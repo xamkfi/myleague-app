@@ -35,6 +35,13 @@ public class HockeyDbContext : DbContext
     public DbSet<HockeyMatchTeam> HockeyMatchTeams => Set<HockeyMatchTeam>();
     public DbSet<HockeyMatchOfficial> HockeyMatchOfficials => Set<HockeyMatchOfficial>();
     public DbSet<HockeyPeriodScore> HockeyPeriodScores => Set<HockeyPeriodScore>();
+    public DbSet<HockeyMatchPlayerSelection> HockeyMatchPlayerSelections => Set<HockeyMatchPlayerSelection>();
+    public DbSet<HockeyMatchActivePlayer> HockeyMatchActivePlayers => Set<HockeyMatchActivePlayer>();
+    public DbSet<HockeyMatchLine> HockeyMatchLines => Set<HockeyMatchLine>();
+    public DbSet<HockeyMatchLinePlayer> HockeyMatchLinePlayers => Set<HockeyMatchLinePlayer>();
+    public DbSet<HockeyOnIceState> HockeyOnIceStates => Set<HockeyOnIceState>();
+    public DbSet<HockeyOnIcePlayer> HockeyOnIcePlayers => Set<HockeyOnIcePlayer>();
+    public DbSet<HockeyOnIceChange> HockeyOnIceChanges => Set<HockeyOnIceChange>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,5 +71,12 @@ public class HockeyDbContext : DbContext
         modelBuilder.ApplyConfiguration(new HockeyMatchTeamConfiguration());
         modelBuilder.ApplyConfiguration(new HockeyMatchOfficialConfiguration());
         modelBuilder.ApplyConfiguration(new HockeyPeriodScoreConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyMatchPlayerSelectionConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyMatchActivePlayerConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyMatchLineConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyMatchLinePlayerConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyOnIceStateConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyOnIcePlayerConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyOnIceChangeConfiguration());
     }
 }

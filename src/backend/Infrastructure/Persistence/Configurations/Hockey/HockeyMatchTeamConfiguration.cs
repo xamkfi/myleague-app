@@ -27,6 +27,26 @@ public class HockeyMatchTeamConfiguration : BaseEntityConfiguration<HockeyMatchT
             .HasForeignKey(t => t.CompetitionTeamId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.HasOne(t => t.PlayerSelection)
+            .WithOne(s => s.MatchTeam)
+            .HasForeignKey<HockeyMatchPlayerSelection>(s => s.MatchTeamId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(t => t.Lines)
+            .WithOne(l => l.MatchTeam)
+            .HasForeignKey(l => l.MatchTeamId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(t => t.OnIceState)
+            .WithOne(s => s.MatchTeam)
+            .HasForeignKey<HockeyOnIceState>(s => s.MatchTeamId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(t => t.ActiveGoalie)
+            .WithMany()
+            .HasForeignKey(t => t.ActiveGoalieMatchPlayerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(t => new { t.MatchId, t.TeamSlot })
             .IsUnique()
             .HasDatabaseName("IX_HockeyMatchTeams_Match_Slot");

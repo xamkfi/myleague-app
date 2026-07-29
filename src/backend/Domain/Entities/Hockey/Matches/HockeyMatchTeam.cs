@@ -1,54 +1,38 @@
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Hockey.Matches;
+using Domain.Enums.Hockey.Teams;
 
 namespace Domain.Entities.Hockey.Matches;
 
 /// <summary>
-/// One side of a hockey match (home or away). The match aggregate stores sides only through
-/// <see cref="HockeyMatchTeam"/> rows keyed by <see cref="TeamSlot"/> — not via separate
-/// HomeTeamId / AwayTeamId columns on <see cref="HockeyMatch"/>.
+/// One side of a hockey match (home or away). Owns match roster selection, match lines
+/// and optional on-ice tracking for that side.
 /// </summary>
 public class HockeyMatchTeam : BaseEntity
 {
-    /// <summary>Gets the parent match identifier.</summary>
     public Guid MatchId { get; private set; }
-
-    /// <summary>Gets the parent match aggregate.</summary>
     public HockeyMatch Match { get; private set; } = null!;
 
-    /// <summary>Gets the underlying hockey team identifier.</summary>
     public Guid TeamId { get; private set; }
-
-    /// <summary>Gets the team navigation (cross-context; ignored in hockey EF config).</summary>
     public HockeyTeam? Team { get; private set; }
 
-    /// <summary>
-    /// Gets the competition-team surrogate when this match belongs to a competition.
-    /// Null for standalone / friendly matches without a competition.
-    /// </summary>
     public Guid? CompetitionTeamId { get; private set; }
-
-    /// <summary>Gets the competition-team navigation when present.</summary>
     public HockeyCompetitionTeam? CompetitionTeam { get; private set; }
 
-    /// <summary>Gets whether this side is home or away.</summary>
     public HockeyTeamSlot TeamSlot { get; private set; }
-
-    /// <summary>Gets the total goals scored by this side in the match.</summary>
     public int Goals { get; private set; }
-
-    /// <summary>Gets whether the goalie has been pulled for an extra attacker.</summary>
     public bool IsGoaliePulled { get; private set; }
-
-    /// <summary>
-    /// Gets the active goalie match-player id when known.
-    /// Full <c>HockeyMatchActivePlayer</c> linkage is added in a later roster ticket.
-    /// </summary>
     public Guid? ActiveGoalieMatchPlayerId { get; private set; }
-
-    /// <summary>Gets whether this side tracks on-ice players for the match.</summary>
+    public HockeyMatchActivePlayer? ActiveGoalie { get; private set; }
     public bool TracksOnIcePlayers { get; private set; }
+
+    public HockeyMatchPlayerSelection? PlayerSelection { get; private set; }
+
+    public IReadOnlyCollection<HockeyMatchLine> Lines => _lines.AsReadOnly();
+    private readonly List<HockeyMatchLine> _lines = new();
+
+    public HockeyOnIceState? OnIceState { get; private set; }
 
     private HockeyMatchTeam() { }
 
@@ -73,6 +57,12 @@ public class HockeyMatchTeam : BaseEntity
         TracksOnIcePlayers = tracksOnIcePlayers;
         Goals = 0;
         IsGoaliePulled = false;
+
+        if (tracksOnIcePlayers)
+        {
+            OnIceState = new HockeyOnIceState(Id, isEnabled: true);
+            OnIceState.AttachMatchTeam(this);
+        }
     }
 
     internal void SetGoals(int goals)
@@ -84,11 +74,78 @@ public class HockeyMatchTeam : BaseEntity
 
     internal void SetGoaliePulled(bool isGoaliePulled) => IsGoaliePulled = isGoaliePulled;
 
-    internal void SetActiveGoalieMatchPlayerId(Guid? activeGoalieMatchPlayerId)
+    /// <summary>
+    /// Creates a new player selection for this match side, replacing any previous selection.
+    /// </summary>
+    public HockeyMatchPlayerSelection CreateOrReplacePlayerSelection(
+        HockeyPlayerSelectionSource source,
+        Guid? createdByUserId = null)
     {
-        if (activeGoalieMatchPlayerId == Guid.Empty)
-            throw new ArgumentException("Active goalie match player id cannot be empty.", nameof(activeGoalieMatchPlayerId));
-        ActiveGoalieMatchPlayerId = activeGoalieMatchPlayerId;
+        HockeyMatchPlayerSelection selection = new(Id, source, createdByUserId);
+        selection.AttachMatchTeam(this);
+        PlayerSelection = selection;
+        ActiveGoalie = null;
+        ActiveGoalieMatchPlayerId = null;
+        return selection;
+    }
+
+    public HockeyMatchLine AddMatchLine(
+        string name,
+        HockeyLineType lineType,
+        int? lineNumber = null,
+        string? notes = null)
+    {
+        HockeyMatchLine line = new(Id, name, lineType, lineNumber, notes);
+        line.AttachMatchTeam(this);
+        _lines.Add(line);
+        return line;
+    }
+
+    public void RemoveMatchLine(Guid matchLineId)
+    {
+        HockeyMatchLine line = _lines.FirstOrDefault(l => l.Id == matchLineId)
+            ?? throw new InvalidOperationException("Match line is not part of this match team.");
+        _lines.Remove(line);
+    }
+
+    public void EnableOnIceTracking(Guid? userId = null)
+    {
+        TracksOnIcePlayers = true;
+        if (OnIceState is null)
+        {
+            OnIceState = new HockeyOnIceState(Id, isEnabled: true, userId);
+            OnIceState.AttachMatchTeam(this);
+        }
+        else
+        {
+            OnIceState.Enable(userId);
+        }
+    }
+
+    public void DisableOnIceTracking(Guid? userId = null)
+    {
+        TracksOnIcePlayers = false;
+        OnIceState?.Disable(userId);
+    }
+
+    public void SetActiveGoalie(HockeyMatchActivePlayer activeGoalie)
+    {
+        ArgumentNullException.ThrowIfNull(activeGoalie);
+        if (!activeGoalie.IsActive)
+            throw new InvalidOperationException("Active goalie must be an active match player.");
+        if (!activeGoalie.IsGoalie && !activeGoalie.IsEmergencyGoalie)
+            throw new InvalidOperationException("Selected player is not marked as a goalie.");
+        if (PlayerSelection is null || !PlayerSelection.HasActivePlayer(activeGoalie.Id))
+            throw new InvalidOperationException("Active goalie must belong to this match team's roster.");
+
+        ActiveGoalie = activeGoalie;
+        ActiveGoalieMatchPlayerId = activeGoalie.Id;
+    }
+
+    public void ClearActiveGoalie()
+    {
+        ActiveGoalie = null;
+        ActiveGoalieMatchPlayerId = null;
     }
 
     internal void SetTracksOnIcePlayers(bool tracksOnIcePlayers) => TracksOnIcePlayers = tracksOnIcePlayers;
