@@ -59,7 +59,7 @@ public class HockeyLine : BaseEntity
         if (!IsActive)
             throw new InvalidOperationException("Cannot add players to an inactive line.");
         if (teamPlayerId == Guid.Empty)
-            throw new ArgumentException("Team player id cannot be empty.", nameof(teamPlayerId));
+            throw new ArgumentException("Team player  id cannot be empty.", nameof(teamPlayerId));
 
         HockeyLinePlayer? existing = _players.FirstOrDefault(p => p.TeamPlayerId == teamPlayerId);
         if (existing is not null)
