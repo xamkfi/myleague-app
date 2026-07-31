@@ -1,6 +1,7 @@
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Matches.Events;
+using Domain.Entities.Hockey.Statistics;
 using Domain.Entities.Hockey.Teams;
 using Domain.ValueObjects.Hockey.Matches;
 using Microsoft.EntityFrameworkCore;
@@ -56,6 +57,15 @@ public class HockeyDbContext : DbContext
     public DbSet<HockeyTimeout> HockeyTimeouts => Set<HockeyTimeout>();
     public DbSet<HockeyShootoutAttempt> HockeyShootoutAttempts => Set<HockeyShootoutAttempt>();
 
+    public DbSet<HockeyMatchTeamStatistics> HockeyMatchTeamStatistics => Set<HockeyMatchTeamStatistics>();
+    public DbSet<HockeyMatchPlayerStatistics> HockeyMatchPlayerStatistics => Set<HockeyMatchPlayerStatistics>();
+    public DbSet<HockeyGoaliePeriodStatistics> HockeyGoaliePeriodStatistics => Set<HockeyGoaliePeriodStatistics>();
+    public DbSet<HockeyGoalieMatchStatistics> HockeyGoalieMatchStatistics => Set<HockeyGoalieMatchStatistics>();
+    public DbSet<HockeyPlayerCompetitionStatistics> HockeyPlayerCompetitionStatistics => Set<HockeyPlayerCompetitionStatistics>();
+    public DbSet<HockeyGoalieCompetitionStatistics> HockeyGoalieCompetitionStatistics => Set<HockeyGoalieCompetitionStatistics>();
+    public DbSet<HockeyTeamCompetitionStatistics> HockeyTeamCompetitionStatistics => Set<HockeyTeamCompetitionStatistics>();
+    public DbSet<HockeyStatisticsCache> HockeyStatisticsCache => Set<HockeyStatisticsCache>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -102,5 +112,14 @@ public class HockeyDbContext : DbContext
         modelBuilder.ApplyConfiguration(new HockeyVideoReviewConfiguration());
         modelBuilder.ApplyConfiguration(new HockeyGoalieChangeConfiguration());
         modelBuilder.ApplyConfiguration(new HockeyShootoutAttemptConfiguration());
+
+        modelBuilder.ApplyConfiguration(new HockeyMatchTeamStatisticsConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyMatchPlayerStatisticsConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyGoalieMatchStatisticsConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyGoaliePeriodStatisticsConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyPlayerCompetitionStatisticsConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyGoalieCompetitionStatisticsConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyTeamCompetitionStatisticsConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeyStatisticsCacheConfiguration());
     }
 }

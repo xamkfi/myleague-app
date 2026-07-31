@@ -59,7 +59,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         /// <summary>
-        /// Gets or sets the TimerStates DbSet.
+        /// Gets  or sets the TimerStates DbSet.
         /// </summary>
         public DbSet<TimerState> TimerStates { get; set; }
 
