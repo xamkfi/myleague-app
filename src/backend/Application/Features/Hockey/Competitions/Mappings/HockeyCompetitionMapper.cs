@@ -41,7 +41,39 @@ public static class HockeyCompetitionMapper
             season.IsCompleted,
             season.SeasonCode,
             season.ChampionCompetitionTeamId,
-            season.Teams.Select(ToTeamDto).ToList());
+            season.Teams.Select(ToTeamDto).ToList(),
+            season.Divisions.Select(ToDivisionDto).ToList(),
+            season.PlayoffSeries.Select(ToPlayoffSeriesDto).ToList(),
+            season.PlayoffSchedule.Select(ToPlayoffScheduleSlotDto).ToList());
+    }
+
+    /// <summary>
+    /// Maps a competition division to a DTO.
+    /// </summary>
+    public static HockeyCompetitionDivisionDto ToDivisionDto(HockeyCompetitionDivision division)
+    {
+        return new HockeyCompetitionDivisionDto(
+            division.Id,
+            division.CompetitionId,
+            division.DivisionId,
+            division.Name,
+            division.SortOrder,
+            division.IsActive,
+            division.ChampionCompetitionTeamId,
+            division.Teams.Select(ToDivisionTeamDto).ToList());
+    }
+
+    /// <summary>
+    /// Maps a competition division team membership to a DTO.
+    /// </summary>
+    public static HockeyCompetitionDivisionTeamDto ToDivisionTeamDto(HockeyCompetitionDivisionTeam team)
+    {
+        return new HockeyCompetitionDivisionTeamDto(
+            team.Id,
+            team.CompetitionDivisionId,
+            team.CompetitionTeamId,
+            team.Seed,
+            team.IsActive);
     }
 
     /// <summary>

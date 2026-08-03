@@ -1,4 +1,5 @@
 using Application.Features.Hockey.Competitions.DTOs;
+using Application.Features.Hockey.Tournaments.DTOs;
 
 namespace Application.Features.Hockey.Seasons.DTOs;
 
@@ -15,6 +16,9 @@ namespace Application.Features.Hockey.Seasons.DTOs;
 /// <param name="SeasonCode">Optional short season code (e.g. 2026-27)</param>
 /// <param name="ChampionCompetitionTeamId">Champion competition-team id when set</param>
 /// <param name="Teams">Teams registered in this season</param>
+/// <param name="Divisions">Divisions belonging to this season</param>
+/// <param name="PlayoffSeries">Playoff series belonging to this season</param>
+/// <param name="PlayoffSchedule">Configured playoff schedule slots</param>
 public record HockeySeasonDto(
     Guid Id,
     string Name,
@@ -25,4 +29,7 @@ public record HockeySeasonDto(
     bool IsCompleted,
     string? SeasonCode,
     Guid? ChampionCompetitionTeamId,
-    IReadOnlyCollection<HockeyCompetitionTeamDto> Teams);
+    IReadOnlyCollection<HockeyCompetitionTeamDto> Teams,
+    IReadOnlyCollection<HockeyCompetitionDivisionDto> Divisions,
+    IReadOnlyCollection<HockeyPlayoffSeriesDto> PlayoffSeries,
+    IReadOnlyCollection<HockeyPlayoffScheduleSlotDto> PlayoffSchedule);

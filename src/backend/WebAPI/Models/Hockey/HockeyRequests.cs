@@ -37,6 +37,71 @@ public class CreateHockeySeasonRequest
 }
 
 /// <summary>
+/// Request body for updating a hockey season.
+/// </summary>
+public class UpdateHockeySeasonRequest
+{
+    /// <summary>Season name.</summary>
+    [Required]
+    [StringLength(200)]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>Start date.</summary>
+    [Required]
+    public DateTime StartDate { get; set; }
+
+    /// <summary>End date.</summary>
+    [Required]
+    public DateTime EndDate { get; set; }
+
+    /// <summary>Optional short season code.</summary>
+    [StringLength(50)]
+    public string? SeasonCode { get; set; }
+}
+
+/// <summary>
+/// Request body for setting the season champion.
+/// </summary>
+public class SetHockeySeasonChampionRequest
+{
+    /// <summary>Champion competition-team id.</summary>
+    [Required]
+    public Guid ChampionCompetitionTeamId { get; set; }
+}
+
+/// <summary>
+/// Request body for adding a Common Division to a hockey season.
+/// </summary>
+public class AddDivisionToHockeySeasonRequest
+{
+    /// <summary>Common Division id.</summary>
+    [Required]
+    public Guid DivisionId { get; set; }
+
+    /// <summary>Display name within the season.</summary>
+    [Required]
+    [StringLength(100)]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>Sort order among sibling divisions.</summary>
+    [Required]
+    public int SortOrder { get; set; }
+}
+
+/// <summary>
+/// Request body for placing a competition team into a season division.
+/// </summary>
+public class AddTeamToHockeySeasonDivisionRequest
+{
+    /// <summary>Competition-team id (not raw HockeyTeam id).</summary>
+    [Required]
+    public Guid CompetitionTeamId { get; set; }
+
+    /// <summary>Optional seed within the division.</summary>
+    public int? Seed { get; set; }
+}
+
+/// <summary>
 /// Request body for creating a hockey tournament.
 /// </summary>
 public class CreateHockeyTournamentRequest
