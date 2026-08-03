@@ -10,16 +10,26 @@ using WebAPI.Models.Hockey;
 
 namespace WebAPI.Controllers.Hockey;
 
+/// <summary>
+/// API endpoints for hockey teams.
+/// </summary>
 [Route("api/[controller]")]
 public class HockeyTeamController : BaseApiController
 {
     private readonly IMediator _mediator;
 
+    /// <summary>
+    /// Creates a new <see cref="HockeyTeamController"/>.
+    /// </summary>
     public HockeyTeamController(IMediator mediator)
     {
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Gets a hockey team by id.
+    /// </summary>
+    /// <param name="id">Team id</param>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -29,6 +39,10 @@ public class HockeyTeamController : BaseApiController
         return HandleResult(result, "Hockey team retrieved successfully", "Hockey team not found");
     }
 
+    /// <summary>
+    /// Creates a new hockey team.
+    /// </summary>
+    /// <param name="request">Team create payload</param>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

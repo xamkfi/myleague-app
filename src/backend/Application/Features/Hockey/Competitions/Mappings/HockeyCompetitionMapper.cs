@@ -5,8 +5,14 @@ using Domain.Entities.Hockey.Competitions;
 
 namespace Application.Features.Hockey.Competitions.Mappings;
 
+/// <summary>
+/// Maps hockey competition domain entities to application DTOs.
+/// </summary>
 public static class HockeyCompetitionMapper
 {
+    /// <summary>
+    /// Maps a competition-team membership to a DTO.
+    /// </summary>
     public static HockeyCompetitionTeamDto ToTeamDto(HockeyCompetitionTeam team)
     {
         return new HockeyCompetitionTeamDto(
@@ -18,6 +24,9 @@ public static class HockeyCompetitionMapper
             team.IsActive);
     }
 
+    /// <summary>
+    /// Maps a hockey season to a DTO.
+    /// </summary>
     public static HockeySeasonDto ToSeasonDto(HockeySeason season)
     {
         return new HockeySeasonDto(
@@ -33,6 +42,9 @@ public static class HockeyCompetitionMapper
             season.Teams.Select(ToTeamDto).ToList());
     }
 
+    /// <summary>
+    /// Maps a hockey tournament to a DTO.
+    /// </summary>
     public static HockeyTournamentDto ToTournamentDto(HockeyTournament tournament)
     {
         return new HockeyTournamentDto(

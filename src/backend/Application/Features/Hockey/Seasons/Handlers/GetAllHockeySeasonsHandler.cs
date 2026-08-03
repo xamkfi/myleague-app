@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Hockey.Seasons.Handlers;
 
+/// <summary>
+/// Handles retrieving all hockey seasons.
+/// </summary>
 public class GetAllHockeySeasonsHandler : IRequestHandler<GetAllHockeySeasonsQuery, Result<IEnumerable<HockeySeasonDto>>>
 {
     private readonly IHockeyCompetitionRepository _competitionRepository;

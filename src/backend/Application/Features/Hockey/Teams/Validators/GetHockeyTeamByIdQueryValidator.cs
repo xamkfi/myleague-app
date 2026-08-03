@@ -3,6 +3,9 @@ using FluentValidation;
 
 namespace Application.Features.Hockey.Teams.Validators;
 
+/// <summary>
+/// Validator for <see cref="GetHockeyTeamByIdQuery"/>.
+/// </summary>
 public class GetHockeyTeamByIdQueryValidator : AbstractValidator<GetHockeyTeamByIdQuery>
 {
     public GetHockeyTeamByIdQueryValidator()

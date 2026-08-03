@@ -12,18 +12,27 @@ using WebAPI.Models.Hockey;
 
 namespace WebAPI.Controllers.Hockey;
 
+/// <summary>
+/// API endpoints for hockey seasons.
+/// </summary>
 [Route("api/[controller]")]
 public class HockeySeasonController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<HockeySeasonController> _logger;
 
+    /// <summary>
+    /// Creates a new <see cref="HockeySeasonController"/>.
+    /// </summary>
     public HockeySeasonController(IMediator mediator, ILogger<HockeySeasonController> logger)
     {
         _mediator = mediator;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Gets all hockey seasons.
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<HockeySeasonDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<HockeySeasonDto>>>> GetAllSeasons()
@@ -32,6 +41,10 @@ public class HockeySeasonController : BaseApiController
         return HandleListResult(result, "Hockey seasons retrieved successfully", "Failed to retrieve hockey seasons");
     }
 
+    /// <summary>
+    /// Gets a hockey season by id.
+    /// </summary>
+    /// <param name="id">Season id</param>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -41,6 +54,10 @@ public class HockeySeasonController : BaseApiController
         return HandleResult(result, "Hockey season retrieved successfully", "Hockey season not found");
     }
 
+    /// <summary>
+    /// Creates a new hockey season.
+    /// </summary>
+    /// <param name="request">Season create payload</param>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -60,6 +77,11 @@ public class HockeySeasonController : BaseApiController
         return HandleResult(result, "Hockey season created successfully", "Failed to create hockey season");
     }
 
+    /// <summary>
+    /// Adds a hockey team to a season competition.
+    /// </summary>
+    /// <param name="competitionId">Season (competition) id</param>
+    /// <param name="request">Team id and optional seed</param>
     [HttpPost("{competitionId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionTeamDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

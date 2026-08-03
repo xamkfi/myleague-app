@@ -11,6 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Hockey.Teams.Handlers;
 
+/// <summary>
+/// Handles creation of a new hockey team.
+/// </summary>
 public class CreateHockeyTeamHandler : IRequestHandler<CreateHockeyTeamCommand, Result<HockeyTeamDto>>
 {
     private readonly IHockeyTeamRepository _teamRepository;

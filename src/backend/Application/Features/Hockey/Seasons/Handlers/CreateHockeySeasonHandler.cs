@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Hockey.Seasons.Handlers;
 
+/// <summary>
+/// Handles creation of a new hockey season.
+/// </summary>
 public class CreateHockeySeasonHandler : IRequestHandler<CreateHockeySeasonCommand, Result<HockeySeasonDto>>
 {
     private readonly IHockeyCompetitionRepository _competitionRepository;

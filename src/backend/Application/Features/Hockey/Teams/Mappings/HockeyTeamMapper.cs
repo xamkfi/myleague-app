@@ -3,8 +3,14 @@ using Domain.Entities.Hockey.Teams;
 
 namespace Application.Features.Hockey.Teams.Mappings;
 
+/// <summary>
+/// Maps hockey team domain entities to application DTOs.
+/// </summary>
 public static class HockeyTeamMapper
 {
+    /// <summary>
+    /// Maps a hockey team to a DTO.
+    /// </summary>
     public static HockeyTeamDto ToDto(HockeyTeam team)
     {
         return new HockeyTeamDto(

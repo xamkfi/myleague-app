@@ -10,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Hockey.Competitions.Handlers;
 
+/// <summary>
+/// Handles adding a hockey team to a competition.
+/// </summary>
 public class AddTeamToHockeyCompetitionHandler
     : IRequestHandler<AddTeamToHockeyCompetitionCommand, Result<HockeyCompetitionTeamDto>>
 {

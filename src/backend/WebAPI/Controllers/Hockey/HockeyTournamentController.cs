@@ -12,18 +12,27 @@ using WebAPI.Models.Hockey;
 
 namespace WebAPI.Controllers.Hockey;
 
+/// <summary>
+/// API endpoints for hockey tournaments.
+/// </summary>
 [Route("api/[controller]")]
 public class HockeyTournamentController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<HockeyTournamentController> _logger;
 
+    /// <summary>
+    /// Creates a new <see cref="HockeyTournamentController"/>.
+    /// </summary>
     public HockeyTournamentController(IMediator mediator, ILogger<HockeyTournamentController> logger)
     {
         _mediator = mediator;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Gets all hockey tournaments.
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<HockeyTournamentDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<HockeyTournamentDto>>>> GetAllTournaments()
@@ -32,6 +41,10 @@ public class HockeyTournamentController : BaseApiController
         return HandleListResult(result, "Hockey tournaments retrieved successfully", "Failed to retrieve hockey tournaments");
     }
 
+    /// <summary>
+    /// Gets a hockey tournament by id.
+    /// </summary>
+    /// <param name="id">Tournament id</param>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -41,6 +54,10 @@ public class HockeyTournamentController : BaseApiController
         return HandleResult(result, "Hockey tournament retrieved successfully", "Hockey tournament not found");
     }
 
+    /// <summary>
+    /// Creates a new hockey tournament.
+    /// </summary>
+    /// <param name="request">Tournament create payload</param>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -67,6 +84,11 @@ public class HockeyTournamentController : BaseApiController
         return HandleResult(result, "Hockey tournament created successfully", "Failed to create hockey tournament");
     }
 
+    /// <summary>
+    /// Adds a hockey team to a tournament competition.
+    /// </summary>
+    /// <param name="competitionId">Tournament (competition) id</param>
+    /// <param name="request">Team id and optional seed</param>
     [HttpPost("{competitionId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionTeamDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

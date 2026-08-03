@@ -3,6 +3,9 @@ using FluentValidation;
 
 namespace Application.Features.Hockey.Competitions.Validators;
 
+/// <summary>
+/// Validator for <see cref="AddTeamToHockeyCompetitionCommand"/>.
+/// </summary>
 public class AddTeamToHockeyCompetitionCommandValidator : AbstractValidator<AddTeamToHockeyCompetitionCommand>
 {
     public AddTeamToHockeyCompetitionCommandValidator()

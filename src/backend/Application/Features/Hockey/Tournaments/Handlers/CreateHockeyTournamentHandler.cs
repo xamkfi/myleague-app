@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Hockey.Tournaments.Handlers;
 
+/// <summary>
+/// Handles creation of a new hockey tournament.
+/// </summary>
 public class CreateHockeyTournamentHandler : IRequestHandler<CreateHockeyTournamentCommand, Result<HockeyTournamentDto>>
 {
     private readonly IHockeyCompetitionRepository _competitionRepository;

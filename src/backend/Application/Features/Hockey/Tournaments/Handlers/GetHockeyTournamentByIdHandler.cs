@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Hockey.Tournaments.Handlers;
 
+/// <summary>
+/// Handles retrieving a hockey tournament by id.
+/// </summary>
 public class GetHockeyTournamentByIdHandler : IRequestHandler<GetHockeyTournamentByIdQuery, Result<HockeyTournamentDto>>
 {
     private readonly IHockeyCompetitionRepository _competitionRepository;

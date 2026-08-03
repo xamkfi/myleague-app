@@ -3,6 +3,9 @@ using FluentValidation;
 
 namespace Application.Features.Hockey.Seasons.Validators;
 
+/// <summary>
+/// Validator for <see cref="CreateHockeySeasonCommand"/>.
+/// </summary>
 public class CreateHockeySeasonCommandValidator : AbstractValidator<CreateHockeySeasonCommand>
 {
     public CreateHockeySeasonCommandValidator()

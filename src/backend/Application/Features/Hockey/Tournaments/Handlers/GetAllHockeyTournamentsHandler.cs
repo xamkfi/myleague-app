@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Hockey.Tournaments.Handlers;
 
+/// <summary>
+/// Handles retrieving all hockey tournaments.
+/// </summary>
 public class GetAllHockeyTournamentsHandler : IRequestHandler<GetAllHockeyTournamentsQuery, Result<IEnumerable<HockeyTournamentDto>>>
 {
     private readonly IHockeyCompetitionRepository _competitionRepository;
