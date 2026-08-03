@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.HockeyDb
 {
     [DbContext(typeof(HockeyDbContext))]
-    partial class HockeyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260803093245_SyncHockeyEventsStatsAndMatchModel")]
+    partial class SyncHockeyEventsStatsAndMatchModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
