@@ -42,7 +42,7 @@ public class CreateHockeySeasonHandler : IRequestHandler<CreateHockeySeasonComma
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to create hockey season {Name}", request.Name);
-            return Result<HockeySeasonDto>.Failure("An error occurred while creating the hockey season.");
+            return Result<HockeySeasonDto>.Failure("An error occurred while creating the hockey season.", ex.Flatten());
         }
     }
 }

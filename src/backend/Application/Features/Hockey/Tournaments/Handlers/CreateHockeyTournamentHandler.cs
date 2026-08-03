@@ -48,7 +48,7 @@ public class CreateHockeyTournamentHandler : IRequestHandler<CreateHockeyTournam
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to create hockey tournament {Name}", request.Name);
-            return Result<HockeyTournamentDto>.Failure("An error occurred while creating the hockey tournament.");
+            return Result<HockeyTournamentDto>.Failure("An error occurred while creating the hockey tournament.", ex.Flatten());
         }
     }
 }

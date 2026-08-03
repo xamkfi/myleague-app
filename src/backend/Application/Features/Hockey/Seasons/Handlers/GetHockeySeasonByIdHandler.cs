@@ -32,7 +32,7 @@ public class GetHockeySeasonByIdHandler : IRequestHandler<GetHockeySeasonByIdQue
             HockeySeason? season = await _competitionRepository.GetSeasonByIdAsync(request.Id);
             if (season is null)
             {
-                return Result<HockeySeasonDto>.Failure("Hockey season not found.");
+                return Result<HockeySeasonDto>.NotFound("HockeySeason", request.Id);
             }
 
             return Result<HockeySeasonDto>.Success(HockeyCompetitionMapper.ToSeasonDto(season));
@@ -40,7 +40,7 @@ public class GetHockeySeasonByIdHandler : IRequestHandler<GetHockeySeasonByIdQue
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to get hockey season {SeasonId}", request.Id);
-            return Result<HockeySeasonDto>.Failure("An error occurred while retrieving the hockey season.");
+            return Result<HockeySeasonDto>.Failure("An error occurred while retrieving the hockey season.", ex.Flatten());
         }
     }
 }

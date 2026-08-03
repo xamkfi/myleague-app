@@ -2,6 +2,8 @@ using Application.Features.Hockey.Competitions.DTOs;
 using Application.Features.Hockey.Seasons.DTOs;
 using Application.Features.Hockey.Tournaments.DTOs;
 using Domain.Entities.Hockey.Competitions;
+using Domain.ValueObjects.Hockey.Matches;
+using Domain.ValueObjects.Hockey.Rules;
 
 namespace Application.Features.Hockey.Competitions.Mappings;
 
@@ -59,6 +61,90 @@ public static class HockeyCompetitionMapper
             tournament.ContentHtml,
             tournament.CurrentStage.ToString(),
             tournament.ChampionCompetitionTeamId,
-            tournament.Teams.Select(ToTeamDto).ToList());
+            tournament.Teams.Select(ToTeamDto).ToList(),
+            tournament.Groups.Select(ToGroupDto).ToList(),
+            tournament.PlayoffSeries.Select(ToPlayoffSeriesDto).ToList(),
+            ToTournamentRulesDto(tournament.TournamentRules),
+            tournament.PlayoffSchedule.Select(ToPlayoffScheduleSlotDto).ToList());
+    }
+
+    /// <summary>
+    /// Maps a tournament group to a DTO.
+    /// </summary>
+    public static HockeyTournamentGroupDto ToGroupDto(HockeyTournamentGroup group)
+    {
+        return new HockeyTournamentGroupDto(
+            group.Id,
+            group.TournamentId,
+            group.Name,
+            group.SortOrder,
+            group.Teams.Select(ToGroupTeamDto).ToList());
+    }
+
+    /// <summary>
+    /// Maps a tournament group-team membership to a DTO.
+    /// </summary>
+    public static HockeyTournamentGroupTeamDto ToGroupTeamDto(HockeyTournamentGroupTeam groupTeam)
+    {
+        return new HockeyTournamentGroupTeamDto(
+            groupTeam.Id,
+            groupTeam.TournamentGroupId,
+            groupTeam.CompetitionTeamId,
+            groupTeam.Seed,
+            groupTeam.IsActive);
+    }
+
+    /// <summary>
+    /// Maps a playoff series to a DTO.
+    /// </summary>
+    public static HockeyPlayoffSeriesDto ToPlayoffSeriesDto(HockeyPlayoffSeries series)
+    {
+        return new HockeyPlayoffSeriesDto(
+            series.Id,
+            series.CompetitionId,
+            series.Round.ToString(),
+            series.SeriesOrder,
+            series.BestOf,
+            series.HomeCompetitionTeamId,
+            series.AwayCompetitionTeamId,
+            series.HomeTeamWins,
+            series.AwayTeamWins,
+            series.WinnerCompetitionTeamId,
+            series.Status.ToString());
+    }
+
+    /// <summary>
+    /// Maps tournament rules to a DTO.
+    /// </summary>
+    public static HockeyTournamentRulesDto ToTournamentRulesDto(HockeyTournamentRules rules)
+    {
+        return new HockeyTournamentRulesDto(
+            rules.Format.ToString(),
+            rules.HasGroupStage,
+            rules.HasPlayoffs,
+            rules.HasBronzeGame,
+            rules.HasPlacementGames,
+            rules.TeamsAdvancingPerGroup);
+    }
+
+    /// <summary>
+    /// Maps a playoff schedule slot to a DTO.
+    /// </summary>
+    public static HockeyPlayoffScheduleSlotDto ToPlayoffScheduleSlotDto(HockeyPlayoffScheduleSlot slot)
+    {
+        return new HockeyPlayoffScheduleSlotDto(
+            slot.Round,
+            slot.SeriesOrder,
+            slot.MatchOrder,
+            slot.HomeSourceType,
+            slot.AwaySourceType,
+            slot.HomeSourceGroupId,
+            slot.AwaySourceGroupId,
+            slot.HomeSourceSeriesId,
+            slot.AwaySourceSeriesId,
+            slot.HomeSourceRank,
+            slot.AwaySourceRank,
+            slot.ManualHomeCompetitionTeamId,
+            slot.ManualAwayCompetitionTeamId);
     }
 }

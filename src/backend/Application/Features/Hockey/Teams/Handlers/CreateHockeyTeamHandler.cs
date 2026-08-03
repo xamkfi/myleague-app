@@ -40,7 +40,7 @@ public class CreateHockeyTeamHandler : IRequestHandler<CreateHockeyTeamCommand, 
             Club? club = await _clubRepository.GetByIdAsync(request.ClubId);
             if (club is null)
             {
-                return Result<HockeyTeamDto>.Failure("Club not found.");
+                return Result<HockeyTeamDto>.NotFound("Club", request.ClubId);
             }
 
             HockeyTeam team = new(
@@ -62,7 +62,7 @@ public class CreateHockeyTeamHandler : IRequestHandler<CreateHockeyTeamCommand, 
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to create hockey team {Name}", request.Name);
-            return Result<HockeyTeamDto>.Failure("An error occurred while creating the hockey team.");
+            return Result<HockeyTeamDto>.Failure("An error occurred while creating the hockey team.", ex.Flatten());
         }
     }
 }

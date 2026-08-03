@@ -71,7 +71,7 @@ public class AddTeamToHockeyCompetitionHandlerTests
             CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Contain("team not found");
+        result.Error.Should().Contain("not found");
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 }

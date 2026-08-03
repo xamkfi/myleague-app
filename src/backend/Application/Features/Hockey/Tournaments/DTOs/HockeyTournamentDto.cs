@@ -17,6 +17,10 @@ namespace Application.Features.Hockey.Tournaments.DTOs;
 /// <param name="CurrentStage">Current tournament stage as a string</param>
 /// <param name="ChampionCompetitionTeamId">Champion competition-team id when set</param>
 /// <param name="Teams">Teams registered in this tournament</param>
+/// <param name="Groups">Tournament groups (lohkot)</param>
+/// <param name="PlayoffSeries">Playoff series belonging to this tournament</param>
+/// <param name="TournamentRules">Tournament rules summary</param>
+/// <param name="PlayoffSchedule">Configured playoff schedule slots</param>
 public record HockeyTournamentDto(
     Guid Id,
     string Name,
@@ -29,4 +33,8 @@ public record HockeyTournamentDto(
     string? ContentHtml,
     string CurrentStage,
     Guid? ChampionCompetitionTeamId,
-    IReadOnlyCollection<HockeyCompetitionTeamDto> Teams);
+    IReadOnlyCollection<HockeyCompetitionTeamDto> Teams,
+    IReadOnlyCollection<HockeyTournamentGroupDto> Groups,
+    IReadOnlyCollection<HockeyPlayoffSeriesDto> PlayoffSeries,
+    HockeyTournamentRulesDto TournamentRules,
+    IReadOnlyCollection<HockeyPlayoffScheduleSlotDto> PlayoffSchedule);

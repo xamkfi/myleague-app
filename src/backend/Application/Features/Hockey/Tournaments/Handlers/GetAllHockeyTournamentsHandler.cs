@@ -38,7 +38,9 @@ public class GetAllHockeyTournamentsHandler : IRequestHandler<GetAllHockeyTourna
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to list hockey tournaments");
-            return Result<IEnumerable<HockeyTournamentDto>>.Failure("An error occurred while retrieving hockey tournaments.");
+            return Result<IEnumerable<HockeyTournamentDto>>.Failure(
+                "An error occurred while retrieving hockey tournaments.",
+                ex.Flatten());
         }
     }
 }

@@ -36,7 +36,9 @@ public class GetAllHockeySeasonsHandler : IRequestHandler<GetAllHockeySeasonsQue
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to list hockey seasons");
-            return Result<IEnumerable<HockeySeasonDto>>.Failure("An error occurred while retrieving hockey seasons.");
+            return Result<IEnumerable<HockeySeasonDto>>.Failure(
+                "An error occurred while retrieving hockey seasons.",
+                ex.Flatten());
         }
     }
 }

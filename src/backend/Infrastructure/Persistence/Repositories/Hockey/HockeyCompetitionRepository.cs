@@ -41,6 +41,8 @@ public class HockeyCompetitionRepository : IHockeyCompetitionRepository
         return await _dbContext.HockeyTournaments
             .Include(c => c.Teams)
             .Include(c => c.Groups)
+                .ThenInclude(g => g.Teams)
+            .Include(c => c.PlayoffSeries)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
@@ -57,6 +59,8 @@ public class HockeyCompetitionRepository : IHockeyCompetitionRepository
         return await _dbContext.HockeyTournaments
             .Include(c => c.Teams)
             .Include(c => c.Groups)
+                .ThenInclude(g => g.Teams)
+            .Include(c => c.PlayoffSeries)
             .OrderByDescending(c => c.StartDate)
             .ToListAsync();
     }

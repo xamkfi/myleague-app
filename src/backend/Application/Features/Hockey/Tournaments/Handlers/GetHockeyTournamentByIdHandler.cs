@@ -32,7 +32,7 @@ public class GetHockeyTournamentByIdHandler : IRequestHandler<GetHockeyTournamen
             HockeyTournament? tournament = await _competitionRepository.GetTournamentByIdAsync(request.Id);
             if (tournament is null)
             {
-                return Result<HockeyTournamentDto>.Failure("Hockey tournament not found.");
+                return Result<HockeyTournamentDto>.NotFound("HockeyTournament", request.Id);
             }
 
             return Result<HockeyTournamentDto>.Success(HockeyCompetitionMapper.ToTournamentDto(tournament));
@@ -40,7 +40,7 @@ public class GetHockeyTournamentByIdHandler : IRequestHandler<GetHockeyTournamen
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to get hockey tournament {TournamentId}", request.Id);
-            return Result<HockeyTournamentDto>.Failure("An error occurred while retrieving the hockey tournament.");
+            return Result<HockeyTournamentDto>.Failure("An error occurred while retrieving the hockey tournament.", ex.Flatten());
         }
     }
 }

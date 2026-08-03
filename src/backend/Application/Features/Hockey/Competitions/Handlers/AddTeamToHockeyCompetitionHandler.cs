@@ -42,13 +42,13 @@ public class AddTeamToHockeyCompetitionHandler
             HockeyTeam? team = await _teamRepository.GetByIdAsync(request.TeamId);
             if (team is null)
             {
-                return Result<HockeyCompetitionTeamDto>.Failure("Hockey team not found.");
+                return Result<HockeyCompetitionTeamDto>.NotFound("HockeyTeam", request.TeamId);
             }
 
             HockeyCompetition? competition = await _competitionRepository.GetByIdAsync(request.CompetitionId);
             if (competition is null)
             {
-                return Result<HockeyCompetitionTeamDto>.Failure("Hockey competition not found.");
+                return Result<HockeyCompetitionTeamDto>.NotFound("HockeyCompetition", request.CompetitionId);
             }
 
             HockeyCompetitionTeam competitionTeam = competition.AddTeam(request.TeamId, request.Seed);
@@ -64,12 +64,12 @@ public class AddTeamToHockeyCompetitionHandler
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Domain rejected add-team for competition {CompetitionId}", request.CompetitionId);
-            return Result<HockeyCompetitionTeamDto>.Failure(ex.Message);
+            return Result<HockeyCompetitionTeamDto>.Failure(ex.Message, ex.Flatten());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to add team to hockey competition {CompetitionId}", request.CompetitionId);
-            return Result<HockeyCompetitionTeamDto>.Failure("An error occurred while adding the team to the competition.");
+            return Result<HockeyCompetitionTeamDto>.Failure("An error occurred while adding the team to the competition.", ex.Flatten());
         }
     }
 }

@@ -32,7 +32,7 @@ public class GetHockeyTeamByIdHandler : IRequestHandler<GetHockeyTeamByIdQuery, 
             HockeyTeam? team = await _teamRepository.GetByIdAsync(request.Id);
             if (team is null)
             {
-                return Result<HockeyTeamDto>.Failure("Hockey team not found.");
+                return Result<HockeyTeamDto>.NotFound("HockeyTeam", request.Id);
             }
 
             return Result<HockeyTeamDto>.Success(HockeyTeamMapper.ToDto(team));
@@ -40,7 +40,7 @@ public class GetHockeyTeamByIdHandler : IRequestHandler<GetHockeyTeamByIdQuery, 
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to get hockey team {TeamId}", request.Id);
-            return Result<HockeyTeamDto>.Failure("An error occurred while retrieving the hockey team.");
+            return Result<HockeyTeamDto>.Failure("An error occurred while retrieving the hockey team.", ex.Flatten());
         }
     }
 }
