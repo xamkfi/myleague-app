@@ -249,4 +249,29 @@ public class HockeyDomainBehaviorTests
         groupStats.Scope.Should().Be(HockeyStatisticsScope.TournamentGroup);
         groupStats.TournamentGroupId.Should().Be(group.Id);
     }
+
+    [Fact]
+    public void HockeyTournament_SetChampion_WhenNotCompleted_Throws()
+    {
+        HockeyTournament tournament = HockeyTestHelpers.CreateTournament();
+
+        Action act = () => tournament.SetChampion(Guid.NewGuid());
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*completed tournament*");
+    }
+
+    [Fact]
+    public void HockeyTournament_SetChampion_WhenCompleted_SetsChampion()
+    {
+        HockeyTournament tournament = HockeyTestHelpers.CreateTournament();
+        tournament.Publish();
+        tournament.Activate();
+        tournament.Complete();
+        Guid championId = Guid.NewGuid();
+
+        tournament.SetChampion(championId);
+
+        tournament.ChampionCompetitionTeamId.Should().Be(championId);
+    }
 }

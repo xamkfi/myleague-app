@@ -99,6 +99,8 @@ public class HockeyTournament : HockeyCompetition
     {
         if (championCompetitionTeamId == Guid.Empty)
             throw new ArgumentException("Champion competition team id cannot be empty.", nameof(championCompetitionTeamId));
+        if (Status != HockeyCompetitionStatus.Completed)
+            throw new InvalidOperationException("Champion can only be set for a completed tournament.");
 
         ChampionCompetitionTeamId = championCompetitionTeamId;
     }

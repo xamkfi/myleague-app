@@ -84,4 +84,55 @@ public class HockeyTournamentLifecycleHandlerTests
         result.Data!.PlayoffSeries.Should().ContainSingle(s => s.Round == HockeyPlayoffRound.SemiFinal.ToString() && s.BestOf == 3);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task SetChampion_WhenNotCompleted_Fails()
+    {
+        HockeyTournament tournament = new(
+            "Cup",
+            new DateTime(2026, 12, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 12, 10, 0, 0, 0, DateTimeKind.Utc));
+        Guid competitionTeamId = Guid.NewGuid();
+        _competitionRepo.Setup(r => r.GetTournamentByIdAsync(tournament.Id)).ReturnsAsync(tournament);
+
+        SetHockeyTournamentChampionHandler handler = new(
+            _competitionRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<SetHockeyTournamentChampionHandler>>());
+
+        Result<HockeyTournamentDto> result = await handler.Handle(
+            new SetHockeyTournamentChampionCommand(tournament.Id, competitionTeamId),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("completed");
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SetChampion_WhenCompleted_SetsChampion()
+    {
+        HockeyTournament tournament = new(
+            "Cup",
+            new DateTime(2026, 12, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 12, 10, 0, 0, 0, DateTimeKind.Utc));
+        tournament.Publish();
+        tournament.Activate();
+        tournament.Complete();
+        Guid competitionTeamId = Guid.NewGuid();
+        _competitionRepo.Setup(r => r.GetTournamentByIdAsync(tournament.Id)).ReturnsAsync(tournament);
+
+        SetHockeyTournamentChampionHandler handler = new(
+            _competitionRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<SetHockeyTournamentChampionHandler>>());
+
+        Result<HockeyTournamentDto> result = await handler.Handle(
+            new SetHockeyTournamentChampionCommand(tournament.Id, competitionTeamId),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.ChampionCompetitionTeamId.Should().Be(competitionTeamId);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
 }
