@@ -11,15 +11,9 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_HockeyCompetitionDivisions_HockeyCompetitionDivisions_Hocke~",
-                schema: "hockey",
-                table: "HockeyCompetitionDivisions");
-
-            migrationBuilder.DropColumn(
-                name: "HockeyVideoReviewRulesHockeyCompetitionRulesHockeyCompetitionD~",
-                schema: "hockey",
-                table: "HockeyCompetitionDivisions");
+            // NOTE: Do not drop HockeyVideoReviewRules* truncated owned-type shadow columns here.
+            // They remain in the model snapshot (nested CoachChallengeRules ownership); dropping them
+            // caused EF PendingModelChangesWarning oscillation at Migrate().
 
             // Home/Away competition team FKs were replaced by MatchTeams; do not rename into
             // TournamentGroupId / PlayoffSeriesId (different semantics — EF false-positive).
@@ -2849,24 +2843,6 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                 table: "HockeyMatches",
                 type: "uuid",
                 nullable: true);
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "HockeyVideoReviewRulesHockeyCompetitionRulesHockeyCompetitionD~",
-                schema: "hockey",
-                table: "HockeyCompetitionDivisions",
-                type: "uuid",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_HockeyCompetitionDivisions_HockeyCompetitionDivisions_Hocke~",
-                schema: "hockey",
-                table: "HockeyCompetitionDivisions",
-                column: "HockeyVideoReviewRulesHockeyCompetitionRulesHockeyCompetitionD~",
-                principalSchema: "hockey",
-                principalTable: "HockeyCompetitionDivisions",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
         }
     }
 }

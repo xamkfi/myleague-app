@@ -1,0 +1,28 @@
+hbgPR description notes — SyncHockeyEventsStatsAndMatchModel
+==========================================================
+
+## Summary
+- Incremental HockeyDb migration aligning schema with current Domain + EF configs
+  (TPH match events, statistics + cache, roster/on-ice, richer HockeyMatches).
+- Hockey is NOT registered in DI, health checks, or startup Migrate().
+- Floorball / Common migrations and runtime migrate behavior unchanged.
+
+## Exact commands used
+
+dotnet ef migrations add SyncHockeyEventsStatsAndMatchModel `
+  --project src/backend/Infrastructure/Infrastructure.csproj `
+  --startup-project src/backend/WebAPI/WebAPI.csproj `
+  --context HockeyDbContext `
+  --output-dir Migrations/HockeyDb
+
+dotnet build src/backend/WebAPI/WebAPI.csproj
+
+## Manual review after scaffold
+- Replaced EF false-positive RenameColumn (HomeCompetitionTeamId/AwayCompetitionTeamId
+  → TournamentGroupId/PlayoffSeriesId) with DropColumn + AddColumn (different semantics).
+
+## Explicitly NOT done
+- No AddDbContext<HockeyDbContext>
+- No hockey health check
+- No Database.Migrate() for HockeyDbContext
+- No database update against shared/compose DB

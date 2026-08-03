@@ -42,6 +42,10 @@ namespace MyLeague.Infrastructure.HealthChecks
                     name: "floorball-database",
                     tags: new[] { "database", "ef-core", "floorball" })
 
+                .AddDbContextCheck<HockeyDbContext>(
+                    name: "hockey-database",
+                    tags: new[] { "database", "ef-core", "hockey" })
+
                 // Custom database health check
                 .AddCheck<DatabaseHealthCheck>(
                     name: "database-operations",

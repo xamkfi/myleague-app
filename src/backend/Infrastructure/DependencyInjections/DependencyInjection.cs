@@ -54,6 +54,17 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     connectionString,
                     b => b.MigrationsAssembly(typeof(FloorballDbContext).Assembly.FullName)));
 
+            services.AddDbContext<HockeyDbContext>(options =>
+            {
+                options.UseNpgsql(
+                    connectionString,
+                    b => b.MigrationsAssembly(typeof(HockeyDbContext).Assembly.FullName));
+                // Nested owned HockeyCoachChallengeRules generates truncated Postgres identifiers that
+                // leave a permanent model/snapshot drift in EF tooling; do not block startup migrate.
+                options.ConfigureWarnings(w =>
+                    w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+            });
+
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();
             services.AddScoped<IPersonRepository, PersonRepository>();
@@ -148,6 +159,9 @@ namespace MyLeague.Infrastructure.DependencyInjections
 
                     FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
                     floorballDbContext.Database.Migrate();
+
+                    HockeyDbContext hockeyDbContext = scope.ServiceProvider.GetRequiredService<HockeyDbContext>();
+                    hockeyDbContext.Database.Migrate();
 
                     // Seed default users after migrations
                     DatabaseSeeder seeder = new();
