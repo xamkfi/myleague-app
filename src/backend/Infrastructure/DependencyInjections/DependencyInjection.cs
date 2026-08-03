@@ -7,6 +7,7 @@ using Application.Interfaces.Auth;
 using Application.Interfaces.Common;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
+using Domain.Repositories.Hockey;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ using MyLeague.Infrastructure.HealthChecks;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories.Common;
 using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
+using MyLeague.Infrastructure.Persistence.Repositories.Hockey;
 using MyLeague.Infrastructure.Persistence.UnitOfWork;
 using MyLeague.Infrastructure.Services.Auth;
 using MyLeague.Infrastructure.Services.Common;
@@ -83,6 +85,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballTournamentRepository, FloorballTournamentRepository>();
             services.AddScoped<IFloorballCompetitionDivisionRepository, FloorballCompetitionDivisionRepository>();
             services.AddScoped<IFloorballStatisticsRepository, FloorballStatisticsRepository>();
+            services.AddScoped<IHockeyCompetitionRepository, HockeyCompetitionRepository>();
+            services.AddScoped<IHockeyTeamRepository, HockeyTeamRepository>();
             services.AddScoped<IImageStorageService>(sp =>
             {
                 IConfiguration config = sp.GetRequiredService<IConfiguration>();
@@ -141,6 +145,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             // Add unit of work
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
             services.AddScoped<IFloorballUnitOfWork, FloorballUnitOfWork>();
+            services.AddScoped<IHockeyUnitOfWork, HockeyUnitOfWork>();
 
 
             // Add domain events / SignalR

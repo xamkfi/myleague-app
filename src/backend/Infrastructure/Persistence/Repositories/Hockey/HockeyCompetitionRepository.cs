@@ -1,0 +1,63 @@
+using Domain.Entities.Hockey.Competitions;
+using Domain.Repositories.Hockey;
+using Microsoft.EntityFrameworkCore;
+using MyLeague.Infrastructure.Persistence.Contexts;
+
+namespace MyLeague.Infrastructure.Persistence.Repositories.Hockey;
+
+/// <summary>
+/// EF Core repository for hockey competitions.
+/// </summary>
+public class HockeyCompetitionRepository : IHockeyCompetitionRepository
+{
+    private readonly HockeyDbContext _dbContext;
+
+    public HockeyCompetitionRepository(HockeyDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public async Task AddAsync(HockeyCompetition competition)
+    {
+        await _dbContext.HockeyCompetitions.AddAsync(competition);
+    }
+
+    public async Task<HockeyCompetition?> GetByIdAsync(Guid id)
+    {
+        return await _dbContext.HockeyCompetitions
+            .Include(c => c.Teams)
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task<HockeySeason?> GetSeasonByIdAsync(Guid id)
+    {
+        return await _dbContext.HockeySeasons
+            .Include(c => c.Teams)
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task<HockeyTournament?> GetTournamentByIdAsync(Guid id)
+    {
+        return await _dbContext.HockeyTournaments
+            .Include(c => c.Teams)
+            .Include(c => c.Groups)
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task<IReadOnlyList<HockeySeason>> GetAllSeasonsAsync()
+    {
+        return await _dbContext.HockeySeasons
+            .Include(c => c.Teams)
+            .OrderByDescending(c => c.StartDate)
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<HockeyTournament>> GetAllTournamentsAsync()
+    {
+        return await _dbContext.HockeyTournaments
+            .Include(c => c.Teams)
+            .Include(c => c.Groups)
+            .OrderByDescending(c => c.StartDate)
+            .ToListAsync();
+    }
+}
