@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Application.Features.Hockey.Tournaments.DTOs;
 using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
+using Domain.Enums.Hockey.Matches;
 using Domain.Enums.Hockey.Teams;
 
 namespace WebAPI.Models.Hockey;
@@ -549,4 +550,157 @@ public class SetHockeyTournamentPlayoffScheduleRequest
     /// <summary>Schedule slots.</summary>
     [Required]
     public List<HockeyPlayoffScheduleSlotDto> Slots { get; set; } = new();
+}
+
+/// <summary>
+/// Request body for creating a hockey match.
+/// </summary>
+public class CreateHockeyMatchRequest
+{
+    [Required]
+    public DateTime ScheduledStartTime { get; set; }
+
+    [Required]
+    public HockeyMatchType MatchType { get; set; }
+
+    public Guid? CompetitionId { get; set; }
+    public Guid? CompetitionDivisionId { get; set; }
+    public Guid? TournamentGroupId { get; set; }
+    public Guid? PlayoffSeriesId { get; set; }
+
+    [StringLength(200)]
+    public string? Venue { get; set; }
+}
+
+/// <summary>
+/// Request body for assigning home/away teams to a hockey match.
+/// </summary>
+public class AddHomeAwayTeamsToHockeyMatchRequest
+{
+    [Required]
+    public Guid HomeTeamId { get; set; }
+
+    [Required]
+    public Guid AwayTeamId { get; set; }
+}
+
+/// <summary>
+/// Request body for confirming a match-side roster.
+/// </summary>
+public class ConfirmHockeyMatchRosterRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    [Required]
+    public List<Guid> TeamPlayerIds { get; set; } = new();
+
+    public Guid? ConfirmedByUserId { get; set; }
+
+    public HockeyPlayerSelectionSource Source { get; set; } = HockeyPlayerSelectionSource.Manual;
+}
+
+/// <summary>
+/// Request body for recording a hockey goal.
+/// </summary>
+public class RecordHockeyGoalRequest
+{
+    [Required]
+    public Guid ScoringMatchTeamId { get; set; }
+
+    [Required]
+    public Guid ScorerActivePlayerId { get; set; }
+
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    [Required]
+    public HockeyGoalStrength GoalStrength { get; set; }
+
+    public Guid? PrimaryAssistActivePlayerId { get; set; }
+    public Guid? SecondaryAssistActivePlayerId { get; set; }
+    public Guid? GoalieActivePlayerId { get; set; }
+    public bool WasEmptyNet { get; set; }
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// Request body for recording a hockey penalty.
+/// </summary>
+public class RecordHockeyPenaltyRequest
+{
+    [Required]
+    public Guid PenaltyMatchTeamId { get; set; }
+
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    [Required]
+    public HockeyPenaltySeverity Severity { get; set; }
+
+    [Required]
+    public HockeyPenaltyOffence Offence { get; set; }
+
+    [Required]
+    public int PenaltyMinutes { get; set; }
+
+    public Guid? PenalizedActivePlayerId { get; set; }
+    public Guid? ServedByActivePlayerId { get; set; }
+    public bool IsBenchPenalty { get; set; }
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// Request body for recording a hockey shot.
+/// </summary>
+public class RecordHockeyShotRequest
+{
+    [Required]
+    public Guid ShootingMatchTeamId { get; set; }
+
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    [Required]
+    public HockeyShotResult ShotResult { get; set; }
+
+    public bool CountsAsShotOnGoal { get; set; } = true;
+    public Guid? ShooterActivePlayerId { get; set; }
+    public Guid? GoalieActivePlayerId { get; set; }
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// Request body for recording a hockey video review.
+/// </summary>
+public class RecordHockeyVideoReviewRequest
+{
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    [Required]
+    public HockeyVideoReviewType ReviewType { get; set; }
+
+    [Required]
+    public HockeyReviewDecision OriginalDecision { get; set; }
+
+    [Required]
+    public HockeyReviewDecision FinalDecision { get; set; }
+
+    public bool IsCoachChallenge { get; set; }
+    public bool WasSuccessful { get; set; }
+    public Guid? RequestedByMatchTeamId { get; set; }
+    public string? Description { get; set; }
 }
