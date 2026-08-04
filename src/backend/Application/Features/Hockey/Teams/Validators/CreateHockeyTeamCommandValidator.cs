@@ -12,14 +12,14 @@ public class CreateHockeyTeamCommandValidator : AbstractValidator<CreateHockeyTe
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Team name is required.")
-            .MaximumLength(200).WithMessage("Team name cannot exceed 200 characters.");
+            .MaximumLength(100).WithMessage("Team name cannot exceed 100 characters.");
 
         RuleFor(x => x.ClubId).NotEmpty().WithMessage("Club id is required.");
 
         RuleFor(x => x.TeamCategory).IsInEnum().WithMessage("Team category is invalid.");
 
         RuleFor(x => x.ShortName)
-            .MaximumLength(50).WithMessage("Short name cannot exceed 50 characters.")
+            .MaximumLength(4).WithMessage("Short name cannot exceed 4 characters.")
             .When(x => !string.IsNullOrWhiteSpace(x.ShortName));
     }
 }

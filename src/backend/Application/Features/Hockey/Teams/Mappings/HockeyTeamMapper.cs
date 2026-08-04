@@ -24,6 +24,72 @@ public static class HockeyTeamMapper
             team.PrimaryJerseyColor,
             team.SecondaryJerseyColor,
             team.LogoUrl?.ToString(),
-            team.IsActive);
+            team.IsActive,
+            team.Roster.Select(ToTeamPlayerDto).ToList(),
+            team.Lines.Select(ToLineDto).ToList(),
+            team.StaffMembers.Select(ToStaffDto).ToList());
+    }
+
+    /// <summary>
+    /// Maps a team-player membership to a DTO.
+    /// </summary>
+    public static HockeyTeamPlayerDto ToTeamPlayerDto(HockeyTeamPlayer teamPlayer)
+    {
+        return new HockeyTeamPlayerDto(
+            teamPlayer.Id,
+            teamPlayer.TeamId,
+            teamPlayer.PlayerId,
+            teamPlayer.CompetitionId,
+            teamPlayer.Position.ToString(),
+            teamPlayer.CaptainRole.ToString(),
+            teamPlayer.RosterStatus.ToString(),
+            teamPlayer.JerseyNumber,
+            teamPlayer.RequestedJerseyNumber,
+            teamPlayer.IsActive,
+            teamPlayer.JoinedAt);
+    }
+
+    /// <summary>
+    /// Maps a line to a DTO.
+    /// </summary>
+    public static HockeyLineDto ToLineDto(HockeyLine line)
+    {
+        return new HockeyLineDto(
+            line.Id,
+            line.TeamId,
+            line.CompetitionId,
+            line.Name,
+            line.LineNumber,
+            line.LineType.ToString(),
+            line.IsActive,
+            line.Players.Select(ToLinePlayerDto).ToList());
+    }
+
+    /// <summary>
+    /// Maps a line-player assignment to a DTO.
+    /// </summary>
+    public static HockeyLinePlayerDto ToLinePlayerDto(HockeyLinePlayer linePlayer)
+    {
+        return new HockeyLinePlayerDto(
+            linePlayer.Id,
+            linePlayer.LineId,
+            linePlayer.TeamPlayerId,
+            linePlayer.Slot.ToString(),
+            linePlayer.Order);
+    }
+
+    /// <summary>
+    /// Maps a staff membership to a DTO.
+    /// </summary>
+    public static HockeyTeamStaffDto ToStaffDto(HockeyTeamStaff staff)
+    {
+        return new HockeyTeamStaffDto(
+            staff.Id,
+            staff.TeamId,
+            staff.PersonId,
+            staff.CompetitionId,
+            staff.Role.ToString(),
+            staff.IsActive,
+            staff.JoinedAt);
     }
 }
