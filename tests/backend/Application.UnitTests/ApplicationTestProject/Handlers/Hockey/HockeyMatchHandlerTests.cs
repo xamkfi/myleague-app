@@ -289,4 +289,104 @@ public class HockeyMatchHandlerTests
         result.Data!.Events.Should().ContainSingle(e => e.EventType == HockeyMatchEventType.Faceoff.ToString());
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task AddMatchLine_AddsLineToSide()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Club club = new("Tappara HC");
+        HockeyTeam home = new("Tappara", club, TeamCategory.Adult);
+        match.AssignMatchTeam(home.Id, HockeyTeamSlot.Home);
+        HockeyMatchTeam homeSide = match.HomeMatchTeam!;
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        AddHockeyMatchLineHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<AddHockeyMatchLineHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new AddHockeyMatchLineCommand(match.Id, homeSide.Id, "PP1", HockeyLineType.PowerPlayUnit, LineNumber: 1),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.MatchTeams.Should().ContainSingle(t => t.Id == homeSide.Id)
+            .Which.Lines.Should().ContainSingle(l =>
+                l.Name == "PP1" && l.LineType == HockeyLineType.PowerPlayUnit.ToString());
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task EnableOnIceAndAddPlayer_TracksPlayer()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Club club = new("Tappara HC");
+        HockeyTeam home = new("Tappara", club, TeamCategory.Adult);
+        HockeyPlayer player = new(Guid.NewGuid(), HockeyPosition.Center);
+        HockeyTeamPlayer teamPlayer = home.AddPlayer(player, HockeyPosition.Center, jerseyNumber: 12);
+
+        match.AssignMatchTeam(home.Id, HockeyTeamSlot.Home);
+        HockeyMatchTeam homeSide = match.HomeMatchTeam!;
+        var selection = homeSide.CreateOrReplacePlayerSelection(HockeyPlayerSelectionSource.Manual);
+        HockeyMatchActivePlayer active = selection.AddActivePlayer(teamPlayer);
+        selection.Confirm();
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        EnableHockeyMatchOnIceTrackingHandler enableHandler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<EnableHockeyMatchOnIceTrackingHandler>>());
+
+        Result<HockeyMatchDto> enableResult = await enableHandler.Handle(
+            new EnableHockeyMatchOnIceTrackingCommand(match.Id, homeSide.Id),
+            CancellationToken.None);
+        enableResult.IsSuccess.Should().BeTrue();
+        enableResult.Data!.MatchTeams.Single(t => t.Id == homeSide.Id).TracksOnIcePlayers.Should().BeTrue();
+
+        AddHockeyMatchPlayerToIceHandler addHandler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<AddHockeyMatchPlayerToIceHandler>>());
+
+        Result<HockeyMatchDto> addResult = await addHandler.Handle(
+            new AddHockeyMatchPlayerToIceCommand(match.Id, homeSide.Id, active.Id),
+            CancellationToken.None);
+
+        addResult.IsSuccess.Should().BeTrue();
+        addResult.Data!.MatchTeams.Single(t => t.Id == homeSide.Id).OnIceState!.PlayersOnIce
+            .Should().ContainSingle(p => p.MatchActivePlayerId == active.Id);
+    }
+
+    [Fact]
+    public async Task DeactivateRosterPlayer_MarksInactive()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Club club = new("Tappara HC");
+        HockeyTeam home = new("Tappara", club, TeamCategory.Adult);
+        HockeyPlayer player = new(Guid.NewGuid(), HockeyPosition.Center);
+        HockeyTeamPlayer teamPlayer = home.AddPlayer(player, HockeyPosition.Center, jerseyNumber: 12);
+
+        match.AssignMatchTeam(home.Id, HockeyTeamSlot.Home);
+        HockeyMatchTeam homeSide = match.HomeMatchTeam!;
+        var selection = homeSide.CreateOrReplacePlayerSelection(HockeyPlayerSelectionSource.Manual);
+        HockeyMatchActivePlayer active = selection.AddActivePlayer(teamPlayer);
+        selection.Confirm();
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        DeactivateHockeyMatchRosterPlayerHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<DeactivateHockeyMatchRosterPlayerHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new DeactivateHockeyMatchRosterPlayerCommand(match.Id, homeSide.Id, active.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.MatchTeams.Single(t => t.Id == homeSide.Id).ActivePlayers
+            .Should().ContainSingle(p => p.Id == active.Id && !p.IsActive);
+        result.Data.MatchTeams.Single(t => t.Id == homeSide.Id).IsConfirmedRoster.Should().BeFalse();
+    }
 }

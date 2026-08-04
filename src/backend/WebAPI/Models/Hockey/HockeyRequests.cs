@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Application.Features.Hockey.Competitions.DTOs;
 using Application.Features.Hockey.Tournaments.DTOs;
 using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
@@ -396,6 +397,7 @@ public class AddTeamToHockeyCompetitionRequest
 
 /// <summary>
 /// Request body for updating shared hockey competition rules.
+/// Nested rule sections default when omitted.
 /// </summary>
 public class UpdateHockeyCompetitionRulesRequest
 {
@@ -411,6 +413,12 @@ public class UpdateHockeyCompetitionRulesRequest
     /// <summary>Rule book source.</summary>
     [Required]
     public HockeyRuleBookSource RuleBookSource { get; set; }
+
+    public HockeyMatchRulesInputDto? MatchRules { get; set; }
+    public HockeyStandingRulesInputDto? StandingRules { get; set; }
+    public HockeyRosterRulesInputDto? RosterRules { get; set; }
+    public HockeyVideoReviewRulesInputDto? VideoReviewRules { get; set; }
+    public HockeyContactRulesInputDto? ContactRules { get; set; }
 }
 
 /// <summary>
@@ -967,3 +975,134 @@ public class RecordHockeyFailedCoachChallengePenaltyRequest
     public bool AllowChallengeInOvertime { get; set; } = true;
     public bool AllowChallengeInShootout { get; set; }
 }
+
+/// <summary>
+/// Request body for adding a match line.
+/// </summary>
+public class AddHockeyMatchLineRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    [Required]
+    [StringLength(100)]
+    public string Name { get; set; } = string.Empty;
+
+    [Required]
+    public HockeyLineType LineType { get; set; }
+
+    public int? LineNumber { get; set; }
+    public string? Notes { get; set; }
+}
+
+/// <summary>
+/// Request body for adding a player to a match line.
+/// </summary>
+public class AddHockeyMatchLinePlayerRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    [Required]
+    public Guid MatchActivePlayerId { get; set; }
+
+    public HockeyLineSlot? Slot { get; set; }
+    public int? Order { get; set; }
+}
+
+/// <summary>
+/// Request body for updating a match line name.
+/// </summary>
+public class UpdateHockeyMatchLineNameRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    [Required]
+    [StringLength(100)]
+    public string Name { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Request body for updating match line notes.
+/// </summary>
+public class UpdateHockeyMatchLineNotesRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    public string? Notes { get; set; }
+}
+
+/// <summary>
+/// Request body identifying a match team (shared).
+/// </summary>
+public class HockeyMatchTeamIdRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    public Guid? UserId { get; set; }
+}
+
+/// <summary>
+/// Request body for putting a player on ice.
+/// </summary>
+public class AddHockeyMatchPlayerToIceRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    [Required]
+    public Guid MatchActivePlayerId { get; set; }
+
+    public HockeyIceSlot? Slot { get; set; }
+    public int? Order { get; set; }
+    public bool? IsGoalie { get; set; }
+    public bool IsExtraAttacker { get; set; }
+    public int? PeriodNumber { get; set; }
+    public int? TimeInSeconds { get; set; }
+    public Guid? UserId { get; set; }
+}
+
+/// <summary>
+/// Request body for removing a player from ice.
+/// </summary>
+public class RemoveHockeyMatchPlayerFromIceRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    [Required]
+    public Guid MatchActivePlayerId { get; set; }
+
+    public int? PeriodNumber { get; set; }
+    public int? TimeInSeconds { get; set; }
+    public Guid? UserId { get; set; }
+}
+
+/// <summary>
+/// Request body for clearing ice / applying line.
+/// </summary>
+public class HockeyMatchIceActionRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    public int? PeriodNumber { get; set; }
+    public int? TimeInSeconds { get; set; }
+    public Guid? UserId { get; set; }
+}
+
+/// <summary>
+/// Request body for setting active goalie or deactivating a roster player.
+/// </summary>
+public class HockeyMatchTeamPlayerRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    [Required]
+    public Guid MatchActivePlayerId { get; set; }
+}
+

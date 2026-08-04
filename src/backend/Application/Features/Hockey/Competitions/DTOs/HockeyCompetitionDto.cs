@@ -18,11 +18,3 @@ public record HockeyCompetitionDto(
     IReadOnlyCollection<HockeyCompetitionTeamDto> Teams,
     IReadOnlyCollection<HockeyCompetitionDivisionDto> Divisions,
     IReadOnlyCollection<HockeyPlayoffSeriesDto> PlayoffSeries);
-
-/// <summary>
-/// Summary of hockey competition rules.
-/// </summary>
-public record HockeyCompetitionRulesDto(
-    string Name,
-    string? RuleBookVersion,
-    string RuleBookSource);

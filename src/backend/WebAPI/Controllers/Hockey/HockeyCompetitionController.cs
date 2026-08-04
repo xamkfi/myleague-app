@@ -132,7 +132,19 @@ public class HockeyCompetitionController : BaseApiController
             "Failed to remove team from division");
 
     /// <summary>
-    /// Updates competition rules metadata (nested match/standing/roster use Domain defaults).
+    /// Gets effective competition rules (includes tournament match-rule overrides).
+    /// </summary>
+    [HttpGet("{competitionId:guid}/rules/effective")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionRulesDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyCompetitionRulesDto>>> GetEffectiveRules(Guid competitionId)
+    {
+        Result<HockeyCompetitionRulesDto> result =
+            await _mediator.Send(new GetEffectiveHockeyCompetitionRulesQuery(competitionId));
+        return HandleResult(result, "Effective hockey competition rules retrieved successfully", "Competition not found");
+    }
+
+    /// <summary>
+    /// Updates competition rules including nested match/standing/roster/video/contact sections.
     /// </summary>
     [HttpPut("{competitionId:guid}/rules")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionDto>), StatusCodes.Status200OK)]
@@ -142,9 +154,15 @@ public class HockeyCompetitionController : BaseApiController
     {
         Result<HockeyCompetitionDto> result = await _mediator.Send(new UpdateHockeyCompetitionRulesCommand(
             competitionId,
-            request.Name,
-            request.RuleBookVersion,
-            request.RuleBookSource));
+            new HockeyCompetitionRulesInputDto(
+                request.Name,
+                request.RuleBookVersion,
+                request.RuleBookSource,
+                request.MatchRules,
+                request.StandingRules,
+                request.RosterRules,
+                request.VideoReviewRules,
+                request.ContactRules)));
 
         return HandleResult(result, "Hockey competition rules updated successfully", "Failed to update hockey competition rules");
     }

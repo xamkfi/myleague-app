@@ -51,4 +51,23 @@ internal static class HockeyMatchHandlerSupport
             return Result<HockeyMatchDto>.Failure($"An error occurred while performing {operationName}.", ex.Flatten());
         }
     }
+
+    public static HockeyMatchTeam GetRequiredMatchTeam(HockeyMatch match, Guid matchTeamId) =>
+        match.MatchTeams.FirstOrDefault(t => t.Id == matchTeamId)
+        ?? throw new InvalidOperationException("Match team is not part of this match.");
+
+    public static HockeyMatchLine GetRequiredMatchLine(HockeyMatchTeam matchTeam, Guid matchLineId) =>
+        matchTeam.Lines.FirstOrDefault(l => l.Id == matchLineId)
+        ?? throw new InvalidOperationException("Match line is not part of this match team.");
+
+    public static HockeyMatchActivePlayer GetRequiredActivePlayer(HockeyMatchTeam matchTeam, Guid matchActivePlayerId)
+    {
+        HockeyMatchActivePlayer? player = matchTeam.PlayerSelection?.FindActivePlayer(matchActivePlayerId);
+        if (player is null)
+        {
+            throw new InvalidOperationException("Match active player is not part of this match team's roster.");
+        }
+
+        return player;
+    }
 }

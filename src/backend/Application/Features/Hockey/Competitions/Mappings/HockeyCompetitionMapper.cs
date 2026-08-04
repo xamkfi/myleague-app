@@ -32,15 +32,84 @@ public static class HockeyCompetitionMapper
     }
 
     /// <summary>
-    /// Maps competition rules to a summary DTO.
+    /// Maps competition rules to a full DTO.
     /// </summary>
     public static HockeyCompetitionRulesDto ToCompetitionRulesDto(HockeyCompetitionRules rules)
     {
         return new HockeyCompetitionRulesDto(
             rules.Name,
             rules.RuleBookVersion,
-            rules.RuleBookSource.ToString());
+            rules.RuleBookSource.ToString(),
+            ToMatchRulesDto(rules.MatchRules),
+            ToStandingRulesDto(rules.StandingRules),
+            ToRosterRulesDto(rules.RosterRules),
+            rules.VideoReviewRules is null ? null : ToVideoReviewRulesDto(rules.VideoReviewRules),
+            rules.ContactRules is null ? null : ToContactRulesDto(rules.ContactRules));
     }
+
+    public static HockeyMatchRulesDto ToMatchRulesDto(HockeyMatchRules rules) =>
+        new(
+            rules.RegularPeriodCount,
+            rules.RegularPeriodLengthMinutes,
+            rules.OvertimeLengthMinutes,
+            rules.StopClock,
+            rules.OvertimeEnabled,
+            rules.ShootoutEnabled,
+            rules.OffsideEnabled,
+            rules.DelayedOffsideEnabled,
+            rules.IcingRule.ToString(),
+            rules.PenaltyShotEnabled,
+            rules.GoaliePullAllowed);
+
+    public static HockeyStandingRulesDto ToStandingRulesDto(HockeyStandingRules rules) =>
+        new(
+            rules.RegulationWinPoints,
+            rules.OvertimeWinPoints,
+            rules.ShootoutWinPoints,
+            rules.OvertimeLossPoints,
+            rules.ShootoutLossPoints,
+            rules.TiePoints,
+            rules.TieBreakers.Select(t => t.ToString()).ToList());
+
+    public static HockeyRosterRulesDto ToRosterRulesDto(HockeyRosterRules rules) =>
+        new(
+            rules.MaxDressedPlayers,
+            rules.MaxDressedGoalies,
+            rules.MinDressedPlayers,
+            rules.RequiresGoalie,
+            rules.MaxCaptains,
+            rules.MaxAlternateCaptains,
+            rules.CanGoalieBeCaptain,
+            rules.AllowGuestPlayers,
+            rules.LineManagementEnabled);
+
+    public static HockeyVideoReviewRulesDto ToVideoReviewRulesDto(HockeyVideoReviewRules rules) =>
+        new(
+            rules.Enabled,
+            rules.CoachChallengeAllowed,
+            rules.ReviewGoals,
+            rules.ReviewOffsideBeforeGoal,
+            rules.ReviewGoalieInterference,
+            rules.ReviewHighStickGoal,
+            rules.ReviewPuckOverLine,
+            new HockeyCoachChallengeRulesDto(
+                rules.CoachChallengeRules.Enabled,
+                rules.CoachChallengeRules.MaxChallengesPerTeam,
+                rules.CoachChallengeRules.LoseChallengeAfterFailed,
+                rules.CoachChallengeRules.PenaltyForFailedChallenge,
+                rules.CoachChallengeRules.FailedChallengePenaltyMinutes,
+                rules.CoachChallengeRules.FailedChallengePenaltyOffence.ToString(),
+                rules.CoachChallengeRules.FailedChallengePenaltySeverity.ToString(),
+                rules.CoachChallengeRules.AllowChallengeInOvertime,
+                rules.CoachChallengeRules.AllowChallengeInShootout));
+
+    public static HockeyContactRulesDto ToContactRulesDto(HockeyContactRules rules) =>
+        new(
+            rules.BodyCheckingAllowed,
+            rules.OpenIceHitsAllowed,
+            rules.FightingAllowed,
+            rules.AutomaticGameMisconductForFight,
+            rules.StrictHeadContactRule);
 
     /// <summary>
     /// Maps a competition-team membership to a DTO.

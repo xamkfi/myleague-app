@@ -42,16 +42,7 @@ public class UpdateHockeyCompetitionRulesHandler
                 return Result<HockeyCompetitionDto>.NotFound("HockeyCompetition", request.CompetitionId);
             }
 
-            HockeyCompetitionRules rules = new(
-                request.Name,
-                request.RuleBookVersion,
-                request.RuleBookSource,
-                HockeyMatchRules.Default(),
-                HockeyStandingRules.Default(),
-                HockeyRosterRules.Default(),
-                HockeyVideoReviewRules.Disabled(),
-                HockeyContactRules.Default());
-
+            HockeyCompetitionRules rules = HockeyCompetitionRulesFactory.FromDto(request.Rules);
             competition.UpdateCompetitionRules(rules);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

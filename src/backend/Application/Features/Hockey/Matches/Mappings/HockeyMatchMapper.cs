@@ -41,7 +41,6 @@ public static class HockeyMatchMapper
     {
         IReadOnlyCollection<HockeyMatchActivePlayerDto> players =
             team.PlayerSelection?.ActivePlayers
-                .Where(p => p.IsActive)
                 .Select(ToActivePlayerDto)
                 .ToList()
             ?? (IReadOnlyCollection<HockeyMatchActivePlayerDto>)Array.Empty<HockeyMatchActivePlayerDto>();
@@ -54,7 +53,11 @@ public static class HockeyMatchMapper
             team.TeamSlot.ToString(),
             team.Goals,
             team.PlayerSelection?.IsConfirmed ?? false,
-            players);
+            team.TracksOnIcePlayers,
+            team.ActiveGoalieMatchPlayerId,
+            players,
+            team.Lines.Select(ToLineDto).ToList(),
+            team.OnIceState is null ? null : ToOnIceStateDto(team.OnIceState));
     }
 
     public static HockeyMatchActivePlayerDto ToActivePlayerDto(HockeyMatchActivePlayer player)
@@ -101,5 +104,49 @@ public static class HockeyMatchMapper
             periodScore.HomeGoals,
             periodScore.AwayGoals,
             periodScore.IsCompleted);
+    }
+
+    public static HockeyMatchLineDto ToLineDto(HockeyMatchLine line)
+    {
+        return new HockeyMatchLineDto(
+            line.Id,
+            line.MatchTeamId,
+            line.Name,
+            line.LineNumber,
+            line.LineType.ToString(),
+            line.IsActive,
+            line.IsLocked,
+            line.Notes,
+            line.Players.Select(ToLinePlayerDto).ToList());
+    }
+
+    public static HockeyMatchLinePlayerDto ToLinePlayerDto(HockeyMatchLinePlayer player)
+    {
+        return new HockeyMatchLinePlayerDto(
+            player.Id,
+            player.MatchActivePlayerId,
+            player.Slot?.ToString(),
+            player.Order);
+    }
+
+    public static HockeyOnIceStateDto ToOnIceStateDto(HockeyOnIceState state)
+    {
+        return new HockeyOnIceStateDto(
+            state.Id,
+            state.MatchTeamId,
+            state.IsEnabled,
+            state.Version,
+            state.PlayersOnIce.Select(ToOnIcePlayerDto).ToList());
+    }
+
+    public static HockeyOnIcePlayerDto ToOnIcePlayerDto(HockeyOnIcePlayer player)
+    {
+        return new HockeyOnIcePlayerDto(
+            player.Id,
+            player.MatchActivePlayerId,
+            player.Slot?.ToString(),
+            player.Order,
+            player.IsGoalie,
+            player.IsExtraAttacker);
     }
 }

@@ -521,4 +521,317 @@ public class HockeyMatchController : BaseApiController
             "Failed coach-challenge penalty recorded successfully",
             "Failed to record failed coach-challenge penalty");
     }
+
+    /// <summary>
+    /// Adds a match line to one side.
+    /// </summary>
+    [HttpPost("{matchId:guid}/lines")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddLine(
+        Guid matchId,
+        [FromBody] AddHockeyMatchLineRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new AddHockeyMatchLineCommand(
+            matchId,
+            request.MatchTeamId,
+            request.Name,
+            request.LineType,
+            request.LineNumber,
+            request.Notes));
+        return HandleResult(result, "Match line added successfully", "Failed to add match line");
+    }
+
+    /// <summary>
+    /// Removes a match line.
+    /// </summary>
+    [HttpDelete("{matchId:guid}/lines/{matchLineId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemoveLine(
+        Guid matchId,
+        Guid matchLineId,
+        [FromQuery] Guid matchTeamId)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new RemoveHockeyMatchLineCommand(matchId, matchTeamId, matchLineId));
+        return HandleResult(result, "Match line removed successfully", "Failed to remove match line");
+    }
+
+    /// <summary>
+    /// Adds a player to a match line.
+    /// </summary>
+    [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/players")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddLinePlayer(
+        Guid matchId,
+        Guid matchLineId,
+        [FromBody] AddHockeyMatchLinePlayerRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new AddHockeyMatchLinePlayerCommand(
+            matchId,
+            request.MatchTeamId,
+            matchLineId,
+            request.MatchActivePlayerId,
+            request.Slot,
+            request.Order));
+        return HandleResult(result, "Line player added successfully", "Failed to add line player");
+    }
+
+    /// <summary>
+    /// Removes a player from a match line.
+    /// </summary>
+    [HttpDelete("{matchId:guid}/lines/{matchLineId:guid}/players/{matchActivePlayerId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemoveLinePlayer(
+        Guid matchId,
+        Guid matchLineId,
+        Guid matchActivePlayerId,
+        [FromQuery] Guid matchTeamId)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new RemoveHockeyMatchLinePlayerCommand(
+            matchId,
+            matchTeamId,
+            matchLineId,
+            matchActivePlayerId));
+        return HandleResult(result, "Line player removed successfully", "Failed to remove line player");
+    }
+
+    /// <summary>
+    /// Updates a match line name.
+    /// </summary>
+    [HttpPut("{matchId:guid}/lines/{matchLineId:guid}/name")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UpdateLineName(
+        Guid matchId,
+        Guid matchLineId,
+        [FromBody] UpdateHockeyMatchLineNameRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new UpdateHockeyMatchLineNameCommand(
+            matchId,
+            request.MatchTeamId,
+            matchLineId,
+            request.Name));
+        return HandleResult(result, "Match line name updated successfully", "Failed to update line name");
+    }
+
+    /// <summary>
+    /// Updates match line notes.
+    /// </summary>
+    [HttpPut("{matchId:guid}/lines/{matchLineId:guid}/notes")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UpdateLineNotes(
+        Guid matchId,
+        Guid matchLineId,
+        [FromBody] UpdateHockeyMatchLineNotesRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new UpdateHockeyMatchLineNotesCommand(
+            matchId,
+            request.MatchTeamId,
+            matchLineId,
+            request.Notes));
+        return HandleResult(result, "Match line notes updated successfully", "Failed to update line notes");
+    }
+
+    /// <summary>
+    /// Locks a match line.
+    /// </summary>
+    [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/lock")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> LockLine(
+        Guid matchId,
+        Guid matchLineId,
+        [FromQuery] Guid matchTeamId)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new LockHockeyMatchLineCommand(matchId, matchTeamId, matchLineId));
+        return HandleResult(result, "Match line locked successfully", "Failed to lock match line");
+    }
+
+    /// <summary>
+    /// Unlocks a match line.
+    /// </summary>
+    [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/unlock")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UnlockLine(
+        Guid matchId,
+        Guid matchLineId,
+        [FromQuery] Guid matchTeamId)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new UnlockHockeyMatchLineCommand(matchId, matchTeamId, matchLineId));
+        return HandleResult(result, "Match line unlocked successfully", "Failed to unlock match line");
+    }
+
+    /// <summary>
+    /// Deactivates a match line.
+    /// </summary>
+    [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/deactivate")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DeactivateLine(
+        Guid matchId,
+        Guid matchLineId,
+        [FromQuery] Guid matchTeamId)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new DeactivateHockeyMatchLineCommand(matchId, matchTeamId, matchLineId));
+        return HandleResult(result, "Match line deactivated successfully", "Failed to deactivate match line");
+    }
+
+    /// <summary>
+    /// Enables on-ice tracking for a match side.
+    /// </summary>
+    [HttpPost("{matchId:guid}/on-ice/enable")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> EnableOnIce(
+        Guid matchId,
+        [FromBody] HockeyMatchTeamIdRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new EnableHockeyMatchOnIceTrackingCommand(matchId, request.MatchTeamId, request.UserId));
+        return HandleResult(result, "On-ice tracking enabled successfully", "Failed to enable on-ice tracking");
+    }
+
+    /// <summary>
+    /// Disables on-ice tracking for a match side.
+    /// </summary>
+    [HttpPost("{matchId:guid}/on-ice/disable")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DisableOnIce(
+        Guid matchId,
+        [FromBody] HockeyMatchTeamIdRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new DisableHockeyMatchOnIceTrackingCommand(matchId, request.MatchTeamId, request.UserId));
+        return HandleResult(result, "On-ice tracking disabled successfully", "Failed to disable on-ice tracking");
+    }
+
+    /// <summary>
+    /// Puts a player on the ice.
+    /// </summary>
+    [HttpPost("{matchId:guid}/on-ice/players")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddPlayerToIce(
+        Guid matchId,
+        [FromBody] AddHockeyMatchPlayerToIceRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new AddHockeyMatchPlayerToIceCommand(
+            matchId,
+            request.MatchTeamId,
+            request.MatchActivePlayerId,
+            request.Slot,
+            request.Order,
+            request.IsGoalie,
+            request.IsExtraAttacker,
+            request.PeriodNumber,
+            request.TimeInSeconds,
+            request.UserId));
+        return HandleResult(result, "Player added to ice successfully", "Failed to add player to ice");
+    }
+
+    /// <summary>
+    /// Removes a player from the ice.
+    /// </summary>
+    [HttpDelete("{matchId:guid}/on-ice/players/{matchActivePlayerId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemovePlayerFromIce(
+        Guid matchId,
+        Guid matchActivePlayerId,
+        [FromQuery] Guid matchTeamId,
+        [FromQuery] int? periodNumber = null,
+        [FromQuery] int? timeInSeconds = null,
+        [FromQuery] Guid? userId = null)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new RemoveHockeyMatchPlayerFromIceCommand(
+            matchId,
+            matchTeamId,
+            matchActivePlayerId,
+            periodNumber,
+            timeInSeconds,
+            userId));
+        return HandleResult(result, "Player removed from ice successfully", "Failed to remove player from ice");
+    }
+
+    /// <summary>
+    /// Clears all players from the ice.
+    /// </summary>
+    [HttpPost("{matchId:guid}/on-ice/clear")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> ClearIce(
+        Guid matchId,
+        [FromBody] HockeyMatchIceActionRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new ClearHockeyMatchIceCommand(
+            matchId,
+            request.MatchTeamId,
+            request.PeriodNumber,
+            request.TimeInSeconds,
+            request.UserId));
+        return HandleResult(result, "Ice cleared successfully", "Failed to clear ice");
+    }
+
+    /// <summary>
+    /// Applies a match line onto the ice.
+    /// </summary>
+    [HttpPost("{matchId:guid}/on-ice/apply-line/{matchLineId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> ApplyLineToIce(
+        Guid matchId,
+        Guid matchLineId,
+        [FromBody] HockeyMatchIceActionRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new ApplyHockeyMatchLineToIceCommand(
+            matchId,
+            request.MatchTeamId,
+            matchLineId,
+            request.PeriodNumber,
+            request.TimeInSeconds,
+            request.UserId));
+        return HandleResult(result, "Line applied to ice successfully", "Failed to apply line to ice");
+    }
+
+    /// <summary>
+    /// Sets the active goalie for a match side.
+    /// </summary>
+    [HttpPut("{matchId:guid}/active-goalie")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetActiveGoalie(
+        Guid matchId,
+        [FromBody] HockeyMatchTeamPlayerRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new SetHockeyMatchActiveGoalieCommand(
+            matchId,
+            request.MatchTeamId,
+            request.MatchActivePlayerId));
+        return HandleResult(result, "Active goalie set successfully", "Failed to set active goalie");
+    }
+
+    /// <summary>
+    /// Clears the active goalie for a match side.
+    /// </summary>
+    [HttpDelete("{matchId:guid}/active-goalie")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> ClearActiveGoalie(
+        Guid matchId,
+        [FromQuery] Guid matchTeamId)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new ClearHockeyMatchActiveGoalieCommand(matchId, matchTeamId));
+        return HandleResult(result, "Active goalie cleared successfully", "Failed to clear active goalie");
+    }
+
+    /// <summary>
+    /// Deactivates a dressed roster player.
+    /// </summary>
+    [HttpPost("{matchId:guid}/roster/deactivate-player")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DeactivateRosterPlayer(
+        Guid matchId,
+        [FromBody] HockeyMatchTeamPlayerRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new DeactivateHockeyMatchRosterPlayerCommand(
+            matchId,
+            request.MatchTeamId,
+            request.MatchActivePlayerId));
+        return HandleResult(result, "Roster player deactivated successfully", "Failed to deactivate roster player");
+    }
 }
+

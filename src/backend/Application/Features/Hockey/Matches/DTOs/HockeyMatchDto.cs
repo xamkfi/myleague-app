@@ -39,7 +39,11 @@ public record HockeyMatchTeamDto(
     string TeamSlot,
     int Goals,
     bool IsConfirmedRoster,
-    IReadOnlyCollection<HockeyMatchActivePlayerDto> ActivePlayers);
+    bool TracksOnIcePlayers,
+    Guid? ActiveGoalieMatchPlayerId,
+    IReadOnlyCollection<HockeyMatchActivePlayerDto> ActivePlayers,
+    IReadOnlyCollection<HockeyMatchLineDto> Lines,
+    HockeyOnIceStateDto? OnIceState);
 
 /// <summary>
 /// Dressed player on a match roster.
@@ -86,3 +90,47 @@ public record HockeyPeriodScoreDto(
     int HomeGoals,
     int AwayGoals,
     bool IsCompleted);
+
+/// <summary>
+/// Match-side line.
+/// </summary>
+public record HockeyMatchLineDto(
+    Guid Id,
+    Guid MatchTeamId,
+    string Name,
+    int? LineNumber,
+    string LineType,
+    bool IsActive,
+    bool IsLocked,
+    string? Notes,
+    IReadOnlyCollection<HockeyMatchLinePlayerDto> Players);
+
+/// <summary>
+/// Player placement on a match line.
+/// </summary>
+public record HockeyMatchLinePlayerDto(
+    Guid Id,
+    Guid MatchActivePlayerId,
+    string? Slot,
+    int? Order);
+
+/// <summary>
+/// On-ice tracking state for a match side.
+/// </summary>
+public record HockeyOnIceStateDto(
+    Guid Id,
+    Guid MatchTeamId,
+    bool IsEnabled,
+    int Version,
+    IReadOnlyCollection<HockeyOnIcePlayerDto> PlayersOnIce);
+
+/// <summary>
+/// Player currently on the ice.
+/// </summary>
+public record HockeyOnIcePlayerDto(
+    Guid Id,
+    Guid MatchActivePlayerId,
+    string? Slot,
+    int? Order,
+    bool IsGoalie,
+    bool IsExtraAttacker);

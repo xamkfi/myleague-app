@@ -36,9 +36,10 @@ public class CreateHockeyMatchHandler : IRequestHandler<CreateHockeyMatchCommand
     {
         try
         {
+            HockeyCompetition? competition = null;
             if (request.CompetitionId is Guid competitionId)
             {
-                HockeyCompetition? competition = await _competitionRepository.GetByIdAsync(competitionId);
+                competition = await _competitionRepository.GetByIdAsync(competitionId);
                 if (competition is null)
                 {
                     return Result<HockeyMatchDto>.NotFound("HockeyCompetition", competitionId);
@@ -60,7 +61,15 @@ public class CreateHockeyMatchHandler : IRequestHandler<CreateHockeyMatchCommand
                 playoffSeriesId: request.PlayoffSeriesId,
                 venue: request.Venue);
 
-            await _matchRepository.AddAsync(match);
+            if (competition is not null)
+            {
+                competition.AddMatch(match);
+            }
+            else
+            {
+                await _matchRepository.AddAsync(match);
+            }
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Created hockey match {MatchId}", match.Id);

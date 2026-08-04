@@ -12,8 +12,9 @@ public class UpdateHockeyCompetitionRulesCommandValidator
     public UpdateHockeyCompetitionRulesCommandValidator()
     {
         RuleFor(x => x.CompetitionId).NotEmpty();
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
-        RuleFor(x => x.RuleBookSource).IsInEnum();
-        RuleFor(x => x.RuleBookVersion).MaximumLength(50).When(x => !string.IsNullOrWhiteSpace(x.RuleBookVersion));
+        RuleFor(x => x.Rules).NotNull();
+        RuleFor(x => x.Rules.Name).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Rules.RuleBookSource).IsInEnum();
+        RuleFor(x => x.Rules.RuleBookVersion).MaximumLength(50).When(x => x.Rules.RuleBookVersion is not null);
     }
 }
