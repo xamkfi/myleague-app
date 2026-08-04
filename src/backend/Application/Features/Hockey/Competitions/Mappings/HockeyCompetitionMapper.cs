@@ -13,6 +13,36 @@ namespace Application.Features.Hockey.Competitions.Mappings;
 public static class HockeyCompetitionMapper
 {
     /// <summary>
+    /// Maps a hockey competition (season or tournament) to a shared summary DTO.
+    /// </summary>
+    public static HockeyCompetitionDto ToCompetitionDto(HockeyCompetition competition)
+    {
+        return new HockeyCompetitionDto(
+            competition.Id,
+            competition.Name,
+            competition.CompetitionType.ToString(),
+            competition.StartDate,
+            competition.EndDate,
+            competition.Status.ToString(),
+            competition.IsActive,
+            competition.IsCompleted,
+            competition.Teams.Select(ToTeamDto).ToList(),
+            competition.Divisions.Select(ToDivisionDto).ToList(),
+            competition.PlayoffSeries.Select(ToPlayoffSeriesDto).ToList());
+    }
+
+    /// <summary>
+    /// Maps competition rules to a summary DTO.
+    /// </summary>
+    public static HockeyCompetitionRulesDto ToCompetitionRulesDto(HockeyCompetitionRules rules)
+    {
+        return new HockeyCompetitionRulesDto(
+            rules.Name,
+            rules.RuleBookVersion,
+            rules.RuleBookSource.ToString());
+    }
+
+    /// <summary>
     /// Maps a competition-team membership to a DTO.
     /// </summary>
     public static HockeyCompetitionTeamDto ToTeamDto(HockeyCompetitionTeam team)

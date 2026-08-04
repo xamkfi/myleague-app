@@ -24,9 +24,23 @@ public class HockeyCompetitionRepository : IHockeyCompetitionRepository
 
     public async Task<HockeyCompetition?> GetByIdAsync(Guid id)
     {
-        return await _dbContext.HockeyCompetitions
+        HockeyCompetition? competition = await _dbContext.HockeyCompetitions
             .Include(c => c.Teams)
+            .Include(c => c.Divisions)
+                .ThenInclude(d => d.Teams)
+            .Include(c => c.PlayoffSeries)
             .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (competition is HockeyTournament tournament)
+        {
+            await _dbContext.Entry(tournament)
+                .Collection(t => t.Groups)
+                .Query()
+                .Include(g => g.Teams)
+                .LoadAsync();
+        }
+
+        return competition;
     }
 
     public async Task<HockeySeason?> GetSeasonByIdAsync(Guid id)

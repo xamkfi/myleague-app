@@ -270,12 +270,25 @@ public class HockeyTournamentController : BaseApiController
     /// </summary>
     [HttpDelete("{tournamentId:guid}/teams/{teamId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> RemoveTeam(Guid tournamentId, Guid teamId) =>
-        HandleResult(
-            await _mediator.Send(new RemoveTeamFromHockeyTournamentCommand(tournamentId, teamId)),
+    public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> RemoveTeam(Guid tournamentId, Guid teamId)
+    {
+        Result<HockeyCompetitionDto> commandResult = await _mediator.Send(
+            new RemoveTeamFromHockeyCompetitionCommand(tournamentId, teamId));
+        if (commandResult.IsFailure)
+        {
+            return HandleResult(
+                Result<HockeyTournamentDto>.Failure(
+                    commandResult.Error ?? "Failed to remove team",
+                    commandResult.Errors),
+                "Team removed from hockey tournament successfully",
+                "Failed to remove team from hockey tournament");
+        }
+
+        return HandleResult(
+            await _mediator.Send(new GetHockeyTournamentByIdQuery(tournamentId)),
             "Team removed from hockey tournament successfully",
             "Failed to remove team from hockey tournament");
-
+    }
     /// <summary>
     /// Creates a group (lohko) within a hockey tournament.
     /// </summary>

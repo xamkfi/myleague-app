@@ -211,11 +211,23 @@ public class HockeySeasonController : BaseApiController
     /// </summary>
     [HttpDelete("{seasonId:guid}/teams/{teamId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> RemoveTeam(Guid seasonId, Guid teamId) =>
-        HandleResult(
-            await _mediator.Send(new RemoveTeamFromHockeySeasonCommand(seasonId, teamId)),
+    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> RemoveTeam(Guid seasonId, Guid teamId)
+    {
+        Result<HockeyCompetitionDto> commandResult = await _mediator.Send(
+            new RemoveTeamFromHockeyCompetitionCommand(seasonId, teamId));
+        if (commandResult.IsFailure)
+        {
+            return HandleResult(
+                Result<HockeySeasonDto>.Failure(commandResult.Error ?? "Failed to remove team", commandResult.Errors),
+                "Team removed from hockey season successfully",
+                "Failed to remove team from hockey season");
+        }
+
+        return HandleResult(
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId)),
             "Team removed from hockey season successfully",
             "Failed to remove team from hockey season");
+    }
 
     /// <summary>
     /// Adds a Common Division link to a hockey season.
@@ -226,13 +238,23 @@ public class HockeySeasonController : BaseApiController
         Guid seasonId,
         [FromBody] AddDivisionToHockeySeasonRequest request)
     {
-        Result<HockeySeasonDto> result = await _mediator.Send(new AddDivisionToHockeySeasonCommand(
+        Result<HockeyCompetitionDto> commandResult = await _mediator.Send(new CreateHockeyCompetitionDivisionCommand(
             seasonId,
             request.DivisionId,
             request.Name,
             request.SortOrder));
+        if (commandResult.IsFailure)
+        {
+            return HandleResult(
+                Result<HockeySeasonDto>.Failure(commandResult.Error ?? "Failed to add division", commandResult.Errors),
+                "Division added to hockey season successfully",
+                "Failed to add division to hockey season");
+        }
 
-        return HandleResult(result, "Division added to hockey season successfully", "Failed to add division to hockey season");
+        return HandleResult(
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId)),
+            "Division added to hockey season successfully",
+            "Failed to add division to hockey season");
     }
 
     /// <summary>
@@ -242,11 +264,23 @@ public class HockeySeasonController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> RemoveDivision(
         Guid seasonId,
-        Guid competitionDivisionId) =>
-        HandleResult(
-            await _mediator.Send(new RemoveDivisionFromHockeySeasonCommand(seasonId, competitionDivisionId)),
+        Guid competitionDivisionId)
+    {
+        Result<HockeyCompetitionDto> commandResult = await _mediator.Send(
+            new RemoveHockeyCompetitionDivisionCommand(seasonId, competitionDivisionId));
+        if (commandResult.IsFailure)
+        {
+            return HandleResult(
+                Result<HockeySeasonDto>.Failure(commandResult.Error ?? "Failed to remove division", commandResult.Errors),
+                "Division removed from hockey season successfully",
+                "Failed to remove division from hockey season");
+        }
+
+        return HandleResult(
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId)),
             "Division removed from hockey season successfully",
             "Failed to remove division from hockey season");
+    }
 
     /// <summary>
     /// Places a competition team into a season division.
@@ -258,13 +292,23 @@ public class HockeySeasonController : BaseApiController
         Guid competitionDivisionId,
         [FromBody] AddTeamToHockeySeasonDivisionRequest request)
     {
-        Result<HockeySeasonDto> result = await _mediator.Send(new AddTeamToHockeySeasonDivisionCommand(
+        Result<HockeyCompetitionDto> commandResult = await _mediator.Send(new AddTeamToHockeyCompetitionDivisionCommand(
             seasonId,
             competitionDivisionId,
             request.CompetitionTeamId,
             request.Seed));
+        if (commandResult.IsFailure)
+        {
+            return HandleResult(
+                Result<HockeySeasonDto>.Failure(commandResult.Error ?? "Failed to add team to division", commandResult.Errors),
+                "Team added to hockey season division successfully",
+                "Failed to add team to hockey season division");
+        }
 
-        return HandleResult(result, "Team added to hockey season division successfully", "Failed to add team to hockey season division");
+        return HandleResult(
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId)),
+            "Team added to hockey season division successfully",
+            "Failed to add team to hockey season division");
     }
 
     /// <summary>
@@ -275,15 +319,26 @@ public class HockeySeasonController : BaseApiController
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> RemoveTeamFromDivision(
         Guid seasonId,
         Guid competitionDivisionId,
-        Guid competitionTeamId) =>
-        HandleResult(
-            await _mediator.Send(new RemoveTeamFromHockeySeasonDivisionCommand(
+        Guid competitionTeamId)
+    {
+        Result<HockeyCompetitionDto> commandResult = await _mediator.Send(
+            new RemoveTeamFromHockeyCompetitionDivisionCommand(
                 seasonId,
                 competitionDivisionId,
-                competitionTeamId)),
+                competitionTeamId));
+        if (commandResult.IsFailure)
+        {
+            return HandleResult(
+                Result<HockeySeasonDto>.Failure(commandResult.Error ?? "Failed to remove team from division", commandResult.Errors),
+                "Team removed from hockey season division successfully",
+                "Failed to remove team from hockey season division");
+        }
+
+        return HandleResult(
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId)),
             "Team removed from hockey season division successfully",
             "Failed to remove team from hockey season division");
-
+    }
     /// <summary>
     /// Creates a playoff series on a hockey season.
     /// </summary>

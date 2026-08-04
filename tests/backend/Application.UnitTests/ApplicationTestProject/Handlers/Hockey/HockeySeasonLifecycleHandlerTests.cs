@@ -153,25 +153,4 @@ public class HockeySeasonLifecycleHandlerTests
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Fact]
-    public async Task RemoveTeam_ExistingTeam_RemovesAndSaves()
-    {
-        HockeySeason season = CreateSeason();
-        Guid teamId = Guid.NewGuid();
-        season.AddTeam(teamId);
-        _competitionRepo.Setup(r => r.GetSeasonByIdAsync(season.Id)).ReturnsAsync(season);
-
-        RemoveTeamFromHockeySeasonHandler handler = new(
-            _competitionRepo.Object,
-            _unitOfWork.Object,
-            Mock.Of<ILogger<RemoveTeamFromHockeySeasonHandler>>());
-
-        Result<HockeySeasonDto> result = await handler.Handle(
-            new RemoveTeamFromHockeySeasonCommand(season.Id, teamId),
-            CancellationToken.None);
-
-        result.IsSuccess.Should().BeTrue();
-        result.Data!.Teams.Should().NotContain(t => t.TeamId == teamId && t.IsActive);
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-    }
 }

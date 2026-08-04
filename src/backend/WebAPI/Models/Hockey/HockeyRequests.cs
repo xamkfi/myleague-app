@@ -394,6 +394,25 @@ public class AddTeamToHockeyCompetitionRequest
 }
 
 /// <summary>
+/// Request body for updating shared hockey competition rules.
+/// </summary>
+public class UpdateHockeyCompetitionRulesRequest
+{
+    /// <summary>Rules display name.</summary>
+    [Required]
+    [StringLength(200)]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>Optional rule book version.</summary>
+    [StringLength(50)]
+    public string? RuleBookVersion { get; set; }
+
+    /// <summary>Rule book source.</summary>
+    [Required]
+    public HockeyRuleBookSource RuleBookSource { get; set; }
+}
+
+/// <summary>
 /// Request body for creating a hockey tournament group (lohko).
 /// </summary>
 public class CreateHockeyTournamentGroupRequest
