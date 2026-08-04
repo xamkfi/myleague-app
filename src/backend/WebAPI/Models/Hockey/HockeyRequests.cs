@@ -704,3 +704,266 @@ public class RecordHockeyVideoReviewRequest
     public Guid? RequestedByMatchTeamId { get; set; }
     public string? Description { get; set; }
 }
+
+/// <summary>
+/// Request body for marking a hockey match as started.
+/// </summary>
+public class MarkHockeyMatchStartedRequest
+{
+    public DateTime? ActualStartTime { get; set; }
+}
+
+/// <summary>
+/// Request body for marking a hockey match as finished.
+/// </summary>
+public class MarkHockeyMatchFinishedRequest
+{
+    public DateTime? ActualEndTime { get; set; }
+    public HockeyMatchResultType? ResultType { get; set; }
+}
+
+/// <summary>
+/// Request body for setting hockey match status.
+/// </summary>
+public class SetHockeyMatchStatusRequest
+{
+    [Required]
+    public HockeyMatchStatus Status { get; set; }
+}
+
+/// <summary>
+/// Request body for setting hockey match result type.
+/// </summary>
+public class SetHockeyMatchResultTypeRequest
+{
+    public HockeyMatchResultType? ResultType { get; set; }
+}
+
+/// <summary>
+/// Request body for setting the current period.
+/// </summary>
+public class SetHockeyMatchCurrentPeriodRequest
+{
+    [Required]
+    public int PeriodNumber { get; set; }
+}
+
+/// <summary>
+/// Request body for overtime / shootout flags.
+/// </summary>
+public class SetHockeyMatchBooleanFlagRequest
+{
+    [Required]
+    public bool Value { get; set; }
+}
+
+/// <summary>
+/// Request body for updating match venue.
+/// </summary>
+public class UpdateHockeyMatchVenueRequest
+{
+    [StringLength(200)]
+    public string? Venue { get; set; }
+}
+
+/// <summary>
+/// Request body for updating scheduled start.
+/// </summary>
+public class UpdateHockeyMatchScheduledStartRequest
+{
+    [Required]
+    public DateTime ScheduledStartTime { get; set; }
+}
+
+/// <summary>
+/// Request body for correcting team goals.
+/// </summary>
+public class SetHockeyMatchTeamGoalsRequest
+{
+    [Required]
+    public HockeyTeamSlot TeamSlot { get; set; }
+
+    [Required]
+    public int Goals { get; set; }
+}
+
+/// <summary>
+/// Request body for assigning an official to a match.
+/// </summary>
+public class AddHockeyMatchOfficialRequest
+{
+    [Required]
+    public Guid OfficialId { get; set; }
+
+    [Required]
+    public HockeyOfficialRole Role { get; set; }
+
+    public bool IsMainOfficial { get; set; }
+}
+
+/// <summary>
+/// Request body for creating a period score row.
+/// </summary>
+public class AddHockeyPeriodScoreRequest
+{
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public HockeyPeriodType PeriodType { get; set; }
+}
+
+/// <summary>
+/// Request body for recording a period event.
+/// </summary>
+public class RecordHockeyPeriodEventRequest
+{
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    [Required]
+    public HockeyPeriodAction Action { get; set; }
+
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// Request body for recording a faceoff.
+/// </summary>
+public class RecordHockeyFaceoffRequest
+{
+    [Required]
+    public Guid WinningMatchTeamId { get; set; }
+
+    [Required]
+    public Guid LosingMatchTeamId { get; set; }
+
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    [Required]
+    public HockeyFaceoffZone Zone { get; set; }
+
+    [Required]
+    public HockeyFaceoffSpot Spot { get; set; }
+
+    public Guid? WinningActivePlayerId { get; set; }
+    public Guid? LosingActivePlayerId { get; set; }
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// Request body for recording a stoppage.
+/// </summary>
+public class RecordHockeyStoppageRequest
+{
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    [Required]
+    public HockeyStoppageReason Reason { get; set; }
+
+    public Guid? ResponsibleMatchTeamId { get; set; }
+    public Guid? ResponsibleActivePlayerId { get; set; }
+    public HockeyFaceoffZone? NextFaceoffZone { get; set; }
+    public HockeyFaceoffSpot? NextFaceoffSpot { get; set; }
+    public string? RuleReference { get; set; }
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// Request body for recording a timeout.
+/// </summary>
+public class RecordHockeyTimeoutRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// Request body for recording a goalie change.
+/// </summary>
+public class RecordHockeyGoalieChangeRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    public Guid? OutgoingGoalieActivePlayerId { get; set; }
+    public Guid? IncomingGoalieActivePlayerId { get; set; }
+    public string? Reason { get; set; }
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// Request body for recording a shootout attempt.
+/// </summary>
+public class RecordHockeyShootoutAttemptRequest
+{
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    [Required]
+    public Guid ShooterActivePlayerId { get; set; }
+
+    [Required]
+    public Guid GoalieActivePlayerId { get; set; }
+
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    [Required]
+    public int ShotOrder { get; set; }
+
+    [Required]
+    public HockeyShootoutAttemptResult Result { get; set; }
+
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// Request body for recording a failed coach-challenge penalty.
+/// </summary>
+public class RecordHockeyFailedCoachChallengePenaltyRequest
+{
+    [Required]
+    public Guid VideoReviewId { get; set; }
+
+    [Required]
+    public Guid PenaltyMatchTeamId { get; set; }
+
+    public bool Enabled { get; set; } = true;
+    public int MaxChallengesPerTeam { get; set; } = 1;
+    public bool LoseChallengeAfterFailed { get; set; } = true;
+    public bool PenaltyForFailedChallenge { get; set; } = true;
+    public int FailedChallengePenaltyMinutes { get; set; } = 2;
+    public HockeyPenaltyOffence FailedChallengePenaltyOffence { get; set; } = HockeyPenaltyOffence.DelayOfGame;
+    public HockeyPenaltySeverity FailedChallengePenaltySeverity { get; set; } = HockeyPenaltySeverity.Minor;
+    public bool AllowChallengeInOvertime { get; set; } = true;
+    public bool AllowChallengeInShootout { get; set; }
+}

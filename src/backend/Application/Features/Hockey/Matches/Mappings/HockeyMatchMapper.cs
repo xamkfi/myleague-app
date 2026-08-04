@@ -32,7 +32,9 @@ public static class HockeyMatchMapper
             match.HomeScore,
             match.AwayScore,
             match.MatchTeams.Select(ToTeamDto).ToList(),
-            match.Events.OrderBy(e => e.PeriodNumber).ThenBy(e => e.GameTime).Select(ToEventDto).ToList());
+            match.Events.OrderBy(e => e.PeriodNumber).ThenBy(e => e.GameTime).Select(ToEventDto).ToList(),
+            match.Officials.Select(ToOfficialDto).ToList(),
+            match.PeriodScores.OrderBy(p => p.PeriodNumber).Select(ToPeriodScoreDto).ToList());
     }
 
     public static HockeyMatchTeamDto ToTeamDto(HockeyMatchTeam team)
@@ -77,5 +79,27 @@ public static class HockeyMatchMapper
             matchEvent.MatchTeamId,
             matchEvent.MatchActivePlayerId,
             matchEvent.Description);
+    }
+
+    public static HockeyMatchOfficialDto ToOfficialDto(HockeyMatchOfficial official)
+    {
+        return new HockeyMatchOfficialDto(
+            official.Id,
+            official.OfficialId,
+            official.Role.ToString(),
+            official.IsMainOfficial);
+    }
+
+    public static HockeyPeriodScoreDto ToPeriodScoreDto(HockeyPeriodScore periodScore)
+    {
+        return new HockeyPeriodScoreDto(
+            periodScore.Id,
+            periodScore.PeriodNumber,
+            periodScore.PeriodType.ToString(),
+            periodScore.HomeMatchTeamId,
+            periodScore.AwayMatchTeamId,
+            periodScore.HomeGoals,
+            periodScore.AwayGoals,
+            periodScore.IsCompleted);
     }
 }

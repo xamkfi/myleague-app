@@ -24,7 +24,9 @@ public record HockeyMatchDto(
     int HomeScore,
     int AwayScore,
     IReadOnlyCollection<HockeyMatchTeamDto> MatchTeams,
-    IReadOnlyCollection<HockeyMatchEventDto> Events);
+    IReadOnlyCollection<HockeyMatchEventDto> Events,
+    IReadOnlyCollection<HockeyMatchOfficialDto> Officials,
+    IReadOnlyCollection<HockeyPeriodScoreDto> PeriodScores);
 
 /// <summary>
 /// One side of a hockey match (home/away).
@@ -62,3 +64,25 @@ public record HockeyMatchEventDto(
     Guid? MatchTeamId,
     Guid? MatchActivePlayerId,
     string? Description);
+
+/// <summary>
+/// Official assigned to a match.
+/// </summary>
+public record HockeyMatchOfficialDto(
+    Guid Id,
+    Guid OfficialId,
+    string Role,
+    bool IsMainOfficial);
+
+/// <summary>
+/// Period score row for a match.
+/// </summary>
+public record HockeyPeriodScoreDto(
+    Guid Id,
+    int PeriodNumber,
+    string PeriodType,
+    Guid HomeMatchTeamId,
+    Guid AwayMatchTeamId,
+    int HomeGoals,
+    int AwayGoals,
+    bool IsCompleted);

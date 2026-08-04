@@ -7,8 +7,8 @@ using Domain.Entities.Common;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Common;
-using Domain.Enums.Hockey.Matches;
 using Domain.Enums.Hockey.Teams;
+using Domain.Enums.Hockey.Matches;
 using Domain.Repositories.Hockey;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -208,6 +208,85 @@ public class HockeyMatchHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Data!.HomeScore.Should().Be(1);
         result.Data.Events.Should().ContainSingle(e => e.EventType == HockeyMatchEventType.Goal.ToString());
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task MarkStarted_ScheduledMatch_SetsInProgress()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        MarkHockeyMatchStartedHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<MarkHockeyMatchStartedHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new MarkHockeyMatchStartedCommand(match.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Status.Should().Be(HockeyMatchStatus.InProgress.ToString());
+        result.Data.ActualStartTime.Should().NotBeNull();
+        result.Data.CurrentPeriodNumber.Should().Be(1);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddOfficial_AssignsOfficial()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Guid officialId = Guid.NewGuid();
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        AddHockeyMatchOfficialHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<AddHockeyMatchOfficialHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new AddHockeyMatchOfficialCommand(match.Id, officialId, HockeyOfficialRole.Referee, IsMainOfficial: true),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Officials.Should().ContainSingle(o => o.OfficialId == officialId && o.IsMainOfficial);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RecordFaceoff_WithTeams_AddsEvent()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Club club = new("Tappara HC");
+        HockeyTeam home = new("Tappara", club, TeamCategory.Adult);
+        HockeyTeam away = new("Ilves", club, TeamCategory.Adult);
+
+        match.AssignMatchTeam(home.Id, HockeyTeamSlot.Home);
+        match.AssignMatchTeam(away.Id, HockeyTeamSlot.Away);
+        HockeyMatchTeam homeSide = match.HomeMatchTeam!;
+        HockeyMatchTeam awaySide = match.AwayMatchTeam!;
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        RecordHockeyFaceoffHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<RecordHockeyFaceoffHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new RecordHockeyFaceoffCommand(
+                match.Id,
+                homeSide.Id,
+                awaySide.Id,
+                PeriodNumber: 1,
+                TimeInSeconds: 0,
+                HockeyFaceoffZone.NeutralZone,
+                HockeyFaceoffSpot.CenterIce),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Events.Should().ContainSingle(e => e.EventType == HockeyMatchEventType.Faceoff.ToString());
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }
