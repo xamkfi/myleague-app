@@ -75,4 +75,16 @@ public class HockeyMatchActivePlayer : BaseEntity
         IsGoalie = isGoalie;
         IsEmergencyGoalie = isEmergencyGoalie;
     }
+
+    /// <summary>
+    /// Attaches the roster membership for statistics resolution (EF ignores this navigation).
+    /// </summary>
+    public void AttachTeamPlayer(HockeyTeamPlayer teamPlayer)
+    {
+        ArgumentNullException.ThrowIfNull(teamPlayer);
+        if (teamPlayer.Id != TeamPlayerId)
+            throw new InvalidOperationException("Team player id does not match this active player.");
+
+        TeamPlayer = teamPlayer;
+    }
 }

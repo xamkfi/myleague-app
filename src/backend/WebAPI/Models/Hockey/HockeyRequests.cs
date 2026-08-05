@@ -4,6 +4,7 @@ using Application.Features.Hockey.Tournaments.DTOs;
 using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Matches;
+using Domain.Enums.Hockey.Statistics;
 using Domain.Enums.Hockey.Teams;
 
 namespace WebAPI.Models.Hockey;
@@ -1104,5 +1105,27 @@ public class HockeyMatchTeamPlayerRequest
 
     [Required]
     public Guid MatchActivePlayerId { get; set; }
+}
+
+/// <summary>
+/// Request body for recalculating competition hockey statistics.
+/// </summary>
+public class RecalculateHockeyCompetitionStatisticsRequest
+{
+    public HockeyStatisticsScope Scope { get; set; } = HockeyStatisticsScope.Competition;
+    public Guid? CompetitionDivisionId { get; set; }
+    public Guid? TournamentGroupId { get; set; }
+    public Guid? PlayoffSeriesId { get; set; }
+}
+
+/// <summary>
+/// Request body for resetting competition hockey statistics.
+/// </summary>
+public class ResetHockeyCompetitionStatisticsRequest
+{
+    public HockeyStatisticsScope? Scope { get; set; }
+    public Guid? CompetitionDivisionId { get; set; }
+    public Guid? TournamentGroupId { get; set; }
+    public Guid? PlayoffSeriesId { get; set; }
 }
 

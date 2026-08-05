@@ -13,6 +13,16 @@ public interface IHockeyMatchRepository
     Task<HockeyMatch?> GetByIdAsync(Guid id);
 
     /// <summary>
+    /// Loads a match with events and roster data needed for statistics recalculation.
+    /// </summary>
+    Task<HockeyMatch?> GetByIdForStatisticsAsync(Guid id);
+
+    /// <summary>
+    /// Loads competition matches with events and rosters for aggregate recalculation.
+    /// </summary>
+    Task<IReadOnlyList<HockeyMatch>> GetByCompetitionIdForStatisticsAsync(Guid competitionId);
+
+    /// <summary>
     /// Marks a newly created match event as added for EF change tracking.
     /// </summary>
     void MarkEventAsAdded(HockeyMatchEvent matchEvent);

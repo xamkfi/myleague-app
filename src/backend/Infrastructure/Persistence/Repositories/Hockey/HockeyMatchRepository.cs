@@ -25,7 +25,28 @@ public class HockeyMatchRepository : IHockeyMatchRepository
 
     public async Task<HockeyMatch?> GetByIdAsync(Guid id)
     {
-        return await _dbContext.HockeyMatches
+        return await BuildDetailQuery().FirstOrDefaultAsync(m => m.Id == id);
+    }
+
+    public async Task<HockeyMatch?> GetByIdForStatisticsAsync(Guid id)
+    {
+        return await BuildStatisticsQuery().FirstOrDefaultAsync(m => m.Id == id);
+    }
+
+    public async Task<IReadOnlyList<HockeyMatch>> GetByCompetitionIdForStatisticsAsync(Guid competitionId)
+    {
+        return await BuildStatisticsQuery()
+            .Where(m => m.CompetitionId == competitionId)
+            .ToListAsync();
+    }
+
+    public void MarkEventAsAdded(HockeyMatchEvent matchEvent)
+    {
+        _dbContext.Entry(matchEvent).State = EntityState.Added;
+    }
+
+    private IQueryable<HockeyMatch> BuildDetailQuery() =>
+        _dbContext.HockeyMatches
             .Include(m => m.MatchTeams)
                 .ThenInclude(t => t.PlayerSelection!)
                     .ThenInclude(s => s.ActivePlayers)
@@ -37,12 +58,15 @@ public class HockeyMatchRepository : IHockeyMatchRepository
                     .ThenInclude(s => s.PlayersOnIce)
             .Include(m => m.Events)
             .Include(m => m.Officials)
-            .Include(m => m.PeriodScores)
-            .FirstOrDefaultAsync(m => m.Id == id);
-    }
+            .Include(m => m.PeriodScores);
 
-    public void MarkEventAsAdded(HockeyMatchEvent matchEvent)
-    {
-        _dbContext.Entry(matchEvent).State = EntityState.Added;
-    }
+    private IQueryable<HockeyMatch> BuildStatisticsQuery() =>
+        _dbContext.HockeyMatches
+            .Include(m => m.MatchTeams)
+                .ThenInclude(t => t.PlayerSelection!)
+                    .ThenInclude(s => s.ActivePlayers)
+            .Include(m => m.MatchTeams)
+                .ThenInclude(t => t.OnIceState!)
+                    .ThenInclude(s => s.ChangeLog)
+            .Include(m => m.Events);
 }
