@@ -298,6 +298,18 @@ public class HockeyMatchController : BaseApiController
     }
 
     /// <summary>
+    /// Deletes a goal event (live-ops undo).
+    /// </summary>
+    [HttpDelete("{matchId:guid}/events/goals/{eventId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DeleteGoal(Guid matchId, Guid eventId)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new DeleteHockeyGoalCommand(matchId, eventId));
+        return HandleResult(result, "Goal deleted successfully", "Failed to delete goal");
+    }
+
+    /// <summary>
     /// Records a penalty.
     /// </summary>
     [HttpPost("{matchId:guid}/events/penalties")]
@@ -323,6 +335,18 @@ public class HockeyMatchController : BaseApiController
     }
 
     /// <summary>
+    /// Deletes a penalty event (live-ops undo).
+    /// </summary>
+    [HttpDelete("{matchId:guid}/events/penalties/{eventId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DeletePenalty(Guid matchId, Guid eventId)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new DeleteHockeyPenaltyCommand(matchId, eventId));
+        return HandleResult(result, "Penalty deleted successfully", "Failed to delete penalty");
+    }
+
+    /// <summary>
     /// Records a shot.
     /// </summary>
     [HttpPost("{matchId:guid}/events/shots")]
@@ -343,6 +367,18 @@ public class HockeyMatchController : BaseApiController
             request.Description));
 
         return HandleResult(result, "Shot recorded successfully", "Failed to record shot");
+    }
+
+    /// <summary>
+    /// Deletes a shot event (live-ops undo).
+    /// </summary>
+    [HttpDelete("{matchId:guid}/events/shots/{eventId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DeleteShot(Guid matchId, Guid eventId)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new DeleteHockeyShotCommand(matchId, eventId));
+        return HandleResult(result, "Shot deleted successfully", "Failed to delete shot");
     }
 
     /// <summary>

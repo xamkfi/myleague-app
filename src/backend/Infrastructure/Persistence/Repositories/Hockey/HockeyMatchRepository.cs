@@ -45,4 +45,9 @@ public class HockeyMatchRepository : IHockeyMatchRepository
     {
         _dbContext.Entry(matchEvent).State = EntityState.Added;
     }
+
+    public void MarkEventAsDeleted(HockeyMatchEvent matchEvent)
+    {
+        _dbContext.Entry(matchEvent).State = EntityState.Deleted;
+    }
 }

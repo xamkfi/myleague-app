@@ -263,6 +263,77 @@ public class HockeyMatch : BaseEntity
     }
 
     /// <summary>
+    /// Removes a match event for live-ops undo. Reverses goal scoreboard side effects.
+    /// Competition/season statistics are not adjusted here — recalculate from remaining events.
+    /// </summary>
+    public HockeyMatchEvent RemoveEvent(Guid eventId)
+    {
+        EnsureCanRemoveEvents();
+
+        HockeyMatchEvent matchEvent = _events.FirstOrDefault(e => e.Id == eventId)
+            ?? throw new ArgumentException($"Event with id '{eventId}' was not found on this match.", nameof(eventId));
+
+        if (matchEvent is HockeyGoal goal)
+        {
+            HockeyMatchTeam scoringTeam = _matchTeams.FirstOrDefault(t => t.Id == goal.ScoringMatchTeamId)
+                ?? throw new InvalidOperationException("Scoring match team must belong to this match.");
+            scoringTeam.DecrementGoals();
+        }
+
+        _events.Remove(matchEvent);
+        return matchEvent;
+    }
+
+    /// <summary>
+    /// Removes a goal event. Equivalent to <see cref="RemoveEvent"/> with a goal type check.
+    /// </summary>
+    public HockeyGoal DeleteGoalEvent(Guid goalEventId) =>
+        DeleteEventOfType<HockeyGoal>(goalEventId, "Goal");
+
+    /// <summary>
+    /// Removes a penalty event.
+    /// </summary>
+    public HockeyPenalty DeletePenaltyEvent(Guid penaltyEventId) =>
+        DeleteEventOfType<HockeyPenalty>(penaltyEventId, "Penalty");
+
+    /// <summary>
+    /// Removes a shot event.
+    /// </summary>
+    public HockeyShot DeleteShotEvent(Guid shotEventId) =>
+        DeleteEventOfType<HockeyShot>(shotEventId, "Shot");
+
+    private T DeleteEventOfType<T>(Guid eventId, string eventLabel) where T : HockeyMatchEvent
+    {
+        EnsureCanRemoveEvents();
+
+        T? matchEvent = _events.OfType<T>().FirstOrDefault(e => e.Id == eventId);
+        if (matchEvent is null)
+            throw new ArgumentException($"{eventLabel} event with id '{eventId}' was not found on this match.", nameof(eventId));
+
+        if (matchEvent is HockeyGoal goal)
+        {
+            HockeyMatchTeam scoringTeam = _matchTeams.FirstOrDefault(t => t.Id == goal.ScoringMatchTeamId)
+                ?? throw new InvalidOperationException("Scoring match team must belong to this match.");
+            scoringTeam.DecrementGoals();
+        }
+
+        _events.Remove(matchEvent);
+        return matchEvent;
+    }
+
+    private void EnsureCanRemoveEvents()
+    {
+        if (Status is HockeyMatchStatus.Finished
+            or HockeyMatchStatus.Cancelled
+            or HockeyMatchStatus.Postponed
+            or HockeyMatchStatus.Forfeit)
+        {
+            throw new InvalidOperationException(
+                $"Cannot delete match events when the match status is {Status}.");
+        }
+    }
+
+    /// <summary>
     /// Creates and records a failed coach-challenge penalty when rules require it,
     /// and links it to the given video review.
     /// </summary>

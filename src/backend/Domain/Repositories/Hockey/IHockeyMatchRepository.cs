@@ -16,4 +16,9 @@ public interface IHockeyMatchRepository
     /// Marks a newly created match event as added for EF change tracking.
     /// </summary>
     void MarkEventAsAdded(HockeyMatchEvent matchEvent);
+
+    /// <summary>
+    /// Marks a removed match event as deleted for EF change tracking.
+    /// </summary>
+    void MarkEventAsDeleted(HockeyMatchEvent matchEvent);
 }

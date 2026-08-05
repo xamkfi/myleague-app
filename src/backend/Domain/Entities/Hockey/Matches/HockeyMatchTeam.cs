@@ -74,6 +74,13 @@ public class HockeyMatchTeam : BaseEntity
 
     internal void IncrementGoals() => Goals += 1;
 
+    internal void DecrementGoals()
+    {
+        if (Goals <= 0)
+            throw new InvalidOperationException("Cannot decrement goals below zero.");
+        Goals -= 1;
+    }
+
     internal void SetGoaliePulled(bool isGoaliePulled) => IsGoaliePulled = isGoaliePulled;
 
     /// <summary>

@@ -5,6 +5,7 @@ using Application.Features.Hockey.Matches.Handlers;
 using Application.Features.Hockey.Matches.Queries;
 using Domain.Entities.Common;
 using Domain.Entities.Hockey.Matches;
+using Domain.Entities.Hockey.Matches.Events;
 using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Common;
 using Domain.Enums.Hockey.Teams;
@@ -388,5 +389,192 @@ public class HockeyMatchHandlerTests
         result.Data!.MatchTeams.Single(t => t.Id == homeSide.Id).ActivePlayers
             .Should().ContainSingle(p => p.Id == active.Id && !p.IsActive);
         result.Data.MatchTeams.Single(t => t.Id == homeSide.Id).IsConfirmedRoster.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task DeleteGoal_ExistingGoal_DecrementsScoreAndMarksDeleted()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Club club = new("Tappara HC");
+        HockeyTeam home = new("Tappara", club, TeamCategory.Adult);
+        HockeyTeam away = new("Ilves", club, TeamCategory.Adult);
+        HockeyPlayer player = new(Guid.NewGuid(), HockeyPosition.Center);
+        HockeyTeamPlayer teamPlayer = home.AddPlayer(player, HockeyPosition.Center, jerseyNumber: 12);
+
+        match.AssignMatchTeam(home.Id, HockeyTeamSlot.Home);
+        match.AssignMatchTeam(away.Id, HockeyTeamSlot.Away);
+        HockeyMatchTeam homeSide = match.HomeMatchTeam!;
+        var selection = homeSide.CreateOrReplacePlayerSelection(HockeyPlayerSelectionSource.Manual);
+        HockeyMatchActivePlayer active = selection.AddActivePlayer(teamPlayer);
+        selection.Confirm();
+        match.MarkStarted();
+
+        HockeyGoal goal = new(
+            match.Id,
+            homeSide.Id,
+            active.Id,
+            periodNumber: 1,
+            gameTime: TimeSpan.FromSeconds(60),
+            HockeyGoalStrength.EvenStrength);
+        match.AddEvent(goal);
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        DeleteHockeyGoalHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<DeleteHockeyGoalHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new DeleteHockeyGoalCommand(match.Id, goal.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.HomeScore.Should().Be(0);
+        result.Data.Events.Should().BeEmpty();
+        _matchRepo.Verify(r => r.MarkEventAsDeleted(goal), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteGoal_FinishedMatch_ReturnsFailure()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Club club = new("Tappara HC");
+        HockeyTeam home = new("Tappara", club, TeamCategory.Adult);
+        HockeyTeam away = new("Ilves", club, TeamCategory.Adult);
+        HockeyPlayer player = new(Guid.NewGuid(), HockeyPosition.Center);
+        HockeyTeamPlayer teamPlayer = home.AddPlayer(player, HockeyPosition.Center, jerseyNumber: 12);
+
+        match.AssignMatchTeam(home.Id, HockeyTeamSlot.Home);
+        match.AssignMatchTeam(away.Id, HockeyTeamSlot.Away);
+        HockeyMatchTeam homeSide = match.HomeMatchTeam!;
+        var selection = homeSide.CreateOrReplacePlayerSelection(HockeyPlayerSelectionSource.Manual);
+        HockeyMatchActivePlayer active = selection.AddActivePlayer(teamPlayer);
+        selection.Confirm();
+        match.MarkStarted();
+
+        HockeyGoal goal = new(
+            match.Id,
+            homeSide.Id,
+            active.Id,
+            periodNumber: 1,
+            gameTime: TimeSpan.FromSeconds(60),
+            HockeyGoalStrength.EvenStrength);
+        match.AddEvent(goal);
+        match.MarkFinished(resultType: HockeyMatchResultType.HomeWin);
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        DeleteHockeyGoalHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<DeleteHockeyGoalHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new DeleteHockeyGoalCommand(match.Id, goal.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("Finished");
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteGoal_MissingEvent_ReturnsFailure()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        match.MarkStarted();
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        DeleteHockeyGoalHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<DeleteHockeyGoalHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new DeleteHockeyGoalCommand(match.Id, Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("not found");
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeletePenalty_Existing_RemovesEvent()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Club club = new("Tappara HC");
+        HockeyTeam home = new("Tappara", club, TeamCategory.Adult);
+        HockeyTeam away = new("Ilves", club, TeamCategory.Adult);
+
+        match.AssignMatchTeam(home.Id, HockeyTeamSlot.Home);
+        match.AssignMatchTeam(away.Id, HockeyTeamSlot.Away);
+        HockeyMatchTeam homeSide = match.HomeMatchTeam!;
+        match.MarkStarted();
+
+        HockeyPenalty penalty = new(
+            match.Id,
+            homeSide.Id,
+            periodNumber: 1,
+            gameTime: TimeSpan.FromSeconds(30),
+            HockeyPenaltySeverity.Minor,
+            HockeyPenaltyOffence.Hooking,
+            penaltyMinutes: 2);
+        match.AddEvent(penalty);
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        DeleteHockeyPenaltyHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<DeleteHockeyPenaltyHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new DeleteHockeyPenaltyCommand(match.Id, penalty.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Events.Should().BeEmpty();
+        _matchRepo.Verify(r => r.MarkEventAsDeleted(penalty), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteShot_Existing_RemovesEvent()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Club club = new("Tappara HC");
+        HockeyTeam home = new("Tappara", club, TeamCategory.Adult);
+        HockeyTeam away = new("Ilves", club, TeamCategory.Adult);
+
+        match.AssignMatchTeam(home.Id, HockeyTeamSlot.Home);
+        match.AssignMatchTeam(away.Id, HockeyTeamSlot.Away);
+        HockeyMatchTeam homeSide = match.HomeMatchTeam!;
+        match.MarkStarted();
+
+        HockeyShot shot = new(
+            match.Id,
+            homeSide.Id,
+            periodNumber: 1,
+            gameTime: TimeSpan.FromSeconds(45),
+            HockeyShotResult.Saved,
+            countsAsShotOnGoal: true);
+        match.AddEvent(shot);
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        DeleteHockeyShotHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<DeleteHockeyShotHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new DeleteHockeyShotCommand(match.Id, shot.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Events.Should().BeEmpty();
+        _matchRepo.Verify(r => r.MarkEventAsDeleted(shot), Times.Once);
     }
 }
