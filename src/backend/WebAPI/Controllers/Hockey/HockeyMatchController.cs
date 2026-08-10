@@ -310,6 +310,34 @@ public class HockeyMatchController : BaseApiController
     }
 
     /// <summary>
+    /// Corrects a goal event (live-ops modify).
+    /// </summary>
+    [HttpPut("{matchId:guid}/events/goals/{eventId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UpdateGoal(
+        Guid matchId,
+        Guid eventId,
+        [FromBody] UpdateHockeyGoalRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new UpdateHockeyGoalCommand(
+            matchId,
+            eventId,
+            request.ScoringMatchTeamId,
+            request.ScorerActivePlayerId,
+            request.PeriodNumber,
+            request.TimeInSeconds,
+            request.GoalStrength,
+            request.PrimaryAssistActivePlayerId,
+            request.SecondaryAssistActivePlayerId,
+            request.GoalieActivePlayerId,
+            request.WasEmptyNet,
+            request.Description));
+
+        return HandleResult(result, "Goal updated successfully", "Failed to update goal");
+    }
+
+    /// <summary>
     /// Records a penalty.
     /// </summary>
     [HttpPost("{matchId:guid}/events/penalties")]
@@ -347,6 +375,34 @@ public class HockeyMatchController : BaseApiController
     }
 
     /// <summary>
+    /// Corrects a penalty event (live-ops modify).
+    /// </summary>
+    [HttpPut("{matchId:guid}/events/penalties/{eventId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UpdatePenalty(
+        Guid matchId,
+        Guid eventId,
+        [FromBody] UpdateHockeyPenaltyRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new UpdateHockeyPenaltyCommand(
+            matchId,
+            eventId,
+            request.PenaltyMatchTeamId,
+            request.PeriodNumber,
+            request.TimeInSeconds,
+            request.Severity,
+            request.Offence,
+            request.PenaltyMinutes,
+            request.PenalizedActivePlayerId,
+            request.ServedByActivePlayerId,
+            request.IsBenchPenalty,
+            request.Description));
+
+        return HandleResult(result, "Penalty updated successfully", "Failed to update penalty");
+    }
+
+    /// <summary>
     /// Records a shot.
     /// </summary>
     [HttpPost("{matchId:guid}/events/shots")]
@@ -379,6 +435,32 @@ public class HockeyMatchController : BaseApiController
     {
         Result<HockeyMatchDto> result = await _mediator.Send(new DeleteHockeyShotCommand(matchId, eventId));
         return HandleResult(result, "Shot deleted successfully", "Failed to delete shot");
+    }
+
+    /// <summary>
+    /// Corrects a shot event (live-ops modify).
+    /// </summary>
+    [HttpPut("{matchId:guid}/events/shots/{eventId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UpdateShot(
+        Guid matchId,
+        Guid eventId,
+        [FromBody] UpdateHockeyShotRequest request)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new UpdateHockeyShotCommand(
+            matchId,
+            eventId,
+            request.ShootingMatchTeamId,
+            request.PeriodNumber,
+            request.TimeInSeconds,
+            request.ShotResult,
+            request.CountsAsShotOnGoal,
+            request.ShooterActivePlayerId,
+            request.GoalieActivePlayerId,
+            request.Description));
+
+        return HandleResult(result, "Shot updated successfully", "Failed to update shot");
     }
 
     /// <summary>

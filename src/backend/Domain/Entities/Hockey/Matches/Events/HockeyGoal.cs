@@ -89,4 +89,42 @@ public class HockeyGoal : HockeyMatchEvent
         RelatedShotId = shot.Id;
         RelatedShot = shot;
     }
+
+    /// <summary>
+    /// Corrects goal details during live match operations.
+    /// </summary>
+    public void UpdateDetails(
+        Guid scoringMatchTeamId,
+        Guid scorerActivePlayerId,
+        int periodNumber,
+        TimeSpan gameTime,
+        HockeyGoalStrength goalStrength,
+        Guid? primaryAssistActivePlayerId = null,
+        Guid? secondaryAssistActivePlayerId = null,
+        Guid? goalieActivePlayerId = null,
+        bool wasEmptyNet = false,
+        string? description = null)
+    {
+        if (scoringMatchTeamId == Guid.Empty)
+            throw new ArgumentException("Scoring match team id cannot be empty.", nameof(scoringMatchTeamId));
+        if (scorerActivePlayerId == Guid.Empty)
+            throw new ArgumentException("Scorer active player id cannot be empty.", nameof(scorerActivePlayerId));
+        if (primaryAssistActivePlayerId == Guid.Empty)
+            throw new ArgumentException("Primary assist id cannot be empty.", nameof(primaryAssistActivePlayerId));
+        if (secondaryAssistActivePlayerId == Guid.Empty)
+            throw new ArgumentException("Secondary assist id cannot be empty.", nameof(secondaryAssistActivePlayerId));
+        if (goalieActivePlayerId == Guid.Empty)
+            throw new ArgumentException("Goalie active player id cannot be empty.", nameof(goalieActivePlayerId));
+
+        UpdateTiming(periodNumber, gameTime, description);
+        UpdatePrimaryReferences(scoringMatchTeamId, scorerActivePlayerId);
+
+        ScoringMatchTeamId = scoringMatchTeamId;
+        ScorerActivePlayerId = scorerActivePlayerId;
+        PrimaryAssistActivePlayerId = primaryAssistActivePlayerId;
+        SecondaryAssistActivePlayerId = secondaryAssistActivePlayerId;
+        GoalieActivePlayerId = goalieActivePlayerId;
+        GoalStrength = goalStrength;
+        WasEmptyNet = wasEmptyNet;
+    }
 }

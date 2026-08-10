@@ -66,4 +66,33 @@ public abstract class HockeyMatchEvent : BaseEntity
         MatchActivePlayerId = matchActivePlayerId;
         Description = description;
     }
+
+    /// <summary>
+    /// Updates shared timing and description fields used by live-ops corrections.
+    /// </summary>
+    protected void UpdateTiming(int periodNumber, TimeSpan gameTime, string? description)
+    {
+        if (periodNumber < 1)
+            throw new ArgumentOutOfRangeException(nameof(periodNumber), "Period number must be at least 1.");
+        if (gameTime < TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(gameTime), "Game time cannot be negative.");
+
+        PeriodNumber = periodNumber;
+        GameTime = gameTime;
+        Description = description;
+    }
+
+    /// <summary>
+    /// Updates the primary match-team / active-player refs on the base event row.
+    /// </summary>
+    protected void UpdatePrimaryReferences(Guid? matchTeamId, Guid? matchActivePlayerId)
+    {
+        if (matchTeamId == Guid.Empty)
+            throw new ArgumentException("Match team id cannot be empty.", nameof(matchTeamId));
+        if (matchActivePlayerId == Guid.Empty)
+            throw new ArgumentException("Match active player id cannot be empty.", nameof(matchActivePlayerId));
+
+        MatchTeamId = matchTeamId;
+        MatchActivePlayerId = matchActivePlayerId;
+    }
 }

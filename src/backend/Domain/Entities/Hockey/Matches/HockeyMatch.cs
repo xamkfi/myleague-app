@@ -268,7 +268,7 @@ public class HockeyMatch : BaseEntity
     /// </summary>
     public HockeyMatchEvent RemoveEvent(Guid eventId)
     {
-        EnsureCanRemoveEvents();
+        EnsureCanModifyEvents();
 
         HockeyMatchEvent matchEvent = _events.FirstOrDefault(e => e.Id == eventId)
             ?? throw new ArgumentException($"Event with id '{eventId}' was not found on this match.", nameof(eventId));
@@ -302,9 +302,132 @@ public class HockeyMatch : BaseEntity
     public HockeyShot DeleteShotEvent(Guid shotEventId) =>
         DeleteEventOfType<HockeyShot>(shotEventId, "Shot");
 
+    /// <summary>
+    /// Corrects a goal event during live match operations. Adjusts the scoreboard when the scoring team changes.
+    /// </summary>
+    public HockeyGoal UpdateGoalEvent(
+        Guid goalEventId,
+        Guid scoringMatchTeamId,
+        Guid scorerActivePlayerId,
+        int periodNumber,
+        TimeSpan gameTime,
+        HockeyGoalStrength goalStrength,
+        Guid? primaryAssistActivePlayerId = null,
+        Guid? secondaryAssistActivePlayerId = null,
+        Guid? goalieActivePlayerId = null,
+        bool wasEmptyNet = false,
+        string? description = null)
+    {
+        EnsureCanModifyEvents();
+
+        HockeyGoal goal = _events.OfType<HockeyGoal>().FirstOrDefault(e => e.Id == goalEventId)
+            ?? throw new ArgumentException($"Goal event with id '{goalEventId}' was not found on this match.", nameof(goalEventId));
+
+        if (!_matchTeams.Any(t => t.Id == scoringMatchTeamId))
+            throw new InvalidOperationException("Scoring match team must belong to this match.");
+
+        if (goal.ScoringMatchTeamId != scoringMatchTeamId)
+        {
+            HockeyMatchTeam previousTeam = _matchTeams.First(t => t.Id == goal.ScoringMatchTeamId);
+            HockeyMatchTeam nextTeam = _matchTeams.First(t => t.Id == scoringMatchTeamId);
+            previousTeam.DecrementGoals();
+            nextTeam.IncrementGoals();
+        }
+
+        goal.UpdateDetails(
+            scoringMatchTeamId,
+            scorerActivePlayerId,
+            periodNumber,
+            gameTime,
+            goalStrength,
+            primaryAssistActivePlayerId,
+            secondaryAssistActivePlayerId,
+            goalieActivePlayerId,
+            wasEmptyNet,
+            description);
+
+        return goal;
+    }
+
+    /// <summary>
+    /// Corrects a penalty event during live match operations.
+    /// </summary>
+    public HockeyPenalty UpdatePenaltyEvent(
+        Guid penaltyEventId,
+        Guid penaltyMatchTeamId,
+        int periodNumber,
+        TimeSpan gameTime,
+        HockeyPenaltySeverity severity,
+        HockeyPenaltyOffence offence,
+        int penaltyMinutes,
+        Guid? penalizedActivePlayerId = null,
+        Guid? servedByActivePlayerId = null,
+        bool isBenchPenalty = false,
+        string? description = null)
+    {
+        EnsureCanModifyEvents();
+
+        HockeyPenalty penalty = _events.OfType<HockeyPenalty>().FirstOrDefault(e => e.Id == penaltyEventId)
+            ?? throw new ArgumentException(
+                $"Penalty event with id '{penaltyEventId}' was not found on this match.",
+                nameof(penaltyEventId));
+
+        if (!_matchTeams.Any(t => t.Id == penaltyMatchTeamId))
+            throw new InvalidOperationException("Penalty match team must belong to this match.");
+
+        penalty.UpdateDetails(
+            penaltyMatchTeamId,
+            periodNumber,
+            gameTime,
+            severity,
+            offence,
+            penaltyMinutes,
+            penalizedActivePlayerId,
+            servedByActivePlayerId,
+            isBenchPenalty,
+            description);
+
+        return penalty;
+    }
+
+    /// <summary>
+    /// Corrects a shot event during live match operations.
+    /// </summary>
+    public HockeyShot UpdateShotEvent(
+        Guid shotEventId,
+        Guid shootingMatchTeamId,
+        int periodNumber,
+        TimeSpan gameTime,
+        HockeyShotResult shotResult,
+        bool countsAsShotOnGoal,
+        Guid? shooterActivePlayerId = null,
+        Guid? goalieActivePlayerId = null,
+        string? description = null)
+    {
+        EnsureCanModifyEvents();
+
+        HockeyShot shot = _events.OfType<HockeyShot>().FirstOrDefault(e => e.Id == shotEventId)
+            ?? throw new ArgumentException($"Shot event with id '{shotEventId}' was not found on this match.", nameof(shotEventId));
+
+        if (!_matchTeams.Any(t => t.Id == shootingMatchTeamId))
+            throw new InvalidOperationException("Shooting match team must belong to this match.");
+
+        shot.UpdateDetails(
+            shootingMatchTeamId,
+            periodNumber,
+            gameTime,
+            shotResult,
+            countsAsShotOnGoal,
+            shooterActivePlayerId,
+            goalieActivePlayerId,
+            description);
+
+        return shot;
+    }
+
     private T DeleteEventOfType<T>(Guid eventId, string eventLabel) where T : HockeyMatchEvent
     {
-        EnsureCanRemoveEvents();
+        EnsureCanModifyEvents();
 
         T? matchEvent = _events.OfType<T>().FirstOrDefault(e => e.Id == eventId);
         if (matchEvent is null)
@@ -321,7 +444,7 @@ public class HockeyMatch : BaseEntity
         return matchEvent;
     }
 
-    private void EnsureCanRemoveEvents()
+    private void EnsureCanModifyEvents()
     {
         if (Status is HockeyMatchStatus.Finished
             or HockeyMatchStatus.Cancelled
@@ -329,7 +452,7 @@ public class HockeyMatch : BaseEntity
             or HockeyMatchStatus.Forfeit)
         {
             throw new InvalidOperationException(
-                $"Cannot delete match events when the match status is {Status}.");
+                $"Cannot modify match events when the match status is {Status}.");
         }
     }
 
