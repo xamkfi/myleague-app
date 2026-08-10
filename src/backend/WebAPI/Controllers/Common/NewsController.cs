@@ -1,9 +1,12 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Application.Common;
-using Domain.Common;
 using Application.Features.Common.Images.Commands;
 using Application.Features.Common.News.Commands;
 using Application.Features.Common.News.DTOs;
 using Application.Features.Common.News.Queries;
+using Domain.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -109,7 +112,7 @@ namespace WebAPI.Controllers.Common
 
             if (result.IsSuccess && result.Data is not null)
             {
-                return CreatedAtAction(nameof(GetNewsById), new { id = result.Data.Id }, 
+                return CreatedAtAction(nameof(GetNewsById), new { id = result.Data.Id },
                     ApiResponse<NewsArticleDto>.SuccessResponse(result.Data, "News article created successfully"));
             }
 
@@ -420,7 +423,7 @@ namespace WebAPI.Controllers.Common
             try
             {
                 using Stream stream = file.OpenReadStream();
-                
+
                 var command = new UploadImageCommand(
                     stream,
                     file.FileName,
@@ -465,7 +468,7 @@ namespace WebAPI.Controllers.Common
                 _logger.LogWarning("Image deletion failed: No url provided");
                 return BadRequest(ApiResponse<string>.ErrorResponse("No url provided"));
             }
-            
+
             if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? imageUri))
             {
                 _logger.LogError("Failed to parse URL: '{url}'", SanitizeForLog(url));

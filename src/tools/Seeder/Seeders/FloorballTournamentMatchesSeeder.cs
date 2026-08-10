@@ -114,7 +114,7 @@ public static class FloorballTournamentMatchesSeeder
                     TournamentStage = nameof(FloorballTournamentStage.GroupStage)
                 };
 
-                HttpResponseMessage createResp = await http.PostAsJsonAsync("api/floorballmatch", createReq);
+                HttpResponseMessage createResp = await http.PostAsJsonAsync("api/floorball-matches", createReq);
                 await SeederHttp.EnsureSuccessWithBody(createResp, "Create Tournament Match");
 
                 ApiResponse<FloorballMatchDto>? createdApi = await createResp.Content.ReadFromJsonAsync<ApiResponse<FloorballMatchDto>>(jsonOptions);
@@ -159,12 +159,12 @@ public static class FloorballTournamentMatchesSeeder
         while (true)
         {
             HttpResponseMessage listResp = await http.GetAsync(
-                $"api/floorballmatch?CompetitionId={competitionId}&Page={page}&PageSize={pageSize}");
+                $"api/floorball-matches?CompetitionId={competitionId}&Page={page}&PageSize={pageSize}");
             if (!listResp.IsSuccessStatusCode)
             {
                 string body = await listResp.Content.ReadAsStringAsync();
                 Console.Error.WriteLine(
-                    $"WARNING: GET /api/floorballmatch?CompetitionId={competitionId}&Page={page}&PageSize={pageSize} returned {(int)listResp.StatusCode}. " +
+                    $"WARNING: GET /api/floorball-matches?CompetitionId={competitionId}&Page={page}&PageSize={pageSize} returned {(int)listResp.StatusCode}. " +
                     $"Existing-match check may be incomplete. Body: {(body.Length > 300 ? body.Substring(0, 300) + "..." : body)}");
                 break;
             }
@@ -344,7 +344,7 @@ public static class FloorballTournamentMatchesSeeder
         await SetActiveGoalieAsync(http, match.Id, awayTeamId, awayGoalieId.Value);
 
         // Start the match.
-        HttpResponseMessage startResp = await http.PutAsync($"api/floorballmatch/start-match/{match.Id}", content: null);
+        HttpResponseMessage startResp = await http.PutAsync($"api/floorball-matches/{match.Id}/start", content: null);
         await SeederHttp.EnsureSuccessWithBody(startResp, "Start Tournament Match");
 
         // Record a believable number of goals split between teams.
@@ -356,7 +356,7 @@ public static class FloorballTournamentMatchesSeeder
         await RecordGoalsAsync(http, match.Id, awayTeamId, awayFieldPlayers, awayGoals, rng);
 
         // Complete the match.
-        HttpResponseMessage completeResp = await http.PutAsync($"api/floorballmatch/complete-match/{match.Id}", content: null);
+        HttpResponseMessage completeResp = await http.PutAsync($"api/floorball-matches/{match.Id}/complete", content: null);
         await SeederHttp.EnsureSuccessWithBody(completeResp, "Complete Tournament Match");
 
         Console.WriteLine($"  Completed: {plan.HomeTeamName} {homeGoals} - {awayGoals} {plan.AwayTeamName}");
@@ -364,7 +364,7 @@ public static class FloorballTournamentMatchesSeeder
 
     private static async Task SetActiveGoalieAsync(HttpClient http, Guid matchId, Guid teamId, Guid goalieId)
     {
-        HttpResponseMessage resp = await http.PutAsync($"api/floorballmatch/{matchId}/team/{teamId}/goalie/{goalieId}", content: null);
+        HttpResponseMessage resp = await http.PutAsync($"api/floorball-matches/{matchId}/teams/{teamId}/goalie/{goalieId}", content: null);
         await SeederHttp.EnsureSuccessWithBody(resp, "Set Active Goalie");
     }
 
@@ -399,7 +399,7 @@ public static class FloorballTournamentMatchesSeeder
                 GoalType = null
             };
 
-            HttpResponseMessage resp = await http.PostAsJsonAsync("api/floorballmatch/record-goal", goalReq);
+            HttpResponseMessage resp = await http.PostAsJsonAsync($"api/floorball-matches/{matchId}/events/goal", goalReq);
             await SeederHttp.EnsureSuccessWithBody(resp, "Record Goal");
         }
     }

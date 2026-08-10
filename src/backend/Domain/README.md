@@ -28,26 +28,48 @@ This domain layer follows **Clean Architecture** and **Domain-Driven Design** pr
 Domain/
 ├── Entities/           # Core business entities
 │   ├── Common/         # Shared entities (Person, Club, etc.)
-│   ├── Floorball/      # Floorball-specific entities
-│   └── Hockey/         # Hockey-specific entities
+│   ├── Floorball/      # Floorball-specific entities (flat structure)
+│   └── Hockey/         # Hockey-specific entities (grouped by subdomain)
+│       ├── Competitions/
+│       ├── Teams/
+│       ├── Matches/
+│       └── Statistics/
 ├── ValueObjects/       # Immutable value objects
 │   ├── Common/         # Shared value objects (Address, ContactInfo)
 │   ├── Floorball/      # Floorball-specific value objects
 │   └── Hockey/         # Hockey-specific value objects
+│       ├── Rules/
+│       ├── Matches/
+│       ├── Statistics/
+│       └── Common/
 ├── Enums/             # Domain enumerations
+│   ├── Common/         # Shared enums (SportsCategory, etc.)
 │   ├── Floorball/      # Floorball-specific enums
 │   └── Hockey/         # Hockey-specific enums
-├── DomainEvents/      # Domain event definitions
-│   ├── Common/         # Shared domain events
-│   ├── Floorball/      # Floorball-specific events
-│   └── Hockey/         # Hockey-specific events
-├── EventSourcing/     # Event sourcing infrastructure
+│       ├── Competitions/
+│       ├── Teams/
+│       ├── Matches/
+│       └── Statistics/
+├── Services/           # Domain service interfaces
+│   └── Hockey/         # Hockey-specific services
 ├── Repositories/      # Repository interface definitions
 │   ├── Common/         # Shared repository interfaces
 │   ├── Floorball/      # Floorball-specific repositories
 │   └── Hockey/         # Hockey-specific repositories
 └── DomainGlossary.md  # Ubiquitous language definitions
 ```
+
+### Hockey naming conventions
+
+All ice hockey domain types use the `Hockey` prefix (e.g. `HockeyTeam`, `HockeyMatchStatus`). Namespaces follow the folder structure:
+
+| Folder | Namespace example |
+|--------|-------------------|
+| `Entities/Hockey/Teams/` | `Domain.Entities.Hockey.Teams` |
+| `Enums/Hockey/Matches/` | `Domain.Enums.Hockey.Matches` |
+| `ValueObjects/Hockey/Rules/` | `Domain.ValueObjects.Hockey.Rules` |
+| `Services/Hockey/` | `Domain.Services.Hockey` |
+| `Repositories/Hockey/` | `Domain.Repositories.Hockey` |
 
 ## 🎯 Core Domain Concepts
 
@@ -103,9 +125,10 @@ The domain uses a carefully crafted **ubiquitous language** shared between devel
 - Official assignment and management
 - Team and league administration
 
-### Hockey (Future Enhancement)
-- Similar structure to floorball with hockey-specific rules
-- Extendable framework for additional sports
+### Hockey (In Development)
+- Domain folder structure in place; entities and services to be added incrementally
+- Follows Floorball patterns with grouped subfolders under `Hockey/`
+- All types prefixed with `Hockey`
 
 ## 🛡️ Code Quality
 

@@ -1,3 +1,6 @@
+import type { RuleItem } from "../types/admin/ruleTypes";
+import DOMPurify from "dompurify";
+
 /**
  * Formats a date string to a localized format in UTC (D.M.YYYY)
  * @param dateString Date string to format (can be null)
@@ -85,4 +88,58 @@ export function truncateText(text: string, maxLength: number): string {
  */
 export function generateId(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
-} 
+}
+
+export const createRuleBlock = (
+  html: string,
+  ruleId?: string,
+  order?: number,
+): string => {
+  const sanitizedHtml = DOMPurify.sanitize(html).trim();
+
+  const plainText = DOMPurify.sanitize(sanitizedHtml, { ALLOWED_TAGS: [] })
+    .replace(/\u00A0/g, " ")
+    .trim();
+
+  if (!plainText) return "";
+
+  const id = ruleId ?? crypto.randomUUID();
+  const orderAttr =
+    order != null && order > 0 ? ` data-rule-order="${order}"` : "";
+
+  return `<div class="rules-item" data-rule-id="${id}"${orderAttr}>${sanitizedHtml}</div>`;
+};
+
+export const parseRulesFromHtml = (
+  html: string,
+  sectionId = "",
+): RuleItem[] => {
+  if (!html.trim()) return [];
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = html;
+
+  const rules = Array.from(wrapper.querySelectorAll(".rules-item")).map(
+    (rule, index) => {
+      const parsedOrder = Number.parseInt(
+        rule.getAttribute("data-rule-order") || "",
+        10,
+      );
+
+      return {
+        id: rule.getAttribute("data-rule-id") || crypto.randomUUID(),
+        html: rule.innerHTML,
+        text:
+          (rule.textContent || "").replace(/\u00A0/g, " ").trim() ||
+          "Untitled rule",
+        sectionId,
+        order:
+          Number.isFinite(parsedOrder) && parsedOrder > 0
+            ? parsedOrder
+            : index + 1,
+      };
+    },
+  );
+
+  return rules.sort((a, b) => a.order - b.order);
+};

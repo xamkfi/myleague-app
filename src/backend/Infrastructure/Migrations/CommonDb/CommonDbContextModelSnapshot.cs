@@ -209,6 +209,44 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.ToTable("NewsArticles", "common");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Common.InfoPageContent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentHtml")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("PageSlug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PageSlug")
+                        .IsUnique();
+
+                    b.ToTable("InfoPageContents", "common");
+                });
+
             modelBuilder.Entity("Domain.Entities.Common.Person", b =>
                 {
                     b.Property<Guid>("Id")
@@ -317,6 +355,51 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasDatabaseName("IX_RefreshToken_ActiveByUser");
 
                     b.ToTable("RefreshTokens", "common");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Common.RulesSection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentHtml")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid?>("ParentSectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SectionType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentSectionId");
+
+                    b.HasIndex("SortOrder");
+
+                    b.ToTable("RulesSections", "common");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.TimerState", b =>
@@ -457,7 +540,6 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                                 .HasColumnType("character varying(100)");
 
                             b1.Property<string>("Country")
-                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("character varying(100)");
 
@@ -522,6 +604,16 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Common.RulesSection", b =>
+                {
+                    b.HasOne("Domain.Entities.Common.RulesSection", "ParentSection")
+                        .WithMany("ChildSections")
+                        .HasForeignKey("ParentSectionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentSection");
+                });
+
             modelBuilder.Entity("Domain.Entities.Common.User", b =>
                 {
                     b.HasOne("Domain.Entities.Common.Person", "Person")
@@ -531,6 +623,11 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .IsRequired();
 
                     b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Common.RulesSection", b =>
+                {
+                    b.Navigation("ChildSections");
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.User", b =>
