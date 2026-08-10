@@ -76,4 +76,40 @@ public class HockeyPenalty : HockeyMatchEvent
     }
 
     public void MarkServed() => WasServed = true;
+
+    /// <summary>
+    /// Corrects penalty details during live match operations.
+    /// </summary>
+    public void UpdateDetails(
+        Guid penaltyMatchTeamId,
+        int periodNumber,
+        TimeSpan gameTime,
+        HockeyPenaltySeverity severity,
+        HockeyPenaltyOffence offence,
+        int penaltyMinutes,
+        Guid? penalizedActivePlayerId = null,
+        Guid? servedByActivePlayerId = null,
+        bool isBenchPenalty = false,
+        string? description = null)
+    {
+        if (penaltyMatchTeamId == Guid.Empty)
+            throw new ArgumentException("Penalty match team id cannot be empty.", nameof(penaltyMatchTeamId));
+        if (penaltyMinutes < 0)
+            throw new ArgumentOutOfRangeException(nameof(penaltyMinutes), "Penalty minutes cannot be negative.");
+        if (penalizedActivePlayerId == Guid.Empty)
+            throw new ArgumentException("Penalized active player id cannot be empty.", nameof(penalizedActivePlayerId));
+        if (servedByActivePlayerId == Guid.Empty)
+            throw new ArgumentException("Served-by active player id cannot be empty.", nameof(servedByActivePlayerId));
+
+        UpdateTiming(periodNumber, gameTime, description);
+        UpdatePrimaryReferences(penaltyMatchTeamId, penalizedActivePlayerId);
+
+        PenaltyMatchTeamId = penaltyMatchTeamId;
+        PenalizedActivePlayerId = penalizedActivePlayerId;
+        ServedByActivePlayerId = servedByActivePlayerId;
+        Severity = severity;
+        Offence = offence;
+        PenaltyMinutes = penaltyMinutes;
+        IsBenchPenalty = isBenchPenalty;
+    }
 }

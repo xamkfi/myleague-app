@@ -637,6 +637,33 @@ public class RecordHockeyGoalRequest
 }
 
 /// <summary>
+/// Request body for correcting a hockey goal during live match operations.
+/// </summary>
+public class UpdateHockeyGoalRequest
+{
+    [Required]
+    public Guid ScoringMatchTeamId { get; set; }
+
+    [Required]
+    public Guid ScorerActivePlayerId { get; set; }
+
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    [Required]
+    public HockeyGoalStrength GoalStrength { get; set; }
+
+    public Guid? PrimaryAssistActivePlayerId { get; set; }
+    public Guid? SecondaryAssistActivePlayerId { get; set; }
+    public Guid? GoalieActivePlayerId { get; set; }
+    public bool WasEmptyNet { get; set; }
+    public string? Description { get; set; }
+}
+
+/// <summary>
 /// Request body for recording a hockey penalty.
 /// </summary>
 public class RecordHockeyPenaltyRequest
@@ -666,9 +693,61 @@ public class RecordHockeyPenaltyRequest
 }
 
 /// <summary>
+/// Request body for correcting a hockey penalty during live match operations.
+/// </summary>
+public class UpdateHockeyPenaltyRequest
+{
+    [Required]
+    public Guid PenaltyMatchTeamId { get; set; }
+
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    [Required]
+    public HockeyPenaltySeverity Severity { get; set; }
+
+    [Required]
+    public HockeyPenaltyOffence Offence { get; set; }
+
+    [Required]
+    public int PenaltyMinutes { get; set; }
+
+    public Guid? PenalizedActivePlayerId { get; set; }
+    public Guid? ServedByActivePlayerId { get; set; }
+    public bool IsBenchPenalty { get; set; }
+    public string? Description { get; set; }
+}
+
+/// <summary>
 /// Request body for recording a hockey shot.
 /// </summary>
 public class RecordHockeyShotRequest
+{
+    [Required]
+    public Guid ShootingMatchTeamId { get; set; }
+
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    [Required]
+    public int TimeInSeconds { get; set; }
+
+    [Required]
+    public HockeyShotResult ShotResult { get; set; }
+
+    public bool CountsAsShotOnGoal { get; set; } = true;
+    public Guid? ShooterActivePlayerId { get; set; }
+    public Guid? GoalieActivePlayerId { get; set; }
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// Request body for correcting a hockey shot during live match operations.
+/// </summary>
+public class UpdateHockeyShotRequest
 {
     [Required]
     public Guid ShootingMatchTeamId { get; set; }
