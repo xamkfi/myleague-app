@@ -5,6 +5,7 @@ using Application.Features.Hockey.Seasons.Commands;
 using Application.Features.Hockey.Seasons.DTOs;
 using Application.Features.Hockey.Seasons.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
@@ -35,9 +36,9 @@ public class HockeySeasonController : BaseApiController
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<HockeySeasonDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<List<HockeySeasonDto>>>> GetAllSeasons()
+    public async Task<ActionResult<ApiResponse<List<HockeySeasonDto>>>> GetAllSeasons(CancellationToken cancellationToken = default)
     {
-        Result<IEnumerable<HockeySeasonDto>> result = await _mediator.Send(new GetAllHockeySeasonsQuery());
+        Result<IEnumerable<HockeySeasonDto>> result = await _mediator.Send(new GetAllHockeySeasonsQuery(), cancellationToken);
         return HandleListResult(result, "Hockey seasons retrieved successfully", "Failed to retrieve hockey seasons");
     }
 
@@ -46,9 +47,9 @@ public class HockeySeasonController : BaseApiController
     /// </summary>
     [HttpGet("active")]
     [ProducesResponseType(typeof(ApiResponse<List<HockeySeasonDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<List<HockeySeasonDto>>>> GetActiveSeasons()
+    public async Task<ActionResult<ApiResponse<List<HockeySeasonDto>>>> GetActiveSeasons(CancellationToken cancellationToken = default)
     {
-        Result<IEnumerable<HockeySeasonDto>> result = await _mediator.Send(new GetActiveHockeySeasonsQuery());
+        Result<IEnumerable<HockeySeasonDto>> result = await _mediator.Send(new GetActiveHockeySeasonsQuery(), cancellationToken);
         return HandleListResult(result, "Active hockey seasons retrieved successfully", "Failed to retrieve active hockey seasons");
     }
 
@@ -59,9 +60,10 @@ public class HockeySeasonController : BaseApiController
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> GetSeasonById(Guid id)
+    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> GetSeasonById(Guid id,
+        CancellationToken cancellationToken = default)
     {
-        Result<HockeySeasonDto> result = await _mediator.Send(new GetHockeySeasonByIdQuery(id));
+        Result<HockeySeasonDto> result = await _mediator.Send(new GetHockeySeasonByIdQuery(id), cancellationToken);
         return HandleResult(result, "Hockey season retrieved successfully", "Hockey season not found");
     }
 
@@ -69,13 +71,15 @@ public class HockeySeasonController : BaseApiController
     /// Creates a new hockey season.
     /// </summary>
     /// <param name="request">Season create payload</param>
+    [Authorize]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> CreateSeason([FromBody] CreateHockeySeasonRequest request)
+    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> CreateSeason([FromBody] CreateHockeySeasonRequest request,
+        CancellationToken cancellationToken = default)
     {
         CreateHockeySeasonCommand command = new(request.Name, request.StartDate, request.EndDate, request.SeasonCode);
-        Result<HockeySeasonDto> result = await _mediator.Send(command);
+        Result<HockeySeasonDto> result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsSuccess && result.Data is not null)
         {
@@ -91,18 +95,20 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Updates hockey season details.
     /// </summary>
+    [Authorize]
     [HttpPut("{seasonId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> UpdateSeason(
         Guid seasonId,
-        [FromBody] UpdateHockeySeasonRequest request)
+        [FromBody] UpdateHockeySeasonRequest request,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeySeasonDto> result = await _mediator.Send(new UpdateHockeySeasonCommand(
             seasonId,
             request.Name,
             request.StartDate,
             request.EndDate,
-            request.SeasonCode));
+            request.SeasonCode), cancellationToken);
 
         return HandleResult(result, "Hockey season updated successfully", "Failed to update hockey season");
     }
@@ -110,79 +116,93 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Publishes a hockey season.
     /// </summary>
+    [Authorize]
     [HttpPost("{seasonId:guid}/publish")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Publish(Guid seasonId) =>
+    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Publish(Guid seasonId,
+        CancellationToken cancellationToken = default) =>
         HandleResult(
-            await _mediator.Send(new PublishHockeySeasonCommand(seasonId)),
+            await _mediator.Send(new PublishHockeySeasonCommand(seasonId), cancellationToken),
             "Hockey season published successfully",
             "Failed to publish hockey season");
 
     /// <summary>
     /// Opens registration for a hockey season.
     /// </summary>
+    [Authorize]
     [HttpPost("{seasonId:guid}/open-registration")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> OpenRegistration(Guid seasonId) =>
+    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> OpenRegistration(Guid seasonId,
+        CancellationToken cancellationToken = default) =>
         HandleResult(
-            await _mediator.Send(new OpenHockeySeasonRegistrationCommand(seasonId)),
+            await _mediator.Send(new OpenHockeySeasonRegistrationCommand(seasonId), cancellationToken),
             "Hockey season registration opened successfully",
             "Failed to open hockey season registration");
 
     /// <summary>
     /// Activates a hockey season.
     /// </summary>
+    [Authorize]
     [HttpPost("{seasonId:guid}/activate")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Activate(Guid seasonId) =>
+    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Activate(Guid seasonId,
+        CancellationToken cancellationToken = default) =>
         HandleResult(
-            await _mediator.Send(new ActivateHockeySeasonCommand(seasonId)),
+            await _mediator.Send(new ActivateHockeySeasonCommand(seasonId), cancellationToken),
             "Hockey season activated successfully",
             "Failed to activate hockey season");
 
     /// <summary>
     /// Deactivates a hockey season.
     /// </summary>
+    [Authorize]
     [HttpPost("{seasonId:guid}/deactivate")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Deactivate(Guid seasonId) =>
+    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Deactivate(Guid seasonId,
+        CancellationToken cancellationToken = default) =>
         HandleResult(
-            await _mediator.Send(new DeactivateHockeySeasonCommand(seasonId)),
+            await _mediator.Send(new DeactivateHockeySeasonCommand(seasonId), cancellationToken),
             "Hockey season deactivated successfully",
             "Failed to deactivate hockey season");
 
     /// <summary>
     /// Cancels a hockey season.
     /// </summary>
+    [Authorize]
     [HttpPost("{seasonId:guid}/cancel")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Cancel(Guid seasonId) =>
+    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Cancel(Guid seasonId,
+        CancellationToken cancellationToken = default) =>
         HandleResult(
-            await _mediator.Send(new CancelHockeySeasonCommand(seasonId)),
+            await _mediator.Send(new CancelHockeySeasonCommand(seasonId), cancellationToken),
             "Hockey season cancelled successfully",
             "Failed to cancel hockey season");
 
     /// <summary>
     /// Completes a hockey season.
     /// </summary>
+    [Authorize]
     [HttpPost("{seasonId:guid}/complete")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Complete(Guid seasonId) =>
+    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Complete(Guid seasonId,
+        CancellationToken cancellationToken = default) =>
         HandleResult(
-            await _mediator.Send(new CompleteHockeySeasonCommand(seasonId)),
+            await _mediator.Send(new CompleteHockeySeasonCommand(seasonId), cancellationToken),
             "Hockey season completed successfully",
             "Failed to complete hockey season");
 
     /// <summary>
     /// Sets the season champion (season must already be completed).
     /// </summary>
+    [Authorize]
     [HttpPost("{seasonId:guid}/champion")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> SetChampion(
         Guid seasonId,
-        [FromBody] SetHockeySeasonChampionRequest request) =>
+        [FromBody] SetHockeySeasonChampionRequest request,
+        CancellationToken cancellationToken = default) =>
         HandleResult(
-            await _mediator.Send(new SetHockeySeasonChampionCommand(seasonId, request.ChampionCompetitionTeamId)),
+            await _mediator.Send(new SetHockeySeasonChampionCommand(seasonId, request.ChampionCompetitionTeamId), cancellationToken),
             "Hockey season champion set successfully",
             "Failed to set hockey season champion");
 
@@ -191,17 +211,19 @@ public class HockeySeasonController : BaseApiController
     /// </summary>
     /// <param name="competitionId">Season (competition) id</param>
     /// <param name="request">Team id and optional seed</param>
+    [Authorize]
     [HttpPost("{competitionId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionTeamDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<HockeyCompetitionTeamDto>>> AddTeam(
         Guid competitionId,
-        [FromBody] AddTeamToHockeyCompetitionRequest request)
+        [FromBody] AddTeamToHockeyCompetitionRequest request,
+        CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Adding team {TeamId} to hockey season {CompetitionId}", request.TeamId, competitionId);
 
         Result<HockeyCompetitionTeamDto> result = await _mediator.Send(
-            new AddTeamToHockeyCompetitionCommand(competitionId, request.TeamId, request.Seed));
+            new AddTeamToHockeyCompetitionCommand(competitionId, request.TeamId, request.Seed), cancellationToken);
 
         return HandleResult(result, "Team added to hockey competition successfully", "Failed to add team to hockey competition");
     }
@@ -209,12 +231,14 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Removes a hockey team from a season competition.
     /// </summary>
+    [Authorize]
     [HttpDelete("{seasonId:guid}/teams/{teamId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> RemoveTeam(Guid seasonId, Guid teamId)
+    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> RemoveTeam(Guid seasonId, Guid teamId,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeyCompetitionDto> commandResult = await _mediator.Send(
-            new RemoveTeamFromHockeyCompetitionCommand(seasonId, teamId));
+            new RemoveTeamFromHockeyCompetitionCommand(seasonId, teamId), cancellationToken);
         if (commandResult.IsFailure)
         {
             return HandleResult(
@@ -224,7 +248,7 @@ public class HockeySeasonController : BaseApiController
         }
 
         return HandleResult(
-            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId)),
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId), cancellationToken),
             "Team removed from hockey season successfully",
             "Failed to remove team from hockey season");
     }
@@ -232,17 +256,19 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Adds a Common Division link to a hockey season.
     /// </summary>
+    [Authorize]
     [HttpPost("{seasonId:guid}/divisions")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> AddDivision(
         Guid seasonId,
-        [FromBody] AddDivisionToHockeySeasonRequest request)
+        [FromBody] AddDivisionToHockeySeasonRequest request,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeyCompetitionDto> commandResult = await _mediator.Send(new CreateHockeyCompetitionDivisionCommand(
             seasonId,
             request.DivisionId,
             request.Name,
-            request.SortOrder));
+            request.SortOrder), cancellationToken);
         if (commandResult.IsFailure)
         {
             return HandleResult(
@@ -252,7 +278,7 @@ public class HockeySeasonController : BaseApiController
         }
 
         return HandleResult(
-            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId)),
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId), cancellationToken),
             "Division added to hockey season successfully",
             "Failed to add division to hockey season");
     }
@@ -260,14 +286,16 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Soft-removes a competition division from a hockey season.
     /// </summary>
+    [Authorize]
     [HttpDelete("{seasonId:guid}/divisions/{competitionDivisionId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> RemoveDivision(
         Guid seasonId,
-        Guid competitionDivisionId)
+        Guid competitionDivisionId,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeyCompetitionDto> commandResult = await _mediator.Send(
-            new RemoveHockeyCompetitionDivisionCommand(seasonId, competitionDivisionId));
+            new RemoveHockeyCompetitionDivisionCommand(seasonId, competitionDivisionId), cancellationToken);
         if (commandResult.IsFailure)
         {
             return HandleResult(
@@ -277,7 +305,7 @@ public class HockeySeasonController : BaseApiController
         }
 
         return HandleResult(
-            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId)),
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId), cancellationToken),
             "Division removed from hockey season successfully",
             "Failed to remove division from hockey season");
     }
@@ -285,18 +313,20 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Places a competition team into a season division.
     /// </summary>
+    [Authorize]
     [HttpPost("{seasonId:guid}/divisions/{competitionDivisionId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> AddTeamToDivision(
         Guid seasonId,
         Guid competitionDivisionId,
-        [FromBody] AddTeamToHockeySeasonDivisionRequest request)
+        [FromBody] AddTeamToHockeySeasonDivisionRequest request,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeyCompetitionDto> commandResult = await _mediator.Send(new AddTeamToHockeyCompetitionDivisionCommand(
             seasonId,
             competitionDivisionId,
             request.CompetitionTeamId,
-            request.Seed));
+            request.Seed), cancellationToken);
         if (commandResult.IsFailure)
         {
             return HandleResult(
@@ -306,7 +336,7 @@ public class HockeySeasonController : BaseApiController
         }
 
         return HandleResult(
-            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId)),
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId), cancellationToken),
             "Team added to hockey season division successfully",
             "Failed to add team to hockey season division");
     }
@@ -314,18 +344,20 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Soft-removes a competition team from a season division.
     /// </summary>
+    [Authorize]
     [HttpDelete("{seasonId:guid}/divisions/{competitionDivisionId:guid}/teams/{competitionTeamId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> RemoveTeamFromDivision(
         Guid seasonId,
         Guid competitionDivisionId,
-        Guid competitionTeamId)
+        Guid competitionTeamId,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeyCompetitionDto> commandResult = await _mediator.Send(
             new RemoveTeamFromHockeyCompetitionDivisionCommand(
                 seasonId,
                 competitionDivisionId,
-                competitionTeamId));
+                competitionTeamId), cancellationToken);
         if (commandResult.IsFailure)
         {
             return HandleResult(
@@ -335,18 +367,20 @@ public class HockeySeasonController : BaseApiController
         }
 
         return HandleResult(
-            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId)),
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId), cancellationToken),
             "Team removed from hockey season division successfully",
             "Failed to remove team from hockey season division");
     }
     /// <summary>
     /// Creates a playoff series on a hockey season.
     /// </summary>
+    [Authorize]
     [HttpPost("{seasonId:guid}/playoff-series")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> CreatePlayoffSeries(
         Guid seasonId,
-        [FromBody] CreateHockeyPlayoffSeriesRequest request)
+        [FromBody] CreateHockeyPlayoffSeriesRequest request,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeySeasonDto> result = await _mediator.Send(new CreateHockeySeasonPlayoffSeriesCommand(
             seasonId,
@@ -354,7 +388,7 @@ public class HockeySeasonController : BaseApiController
             request.SeriesOrder,
             request.BestOf,
             request.HomeCompetitionTeamId,
-            request.AwayCompetitionTeamId));
+            request.AwayCompetitionTeamId), cancellationToken);
 
         return HandleResult(result, "Playoff series created successfully", "Failed to create playoff series");
     }
@@ -362,18 +396,20 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Assigns home/away teams to a season playoff series.
     /// </summary>
+    [Authorize]
     [HttpPost("{seasonId:guid}/playoff-series/{seriesId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> AssignPlayoffSeriesTeams(
         Guid seasonId,
         Guid seriesId,
-        [FromBody] AssignHockeyPlayoffSeriesTeamsRequest request)
+        [FromBody] AssignHockeyPlayoffSeriesTeamsRequest request,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeySeasonDto> result = await _mediator.Send(new AssignHockeySeasonPlayoffSeriesTeamsCommand(
             seasonId,
             seriesId,
             request.HomeCompetitionTeamId,
-            request.AwayCompetitionTeamId));
+            request.AwayCompetitionTeamId), cancellationToken);
 
         return HandleResult(result, "Playoff series teams assigned successfully", "Failed to assign playoff series teams");
     }
@@ -381,14 +417,16 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Replaces the season playoff schedule.
     /// </summary>
+    [Authorize]
     [HttpPut("{seasonId:guid}/playoff-schedule")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> SetPlayoffSchedule(
         Guid seasonId,
-        [FromBody] SetHockeyTournamentPlayoffScheduleRequest request)
+        [FromBody] SetHockeyTournamentPlayoffScheduleRequest request,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeySeasonDto> result = await _mediator.Send(
-            new SetHockeySeasonPlayoffScheduleCommand(seasonId, request.Slots));
+            new SetHockeySeasonPlayoffScheduleCommand(seasonId, request.Slots), cancellationToken);
 
         return HandleResult(result, "Playoff schedule set successfully", "Failed to set playoff schedule");
     }

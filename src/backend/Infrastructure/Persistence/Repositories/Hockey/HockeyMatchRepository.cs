@@ -28,6 +28,22 @@ public class HockeyMatchRepository : IHockeyMatchRepository
         return await BuildDetailQuery().FirstOrDefaultAsync(m => m.Id == id);
     }
 
+    public async Task<IReadOnlyList<HockeyMatch>> GetByCompetitionIdAsync(Guid competitionId)
+    {
+        return await BuildDetailQuery()
+            .Where(m => m.CompetitionId == competitionId)
+            .OrderBy(m => m.ScheduledStartTime)
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<HockeyMatch>> GetByTeamIdAsync(Guid teamId)
+    {
+        return await BuildDetailQuery()
+            .Where(m => m.MatchTeams.Any(t => t.TeamId == teamId))
+            .OrderBy(m => m.ScheduledStartTime)
+            .ToListAsync();
+    }
+
     public async Task<HockeyMatch?> GetByIdForStatisticsAsync(Guid id)
     {
         return await BuildStatisticsQuery().FirstOrDefaultAsync(m => m.Id == id);

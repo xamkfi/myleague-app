@@ -4,6 +4,7 @@ using Application.Features.Hockey.Statistics.DTOs;
 using Application.Features.Hockey.Statistics.Queries;
 using Domain.Enums.Hockey.Statistics;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
@@ -30,24 +31,28 @@ public class HockeyStatisticsController : BaseApiController
     /// <summary>
     /// Recalculates match-level statistics.
     /// </summary>
+    [Authorize]
     [HttpPost("matches/{matchId:guid}/recalculate")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse>> RecalculateMatch(Guid matchId)
+    public async Task<ActionResult<ApiResponse>> RecalculateMatch(Guid matchId,
+        CancellationToken cancellationToken = default)
     {
-        Result result = await _mediator.Send(new RecalculateHockeyMatchStatisticsCommand(matchId));
+        Result result = await _mediator.Send(new RecalculateHockeyMatchStatisticsCommand(matchId), cancellationToken);
         return HandleVoidResult(result, "Match statistics recalculated successfully", "Failed to recalculate match statistics");
     }
 
     /// <summary>
     /// Recalculates competition aggregate statistics for a scope.
     /// </summary>
+    [Authorize]
     [HttpPost("competitions/{competitionId:guid}/recalculate")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse>> RecalculateCompetition(
         Guid competitionId,
-        [FromBody] RecalculateHockeyCompetitionStatisticsRequest? request)
+        [FromBody] RecalculateHockeyCompetitionStatisticsRequest? request,
+        CancellationToken cancellationToken = default)
     {
         RecalculateHockeyCompetitionStatisticsRequest body = request ?? new RecalculateHockeyCompetitionStatisticsRequest();
         Result result = await _mediator.Send(new RecalculateHockeyCompetitionStatisticsCommand(
@@ -55,19 +60,21 @@ public class HockeyStatisticsController : BaseApiController
             body.Scope,
             body.CompetitionDivisionId,
             body.TournamentGroupId,
-            body.PlayoffSeriesId));
+            body.PlayoffSeriesId), cancellationToken);
         return HandleVoidResult(result, "Competition statistics recalculated successfully", "Failed to recalculate competition statistics");
     }
 
     /// <summary>
     /// Resets competition aggregate statistics without rebuilding.
     /// </summary>
+    [Authorize]
     [HttpPost("competitions/{competitionId:guid}/reset")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse>> ResetCompetition(
         Guid competitionId,
-        [FromBody] ResetHockeyCompetitionStatisticsRequest? request)
+        [FromBody] ResetHockeyCompetitionStatisticsRequest? request,
+        CancellationToken cancellationToken = default)
     {
         ResetHockeyCompetitionStatisticsRequest body = request ?? new ResetHockeyCompetitionStatisticsRequest();
         Result result = await _mediator.Send(new ResetHockeyCompetitionStatisticsCommand(
@@ -75,7 +82,7 @@ public class HockeyStatisticsController : BaseApiController
             body.Scope,
             body.CompetitionDivisionId,
             body.TournamentGroupId,
-            body.PlayoffSeriesId));
+            body.PlayoffSeriesId), cancellationToken);
         return HandleVoidResult(result, "Competition statistics reset successfully", "Failed to reset competition statistics");
     }
 
@@ -85,9 +92,10 @@ public class HockeyStatisticsController : BaseApiController
     [HttpGet("matches/{matchId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchStatisticsDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<HockeyMatchStatisticsDto>>> GetMatch(Guid matchId)
+    public async Task<ActionResult<ApiResponse<HockeyMatchStatisticsDto>>> GetMatch(Guid matchId,
+        CancellationToken cancellationToken = default)
     {
-        Result<HockeyMatchStatisticsDto> result = await _mediator.Send(new GetHockeyMatchStatisticsQuery(matchId));
+        Result<HockeyMatchStatisticsDto> result = await _mediator.Send(new GetHockeyMatchStatisticsQuery(matchId), cancellationToken);
         return HandleResult(result, "Match statistics retrieved successfully", "Failed to retrieve match statistics");
     }
 
@@ -96,10 +104,11 @@ public class HockeyStatisticsController : BaseApiController
     /// </summary>
     [HttpGet("standings/{competitionId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<List<HockeyTeamCompetitionStatisticsDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<List<HockeyTeamCompetitionStatisticsDto>>>> GetStandings(Guid competitionId)
+    public async Task<ActionResult<ApiResponse<List<HockeyTeamCompetitionStatisticsDto>>>> GetStandings(Guid competitionId,
+        CancellationToken cancellationToken = default)
     {
         Result<List<HockeyTeamCompetitionStatisticsDto>> result =
-            await _mediator.Send(new GetHockeyCompetitionStandingsQuery(competitionId));
+            await _mediator.Send(new GetHockeyCompetitionStandingsQuery(competitionId), cancellationToken);
         return HandleResult(result, "Standings retrieved successfully", "Failed to retrieve standings");
     }
 
@@ -110,10 +119,11 @@ public class HockeyStatisticsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<List<HockeyTeamCompetitionStatisticsDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<HockeyTeamCompetitionStatisticsDto>>>> GetDivisionStandings(
         Guid competitionId,
-        Guid divisionId)
+        Guid divisionId,
+        CancellationToken cancellationToken = default)
     {
         Result<List<HockeyTeamCompetitionStatisticsDto>> result =
-            await _mediator.Send(new GetHockeyDivisionStandingsQuery(competitionId, divisionId));
+            await _mediator.Send(new GetHockeyDivisionStandingsQuery(competitionId, divisionId), cancellationToken);
         return HandleResult(result, "Division standings retrieved successfully", "Failed to retrieve division standings");
     }
 
@@ -124,10 +134,11 @@ public class HockeyStatisticsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<List<HockeyTeamCompetitionStatisticsDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<HockeyTeamCompetitionStatisticsDto>>>> GetTournamentGroupStandings(
         Guid competitionId,
-        Guid groupId)
+        Guid groupId,
+        CancellationToken cancellationToken = default)
     {
         Result<List<HockeyTeamCompetitionStatisticsDto>> result =
-            await _mediator.Send(new GetHockeyTournamentGroupStandingsQuery(competitionId, groupId));
+            await _mediator.Send(new GetHockeyTournamentGroupStandingsQuery(competitionId, groupId), cancellationToken);
         return HandleResult(result, "Tournament group standings retrieved successfully", "Failed to retrieve group standings");
     }
 
@@ -138,10 +149,11 @@ public class HockeyStatisticsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<HockeyPlayoffSeriesStatisticsDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyPlayoffSeriesStatisticsDto>>> GetPlayoffSeriesStatistics(
         Guid competitionId,
-        Guid playoffSeriesId)
+        Guid playoffSeriesId,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeyPlayoffSeriesStatisticsDto> result =
-            await _mediator.Send(new GetHockeyPlayoffSeriesStatisticsQuery(competitionId, playoffSeriesId));
+            await _mediator.Send(new GetHockeyPlayoffSeriesStatisticsQuery(competitionId, playoffSeriesId), cancellationToken);
         return HandleResult(result, "Playoff series statistics retrieved successfully", "Failed to retrieve playoff series statistics");
     }
 
@@ -157,7 +169,8 @@ public class HockeyStatisticsController : BaseApiController
         [FromQuery] HockeyStatisticsScope scope = HockeyStatisticsScope.Competition,
         [FromQuery] Guid? competitionDivisionId = null,
         [FromQuery] Guid? tournamentGroupId = null,
-        [FromQuery] Guid? playoffSeriesId = null)
+        [FromQuery] Guid? playoffSeriesId = null,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeyTeamCompetitionStatisticsDto> result = await _mediator.Send(
             new GetHockeyTeamCompetitionStatisticsQuery(
@@ -166,7 +179,7 @@ public class HockeyStatisticsController : BaseApiController
                 scope,
                 competitionDivisionId,
                 tournamentGroupId,
-                playoffSeriesId));
+                playoffSeriesId), cancellationToken);
         return HandleResult(result, "Team statistics retrieved successfully", "Failed to retrieve team statistics");
     }
 
@@ -182,7 +195,8 @@ public class HockeyStatisticsController : BaseApiController
         [FromQuery] Guid? teamId = null,
         [FromQuery] Guid? competitionDivisionId = null,
         [FromQuery] Guid? tournamentGroupId = null,
-        [FromQuery] Guid? playoffSeriesId = null)
+        [FromQuery] Guid? playoffSeriesId = null,
+        CancellationToken cancellationToken = default)
     {
         Result<List<HockeyPlayerCompetitionStatisticsDto>> result = await _mediator.Send(
             new GetHockeyPlayerCompetitionStatisticsQuery(
@@ -192,7 +206,7 @@ public class HockeyStatisticsController : BaseApiController
                 teamId,
                 competitionDivisionId,
                 tournamentGroupId,
-                playoffSeriesId));
+                playoffSeriesId), cancellationToken);
         return HandleResult(result, "Player statistics retrieved successfully", "Failed to retrieve player statistics");
     }
 
@@ -208,7 +222,8 @@ public class HockeyStatisticsController : BaseApiController
         [FromQuery] Guid? teamId = null,
         [FromQuery] Guid? competitionDivisionId = null,
         [FromQuery] Guid? tournamentGroupId = null,
-        [FromQuery] Guid? playoffSeriesId = null)
+        [FromQuery] Guid? playoffSeriesId = null,
+        CancellationToken cancellationToken = default)
     {
         Result<List<HockeyGoalieCompetitionStatisticsDto>> result = await _mediator.Send(
             new GetHockeyGoalieCompetitionStatisticsQuery(
@@ -218,7 +233,7 @@ public class HockeyStatisticsController : BaseApiController
                 teamId,
                 competitionDivisionId,
                 tournamentGroupId,
-                playoffSeriesId));
+                playoffSeriesId), cancellationToken);
         return HandleResult(result, "Goalie statistics retrieved successfully", "Failed to retrieve goalie statistics");
     }
 
@@ -233,7 +248,8 @@ public class HockeyStatisticsController : BaseApiController
         [FromQuery] int topN = 10,
         [FromQuery] Guid? competitionDivisionId = null,
         [FromQuery] Guid? tournamentGroupId = null,
-        [FromQuery] Guid? playoffSeriesId = null)
+        [FromQuery] Guid? playoffSeriesId = null,
+        CancellationToken cancellationToken = default)
     {
         Result<List<HockeyTopScorerDto>> result = await _mediator.Send(
             new GetHockeyTopScorersQuery(
@@ -242,7 +258,7 @@ public class HockeyStatisticsController : BaseApiController
                 topN,
                 competitionDivisionId,
                 tournamentGroupId,
-                playoffSeriesId));
+                playoffSeriesId), cancellationToken);
         return HandleResult(result, "Top scorers retrieved successfully", "Failed to retrieve top scorers");
     }
 
@@ -258,7 +274,8 @@ public class HockeyStatisticsController : BaseApiController
         [FromQuery] int minimumGamesPlayed = 1,
         [FromQuery] Guid? competitionDivisionId = null,
         [FromQuery] Guid? tournamentGroupId = null,
-        [FromQuery] Guid? playoffSeriesId = null)
+        [FromQuery] Guid? playoffSeriesId = null,
+        CancellationToken cancellationToken = default)
     {
         Result<List<HockeyTopGoalieDto>> result = await _mediator.Send(
             new GetHockeyTopGoaliesQuery(
@@ -268,7 +285,7 @@ public class HockeyStatisticsController : BaseApiController
                 minimumGamesPlayed,
                 competitionDivisionId,
                 tournamentGroupId,
-                playoffSeriesId));
+                playoffSeriesId), cancellationToken);
         return HandleResult(result, "Top goalies retrieved successfully", "Failed to retrieve top goalies");
     }
 
@@ -283,7 +300,8 @@ public class HockeyStatisticsController : BaseApiController
         [FromQuery] Guid? competitionDivisionId = null,
         [FromQuery] Guid? tournamentGroupId = null,
         [FromQuery] Guid? playoffSeriesId = null,
-        [FromQuery] int topN = 5)
+        [FromQuery] int topN = 5,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeyCompetitionStatisticsSummaryDto> result = await _mediator.Send(
             new GetHockeyCompetitionStatisticsSummaryQuery(
@@ -292,7 +310,7 @@ public class HockeyStatisticsController : BaseApiController
                 competitionDivisionId,
                 tournamentGroupId,
                 playoffSeriesId,
-                topN));
+                topN), cancellationToken);
         return HandleResult(result, "Competition statistics summary retrieved successfully", "Failed to retrieve summary");
     }
 }

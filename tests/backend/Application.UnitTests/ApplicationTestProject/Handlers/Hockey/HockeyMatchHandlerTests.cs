@@ -849,4 +849,72 @@ public class HockeyMatchHandlerTests
         shot.ShotResult.Should().Be(HockeyShotResult.Missed);
         shot.CountsAsShotOnGoal.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task GetByCompetition_ReturnsMappedMatches()
+    {
+        Guid competitionId = Guid.NewGuid();
+        HockeyMatch match = new(
+            new DateTime(2026, 10, 1, 18, 0, 0, DateTimeKind.Utc),
+            HockeyMatchType.League,
+            competitionId: competitionId,
+            venue: "Arena");
+
+        _matchRepo
+            .Setup(r => r.GetByCompetitionIdAsync(competitionId))
+            .ReturnsAsync(new List<HockeyMatch> { match });
+
+        GetHockeyMatchesByCompetitionHandler handler = new(
+            _matchRepo.Object,
+            Mock.Of<ILogger<GetHockeyMatchesByCompetitionHandler>>());
+
+        Result<IEnumerable<HockeyMatchDto>> result = await handler.Handle(
+            new GetHockeyMatchesByCompetitionQuery(competitionId),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data.Should().ContainSingle(m => m.Id == match.Id);
+    }
+
+    [Fact]
+    public async Task GetByTeam_ReturnsMappedMatches()
+    {
+        Guid teamId = Guid.NewGuid();
+        HockeyMatch match = CreateStandaloneMatch();
+
+        _matchRepo
+            .Setup(r => r.GetByTeamIdAsync(teamId))
+            .ReturnsAsync(new List<HockeyMatch> { match });
+
+        GetHockeyMatchesByTeamHandler handler = new(
+            _matchRepo.Object,
+            Mock.Of<ILogger<GetHockeyMatchesByTeamHandler>>());
+
+        Result<IEnumerable<HockeyMatchDto>> result = await handler.Handle(
+            new GetHockeyMatchesByTeamQuery(teamId),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data.Should().ContainSingle(m => m.Id == match.Id);
+    }
+
+    [Fact]
+    public async Task GetByCompetition_Empty_ReturnsEmptyList()
+    {
+        Guid competitionId = Guid.NewGuid();
+        _matchRepo
+            .Setup(r => r.GetByCompetitionIdAsync(competitionId))
+            .ReturnsAsync(Array.Empty<HockeyMatch>());
+
+        GetHockeyMatchesByCompetitionHandler handler = new(
+            _matchRepo.Object,
+            Mock.Of<ILogger<GetHockeyMatchesByCompetitionHandler>>());
+
+        Result<IEnumerable<HockeyMatchDto>> result = await handler.Handle(
+            new GetHockeyMatchesByCompetitionQuery(competitionId),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data.Should().BeEmpty();
+    }
 }

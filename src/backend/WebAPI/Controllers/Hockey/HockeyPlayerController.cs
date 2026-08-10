@@ -3,6 +3,7 @@ using Application.Features.Hockey.Players.Commands;
 using Application.Features.Hockey.Players.DTOs;
 using Application.Features.Hockey.Players.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
@@ -32,26 +33,29 @@ public class HockeyPlayerController : BaseApiController
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyPlayerDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<HockeyPlayerDto>>> GetPlayerById(Guid id)
+    public async Task<ActionResult<ApiResponse<HockeyPlayerDto>>> GetPlayerById(Guid id,
+        CancellationToken cancellationToken = default)
     {
-        Result<HockeyPlayerDto> result = await _mediator.Send(new GetHockeyPlayerByIdQuery(id));
+        Result<HockeyPlayerDto> result = await _mediator.Send(new GetHockeyPlayerByIdQuery(id), cancellationToken);
         return HandleResult(result, "Hockey player retrieved successfully", "Hockey player not found");
     }
 
     /// <summary>
     /// Creates a new hockey player profile.
     /// </summary>
+    [Authorize]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeyPlayerDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ApiResponse<HockeyPlayerDto>>> CreatePlayer([FromBody] CreateHockeyPlayerRequest request)
+    public async Task<ActionResult<ApiResponse<HockeyPlayerDto>>> CreatePlayer([FromBody] CreateHockeyPlayerRequest request,
+        CancellationToken cancellationToken = default)
     {
         Result<HockeyPlayerDto> result = await _mediator.Send(new CreateHockeyPlayerCommand(
             request.PersonId,
             request.PrimaryPosition,
             request.Shoots,
             request.Catches,
-            request.LicenseNumber));
+            request.LicenseNumber), cancellationToken);
 
         if (result.IsSuccess && result.Data is not null)
         {

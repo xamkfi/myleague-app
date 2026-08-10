@@ -13,6 +13,16 @@ public interface IHockeyMatchRepository
     Task<HockeyMatch?> GetByIdAsync(Guid id);
 
     /// <summary>
+    /// Loads matches for a competition with the same detail Includes as <see cref="GetByIdAsync"/>.
+    /// </summary>
+    Task<IReadOnlyList<HockeyMatch>> GetByCompetitionIdAsync(Guid competitionId);
+
+    /// <summary>
+    /// Loads matches where the given career team appears as home or away.
+    /// </summary>
+    Task<IReadOnlyList<HockeyMatch>> GetByTeamIdAsync(Guid teamId);
+
+    /// <summary>
     /// Loads a match with events and roster data needed for statistics recalculation.
     /// </summary>
     Task<HockeyMatch?> GetByIdForStatisticsAsync(Guid id);
