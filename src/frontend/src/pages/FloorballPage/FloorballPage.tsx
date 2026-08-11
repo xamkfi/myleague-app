@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
@@ -13,6 +13,10 @@ import {
   floorballStatisticsService,
   type FloorballTeamSeasonStatisticsDto,
 } from '../../api/floorball/floorballStatistics';
+import { floorballMatchService } from '../../api/floorball/floorballMatchService';
+import { FloorballMatchStatus, type FloorballMatchDto } from '../../types/floorball/floorballTypes';
+import { formatMatchDateTime } from '../../utils/helpers';
+import bannerImage from '../../assets/floorball-banner.png';
 import './FloorballPage.scss';
 
 interface SeasonWithStandings {
@@ -22,21 +26,15 @@ interface SeasonWithStandings {
 }
 
 const PAGE_SIZE = 6;
-const MAX_STANDINGS_PREVIEW = 9;
+const MAX_STANDINGS_PREVIEW = 10;
+const MAX_UPCOMING_MATCHES = 6;
 
 function formatSeasonYearLabel(year: string): string {
   return year.replace('-', '–');
 }
 
-function formatDateRange(startDate: string, endDate: string, locale: string): string {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'numeric', year: 'numeric' };
-  return `${start.toLocaleDateString(locale, opts)} – ${end.toLocaleDateString(locale, opts)}`;
-}
-
 function FloorballPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initializedRef = useRef(false);
 
@@ -46,30 +44,24 @@ function FloorballPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [seasonsData, setSeasonsData] = useState<SeasonWithStandings[]>([]);
+  const [upcomingMatches, setUpcomingMatches] = useState<FloorballMatchDto[]>([]);
   const [isLoadingYears, setIsLoadingYears] = useState(true);
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [listKey, setListKey] = useState(0);
   const [reloadToken, setReloadToken] = useState(0);
-
-  const locale = i18n.language?.startsWith('fi') ? 'fi-FI' : 'en-GB';
 
   const selectedYearMeta = useMemo(
     () => years.find((y) => y.year === selectedYear),
     [years, selectedYear]
   );
-
-  const fetchStandingsForSeason = useCallback(
-    async (competitionId: string): Promise<FloorballTeamSeasonStatisticsDto[]> => {
-      try {
-        return await floorballStatisticsService.getTeamStandings(competitionId);
-      } catch (err) {
-        console.error(`Failed to fetch standings for season ${competitionId}:`, err);
-        return [];
-      }
-    },
-    []
+  // The "current season" view is the year with an active season, or the newest
+  // year when nothing is flagged active (e.g. between seasons).
+  const currentYear = useMemo(
+    () => years.find((y) => y.hasActiveSeason)?.year ?? years[0]?.year ?? '',
+    [years]
   );
+  const isCurrentSeasonView =
+    (selectedYearMeta?.hasActiveSeason ?? false) || selectedYear === currentYear;
 
   useEffect(() => {
     if (initializedRef.current) return;
@@ -116,6 +108,7 @@ function FloorballPage() {
       try {
         setIsLoadingSeasons(true);
         setError(null);
+        setUpcomingMatches([]);
 
         const response = await floorballSeasonService.getPaged({
           page: currentPage,
@@ -126,7 +119,6 @@ function FloorballPage() {
         const seasons = response.data ?? [];
         setTotalCount(response.pagination.totalCount);
         setTotalPages(response.pagination.totalPages);
-        setListKey((k) => k + 1);
 
         const initial: SeasonWithStandings[] = seasons.map((season) => ({
           season,
@@ -136,18 +128,59 @@ function FloorballPage() {
         setSeasonsData(initial);
         setIsLoadingSeasons(false);
 
-        await Promise.all(
+        const standingsTask = Promise.all(
           seasons.map(async (season) => {
-            const standings = await fetchStandingsForSeason(season.id);
-            setSeasonsData((prev) =>
-              prev.map((item) =>
-                item.season.id === season.id
-                  ? { ...item, standings, standingsLoading: false }
-                  : item
-              )
-            );
+            try {
+              const standings = await floorballStatisticsService.getTeamStandings(season.id);
+              setSeasonsData((prev) =>
+                prev.map((item) =>
+                  item.season.id === season.id
+                    ? { ...item, standings, standingsLoading: false }
+                    : item
+                )
+              );
+            } catch (err) {
+              console.error(`Failed to fetch standings for season ${season.id}:`, err);
+              setSeasonsData((prev) =>
+                prev.map((item) =>
+                  item.season.id === season.id ? { ...item, standingsLoading: false } : item
+                )
+              );
+            }
           })
         );
+
+        const activeSeasons = seasons.some((s) => s.isActive)
+          ? seasons.filter((s) => s.isActive)
+          : seasons;
+        const matchesTask = Promise.all(
+          activeSeasons.map(async (season) => {
+            try {
+              const result = await floorballMatchService.getBySeason(season.id);
+              return result.data ?? [];
+            } catch (err) {
+              console.error(`Failed to fetch matches for season ${season.id}:`, err);
+              return [];
+            }
+          })
+        ).then((matchLists) => {
+          const now = Date.now();
+          const upcoming = matchLists
+            .flat()
+            .filter(
+              (m) =>
+                m.status === FloorballMatchStatus.Scheduled &&
+                new Date(m.scheduledDateTime).getTime() >= now
+            )
+            .sort(
+              (a, b) =>
+                new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime()
+            )
+            .slice(0, MAX_UPCOMING_MATCHES);
+          setUpcomingMatches(upcoming);
+        });
+
+        await Promise.all([standingsTask, matchesTask]);
       } catch (err) {
         console.error('Failed to fetch seasons:', err);
         setError(t('floorballPage.error'));
@@ -156,15 +189,7 @@ function FloorballPage() {
     };
 
     void loadSeasons();
-  }, [
-    isLoadingYears,
-    selectedYear,
-    currentPage,
-    reloadToken,
-    fetchStandingsForSeason,
-    setSearchParams,
-    t,
-  ]);
+  }, [isLoadingYears, selectedYear, currentPage, reloadToken, setSearchParams, t]);
 
   const handleYearSelect = (year: string) => {
     if (year === selectedYear) return;
@@ -177,151 +202,185 @@ function FloorballPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleRetry = () => {
-    initializedRef.current = false;
-    setIsLoadingYears(true);
-    window.location.reload();
-  };
+  const renderTeamLogo = (logo: string | null | undefined) =>
+    logo && logo.trim() !== '' ? (
+      <img
+        className="fb-team-logo"
+        src={logo}
+        alt=""
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.visibility = 'hidden';
+        }}
+      />
+    ) : (
+      <span className="fb-team-logo fb-team-logo--empty" aria-hidden="true" />
+    );
 
-  const renderStandingsTable = (data: SeasonWithStandings) => {
-    const { standings, standingsLoading } = data;
-
-    if (standingsLoading) {
-      return (
-        <div className="standings-table standings-table--loading">
-          <div className="standings-table__header">
-            <span className="standings-table__header-title">
-              {t('floorballPage.standingsTitle')}
-            </span>
-          </div>
-          <div className="standings-table__skeleton" aria-hidden="true">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="standings-table__skeleton-row" />
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    if (standings.length === 0) {
-      return null;
-    }
-
+  const renderStandingsCard = (data: SeasonWithStandings, isDark: boolean) => {
+    const { season, standings, standingsLoading } = data;
     const displayStandings = standings.slice(0, MAX_STANDINGS_PREVIEW);
 
     return (
-      <div className="standings-table">
-        <div className="standings-table__header">
-          <span className="standings-table__header-title">
-            {t('floorballPage.standingsTitle')}
-          </span>
-        </div>
-        <table className="standings-table__table">
-          <thead>
-            <tr>
-              <th className="standings-table__rank">#</th>
-              <th className="standings-table__team">{t('floorballPage.team')}</th>
-              <th className="standings-table__games">{t('floorballPage.gamesShort')}</th>
-              <th className="standings-table__points">{t('floorballPage.pointsShort')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayStandings.map((team, index) => (
-              <tr
-                key={team.teamId}
-                className={index < 3 ? `standings-table__row--top-${index + 1}` : undefined}
-              >
-                <td className="standings-table__rank">
-                  <span className="standings-table__rank-badge">{index + 1}</span>
-                </td>
-                <td className="standings-table__team">{team.teamName}</td>
-                <td className="standings-table__games">{team.gamesPlayed}</td>
-                <td className="standings-table__points">{team.points}</td>
-              </tr>
+      <section
+        key={season.id}
+        className={`fb-standings-card${isDark ? ' fb-standings-card--dark' : ''}`}
+      >
+        <h2 className="fb-standings-card__title">{season.name}</h2>
+
+        {isDark && (
+          <nav className="fb-standings-card__links" aria-label={season.name}>
+            <Link to={`/league/${season.id}?tab=fixtures`}>{t('leaguePage.tabs.fixtures')}</Link>
+            <Link to={`/league/${season.id}?tab=results`}>{t('leaguePage.tabs.results')}</Link>
+            <Link to={`/league/${season.id}?tab=statistics`}>
+              {t('leaguePage.tabs.statistics')}
+            </Link>
+            <Link to={`/league/${season.id}?tab=summary`}>{t('leaguePage.tabs.summary')}</Link>
+          </nav>
+        )}
+
+        <span className="fb-standings-card__label">{t('floorballPage.standingsTitle')}</span>
+
+        {standingsLoading ? (
+          <div className="fb-standings-card__skeleton" aria-hidden="true">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="fb-standings-card__skeleton-row" />
             ))}
-          </tbody>
-        </table>
-        <Link
-          to={`/league/${data.season.id}?tab=statistics`}
-          className="standings-table__full-link"
-        >
+          </div>
+        ) : displayStandings.length === 0 ? (
+          <p className="fb-standings-card__empty">{t('floorballPage.noStandings')}</p>
+        ) : (
+          <div className="fb-standings-table">
+            <div className="fb-standings-table__head">
+              <span className="fb-standings-table__rank">#</span>
+              <span className="fb-standings-table__team">{t('floorballPage.teamShort')}</span>
+              <span className="fb-standings-table__num">{t('floorballPage.gdShort')}</span>
+              <span className="fb-standings-table__num fb-standings-table__num--pts">
+                {t('floorballPage.ptsShort')}
+              </span>
+            </div>
+            {displayStandings.map((team, index) => (
+              <div key={team.teamId} className="fb-standings-table__row">
+                <span className="fb-standings-table__rank">{index + 1}.</span>
+                <span className="fb-standings-table__team">
+                  {renderTeamLogo(team.teamLogo)}
+                  <span className="fb-standings-table__team-name">{team.teamName}</span>
+                </span>
+                <span className="fb-standings-table__num">{team.goalDifference}</span>
+                <span className="fb-standings-table__num fb-standings-table__num--pts">
+                  {team.points}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <Link to={`/league/${season.id}?tab=statistics`} className="fb-standings-card__full-link">
           {t('floorballPage.viewFullTable')}
         </Link>
-      </div>
+      </section>
     );
   };
 
-  const renderSeasonCard = (data: SeasonWithStandings) => {
-    const { season } = data;
-    const cardClass = [
-      'season-card',
-      season.isActive ? 'season-card--active' : '',
-      season.isCompleted ? 'season-card--completed' : '',
-    ]
-      .filter(Boolean)
-      .join(' ');
+  const renderUpcomingMatchesCard = () => {
+    if (upcomingMatches.length === 0) return null;
 
     return (
-      <article key={season.id} className={cardClass}>
-        <span className="season-card__accent" aria-hidden="true" />
-        <div className="season-card__header">
-          <div className="season-card__heading">
-            <h2 className="season-card__title">{season.name}</h2>
-            <span className="season-card__dates">
-              {formatDateRange(season.startDate, season.endDate, locale)}
-            </span>
-          </div>
-          {season.isActive && (
-            <span className="season-card__badge season-card__badge--active">
-              <span className="season-card__badge-dot" aria-hidden="true" />
-              {t('floorballPage.active')}
-            </span>
-          )}
-          {season.isCompleted && !season.isActive && (
-            <span className="season-card__badge season-card__badge--completed">
-              {t('floorballPage.completed')}
-            </span>
-          )}
+      <section className="fb-upcoming-card">
+        <h2 className="fb-upcoming-card__title">{t('floorballPage.upcomingMatches')}</h2>
+        <div className="fb-upcoming-card__list">
+          {upcomingMatches.map((match) => {
+            const [date, time] = formatMatchDateTime(match.scheduledDateTime);
+            return (
+              <Link
+                key={match.id}
+                to={`/match/${match.id}`}
+                className="fb-upcoming-card__row"
+              >
+                <span className="fb-upcoming-card__datetime">
+                  <span>{date}</span>
+                  <span>{time}</span>
+                </span>
+                <span className="fb-upcoming-card__teams">
+                  <span className="fb-upcoming-card__team">
+                    {renderTeamLogo(match.homeTeamLogo)}
+                    <span>{match.homeTeamName ?? t('floorballPage.tbd')}</span>
+                  </span>
+                  <span className="fb-upcoming-card__team">
+                    {renderTeamLogo(match.awayTeamLogo)}
+                    <span>{match.awayTeamName ?? t('floorballPage.tbd')}</span>
+                  </span>
+                </span>
+              </Link>
+            );
+          })}
         </div>
+      </section>
+    );
+  };
 
-        <nav className="season-card__links" aria-label={season.name}>
-          <Link to={`/league/${season.id}?tab=fixtures`} className="season-card__link">
-            {t('floorballPage.fixtures')}
-          </Link>
-          <Link to={`/league/${season.id}?tab=statistics`} className="season-card__link">
-            {t('floorballPage.standings')}
-          </Link>
-          <Link to={`/league/${season.id}?tab=summary`} className="season-card__link">
-            {t('floorballPage.stats')}
-          </Link>
-        </nav>
+  const renderInfoCards = () => {
+    if (!isCurrentSeasonView) {
+      return (
+        <article className="fb-info-card">
+          <h2 className="fb-info-card__title">
+            {t('floorballPage.archiveTitle', { year: formatSeasonYearLabel(selectedYear) })}
+          </h2>
+          <p>{t('floorballPage.archiveText')}</p>
+          {currentYear && (
+            <p>
+              <button
+                type="button"
+                className="fb-info-card__link-button"
+                onClick={() => handleYearSelect(currentYear)}
+              >
+                {t('floorballPage.backToCurrent', { year: formatSeasonYearLabel(currentYear) })}
+              </button>
+            </p>
+          )}
+        </article>
+      );
+    }
 
-        {renderStandingsTable(data)}
-      </article>
+    const infoSections = [
+      { title: t('floorballPage.info.introTitle'), paragraphs: ['intro1', 'intro2', 'intro3'] },
+      {
+        title: t('floorballPage.info.seriesTitle'),
+        paragraphs: ['series1', 'series2', 'series3', 'series4'],
+      },
+      { title: t('floorballPage.info.loanTitle'), paragraphs: ['loan1'] },
+      { title: t('floorballPage.info.feeTitle'), paragraphs: ['fee1', 'fee2', 'fee3'] },
+    ];
+
+    return (
+      <>
+        {infoSections.map((section) => (
+          <article key={section.title} className="fb-info-card">
+            <h2 className="fb-info-card__title">{section.title}</h2>
+            {section.paragraphs.map((key) => (
+              <p key={key}>{t(`floorballPage.info.${key}`)}</p>
+            ))}
+          </article>
+        ))}
+        <article className="fb-info-card">
+          <h2 className="fb-info-card__title">{t('floorballPage.info.contactTitle')}</h2>
+          <p className="fb-info-card__contact">
+            Mikko Luukkonen
+            <br />
+            mikko(at)mahl.fi
+            <br />
+            044 209 9199
+          </p>
+        </article>
+      </>
     );
   };
 
   if (isLoadingYears) {
     return (
-      <PageTemplate title={t('sports.floorball')}>
+      <PageTemplate title={t('sports.floorball')} fullBleed>
         <div className="floorball-page">
-          <div className="floorball-page__loading">
+          <div className="floorball-page__state">
             <LoadingSpinner variant="light" text={t('floorballPage.loading')} />
-          </div>
-        </div>
-      </PageTemplate>
-    );
-  }
-
-  if (error && years.length === 0) {
-    return (
-      <PageTemplate title={t('sports.floorball')}>
-        <div className="floorball-page">
-          <div className="floorball-page__error">
-            <p>{error}</p>
-            <button type="button" onClick={handleRetry} className="floorball-page__retry-btn">
-              {t('floorballPage.retry')}
-            </button>
           </div>
         </div>
       </PageTemplate>
@@ -329,109 +388,106 @@ function FloorballPage() {
   }
 
   return (
-    <PageTemplate title={t('sports.floorball')}>
+    <PageTemplate title={t('sports.floorball')} fullBleed>
       <div className="floorball-page">
-        <header className="floorball-page__header">
-          <div className="floorball-page__header-top">
-            <div>
-              <span className="floorball-page__kicker">{t('floorballPage.kicker')}</span>
-              <h1 className="floorball-page__title">{t('sports.floorball')}</h1>
-              <p className="floorball-page__description">{t('floorballPage.description')}</p>
-            </div>
-            {selectedYearMeta && (
-              <div className="floorball-page__header-stat">
-                <span className="floorball-page__header-stat-value">
-                  {selectedYearMeta.seasonCount}
-                </span>
-                <span className="floorball-page__header-stat-label">
-                  {t('floorballPage.seasonsInYear')}
-                </span>
+        <header className="fb-banner">
+          <img className="fb-banner__image" src={bannerImage} alt="" aria-hidden="true" />
+          <div className="fb-banner__content">
+            <h1 className="fb-banner__title">{t('sports.floorball')}</h1>
+            {years.length > 0 && (
+              <div className="fb-banner__nav">
+                <label className="fb-banner__select-wrap">
+                  <span className="fb-banner__select-label">
+                    {t('floorballPage.seasonLabel')}
+                  </span>
+                  <select
+                    className="fb-banner__select"
+                    value={selectedYear}
+                    onChange={(e) => handleYearSelect(e.target.value)}
+                    aria-label={t('floorballPage.seasonYears')}
+                  >
+                    {years.map((year) => (
+                      <option key={year.year} value={year.year}>
+                        {formatSeasonYearLabel(year.year)}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="fb-banner__select-chevron" aria-hidden="true" />
+                </label>
               </div>
             )}
           </div>
-
-          {years.length > 0 && (
-            <div className="floorball-page__years-wrap">
-              <div
-                className="floorball-page__years"
-                role="tablist"
-                aria-label={t('floorballPage.seasonYears')}
-              >
-                {years.map((year) => (
-                  <button
-                    key={year.year}
-                    type="button"
-                    role="tab"
-                    aria-selected={year.year === selectedYear}
-                    className={`floorball-page__year-chip${
-                      year.year === selectedYear ? ' floorball-page__year-chip--active' : ''
-                    }`}
-                    onClick={() => handleYearSelect(year.year)}
-                  >
-                    {formatSeasonYearLabel(year.year)}
-                    {year.hasActiveSeason && (
-                      <span className="floorball-page__year-dot" aria-hidden="true" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </header>
 
-        {selectedYear && (
-          <div className="floorball-page__section-head">
-            <h2 className="floorball-page__section-title">
-              {t('floorballPage.seasonYear', { year: formatSeasonYearLabel(selectedYear) })}
-            </h2>
-            <span className="floorball-page__section-rule" aria-hidden="true" />
-          </div>
-        )}
+        <div className="fb-content">
+          <div className="fb-container">
+            {error ? (
+              <div className="floorball-page__state">
+                <p>{error}</p>
+                <button
+                  type="button"
+                  className="fb-retry-btn"
+                  onClick={() => {
+                    setError(null);
+                    setReloadToken((token) => token + 1);
+                  }}
+                >
+                  {t('floorballPage.retry')}
+                </button>
+              </div>
+            ) : (
+              <div className="fb-columns">
+                <div className="fb-columns__main">{renderInfoCards()}</div>
+                <aside className="fb-columns__side">
+                  {isLoadingSeasons && seasonsData.length === 0 ? (
+                    <div className="floorball-page__state floorball-page__state--inline">
+                      <LoadingSpinner variant="dark" text={t('floorballPage.loading')} />
+                    </div>
+                  ) : seasonsData.length === 0 ? (
+                    <div className="fb-info-card">
+                      <p>{t('floorballPage.noSeasonsForYear')}</p>
+                    </div>
+                  ) : (
+                    (() => {
+                      const ordered = [
+                        ...seasonsData.filter((d) => d.season.isActive),
+                        ...seasonsData.filter((d) => !d.season.isActive),
+                      ];
+                      const darkCount = ordered.filter((d) => d.season.isActive).length
+                        || (isCurrentSeasonView ? 1 : 0);
+                      return (
+                        <>
+                          {ordered
+                            .slice(0, darkCount)
+                            .map((d) => renderStandingsCard(d, true))}
+                          {renderUpcomingMatchesCard()}
+                          {ordered
+                            .slice(darkCount)
+                            .map((d) => renderStandingsCard(d, false))}
+                        </>
+                      );
+                    })()
+                  )}
 
-        {isLoadingSeasons && seasonsData.length === 0 ? (
-          <div className="floorball-page__loading floorball-page__loading--inline">
-            <LoadingSpinner variant="light" text={t('floorballPage.loading')} />
-          </div>
-        ) : error ? (
-          <div className="floorball-page__error">
-            <p>{error}</p>
-            <button
-              type="button"
-              onClick={() => {
-                setError(null);
-                setReloadToken((token) => token + 1);
-              }}
-              className="floorball-page__retry-btn"
-            >
-              {t('floorballPage.retry')}
-            </button>
-          </div>
-        ) : seasonsData.length === 0 ? (
-          <div className="floorball-page__empty">
-            <p>{t('floorballPage.noSeasonsForYear')}</p>
-          </div>
-        ) : (
-          <>
-            <div key={listKey} className="floorball-page__seasons floorball-page__seasons--enter">
-              {seasonsData.map((data) => renderSeasonCard(data))}
-            </div>
-
-            {totalPages > 1 && (
-              <div className="floorball-page__pagination">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  totalCount={totalCount}
-                  pageSize={PAGE_SIZE}
-                  onPageChange={handlePageChange}
-                  onPageSizeChange={() => undefined}
-                  showPageSizeSelector={false}
-                  showSummary
-                />
+                  {totalPages > 1 && (
+                    <div className="fb-pagination">
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalCount={totalCount}
+                        pageSize={PAGE_SIZE}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={() => undefined}
+                        showPageSizeSelector={false}
+                        showSummary={false}
+                      />
+                    </div>
+                  )}
+                </aside>
               </div>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
     </PageTemplate>
   );

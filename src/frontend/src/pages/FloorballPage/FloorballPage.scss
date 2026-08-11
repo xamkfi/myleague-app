@@ -1,646 +1,570 @@
 @use 'sass:map';
 @use '@variables' as *;
 
-// Modern dark-sport look built on the existing blue/green token palette:
-// layered hero with glow orbs + grid texture, glass season cards with an
-// accent bar, pill quick-links, badge-style top-3 ranks and a dark pagination.
+// Floorball landing implemented from the Figma "Summary" design:
+// full-width photo banner with season-year pill navigation, light content
+// area with info cards on the left and league standings / upcoming match
+// cards on the right.
 
 .floorball-page {
-  max-width: $max-width-page;
-  margin: 0 auto;
-  padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'lg');
+  width: 100%;
+  background: $color-neutral-light-grey;
 
-  // ── Hero ────────────────────────────────────────────────
-  &__header {
-    background:
-      radial-gradient(ellipse 60% 90% at 85% -10%, rgba($color-blue-secondary, 0.28) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 70% at 10% 110%, rgba($color-green-primary, 0.10) 0%, transparent 60%),
-      linear-gradient(135deg, $color-blue-deep 0%, $color-blue-darkest 62%);
-    border: 1px solid rgba($color-white, 0.08);
-    border-radius: map.get($border-radius, 'lg-plus');
-    padding: map.get($spacing, 'xl') map.get($spacing, 'lg') 0;
-    margin-bottom: map.get($spacing, 'xl');
-    position: relative;
-    overflow: hidden;
-
-    // Subtle line grid for texture
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba($color-white, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba($color-white, 0.035) 1px, transparent 1px);
-      background-size: 44px 44px;
-      mask-image: radial-gradient(ellipse 90% 90% at 70% 0%, black 0%, transparent 75%);
-      pointer-events: none;
-    }
-  }
-
-  &__header-top {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: map.get($spacing, 'lg');
-    position: relative;
-    margin-bottom: map.get($spacing, 'lg');
-  }
-
-  &__kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: map.get($spacing, 'xs');
-    font-size: map.get($font-sizes, 'sm-xs');
-    font-weight: map.get($font-weights, 'semibold');
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: $color-blue-secondary-light;
-    margin-bottom: map.get($spacing, 'xs');
-
-    &::before {
-      content: '';
-      width: 24px;
-      height: 2px;
-      border-radius: 2px;
-      background: $color-green-primary;
-    }
-  }
-
-  &__title {
-    font-size: map.get($font-sizes, 'xxl');
-    font-weight: map.get($font-weights, 'extrabold');
-    color: $color-white;
-    margin: 0 0 map.get($spacing, 'sm');
-    font-family: $font-family-display;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    line-height: 1.05;
-    text-shadow: 0 4px 30px rgba($color-blue-secondary, 0.35);
-  }
-
-  &__description {
-    font-size: map.get($font-sizes, 'md');
-    color: rgba($color-white, 0.72);
-    max-width: 600px;
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  &__header-stat {
-    flex-shrink: 0;
-    text-align: center;
-    min-width: 110px;
-    padding: map.get($spacing, 'md') map.get($spacing, 'md');
-    border: 1px solid rgba($color-white, 0.12);
-    border-radius: map.get($border-radius, 'lg-plus');
-    background: linear-gradient(160deg, rgba($color-white, 0.09) 0%, rgba($color-white, 0.03) 100%);
-    backdrop-filter: blur(6px);
-    box-shadow: inset 0 1px 0 rgba($color-white, 0.12);
-  }
-
-  &__header-stat-value {
-    display: block;
-    font-family: $font-family-display;
-    font-size: map.get($font-sizes, 'xl');
-    font-weight: map.get($font-weights, 'extrabold');
-    line-height: 1.05;
-    background: linear-gradient(180deg, $color-white 30%, $color-blue-secondary-light 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  &__header-stat-label {
-    display: block;
-    margin-top: map.get($spacing, 'xxs');
-    font-size: map.get($font-sizes, 'xs');
-    color: rgba($color-white, 0.6);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  // ── Year navigation ─────────────────────────────────────
-  &__years-wrap {
-    position: relative;
-    margin: 0 calc(-1 * #{map.get($spacing, 'lg')});
-    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
-    background: rgba($color-neutral-black, 0.35);
-    border-top: 1px solid rgba($color-white, 0.08);
-    backdrop-filter: blur(4px);
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 56px;
-      pointer-events: none;
-      background: linear-gradient(90deg, transparent, rgba($color-blue-darkest, 0.9));
-    }
-  }
-
-  &__years {
-    display: flex;
-    gap: map.get($spacing, 'xs');
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-
-  &__year-chip {
-    position: relative;
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: map.get($spacing, 'xs');
-    border: 1px solid rgba($color-white, 0.14);
-    background: rgba($color-white, 0.04);
-    color: rgba($color-white, 0.8);
-    border-radius: 999px;
-    padding: map.get($spacing, 'xs') map.get($spacing, 'md');
-    font-size: map.get($font-sizes, 'sm');
-    font-weight: map.get($font-weights, 'semibold');
-    font-family: $font-family-display;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
-      box-shadow 0.2s ease, transform 0.15s ease;
-
-    &:hover {
-      background: rgba($color-white, 0.1);
-      border-color: rgba($color-white, 0.3);
-      color: $color-white;
-    }
-
-    &:focus-visible {
-      outline: 2px solid $color-blue-secondary;
-      outline-offset: 2px;
-    }
-
-    &--active {
-      background: linear-gradient(135deg, $color-green-primary 0%, $color-green-muted 100%);
-      border-color: transparent;
-      color: $color-white;
-      box-shadow: 0 4px 18px rgba($color-green-primary, 0.4);
-      transform: translateY(-1px);
-    }
-  }
-
-  &__year-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: $color-green-primary;
-    box-shadow: 0 0 6px rgba($color-green-primary, 0.9);
-
-    .floorball-page__year-chip--active & {
-      background: $color-white;
-      box-shadow: 0 0 6px rgba($color-white, 0.9);
-    }
-  }
-
-  // ── Section heading ─────────────────────────────────────
-  &__section-head {
-    display: flex;
-    align-items: center;
-    gap: map.get($spacing, 'md');
-    margin-bottom: map.get($spacing, 'md');
-  }
-
-  &__section-title {
-    margin: 0;
-    font-family: $font-family-display;
-    font-size: map.get($font-sizes, 'lg');
-    font-weight: map.get($font-weights, 'extrabold');
-    color: $color-blue-darkest;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-  }
-
-  &__section-rule {
-    flex: 1;
-    height: 2px;
-    border-radius: 2px;
-    background: linear-gradient(90deg, rgba($color-blue-secondary, 0.5) 0%, transparent 100%);
-  }
-
-  // ── States ──────────────────────────────────────────────
-  &__loading,
-  &__error,
-  &__empty {
+  &__state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 300px;
-    color: $color-blue-deep;
     gap: map.get($spacing, 'md');
-  }
+    color: $color-blue-deep;
 
-  &__loading--inline {
-    min-height: 180px;
-  }
-
-  &__empty p {
-    font-family: $font-family-display;
-    font-size: map.get($font-sizes, 'md');
-    color: rgba($color-blue-darkest, 0.6);
-  }
-
-  &__retry-btn {
-    background: $color-blue-secondary;
-    color: $color-white;
-    border: none;
-    padding: map.get($spacing, 'sm') map.get($spacing, 'lg');
-    border-radius: 999px;
-    cursor: pointer;
-    font-weight: map.get($font-weights, 'semibold');
-    transition: background 0.2s ease, box-shadow 0.2s ease;
-
-    &:hover {
-      background: $color-blue-secondary-muted;
-      box-shadow: 0 4px 14px rgba($color-blue-secondary, 0.4);
-    }
-  }
-
-  // ── Grid ────────────────────────────────────────────────
-  &__seasons {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: map.get($spacing, 'lg');
-
-    &--enter {
-      animation: floorball-list-enter 0.25s ease-out;
-    }
-  }
-
-  // ── Pagination ──────────────────────────────────────────
-  &__pagination {
-    margin-top: map.get($spacing, 'xl');
-    display: flex;
-    justify-content: center;
-
-    .pagination-container {
-      background: linear-gradient(135deg, $color-blue-deep 0%, $color-blue-darkest 100%);
-      border: 1px solid rgba($color-white, 0.1);
-      border-radius: map.get($border-radius, 'lg-plus');
-      box-shadow: none;
-      justify-content: center;
-    }
-
-    .pagination-summary,
-    .pagination-ellipsis,
-    .page-size-selector label {
-      color: rgba($color-white, 0.7);
-    }
-
-    .pagination-button,
-    .pagination-page-button {
-      background: rgba($color-white, 0.05);
-      color: $color-white;
-      border-color: rgba($color-white, 0.15);
-      border-radius: 999px;
-
-      &:hover:not(:disabled) {
-        background: rgba($color-blue-secondary, 0.4);
-        border-color: rgba($color-blue-secondary, 0.6);
-        color: $color-white;
-        box-shadow: none;
-        transform: none;
-      }
-
-      &.active,
-      &.active:hover {
-        background: $color-blue-secondary;
-        border-color: $color-blue-secondary;
-        color: $color-white;
-        box-shadow: 0 4px 14px rgba($color-blue-secondary, 0.45);
-      }
-
-      &:disabled {
-        opacity: 0.35;
-      }
+    &--inline {
+      min-height: 180px;
     }
   }
 }
 
-// ── Season card ───────────────────────────────────────────
-.season-card {
+// ── Banner ────────────────────────────────────────────────
+.fb-banner {
   position: relative;
+  width: 100%;
+  min-height: 320px;
+  background: $color-blue-light;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(165deg, rgba($color-blue-deep, 0.55) 0%, $color-blue-darkest 60%), $color-blue-darkest;
-  border-radius: map.get($border-radius, 'lg-plus');
+  align-items: center;
+  justify-content: flex-end;
   overflow: hidden;
-  border: 1px solid rgba($color-white, 0.1);
-  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
 
-  &:hover {
-    transform: translateY(-3px);
-    border-color: rgba($color-blue-secondary, 0.45);
-    box-shadow:
-      0 16px 40px rgba($color-blue-darkest, 0.45),
-      0 0 0 1px rgba($color-blue-secondary, 0.2),
-      0 8px 24px rgba($color-blue-secondary, 0.18);
+  // Crop values come from the Figma design: only the lower-right floor area
+  // of the source photo is shown, heavily faded over the blue fill.
+  &__image {
+    position: absolute;
+    width: 154.25%;
+    height: 365.22%;
+    max-width: none;
+    left: -54.28%;
+    top: -265.15%;
+    object-fit: cover;
+    opacity: 0.2;
+    pointer-events: none;
   }
 
-  // Top accent bar — green for active, blue for finished
-  &__accent {
-    display: block;
-    height: 3px;
-    background: linear-gradient(90deg, $color-blue-secondary 0%, rgba($color-blue-secondary, 0.15) 100%);
-  }
-
-  &--active &__accent {
-    background: linear-gradient(90deg, $color-green-primary 0%, rgba($color-green-primary, 0.15) 100%);
-  }
-
-  &--completed:not(.season-card--active) {
-    opacity: 0.94;
-  }
-
-  &__header {
+  &__content {
+    position: relative;
+    width: 100%;
+    max-width: 920px;
+    padding: map.get($spacing, 'md') map.get($spacing, 'md') 48px;
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: map.get($spacing, 'sm');
-    padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'sm');
-  }
-
-  &__heading {
-    min-width: 0;
+    flex-direction: column;
+    gap: 12px;
   }
 
   &__title {
+    margin: 0;
     font-family: $font-family-display;
-    font-size: map.get($font-sizes, 'md');
-    font-weight: map.get($font-weights, 'bold');
-    color: $color-white;
-    margin: 0 0 map.get($spacing, 'xxs');
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 48px;
+    line-height: 64px;
+    letter-spacing: 2.4px;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
-    line-height: 1.3;
+    color: $color-neutral-white;
   }
 
-  &__dates {
-    display: block;
-    font-size: map.get($font-sizes, 'sm-xs');
-    color: rgba($color-white, 0.5);
-    letter-spacing: 0.3px;
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
-  &__badge {
-    flex-shrink: 0;
+  &__select-wrap {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: map.get($font-sizes, 'xs');
-    padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
-    border-radius: 999px;
-    font-weight: map.get($font-weights, 'semibold');
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
+    gap: 8px;
+    background: $color-neutral-white;
+    border-radius: 20px;
+    padding: 0 14px 0 16px;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease;
 
-    &--active {
-      background: rgba($color-green-primary, 0.15);
-      border: 1px solid rgba($color-green-primary, 0.5);
-      color: $color-green-light;
+    &:hover {
+      box-shadow: 0 0 0 3px rgba($color-neutral-white, 0.25);
     }
 
-    &--completed {
-      background: rgba($color-white, 0.07);
-      border: 1px solid rgba($color-white, 0.18);
-      color: rgba($color-white, 0.65);
+    &:focus-within {
+      box-shadow: 0 0 0 3px rgba($color-neutral-white, 0.4);
     }
   }
 
-  &__badge-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: $color-green-primary;
-    box-shadow: 0 0 6px rgba($color-green-primary, 0.9);
-    animation: floorball-pulse 2s ease-in-out infinite;
+  &__select-label {
+    font-family: $font-family-link;
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: map.get($font-weights, 'regular');
+    color: $color-neutral-dark-grey;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  &__select {
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 8px 20px 8px 0;
+    font-family: $font-family-link;
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-neutral-black;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__select-chevron {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-top: -6px;
+    border-right: 2px solid $color-neutral-black;
+    border-bottom: 2px solid $color-neutral-black;
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+}
+
+// ── Content layout ────────────────────────────────────────
+.fb-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: map.get($spacing, 'lg') map.get($spacing, 'md') map.get($spacing, 'xl');
+}
+
+.fb-container {
+  width: 100%;
+  max-width: 920px;
+}
+
+.fb-columns {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+
+  &__main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  &__side {
+    width: 323px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
+// ── Info cards (left column) ──────────────────────────────
+.fb-info-card {
+  background: $color-white;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 22px;
+    line-height: 32px;
+    text-transform: uppercase;
+    color: $color-blue-deep;
+    overflow-wrap: break-word;
+  }
+
+  p {
+    margin: 0;
+    font-family: $font-family-body;
+    font-size: 16px;
+    line-height: 24px;
+    color: $color-neutral-black;
+    overflow-wrap: break-word;
+  }
+
+  &__contact {
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &__link-button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-family: $font-family-body;
+    font-size: 16px;
+    line-height: 24px;
+    color: $color-blue-secondary-muted;
+    cursor: pointer;
+    text-decoration: underline;
+
+    &:hover {
+      color: $color-blue-deep;
+    }
+  }
+}
+
+// ── Standings card (right column) ─────────────────────────
+.fb-standings-card {
+  background: $color-neutral-white;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: $box-shadow-drop-1;
+
+  &__title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 18px;
+    line-height: 32px;
+    text-transform: uppercase;
+    color: $color-blue-darkest;
+    overflow-wrap: break-word;
   }
 
   &__links {
     display: flex;
-    flex-wrap: wrap;
-    gap: map.get($spacing, 'xs');
-    padding: 0 map.get($spacing, 'lg') map.get($spacing, 'md');
-    border-bottom: 1px solid rgba($color-white, 0.08);
-  }
+    flex-direction: column;
+    gap: 4px;
 
-  &__link {
-    display: inline-flex;
-    align-items: center;
-    padding: 5px map.get($spacing, 'sm');
-    border-radius: 999px;
-    border: 1px solid rgba($color-blue-secondary, 0.35);
-    background: rgba($color-blue-secondary, 0.1);
-    color: $color-blue-secondary-light;
-    text-decoration: none;
-    font-size: map.get($font-sizes, 'sm-xs');
-    font-weight: map.get($font-weights, 'semibold');
-    letter-spacing: 0.3px;
-    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-
-    &:hover {
-      background: rgba($color-blue-secondary, 0.3);
-      border-color: rgba($color-blue-secondary, 0.7);
-      color: $color-white;
+    a {
+      font-family: $font-family-body;
+      font-size: 14px;
+      line-height: 24px;
+      color: $color-blue-secondary-muted;
       text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
-}
 
-// ── Standings preview ─────────────────────────────────────
-.standings-table {
-  padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'md');
-  margin-top: auto;
-
-  &__header {
-    margin-bottom: map.get($spacing, 'sm');
-  }
-
-  &__header-title {
-    font-size: map.get($font-sizes, 'sm-xs');
-    font-weight: map.get($font-weights, 'bold');
-    color: rgba($color-white, 0.45);
+  &__label {
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 16px;
+    line-height: 24px;
     text-transform: uppercase;
-    letter-spacing: 1.2px;
+    color: $color-blue-darkest;
   }
 
   &__skeleton {
     display: flex;
     flex-direction: column;
-    gap: map.get($spacing, 'xs');
+    gap: 8px;
   }
 
   &__skeleton-row {
-    height: 28px;
-    border-radius: map.get($border-radius, 'sm');
+    height: 32px;
+    border-radius: 4px;
     background: linear-gradient(
       90deg,
-      rgba($color-white, 0.04) 0%,
-      rgba($color-white, 0.1) 50%,
-      rgba($color-white, 0.04) 100%
+      rgba($color-blue-deep, 0.06) 0%,
+      rgba($color-blue-deep, 0.14) 50%,
+      rgba($color-blue-deep, 0.06) 100%
     );
     background-size: 200% 100%;
-    animation: floorball-shimmer 1.1s ease-in-out infinite;
+    animation: fb-shimmer 1.1s ease-in-out infinite;
   }
 
-  &__table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: map.get($spacing, 'sm');
-
-    thead {
-      th {
-        padding: 6px map.get($spacing, 'sm');
-        text-align: left;
-        font-size: map.get($font-sizes, 'xs');
-        font-weight: map.get($font-weights, 'semibold');
-        color: rgba($color-white, 0.45);
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        border-bottom: 1px solid rgba($color-white, 0.1);
-
-        &.standings-table__rank {
-          width: 36px;
-          text-align: center;
-        }
-
-        &.standings-table__games,
-        &.standings-table__points {
-          width: 46px;
-          text-align: center;
-        }
-      }
-    }
-
-    tbody {
-      tr {
-        border-bottom: 1px solid rgba($color-white, 0.05);
-        transition: background 0.15s ease;
-
-        &:hover {
-          background: rgba($color-blue-secondary, 0.08);
-        }
-
-        &:last-child {
-          border-bottom: none;
-        }
-      }
-
-      td {
-        padding: 5px map.get($spacing, 'sm');
-        font-size: map.get($font-sizes, 'sm');
-        color: rgba($color-white, 0.92);
-
-        &.standings-table__rank {
-          text-align: center;
-        }
-
-        &.standings-table__team {
-          font-weight: map.get($font-weights, 'medium');
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-width: 0;
-          width: 100%;
-        }
-
-        &.standings-table__games {
-          text-align: center;
-          color: rgba($color-white, 0.55);
-        }
-
-        &.standings-table__points {
-          text-align: center;
-          font-weight: map.get($font-weights, 'bold');
-          font-family: $font-family-display;
-          color: $color-blue-secondary-light;
-        }
-      }
-    }
-  }
-
-  &__rank-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    font-size: map.get($font-sizes, 'xs');
-    font-weight: map.get($font-weights, 'semibold');
-    color: rgba($color-white, 0.55);
-    background: transparent;
-  }
-
-  &__row--top-1 &__rank-badge {
-    background: linear-gradient(135deg, $color-green-primary 0%, $color-green-muted 100%);
-    color: $color-white;
-    box-shadow: 0 2px 8px rgba($color-green-primary, 0.4);
-  }
-
-  &__row--top-2 &__rank-badge {
-    background: rgba($color-blue-secondary, 0.55);
-    color: $color-white;
-  }
-
-  &__row--top-3 &__rank-badge {
-    background: rgba($color-blue-secondary, 0.25);
-    color: $color-blue-secondary-pale;
+  &__empty {
+    margin: 0;
+    font-family: $font-family-body;
+    font-size: 14px;
+    line-height: 24px;
+    color: $color-neutral-dark-grey;
   }
 
   &__full-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: $color-blue-secondary-light;
-    font-size: map.get($font-sizes, 'sm-xs');
-    font-weight: map.get($font-weights, 'semibold');
+    align-self: flex-end;
+    font-family: $font-family-body;
+    font-size: 14px;
+    line-height: 24px;
+    color: $color-blue-deep;
     text-decoration: none;
-    padding-top: map.get($spacing, 'xs');
-    letter-spacing: 0.3px;
-    transition: color 0.2s ease, gap 0.2s ease;
-
-    &::after {
-      content: '→';
-      transition: transform 0.2s ease;
-    }
 
     &:hover {
-      color: $color-white;
+      text-decoration: underline;
+    }
+  }
 
-      &::after {
-        transform: translateX(3px);
+  // Dark (active league) variant per the Figma design
+  &--dark {
+    background: $color-blue-deep;
+    box-shadow: none;
+
+    .fb-standings-card__title,
+    .fb-standings-card__label {
+      color: $color-neutral-white;
+    }
+
+    .fb-standings-card__links a {
+      color: $color-neutral-white;
+    }
+
+    .fb-standings-card__empty {
+      color: rgba($color-neutral-white, 0.7);
+    }
+
+    .fb-standings-card__full-link {
+      color: $color-neutral-white;
+    }
+
+    .fb-standings-card__skeleton-row {
+      background: linear-gradient(
+        90deg,
+        rgba($color-white, 0.06) 0%,
+        rgba($color-white, 0.16) 50%,
+        rgba($color-white, 0.06) 100%
+      );
+      background-size: 200% 100%;
+    }
+
+    .fb-standings-table__head {
+      background: $color-gradient-blue;
+      color: $color-neutral-white;
+    }
+
+    .fb-standings-table__row {
+      border-bottom-color: rgba($color-neutral-medium-grey, 0.35);
+      color: $color-neutral-white;
+
+      &:hover {
+        background: rgba($color-white, 0.06);
       }
     }
   }
 }
 
-// ── Motion ────────────────────────────────────────────────
-@keyframes floorball-list-enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+// ── Standings table ───────────────────────────────────────
+.fb-standings-table {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    padding: 4px 16px;
+    border-radius: 4px;
+    background: $color-blue-darkest;
+    color: $color-neutral-white;
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'bold');
+    font-size: 12px;
+    line-height: 24px;
+
+    .fb-standings-table__team {
+      font-size: 14px;
+    }
+
+    .fb-standings-table__rank {
+      font-size: 14px;
+    }
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  &__row {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 4px 16px;
+    border-bottom: 1px solid $color-neutral-medium-grey;
+    font-family: $font-family-body;
+    font-size: 12px;
+    line-height: 16px;
+    color: $color-neutral-black;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: rgba($color-blue-secondary, 0.06);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__rank {
+    width: 32px;
+    flex-shrink: 0;
+    font-weight: map.get($font-weights, 'bold');
+  }
+
+  &__team {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: map.get($font-weights, 'semibold');
+  }
+
+  &__team-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__num {
+    width: 40px;
+    flex-shrink: 0;
+    text-align: center;
+
+    &--pts {
+      font-weight: map.get($font-weights, 'bold');
+    }
   }
 }
 
-@keyframes floorball-shimmer {
+.fb-team-logo {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  object-fit: contain;
+
+  &--empty {
+    display: inline-block;
+    border-radius: 50%;
+    background: rgba($color-neutral-dark-grey, 0.3);
+  }
+}
+
+// ── Upcoming matches card ─────────────────────────────────
+.fb-upcoming-card {
+  background: $color-neutral-white;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: $box-shadow-drop-1;
+
+  &__title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 18px;
+    line-height: 32px;
+    text-transform: uppercase;
+    color: $color-blue-darkest;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0 8px 16px;
+    border-bottom: 1px solid $color-neutral-medium-grey;
+    text-decoration: none;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: rgba($color-blue-secondary, 0.06);
+    }
+  }
+
+  &__datetime {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    font-family: $font-family-body;
+    font-size: 12px;
+    line-height: 16px;
+    color: $color-neutral-dark-grey;
+
+    span {
+      width: 40px;
+      text-align: center;
+    }
+  }
+
+  &__teams {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__team {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: $font-family-body;
+    font-size: 12px;
+    line-height: 16px;
+    color: $color-neutral-black;
+
+    .fb-team-logo {
+      width: 16px;
+      height: 16px;
+    }
+
+    span:last-child {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+// ── Pagination & misc ─────────────────────────────────────
+.fb-pagination {
+  display: flex;
+  justify-content: center;
+
+  .pagination-container {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+.fb-retry-btn {
+  background: $color-blue-secondary;
+  color: $color-white;
+  border: none;
+  padding: map.get($spacing, 'sm') map.get($spacing, 'lg');
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: map.get($font-weights, 'semibold');
+
+  &:hover {
+    background: $color-blue-secondary-muted;
+  }
+}
+
+@keyframes fb-shimmer {
   0% {
     background-position: 100% 0;
   }
@@ -649,82 +573,39 @@
   }
 }
 
-@keyframes floorball-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
+// ── Responsive ────────────────────────────────────────────
+@media (max-width: map.get($breakpoints, 'desktop')) {
+  .fb-columns {
+    flex-direction: column;
+
+    &__side {
+      width: 100%;
+      order: -1;
+    }
   }
 }
 
-// ── Responsive ────────────────────────────────────────────
-@media (max-width: 768px) {
-  .floorball-page {
-    padding: 0 map.get($spacing, 'md') map.get($spacing, 'md');
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .fb-banner {
+    min-height: 220px;
 
-    &__header {
-      padding: map.get($spacing, 'lg') map.get($spacing, 'md') 0;
-      margin-bottom: map.get($spacing, 'lg');
-      border-radius: map.get($border-radius, 'lg');
-    }
-
-    &__header-top {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: map.get($spacing, 'md');
-    }
-
-    &__header-stat {
-      align-self: stretch;
-      display: flex;
-      align-items: baseline;
-      justify-content: flex-start;
-      gap: map.get($spacing, 'sm');
-      text-align: left;
-      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    &__content {
+      padding: map.get($spacing, 'md') map.get($spacing, 'md') map.get($spacing, 'lg');
     }
 
     &__title {
-      font-size: map.get($font-sizes, 'xl');
-    }
-
-    &__years-wrap {
-      margin: 0 calc(-1 * #{map.get($spacing, 'md')});
-      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
-    }
-
-    &__section-title {
-      font-size: map.get($font-sizes, 'md');
-    }
-
-    &__seasons {
-      grid-template-columns: 1fr;
-      gap: map.get($spacing, 'md');
+      font-size: 32px;
+      line-height: 44px;
     }
   }
 
-  .season-card {
-    &__header {
-      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
-    }
-
-    &__title {
-      font-size: map.get($font-sizes, 'base');
-    }
-
-    &__links {
-      padding: 0 map.get($spacing, 'md') map.get($spacing, 'sm');
-    }
+  .fb-content {
+    padding: map.get($spacing, 'md') map.get($spacing, 'sm') map.get($spacing, 'lg');
   }
 
-  .standings-table {
-    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
-    overflow-x: auto;
-
-    &__table {
-      min-width: 280px;
-    }
+  .fb-info-card,
+  .fb-standings-card,
+  .fb-upcoming-card {
+    padding: map.get($spacing, 'md');
   }
 }
