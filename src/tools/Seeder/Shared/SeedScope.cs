@@ -12,14 +12,20 @@ public enum SeedScope
     Seasons           = 1 << 5,
     SeasonMatches     = 1 << 6,
     Tournaments       = 1 << 7,
-    All = Persons | Clubs | Divisions | PlayersReferees | Teams | Seasons | SeasonMatches | Tournaments
+
+    HockeyPlayers       = 1 << 8,
+    HockeyTeams         = 1 << 9,
+    HockeySeasons       = 1 << 10,
+    HockeySeasonMatches = 1 << 11,
+    HockeyTournaments   = 1 << 12,
+
+    All = Persons | Clubs | Divisions | PlayersReferees | Teams | Seasons | SeasonMatches | Tournaments,
+    HockeyAll = Persons | Clubs | Divisions | HockeyPlayers | HockeyTeams | HockeySeasons | HockeySeasonMatches | HockeyTournaments
 }
 
 public static class SeedScopeResolver
 {
     // Iterative fixed-point: each pass adds the prerequisites of any flag currently in the set.
-    // Iterating until stable keeps the rule list flat and lets us add new transitive dependencies
-    // without manually computing closures.
     public static SeedScope Resolve(SeedScope requested)
     {
         SeedScope current = requested;
@@ -46,10 +52,28 @@ public static class SeedScopeResolver
             }
             if (current.HasFlag(SeedScope.Tournaments))
             {
-                // Tournaments is a single inseparable phase: tournament records + their group-stage matches
-                // are always seeded together by FloorballTournamentMatchesSeeder, so we don't expose a
-                // standalone "tournament matches" scope.
                 current |= SeedScope.Persons | SeedScope.Clubs | SeedScope.Divisions | SeedScope.PlayersReferees | SeedScope.Teams;
+            }
+
+            if (current.HasFlag(SeedScope.HockeyPlayers))
+            {
+                current |= SeedScope.Persons;
+            }
+            if (current.HasFlag(SeedScope.HockeyTeams))
+            {
+                current |= SeedScope.Persons | SeedScope.Clubs | SeedScope.Divisions | SeedScope.HockeyPlayers;
+            }
+            if (current.HasFlag(SeedScope.HockeySeasons))
+            {
+                current |= SeedScope.Persons | SeedScope.Clubs | SeedScope.Divisions | SeedScope.HockeyPlayers | SeedScope.HockeyTeams;
+            }
+            if (current.HasFlag(SeedScope.HockeySeasonMatches))
+            {
+                current |= SeedScope.Persons | SeedScope.Clubs | SeedScope.Divisions | SeedScope.HockeyPlayers | SeedScope.HockeyTeams | SeedScope.HockeySeasons;
+            }
+            if (current.HasFlag(SeedScope.HockeyTournaments))
+            {
+                current |= SeedScope.Persons | SeedScope.Clubs | SeedScope.Divisions | SeedScope.HockeyPlayers | SeedScope.HockeyTeams;
             }
         } while (current != previous);
 
@@ -81,8 +105,12 @@ public static class SeedScopeResolver
             scope = SeedScope.All;
             return true;
         }
-        // Reject pure-numeric strings — Enum.TryParse silently accepts them as raw bit values,
-        // which is not what users mean when they pass --scope tokens.
+        if (string.Equals(trimmed, "hockey", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "hockeyall", StringComparison.OrdinalIgnoreCase))
+        {
+            scope = SeedScope.HockeyAll;
+            return true;
+        }
         if (int.TryParse(trimmed, out _))
         {
             return false;
@@ -111,7 +139,12 @@ public static class SeedScopeResolver
             SeedScope.Teams,
             SeedScope.Seasons,
             SeedScope.SeasonMatches,
-            SeedScope.Tournaments
+            SeedScope.Tournaments,
+            SeedScope.HockeyPlayers,
+            SeedScope.HockeyTeams,
+            SeedScope.HockeySeasons,
+            SeedScope.HockeySeasonMatches,
+            SeedScope.HockeyTournaments
         };
         List<string> parts = new List<string>();
         foreach (SeedScope flag in order)

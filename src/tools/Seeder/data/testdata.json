@@ -140,7 +140,8 @@
     ],
 
     "Divisions": [
-      { "Name": "Championship Division", "Description": "Top tier championship floorball league", "Level": 1, "SportType": "Floorball" }
+      { "Name": "Championship Division", "Description": "Top tier championship floorball league", "Level": 1, "SportType": "Floorball" },
+      { "Name": "Liiga Division", "Description": "Top tier ice hockey league", "Level": 1, "SportType": "Icehockey" }
     ],
 
     "FloorballSeasons": [
@@ -573,6 +574,139 @@
       { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-08T18:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
       { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-09T14:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "tapio.heinonen@referee.fi" },
       { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-09T16:00:00", "Venue": "Lahti Arena", "RefereeEmail": "veikko.koivisto@referee.fi" }
+    ],
+
+    "HockeySeasons": [
+      {
+        "Name": "2026-27 Liiga Season",
+        "StartDate": "2026-09-01",
+        "EndDate": "2027-04-30",
+        "SeasonCode": "2026-27-H",
+        "DivisionNames": ["Liiga Division"]
+      }
+    ],
+
+    "HockeyTournaments": [
+      {
+        "Name": "Christmas Hockey Cup 2026",
+        "StartDate": "2026-12-10",
+        "EndDate": "2026-12-20",
+        "Venue": "Nokia Arena",
+        "ContentHtml": "<p>Small invitational ice hockey cup.</p>",
+        "AllGroupMatchesCompleted": false,
+        "Groups": [
+          {
+            "Name": "Group A",
+            "TeamNames": ["Tappara HC", "Ilves HC"]
+          },
+          {
+            "Name": "Group B",
+            "TeamNames": ["HIFK Ice", "Kärpät HC"]
+          }
+        ]
+      }
+    ],
+
+    "HockeyTeams": [
+      {
+        "Name": "Tappara HC",
+        "ShortName": "TAP",
+        "DivisionName": "Liiga Division",
+        "ClubName": "Tampere Titans",
+        "HomeArena": "Nokia Arena",
+        "PrimaryJerseyColor": "Blue",
+        "SecondaryJerseyColor": "Orange",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "aleksi.virtanen@team1.fi", "Position": 2, "JerseyNumber": 9 },
+          { "PersonEmail": "mikko.korhonen@team1.fi", "Position": 3, "JerseyNumber": 11 },
+          { "PersonEmail": "juha.laine@team1.fi", "Position": 4, "JerseyNumber": 15 },
+          { "PersonEmail": "antti.jarvinen@team1.fi", "Position": 1, "JerseyNumber": 5 },
+          { "PersonEmail": "ville.nieminen@team1.fi", "Position": 1, "JerseyNumber": 7 },
+          { "PersonEmail": "jussi.vehvilainen@team1.fi", "Position": 0, "JerseyNumber": 1 }
+        ]
+      },
+      {
+        "Name": "Ilves HC",
+        "ShortName": "ILV",
+        "DivisionName": "Liiga Division",
+        "ClubName": "Tampere Titans",
+        "HomeArena": "Hakametsä",
+        "PrimaryJerseyColor": "Green",
+        "SecondaryJerseyColor": "Yellow",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "janne.aalto@team2.fi", "Position": 2, "JerseyNumber": 19 },
+          { "PersonEmail": "kari.rantanen@team2.fi", "Position": 3, "JerseyNumber": 21 },
+          { "PersonEmail": "markus.salonen@team2.fi", "Position": 4, "JerseyNumber": 23 },
+          { "PersonEmail": "lauri.koskinen@team2.fi", "Position": 1, "JerseyNumber": 4 },
+          { "PersonEmail": "olli.hamalainen@team2.fi", "Position": 1, "JerseyNumber": 6 },
+          { "PersonEmail": "harri.rautiainen@team2.fi", "Position": 0, "JerseyNumber": 30 }
+        ]
+      },
+      {
+        "Name": "HIFK Ice",
+        "ShortName": "HIF",
+        "DivisionName": "Liiga Division",
+        "ClubName": "Helsinki Hammers",
+        "HomeArena": "Helsinki Ice Hall",
+        "PrimaryJerseyColor": "Red",
+        "SecondaryJerseyColor": "White",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "matti.karjalainen@team3.fi", "Position": 2, "JerseyNumber": 12 },
+          { "PersonEmail": "pekka.vaisanen@team3.fi", "Position": 3, "JerseyNumber": 14 },
+          { "PersonEmail": "tommi.lahtinen@team3.fi", "Position": 4, "JerseyNumber": 16 },
+          { "PersonEmail": "jukka.savolainen@team3.fi", "Position": 1, "JerseyNumber": 3 },
+          { "PersonEmail": "esa.peltola@team3.fi", "Position": 1, "JerseyNumber": 8 },
+          { "PersonEmail": "keijo.turunen@team3.fi", "Position": 0, "JerseyNumber": 31 }
+        ]
+      },
+      {
+        "Name": "Kärpät HC",
+        "ShortName": "KAR",
+        "DivisionName": "Liiga Division",
+        "ClubName": "Oulu Outlaws",
+        "HomeArena": "Oulun Energia Areena",
+        "PrimaryJerseyColor": "Black",
+        "SecondaryJerseyColor": "Yellow",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "teemu.hakala@team4.fi", "Position": 2, "JerseyNumber": 10 },
+          { "PersonEmail": "jari.mattila@team4.fi", "Position": 3, "JerseyNumber": 17 },
+          { "PersonEmail": "kimmo.nurmi@team4.fi", "Position": 4, "JerseyNumber": 22 },
+          { "PersonEmail": "hannu.oksanen@team4.fi", "Position": 1, "JerseyNumber": 2 },
+          { "PersonEmail": "seppo.partanen@team4.fi", "Position": 1, "JerseyNumber": 44 },
+          { "PersonEmail": "olavi.eriksson@team4.fi", "Position": 0, "JerseyNumber": 35 }
+        ]
+      }
+    ],
+
+    "HockeyMatches": [
+      {
+        "HomeTeamName": "Tappara HC",
+        "AwayTeamName": "Ilves HC",
+        "SeasonName": "2026-27 Liiga Season",
+        "ScheduledDateTime": "2026-10-15T16:00:00Z",
+        "Venue": "Nokia Arena",
+        "SimulateCompleted": true
+      },
+      {
+        "HomeTeamName": "HIFK Ice",
+        "AwayTeamName": "Kärpät HC",
+        "SeasonName": "2026-27 Liiga Season",
+        "ScheduledDateTime": "2026-10-16T17:00:00Z",
+        "Venue": "Helsinki Ice Hall",
+        "SimulateCompleted": true
+      },
+      {
+        "HomeTeamName": "Ilves HC",
+        "AwayTeamName": "HIFK Ice",
+        "SeasonName": "2026-27 Liiga Season",
+        "ScheduledDateTime": "2027-01-20T16:00:00Z",
+        "Venue": "Hakametsä",
+        "SimulateCompleted": false
+      }
     ]
   }
 }

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
+using Domain.Enums.Hockey.Teams;
 
 namespace Seeder;
 public class PersonSeed
@@ -135,6 +136,63 @@ public class FloorballMatchSeed
 	public string ScheduledDateTime { get; init; } = string.Empty;
 	public string? Venue { get; init; }
 	public string? RefereeEmail { get; init; }
+}
+
+public class HockeySeasonSeed
+{
+	public string Name { get; init; } = "2026-27 Hockey Season";
+	public string StartDate { get; init; } = "2026-09-01";
+	public string EndDate { get; init; } = "2027-04-30";
+	public string? SeasonCode { get; init; } = "2026-27-H";
+	public List<string> DivisionNames { get; init; } = new List<string>();
+}
+
+public class HockeyTournamentSeed
+{
+	public string Name { get; init; } = "Hockey Cup";
+	public string StartDate { get; init; } = "2026-12-01";
+	public string EndDate { get; init; } = "2026-12-15";
+	public string? Venue { get; init; }
+	public string? ContentHtml { get; init; }
+	public bool AllGroupMatchesCompleted { get; init; } = false;
+	public List<HockeyTournamentGroupSeed> Groups { get; init; } = new List<HockeyTournamentGroupSeed>();
+}
+
+public class HockeyTournamentGroupSeed
+{
+	public string Name { get; init; } = "Group A";
+	public List<string> TeamNames { get; init; } = new List<string>();
+}
+
+public class HockeyTeamSeed
+{
+	public string Name { get; init; } = "Tappara HC";
+	public string? ShortName { get; init; } = "TAP";
+	public string DivisionName { get; init; } = string.Empty;
+	public string ClubName { get; init; } = string.Empty;
+	public string HomeArena { get; init; } = "Nokia Arena";
+	public string PrimaryJerseyColor { get; init; } = "Blue";
+	public string? SecondaryJerseyColor { get; init; } = "Orange";
+	public TeamCategory Category { get; init; } = TeamCategory.Adult;
+	public List<HockeyTeamPlayerByEmailSeed> Players { get; init; } = new List<HockeyTeamPlayerByEmailSeed>();
+}
+
+public class HockeyTeamPlayerByEmailSeed
+{
+	public string PersonEmail { get; init; } = string.Empty;
+	public HockeyPosition Position { get; init; } = HockeyPosition.Center;
+	public int JerseyNumber { get; init; } = 10;
+}
+
+public class HockeyMatchSeed
+{
+	public string HomeTeamName { get; init; } = string.Empty;
+	public string AwayTeamName { get; init; } = string.Empty;
+	public string SeasonName { get; init; } = string.Empty;
+	public string ScheduledDateTime { get; init; } = string.Empty;
+	public string? Venue { get; init; }
+	/// <summary>When true, simulate the match to Finished and recalculate stats.</summary>
+	public bool SimulateCompleted { get; init; } = false;
 }
 
 public class LoginDevResponse

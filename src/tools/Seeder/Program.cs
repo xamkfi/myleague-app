@@ -11,6 +11,11 @@ using Application.Features.Floorball.Teams.DTOs;
 using Application.Features.Floorball.Tournaments.DTOs;
 using Application.Features.Floorball.Players.DTOs;
 using Application.Features.Floorball.Referees.DTOs;
+using Application.Features.Hockey.Matches.DTOs;
+using Application.Features.Hockey.Players.DTOs;
+using Application.Features.Hockey.Seasons.DTOs;
+using Application.Features.Hockey.Teams.DTOs;
+using Application.Features.Hockey.Tournaments.DTOs;
 using WebAPI.Models.Common;
 
 namespace Seeder;
@@ -148,6 +153,81 @@ public static class Program
 				tournamentMatchesCreated = await FloorballTournamentMatchesSeeder.SeedAsync(http, jsonOptions, tournaments, tournamentReferees, config.FloorballTournaments);
 			}
 
+			// --- Hockey phases (after Floorball; independent except shared Persons/Clubs/Divisions) ---
+			List<HockeyPlayerDto> hockeyPlayers = new List<HockeyPlayerDto>();
+			Dictionary<string, Guid> hockeyEmailToPlayerId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+			List<HockeyTeamDto> hockeyTeams = new List<HockeyTeamDto>();
+			List<HockeySeasonDto> hockeySeasons = new List<HockeySeasonDto>();
+			List<HockeyMatchDto> hockeyMatches = new List<HockeyMatchDto>();
+			List<HockeyTournamentDto> hockeyTournaments = new List<HockeyTournamentDto>();
+			int hockeyTournamentMatchesCreated = 0;
+
+			if (scope.HasFlag(SeedScope.HockeyPlayers))
+			{
+				HashSet<string> hockeyEmails = config.HockeyTeams
+					.SelectMany(t => t.Players)
+					.Select(p => p.PersonEmail)
+					.Where(e => !string.IsNullOrWhiteSpace(e))
+					.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+				List<PersonSeed> hockeyPersonSeeds = config.PlayerPersons
+					.Concat(config.GoaliePersons)
+					.Where(p => p.ContactInfo?.Email != null && hockeyEmails.Contains(p.ContactInfo.Email))
+					.GroupBy(p => p.ContactInfo!.Email!, StringComparer.OrdinalIgnoreCase)
+					.Select(g => g.First())
+					.ToList();
+
+				if (hockeyPersonSeeds.Count == 0 && hockeyEmails.Count > 0)
+				{
+					throw new InvalidOperationException(
+						"HockeyTeams roster emails were not found in PlayerPersons/GoaliePersons. Add matching PersonSeed entries or reuse floorball person emails.");
+				}
+
+				(List<PersonDto> hockeyPersons, Dictionary<string, Guid> hockeyEmailToPersonId) =
+					await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, hockeyPersonSeeds);
+
+				(hockeyPlayers, hockeyEmailToPlayerId) = await HockeyPlayersSeeder.SeedAsync(
+					http, jsonOptions, hockeyPersons, hockeyEmailToPersonId, config.HockeyTeams);
+			}
+
+			if (scope.HasFlag(SeedScope.HockeyTeams))
+			{
+				hockeyTeams = await HockeyTeamsSeeder.SeedTeamsAsync(http, jsonOptions, config.HockeyTeams, divisionResults, clubResults);
+			}
+
+			if (scope.HasFlag(SeedScope.HockeySeasons))
+			{
+				hockeySeasons = await HockeySeasonsSeeder.SeedAsync(http, jsonOptions, config.HockeySeasons, divisionResults);
+				await HockeyTeamsSeeder.AssignTeamsToSeasonsAsync(
+					http, jsonOptions, hockeySeasons, config.HockeyTeams, hockeyTeams, divisionResults);
+			}
+
+			if (scope.HasFlag(SeedScope.HockeyTeams))
+			{
+				foreach (HockeyTeamSeed teamSeed in config.HockeyTeams)
+				{
+					HockeyTeamDto? team = hockeyTeams.FirstOrDefault(t => string.Equals(t.Name, teamSeed.Name, StringComparison.OrdinalIgnoreCase));
+					if (team != null)
+					{
+						await HockeyTeamsSeeder.AddPlayersAsync(http, jsonOptions, team.Id, teamSeed.Players, hockeyEmailToPlayerId);
+					}
+				}
+			}
+
+			if (scope.HasFlag(SeedScope.HockeySeasonMatches))
+			{
+				hockeyMatches = await HockeyMatchesSeeder.SeedAsync(
+					http, jsonOptions, config.HockeyMatches, hockeySeasons, hockeyTeams);
+			}
+
+			if (scope.HasFlag(SeedScope.HockeyTournaments))
+			{
+				hockeyTournaments = await HockeyTournamentsSeeder.SeedAsync(
+					http, jsonOptions, config.HockeyTournaments, hockeyTeams);
+				hockeyTournamentMatchesCreated = await HockeyTournamentMatchesSeeder.SeedAsync(
+					http, jsonOptions, hockeyTournaments, hockeyTeams, config.HockeyTournaments);
+			}
+
 			Console.WriteLine("\nSummary:");
 			WriteSummaryLine("Persons created:", scope.HasFlag(SeedScope.Persons), basePersons.Count);
 			WriteSummaryLine("Clubs created:", scope.HasFlag(SeedScope.Clubs), clubResults.Count);
@@ -159,6 +239,12 @@ public static class Program
 			WriteSummaryLine("Matches created:", scope.HasFlag(SeedScope.SeasonMatches), matches.Count);
 			WriteSummaryLine("Tournaments created:", scope.HasFlag(SeedScope.Tournaments), tournaments.Count);
 			WriteSummaryLine("Tournament matches created:", scope.HasFlag(SeedScope.Tournaments), tournamentMatchesCreated);
+			WriteSummaryLine("Hockey players created:", scope.HasFlag(SeedScope.HockeyPlayers), hockeyPlayers.Count);
+			WriteSummaryLine("Hockey teams created:", scope.HasFlag(SeedScope.HockeyTeams), hockeyTeams.Count);
+			WriteSummaryLine("Hockey seasons created:", scope.HasFlag(SeedScope.HockeySeasons), hockeySeasons.Count);
+			WriteSummaryLine("Hockey matches created:", scope.HasFlag(SeedScope.HockeySeasonMatches), hockeyMatches.Count);
+			WriteSummaryLine("Hockey tournaments created:", scope.HasFlag(SeedScope.HockeyTournaments), hockeyTournaments.Count);
+			WriteSummaryLine("Hockey tournament matches:", scope.HasFlag(SeedScope.HockeyTournaments), hockeyTournamentMatchesCreated);
 
 			http.Dispose();
 			return 0;
@@ -178,7 +264,6 @@ public static class Program
 		Console.WriteLine("==========================================================");
 		Console.WriteLine($"Requesting login code for {DefaultAuthEmail}...");
 
-		// Step 1: Request login code
 		HttpResponseMessage loginResp = await http.PostAsJsonAsync("api/auth/login", new { email = DefaultAuthEmail });
 		await SeederHttp.EnsureSuccessWithBody(loginResp, "Request login code");
 
@@ -191,7 +276,6 @@ public static class Program
 		string code = loginApi.Data.DevCode;
 		Console.WriteLine($"Received dev code: {code}");
 
-		// Step 2: Verify code to get tokens
 		HttpResponseMessage verifyResp = await http.PostAsJsonAsync("api/auth/verify", new { email = DefaultAuthEmail, code });
 		await SeederHttp.EnsureSuccessWithBody(verifyResp, "Verify login code");
 
@@ -201,7 +285,6 @@ public static class Program
 			throw new InvalidOperationException("Failed to get access token from verify response.");
 		}
 
-		// Step 3: Set Bearer token on HttpClient for all subsequent requests
 		http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", verifyApi.Data.AccessToken);
 		Console.WriteLine($"Authenticated successfully. Token expires at {verifyApi.Data.ExpiresAt:u}");
 		Console.WriteLine("==========================================================\n");
@@ -223,14 +306,12 @@ public static class Program
 			return defaultUrl;
 		}
 
-		// Ensure URL has a scheme
 		if (!input.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
 			!input.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
 		{
 			input = "http://" + input;
 		}
 
-		// Ensure URL ends with /
 		if (!input.EndsWith('/'))
 		{
 			input += "/";
@@ -250,7 +331,7 @@ public static class Program
 				Console.WriteLine($"Using --scope from command line: \"{cliValue}\"");
 				return cliScope;
 			}
-			Console.Error.WriteLine($"Invalid --scope value: '{cliValue}'. Valid tokens: all, persons, clubs, divisions, playersreferees, teams, seasons, seasonmatches, tournaments.");
+			Console.Error.WriteLine($"Invalid --scope value: '{cliValue}'. Valid tokens: all, hockey, hockeyall, persons, clubs, divisions, playersreferees, teams, seasons, seasonmatches, tournaments, hockeyplayers, hockeyteams, hockeyseasons, hockeyseasonmatches, hockeytournaments.");
 			Environment.Exit(2);
 			return SeedScope.None;
 		}
@@ -315,9 +396,10 @@ public static class Program
 		Console.WriteLine("  6) Kaudet (Seasons + team-to-season assignment)  — needs 1, 2, 3, 5");
 		Console.WriteLine("  7) Kausi-ottelut (Season matches)  — needs 1, 2, 3, 4, 5, 6");
 		Console.WriteLine("  8) Turnaukset ja turnausottelut    — needs 1, 2, 3, 4, 5");
-		Console.WriteLine("  9) Kaikki (Everything)");
+		Console.WriteLine("  9) Kaikki Floorball (Everything floorball)");
+		Console.WriteLine(" 10) Hockey kaikki (HockeyAll)       — Icehockey pipeline");
 		Console.WriteLine();
-		Console.WriteLine("Enter selection: comma-separated numbers (e.g. \"1,2,5\") or \"9\" / \"all\" / blank for all.");
+		Console.WriteLine("Enter selection: comma-separated numbers (e.g. \"1,2,5\") or \"9\" / \"all\" / \"10\" / \"hockey\" / blank for floorball all.");
 	}
 
 	private static SeedScope? TryParseMenuInput(string trimmed)
@@ -327,6 +409,13 @@ public static class Program
 			string.Equals(trimmed, "all", StringComparison.OrdinalIgnoreCase))
 		{
 			return SeedScope.All;
+		}
+
+		if (string.Equals(trimmed, "10", StringComparison.OrdinalIgnoreCase) ||
+			string.Equals(trimmed, "hockey", StringComparison.OrdinalIgnoreCase) ||
+			string.Equals(trimmed, "hockeyall", StringComparison.OrdinalIgnoreCase))
+		{
+			return SeedScope.HockeyAll;
 		}
 
 		string[] tokens = trimmed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -361,6 +450,7 @@ public static class Program
 			"7" => SeedScope.SeasonMatches,
 			"8" => SeedScope.Tournaments,
 			"9" => SeedScope.All,
+			"10" => SeedScope.HockeyAll,
 			_ => null
 		};
 	}

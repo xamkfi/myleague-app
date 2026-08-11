@@ -26,6 +26,11 @@ public sealed class SeederConfiguration
     public List<FloorballTeamSeed> FloorballTeams { get; set; } = new List<FloorballTeamSeed>();
     public List<FloorballMatchSeed> FloorballMatches { get; set; } = new List<FloorballMatchSeed>();
 
+    public List<HockeySeasonSeed> HockeySeasons { get; set; } = new List<HockeySeasonSeed>();
+    public List<HockeyTournamentSeed> HockeyTournaments { get; set; } = new List<HockeyTournamentSeed>();
+    public List<HockeyTeamSeed> HockeyTeams { get; set; } = new List<HockeyTeamSeed>();
+    public List<HockeyMatchSeed> HockeyMatches { get; set; } = new List<HockeyMatchSeed>();
+
     public static SeederConfiguration Load()
     {
         // Build path to data/testdata.json relative to the base directory
