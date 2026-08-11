@@ -5,12 +5,14 @@ using Application.Common;
 using Application.Features.Floorball.Seasons.Commands;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Seasons.Queries;
+using Domain.Common;
 using Domain.Enums.Floorball;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using WebAPI.Models.Floorball;
 
 namespace WebAPI.Controllers.Floorball
@@ -50,6 +52,48 @@ namespace WebAPI.Controllers.Floorball
             Result<IEnumerable<FloorballSeasonDto>> result = await _mediator.Send(query);
 
             return HandleListResult(result, "Floorball seasons retrieved successfully", "Failed to retrieve floorball seasons");
+        }
+
+        /// <summary>
+        /// Gets distinct season years for public year navigation.
+        /// </summary>
+        [HttpGet("years")]
+        [ProducesResponseType(typeof(ApiResponse<List<FloorballSeasonYearDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<FloorballSeasonYearDto>>>> GetSeasonYears()
+        {
+            _logger.LogInformation("Getting floorball season years");
+
+            Result<IEnumerable<FloorballSeasonYearDto>> result =
+                await _mediator.Send(new GetFloorballSeasonYearsQuery());
+
+            return HandleListResult(result, "Floorball season years retrieved successfully", "Failed to retrieve floorball season years");
+        }
+
+        /// <summary>
+        /// Gets a paginated slim list of floorball seasons (optional season-year filter).
+        /// </summary>
+        [HttpGet("paged")]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballSeasonSummaryDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballSeasonSummaryDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballSeasonSummaryDto>), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PaginatedApiResponse<FloorballSeasonSummaryDto>>> GetSeasonsPaged(
+            [FromQuery] GetFloorballSeasonsPagedRequest request)
+        {
+            _logger.LogInformation(
+                "Getting paged floorball seasons - Page: {Page}, PageSize: {PageSize}, SeasonYear: {SeasonYear}",
+                request.Page,
+                request.PageSize,
+                request.SeasonYear);
+
+            GetFloorballSeasonsPagedQuery query = new GetFloorballSeasonsPagedQuery(
+                request.Page,
+                request.PageSize,
+                request.SeasonYear);
+
+            Result<PagedResult<FloorballSeasonSummaryDto>> result = await _mediator.Send(query);
+
+            return HandlePaginatedResult(result, "Floorball seasons retrieved successfully", "Failed to retrieve floorball seasons");
         }
 
         /// <summary>

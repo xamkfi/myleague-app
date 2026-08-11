@@ -1,5 +1,6 @@
 import type { 
   ApiResponse,
+  PaginatedApiResponse,
   FloorballTeam,
   FloorballMatchRules
 } from '../../types/floorball/floorballTypes';
@@ -24,7 +25,29 @@ export interface FloorballSeasonDto {
   teams: FloorballTeam[];
   matches: unknown[];
   matchRules: FloorballMatchRules;
-} 
+}
+
+export interface FloorballSeasonSummaryDto {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  isCompleted: boolean;
+  seasonYear: string;
+}
+
+export interface FloorballSeasonYearDto {
+  year: string;
+  seasonCount: number;
+  hasActiveSeason: boolean;
+}
+
+export interface GetFloorballSeasonsPagedParams {
+  page?: number;
+  pageSize?: number;
+  seasonYear?: string;
+}
 
 export interface CreateFloorballSeasonRequest {
   name: string;
@@ -80,6 +103,51 @@ export const floorballSeasonService = {
       console.error('Error in floorballSeasonService.getAll:', error);
       throw error;
     }
+  },
+
+  /**
+   * Get distinct season years for public navigation
+   */
+  getYears: async (): Promise<FloorballSeasonYearDto[]> => {
+    const response = await authFetch(`${API_URL}/FloorballSeason/years`);
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to fetch floorball season years');
+      throw new Error(errorMessage);
+    }
+
+    const apiResponse: ApiResponse<FloorballSeasonYearDto[]> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch floorball season years'));
+    }
+
+    return apiResponse.data ?? [];
+  },
+
+  /**
+   * Get paginated slim season list (optional season-year filter)
+   */
+  getPaged: async (
+    params: GetFloorballSeasonsPagedParams = {}
+  ): Promise<PaginatedApiResponse<FloorballSeasonSummaryDto>> => {
+    const searchParams = new URLSearchParams();
+    searchParams.set('page', String(params.page ?? 1));
+    searchParams.set('pageSize', String(params.pageSize ?? 6));
+    if (params.seasonYear) {
+      searchParams.set('seasonYear', params.seasonYear);
+    }
+
+    const response = await authFetch(`${API_URL}/FloorballSeason/paged?${searchParams.toString()}`);
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to fetch floorball seasons');
+      throw new Error(errorMessage);
+    }
+
+    const apiResponse: PaginatedApiResponse<FloorballSeasonSummaryDto> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch floorball seasons'));
+    }
+
+    return apiResponse;
   },
 
   /**

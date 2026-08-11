@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
@@ -188,6 +189,48 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<bool> ExistsAsync(Guid id)
         {
             return await _entities.AnyAsync(s => s.Id == id);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<FloorballSeasonDateSummary>> GetSeasonDateSummariesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _entities
+                .OfType<FloorballSeason>()
+                .AsNoTracking()
+                .Select(s => new FloorballSeasonDateSummary(s.StartDate, s.EndDate, s.IsActive))
+                .ToListAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<PagedResult<FloorballSeason>> GetSeasonsPagedAsync(
+            int page,
+            int pageSize,
+            int? startYear,
+            int? endYear,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballSeason> query = _entities
+                .OfType<FloorballSeason>()
+                .AsNoTracking();
+
+            if (startYear.HasValue && endYear.HasValue)
+            {
+                int start = startYear.Value;
+                int end = endYear.Value;
+                query = query.Where(s => s.StartDate.Year == start && s.EndDate.Year == end);
+            }
+
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            List<FloorballSeason> items = await query
+                .OrderByDescending(s => s.IsActive)
+                .ThenByDescending(s => s.StartDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return PagedResult.Create(items, totalCount, page, pageSize);
         }
     }
 }

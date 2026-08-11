@@ -1,9 +1,22 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using Domain.Enums.Floorball;
+using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Models.Floorball
 {
+    /// <summary>
+    /// Request for paginated public floorball season listing.
+    /// </summary>
+    public record GetFloorballSeasonsPagedRequest : PagedRequestBase
+    {
+        /// <summary>
+        /// Optional season-year filter, e.g. "2024" or "2024-2025".
+        /// </summary>
+        [StringLength(20)]
+        public string? SeasonYear { get; init; }
+    }
+
     /// <summary>
     /// Request model for creating a floorball season
     /// </summary>
@@ -110,4 +123,4 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         public bool AllowShootout { get; set; } = true;
     }
-} 
+}
