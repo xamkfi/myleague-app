@@ -208,6 +208,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             int pageSize,
             int? startYear,
             int? endYear,
+            Domain.Enums.Common.TeamCategory? teamCategory = null,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballSeason> query = _entities
@@ -219,6 +220,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 int start = startYear.Value;
                 int end = endYear.Value;
                 query = query.Where(s => s.StartDate.Year == start && s.EndDate.Year == end);
+            }
+
+            if (teamCategory.HasValue)
+            {
+                query = query.Where(s => s.TeamCategory == teamCategory.Value);
             }
 
             int totalCount = await query.CountAsync(cancellationToken);

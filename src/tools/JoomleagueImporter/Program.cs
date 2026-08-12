@@ -60,10 +60,11 @@ public static class Program
 
         Console.WriteLine($"Selected {set.Projects.Count} floorball projects " +
                           $"(filter: '{includeFilter}', exclude: '{excludeFilter}'):\n");
-        Console.WriteLine($"  {"ID",4}  {"Project",-50} {"Teams",5} {"Match",6} {"Event",6}");
+        Console.WriteLine($"  {"ID",4}  {"Project",-44} {"Cat",6} {"Teams",5} {"Match",6} {"Event",6}");
         foreach (ProjectImport pi in set.Projects)
         {
-            Console.WriteLine($"  {pi.Project.Id,4}  {Truncate(pi.Project.Name, 50),-50} " +
+            string category = TeamCategoryResolver.InferFromName(pi.Project.Name).ToString();
+            Console.WriteLine($"  {pi.Project.Id,4}  {Truncate(pi.Project.Name, 44),-44} {category,6} " +
                               $"{pi.Teams.Count,5} {pi.Matches.Count,6} {pi.Matches.Sum(m => m.Events.Count),6}");
         }
         Console.WriteLine();

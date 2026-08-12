@@ -101,5 +101,6 @@ public interface IFloorballCompetitionRepository
         int pageSize,
         int? startYear,
         int? endYear,
+        Domain.Enums.Common.TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
 } 

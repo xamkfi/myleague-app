@@ -133,8 +133,14 @@ public class ApiClient : IDisposable
     public async Task<List<FloorballTeamDto>> GetTeamsAsync() =>
         await GetPaginatedListAsync<FloorballTeamDto>("api/floorballteam?Page=1&PageSize=50");
 
-    public async Task<FloorballTeamDto?> CreateTeamAsync(string name, string shortName, Guid clubId, Guid? divisionId)
+    public async Task<FloorballTeamDto?> CreateTeamAsync(
+        string name,
+        string shortName,
+        Guid clubId,
+        Guid? divisionId,
+        Domain.Enums.Common.TeamCategory teamCategory = Domain.Enums.Common.TeamCategory.Adult)
     {
+        // FloorballTeamRequest uses `Category` (not TeamCategory) for create/update.
         HttpResponseMessage resp = await _http.PostAsJsonAsync("api/floorballteam", new
         {
             name,
@@ -142,7 +148,7 @@ public class ApiClient : IDisposable
             divisionId,
             homeArena = "MAHL Arena",
             primaryJerseyColor = "",
-            teamCategory = "Adult",
+            category = teamCategory.ToString(),
             shortName,
         });
         return await ReadDataOrNull<FloorballTeamDto>(resp, $"Create team '{name}'");
@@ -201,7 +207,8 @@ public class ApiClient : IDisposable
         DateTime startDate,
         DateTime endDate,
         int numberOfPeriods,
-        int periodDurationMinutes)
+        int periodDurationMinutes,
+        Domain.Enums.Common.TeamCategory teamCategory = Domain.Enums.Common.TeamCategory.Adult)
     {
         HttpResponseMessage resp = await _http.PostAsJsonAsync("api/floorballseason", new
         {
@@ -213,8 +220,28 @@ public class ApiClient : IDisposable
             periodDurationMinutes,
             allowOvertime = false,
             allowShootout = false,
+            teamCategory = teamCategory.ToString(),
         });
         return await ReadDataOrNull<FloorballSeasonDto>(resp, $"Create season '{name}'");
+    }
+
+    public async Task<FloorballSeasonDto?> UpdateSeasonAsync(
+        FloorballSeasonDto season,
+        Domain.Enums.Common.TeamCategory teamCategory)
+    {
+        HttpResponseMessage resp = await _http.PutAsJsonAsync($"api/floorballseason/{season.Id}", new
+        {
+            name = season.Name,
+            startDate = season.StartDate.ToString("yyyy-MM-dd"),
+            endDate = season.EndDate.ToString("yyyy-MM-dd"),
+            numberOfPeriods = season.MatchRules.NumberOfPeriods,
+            periodDurationMinutes = season.MatchRules.PeriodDurationMinutes,
+            allowOvertime = season.MatchRules.AllowOvertime,
+            overtimeDurationMinutes = season.MatchRules.OvertimeDurationMinutes,
+            allowShootout = season.MatchRules.AllowShootout,
+            teamCategory = teamCategory.ToString(),
+        });
+        return await ReadDataOrNull<FloorballSeasonDto>(resp, $"Update season '{season.Name}' category");
     }
 
     public async Task<bool> AddTeamToSeasonAsync(Guid seasonId, Guid teamId)

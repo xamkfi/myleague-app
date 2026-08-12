@@ -75,6 +75,20 @@
     "fi": "Finnish",
     "switchLanguage": "Switch language"
   },
+  "audience": {
+    "adult": "Adult",
+    "youth": "Youth",
+    "women": "Women",
+    "select": "Select",
+    "selected": "Selected",
+    "switcherLabel": "Age group",
+    "intro": "Select your audience to see relevant information and theming.",
+    "descriptions": {
+      "adult": "Adult leagues and news (blue theme).",
+      "youth": "Youth and children's leagues and news (green theme).",
+      "women": "Women's leagues and news (pink theme)."
+    }
+  },
   "matchPage": {
     "navigation": {
       "summary": "SUMMARY",

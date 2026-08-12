@@ -20,6 +20,11 @@ namespace WebAPI.Models.Floorball
         /// Gets the division filter
         /// </summary>
         public string? Division { get; init; }
+
+        /// <summary>
+        /// Gets the audience / age-group category filter
+        /// </summary>
+        public TeamCategory? TeamCategory { get; init; }
     }
 
     /// <summary>

@@ -63,7 +63,8 @@ namespace WebAPI.Controllers.Floorball
                 request.SearchQuery,
                 request.Status,
                 request.TournamentGroupId,
-                request.CompetitionType
+                request.CompetitionType,
+                request.TeamCategory
             );
 
             Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query, cancellationToken);

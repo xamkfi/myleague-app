@@ -57,6 +57,12 @@ namespace WebAPI.Models.Common
         public string? SportCategory { get; init; }
 
         /// <summary>
+        /// Gets the optional audience / age-group category (Adult, Youth, Women).
+        /// Null means the article is shown for all audiences.
+        /// </summary>
+        public string? TeamCategory { get; init; }
+
+        /// <summary>
         /// Gets the optional list of tags associated with the news article
         /// </summary>
         public IReadOnlyList<string>? Tags { get; init; }
@@ -111,6 +117,12 @@ namespace WebAPI.Models.Common
         /// Gets the optional sport category of the news article
         /// </summary>
         public string? SportCategory { get; init; }
+
+        /// <summary>
+        /// Gets the optional audience / age-group category (Adult, Youth, Women).
+        /// Null means the article is shown for all audiences.
+        /// </summary>
+        public string? TeamCategory { get; init; }
 
         /// <summary>
         /// Gets the optional list of tags associated with the news article
@@ -195,6 +207,12 @@ namespace WebAPI.Models.Common
         /// Gets the optional author filter
         /// </summary>
         public string? Author { get; init; }
+
+        /// <summary>
+        /// Gets the optional audience / age-group category filter (Adult, Youth, Women).
+        /// When set, returns articles for that category plus articles with no category (all audiences).
+        /// </summary>
+        public string? TeamCategory { get; init; }
 
         /// <summary>
         /// Gets whether to include archived articles

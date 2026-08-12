@@ -16,6 +16,7 @@ import {
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { FloorballMatchStatus, type FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import { formatMatchDateTime } from '../../utils/helpers';
+import { useAudience } from '../../context/AudienceContext';
 import bannerImage from '../../assets/floorball-banner.png';
 import './FloorballPage.scss';
 
@@ -35,6 +36,7 @@ function formatSeasonYearLabel(year: string): string {
 
 function FloorballPage() {
   const { t } = useTranslation();
+  const { audience } = useAudience();
   const [searchParams, setSearchParams] = useSearchParams();
   const initializedRef = useRef(false);
 
@@ -114,6 +116,7 @@ function FloorballPage() {
           page: currentPage,
           pageSize: PAGE_SIZE,
           seasonYear: selectedYear,
+          teamCategory: audience.teamCategory,
         });
 
         const seasons = response.data ?? [];
@@ -189,7 +192,7 @@ function FloorballPage() {
     };
 
     void loadSeasons();
-  }, [isLoadingYears, selectedYear, currentPage, reloadToken, setSearchParams, t]);
+  }, [isLoadingYears, selectedYear, currentPage, reloadToken, setSearchParams, t, audience.teamCategory]);
 
   const handleYearSelect = (year: string) => {
     if (year === selectedYear) return;

@@ -15,6 +15,11 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [StringLength(20)]
         public string? SeasonYear { get; init; }
+
+        /// <summary>
+        /// Optional audience / age-group category filter.
+        /// </summary>
+        public Domain.Enums.Common.TeamCategory? TeamCategory { get; init; }
     }
 
     /// <summary>
@@ -72,6 +77,11 @@ namespace WebAPI.Models.Floorball
         /// Whether shootout is allowed after overtime. Default: true.
         /// </summary>
         public bool AllowShootout { get; set; } = true;
+
+        /// <summary>
+        /// Audience / age-group category. Default: Adult.
+        /// </summary>
+        public Domain.Enums.Common.TeamCategory TeamCategory { get; set; } = Domain.Enums.Common.TeamCategory.Adult;
     }
 
     /// <summary>
@@ -122,5 +132,10 @@ namespace WebAPI.Models.Floorball
         /// Whether shootout is allowed after overtime. Default: true.
         /// </summary>
         public bool AllowShootout { get; set; } = true;
+
+        /// <summary>
+        /// Audience / age-group category. When omitted, the existing value is kept.
+        /// </summary>
+        public Domain.Enums.Common.TeamCategory? TeamCategory { get; set; }
     }
 }

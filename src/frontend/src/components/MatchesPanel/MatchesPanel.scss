@@ -1,5 +1,4 @@
 @use 'sass:map';
-@use 'sass:color';
 @use '@variables' as *;
 
 // =============================================
@@ -180,7 +179,7 @@
   display: flex;
   flex-direction: column;
   gap: map.get($spacing, 'xxs');
-  background: $color-blue-darkest;
+  background-color: $color-brand-darkest;
   color: $color-white;
   border-radius: map.get($border-radius, 'lg');
   padding: map.get($spacing, 'sm') map.get($spacing, 'sm');
@@ -189,8 +188,10 @@
   position: relative;
   overflow: hidden;
 
+  // Darkened via an overlay instead of color.adjust(), because the base colour is an
+  // audience-theme CSS variable that Sass colour functions cannot read.
   &:hover {
-    background: color.adjust($color-blue-darkest, $lightness: -3%);
+    background-image: linear-gradient(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.12));
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
   }
 

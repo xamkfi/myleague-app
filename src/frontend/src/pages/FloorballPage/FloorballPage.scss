@@ -30,7 +30,7 @@
   position: relative;
   width: 100%;
   min-height: 320px;
-  background: $color-blue-light;
+  background: $color-brand-light;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -314,7 +314,7 @@
 
   // Dark (active league) variant per the Figma design
   &--dark {
-    background: $color-blue-deep;
+    background: $color-brand-deep;
     box-shadow: none;
 
     .fb-standings-card__title,
@@ -371,7 +371,7 @@
     align-items: center;
     padding: 4px 16px;
     border-radius: 4px;
-    background: $color-blue-darkest;
+    background: $color-banner-bg;
     color: $color-neutral-white;
     font-family: $font-family-body;
     font-weight: map.get($font-weights, 'bold');

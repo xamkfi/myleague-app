@@ -64,7 +64,7 @@ namespace Domain.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Collection of news articles</returns>
-        Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default);
+        Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, string? teamCategory = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the total count of news articles with filtering
@@ -75,7 +75,7 @@ namespace Domain.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Total count of matching news articles</returns>
-        Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default);
+        Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, string? teamCategory = null, CancellationToken cancellationToken = default);
         
         /// <summary>
         /// Gets all unique tags used in news articles

@@ -165,33 +165,49 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// avoid the cartesian explosion that would otherwise occur when including multiple unrelated
         /// collections (Groups.Teams + Matches) on the same root.
         /// </summary>
-        public async Task<List<FloorballTournament>> GetAllAsync(CancellationToken ct = default)
+        public async Task<List<FloorballTournament>> GetAllAsync(
+            Domain.Enums.Common.TeamCategory? teamCategory = null,
+            CancellationToken ct = default)
         {
-            return await _entities
+            IQueryable<FloorballTournament> query = _entities
                 .Include(t => t.Teams)
                 .Include(t => t.Groups)
                     .ThenInclude(g => g.Teams)
                         .ThenInclude(gt => gt.Team)
                 .Include(t => t.Matches)
-                .AsSplitQuery()
-                .ToListAsync(ct);
+                .AsSplitQuery();
+
+            if (teamCategory.HasValue)
+            {
+                query = query.Where(t => t.TeamCategory == teamCategory.Value);
+            }
+
+            return await query.ToListAsync(ct);
         }
 
         /// <summary>
         /// Gets active floorball tournaments. Same eager-loading strategy as GetAllAsync so the listing DTO
         /// can populate group/team/match counts.
         /// </summary>
-        public async Task<List<FloorballTournament>> GetActiveAsync(CancellationToken ct = default)
+        public async Task<List<FloorballTournament>> GetActiveAsync(
+            Domain.Enums.Common.TeamCategory? teamCategory = null,
+            CancellationToken ct = default)
         {
-            return await _entities
+            IQueryable<FloorballTournament> query = _entities
                 .Include(t => t.Teams)
                 .Include(t => t.Groups)
                     .ThenInclude(g => g.Teams)
                         .ThenInclude(gt => gt.Team)
                 .Include(t => t.Matches)
                 .AsSplitQuery()
-                .Where(t => t.IsActive && t.TournamentStatus != FloorballTournamentStatus.Completed)
-                .ToListAsync(ct);
+                .Where(t => t.IsActive && t.TournamentStatus != FloorballTournamentStatus.Completed);
+
+            if (teamCategory.HasValue)
+            {
+                query = query.Where(t => t.TeamCategory == teamCategory.Value);
+            }
+
+            return await query.ToListAsync(ct);
         }
 
         /// <summary>

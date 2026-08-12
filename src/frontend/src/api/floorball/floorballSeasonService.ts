@@ -25,6 +25,7 @@ export interface FloorballSeasonDto {
   teams: FloorballTeam[];
   matches: unknown[];
   matchRules: FloorballMatchRules;
+  teamCategory?: string;
 }
 
 export interface FloorballSeasonSummaryDto {
@@ -35,6 +36,7 @@ export interface FloorballSeasonSummaryDto {
   isActive: boolean;
   isCompleted: boolean;
   seasonYear: string;
+  teamCategory?: string;
 }
 
 export interface FloorballSeasonYearDto {
@@ -47,6 +49,7 @@ export interface GetFloorballSeasonsPagedParams {
   page?: number;
   pageSize?: number;
   seasonYear?: string;
+  teamCategory?: string;
 }
 
 export interface CreateFloorballSeasonRequest {
@@ -59,6 +62,7 @@ export interface CreateFloorballSeasonRequest {
   allowOvertime: boolean;
   overtimeDurationMinutes: number;
   allowShootout: boolean;
+  teamCategory?: string;
 }
 
 export interface UpdateFloorballSeasonRequest {
@@ -70,6 +74,7 @@ export interface UpdateFloorballSeasonRequest {
   allowOvertime: boolean;
   overtimeDurationMinutes: number;
   allowShootout: boolean;
+  teamCategory?: string;
 }
 
 export const floorballSeasonService = {
@@ -134,6 +139,9 @@ export const floorballSeasonService = {
     searchParams.set('pageSize', String(params.pageSize ?? 6));
     if (params.seasonYear) {
       searchParams.set('seasonYear', params.seasonYear);
+    }
+    if (params.teamCategory) {
+      searchParams.set('teamCategory', params.teamCategory);
     }
 
     const response = await authFetch(`${API_URL}/FloorballSeason/paged?${searchParams.toString()}`);

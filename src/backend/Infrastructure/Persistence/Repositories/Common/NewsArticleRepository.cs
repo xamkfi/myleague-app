@@ -215,7 +215,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Collection of news articles</returns>
-        public async Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, string? teamCategory = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -268,6 +268,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     query = query.Where(n => EF.Functions.ILike(n.Author ?? "", $"%{author}%"));
                 }
 
+                if (!string.IsNullOrWhiteSpace(teamCategory)
+                    && Enum.TryParse<TeamCategory>(teamCategory, true, out TeamCategory parsedTeamCategory))
+                {
+                    // Null TeamCategory = shown for all audiences
+                    query = query.Where(n => n.TeamCategory == null || n.TeamCategory == parsedTeamCategory);
+                }
+
                 // Apply pagination
                 int skip = (page - 1) * pageSize;
 
@@ -293,7 +300,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Total count of matching news articles</returns>
-        public async Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default)
+        public async Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, string? teamCategory = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -332,6 +339,12 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 if (!string.IsNullOrWhiteSpace(author))
                 {
                     query = query.Where(n => EF.Functions.ILike(n.Author ?? "", $"%{author}%"));
+                }
+
+                if (!string.IsNullOrWhiteSpace(teamCategory)
+                    && Enum.TryParse<TeamCategory>(teamCategory, true, out TeamCategory parsedTeamCategory))
+                {
+                    query = query.Where(n => n.TeamCategory == null || n.TeamCategory == parsedTeamCategory);
                 }
 
                 return await query.CountAsync(cancellationToken);

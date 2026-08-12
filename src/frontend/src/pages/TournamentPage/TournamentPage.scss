@@ -12,7 +12,7 @@
   padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'xl');
 
   &__hero {
-    background: linear-gradient(135deg, $color-blue-deep 0%, $color-blue-darkest 100%);
+    background: $color-banner-gradient;
     border-radius: map.get($border-radius, 'lg');
     padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
     margin-bottom: map.get($spacing, 'xl');

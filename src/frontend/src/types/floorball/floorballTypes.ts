@@ -369,4 +369,5 @@ export interface GetFloorballMatchesRequest {
   searchQuery?: string;
   tournamentGroupId?: string;
   competitionType?: FloorballCompetitionType;
+  teamCategory?: TeamCategory;
 } 

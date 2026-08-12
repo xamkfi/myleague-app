@@ -56,11 +56,12 @@ namespace WebAPI.Controllers.Floorball
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTournamentDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballTournamentDto>>>> GetAllTournaments()
+        public async Task<ActionResult<ApiResponse<List<FloorballTournamentDto>>>> GetAllTournaments(
+            [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null)
         {
             _logger.LogInformation("Getting all floorball tournaments");
 
-            GetAllFloorballTournamentsQuery query = new GetAllFloorballTournamentsQuery();
+            GetAllFloorballTournamentsQuery query = new GetAllFloorballTournamentsQuery(teamCategory);
             Result<List<FloorballTournamentDto>> result = await _mediator.Send(query);
 
             return HandleResult(result, "Floorball tournaments retrieved successfully", "Failed to retrieve floorball tournaments");
@@ -73,11 +74,12 @@ namespace WebAPI.Controllers.Floorball
         [HttpGet("active")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTournamentDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballTournamentDto>>>> GetActiveTournaments()
+        public async Task<ActionResult<ApiResponse<List<FloorballTournamentDto>>>> GetActiveTournaments(
+            [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null)
         {
             _logger.LogInformation("Getting active floorball tournaments");
 
-            GetActiveFloorballTournamentsQuery query = new GetActiveFloorballTournamentsQuery();
+            GetActiveFloorballTournamentsQuery query = new GetActiveFloorballTournamentsQuery(teamCategory);
             Result<List<FloorballTournamentDto>> result = await _mediator.Send(query);
 
             return HandleResult(result, "Active floorball tournaments retrieved successfully", "Failed to retrieve active floorball tournaments");
@@ -137,7 +139,8 @@ namespace WebAPI.Controllers.Floorball
                 request.TeamsAdvancingPerGroup,
                 request.HasPlayoffStage,
                 request.HasThirdPlaceMatch,
-                scheduleSlots
+                scheduleSlots,
+                request.TeamCategory ?? Domain.Enums.Common.TeamCategory.Adult
             );
 
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
@@ -192,7 +195,8 @@ namespace WebAPI.Controllers.Floorball
                 request.TeamsAdvancingPerGroup,
                 request.HasPlayoffStage,
                 request.HasThirdPlaceMatch,
-                scheduleSlots
+                scheduleSlots,
+                request.TeamCategory
             );
 
             Result<FloorballTournamentDto> result = await _mediator.Send(command);

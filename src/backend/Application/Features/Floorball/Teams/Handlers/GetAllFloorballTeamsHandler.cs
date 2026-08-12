@@ -109,6 +109,7 @@ public class GetAllFloorballTeamsHandler : BasePagedQueryHandler<GetAllFloorball
                 pageSize: actualPageSize,
                 clubId: request.ClubId,
                 divisionId: divisionId,
+                teamCategory: request.TeamCategory,
                 cancellationToken: cancellationToken);
             
             // Load all clubs for DTO mapping (since Club navigation is ignored in FloorballTeam)

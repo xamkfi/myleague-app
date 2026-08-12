@@ -1,3 +1,4 @@
+using Domain.Enums.Common;
 using Domain.ValueObjects.Floorball;
 
 namespace Domain.Entities.Floorball;
@@ -19,6 +20,12 @@ public class FloorballSeason : FloorballCompetition
     /// <param name="startDate">The start date of the season</param>
     /// <param name="endDate">The end date of the season</param>
     /// <param name="matchRules">Optional match rules configuration. If null, defaults are used.</param>
-    public FloorballSeason(string name, DateTime startDate, DateTime endDate, FloorballMatchRules? matchRules = null)
-        : base(name, startDate, endDate, matchRules) { }
+    /// <param name="teamCategory">Audience / age-group category. Defaults to Adult.</param>
+    public FloorballSeason(
+        string name,
+        DateTime startDate,
+        DateTime endDate,
+        FloorballMatchRules? matchRules = null,
+        TeamCategory teamCategory = TeamCategory.Adult)
+        : base(name, startDate, endDate, matchRules, teamCategory) { }
 }

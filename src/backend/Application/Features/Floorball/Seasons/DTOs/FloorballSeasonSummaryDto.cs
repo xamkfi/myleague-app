@@ -1,3 +1,5 @@
+using Domain.Enums.Common;
+
 namespace Application.Features.Floorball.Seasons.DTOs;
 
 /// <summary>
@@ -10,4 +12,5 @@ public record FloorballSeasonSummaryDto(
     DateTime EndDate,
     bool IsActive,
     bool IsCompleted,
-    string SeasonYear);
+    string SeasonYear,
+    TeamCategory TeamCategory);

@@ -36,7 +36,7 @@ public class GetActiveFloorballTournamentsHandler : IRequestHandler<GetActiveFlo
         {
             _logger.LogInformation("Retrieving active floorball tournaments");
 
-            IEnumerable<FloorballTournament> tournaments = await _tournamentRepository.GetActiveAsync();
+            IEnumerable<FloorballTournament> tournaments = await _tournamentRepository.GetActiveAsync(request.TeamCategory, cancellationToken);
             List<FloorballTournamentDto> tournamentDtos = tournaments
                 .Select(t => FloorballTournamentMapper.ToDto(t))
                 .ToList();

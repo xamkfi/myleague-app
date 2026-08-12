@@ -89,7 +89,8 @@ namespace WebAPI.Controllers.Floorball
             GetFloorballSeasonsPagedQuery query = new GetFloorballSeasonsPagedQuery(
                 request.Page,
                 request.PageSize,
-                request.SeasonYear);
+                request.SeasonYear,
+                request.TeamCategory);
 
             Result<PagedResult<FloorballSeasonSummaryDto>> result = await _mediator.Send(query);
 
@@ -178,7 +179,8 @@ namespace WebAPI.Controllers.Floorball
                 request.PeriodDurationMinutes,
                 request.AllowOvertime,
                 request.OvertimeDurationMinutes,
-                request.AllowShootout
+                request.AllowShootout,
+                request.TeamCategory
             );
 
             Result<FloorballSeasonDto> result = await _mediator.Send(command);
@@ -225,7 +227,8 @@ namespace WebAPI.Controllers.Floorball
                 request.PeriodDurationMinutes,
                 request.AllowOvertime,
                 request.OvertimeDurationMinutes,
-                request.AllowShootout
+                request.AllowShootout,
+                request.TeamCategory
             );
 
             Result<FloorballSeasonDto> result = await _mediator.Send(command);

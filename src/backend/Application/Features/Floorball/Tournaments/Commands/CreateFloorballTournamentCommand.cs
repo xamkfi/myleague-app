@@ -38,4 +38,5 @@ public record CreateFloorballTournamentCommand(
     int TeamsAdvancingPerGroup,
     bool HasPlayoffStage,
     bool HasThirdPlaceMatch,
-    IReadOnlyList<PlayoffScheduleSlotInput>? PlayoffSchedule = null) : IRequest<Result<FloorballTournamentDto>>;
+    IReadOnlyList<PlayoffScheduleSlotInput>? PlayoffSchedule = null,
+    Domain.Enums.Common.TeamCategory TeamCategory = Domain.Enums.Common.TeamCategory.Adult) : IRequest<Result<FloorballTournamentDto>>;

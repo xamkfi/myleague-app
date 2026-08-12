@@ -8,6 +8,7 @@ using Application.Features.Common.News.DTOs;
 using Application.Features.Common.Search.DTOs;
 using Application.Features.Common.MatchTimer.DTOs;
 using Application.Features.Common.Shared.DTOs;
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 
 namespace Application.Features.Floorball.Teams.DTOs
@@ -26,6 +27,7 @@ namespace Application.Features.Floorball.Teams.DTOs
     /// <param name="LogoUrl">The team's logo URL</param>
     /// <param name="HasActiveMembers">Whether the team has any active members</param>
     /// <param name="Roster">The team's roster of players</param>
+    /// <param name="TeamCategory">Audience / age-group category</param>
     public record FloorballTeamDto(
         Guid Id,
         string Name,
@@ -37,5 +39,6 @@ namespace Application.Features.Floorball.Teams.DTOs
         string SecondaryJerseyColor,
         string? LogoUrl,
         bool HasActiveMembers,
-        IReadOnlyCollection<FloorballTeamPlayerDto> Roster);
+        IReadOnlyCollection<FloorballTeamPlayerDto> Roster,
+        TeamCategory TeamCategory);
 }

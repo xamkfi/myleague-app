@@ -13,6 +13,7 @@ export interface NewsArticleDto {
   updatedAt?: string;
   category?: string;
   sportCategory?: string;
+  teamCategory?: string;
   tags: string[];
   isArchived: boolean;
 }
@@ -20,6 +21,7 @@ export interface NewsArticleDto {
 export interface NewsParameters{
   category: string;
   sportCategory: string;
+  teamCategory?: string;
   searchTerm: string;
   includeArchived?: boolean;
   page?: number;
@@ -48,6 +50,7 @@ export async function newsService(params?: Partial<NewsParameters>): Promise<Pag
 
     if (params?.category) queryParams.append("category", params.category);
     if (params?.sportCategory) queryParams.append("sportCategory", params.sportCategory);
+    if (params?.teamCategory) queryParams.append("teamCategory", params.teamCategory);
     if (params?.searchTerm) queryParams.append("search", params.searchTerm);
     if (params?.includeArchived !== undefined) queryParams.append("includeArchived", params.includeArchived.toString());
     if (params?.page) queryParams.append("page", params.page.toString());

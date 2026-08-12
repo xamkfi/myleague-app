@@ -1,0 +1,35 @@
+/**
+ * Audience / age-group theme tokens.
+ * Applied via document.documentElement[data-audience="adult|youth|women"].
+ */
+
+:root,
+[data-audience='adult'] {
+  --brand-darkest: #0c1d3e;
+  --brand-deep: #16346b;
+  --brand-medium: #2a4a63;
+  --brand-light: #4a679f;
+  --brand-bg: #cfdaef;
+  --banner-bg: #0c1d3e;
+  --banner-text: #ffffff;
+}
+
+[data-audience='youth'] {
+  --brand-darkest: #0f3d24;
+  --brand-deep: #1e9850;
+  --brand-medium: #2fcc6f;
+  --brand-light: #6dd698;
+  --brand-bg: #e8f9f1;
+  --banner-bg: #0f3d24;
+  --banner-text: #ffffff;
+}
+
+[data-audience='women'] {
+  --brand-darkest: #6b1d3a;
+  --brand-deep: #9b2d5b;
+  --brand-medium: #c44b7a;
+  --brand-light: #e07a9f;
+  --brand-bg: #f5d0dc;
+  --banner-bg: #6b1d3a;
+  --banner-text: #ffffff;
+}

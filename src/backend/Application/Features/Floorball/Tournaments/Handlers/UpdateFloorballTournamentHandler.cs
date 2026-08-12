@@ -62,6 +62,10 @@ public class UpdateFloorballTournamentHandler : IRequestHandler<UpdateFloorballT
             tournament.UpdateDetails(request.Name, startDateUtc, endDateUtc);
             tournament.UpdateContent(request.ContentHtml);
             tournament.UpdateVenue(request.Venue);
+            if (request.TeamCategory.HasValue)
+            {
+                tournament.UpdateTeamCategory(request.TeamCategory.Value);
+            }
 
             FloorballMatchRules groupStageMatchRules = new FloorballMatchRules(
                 request.GroupStageNumberOfPeriods,

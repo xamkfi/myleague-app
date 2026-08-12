@@ -90,6 +90,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             string? searchQuery = null,
             Guid? tournamentGroupId = null,
             FloorballCompetitionType? competitionType = null,
+            Domain.Enums.Common.TeamCategory? teamCategory = null,
             CancellationToken cancellationToken = default)
         {
             DateTime? startDateUtc = startDate.HasValue
@@ -148,6 +149,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 {
                     query = query.Where(m => m.Competition is FloorballSeason);
                 }
+            }
+
+            if (teamCategory.HasValue)
+            {
+                query = query.Where(m => m.Competition.TeamCategory == teamCategory.Value);
             }
 
             // Apply search query filter (team names)

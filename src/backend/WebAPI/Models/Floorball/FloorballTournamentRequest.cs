@@ -141,6 +141,12 @@ namespace WebAPI.Models.Floorball
         /// page so end-users see the full match program from day one.
         /// </summary>
         public List<PlayoffScheduleSlotRequest>? PlayoffSchedule { get; set; }
+
+        /// <summary>
+        /// Audience / age-group category. Defaults to Adult when omitted on create.
+        /// On update, omit to keep the existing value.
+        /// </summary>
+        public Domain.Enums.Common.TeamCategory? TeamCategory { get; set; }
     }
 
     /// <summary>

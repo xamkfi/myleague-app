@@ -5,6 +5,7 @@ using Application.Features.Floorball.Players.DTOs;
 using Application.Features.Floorball.Referees.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Teams.DTOs;
+using Domain.Enums.Common;
 using JoomleagueImporter.Models;
 
 namespace JoomleagueImporter.Import;
@@ -188,9 +189,12 @@ public class EntityImporter
         int created = 0, reused = 0;
 
         // Union roster per team across all selected projects. Prefer data from newer projects.
+        // Also collect the strongest inferred TeamCategory from projects that include the team.
         Dictionary<int, Dictionary<int, RosterEntry>> rosterByTeam = [];
+        Dictionary<int, TeamCategory> categoryByTeam = [];
         foreach (ProjectImport pi in set.Projects.OrderBy(p => p.Project.Id))
         {
+            TeamCategory projectCategory = TeamCategoryResolver.InferFromName(pi.Project.Name);
             foreach (ProjectTeamImport pti in pi.Teams.Values)
             {
                 if (!rosterByTeam.TryGetValue(pti.Team.Id, out Dictionary<int, RosterEntry>? union))
@@ -200,12 +204,20 @@ public class EntityImporter
                 }
                 foreach (RosterEntry re in pti.Roster)
                     union[re.Person.Id] = re; // later projects overwrite: newest jersey/position wins
+
+                TeamCategory fromTeamName = TeamCategoryResolver.InferFromName(pti.Team.Name);
+                TeamCategory combined = TeamCategoryResolver.Prefer(projectCategory, fromTeamName);
+                if (categoryByTeam.TryGetValue(pti.Team.Id, out TeamCategory existingCat))
+                    categoryByTeam[pti.Team.Id] = TeamCategoryResolver.Prefer(existingCat, combined);
+                else
+                    categoryByTeam[pti.Team.Id] = combined;
             }
         }
 
         foreach (OldTeam oldTeam in set.UniqueTeams.Values)
         {
             FloorballTeamDto? team = null;
+            TeamCategory teamCategory = categoryByTeam.GetValueOrDefault(oldTeam.Id, TeamCategory.Adult);
 
             if (_idMap.Teams.TryGetValue(oldTeam.Id, out Guid mappedId))
             {
@@ -228,7 +240,8 @@ public class EntityImporter
                         continue;
                     }
 
-                    team = await _api.CreateTeamAsync(oldTeam.Name, MakeShortName(oldTeam), clubId, division.Id);
+                    team = await _api.CreateTeamAsync(
+                        oldTeam.Name, MakeShortName(oldTeam), clubId, division.Id, teamCategory);
                     if (team == null)
                     {
                         _log.LogError("CreateTeam", new { oldTeam.Id, oldTeam.Name }, "API returned null.");
@@ -368,6 +381,7 @@ public class EntityImporter
     public async Task<FloorballSeasonDto?> ImportSeasonAsync(ProjectImport pi, DivisionDto division)
     {
         OldProject project = pi.Project;
+        TeamCategory teamCategory = TeamCategoryResolver.InferFromName(project.Name);
 
         List<FloorballSeasonDto> existing = await _api.GetSeasonsAsync();
 
@@ -376,7 +390,9 @@ public class EntityImporter
             FloorballSeasonDto? mapped = existing.FirstOrDefault(s => s.Id == mappedSeasonId);
             if (mapped != null)
             {
-                Console.WriteLine($"  Season already imported: '{mapped.Name}' ({mapped.Id})");
+                mapped = await EnsureSeasonCategoryAsync(mapped, teamCategory);
+                Console.WriteLine(
+                    $"  Season already imported: '{mapped.Name}' ({mapped.Id}) [{mapped.TeamCategory}]");
                 // Team membership is idempotent on the API side, so always (re-)ensure it;
                 // an earlier run may have failed to add some teams.
                 await EnsureTeamsInSeasonAsync(pi, mapped, division);
@@ -410,17 +426,19 @@ public class EntityImporter
 
             season = await _api.CreateSeasonAsync(
                 seasonName, division.Id, start, end,
-                project.NumberOfPeriods, project.PeriodDurationMinutes);
+                project.NumberOfPeriods, project.PeriodDurationMinutes,
+                teamCategory);
             if (season == null)
             {
-                _log.LogError("CreateSeason", new { project.Id, seasonName }, "API returned null.");
+                _log.LogError("CreateSeason", new { project.Id, seasonName, teamCategory }, "API returned null.");
                 return null;
             }
-            Console.WriteLine($"  Created season '{seasonName}' ({season.Id})");
+            Console.WriteLine($"  Created season '{seasonName}' ({season.Id}) [{teamCategory}]");
         }
         else
         {
-            Console.WriteLine($"  Using existing season '{seasonName}' ({season.Id})");
+            season = await EnsureSeasonCategoryAsync(season, teamCategory);
+            Console.WriteLine($"  Using existing season '{seasonName}' ({season.Id}) [{season.TeamCategory}]");
         }
 
         _idMap.Seasons[project.Id] = season.Id;
@@ -429,6 +447,30 @@ public class EntityImporter
         await EnsureTeamsInSeasonAsync(pi, season, division);
 
         return season;
+    }
+
+    /// <summary>
+    /// Re-runs can fix seasons that were imported before TeamCategory existed (default Adult).
+    /// </summary>
+    private async Task<FloorballSeasonDto> EnsureSeasonCategoryAsync(
+        FloorballSeasonDto season,
+        TeamCategory expected)
+    {
+        if (season.TeamCategory == expected)
+            return season;
+
+        FloorballSeasonDto? updated = await _api.UpdateSeasonAsync(season, expected);
+        if (updated == null)
+        {
+            _log.LogError(
+                "UpdateSeasonCategory",
+                new { season.Id, season.Name, From = season.TeamCategory, To = expected },
+                "API returned null; keeping previous category.");
+            return season;
+        }
+
+        Console.WriteLine($"  Updated season category '{season.Name}': {season.TeamCategory} → {expected}");
+        return updated;
     }
 
     private async Task EnsureTeamsInSeasonAsync(ProjectImport pi, FloorballSeasonDto season, DivisionDto division)

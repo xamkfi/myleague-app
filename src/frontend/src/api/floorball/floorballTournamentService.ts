@@ -10,9 +10,16 @@ import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
 
 export const floorballTournamentService = {
-  getAll: async (): Promise<ApiResponse<FloorballTournamentDto[]>> => {
+  getAll: async (teamCategory?: string): Promise<ApiResponse<FloorballTournamentDto[]>> => {
     try {
-      const response = await authFetch(`${API_URL}/FloorballTournament`);
+      const searchParams = new URLSearchParams();
+      if (teamCategory) {
+        searchParams.set('teamCategory', teamCategory);
+      }
+      const query = searchParams.toString();
+      const response = await authFetch(
+        `${API_URL}/FloorballTournament${query ? `?${query}` : ''}`,
+      );
 
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch tournaments');
@@ -32,9 +39,16 @@ export const floorballTournamentService = {
     }
   },
 
-  getActive: async (): Promise<ApiResponse<FloorballTournamentDto[]>> => {
+  getActive: async (teamCategory?: string): Promise<ApiResponse<FloorballTournamentDto[]>> => {
     try {
-      const response = await authFetch(`${API_URL}/FloorballTournament/active`);
+      const searchParams = new URLSearchParams();
+      if (teamCategory) {
+        searchParams.set('teamCategory', teamCategory);
+      }
+      const query = searchParams.toString();
+      const response = await authFetch(
+        `${API_URL}/FloorballTournament/active${query ? `?${query}` : ''}`,
+      );
 
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch active tournaments');

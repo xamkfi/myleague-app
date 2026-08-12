@@ -48,6 +48,7 @@ public interface IFloorballMatchRepository
         string? searchQuery = null,
         Guid? tournamentGroupId = null,
         FloorballCompetitionType? competitionType = null,
+        Domain.Enums.Common.TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>

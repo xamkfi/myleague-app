@@ -34,6 +34,13 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Property(s => s.IsCompleted)
                 .IsRequired();
 
+            builder.Property(s => s.TeamCategory)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasDefaultValue(Domain.Enums.Common.TeamCategory.Adult);
+
+            builder.HasIndex(s => s.TeamCategory);
+
             builder.OwnsOne(s => s.MatchRules, rules =>
             {
                 rules.Property(r => r.NumberOfPeriods)

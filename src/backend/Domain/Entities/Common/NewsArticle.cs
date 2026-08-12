@@ -60,6 +60,12 @@ namespace Domain.Entities.Common
         public SportsCategory? SportCategory { get; private set; }
 
         /// <summary>
+        /// Gets the optional audience / age-group category.
+        /// Null means the article is shown for all audiences.
+        /// </summary>
+        public TeamCategory? TeamCategory { get; private set; }
+
+        /// <summary>
         /// Gets the read-only list of tags associated with the news article.
         /// </summary>
         public IReadOnlyList<string> Tags => _tags.AsReadOnly();
@@ -164,6 +170,16 @@ namespace Domain.Entities.Common
         {
             SportsCategory? oldCategory = SportCategory;
             SportCategory = category;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Sets or clears the audience / age-group category for this article.
+        /// Pass null to show the article for all audiences.
+        /// </summary>
+        public void SetTeamCategory(TeamCategory? teamCategory)
+        {
+            TeamCategory = teamCategory;
             UpdatedAt = DateTime.UtcNow;
         }
 

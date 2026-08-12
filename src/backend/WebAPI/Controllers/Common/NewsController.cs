@@ -55,7 +55,8 @@ namespace WebAPI.Controllers.Common
                 request.SportCategory,
                 request.Search,
                 request.Author,
-                request.IncludeArchived
+                request.IncludeArchived,
+                request.TeamCategory
             );
 
             Result<PagedResult<NewsArticleListDto>> result = await _mediator.Send(query);
@@ -105,7 +106,8 @@ namespace WebAPI.Controllers.Common
                 request.Author,
                 request.Category,
                 request.SportCategory,
-                request.Tags
+                request.Tags,
+                request.TeamCategory
             );
 
             Result<NewsArticleDto> result = await _mediator.Send(command);
@@ -145,7 +147,8 @@ namespace WebAPI.Controllers.Common
                 request.Author,
                 request.Category,
                 request.SportCategory,
-                request.Tags
+                request.Tags,
+                request.TeamCategory
             );
 
             Result<NewsArticleDto> result = await _mediator.Send(command);

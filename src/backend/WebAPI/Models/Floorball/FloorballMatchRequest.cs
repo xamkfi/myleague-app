@@ -53,6 +53,12 @@ public record GetFloorballMatchesRequest : PagedRequestBase
     /// Gets the competition type filter (Season or Tournament). When null, matches from both types are returned.
     /// </summary>
     public FloorballCompetitionType? CompetitionType { get; init; }
+
+    /// <summary>
+    /// Optional audience / age-group category filter (Adult, Youth, Women).
+    /// Filters matches by the competition's TeamCategory.
+    /// </summary>
+    public Domain.Enums.Common.TeamCategory? TeamCategory { get; init; }
 }
 
 /// <summary>

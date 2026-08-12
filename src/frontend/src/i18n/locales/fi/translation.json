@@ -156,6 +156,20 @@
     "fi": "Suomi",
     "switchLanguage": "Vaihda kieli"
   },
+  "audience": {
+    "adult": "Aikuiset",
+    "youth": "Nuoret",
+    "women": "Naiset",
+    "select": "Valitse",
+    "selected": "Valittu",
+    "switcherLabel": "Ikäryhmä",
+    "intro": "Valitse kohderyhmä nähdäksesi siihen liittyvät tiedot ja teeman.",
+    "descriptions": {
+      "adult": "Aikuisten sarjat ja uutiset (sininen teema).",
+      "youth": "Nuorten ja lasten sarjat ja uutiset (vihreä teema).",
+      "women": "Naisten sarjat ja uutiset (pinkki teema)."
+    }
+  },
   "infoPages": {
     "loadFailed": "Sivun lataus epäonnistui.",
     "emptyContent": "Sivun sisältöä ei ole vielä julkaistu."
