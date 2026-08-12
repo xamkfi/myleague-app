@@ -46,7 +46,22 @@ public class HockeyOfficial : BaseEntity
 
     public void UpdateOfficialNumber(string? officialNumber) => OfficialNumber = officialNumber;
 
-    public void UpdateLicenseExpiry(DateTime? licenseExpiryDate) => LicenseExpiryDate = licenseExpiryDate;
+    public void UpdateLicenseDates(DateTime? licenseIssueDate, DateTime? licenseExpiryDate)
+    {
+        if (licenseIssueDate is not null && licenseExpiryDate is not null && licenseExpiryDate <= licenseIssueDate)
+            throw new ArgumentException("License expiry date must be after the issue date.", nameof(licenseExpiryDate));
+
+        LicenseIssueDate = licenseIssueDate;
+        LicenseExpiryDate = licenseExpiryDate;
+    }
+
+    public void UpdateLicenseExpiry(DateTime? licenseExpiryDate)
+    {
+        if (LicenseIssueDate is not null && licenseExpiryDate is not null && licenseExpiryDate <= LicenseIssueDate)
+            throw new ArgumentException("License expiry date must be after the issue date.", nameof(licenseExpiryDate));
+
+        LicenseExpiryDate = licenseExpiryDate;
+    }
 
     public void RecordMatchOfficiated() => MatchesOfficiated++;
 

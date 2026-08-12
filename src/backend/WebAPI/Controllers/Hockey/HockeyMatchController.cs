@@ -320,6 +320,22 @@ public class HockeyMatchController : BaseApiController
     }
 
     /// <summary>
+    /// Removes an official from the match.
+    /// </summary>
+    [Authorize]
+    [HttpDelete("{matchId:guid}/officials/{officialId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemoveOfficial(
+        Guid matchId,
+        Guid officialId,
+        CancellationToken cancellationToken = default)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new RemoveHockeyMatchOfficialCommand(matchId, officialId), cancellationToken);
+        return HandleResult(result, "Official removed from hockey match successfully", "Failed to remove official");
+    }
+
+    /// <summary>
     /// Creates a period score row.
     /// </summary>
     [Authorize]

@@ -185,6 +185,23 @@ public class HockeyMatch : BaseEntity
         return matchOfficial;
     }
 
+    public void RemoveOfficial(Guid officialId)
+    {
+        if (Status is HockeyMatchStatus.Finished
+            or HockeyMatchStatus.Cancelled
+            or HockeyMatchStatus.Postponed
+            or HockeyMatchStatus.Forfeit)
+        {
+            throw new InvalidOperationException($"Cannot remove officials from a match with status {Status}.");
+        }
+
+        HockeyMatchOfficial? existing = _officials.FirstOrDefault(o => o.OfficialId == officialId);
+        if (existing is null)
+            return;
+
+        _officials.Remove(existing);
+    }
+
     public HockeyPeriodScore AddPeriodScore(int periodNumber, HockeyPeriodType periodType)
     {
         HockeyMatchTeam home = HomeMatchTeam

@@ -88,6 +88,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IHockeyCompetitionRepository, HockeyCompetitionRepository>();
             services.AddScoped<IHockeyTeamRepository, HockeyTeamRepository>();
             services.AddScoped<IHockeyPlayerRepository, HockeyPlayerRepository>();
+            services.AddScoped<IHockeyOfficialRepository, HockeyOfficialRepository>();
             services.AddScoped<IHockeyMatchRepository, HockeyMatchRepository>();
             services.AddScoped<IHockeyStatisticsRepository, HockeyStatisticsRepository>();
             services.AddScoped<IImageStorageService>(sp =>

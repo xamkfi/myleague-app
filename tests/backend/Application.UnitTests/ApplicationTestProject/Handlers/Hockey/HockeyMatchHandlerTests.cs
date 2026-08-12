@@ -238,20 +238,70 @@ public class HockeyMatchHandlerTests
     public async Task AddOfficial_AssignsOfficial()
     {
         HockeyMatch match = CreateStandaloneMatch();
-        Guid officialId = Guid.NewGuid();
+        HockeyOfficial official = new(Guid.NewGuid(), HockeyOfficialRole.Referee);
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        Mock<IHockeyOfficialRepository> officialRepo = new();
+        officialRepo.Setup(r => r.GetByIdAsync(official.Id)).ReturnsAsync(official);
 
         AddHockeyMatchOfficialHandler handler = new(
             _matchRepo.Object,
+            officialRepo.Object,
             _unitOfWork.Object,
             Mock.Of<ILogger<AddHockeyMatchOfficialHandler>>());
 
         Result<HockeyMatchDto> result = await handler.Handle(
-            new AddHockeyMatchOfficialCommand(match.Id, officialId, HockeyOfficialRole.Referee, IsMainOfficial: true),
+            new AddHockeyMatchOfficialCommand(match.Id, official.Id, HockeyOfficialRole.Referee, IsMainOfficial: true),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Data!.Officials.Should().ContainSingle(o => o.OfficialId == officialId && o.IsMainOfficial);
+        result.Data!.Officials.Should().ContainSingle(o => o.OfficialId == official.Id && o.IsMainOfficial);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddOfficial_OfficialNotFound_ReturnsNotFound()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Guid officialId = Guid.NewGuid();
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        Mock<IHockeyOfficialRepository> officialRepo = new();
+        officialRepo.Setup(r => r.GetByIdAsync(officialId)).ReturnsAsync((HockeyOfficial?)null);
+
+        AddHockeyMatchOfficialHandler handler = new(
+            _matchRepo.Object,
+            officialRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<AddHockeyMatchOfficialHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new AddHockeyMatchOfficialCommand(match.Id, officialId, HockeyOfficialRole.Referee),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("not found");
+    }
+
+    [Fact]
+    public async Task RemoveOfficial_RemovesAssignment()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Guid officialId = Guid.NewGuid();
+        match.AddOfficial(officialId, HockeyOfficialRole.Referee, isMainOfficial: true);
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        RemoveHockeyMatchOfficialHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<RemoveHockeyMatchOfficialHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new RemoveHockeyMatchOfficialCommand(match.Id, officialId),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Officials.Should().BeEmpty();
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
