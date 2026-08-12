@@ -44,17 +44,16 @@ $color-blue-background: #CFDAEF;
 $color-gradient-blue: linear-gradient(270deg, var(--Colour-Medium, #2A4A83) 0%, var(--Colour-Light, #4A679F) 100%);
 
 // Banner / section-header design tokens (audience-aware via CSS custom properties).
-// Use these instead of the raw $color-blue-* variables anywhere a surface should
-// follow the selected audience theme. The raw variables remain for Sass colour
-// functions (rgba/darken/color.adjust), which cannot operate on CSS variables.
-$color-banner-bg: var(--banner-bg, #0C1D3E);
+// Primary colour is solid (no gradients) — matches the design mockup navbar/banner.
+// Raw $color-blue-* variables remain for Sass colour functions (rgba/darken),
+// which cannot operate on CSS variables.
+$color-banner-bg: var(--banner-bg, #1c356d);
 $color-banner-text: var(--banner-text, #fff);
 
-$color-brand-darkest: var(--brand-darkest, #0C1D3E);
-$color-brand-deep: var(--brand-deep, #16346B);
-$color-brand-medium: var(--brand-medium, #2A4A63);
-$color-brand-light: var(--brand-light, #4A679F);
-$color-banner-gradient: linear-gradient(135deg, $color-brand-deep 0%, $color-brand-darkest 100%);
+$color-brand-darkest: var(--brand-darkest, #1c356d);
+$color-brand-deep: var(--brand-deep, #1c356d);
+$color-brand-medium: var(--brand-medium, #394f80);
+$color-brand-light: var(--brand-light, #5a6ea0);
 
 // Box Shadow
 $box-shadow-drop-1: 0 5px 25px 0 rgba(57, 62, 99, 0.15);

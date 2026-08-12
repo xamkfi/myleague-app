@@ -8,7 +8,7 @@
 
   &__header {
     text-align: center;
-    background: $color-banner-gradient;
+    background: $color-banner-bg;
     border-radius: map.get($border-radius, 'lg');
     padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
     margin-bottom: map.get($spacing, 'lg');

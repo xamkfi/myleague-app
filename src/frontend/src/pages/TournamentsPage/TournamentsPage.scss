@@ -13,7 +13,7 @@
   padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'lg');
 
   &__header {
-    background: $color-banner-gradient;
+    background: $color-banner-bg;
     border-radius: map.get($border-radius, 'lg');
     padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
     margin-bottom: map.get($spacing, 'xl');
@@ -102,7 +102,7 @@
     align-items: center;
     justify-content: space-between;
     padding: map.get($spacing, 'md') map.get($spacing, 'lg');
-    background: linear-gradient(90deg, $color-brand-deep 0%, $color-brand-darkest 100%);
+    background: $color-banner-bg;
     gap: map.get($spacing, 'sm');
   }
 

@@ -1,35 +1,41 @@
 /**
  * Audience / age-group theme tokens.
  * Applied via document.documentElement[data-audience="adult|youth|women"].
+ *
+ * Primary colour (= --banner-bg / --brand-darkest) is the solid navbar/banner colour
+ * from the design mockups — no gradients.
  */
 
 :root,
 [data-audience='adult'] {
-  --brand-darkest: #0c1d3e;
-  --brand-deep: #16346b;
-  --brand-medium: #2a4a63;
-  --brand-light: #4a679f;
-  --brand-bg: #cfdaef;
-  --banner-bg: #0c1d3e;
+  /* Primary: navy (Miehet) */
+  --brand-darkest: #1c356d;
+  --brand-deep: #1c356d;
+  --brand-medium: #394f80;
+  --brand-light: #5a6ea0;
+  --brand-bg: #cfd6e8;
+  --banner-bg: #1c356d;
   --banner-text: #ffffff;
 }
 
 [data-audience='youth'] {
-  --brand-darkest: #0f3d24;
-  --brand-deep: #1e9850;
-  --brand-medium: #2fcc6f;
-  --brand-light: #6dd698;
-  --brand-bg: #e8f9f1;
-  --banner-bg: #0f3d24;
+  /* Primary: green (Lapset) */
+  --brand-darkest: #4e8100;
+  --brand-deep: #4e8100;
+  --brand-medium: #65941a;
+  --brand-light: #86b340;
+  --brand-bg: #e4efd0;
+  --banner-bg: #4e8100;
   --banner-text: #ffffff;
 }
 
 [data-audience='women'] {
-  --brand-darkest: #6b1d3a;
-  --brand-deep: #9b2d5b;
-  --brand-medium: #c44b7a;
-  --brand-light: #e07a9f;
-  --brand-bg: #f5d0dc;
-  --banner-bg: #6b1d3a;
+  /* Primary: magenta (Naiset) */
+  --brand-darkest: #dd1e84;
+  --brand-deep: #dd1e84;
+  --brand-medium: #e564aa;
+  --brand-light: #e871a4;
+  --brand-bg: #f9d6e8;
+  --banner-bg: #dd1e84;
   --banner-text: #ffffff;
 }
