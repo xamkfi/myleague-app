@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Models.Common
@@ -210,9 +212,11 @@ namespace WebAPI.Models.Common
 
         /// <summary>
         /// Gets the optional audience / age-group category filter (Adult, Youth, Women).
-        /// When set, returns articles for that category plus articles with no category (all audiences).
+        /// Accepts one or more values (e.g. ?teamCategory=Adult&amp;teamCategory=Women). When set,
+        /// returns articles for those categories plus articles with no category (all audiences).
         /// </summary>
-        public string? TeamCategory { get; init; }
+        [FromQuery(Name = "teamCategory")]
+        public List<string>? TeamCategories { get; init; }
 
         /// <summary>
         /// Gets whether to include archived articles

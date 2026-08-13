@@ -22,9 +22,11 @@ const FloorballTournamentsPage = () => {
     error,
     showOngoingOnly,
     statusFilter,
+    categoryFilter,
     uniqueStatuses,
     setShowOngoingOnly,
     setStatusFilter,
+    setCategoryFilter,
     loadTournaments,
   } = useTournamentsManagement();
 
@@ -56,6 +58,8 @@ const FloorballTournamentsPage = () => {
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
           uniqueStatuses={uniqueStatuses}
+          categoryFilter={categoryFilter}
+          onCategoryFilterChange={setCategoryFilter}
         />
 
         <div className="admin-table__wrapper">

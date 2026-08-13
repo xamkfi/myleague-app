@@ -24,7 +24,7 @@ namespace Application.Features.Floorball.Teams.Queries
         int PageSize = 0, // 0 means use default from configuration
         Guid? ClubId = null,
         string? Division = null,
-        Domain.Enums.Common.TeamCategory? TeamCategory = null
+        IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? TeamCategories = null
     ) : IRequest<Result<PagedResult<FloorballTeamDto>>>
     {
         /// <summary>

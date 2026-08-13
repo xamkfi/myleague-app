@@ -215,7 +215,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Collection of news articles</returns>
-        public async Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, string? teamCategory = null, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, IReadOnlyCollection<string>? teamCategories = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -268,11 +268,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     query = query.Where(n => EF.Functions.ILike(n.Author ?? "", $"%{author}%"));
                 }
 
-                if (!string.IsNullOrWhiteSpace(teamCategory)
-                    && Enum.TryParse<TeamCategory>(teamCategory, true, out TeamCategory parsedTeamCategory))
+                List<TeamCategory> parsedTeamCategories = ParseTeamCategories(teamCategories);
+                if (parsedTeamCategories.Count > 0)
                 {
                     // Null TeamCategory = shown for all audiences
-                    query = query.Where(n => n.TeamCategory == null || n.TeamCategory == parsedTeamCategory);
+                    query = query.Where(n => n.TeamCategory == null || parsedTeamCategories.Contains(n.TeamCategory.Value));
                 }
 
                 // Apply pagination
@@ -300,7 +300,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Total count of matching news articles</returns>
-        public async Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, string? teamCategory = null, CancellationToken cancellationToken = default)
+        public async Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, IReadOnlyCollection<string>? teamCategories = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -341,10 +341,10 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     query = query.Where(n => EF.Functions.ILike(n.Author ?? "", $"%{author}%"));
                 }
 
-                if (!string.IsNullOrWhiteSpace(teamCategory)
-                    && Enum.TryParse<TeamCategory>(teamCategory, true, out TeamCategory parsedTeamCategory))
+                List<TeamCategory> parsedTeamCategories = ParseTeamCategories(teamCategories);
+                if (parsedTeamCategories.Count > 0)
                 {
-                    query = query.Where(n => n.TeamCategory == null || n.TeamCategory == parsedTeamCategory);
+                    query = query.Where(n => n.TeamCategory == null || parsedTeamCategories.Contains(n.TeamCategory.Value));
                 }
 
                 return await query.CountAsync(cancellationToken);
@@ -354,6 +354,31 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 _logger.LogError(ex, "Error occurred while counting news articles with filters. Category: {Category}, SportCategory: {SportCategory}, Author: {Author}", category, sportCategory, author);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Parses team category filter values into enum values, ignoring invalid input
+        /// </summary>
+        private static List<TeamCategory> ParseTeamCategories(IReadOnlyCollection<string>? teamCategories)
+        {
+            List<TeamCategory> parsed = new List<TeamCategory>();
+
+            if (teamCategories is null)
+            {
+                return parsed;
+            }
+
+            foreach (string value in teamCategories)
+            {
+                if (!string.IsNullOrWhiteSpace(value)
+                    && Enum.TryParse<TeamCategory>(value, true, out TeamCategory category)
+                    && !parsed.Contains(category))
+                {
+                    parsed.Add(category);
+                }
+            }
+
+            return parsed;
         }
 
         /// <summary>

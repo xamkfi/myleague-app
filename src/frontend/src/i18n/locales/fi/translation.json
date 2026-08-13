@@ -163,6 +163,8 @@
     "select": "Valitse",
     "selected": "Valittu",
     "switcherLabel": "Ikäryhmä",
+    "filterLabel": "Valitse näytettävä ikäryhmä",
+    "filterHint": "Voit valita yhden tai useamman. Tyhjä valinta näyttää kaikki.",
     "intro": "Valitse kohderyhmä nähdäksesi siihen liittyvät tiedot ja teeman.",
     "descriptions": {
       "adult": "Aikuisten sarjat ja uutiset (sininen teema).",

@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Domain.Enums.Floorball;
 using Domain.Enums.Common;
+using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Models.Floorball
@@ -22,9 +24,11 @@ namespace WebAPI.Models.Floorball
         public string? Division { get; init; }
 
         /// <summary>
-        /// Gets the audience / age-group category filter
+        /// Gets the audience / age-group category filter. Accepts one or more values
+        /// (e.g. ?teamCategory=Adult&amp;teamCategory=Women).
         /// </summary>
-        public TeamCategory? TeamCategory { get; init; }
+        [FromQuery(Name = "teamCategory")]
+        public List<TeamCategory>? TeamCategories { get; init; }
     }
 
     /// <summary>

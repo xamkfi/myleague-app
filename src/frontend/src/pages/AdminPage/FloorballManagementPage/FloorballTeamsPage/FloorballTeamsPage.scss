@@ -89,6 +89,11 @@
     background: white;
     border-top: 1px solid #dee2e6;
   }
+
+  .pagination-container {
+    background-color: #f1f2f7;
+    color: #222;
+  }
 }
 
 .teams-table {
@@ -217,8 +222,12 @@
   }
 }
 
+.teams-category-filter {
+  margin-bottom: 1.5rem;
+}
+
 .teams-search-bar {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   padding: 1rem;
   background-color: #f8f9fa;
   border: 1px solid #dee2e6;

@@ -88,7 +88,7 @@ public class GetAllNewsArticlesHandler : BasePagedQueryHandler<GetAllNewsArticle
                 request.Search,
                 request.Author,
                 request.IncludeArchived,
-                request.TeamCategory,
+                request.TeamCategories,
                 cancellationToken);
 
             int totalCount = await _newsRepository.GetCountAsync(
@@ -97,7 +97,7 @@ public class GetAllNewsArticlesHandler : BasePagedQueryHandler<GetAllNewsArticle
                 request.Search,
                 request.Author,
                 request.IncludeArchived,
-                request.TeamCategory,
+                request.TeamCategories,
                 cancellationToken);
 
             // Check for cancellation after database operations

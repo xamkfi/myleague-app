@@ -52,7 +52,8 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
     return location.pathname.startsWith('/admin/site-content');
   };
 
-  const userInitial = (user?.person?.fullName ?? user?.email ?? '?')[0].toUpperCase();
+  const userLabel = user?.person?.fullName?.trim() || user?.email?.trim() || '?';
+  const userInitial = userLabel.charAt(0).toUpperCase();
 
   return (
     <nav className={`admin-navbar ${collapsed ? 'admin-navbar--collapsed' : ''}`}>

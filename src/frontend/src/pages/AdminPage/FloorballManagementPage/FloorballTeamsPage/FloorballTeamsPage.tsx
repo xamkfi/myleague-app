@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { floorballTeamService } from '../../../../api/floorball/floorballTeamService';
-import type { FloorballTeam, PaginatedApiResponse } from '../../../../types/floorball/floorballTypes';
+import type { FloorballTeam, PaginatedApiResponse, TeamCategory } from '../../../../types/floorball/floorballTypes';
 import TeamsTable from './components/TeamsTable';
+import TeamCategoryFilter from '../../../../components/TeamCategoryFilter/TeamCategoryFilter';
 import './FloorballTeamsPage.scss';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 
@@ -20,19 +21,25 @@ const FloorballTeamsPage = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [pageSize, setPageSize] = useState(50);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<TeamCategory[]>([]);
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Fetch teams data
-  const fetchTeams = async (page: number = 1, size: number = pageSize) => {
+  const fetchTeams = async (
+    page: number = 1,
+    size: number = pageSize,
+    categories: TeamCategory[] = categoryFilter
+  ) => {
     try {
       setLoading(true);
       setError(null);
       
       const response: PaginatedApiResponse<FloorballTeam> = await floorballTeamService.getAll({
         page,
-        pageSize: size
+        pageSize: size,
+        teamCategories: categories.length > 0 ? categories : undefined
       });
       
       // Ensure we have valid response data
@@ -63,7 +70,7 @@ const FloorballTeamsPage = () => {
   };
 
   // Fetch all teams (no pagination) - used for search
-  const fetchAllTeams = async () => {
+  const fetchAllTeams = async (categories: TeamCategory[] = categoryFilter) => {
     try {
       setLoading(true);
       setError(null);
@@ -77,6 +84,7 @@ const FloorballTeamsPage = () => {
         const response: PaginatedApiResponse<FloorballTeam> = await floorballTeamService.getAll({
           page,
           pageSize: pageSizeBatch,
+          teamCategories: categories.length > 0 ? categories : undefined,
         });
 
         if (response?.data && Array.isArray(response.data)) {
@@ -113,6 +121,18 @@ const FloorballTeamsPage = () => {
   const filteredTeams = teams.filter(team =>
     team.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Handle category filter change (multi-select); refetch with the new filter
+  const handleCategoryFilterChange = (categories: string[]) => {
+    const typedCategories = categories as TeamCategory[];
+    setCategoryFilter(typedCategories);
+
+    if (searchTerm.trim()) {
+      fetchAllTeams(typedCategories);
+    } else {
+      fetchTeams(1, pageSize, typedCategories);
+    }
+  };
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -253,6 +273,11 @@ const FloorballTeamsPage = () => {
             placeholder={t('floorball.teams.searchPlaceholder', 'Search teams by name...') as string}
             className="teams-search-input"
           />
+        </div>
+
+        {/* Category filter */}
+        <div className="teams-category-filter">
+          <TeamCategoryFilter selected={categoryFilter} onChange={handleCategoryFilterChange} />
         </div>
 
         {/* Error message */}

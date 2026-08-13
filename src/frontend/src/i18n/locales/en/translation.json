@@ -82,6 +82,8 @@
     "select": "Select",
     "selected": "Selected",
     "switcherLabel": "Age group",
+    "filterLabel": "Select age group to display",
+    "filterHint": "Select one or more. An empty selection shows all.",
     "intro": "Select your audience to see relevant information and theming.",
     "descriptions": {
       "adult": "Adult leagues and news (blue theme).",

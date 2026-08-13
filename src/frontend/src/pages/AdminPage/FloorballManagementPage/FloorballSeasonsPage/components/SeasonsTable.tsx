@@ -4,6 +4,7 @@ import { useInProgressMatches } from '../../../../../hooks/useInProgressMatches'
 import type { FloorballSeasonDto } from '../../../../../api/floorball/floorballSeasonService';
 import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
 import LiveDot from '../../../../../components/LiveDot/LiveDot';
+import TeamCategoryBadge from '../../../../../components/TeamCategoryBadge/TeamCategoryBadge';
 import '../../../../../styles/AdminTable.scss';
 
 interface SeasonsTableProps {
@@ -180,6 +181,7 @@ export const SeasonsTable = ({
                   )}
 
                   <span>{season.name}</span>
+                  <TeamCategoryBadge category={season.teamCategory} />
                 </span>
               </td>
 

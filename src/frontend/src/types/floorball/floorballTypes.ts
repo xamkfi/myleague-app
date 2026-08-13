@@ -135,6 +135,7 @@ export interface GetFloorballTeamsRequest {
   pageSize?: number;
   clubId?: string;
   division?: string;
+  teamCategories?: TeamCategory[];
 }
 
 export interface FloorballTeamRequest {

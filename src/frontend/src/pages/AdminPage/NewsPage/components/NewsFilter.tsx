@@ -1,5 +1,6 @@
 import { type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import TeamCategoryFilter from '../../../../components/TeamCategoryFilter/TeamCategoryFilter';
 import './NewsFilter.scss';
 import { NewsCategory, SportsCategory } from '../Utils/NewsFilterContstants';
 
@@ -8,6 +9,7 @@ export type NewsFilters = {
   sportCategory: string;
   searchTerm: string;
   includeArchived: boolean;
+  teamCategories: string[];
 };
 
 type NewsFilterProps = {
@@ -81,6 +83,13 @@ export default function NewsFilter({ filters, onFiltersChange, onClearFilters }:
             placeholder={t('admin.news.filter.searchPlaceholder', 'Search news articles...')}
             value={filters.searchTerm}
             onChange={handleSearchChange}
+          />
+        </div>
+
+        <div className="filter-group">
+          <TeamCategoryFilter
+            selected={filters.teamCategories}
+            onChange={(categories) => onFiltersChange({ teamCategories: categories })}
           />
         </div>
 

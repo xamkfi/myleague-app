@@ -62,7 +62,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             string searchTerm = "",
             Guid? clubId = null, 
             Guid? divisionId = null,
-            Domain.Enums.Common.TeamCategory? teamCategory = null,
+            IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? teamCategories = null,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballTeam> query = _entities.AsQueryable();
@@ -78,9 +78,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 query = query.Where(t => t.DivisionId == divisionId);
             }
 
-            if (teamCategory.HasValue)
+            if (teamCategories is { Count: > 0 })
             {
-                query = query.Where(t => t.TeamCategory == teamCategory.Value);
+                query = query.Where(t => teamCategories.Contains(t.TeamCategory));
             }
 
             if (!string.IsNullOrWhiteSpace(searchTerm))

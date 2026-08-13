@@ -22,6 +22,8 @@ export interface NewsParameters{
   category: string;
   sportCategory: string;
   teamCategory?: string;
+  /** Multi-select category filter (admin views); each value is sent as its own teamCategory param. */
+  teamCategories?: string[];
   searchTerm: string;
   includeArchived?: boolean;
   page?: number;
@@ -51,6 +53,7 @@ export async function newsService(params?: Partial<NewsParameters>): Promise<Pag
     if (params?.category) queryParams.append("category", params.category);
     if (params?.sportCategory) queryParams.append("sportCategory", params.sportCategory);
     if (params?.teamCategory) queryParams.append("teamCategory", params.teamCategory);
+    params?.teamCategories?.forEach(category => queryParams.append("teamCategory", category));
     if (params?.searchTerm) queryParams.append("search", params.searchTerm);
     if (params?.includeArchived !== undefined) queryParams.append("includeArchived", params.includeArchived.toString());
     if (params?.page) queryParams.append("page", params.page.toString());

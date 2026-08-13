@@ -45,7 +45,7 @@ public interface IFloorballTeamRepository
         string searchTerm = "",
         Guid? clubId = null,
         Guid? divisionId = null,
-        Domain.Enums.Common.TeamCategory? teamCategory = null,
+        IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? teamCategories = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>

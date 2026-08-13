@@ -255,54 +255,6 @@
   }
 }
 
-// Dark theme support
-@media (prefers-color-scheme: dark) {
-  .pagination-container {
-    background-color: $color-neutral-black;
-    border-color: $color-neutral-dark-grey;
-    color: $color-neutral-white;
-  }
-
-  
-
-  .pagination-button {
-    background-color: $color-neutral-dark-grey;
-    border-color: $color-blue-secondary;
-    color: $color-neutral-white;
-
-    &:hover:not(:disabled) {
-      background-color: $color-blue-secondary;
-      color: $color-neutral-black;
-    }
-
-    &:disabled {
-      border-color: $color-neutral-medium-grey;
-      color: $color-neutral-medium-grey;
-    }
-  }
-
-  .pagination-page-button {
-    background-color: $color-neutral-dark-grey;
-    border-color: $color-neutral-medium-grey;
-    color: $color-neutral-white;
-
-    &:hover:not(.active) {
-      background-color: $color-neutral-medium-grey;
-      border-color: $color-neutral-medium-grey;
-    }
-
-    &.active {
-      background-color: $color-blue-secondary;
-      border-color: $color-blue-secondary;
-      color: $color-neutral-black;
-    }
-  }
-
-  .pagination-summary {
-    color: $color-neutral-medium-grey;
-  }
-}
-
 // High contrast mode support
 @media (prefers-contrast: high) {
   .pagination-container {
