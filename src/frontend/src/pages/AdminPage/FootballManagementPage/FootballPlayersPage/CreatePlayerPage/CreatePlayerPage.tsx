@@ -1,0 +1,771 @@
+import { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo, memo, forwardRef, useImperativeHandle } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useLocation } from 'react-router-dom';
+import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
+import { personApi } from '../../../../../api/admin/personApi';
+import { footballPlayerService } from '../../../../../api/football/footballPlayerService';
+import type { Person, PaginatedApiResponse } from '../../../../../types/admin/personTypes';
+import { formatDate } from '../../../../../utils/helpers';
+import './CreatePlayerPage.scss';
+import CheckIcon from '../../../../../assets/basicIcons/check.svg';
+import CloseIcon from '../../../../../assets/basicIcons/close.svg';
+import Button from '../../../../../components/Button/Button';
+import AddIcon from '../../../../../assets/basicIcons/add.svg';
+import SearchIcon from '../../../../../assets/basicIcons/search.svg';
+import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import PaginationControls from '../components/PaginationControls';
+
+type SortField = 'birthDate' | 'registration' | 'name';
+type SortDirection = 'asc' | 'desc';
+
+interface SearchBarProps {
+  onSearchChange: (value: string) => void;
+  placeholder: string;
+}
+
+export interface SearchBarRef {
+  clear: () => void;
+  focus: () => void;
+  getValue: () => string;
+}
+
+// Memoized search bar component with internal state - only re-renders when callbacks change
+const SearchBar = memo(forwardRef<SearchBarRef, SearchBarProps>(({ onSearchChange, placeholder }, ref) => {
+  const [internalValue, setInternalValue] = useState('');
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Expose methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    clear: () => {
+      setInternalValue('');
+      inputRef.current?.focus();
+    },
+    focus: () => {
+      inputRef.current?.focus();
+    },
+    getValue: () => internalValue,
+  }));
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInternalValue(value);
+    onSearchChange(value);
+  };
+
+  const handleClear = () => {
+    setInternalValue('');
+    onSearchChange('');
+    inputRef.current?.focus();
+  };
+
+  return (
+    <div className="persons-search-bar">
+      <img
+        src={SearchIcon}
+        className="search-icon"
+        alt=""
+        aria-hidden="true"
+      />
+      <input
+        ref={inputRef}
+        type="text"
+        value={internalValue}
+        onChange={handleChange}
+        placeholder={placeholder}
+        className="persons-search-input"
+      />
+      {internalValue && (
+        <button
+          className="search-clear-button"
+          onClick={handleClear}
+          title="Clear search"
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}));
+
+SearchBar.displayName = 'SearchBar';
+
+const CreatePlayerPage = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [availablePersons, setAvailablePersons] = useState<Person[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [paginationLoading, setPaginationLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const debounceTimerRef = useRef<number | null>(null);
+  const previousSearchTermRef = useRef('');
+  const searchBarRef = useRef<SearchBarRef>(null);
+  const shouldRestoreFocusRef = useRef(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  
+  // Sorting state
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  
+  // Selection state for multiselect
+  const [selectedPersons, setSelectedPersons] = useState<Set<string>>(new Set());
+  const [bulkCreating, setBulkCreating] = useState(false);
+  const [showBulkConfirmation, setShowBulkConfirmation] = useState(false);
+
+  // Debounce search term - only update if it actually changed and has at least 2 characters
+  useEffect(() => {
+    // Clear any existing timer
+    if (debounceTimerRef.current !== null) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Only update if search term actually changed (skip if same as previous)
+    if (searchTerm !== previousSearchTermRef.current) {
+      debounceTimerRef.current = window.setTimeout(() => {
+        // Only search if there are at least 2 characters, otherwise clear search
+        if (searchTerm.trim().length >= 2) {
+          setDebouncedSearchTerm(searchTerm);
+          // Reset to page 1 when search term changes
+          setCurrentPage(1);
+        } else {
+          setDebouncedSearchTerm('');
+          // Reset to page 1 when clearing search
+          setCurrentPage(1);
+        }
+        previousSearchTermRef.current = searchTerm;
+      }, 300); // 300ms delay
+    }
+
+    return () => {
+      if (debounceTimerRef.current !== null) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [searchTerm]);
+
+  // Fetch persons and filter out those who are already players
+  const fetchData = useCallback(async (isInitialLoad = false) => {
+    try {
+      const hadFocus = document.activeElement?.tagName === 'INPUT' && searchBarRef.current !== null;
+      shouldRestoreFocusRef.current = hadFocus;
+      
+      if (isInitialLoad) {
+        setLoading(true);
+      } else {
+        setPaginationLoading(true);
+      }
+      setError(null);
+      
+      let personsData: Person[];
+      let paginationMetadata = { totalCount: 0, totalPages: 1 };
+      
+      // Conditionally fetch based on search term (require at least 2 characters)
+      const trimmedSearchTerm = debouncedSearchTerm.trim();
+      // Ensure pageSize doesn't exceed backend maximum of 50
+      const actualPageSize = Math.min(pageSize, 50);
+      
+      if (trimmedSearchTerm.length >= 2) {
+        // Use search API when there's a search term (with pagination)
+        const searchResponse: PaginatedApiResponse<Person> = await personApi.search(
+          trimmedSearchTerm,
+          currentPage,
+          actualPageSize
+        );
+        personsData = searchResponse.data;
+        paginationMetadata = {
+          totalCount: searchResponse.pagination.totalCount,
+          totalPages: searchResponse.pagination.totalPages,
+        };
+      } else {
+        // Use getAll when there's no search term or less than 2 characters (with pagination)
+        const getAllResponse: PaginatedApiResponse<Person> = await personApi.getAll(
+          currentPage,
+          actualPageSize
+        );
+        personsData = getAllResponse.data;
+        paginationMetadata = {
+          totalCount: getAllResponse.pagination.totalCount,
+          totalPages: getAllResponse.pagination.totalPages,
+        };
+      }
+      
+      // Fetch existing players using the same parameters that work in the main page
+      const playersResponse = await footballPlayerService.getAll({ 
+        pageSize: 50 
+      });
+      
+      // Extract person IDs that are already players
+      const existingPlayerPersonIds = new Set(
+        (playersResponse.data || []).map(player => player.personId)
+      );
+      
+      // Filter out persons who are already players
+      const availablePersonsData = personsData.filter(
+        person => !existingPlayerPersonIds.has(person.id)
+      );
+      
+      setAvailablePersons(availablePersonsData);
+      setTotalCount(paginationMetadata.totalCount);
+      setTotalPages(paginationMetadata.totalPages);
+      
+      // Check if we have a newly created person from navigation state (only on initial load)
+      if (!debouncedSearchTerm && location.state) {
+        const state = location.state as { newPersonCreated?: Person; successMessage?: string } | null;
+        if (state?.newPersonCreated && state?.successMessage) {
+          setSuccessMessage(state.successMessage);
+          
+          // Auto-hide success message after 3 seconds
+          const timeoutId = setTimeout(() => {
+            setSuccessMessage(null);
+            setSuccessTimeoutId(null);
+          }, 3000);
+          setSuccessTimeoutId(timeoutId);
+          
+          // Clear navigation state
+          navigate(location.pathname, { replace: true, state: null });
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+      console.error('Error fetching data:', err);
+    } finally {
+      if (isInitialLoad) {
+        setLoading(false);
+      }
+      setPaginationLoading(false);
+    }
+  }, [debouncedSearchTerm, currentPage, pageSize, location.state, location.pathname, navigate]);
+
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  useEffect(() => {
+    const run = async () => {
+      await fetchData(isInitialLoad);
+      if (isInitialLoad) {
+        setIsInitialLoad(false);
+      }
+    };
+
+    run();
+  }, [fetchData, isInitialLoad]);
+
+  // Restore focus to search bar after loading completes
+  useLayoutEffect(() => {
+    if (!loading && shouldRestoreFocusRef.current && searchBarRef.current) {
+      searchBarRef.current.focus();
+      shouldRestoreFocusRef.current = false;
+    }
+  }, [loading]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimeoutId) {
+        clearTimeout(successTimeoutId);
+      }
+    };
+  }, [successTimeoutId]);
+
+  // Handle sorting
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Toggle direction if same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New field, default to ascending
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Sort available persons (filtering is handled by backend when searching)
+  const filteredAndSortedPersons = useMemo(() => {
+    const sortedPersons = [...availablePersons];
+
+    sortedPersons.sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortField) {
+        case 'birthDate': {
+          if (!a.birthDate && !b.birthDate) {
+            comparison = 0;
+          } else if (!a.birthDate) {
+            comparison = 1;
+          } else if (!b.birthDate) {
+            comparison = -1;
+          } else {
+            const dateA = new Date(a.birthDate);
+            const dateB = new Date(b.birthDate);
+            comparison = dateA.getTime() - dateB.getTime();
+          }
+          break;
+        }
+        case 'registration':
+          comparison = (b.isRegistered ? 1 : 0) - (a.isRegistered ? 1 : 0);
+          break;
+        case 'name':
+          comparison = a.fullName.localeCompare(b.fullName);
+          break;
+        default:
+          comparison = 0;
+      }
+
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    return sortedPersons;
+  }, [availablePersons, sortField, sortDirection]);
+
+  
+  const handleCreatePlayer = async (personId: string) => {
+    try {
+      setCreating(true);
+      setError(null);
+      setSuccessMessage(null);
+      
+      // Find the person to get their name for the success message
+      const person = availablePersons.find(p => p.id === personId);
+      if (!person) {
+        setError('Person not found');
+        return;
+      }
+      
+      // Create the player using the football player service
+      await footballPlayerService.create({ personId });
+      
+      // Remove the person from available persons list
+      setAvailablePersons(prev => prev.filter(person => person.id !== personId));
+      
+      // Clear selection if the created player was selected
+      setSelectedPersons(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(personId);
+        return newSet;
+      });
+      
+      // Clear any existing timeout to prevent flickering
+      if (successTimeoutId) {
+        clearTimeout(successTimeoutId);
+      }
+      
+      // Show success message with person's name
+      const message = t('football.players.playerCreated', '{{personName}} is now a football player!', { 
+        personName: person.fullName 
+      });
+      setSuccessMessage(message);
+      
+      // Auto-hide success message after 3 seconds
+      const timeoutId = setTimeout(() => {
+        setSuccessMessage(null);
+        setSuccessTimeoutId(null);
+      }, 3000);
+      setSuccessTimeoutId(timeoutId);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create player');
+      console.error('Error creating player:', err);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleCreateNewPerson = () => {
+    navigate('/admin/football/players/create-person');
+  };
+
+  // Handle search input change - receives value directly, not event
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
+    setSelectedPersons(new Set()); // Clear selection when searching
+    
+    // If clearing search or less than 2 characters, immediately clear debounced term
+    if (!value.trim() || value.trim().length < 2) {
+      setDebouncedSearchTerm('');
+      previousSearchTermRef.current = value;
+    }
+  }, []);
+
+  // Handle pagination
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  }, []);
+
+  // Selection management functions
+  const togglePersonSelection = useCallback((personId: string) => {
+    setSelectedPersons(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(personId)) {
+        newSet.delete(personId);
+      } else {
+        newSet.add(personId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const selectAllFilteredPersons = useCallback(() => {
+    setSelectedPersons(new Set(filteredAndSortedPersons.map(p => p.id)));
+  }, [filteredAndSortedPersons]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedPersons(new Set());
+  }, []);
+
+  const handleBulkCreatePlayers = useCallback(() => {
+    if (selectedPersons.size === 0) return;
+    setShowBulkConfirmation(true);
+  }, [selectedPersons.size]);
+
+  const confirmBulkCreatePlayers = async () => {
+    if (selectedPersons.size === 0) return;
+
+    try {
+      setBulkCreating(true);
+      setError(null);
+      setSuccessMessage(null);
+      setShowBulkConfirmation(false);
+      
+      // Clear any existing timeout to prevent flickering
+      if (successTimeoutId) {
+        clearTimeout(successTimeoutId);
+      }
+      
+      const selectedPersonsList = availablePersons.filter(p => selectedPersons.has(p.id));
+      
+      // Create players for all selected persons
+      for (const person of selectedPersonsList) {
+        await footballPlayerService.create({ personId: person.id });
+      }
+      
+      // Remove the created players from available persons list
+      setAvailablePersons(prev => prev.filter(person => !selectedPersons.has(person.id)));
+      
+      // Clear selection
+      setSelectedPersons(new Set());
+      
+      // Show success message
+      const message = t('football.players.bulkPlayersCreated', 
+        '{{count}} player(s) created successfully!', 
+        { count: selectedPersonsList.length }
+      );
+      setSuccessMessage(message);
+      
+      // Auto-hide success message after 3 seconds
+      const timeoutId = setTimeout(() => {
+        setSuccessMessage(null);
+        setSuccessTimeoutId(null);
+      }, 3000);
+      setSuccessTimeoutId(timeoutId);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create players');
+      console.error('Error creating players:', err);
+    } finally {
+      setBulkCreating(false);
+    }
+  };
+
+  const cancelBulkCreate = () => {
+    setShowBulkConfirmation(false);
+  };
+
+  return (
+    <PageTemplate title={t('football.players.createFromPerson', 'Create Player from Available Persons')}>
+      <div className="create-player-container">
+        {/* Floating Success Toast */}
+        {successMessage && (
+          <div className="success-toast">
+            <p>{successMessage}</p>
+          </div>
+        )}
+
+        {/* Search Bar with Create Person Button - Always rendered to preserve state */}
+        <div className="search-container">
+          <SearchBar
+            ref={searchBarRef}
+            onSearchChange={handleSearchChange}
+            placeholder={t('football.players.searchPersons', 'Search available persons...')}
+          />
+          <Button
+            variant="primary"
+            size="md"
+            rounded="pill"
+            onClick={handleCreateNewPerson}
+            iconLeft={AddIcon}
+          >
+            {t('football.players.createNewPerson', 'Create New Person')}
+          </Button>
+        </div>
+
+        {loading && (
+          <div className="create-player-loading">
+            <p>{t('common.loading', 'Loading...')}</p>
+          </div>
+        )}
+
+        {error && (
+          <ErrorPopup message={error} />
+        )}
+
+        {!loading && !error && (
+          <>
+            {/* Selection Controls */}
+            <div className="selection-controls">
+              <div className="selection-info">
+                {filteredAndSortedPersons.length > 0 && (
+                  <div className="selection-buttons">
+                    <button
+                      type="button"
+                      className="control-btn"
+                      onClick={selectAllFilteredPersons}
+                      disabled={selectedPersons.size === filteredAndSortedPersons.length}
+                    >
+                      {t('common.selectAll', 'Select All')} ({filteredAndSortedPersons.length})
+                    </button>
+                    <button
+                      type="button"
+                      className="control-btn"
+                      onClick={clearSelection}
+                      disabled={selectedPersons.size === 0}
+                    >
+                      {t('common.clear', 'Clear')}
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Bulk Actions */}
+              {selectedPersons.size > 0 && (
+                <div className="bulk-actions">
+                  <button
+                    type="button"
+                    className="bulk-create-btn"
+                    onClick={handleBulkCreatePlayers}
+                    disabled={bulkCreating}
+                  >
+                    {bulkCreating 
+                      ? t('football.players.actions.bulkCreating', 'Creating players...')
+                      : t('football.players.actions.bulkCreatePlayers', 'Create {{count}} Player(s)', { count: selectedPersons.size })
+                    }
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Persons List */}
+            <div className="persons-container-wrapper">
+              <div className="persons-container">
+                {filteredAndSortedPersons.length === 0 ? (
+                  <div className="no-persons">
+                    <p>{searchTerm ? 
+                      t('football.players.noPersonsFound', 'No persons found matching your search') :
+                      t('football.players.noPersonsAvailable', 'No available persons to convert to players. All persons are already players.')
+                    }</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Table Header */}
+                    <div className="persons-table-header">
+                <div className="header-select">
+                  <input
+                    type="checkbox"
+                    checked={filteredAndSortedPersons.length > 0 && filteredAndSortedPersons.every(person => selectedPersons.has(person.id))}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        selectAllFilteredPersons();
+                      } else {
+                        clearSelection();
+                      }
+                    }}
+                    title={t('football.players.selectAllVisible', 'Select all visible persons')}
+                  />
+                </div>
+                <div className="header-birth-date" onClick={() => handleSort('birthDate')} style={{ cursor: 'pointer' }}>
+                  {t('common.birthDate', 'BIRTH DATE')}
+                  {sortField === 'birthDate' && (
+                    <span style={{ marginLeft: '5px' }}>
+                      {sortDirection === 'asc' ? '↑' : '↓'}
+                    </span>
+                  )}
+                </div>
+                <div className="header-registration" onClick={() => handleSort('registration')} style={{ cursor: 'pointer' }}>
+                  {t('common.registration', 'REGISTRATION')}
+                  {sortField === 'registration' && (
+                    <span style={{ marginLeft: '5px' }}>
+                      {sortDirection === 'asc' ? '↑' : '↓'}
+                    </span>
+                  )}
+                </div>
+                <div className="header-name" onClick={() => handleSort('name')} style={{ cursor: 'pointer' }}>
+                  {t('common.name', 'NAME')}
+                  {sortField === 'name' && (
+                    <span style={{ marginLeft: '5px' }}>
+                      {sortDirection === 'asc' ? '(Asc.)' : '(Desc.)'}
+                    </span>
+                  )}
+                </div>
+                <div className="header-actions">{t('common.actions', 'ACTIONS')}</div>
+                  </div>
+                  
+                  {/* Persons List */}
+                  <div className="create-player-persons-list">
+                    {filteredAndSortedPersons.map((person) => (
+                      <div 
+                        key={person.id} 
+                        className={`create-player-person-item ${selectedPersons.has(person.id) ? 'selected' : ''}`}
+                      >
+                        <div className="person-select-column">
+                          <input
+                            type="checkbox"
+                            checked={selectedPersons.has(person.id)}
+                            onChange={() => togglePersonSelection(person.id)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                        <div 
+                          className="create-player-person-birth-date clickable-cell"
+                          onClick={() => togglePersonSelection(person.id)}
+                        >
+                          {formatDate(person.birthDate)}
+                        </div>
+                        <div 
+                          className="create-player-person-registration clickable-cell"
+                          onClick={() => togglePersonSelection(person.id)}
+                        >
+                          <span 
+                            className={`registration-badge ${person.isRegistered ? 'active' : 'inactive'}`}
+                            aria-label={person.isRegistered ? t('common.registered', 'Registered') : t('common.notRegistered', 'Not Registered')}
+                            title={person.isRegistered ? t('common.registered', 'Registered') : t('common.notRegistered', 'Not Registered')}
+                          >
+                            <img
+                              src={person.isRegistered ? CheckIcon : CloseIcon}
+                              alt={person.isRegistered ? t('common.registered', 'Registered') : t('common.notRegistered', 'Not Registered')}
+                              className="registration-icon"
+                            />
+                          </span>
+                        </div>
+                        <div 
+                          className="create-player-person-name clickable-cell"
+                          onClick={() => togglePersonSelection(person.id)}
+                        >
+                          {person.fullName}
+                        </div>
+                        <div className="create-player-person-actions">
+                          <button
+                            className="create-player-btn"
+                            onClick={() => handleCreatePlayer(person.id)}
+                            disabled={creating}
+                          >
+                            {creating ? 
+                              t('common.creating', 'Creating...') : 
+                              t('football.players.createPlayer', 'Create Player')
+                            }
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  </>
+                )}
+              </div>
+              {paginationLoading && (
+                <div className="pagination-loading-overlay">
+                  <div className="loading-spinner-small" />
+                </div>
+              )}
+            </div>
+            
+            {/* Pagination Controls - show when there are multiple pages */}
+            {totalPages > 1 && (
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                pageSize={pageSize}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            )}
+          </>
+        )}
+        
+        {/* Bulk Create Confirmation Modal */}
+        {showBulkConfirmation && (
+          <div className="modal-overlay" onClick={cancelBulkCreate}>
+            <div className="bulk-create-modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>{t('football.players.confirmBulkCreate.title', 'Confirm Bulk Player Creation')}</h2>
+                <button
+                  className="modal-close"
+                  onClick={cancelBulkCreate}
+                  type="button"
+                  aria-label="Close modal"
+                  disabled={bulkCreating}
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="warning-icon">
+                  ⚠️
+                </div>
+                <div className="confirm-message">
+                  <p>
+                    {t('football.players.confirmBulkCreate.message', 
+                      'Are you sure you want to create {{count}} player(s) from the selected persons?', 
+                      { count: selectedPersons.size }
+                    )}
+                  </p>
+                  <p className="info-text">
+                    {t('football.players.confirmBulkCreate.info', 'This will convert the selected persons into football players.')}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  onClick={cancelBulkCreate}
+                  className="cancel-button"
+                  disabled={bulkCreating}
+                >
+                  {t('common.cancel', 'Cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmBulkCreatePlayers}
+                  className="create-button"
+                  disabled={bulkCreating}
+                >
+                  {bulkCreating 
+                    ? t('football.players.actions.bulkCreating', 'Creating players...')
+                    : t('football.players.actions.confirmBulkCreate', 'Create All Players')
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </PageTemplate>
+  );
+};
+
+export default CreatePlayerPage;

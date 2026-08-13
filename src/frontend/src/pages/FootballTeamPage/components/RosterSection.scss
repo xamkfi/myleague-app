@@ -1,0 +1,306 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../../styles/common' as *;
+
+.roster-section{
+  width: 100%;
+}
+
+.roster-container{
+   @include container;
+   margin-bottom: map.get($spacing, "md");
+   color: $color-neutral-black;
+   width: 100%;
+}
+
+// Horizontal scroll wrapper similar to LeagueStanding
+.table-wrapper{
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.roster-section .table{
+   display: grid;
+   grid-template-columns: 40px minmax(200px, 400px) 60px repeat(3, 1fr);
+   gap: 16px;
+   grid-template-areas: "jersey playerName age gamesPlayed goals assists";
+   width: 100%;
+   box-sizing: border-box;
+   min-width: 600px;
+   >*{
+      display: flex;
+      text-align: center;
+      justify-content: center;
+      align-items: center;
+   }
+}
+
+.stats-header{
+   border-radius: map.get($border-radius, "sm");
+   background: $color-banner-bg;
+   font-size: map.get($font-sizes, "sm");
+   font-weight: map.get($font-weights, "bold");
+   padding: map.get($spacing, "xs") map.get($spacing, "sm");   
+   color: $color-banner-text;
+}
+
+.roster-position-container{
+   // border: 1px solid $color-border;
+   // box-shadow: 0 2px 4px $color-box-shadow;
+   margin-bottom: map.get($spacing, "base");
+   border-radius: 6px;
+   
+} 
+
+.roster-position-header{
+   text-align: left;
+   border-radius: map.get($border-radius, "sm");
+   margin-bottom: map.get($spacing, "sm");
+   color: $color-blue-deep;
+   font-size: map.get($font-sizes, "lg");
+   font-weight: map.get($font-weights, "bold");
+
+}
+
+.roster-player{
+   // margin-bottom: map.get($spacing, "xs" );
+   padding: map.get($spacing, "xs") map.get($spacing, "sm");   
+   justify-content: center;
+   align-items: center;
+   box-shadow: 0 0 0px rgba(0, 0, 0, 0);
+   border-bottom: 1px solid $color-neutral-medium-grey;   
+   transform: scale(1);
+   transition:
+      background-color 0.25s ease,
+      box-shadow 0.25s ease,
+      transform 0.25s ease;
+
+   &:hover{
+      background-color: #b5b5b5;
+      box-shadow: 0 0 32px rgba(0, 0, 0, 0.194);
+      transform: scale(1.005);
+      color: $color-neutral-light-grey !important;
+      cursor: pointer;
+      z-index: 10;
+      position: relative;
+   }
+}
+
+.seperator-line{
+   border-left: 1px solid rgb(183, 183, 183);
+
+}
+
+.roster-jersey{
+   grid-area: jersey;
+   
+   font-weight: map.get($font-weights, "bold");
+
+   &.row{
+      width: 32px;
+      height: 32px;
+      color: $color-neutral-dark-grey;
+      border-radius: map.get($border-radius, "lg");;
+      border: 1px solid $color-neutral-medium-grey;
+   }
+   
+   
+
+}
+
+.roster-player-name{
+   grid-area: playerName;
+   justify-content: left;
+   font-weight: map.get($font-weights, "bold");
+   min-width: 0;
+   overflow: hidden;
+   text-overflow: ellipsis;
+}
+
+// Easter egg: system creator highlight
+.roster-player--creator {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.08) 0%, transparent 100%);
+
+  .roster-player-name {
+    background: linear-gradient(135deg, $color-blue-deep, #b8860b, $color-blue-deep);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: creator-shimmer 4s ease-in-out infinite;
+  }
+
+  &:hover .roster-player-name {
+    animation-duration: 1.5s;
+  }
+}
+
+.creator-badge {
+  -webkit-text-fill-color: #b8860b;
+  font-size: map.get($font-sizes, "sm-xs");
+  margin-left: map.get($spacing, "xxs");
+  filter: drop-shadow(0 0 2px rgba(184, 134, 11, 0.5));
+}
+
+@keyframes creator-shimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
+}
+
+.roster-age{
+   grid-area: age;
+   text-align: center;
+}
+
+.roster-games-played{
+   grid-area: gamesPlayed;
+   text-align: center;
+}
+
+.roster-goals{
+   grid-area: goals;
+   text-align: center;
+}
+
+
+.roster-assists{
+   grid-area: assists;
+   text-align: center;
+}
+
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
+@media (max-width: 768px) {
+  .roster-container {
+    padding: map.get($spacing, 'sm');
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .roster-section .table{
+    min-width: 480px;
+  }
+
+  .roster-position-header {
+    font-size: map.get($font-sizes, 'md');
+    text-align: center;
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .roster-section .table {
+    grid-template-columns: 30px minmax(75px, 150px) 40px repeat(3, 48px);
+    gap: map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .stats-header {
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
+  }
+
+  .roster-player {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'xs');
+    // Avoid horizontal overflow from hover effects on mobile
+    &:hover{
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  .roster-jersey.row {
+    width: 24px;
+    height: 24px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .roster-container {
+    padding: map.get($spacing, 'xs');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .roster-section .table{
+    min-width: 380px;
+  }
+
+  .roster-position-header {
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .roster-section .table {
+    grid-template-columns: 25px minmax(75px, 1fr) 36px repeat(3, 40px);
+    gap: map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .stats-header {
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xxs');
+  }
+
+  .roster-player {
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'xs');
+    &:hover{
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  .roster-jersey.row {
+    width: 20px;
+    height: 20px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .roster-player-name {
+    font-size: map.get($font-sizes, 'xs');
+  }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+  .roster-container {
+    padding: map.get($spacing, 'xxs');
+  }
+
+  .roster-position-header {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .roster-section .table {
+    grid-template-columns: 20px minmax(100px, 1fr) 35px repeat(3, 45px);
+    gap: 2px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .stats-header {
+    font-size: map.get($font-sizes, 'xs');
+    padding: 2px 4px;
+  }
+
+  .roster-player {
+    padding: 2px 4px;
+    font-size: map.get($font-sizes, 'xs');
+    &:hover{
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  .roster-jersey.row {
+    width: 18px;
+    height: 18px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .roster-player-name {
+    font-size: map.get($font-sizes, 'xs');
+  }
+}

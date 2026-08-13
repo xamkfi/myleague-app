@@ -1,0 +1,75 @@
+@use "sass:map";
+@use '@variables' as *;
+
+.filters-section {
+  margin-bottom: map.get($spacing, 'lg');
+  padding: map.get($spacing, 'base');
+  background-color: $color-neutral-light-grey;
+  border-radius: $border-radius-default;
+  border: 1px solid $color-border;
+
+  .filters-row {
+    display: flex;
+    gap: map.get($spacing, 'lg');
+    align-items: center;
+    flex-wrap: wrap;
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, 'xs');
+
+      .show-active {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: map.get($spacing, 'xs');
+        user-select: none;
+        font-size: map.get($font-sizes, 'sm');
+        color: $color-text-primary;
+      }
+
+      label {
+        font-weight: map.get($font-weights, 'medium');
+        color: $color-text-primary;
+        white-space: nowrap;
+        font-size: map.get($font-sizes, 'sm');
+      }
+
+      input[type="checkbox"] {
+        margin-right: map.get($spacing, 'xs');
+        accent-color: $color-blue-light;
+      }
+
+      select {
+        padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+        border: 1px solid $color-border;
+        border-radius: map.get($border-radius, 'sm');
+        background-color: $color-white;
+        color: $color-text-primary;
+        min-width: 120px;
+        font-size: map.get($font-sizes, 'sm');
+        @include transition(border-color);
+
+        &:focus {
+          outline: none;
+          border-color: $color-blue-light;
+          box-shadow: 0 0 0 2px rgba(74, 103, 159, 0.15);
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .filters-section .filters-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: map.get($spacing, 'base');
+
+    .filter-group {
+      justify-content: space-between;
+    }
+  }
+}

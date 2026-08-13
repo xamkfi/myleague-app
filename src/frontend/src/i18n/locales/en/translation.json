@@ -177,117 +177,117 @@
     "emptyContent": "Page content has not been published yet."
   },
   "rules": {
-  "title": "Rules",
-  "defaultTitle": "Rules",
-  "publicTitle": "MAHL Rules",
-  "publicIntro": "Find MAHL general rules, sport-specific rules, and other rule sections on this page.",
-  "generalRules": "MAHL general rules",
-  "sectionKicker": "Rules",
-  "ruleCountLabel": "rules",
-  "sectionTabs": "Select rule section",
-  "selectSport": "Select sport",
-  "noRules": "No rules have been added yet.",
-  "mahlNavigation": "MAHL navigation",
-  "mahlNav": {
-    "summary": "Summary",
-    "finance": "Club finances",
-    "partners": "Partners",
-    "responsibility": "Responsibility",
-    "rules": "Rules"
-  },
-  "loading": "Loading rules...",
-  "loadFailed": "Failed to load rules.",
-  "admin": {
-    "pageTitle": "Rules management",
-    "managementTitle": "Rules management",
-    "managementDescription": "Publish rules to the public rules page.",
-    "loadFailed": "Failed to load rules content.",
-    "noPublishedRules": "No published rules.",
-    "typeRuleToAdd": "Type to add rules.",
-    "addRuleBeforeSaving": "Add a rule first before saving.",
-    "rulesPublishedSuccessfully": "Rules published successfully!",
-    "saveFailed": "Failed to save rules.",
-    "lastUpdate": "Last update",
-    "noRulesAddedYet": "No rules added yet.",
-    "editor": "Editor",
-    "unknown": "Unknown",
-    "ruleUpdatedSuccessfully": "Rule updated successfully!",
-    "updateRuleFailed": "Failed to update rule.",
-    "confirmDeleteRule": "Are you sure you want to delete this rule: {{ruleName}}?",
-    "ruleDeletedSuccessfully": "Rule deleted successfully!",
-    "deleteRuleFailed": "Failed to delete rule.",
-    "editRule": "Edit rule",
-    "saveRule": "Save rule",
-    "saving": "Saving...",
-    "searchPlaceholder": "Search rules...",
-    "publish": "Publish",
-    "publishing": "Publishing...",
-    "addRule": "Add new rule",
-    "createRuleTitle": "Configure new rule",
-    "createRuleDescription": "Write the rule content before adding it to preview.",
-    "typeRulePlaceholder": "Type here...",
-    "preview": "Preview",
-    "noPreviewRules": "No rules to preview.",
-    "publishedRules": "Published rules",
-    "allCategories": "All Categories",
-    "category": "Category",
-    "categories": {
-      "general": "General",
-      "fees": "Fees & Charges",
-      "validation": "Validation",
-      "calculation": "Calculation"
+    "title": "Rules",
+    "defaultTitle": "Rules",
+    "publicTitle": "MAHL Rules",
+    "publicIntro": "Find MAHL general rules, sport-specific rules, and other rule sections on this page.",
+    "generalRules": "MAHL general rules",
+    "sectionKicker": "Rules",
+    "ruleCountLabel": "rules",
+    "sectionTabs": "Select rule section",
+    "selectSport": "Select sport",
+    "noRules": "No rules have been added yet.",
+    "mahlNavigation": "MAHL navigation",
+    "mahlNav": {
+      "summary": "Summary",
+      "finance": "Club finances",
+      "partners": "Partners",
+      "responsibility": "Responsibility",
+      "rules": "Rules"
     },
-    "editRuleTitle": "Edit rule",
-    "editRuleDescription": "Update the rule before moving it to preview.",
-    "selectCategory": "Select category",
-    "rule": "Rule",
-    "subtitle": "Manage Rules",
-    "confirmPublish": "Are you sure you want to publish the rules?",
-    "confirmDiscardChanges": "You have unsaved changes.",
-    "section": "Rule section",
-    "allSections": "All sections",
-    "unknownSection": "Unknown section",
-    "selectSectionFirst": "Select a rule section first.",
-    "manageSections": "Manage sections",
-    "manageRules": "Manage rules",
-    "sectionsTitle": "Rule sections",
-    "topLevelSections": "Top-level tabs",
-    "sportSections": "Sport-specific rules",
-    "sortOrder": "Order",
-    "sectionTitle": "Title",
-    "sectionType": "Section type",
-    "addSection": "Add section",
-    "editSection": "Edit rule section",
-    "createSection": "Create section",
-    "sectionTitleRequired": "Section title is required.",
-    "sectionSavedSuccessfully": "Rule section saved successfully.",
-    "sectionSaveFailed": "Failed to save rule section.",
-    "sectionDeletedSuccessfully": "Rule section deleted successfully.",
-    "sectionDeleteFailed": "Failed to delete rule section.",
-    "confirmDeleteSection": "Are you sure you want to delete section: {{title}}?",
-    "sportSectionHint": "The sport will appear under Sport-specific rules.",
-    "confirmUpdateRule": "Are you sure you want to update this rule?",
-    "confirmPublishSingleRule": "Are you sure you want to publish this rule?",
-    "publishRule": "Publish rule",
-    "updateRule": "Update rule",
-    "editMode": "Edit mode",
-    "createMode": "Create mode",
-    "sectionTypes": {
-      "Global": "General rules",
-      "SportGroup": "Sport-specific rules",
-      "Sport": "Sport (under sport-specific)",
-      "Validation": "Validation",
-      "Companion": "Companions",
-      "Fee": "Fees"
-    },
-    "table": {
+    "loading": "Loading rules...",
+    "loadFailed": "Failed to load rules.",
+    "admin": {
+      "pageTitle": "Rules management",
+      "managementTitle": "Rules management",
+      "managementDescription": "Publish rules to the public rules page.",
+      "loadFailed": "Failed to load rules content.",
+      "noPublishedRules": "No published rules.",
+      "typeRuleToAdd": "Type to add rules.",
+      "addRuleBeforeSaving": "Add a rule first before saving.",
+      "rulesPublishedSuccessfully": "Rules published successfully!",
+      "saveFailed": "Failed to save rules.",
+      "lastUpdate": "Last update",
+      "noRulesAddedYet": "No rules added yet.",
+      "editor": "Editor",
+      "unknown": "Unknown",
+      "ruleUpdatedSuccessfully": "Rule updated successfully!",
+      "updateRuleFailed": "Failed to update rule.",
+      "confirmDeleteRule": "Are you sure you want to delete this rule: {{ruleName}}?",
+      "ruleDeletedSuccessfully": "Rule deleted successfully!",
+      "deleteRuleFailed": "Failed to delete rule.",
+      "editRule": "Edit rule",
+      "saveRule": "Save rule",
+      "saving": "Saving...",
+      "searchPlaceholder": "Search rules...",
+      "publish": "Publish",
+      "publishing": "Publishing...",
+      "addRule": "Add new rule",
+      "createRuleTitle": "Configure new rule",
+      "createRuleDescription": "Write the rule content before adding it to preview.",
+      "typeRulePlaceholder": "Type here...",
+      "preview": "Preview",
+      "noPreviewRules": "No rules to preview.",
+      "publishedRules": "Published rules",
+      "allCategories": "All Categories",
+      "category": "Category",
+      "categories": {
+        "general": "General",
+        "fees": "Fees & Charges",
+        "validation": "Validation",
+        "calculation": "Calculation"
+      },
+      "editRuleTitle": "Edit rule",
+      "editRuleDescription": "Update the rule before moving it to preview.",
+      "selectCategory": "Select category",
       "rule": "Rule",
-      "section": "Section",
-      "order": "Order",
-      "actions": "Actions"
+      "subtitle": "Manage Rules",
+      "confirmPublish": "Are you sure you want to publish the rules?",
+      "confirmDiscardChanges": "You have unsaved changes.",
+      "section": "Rule section",
+      "allSections": "All sections",
+      "unknownSection": "Unknown section",
+      "selectSectionFirst": "Select a rule section first.",
+      "manageSections": "Manage sections",
+      "manageRules": "Manage rules",
+      "sectionsTitle": "Rule sections",
+      "topLevelSections": "Top-level tabs",
+      "sportSections": "Sport-specific rules",
+      "sortOrder": "Order",
+      "sectionTitle": "Title",
+      "sectionType": "Section type",
+      "addSection": "Add section",
+      "editSection": "Edit rule section",
+      "createSection": "Create section",
+      "sectionTitleRequired": "Section title is required.",
+      "sectionSavedSuccessfully": "Rule section saved successfully.",
+      "sectionSaveFailed": "Failed to save rule section.",
+      "sectionDeletedSuccessfully": "Rule section deleted successfully.",
+      "sectionDeleteFailed": "Failed to delete rule section.",
+      "confirmDeleteSection": "Are you sure you want to delete section: {{title}}?",
+      "sportSectionHint": "The sport will appear under Sport-specific rules.",
+      "confirmUpdateRule": "Are you sure you want to update this rule?",
+      "confirmPublishSingleRule": "Are you sure you want to publish this rule?",
+      "publishRule": "Publish rule",
+      "updateRule": "Update rule",
+      "editMode": "Edit mode",
+      "createMode": "Create mode",
+      "sectionTypes": {
+        "Global": "General rules",
+        "SportGroup": "Sport-specific rules",
+        "Sport": "Sport (under sport-specific)",
+        "Validation": "Validation",
+        "Companion": "Companions",
+        "Fee": "Fees"
+      },
+      "table": {
+        "rule": "Rule",
+        "section": "Section",
+        "order": "Order",
+        "actions": "Actions"
+      }
     }
-  }
-},
+  },
   "admin": {
     "title": "Admin Dashboard",
     "database": "Database",
@@ -307,6 +307,8 @@
       "manageDivisions": "Manage sport divisions",
       "floorball": "Floorball",
       "manageFloorball": "Manage floorball",
+      "football": "Football",
+      "manageFootball": "Manage football",
       "clubs": "Clubs",
       "manageClubs": "Manage clubs",
       "users": "System Users",
@@ -445,7 +447,7 @@
         "sportHint": "Sport type cannot be changed for existing divisions."
       }
     },
-    "persons":{
+    "persons": {
       "title": "Person Management",
       "subtitle": "Manage Persons",
       "searchPlaceholder": "Search persons by name...",
@@ -457,16 +459,16 @@
         "editTitle": "Edit Person",
         "close": "Close"
       },
-      "status":{
+      "status": {
         "registered": "Yes",
         "notRegistered": "No"
       },
-      "success":{
+      "success": {
         "registered": "Person registered successfully.",
         "unregister": "Person unregistered successfully.",
         "roleUpdated": "Person role updated successfully"
       },
-      "table":{
+      "table": {
         "name": "Name",
         "birthDate": "Birth Date",
         "email": "Email",
@@ -474,7 +476,7 @@
         "role": "Role",
         "actions": "Actions"
       },
-      "roles":{
+      "roles": {
         "user": "User",
         "admin": "Admin",
         "superAdmin": "Super Admin"
@@ -510,6 +512,7 @@
         "jerseyNumberHint": "Optional: 1-99",
         "positions": {
           "none": "No position",
+          "midfielder": "Midfielder",
           "center": "Center",
           "winger": "Winger",
           "forward": "Forward",
@@ -534,7 +537,7 @@
       "validation": {
         "firstNameRequired": "First name is required",
         "firstNameTooLong": "First name cannot exceed {{max}} characters",
-        "lastNameRequired": "Last name is required", 
+        "lastNameRequired": "Last name is required",
         "lastNameTooLong": "Last name cannot exceed {{max}} characters",
         "birthDateRequired": "Birth date is required",
         "invalidDate": "Invalid date format",
@@ -544,7 +547,7 @@
         "street1TooLong": "Street address cannot exceed {{max}} characters",
         "street2TooLong": "Street address 2 cannot exceed {{max}} characters",
         "cityRequired": "City is required",
-        "cityTooLong": "City cannot exceed {{max}} characters", 
+        "cityTooLong": "City cannot exceed {{max}} characters",
         "postalCodeRequired": "Postal code is required",
         "postalCodeTooLong": "Postal code cannot exceed {{max}} characters",
         "countryRequired": "Country is required",
@@ -571,7 +574,7 @@
       "uploadFailed": "Image upload failed.",
       "placeholder": "Start writing here..."
     },
-    "news":{
+    "news": {
       "pageTitle": "News Management",
       "createNew": "Create New",
       "create": "Create News Article",
@@ -625,7 +628,7 @@
       "confirm_update": "Are you sure you want to update this news article?",
       "table": {
         "title": "Title",
-        "author": "Author", 
+        "author": "Author",
         "category": "Category",
         "createdAt": "Created",
         "archived": "Archived",
@@ -654,7 +657,7 @@
         "publish_error": "Failed to publish news article. Please try again.",
         "update_error": "Failed to update news article. Please try again.",
         "title_required": "Title is required",
-        "title_too_short": "Title must be at least 5 characters long", 
+        "title_too_short": "Title must be at least 5 characters long",
         "title_too_long": "Title cannot exceed 200 characters",
         "content_required": "Article content is required",
         "author_too_long": "Author name cannot exceed 50 characters",
@@ -779,7 +782,7 @@
       "hasMembers": "Yes",
       "noMembers": "No",
       "primary": "Primary",
-      "secondary": "Secondary", 
+      "secondary": "Secondary",
       "name": "Team Name",
       "namePlaceholder": "Enter team name",
       "club": "Club",
@@ -898,7 +901,7 @@
         "endDate": "Ends",
         "teams": "Teams"
       },
-            "status": {
+      "status": {
         "active": "Active",
         "inactive": "Inactive",
         "completed": "Completed"
@@ -1204,7 +1207,7 @@
     },
     "categories": {
       "adult": "Adult",
-      "youth": "Youth", 
+      "youth": "Youth",
       "women": "Women"
     },
     "referees": {
@@ -1394,7 +1397,7 @@
       },
       "status": {
         "Scheduled": "Scheduled",
-        "InProgress": "In Progress", 
+        "InProgress": "In Progress",
         "Completed": "Completed",
         "Cancelled": "Cancelled",
         "Postponed": "Postponed"
@@ -1485,24 +1488,30 @@
     }
   },
   "roster": {
-    "positions": {
-      "Goalkeeper": "Goalkeepers",
-      "Defender": "Defenders", 
-      "Center": "Centers",
-      "Forward": "Forwards"
-    },
     "jerseyNumber": "#",
     "name": "Name",
     "age": "Age",
-    "matchesPlayed": "Games",
+    "matchesPlayed": "Matches played",
     "goals": "Goals",
     "assists": "Assists",
+    "yellowCards": "Yellow cards",
+    "redCards": "Red cards",
+    "positions": {
+      "None": "NONE",
+      "Goalkeeper": "GOALKEEPER",
+      "Defender": "DEFENDER",
+      "Center": "CENTER",
+      "Forward": "FORWARD",
+      "Midfielder": "MIDFIELDER"
+    },
     "tooltips": {
-      "jerseyNumber": "Jersey Number",
+      "jerseyNumber": "Jersey number",
       "age": "Age",
-      "matchesPlayed": "Matches Played",
+      "matchesPlayed": "Matches played",
       "goals": "Goals",
-      "assists": "Assists"
+      "assists": "Assists",
+      "yellowCards": "Yellow cards",
+      "redCards": "Red cards"
     }
   },
   "common": {
@@ -1551,14 +1560,14 @@
       "pageOf": "Page {{current}} of {{total}}"
     }
   },
-  "newsPage":{
+  "newsPage": {
     "category": {
       "all": "All"
     },
     "sportCategory": {
       "floorball": "Floorball",
       "hockey": "Icehockey",
-      "football": "Football" 
+      "football": "Football"
     },
     "search": "Search",
     "searchPlaceholder": "Search news...",
@@ -1644,51 +1653,22 @@
     "loading": "Loading results…",
     "noResults": "No results found."
   },
-  "roster": {
-    "jerseyNumber": "#",
-    "name": "Name",
-    "age": "Age",
-    "matchesPlayed": "Matches played",
-    "goals": "Goals",
-    "assists": "Assists",
-    "yellowCards": "Yellow cards",
-    "redCards": "Red cards",
-    "positions": {
-      "None": "NONE",
-      "Goalkeeper": "GOALKEEPER",
-      "Defender": "DEFENDER",
-      "Center": "CENTER",
-      "Forward": "FORWARD"
-    },
-    "tooltips": {
-      "jerseyNumber": "Jersey number",
-      "age": "Age",
-      "matchesPlayed": "Matches played",
-      "goals": "Goals",
-      "assists": "Assists",
-      "yellowCards": "Yellow cards",
-      "redCards": "Red cards"
-    }
-  },
   "searchBar": {
     "placeholder": "Search...",
     "button": "Search",
     "noMatches": "No matches found."
   },
-  "results": {
-    "title": "RESULTS",
-    "loading": "Loading results…",
-    "noResults": "No results found."
-  },
   "sports": {
     "allSports": "All sports",
     "floorball": "Floorball",
+    "football": "Football",
     "iceHockey": "Ice Hockey"
   },
   "sportsPage": {
     "title": "Sports",
     "description": "MAHL sports are divided into different sports categories. Select a sport to see leagues, matches, and statistics.",
     "floorballDescription": "Floorball is a fast-paced indoor sport where two teams compete to score goals.",
+    "footballDescription": "Football is a team sport played on a pitch where two sides compete to score goals.",
     "iceHockeyDescription": "Ice hockey is an intense team sport played on ice.",
     "viewLeagues": "View leagues",
     "comingSoon": "Coming soon"
@@ -1728,6 +1708,45 @@
       "fee1": "Participation fee 1200-2000 €, VAT 0% (the final price is confirmed once the number of teams and the league format are set).",
       "fee2": "Half of the team fee must be paid by the end of October 2025. The rest of the team fee must be paid by the end of January 2026.",
       "fee3": "The team fee includes participation in the PMT Festival floorball tournament. Teams are invoiced via Suomisport. Team managers will be contacted about invoicing at the start of the season.",
+      "contactTitle": "For more information, contact"
+    }
+  },
+  "footballPage": {
+    "title": "Football",
+    "loading": "Loading leagues...",
+    "error": "Failed to load leagues",
+    "retry": "Try again",
+    "noSeasonsForYear": "No leagues found for this season year",
+    "seasonYears": "Season years",
+    "seasonLabel": "Season",
+    "standingsTitle": "Standings",
+    "teamShort": "Team",
+    "gamesShort": "GP",
+    "gdShort": "GD",
+    "ptsShort": "PTS",
+    "noStandings": "Standings are not available yet",
+    "viewFullTable": "Full table",
+    "upcomingMatches": "Upcoming matches",
+    "tbd": "TBD",
+    "archiveTitle": "Season archive {{year}}",
+    "archiveText": "You are browsing leagues from a past season. Standings and statistics are shown on the right.",
+    "backToCurrent": "Back to season {{year}}",
+    "info": {
+      "introTitle": "MAHL Football",
+      "intro1": "Follow MAHL football leagues, standings, fixtures, and results.",
+      "intro2": "Select a season year to browse current and archived competitions.",
+      "intro3": "Match pages include goals, cards, substitutions, and lineups.",
+      "seriesTitle": "League info",
+      "series1": "Football leagues use a win-draw-loss points system with goal difference.",
+      "series2": "Standings and player statistics update as matches are completed.",
+      "series3": "Tournaments include group tables with draws and a playoff bracket when enabled.",
+      "series4": "Use the season filter to switch between the current season and archives.",
+      "loanTitle": "Players",
+      "loan1": "Player profiles show games, goals, assists, and yellow/red cards.",
+      "feeTitle": "Competitions",
+      "fee1": "Open a league to view standings, fixtures, and results.",
+      "fee2": "Open a tournament to view groups, playoffs, and statistics.",
+      "fee3": "Live matches update in real time while they are in progress.",
       "contactTitle": "For more information, contact"
     }
   },
@@ -1778,32 +1797,6 @@
       "loadMatches": "Failed to load matches"
     }
   },
-  "roster": {
-    "jerseyNumber": "#",
-    "name": "Name",
-    "age": "Age",
-    "matchesPlayed": "Matches played",
-    "goals": "Goals",
-    "assists": "Assists",
-    "yellowCards": "Yellow cards",
-    "redCards": "Red cards",
-    "positions": {
-      "None": "NONE",
-      "Goalkeeper": "GOALKEEPER",
-      "Defender": "DEFENDER",
-      "Center": "CENTER",
-      "Forward": "FORWARD"
-    },
-    "tooltips": {
-      "jerseyNumber": "Jersey number",
-      "age": "Age",
-      "matchesPlayed": "Matches played",
-      "goals": "Goals",
-      "assists": "Assists",
-      "yellowCards": "Yellow cards",
-      "redCards": "Red cards"
-    }
-  },
   "clubsPage": {
     "title": "Clubs",
     "description": "Browse and search MAHL league clubs.",
@@ -1848,5 +1841,751 @@
     "codeSent": "A login code has been sent to your email.",
     "unexpectedError": "An unexpected error occurred.",
     "logout": "Log out"
+  },
+  "football": {
+    "management": {
+      "title": "Football Management",
+      "legend": {
+        "availableNow": "Available Now",
+        "comingSoon": "Coming Soon"
+      },
+      "badges": {
+        "ready": "✨ Ready!",
+        "soon": "🚧 Soon"
+      },
+      "comingSoonAlert": "🚧 {{featureName}} is coming soon! 🚧\n\nOur development team is working hard to bring you this feature. Stay tuned for updates! 🎯",
+      "actions": {
+        "teams": "Teams",
+        "manageTeams": "Manage teams",
+        "managePlayers": "Manage players",
+        "manageSeasons": "Manage seasons",
+        "manageTournaments": "Manage tournaments",
+        "manageMatches": "Manage matches",
+        "manageReferees": "Manage referees",
+        "players": "Manage Players",
+        "coaches": "Manage Coaches",
+        "teamManagers": "Manage Team Managers",
+        "referees": "Manage Referees",
+        "matches": "Manage Matches",
+        "matchEvents": "Manage Match Events",
+        "seasons": "Manage Seasons",
+        "seasonMatches": "Manage Season Matches",
+        "tournaments": "Manage Tournaments",
+        "tournamentMatches": "Manage Tournament Matches"
+      }
+    },
+    "teams": {
+      "title": "Manage Teams",
+      "totalCount": "Total: {{count}} teams",
+      "createNew": "Create New Team",
+      "searchPlaceholder": "Search teams by name...",
+      "noTeams": "No teams found",
+      "players": "Team Players",
+      "hasMembers": "Yes",
+      "noMembers": "No",
+      "primary": "Primary",
+      "secondary": "Secondary",
+      "name": "Team Name",
+      "namePlaceholder": "Enter team name",
+      "club": "Club",
+      "selectClub": "Select a club",
+      "division": "Division",
+      "selectDivision": "Select division...",
+      "category": "Category",
+      "homeArena": "Home Arena",
+      "homeArenaPlaceholder": "Enter home arena",
+      "optional": "Optional",
+      "secondaryColorTooShort": "Secondary color must be at least 2 characters",
+      "secondaryColorTooLong": "Secondary color must be no more than 50 characters",
+      "confirmDelete": "Are you sure you want to delete team \"{{name}}\"?",
+      "table": {
+        "name": "Team Name",
+        "club": "Club",
+        "division": "Division",
+        "homeArena": "Home Arena",
+        "activeMembers": "Active Members",
+        "actions": "Actions"
+      },
+      "assignPlayerToTeam": "Assign to Team",
+      "assignPlayersToTeam": "Assign Players to Team",
+      "selectTeam": "Select Team",
+      "chooseTeam": "Choose a team...",
+      "addToRoster": "Add to Roster",
+      "errors": {
+        "loadFailed": "Failed to load teams",
+        "selectTeam": "Please select a team",
+        "invalidJerseyNumber": "Jersey number must be between 1 and 99"
+      },
+      "requestedJerseyTooltip": "Requested #{{requested}} during import but it was taken; assigned #{{assigned}} instead. Pick a different number to clear this notice.",
+      "requestedJerseyBadge": "requested #{{requested}}"
+    },
+    "divisions": {
+      "men": "Men",
+      "women": "Women",
+      "youth": "Youth",
+      "junior": "Junior"
+    },
+    "players": {
+      "title": "Manage Football Players",
+      "totalCount": "{{count}} players",
+      "createNew": "Create New Player",
+      "noPlayers": "No players found.",
+      "createFromPerson": "Create Player from Available Persons",
+      "createNewPerson": "Create New Person",
+      "searchPersons": "Search available persons...",
+      "searchPlayers": "Search players...",
+      "selected": "{{count}} selected",
+      "selectedPlayers": "{{count}} players selected",
+      "selectAll": "Select All",
+      "selectAllVisible": "Select all visible persons",
+      "createPlayer": "Create Player",
+      "createPlayers": "Create Multiple Players",
+      "playerCreated": "{{personName}} is now a football player!",
+      "playersCreated": "{{personName}} are now football players!",
+      "personCreated": "{{personName}} created successfully! You can now create a player from them.",
+      "noPersonsFound": "No persons found matching your search",
+      "noPersonsAvailable": "No available persons to convert to players. All persons are already players.",
+      "backToPersonSelection": "Back to Person Selection",
+      "backToPlayerCreation": "Back to Player Creation",
+      "table": {
+        "name": "Name",
+        "position": "Position",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "position": "Position",
+      "games": "Games",
+      "goals": "Goals",
+      "assists": "Assists",
+      "penalties": "Cards",
+      "confirmDelete": {
+        "title": "Confirm Deletion",
+        "message": "Are you sure you want to delete {{playerName}}?",
+        "warning": "This action cannot be undone."
+      },
+      "noPlayersInTeam": "This team has no players assigned yet.",
+      "addPlayersHelp": "Use the edit button to manage team roster and add players.",
+      "actions": {
+        "menu": "Player actions menu",
+        "activate": "Activate Player",
+        "deactivate": "Deactivate Player",
+        "bulkActivate": "Activate Selected ({{count}})",
+        "bulkDeactivate": "Deactivate Selected ({{count}})",
+        "bulkDelete": "Delete Selected ({{count}})",
+        "bulkAssignToTeam": "Assign to Team ({{count}})"
+      },
+      "errors": {
+        "loadPlayers": "Failed to load players. Please try again.",
+        "deleteFailed": "Failed to delete player. Please try again."
+      }
+    },
+    "positions": {
+      "none": "None",
+      "defender": "Defender",
+      "goalkeeper": "Goalkeeper",
+      "forward": "Forward",
+      "midfielder": "Midfielder"
+    },
+    "seasons": {
+      "title": "Manage Seasons",
+      "totalCount": "{{count}} seasons",
+      "createNew": "Create New Season",
+      "showActiveOnly": "Show Active Only",
+      "backToList": "Back to Seasons",
+      "division": "Division",
+      "matchesInProgress_one": "{{count}} match in progress",
+      "matchesInProgress_other": "{{count}} matches in progress",
+      "fields": {
+        "name": "Name",
+        "division": "Division",
+        "startDate": "Starts",
+        "endDate": "Ends",
+        "teams": "Teams"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "completed": "Completed"
+      },
+      "create": {
+        "title": "Create New Season",
+        "info": "The season will be created as inactive by default"
+      },
+      "placeholders": {
+        "name": "Enter season name",
+        "selectDivision": "Select division"
+      },
+      "errors": {
+        "networkError": "Network error. Please check your connection and try again.",
+        "validationError": "Invalid data provided. Please check your input and try again.",
+        "conflictError": "A season with overlapping dates already exists.",
+        "serverError": "Server error. Please try again later.",
+        "overlappingDates": "A season already exists that overlaps with the specified dates."
+      },
+      "validation": {
+        "nameRequired": "Season name is required.",
+        "nameTooLong": "Season name cannot exceed 100 characters.",
+        "divisionRequired": "Please select a valid division.",
+        "startDateRequired": "Start date is required.",
+        "endDateRequired": "End date is required."
+      }
+    },
+    "tournaments": {
+      "title": "Manage Tournaments",
+      "totalCount": "{{count}} tournaments",
+      "createNew": "Create New Tournament",
+      "editTitle": "Edit Tournament",
+      "createTitle": "Create New Tournament",
+      "noTournaments": "No tournaments found",
+      "noGroups": "No groups",
+      "import": {
+        "button": "Import from JSON",
+        "buttonTooltip": "Create a tournament by uploading a JSON file (myleague format).",
+        "title": "Import tournament from JSON",
+        "dropzone": "Drop a JSON file here, or click to choose.",
+        "chooseFile": "Choose file",
+        "downloadSample": "Download sample JSON",
+        "invalidTitle": "JSON validation failed",
+        "invalidJson": "File is not valid JSON: {{msg}}",
+        "tournamentName": "Tournament name",
+        "tournamentVenue": "Venue",
+        "tournamentVenuePlaceholder": "e.g. Kampparit Areena",
+        "tournamentVenueHint": "Pre-filled from the JSON when available. Used as the tournament venue and as the default location for matches.",
+        "tournamentCategory": "Tournament type",
+        "tournamentCategoryHint": "Applied to newly created teams (existing teams keep their category).",
+        "previewNote": "Existing clubs/teams (matched by name) are reused. Only missing ones are created.",
+        "autoRevert": "Automatically revert if any step fails",
+        "startImport": "Start import",
+        "starting": "Starting...",
+        "successTitle": "Import complete",
+        "failedTitle": "Import failed",
+        "failedNote": "{{count}} entities were created before the failure. You can revert them.",
+        "aborted": "Import was cancelled by the user.",
+        "unknownError": "Import failed for an unknown reason.",
+        "revertStart": "Reverting created entities...",
+        "revertAll": "Revert all changes",
+        "reverting": "Reverting...",
+        "revertedTitle": "Revert complete",
+        "revertedSummary": "Removed {{deleted}} item(s). {{failed}} failure(s) — check the log.",
+        "openTournament": "Open tournament",
+        "counts": {
+          "clubs": "Clubs",
+          "divisions": "Divisions",
+          "teams": "Teams",
+          "players": "Players",
+          "tournament": "Tournament",
+          "groups": "Groups",
+          "assignments": "Group assignments",
+          "matches": "Matches",
+          "playoffSlots": "Playoff slots"
+        },
+        "phases": {
+          "players": "Players"
+        },
+        "playerRosterNote": "Player rosters (if included in the JSON) are created and added to teams automatically. Existing players (matched by name) are reused.",
+        "playoffSlotsNote": "Playoff slots will appear as placeholder \"TBD vs TBD\" rows in the schedule. The real teams are filled in automatically when the playoff stage is started.",
+        "playoffSlotsIgnoredNote": "Playoffs are disabled for this import — the {{count}} playoff slot(s) in the JSON will be ignored.",
+        "hasPlayoffStage": "Tournament has a playoff stage",
+        "hasPlayoffStageHintOn": "Standard bracket rules apply: 2/4/8 teams must qualify for the playoffs (teamsAdvancingPerGroup × group count).",
+        "hasPlayoffStageHintOff": "Group-stage-only tournament: any number of teams per group is fine and the playoff schedule (if any) will be ignored.",
+        "aiHelp": {
+          "title": "Don't have a JSON file yet? Generate one with AI",
+          "step1": "Copy the prompt below with the \"Copy prompt\" button (or download it if copying is blocked).",
+          "step2": "Open ChatGPT, Claude, Gemini or another vision-capable AI and paste the prompt (Ctrl/Cmd + V).",
+          "step3": "Attach a screenshot / photo of the tournament schedule (and roster sheets if you have them) and send the message.",
+          "step4": "Save the AI's response as a .json file and drop it into the area above.",
+          "copyPrompt": "Copy AI prompt to clipboard",
+          "downloadPrompt": "Download AI prompt as .txt",
+          "copiedToast": "Prompt copied to clipboard. Paste it into your AI chat (Ctrl/Cmd + V) and attach the schedule image.",
+          "downloadedToast": "Prompt downloaded as a .txt file. Open it, copy the contents, and paste them into your AI chat.",
+          "errorToast": "Could not copy or download the prompt. Please try the \"Download\" button again."
+        }
+      },
+      "playoffSchedule": {
+        "title": "Planned playoff matches",
+        "hint": "Teams are filled in automatically after the group stage finishes.",
+        "toggleShow": "Show playoff schedule ({{count}} matches)",
+        "toggleHide": "Hide playoff schedule",
+        "tbd": "TBD",
+        "placeholderTooltip": "This is a planned playoff slot. The actual match will be generated when the group stage finishes.",
+        "rounds": {
+          "qf": "QF",
+          "sf": "SF",
+          "thirdPlace": "3rd place",
+          "final": "Final"
+        }
+      },
+      "playoffScheduleManager": {
+        "title": "Planned playoff schedule",
+        "hint": "Set the kickoff time and optional venue for every playoff round. Teams are filled in automatically when the playoff stage is started; the slots appear as \"TBD vs TBD\" placeholders in the schedule meanwhile.",
+        "lockedHint": "The playoff bracket has been generated, so the planned schedule is no longer editable. Edit individual matches in the matches list instead.",
+        "disabledHint": "This tournament does not have a playoff stage enabled. Enable it on the Tournament Details tab to plan playoff matches.",
+        "fillSuggested": "Fill in missing slots",
+        "fillSuggestedTooltip": "Add the missing bracket slots based on the configured tournament rules.",
+        "savedSuccess": "Playoff schedule saved.",
+        "empty": "No playoff slots planned yet.",
+        "errors": {
+          "unsupportedSize": "Cannot suggest a layout: TeamsAdvancingPerGroup × group count must equal 2, 4 or 8 (current: {{count}}).",
+          "missingTime": "Every playoff slot must have a kickoff time.",
+          "duplicateSlot": "Duplicate playoff slots detected: {{slots}}"
+        },
+        "fields": {
+          "round": "Round",
+          "order": "Order",
+          "scheduledDateTime": "Date & time",
+          "venue": "Venue (optional)"
+        },
+        "placeholders": {
+          "venue": "e.g. Court 1"
+        },
+        "rounds": {
+          "QuarterFinal": "Quarterfinal",
+          "SemiFinal": "Semifinal",
+          "ThirdPlaceMatch": "3rd place match",
+          "Final": "Final"
+        },
+        "addRound": {
+          "QuarterFinal": "Add Quarterfinal",
+          "SemiFinal": "Add Semifinal",
+          "ThirdPlaceMatch": "Add 3rd place match",
+          "Final": "Add Final"
+        },
+        "removeRowAriaLabel": "Remove this playoff slot",
+        "removeRowTooltip": "Remove this playoff slot from the schedule"
+      },
+      "matchesInProgress_one": "{{count}} match in progress",
+      "matchesInProgress_other": "{{count}} matches in progress",
+      "showOngoingOnly": "Show Ongoing Only",
+      "filterByStatus": "Filter by status",
+      "allStatuses": "All statuses",
+      "selectAll": "Select all tournaments",
+      "statusLabel": "Status",
+      "teamsCount": "{{count}} teams",
+      "matchesCount": "{{count}} matches",
+      "backToList": "Back to Tournaments",
+      "fields": {
+        "name": "Name",
+        "venue": "Venue",
+        "groups": "Groups",
+        "startDate": "Starts",
+        "endDate": "Ends",
+        "teams": "Teams",
+        "matches": "Matches",
+        "status": "Status"
+      },
+      "tabs": {
+        "details": "Tournament Details",
+        "groups": "Manage Groups",
+        "teams": "Manage Teams",
+        "matches": "Matches",
+        "bracket": "Playoff Bracket"
+      },
+      "matchesTab": {
+        "empty": "No matches have been added to this tournament yet.",
+        "createFirst": "Create the first match",
+        "createNew": "Create new match"
+      },
+      "sections": {
+        "basicInfo": "Basic Information",
+        "schedule": "Schedule",
+        "groupStageRules": "Group Stage Rules",
+        "playoffRules": "Playoff Rules",
+        "structure": "Structure"
+      },
+      "bracket": {
+        "empty": "Playoff bracket has not been generated yet. Start the playoff stage from the Details tab."
+      },
+      "status": {
+        "draft": "Draft",
+        "groupStage": "Group Stage",
+        "playoffStage": "Playoff Stage",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "lifecycle": {
+        "startGroupStage": "Start Group Stage",
+        "startPlayoffStage": "Start Playoff",
+        "complete": "Complete Tournament",
+        "cancel": "Cancel Tournament",
+        "delete": "Delete Tournament",
+        "moreActions": "More actions",
+        "matchesLoadError": "Failed to load match status — preconditions cannot be verified. Check match progress before triggering lifecycle actions.",
+        "startGroupStageSuccess": "Group stage started successfully.",
+        "startPlayoffStageSuccess": "Playoff stage started successfully.",
+        "completeSuccess": "Tournament completed successfully.",
+        "cancelSuccess": "Tournament cancelled successfully.",
+        "statusDescription": {
+          "draft": "Tournament is in draft state. Add groups and teams, then start the group stage to schedule matches.",
+          "groupStageWithPlayoff": "Group stage in progress. Once all group-stage matches are complete, you can move on to the playoffs.",
+          "groupStageNoPlayoff": "Group stage in progress. Once all matches are complete, you can mark the tournament as completed.",
+          "playoffStage": "Playoff stage in progress. Complete the tournament once all playoff matches are decided.",
+          "completed": "Tournament has been completed. No further lifecycle actions are available.",
+          "cancelled": "Tournament has been cancelled. No further lifecycle actions are available."
+        },
+        "tooltip": {
+          "startGroupStage": "Marks the tournament as active and exposes matches on public pages.",
+          "startPlayoffStage": "Calculates group standings, builds the playoff bracket and schedules playoff matches. Requires all group-stage matches to be completed.",
+          "complete": "Closes the tournament. Requires all matches to be completed first.",
+          "cancel": "Cancels the tournament. This action is final and cannot be undone.",
+          "delete": "Permanently deletes the tournament. This action cannot be undone."
+        },
+        "disabled": {
+          "noGroups": "Add at least one group before starting the group stage.",
+          "loadingMatches": "Loading match status...",
+          "unsupportedPlayoffSize": "Unsupported playoff size ({{size}}). Adjust groups or teams-advancing-per-group so the total is 2, 4 or 8.",
+          "noGroupStageMatches": "No group-stage matches have been created yet.",
+          "groupStageInProgress": "{{completed}}/{{total}} group-stage matches played. Finish them all before starting the playoffs.",
+          "noMatches": "Tournament has no matches yet.",
+          "matchesInProgress": "{{completed}}/{{total}} matches played. Finish them all before completing the tournament."
+        },
+        "prereq": {
+          "tournamentInDraft": "Tournament is in draft state.",
+          "hasAtLeastOneGroup": "Tournament has at least one group.",
+          "hasPlayoffStageEnabled": "Tournament has playoff stage enabled.",
+          "supportedPlayoffSize": "Playoff bracket size is supported (2, 4 or 8 teams). Current: {{size}}.",
+          "allGroupStageMatchesDone": "All group-stage matches are completed ({{completed}}/{{total}}).",
+          "tournamentIsRunning": "Tournament is running (group or playoff stage).",
+          "allMatchesDone": "All matches are completed ({{completed}}/{{total}})."
+        },
+        "confirm": {
+          "startGroupStage": {
+            "title": "Start group stage",
+            "description": "Marks the tournament as active. After this, the schedule and match data become visible on public pages.",
+            "confirm": "Start group stage"
+          },
+          "startPlayoffStage": {
+            "title": "Start playoff stage",
+            "description": "Calculates group standings, builds the playoff bracket and schedules playoff matches. This action cannot be undone without manual cleanup.",
+            "confirm": "Start playoff stage"
+          },
+          "complete": {
+            "title": "Complete tournament",
+            "description": "Closes the tournament for good. After this, matches and standings are not expected to change.",
+            "confirm": "Complete tournament"
+          },
+          "cancel": {
+            "title": "Cancel tournament",
+            "description": "Cancels the tournament. This is a final action and cannot be undone without database surgery. Match data is preserved but the tournament is marked cancelled.",
+            "confirm": "Yes, cancel tournament",
+            "acknowledge": "I understand that cancelling the tournament is a final action."
+          },
+          "delete": {
+            "title": "Delete tournament",
+            "description": "Permanently deletes tournament \"{{name}}\". All groups, team assignments and matches are removed and the action cannot be undone.",
+            "confirm": "Yes, delete tournament",
+            "acknowledge": "I understand that deleting the tournament is a final action."
+          }
+        }
+      },
+      "actions": {
+        "menu": "Tournament actions menu",
+        "manageMatches": "Manage tournament matches",
+        "bulkDelete": "Delete ({{count}})",
+        "openEdit": "Open and edit tournament"
+      },
+      "errors": {
+        "networkError": "Network error. Please check your connection and try again.",
+        "validationError": "Invalid data provided. Please check your input and try again.",
+        "notFound": "Tournament not found. It may have been deleted.",
+        "serverError": "Server error. Please try again later.",
+        "operationFailed": "Operation failed. Please try again."
+      },
+      "confirmDelete": {
+        "title": "Confirm Delete",
+        "message": "Are you sure you want to delete tournament \"{{name}}\"?",
+        "warning": "This action cannot be undone."
+      },
+      "teamGroup": {
+        "removeTeam": "Remove from group",
+        "removeTeamTooltip": "Remove this team from the group",
+        "removeTeamDisabledReason": "Teams cannot be removed once the group stage has started.",
+        "confirmRemoveTitle": "Remove team from group",
+        "confirmRemoveBody": "Remove {{teamName}} from {{groupName}}?",
+        "confirmRemoveDetail": "The team will become available again in the list below.",
+        "confirmButton": "Remove from group",
+        "teamRemovedSuccess": "Team removed from group."
+      }
+    },
+    "categories": {
+      "adult": "Adult",
+      "youth": "Youth",
+      "women": "Women"
+    },
+    "referees": {
+      "title": "Manage Referees",
+      "totalCount": "{{count}} referees",
+      "createNew": "Create New Referee",
+      "createFromPerson": "Create Referee from Available Persons",
+      "createRefereeFor": "Create Referee for {{name}}",
+      "searchPersons": "Search available persons...",
+      "selectPerson": "Select",
+      "createReferee": "Create Referee",
+      "refereeCreated": "{{personName}} is now a football referee!",
+      "noPersonsFound": "No persons found matching your search",
+      "noPersonsAvailable": "No available persons to convert to referees. All persons are already referees.",
+      "licenseIssueDate": "License Issue Date",
+      "licenseExpiryDate": "License Expiry Date",
+      "noReferees": "No referees found.",
+      "table": {
+        "name": "Name",
+        "status": "Status",
+        "licenseExpiry": "License Expiry",
+        "matchesOfficiated": "Matches",
+        "actions": "Actions"
+      },
+      "license": {
+        "valid": "Valid",
+        "expired": "Expired",
+        "expiring": "Expiring Soon"
+      },
+      "errors": {
+        "loadReferees": "Failed to load referees. Please try again.",
+        "deleteFailed": "Failed to delete referee. Please try again."
+      }
+    },
+    "matches": {
+      "title": "Match Management",
+      "subtitle": "Manage your football matches, track live games, and organize your season",
+      "seasonTitle": "Season Match Management",
+      "seasonSubtitle": "Manage matches scheduled within league seasons",
+      "tournamentTitle": "Tournament Match Management",
+      "tournamentSubtitle": "Manage matches scheduled within tournaments",
+      "loading": "Loading matches...",
+      "noMatchesFound": "No matches found",
+      "noMatchesForSeason": "No matches found for the selected season",
+      "createFirstMatch": "Create your first match to get started",
+      "createNewMatch": "Create New Match",
+      "goLive": "🟢 Go Live",
+      "live": "🔴 Live",
+      "edit": "✏️ Edit",
+      "tbd": "TBD",
+      "noScore": "-",
+      "table": {
+        "match": "Match",
+        "dateTime": "Date & Time",
+        "venue": "Venue",
+        "score": "Score",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "columns": {
+        "match": "Match",
+        "season": "Season",
+        "dateTime": "Date & Time",
+        "venue": "Venue",
+        "score": "Score",
+        "status": "Status"
+      },
+      "tabs": {
+        "all": "All",
+        "ongoing": "Ongoing",
+        "scheduled": "Scheduled",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "ariaLabel": "Filter matches by status"
+      },
+      "create": {
+        "title": "Create New Match",
+        "seasonTitle": "Create Season Match",
+        "tournamentTitle": "Create Tournament Match",
+        "submit": "Create Match",
+        "season": "Season",
+        "homeTeam": "Home Team",
+        "awayTeam": "Away Team",
+        "referee": "Referee",
+        "dateTime": "Date & Time",
+        "venue": "Venue",
+        "createMatch": "Create Match",
+        "lockedCompetitionTooltip": "Tournament is locked from context"
+      },
+      "fields": {
+        "season": "Season",
+        "tournament": "Tournament",
+        "division": "Division",
+        "group": "Group",
+        "homeTeam": "Home Team",
+        "awayTeam": "Away Team",
+        "referee": "Referee",
+        "dateTime": "Date & Time",
+        "venue": "Venue"
+      },
+      "sections": {
+        "matches": "Matches",
+        "ongoing": "Ongoing Matches",
+        "scheduled": "Scheduled Matches",
+        "completed": "Completed Matches",
+        "cancelled": "Cancelled Matches",
+        "seasonDivision": "Season & Division",
+        "tournamentGroup": "Tournament & Group",
+        "teams": "Teams",
+        "schedule": "Schedule & Venue",
+        "referee": "Referee"
+      },
+      "placeholders": {
+        "selectSeason": "-- Select a season --",
+        "selectTournament": "-- Select a tournament --",
+        "selectDivision": "-- Select a division --",
+        "selectGroup": "-- Select a group --",
+        "selectHomeTeam": "-- Select home team --",
+        "selectAwayTeam": "-- Select away team --",
+        "selectReferee": "Select Referee",
+        "noReferee": "-- No referee (assign later) --",
+        "searchSeasons": "Search seasons...",
+        "searchTeams": "Search teams...",
+        "searchReferees": "Search referees...",
+        "hoursPlaceholder": "HH",
+        "minutesPlaceholder": "MM",
+        "venue": "Enter venue name",
+        "venuePlaceholder": "Enter venue (optional)"
+      },
+      "validation": {
+        "fillRequired": "Please fill in all required fields",
+        "sameTeam": "Home team and away team cannot be the same",
+        "sameTeams": "Home team and away team cannot be the same",
+        "validDateTime": "Please enter a valid date and time",
+        "dateTimeRequired": "Please enter a valid date and time",
+        "seasonRequired": "Please select a season.",
+        "tournamentRequired": "Please select a tournament.",
+        "divisionRequired": "Please select a division.",
+        "groupRequired": "Please select a group.",
+        "homeTeamRequired": "Please select a home team.",
+        "awayTeamRequired": "Please select an away team.",
+        "createFailed": "Failed to create match"
+      },
+      "noGroupsInTournament": "This tournament has no groups yet. Add groups in the tournament edit page first.",
+      "noDivisionsInSeason": "This season has no divisions. Please add divisions to the season first.",
+      "notEnoughTeams": "This division needs at least 2 teams. Please add teams to the season division first.",
+      "notEnoughTeamsInGroup": "This group needs at least 2 teams. Add teams to the group from the tournament edit page first.",
+      "loadingTournamentDetails": "Loading tournament details...",
+      "refereeHint": "You can assign a referee later from the match details page.",
+      "created": "Match created successfully!",
+      "matchForm": {
+        "loading": "Loading match...",
+        "notLoaded": "Failed to load match details.",
+        "editSeasonMatch": "Edit season match",
+        "editTournamentMatch": "Edit tournament match",
+        "season": "Season",
+        "tournament": "Tournament",
+        "selectSeason": "Select season",
+        "selectTournament": "Select tournament",
+        "searchSeasons": "Search seasons...",
+        "searchTournaments": "Search tournaments...",
+        "noSeasons": "No seasons found",
+        "noTournaments": "No tournaments found"
+      },
+      "emptyStates": {
+        "noSeasons": "No seasons found",
+        "noTeams": "No teams found",
+        "noReferees": "No referees found"
+      },
+      "stats": {
+        "totalMatches": "Total Matches",
+        "seasonMatches": "Season Matches",
+        "completed": "Completed",
+        "scheduled": "Scheduled",
+        "inProgress": "In Progress",
+        "cancelled": "Cancelled",
+        "createNew": "Create New"
+      },
+      "filters": {
+        "filterBySeason": "Filter by Season:",
+        "filterByTournament": "Filter by Tournament:",
+        "allSeasons": "All Seasons",
+        "allTournaments": "All Tournaments",
+        "allCompetitions": "All Competitions",
+        "searchByTeam": "Search by Team:",
+        "searchPlaceholder": "Search for team names..."
+      },
+      "status": {
+        "Scheduled": "Scheduled",
+        "InProgress": "In Progress",
+        "Completed": "Completed",
+        "Cancelled": "Cancelled",
+        "Postponed": "Postponed"
+      },
+      "actions": {
+        "open": "Open Match",
+        "manage": "Manage",
+        "live": "Live View",
+        "cancel": "Cancel Match",
+        "reactivate": "Reactivate Match",
+        "edit": "Edit match details",
+        "menu": "Match actions menu"
+      },
+      "confirmCancel": {
+        "title": "Cancel Match",
+        "message": "Are you sure you want to cancel this match? This will mark the match as cancelled.",
+        "confirm": "Yes, Cancel Match"
+      },
+      "confirmReactivate": {
+        "title": "Reactivate Match",
+        "message": "Are you sure you want to reactivate this match? This will set the match back to Scheduled status.",
+        "confirm": "Yes, Reactivate Match"
+      },
+      "manage": {
+        "finished": "FINISHED",
+        "reopenMatch": "Open match",
+        "reopenMatchTitle": "Reopen this match for editing",
+        "matchOfficials": "MATCH OFFICIALS",
+        "addReferee": "Add referee",
+        "removeReferee": "Remove referee",
+        "selectReferee": "SELECT REFEREE",
+        "saving": "Saving...",
+        "noOfficials": "No officials assigned.",
+        "confirmReopen": {
+          "title": "Reopen match for editing",
+          "message": "Are you sure you want to reopen this match? It will move back to In progress so you can edit events or continue play (e.g. if the match was finished by accident).",
+          "warning": "Per-match team, player and goalie season aggregates will be reverted. Statistics will be recalculated when you finish the match again.",
+          "confirm": "Yes, reopen match"
+        }
+      },
+      "cancelling": "Cancelling...",
+      "reactivating": "Reactivating...",
+      "creating": "Creating...",
+      "updating": "Updating...",
+      "createMatch": "Create Match",
+      "updateMatch": "Update Match",
+      "matchCount": "match(es)",
+      "lineup": {
+        "activeLineup": "Active lineup",
+        "editLineup": "Edit lineup",
+        "editLineupTitle": "Edit active lineup",
+        "homeTeam": "Home team",
+        "awayTeam": "Away team",
+        "playerCount_one": "{{count}} player",
+        "playerCount_other": "{{count}} players",
+        "playerCount": "{{count}} players",
+        "noPlayersSelected": "No players selected. Click \"Edit lineup\" to set the lineup.",
+        "goalkeeper": "Goalkeeper",
+        "selectGoalkeeper": "Select goalkeeper",
+        "selectGoalkeeperRequired": "Goalkeeper is required to start the match",
+        "noGoalkeeper": "No goalkeeper selected (required to start match)",
+        "players": "Field players",
+        "player": "Player",
+        "position": "Position",
+        "searchPlayers": "Search players by name...",
+        "allPositions": "All positions",
+        "fieldPlayers": "Field players",
+        "goalkeepersOnly": "Goalkeepers",
+        "noPlayersFound": "No players match the current filters.",
+        "noAvailablePlayers": "No available players match the current filters.",
+        "noTeamPlayers": "Team has no players.",
+        "noPlayersInLineup": "No players in lineup yet — add from the list below.",
+        "selectedPlayers": "Selected players",
+        "selectedCount": "{{count}} selected",
+        "addPlayer": "Add",
+        "removePlayer": "Remove from lineup",
+        "action": "Action",
+        "defenders": "Defenders",
+        "forwards": "Forwards",
+        "noDefenders": "No defenders selected.",
+        "noForwards": "No forwards selected.",
+        "addAs": {
+          "Defender": "Defender",
+          "Forward": "Forward"
+        },
+        "saveLineup": "Save lineup"
+      }
+    }
   }
 }

@@ -10,6 +10,7 @@ import AudienceSwitcher from '../AudienceSwitcher/AudienceSwitcher';
 // Sports configuration
 const SPORTS_CONFIG = [
   { id: 'floorball', path: '/sports/floorball', translationKey: 'sports.floorball' },
+  { id: 'football', path: '/sports/football', translationKey: 'sports.football' },
   { id: 'icehockey', path: '/sports/icehockey', translationKey: 'sports.iceHockey', disabled: true }
 ];
 

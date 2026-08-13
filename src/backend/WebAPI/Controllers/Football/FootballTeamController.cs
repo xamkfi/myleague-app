@@ -364,7 +364,7 @@ namespace WebAPI.Controllers.Football
         /// <param name="teamId">The ID of the team to update</param>
         /// <param name="divisionId">The ID of the new division</param>
         /// <returns>Updated team details</returns>
-        [HttpPatch("{teamId:guid}/division{divisionId:guid}")]
+        [HttpPatch("{teamId:guid}/division/{divisionId:guid}")]
         [Authorize]
         [ProducesResponseType(typeof(ApiResponse<FootballTeamDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

@@ -1,0 +1,362 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.schedule-section {
+  background: $color-white;
+  border-radius: map.get($border-radius, 'lg');
+  padding: map.get($spacing, 'lg');
+  box-shadow: $box-shadow-drop-1;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'sm');
+    margin-bottom: map.get($spacing, 'md');
+    padding-bottom: map.get($spacing, 'sm');
+    border-bottom: 2px solid $color-neutral-light-grey;
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    margin: 0;
+  }
+
+  &__filters {
+    display: flex;
+    gap: map.get($spacing, 'xs');
+    flex-wrap: wrap;
+  }
+
+  &__loading,
+  &__error,
+  &__empty {
+    text-align: center;
+    padding: map.get($spacing, 'xl') map.get($spacing, 'base');
+    color: $color-neutral-dark-grey;
+  }
+
+  &__retry {
+    margin-top: map.get($spacing, 'base');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'md');
+    background: $color-blue-deep;
+    color: $color-white;
+    border: none;
+    border-radius: map.get($border-radius, 'lg');
+    cursor: pointer;
+    font-size: map.get($font-sizes, 'sm');
+    @include transition(background);
+
+    &:hover {
+      background: $color-blue-medium;
+    }
+  }
+
+  &__pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: map.get($spacing, 'sm');
+    margin-top: map.get($spacing, 'md');
+    padding-top: map.get($spacing, 'md');
+    border-top: 1px solid $color-neutral-light-grey;
+  }
+
+  &__page-btn {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+    background: $color-blue-deep;
+    color: $color-white;
+    border: none;
+    border-radius: map.get($border-radius, 'lg');
+    cursor: pointer;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+    @include transition(background);
+
+    &:hover {
+      background: $color-blue-medium;
+    }
+
+    &:disabled {
+      background: $color-neutral-medium-grey;
+      cursor: not-allowed;
+    }
+  }
+
+  &__page-info {
+    color: $color-neutral-dark-grey;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: map.get($font-sizes, 'sm');
+  }
+}
+
+// Filter buttons
+.schedule-filter {
+  padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: map.get($border-radius, 'xl');
+  background: $color-white;
+  color: $color-neutral-dark-grey;
+  font-size: map.get($font-sizes, 'sm-xs');
+  font-weight: map.get($font-weights, 'medium');
+  cursor: pointer;
+  @include transition(all);
+
+  &:hover {
+    border-color: $color-blue-secondary;
+    color: $color-blue-secondary;
+  }
+
+  &--active {
+    background: $color-blue-deep;
+    color: $color-white;
+    border-color: $color-blue-deep;
+
+    &:hover {
+      background: $color-blue-medium;
+      border-color: $color-blue-medium;
+      color: $color-white;
+    }
+  }
+}
+
+// Match list
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+}
+
+// Individual match row
+.schedule-match {
+  display: grid;
+  grid-template-columns: 100px 1fr 80px auto;
+  align-items: center;
+  gap: map.get($spacing, 'sm');
+  padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+  border-bottom: 1px solid $color-neutral-light-grey;
+  cursor: pointer;
+  @include transition(background);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: $color-neutral-light-grey;
+    border-radius: map.get($border-radius, 'lg');
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-blue-secondary;
+    outline-offset: -2px;
+    border-radius: map.get($border-radius, 'lg');
+  }
+
+  // Completed matches get a subtle left accent
+  &--completed {
+    .schedule-match__date {
+      color: $color-neutral-dark-grey;
+    }
+  }
+
+  // Live matches
+  &--live {
+    background: rgba($color-red-pale, 0.3);
+    border-left: 3px solid $color-red-primary;
+    border-radius: map.get($border-radius, 'sm');
+  }
+
+  // Scheduled - default, slightly emphasized
+  &--scheduled {
+    .schedule-match__date-time {
+      color: $color-blue-deep;
+      font-weight: map.get($font-weights, 'semibold');
+    }
+  }
+
+  &--cancelled,
+  &--postponed {
+    opacity: 0.6;
+  }
+
+  // Date column
+  &__date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  &__date-day {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-text-primary;
+  }
+
+  &__date-time {
+    font-size: map.get($font-sizes, 'sm-xs');
+    color: $color-neutral-dark-grey;
+  }
+
+  // Teams column
+  &__teams {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__team {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-primary;
+
+    &--winner {
+      font-weight: map.get($font-weights, 'bold');
+    }
+  }
+
+  &__team-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__team-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Score column
+  &__score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: map.get($spacing, 'xxs');
+  }
+
+  &__score-value {
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    min-width: 20px;
+    text-align: center;
+
+    &--winner {
+      color: $color-blue-deep;
+    }
+  }
+
+  &__score-separator {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-neutral-dark-grey;
+  }
+
+  &__score-pending {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-neutral-medium-grey;
+    font-weight: map.get($font-weights, 'medium');
+    text-transform: uppercase;
+  }
+
+  // Status badge
+  &__status {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  &__status-badge {
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'semibold');
+    padding: 2px map.get($spacing, 'xs');
+    border-radius: map.get($border-radius, 'sm');
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+
+    &--completed {
+      background: $color-neutral-light-grey;
+      color: $color-neutral-dark-grey;
+    }
+
+    &--inprogress {
+      background: $color-red-primary;
+      color: $color-white;
+      animation: pulse-live 2s ease-in-out infinite;
+    }
+
+    &--cancelled {
+      background: $color-red-pale;
+      color: $color-red-muted;
+    }
+
+    &--postponed {
+      background: $color-yellow-pale;
+      color: $color-yellow-muted;
+    }
+  }
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+// Responsive
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .schedule-section {
+    padding: map.get($spacing, 'base');
+
+    &__header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    &__pagination {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+
+  .schedule-match {
+    grid-template-columns: 70px 1fr 60px;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+
+    &__status {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+    }
+  }
+}
+
+@media (max-width: map.get($breakpoints, 'mobile')) {
+  .schedule-section {
+    padding: map.get($spacing, 'sm');
+  }
+
+  .schedule-filter {
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+  }
+
+  .schedule-match {
+    grid-template-columns: 60px 1fr 50px;
+
+    &__team-name {
+      font-size: map.get($font-sizes, 'sm-xs');
+    }
+
+    &__score-value {
+      font-size: map.get($font-sizes, 'base');
+    }
+  }
+}

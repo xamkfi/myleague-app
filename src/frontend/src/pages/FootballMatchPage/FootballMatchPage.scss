@@ -1,0 +1,912 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../styles/common' as *;
+
+// Override PageTemplate padding for MatchPage only
+.match-page-wrapper .page-body {
+  padding: 0 !important;
+}
+
+.match-page {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+// ===== NAVIGATION TABS =====
+
+.navigation-tabs {
+  background-color: $color-neutral-white;
+  border-bottom: 2px solid $color-neutral-light-grey;
+  display: flex;
+  justify-content: center;
+  padding: 0 1.25rem;
+  gap: 0.25rem;
+}
+
+.nav-tab {
+  background: none;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $color-neutral-dark-grey;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.75px;
+
+  &:hover {
+    color: $color-blue-secondary;
+  }
+
+  &.active {
+    color: $color-blue-secondary;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: $color-blue-secondary;
+      border-radius: 3px 3px 0 0;
+    }
+  }
+}
+
+// ===== TAB CONTENT =====
+
+.tab-content {
+  background-color: $color-neutral-white;
+  min-height: 400px;
+}
+
+.summary-content {
+  padding: 1.5rem 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  .summary-stats-section {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid $color-neutral-light-grey;
+
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: $color-neutral-black;
+      margin-bottom: 1.25rem;
+    }
+
+    // Make stats more compact in summary view
+    .match-stats {
+      padding: 0;
+      
+      .stats-header {
+        margin-bottom: 1.5rem;
+      }
+
+      .stats-content {
+        gap: 1rem;
+      }
+    }
+  }
+}
+
+// ===== MATCH INFO (in summary tab) =====
+
+.match-info {
+  background-color: $color-neutral-light-grey;
+  border-radius: map.get($border-radius, 'lg');
+  padding: 1rem 1.25rem;
+
+  p {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    color: $color-neutral-dark-grey;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ===== MATCH EVENTS =====
+
+.events-section {
+  margin-top: 2rem;
+}
+
+.events-section h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: $color-neutral-black;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.event-item {
+  background-color: white;
+  border: 1px solid $color-neutral-light-grey;
+  border-radius: map.get($border-radius, 'lg');
+  padding: 0.875rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+
+  &:hover {
+    box-shadow: $box-shadow-drop-1;
+    transform: translateY(-1px);
+  }
+
+  &.goal {
+    border-left: 4px solid $color-green-primary;
+  }
+
+  &.penalty {
+    border-left: 4px solid $color-red-primary;
+  }
+}
+
+.event-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+
+  &.goal {
+    background-color: $color-green-primary;
+    color: white;
+  }
+
+  &.penalty {
+    background-color: $color-red-primary;
+    color: white;
+  }
+}
+
+.event-details {
+  flex: 1;
+}
+
+.event-time {
+  font-weight: 700;
+  color: $color-neutral-black;
+  margin-bottom: 2px;
+  font-size: 0.875rem;
+}
+
+.event-description {
+  color: $color-neutral-dark-grey;
+  font-size: 0.8125rem;
+  margin-bottom: 2px;
+}
+
+.event-player {
+  font-weight: 600;
+  color: $color-neutral-black;
+  font-size: 0.875rem;
+}
+
+.event-assists {
+  font-size: 0.75rem;
+  color: $color-neutral-dark-grey;
+  margin-top: 2px;
+}
+
+// ===== PERIOD SCORES =====
+
+.period-scores {
+  background-color: $color-neutral-light-grey;
+  border-radius: map.get($border-radius, 'lg');
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+
+  h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: $color-neutral-black;
+  }
+}
+
+.period-scores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.period-score {
+  background-color: white;
+  border-radius: map.get($border-radius, 'lg');
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid $color-neutral-medium-grey-alpha;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: $box-shadow-drop-1;
+  }
+
+  .period-label {
+    font-size: 0.6875rem;
+    color: $color-neutral-dark-grey;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.75px;
+    margin-bottom: 0.5rem;
+  }
+
+  .period-result {
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: $color-neutral-black;
+  }
+}
+
+// ===== PLACEHOLDERS =====
+
+.stats-placeholder,
+.h2h-placeholder,
+.table-placeholder {
+  padding: 3.5rem 2rem;
+  text-align: center;
+  color: $color-neutral-dark-grey;
+
+  h3 {
+    margin-bottom: 0.625rem;
+    color: $color-neutral-black;
+  }
+}
+
+// ===== LOADING & ERROR =====
+
+.loading,
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 1.125rem;
+  color: $color-neutral-dark-grey;
+}
+
+.error {
+  color: $color-red-primary;
+}
+
+// ===== MATCH EVENTS TIMELINE =====
+
+.match-events {
+  margin-top: 1.5rem;
+}
+
+.period-section {
+  margin-bottom: 1.5rem;
+  background-color: white;
+  border-radius: map.get($border-radius, 'lg');
+  overflow: hidden;
+  box-shadow: $box-shadow-drop-1;
+}
+
+.period-header {
+  background-color: $color-banner-bg;
+  color: $color-banner-text;
+  padding: 0.5rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.5px;
+}
+
+.period-name {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.period-events {
+  padding: 0;
+}
+
+.event-row {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid $color-neutral-light-grey;
+  min-height: 48px;
+  background-color: white;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.goal {
+    border-left: 4px solid $color-green-primary;
+  }
+
+  &.penalty {
+    border-left: 4px solid $color-red-primary;
+  }
+
+  .event-time {
+    flex: 0 0 auto;
+    min-width: 84px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: $color-neutral-black;
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+  }
+
+  .event-type-badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: white;
+
+    &.goal {
+      background-color: $color-green-primary;
+    }
+
+    &.penalty {
+      background-color: $color-red-primary;
+    }
+
+    .badge-letter {
+      line-height: 1;
+    }
+  }
+
+  .event-team-short {
+    flex: 0 0 auto;
+    min-width: 44px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background-color: $color-neutral-light-grey;
+    color: $color-neutral-black;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-align: center;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    // Värikoodaus: kotijoukkue sininen, vieras vihreä — käyttäjä erottaa heti
+    // kumman joukkueen tilastosta on kyse, vaikka logoa ei olisi saatavilla.
+    &.home-team {
+      background-color: $color-blue-secondary;
+      color: $color-white;
+    }
+
+    &.away-team {
+      background-color: $color-green-muted;
+      color: $color-white;
+    }
+
+    // Kun joukkueella on logo, badge muuttuu pieneksi pyöreäksi logo-kehykseksi:
+    // taustaväri kuvastaa silti kotijoukkue/vieras-roolia, jotta nopea silmäys
+    // riittää erotteluun.
+    &.has-logo {
+      min-width: 32px;
+      width: 32px;
+      height: 32px;
+      padding: 2px;
+      border-radius: 50%;
+      background-color: $color-neutral-white;
+      border: 2px solid $color-neutral-light-grey;
+      overflow: hidden;
+
+      &.home-team {
+        border-color: $color-blue-secondary;
+      }
+
+      &.away-team {
+        border-color: $color-green-muted;
+      }
+    }
+
+    .event-team-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+  }
+
+  // Pelaajan paitanumero näytetään pyöreänä badgena nimen edessä, jotta katsoja
+  // tunnistaa pelaajan nopeasti myös numeron perusteella (sama tapa kuin
+  // KOKOONPANOT-välilehden roster-listassa).
+  .event-player-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    margin-right: 0.375rem;
+    border-radius: 999px;
+    background-color: $color-neutral-light-grey;
+    color: $color-neutral-black;
+    font-weight: 700;
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    line-height: 1;
+    vertical-align: middle;
+  }
+
+  .event-player-name-text {
+    vertical-align: middle;
+  }
+
+  .event-score {
+    flex: 0 0 auto;
+    min-width: 48px;
+    text-align: center;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: $color-neutral-black;
+    font-size: 0.875rem;
+  }
+
+  .event-details {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem;
+    color: $color-neutral-black;
+    font-size: 0.875rem;
+  }
+
+  .event-player-name {
+    font-weight: 600;
+    color: $color-neutral-black;
+  }
+}
+
+// Goal-type tag (e.g. "(YV)", "(AV)") rendered right after the green Goal
+// badge in the spectator match-events list. Lives outside `.event-details`
+// so its styling sits at the same level as the team-short / score columns.
+.event-row .goal-type-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 18px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.event-assist {
+  font-size: 0.75rem;
+  color: $color-neutral-dark-grey;
+  font-style: italic;
+
+  &.clickable {
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $color-blue-secondary;
+      text-decoration: underline;
+    }
+  }
+}
+
+.event-player-link {
+  &.clickable {
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $color-blue-secondary;
+      text-decoration: underline;
+    }
+  }
+}
+
+.penalty-type {
+  font-weight: 400;
+  color: $color-neutral-dark-grey;
+}
+
+// Penalty rows render the player + severity inline (`.penalty-line`) and, when the recorder
+// supplied a description, append it on a second muted/italic line below. Switching the
+// container to `flex-direction: column` lets the description claim its own row without
+// pushing the badges/team-short/score columns out of alignment.
+.event-details.penalty-details {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+
+  .penalty-line {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem;
+  }
+
+  .penalty-description {
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    color: $color-neutral-dark-grey;
+    font-style: italic;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
+@media (max-width: 768px) {
+  .match-page {
+    padding-top: map.get($spacing, 'sm');
+    padding-bottom: map.get($spacing, 'sm');
+  }
+
+  .navigation-tabs {
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 0 map.get($spacing, 'sm');
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+    
+    .nav-tab {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+      font-size: 0.75rem;
+      white-space: nowrap;
+      min-width: 80px;
+      text-align: center;
+    }
+  }
+
+  .summary-content {
+    padding: map.get($spacing, 'md');
+    
+    .summary-stats-section {
+      margin-top: map.get($spacing, 'lg');
+      padding-top: map.get($spacing, 'md');
+    }
+  }
+
+  .period-scores-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: map.get($spacing, 'sm');
+  }
+
+  .period-score {
+    padding: map.get($spacing, 'sm');
+    
+    .period-label {
+      font-size: 0.6rem;
+      margin-bottom: map.get($spacing, 'xs');
+    }
+    
+    .period-result {
+      font-size: 1rem;
+    }
+  }
+
+  .match-info {
+    padding: map.get($spacing, 'md');
+    border-radius: map.get($border-radius, 'sm');
+    
+    p {
+      font-size: 0.8125rem;
+      margin-bottom: map.get($spacing, 'xs');
+    }
+  }
+
+  .events-section {
+    margin-top: map.get($spacing, 'md');
+    
+    h3 {
+      font-size: 1rem;
+      margin-bottom: map.get($spacing, 'md');
+    }
+  }
+
+  .events-list {
+    gap: map.get($spacing, 'sm');
+  }
+
+  .event-item {
+    padding: map.get($spacing, 'sm');
+    gap: map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'sm');
+  }
+
+  .event-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8125rem;
+  }
+
+  .event-time {
+    font-size: 0.8125rem;
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .event-description {
+    font-size: 0.8125rem;
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .event-player {
+    font-size: 0.8125rem;
+  }
+
+  .event-assists {
+    font-size: 0.6875rem;
+    margin-top: map.get($spacing, 'xs');
+  }
+
+  // Match events timeline
+  .match-events {
+    margin-top: map.get($spacing, 'md');
+  }
+
+  .period-section {
+    margin-bottom: map.get($spacing, 'md');
+    border-radius: map.get($border-radius, 'sm');
+  }
+
+  .period-header {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    font-size: 0.75rem;
+  }
+
+  .event-row {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    min-height: 40px;
+    gap: map.get($spacing, 'sm');
+
+    .event-time {
+      min-width: 76px;
+      font-size: 0.75rem;
+    }
+
+    .event-score,
+    .event-details {
+      font-size: 0.8125rem;
+    }
+
+    .event-type-badge {
+      width: 24px;
+      height: 24px;
+      font-size: 0.75rem;
+    }
+
+    .event-team-short {
+      font-size: 0.6875rem;
+      min-width: 40px;
+
+      &.has-logo {
+        min-width: 28px;
+        width: 28px;
+        height: 28px;
+      }
+    }
+
+    .event-player-number {
+      min-width: 20px;
+      height: 18px;
+      font-size: 0.625rem;
+      padding: 0 5px;
+      margin-right: 0.25rem;
+    }
+  }
+
+  .event-assist {
+    font-size: 0.6875rem;
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .match-page {
+    padding-top: map.get($spacing, 'xs');
+    padding-bottom: map.get($spacing, 'xs');
+  }
+
+  .navigation-tabs {
+    padding: 0 map.get($spacing, 'xs');
+    
+    .nav-tab {
+      padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+      font-size: 0.6875rem;
+      min-width: 70px;
+    }
+  }
+
+  .summary-content {
+    padding: map.get($spacing, 'sm');
+    
+    .summary-stats-section {
+      margin-top: map.get($spacing, 'md');
+      padding-top: map.get($spacing, 'sm');
+      
+      h3 {
+        font-size: 1rem;
+        margin-bottom: map.get($spacing, 'sm');
+      }
+    }
+  }
+
+  .period-scores-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: map.get($spacing, 'xs');
+  }
+
+  .period-score {
+    padding: map.get($spacing, 'xs');
+    
+    .period-label {
+      font-size: 0.6rem;
+    }
+    
+    .period-result {
+      font-size: 0.875rem;
+    }
+  }
+
+  .match-info {
+    padding: map.get($spacing, 'sm');
+    
+    p {
+      font-size: 0.75rem;
+    }
+  }
+
+  .events-section {
+    margin-top: map.get($spacing, 'sm');
+    
+    h3 {
+      font-size: 0.9375rem;
+      margin-bottom: map.get($spacing, 'sm');
+    }
+  }
+
+  .events-list {
+    gap: map.get($spacing, 'xs');
+  }
+
+  .event-item {
+    padding: map.get($spacing, 'xs');
+    gap: map.get($spacing, 'xs');
+  }
+
+  .event-icon {
+    width: 26px;
+    height: 26px;
+    font-size: 0.6875rem;
+  }
+
+  .event-time {
+    font-size: 0.75rem;
+  }
+
+  .event-description {
+    font-size: 0.75rem;
+  }
+
+  .event-player {
+    font-size: 0.75rem;
+  }
+
+  .event-assists {
+    font-size: 0.6rem;
+  }
+
+  // Match events timeline
+  .match-events {
+    margin-top: map.get($spacing, 'sm');
+  }
+
+  .period-section {
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .period-header {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    font-size: 0.6875rem;
+  }
+
+  .event-row {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    min-height: 35px;
+    gap: map.get($spacing, 'xs');
+    flex-wrap: wrap;
+
+    .event-time {
+      min-width: 70px;
+      font-size: 0.6875rem;
+    }
+
+    .event-score,
+    .event-details {
+      font-size: 0.75rem;
+    }
+
+    .event-type-badge {
+      width: 22px;
+      height: 22px;
+      font-size: 0.6875rem;
+    }
+
+    .event-team-short {
+      font-size: 0.625rem;
+      min-width: 36px;
+      padding: 2px 6px;
+
+      &.has-logo {
+        min-width: 24px;
+        width: 24px;
+        height: 24px;
+        padding: 1px;
+      }
+    }
+
+    .event-player-number {
+      min-width: 18px;
+      height: 16px;
+      font-size: 0.5625rem;
+      padding: 0 4px;
+      margin-right: 0.25rem;
+    }
+  }
+
+  .event-assist {
+    font-size: 0.6rem;
+  }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+  .navigation-tabs .nav-tab {
+    padding: map.get($spacing, 'xs');
+    font-size: 0.6rem;
+    min-width: 60px;
+  }
+}

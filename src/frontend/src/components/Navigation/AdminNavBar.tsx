@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useInProgressMatches } from '../../hooks/useInProgressMatches';
+import { useInProgressFootballMatches } from '../../hooks/useInProgressFootballMatches';
 import LiveDot from '../LiveDot/LiveDot';
 import './AdminNavBar.scss';
 import RulesIcon from '../../assets/adminIcons/Rules.svg';
@@ -29,11 +30,16 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
   const { user, logout } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [floorballDropdownOpen, setFloorballDropdownOpen] = useState(true);
+  const [footballDropdownOpen, setFootballDropdownOpen] = useState(true);
   const [siteContentDropdownOpen, setSiteContentDropdownOpen] = useState(true);
   const inProgress = useInProgressMatches();
+  const footballInProgress = useInProgressFootballMatches();
   const totalLive: number = inProgress.totalCount;
   const seasonLive: number = inProgress.countByCompetitionType.season;
   const tournamentLive: number = inProgress.countByCompetitionType.tournament;
+  const footballTotalLive: number = footballInProgress.totalCount;
+  const footballSeasonLive: number = footballInProgress.countByCompetitionType.season;
+  const footballTournamentLive: number = footballInProgress.countByCompetitionType.tournament;
 
   const handleLogout = async () => {
     await logout();
@@ -46,6 +52,10 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
 
   const isFloorballActive = () => {
     return location.pathname.startsWith('/admin/floorball');
+  };
+
+  const isFootballActive = () => {
+    return location.pathname.startsWith('/admin/football');
   };
 
   const isSiteContentActive = () => {
@@ -274,6 +284,109 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                     <Link to="/admin/floorball/referees">
                       <img src={RefereesIcon} alt="Referees" className="icon" />
                       <span>{t('floorball.management.actions.referees', 'Referees')}</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+            <li className={`admin-navbar-item ${isFootballActive() ? 'active' : ''}`}>
+              {collapsed ? (
+                <Link to="/admin/football" title={t('admin.actions.football', 'Football')}>
+                  <span className="admin-navbar-icon-wrapper">
+                    <img src={SportsIcon} alt="Football" className="icon" />
+                    {footballTotalLive > 0 && (
+                      <LiveDot
+                        tone="dark"
+                        ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: footballTotalLive })}
+                        className="admin-navbar__live-dot admin-navbar__live-dot--icon-corner"
+                      />
+                    )}
+                  </span>
+                </Link>
+              ) : (
+                <div className="admin-navbar-dropdown-trigger">
+                  <Link
+                    to="/admin/football"
+                    className="admin-navbar-dropdown-trigger-content"
+                  >
+                    <img src={SportsIcon} alt="Football" className="icon" />
+                    <span>{t('admin.actions.football', 'Football')}</span>
+                    {footballTotalLive > 0 && (
+                      <LiveDot
+                        tone="dark"
+                        ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: footballTotalLive })}
+                        className="admin-navbar__live-dot"
+                      />
+                    )}
+                  </Link>
+                  <span
+                    className={`admin-navbar-dropdown-arrow ${footballDropdownOpen ? 'open' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFootballDropdownOpen(!footballDropdownOpen);
+                    }}
+                  >
+                    ▼
+                  </span>
+                </div>
+              )}
+              {!collapsed && footballDropdownOpen && (
+                <ul className="admin-navbar-submenu">
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/football/teams') ? 'active' : ''}`}>
+                    <Link to="/admin/football/teams">
+                      <img src={TeamsIcon} alt="Teams" className="icon" />
+                      <span>{t('football.management.actions.teams', 'Teams')}</span>
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/football/players') ? 'active' : ''}`}>
+                    <Link to="/admin/football/players">
+                      <img src={PlayersIcon} alt="Players" className="icon" />
+                      <span>{t('football.management.actions.players', 'Players')}</span>
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/football/seasons') ? 'active' : ''}`}>
+                    <Link to="/admin/football/seasons">
+                      <img src={SeasonsIcon} alt="Seasons" className="icon" />
+                      <span>{t('football.management.actions.seasons', 'Manage Seasons')}</span>
+                      {footballSeasonLive > 0 && (
+                        <LiveDot
+                          tone="dark"
+                          ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: footballSeasonLive })}
+                          className="admin-navbar__live-dot"
+                        />
+                      )}
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/football/tournaments') ? 'active' : ''}`}>
+                    <Link to="/admin/football/tournaments">
+                      <img src={SeasonsIcon} alt="Tournaments" className="icon" />
+                      <span>{t('football.management.actions.tournaments', 'Manage Tournaments')}</span>
+                      {footballTournamentLive > 0 && (
+                        <LiveDot
+                          tone="dark"
+                          ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: footballTournamentLive })}
+                          className="admin-navbar__live-dot"
+                        />
+                      )}
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/football/matches') ? 'active' : ''}`}>
+                    <Link to="/admin/football/matches">
+                      <img src={MatchesIcon} alt="Matches" className="icon" />
+                      <span>{t('football.management.actions.matches', 'Manage Matches')}</span>
+                      {footballTotalLive > 0 && (
+                        <LiveDot
+                          tone="dark"
+                          ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: footballTotalLive })}
+                          className="admin-navbar__live-dot"
+                        />
+                      )}
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/football/referees') ? 'active' : ''}`}>
+                    <Link to="/admin/football/referees">
+                      <img src={RefereesIcon} alt="Referees" className="icon" />
+                      <span>{t('football.management.actions.referees', 'Referees')}</span>
                     </Link>
                   </li>
                 </ul>

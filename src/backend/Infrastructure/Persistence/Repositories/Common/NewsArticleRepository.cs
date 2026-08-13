@@ -268,12 +268,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     query = query.Where(n => EF.Functions.ILike(n.Author ?? "", $"%{author}%"));
                 }
 
-                List<TeamCategory> parsedTeamCategories = ParseTeamCategories(teamCategories);
-                if (parsedTeamCategories.Count > 0)
-                {
-                    // Null TeamCategory = shown for all audiences
-                    query = query.Where(n => n.TeamCategory == null || parsedTeamCategories.Contains(n.TeamCategory.Value));
-                }
+                query = ApplyTeamCategoryFilter(query, teamCategories);
 
                 // Apply pagination
                 int skip = (page - 1) * pageSize;
@@ -341,11 +336,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     query = query.Where(n => EF.Functions.ILike(n.Author ?? "", $"%{author}%"));
                 }
 
-                List<TeamCategory> parsedTeamCategories = ParseTeamCategories(teamCategories);
-                if (parsedTeamCategories.Count > 0)
-                {
-                    query = query.Where(n => n.TeamCategory == null || parsedTeamCategories.Contains(n.TeamCategory.Value));
-                }
+                query = ApplyTeamCategoryFilter(query, teamCategories);
 
                 return await query.CountAsync(cancellationToken);
             }
@@ -379,6 +370,32 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             }
 
             return parsed;
+        }
+
+        /// <summary>
+        /// Filters articles for the selected audiences. Articles with no team category are shown to everyone.
+        /// Uses equality predicates instead of Contains() so Npgsql can translate the nullable
+        /// string-converted TeamCategory column.
+        /// </summary>
+        private static IQueryable<NewsArticle> ApplyTeamCategoryFilter(
+            IQueryable<NewsArticle> query,
+            IReadOnlyCollection<string>? teamCategories)
+        {
+            List<TeamCategory> parsed = ParseTeamCategories(teamCategories);
+            if (parsed.Count == 0)
+            {
+                return query;
+            }
+
+            bool includeAdult = parsed.Contains(TeamCategory.Adult);
+            bool includeYouth = parsed.Contains(TeamCategory.Youth);
+            bool includeWomen = parsed.Contains(TeamCategory.Women);
+
+            return query.Where(n =>
+                n.TeamCategory == null
+                || (includeAdult && n.TeamCategory == TeamCategory.Adult)
+                || (includeYouth && n.TeamCategory == TeamCategory.Youth)
+                || (includeWomen && n.TeamCategory == TeamCategory.Women));
         }
 
         /// <summary>

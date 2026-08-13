@@ -22,6 +22,14 @@ const SPORTS: SportItem[] = [
     enabled: true,
   },
   {
+    id: 'football',
+    nameKey: 'sports.football',
+    descriptionKey: 'sportsPage.footballDescription',
+    icon: '⚽',
+    path: '/sports/football',
+    enabled: true,
+  },
+  {
     id: 'icehockey',
     nameKey: 'sports.iceHockey',
     descriptionKey: 'sportsPage.iceHockeyDescription',
