@@ -1,5 +1,12 @@
 namespace Seeder;
 
+public enum SeedSport
+{
+    Floorball,
+    Football,
+    All
+}
+
 [Flags]
 public enum SeedScope
 {

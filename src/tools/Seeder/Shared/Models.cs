@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
+using Domain.Enums.Football;
 
 namespace Seeder;
 public class PersonSeed
@@ -128,6 +129,108 @@ public class TeamPlayerByEmailSeed
 }
 
 public class FloorballMatchSeed
+{
+	public string HomeTeamName { get; init; } = string.Empty;
+	public string AwayTeamName { get; init; } = string.Empty;
+	public string SeasonName { get; init; } = string.Empty;
+	public string ScheduledDateTime { get; init; } = string.Empty;
+	public string? Venue { get; init; }
+	public string? RefereeEmail { get; init; }
+}
+
+public class FootballSeasonSeed
+{
+	public string Name { get; init; } = "2026 Football Championship";
+	public string StartDate { get; init; } = "2026-04-01";
+	public string EndDate { get; init; } = "2026-10-31";
+	public List<string> DivisionNames { get; init; } = new List<string>();
+
+	public int NumberOfHalves { get; init; } = 2;
+	public int HalfDurationMinutes { get; init; } = 25;
+	public int PlayersOnField { get; init; } = 5;
+	public bool RequireGoalkeeper { get; init; } = true;
+	public int MaxSubstitutions { get; init; }
+	public bool RequireOfficialsToStart { get; init; }
+	public bool AllowExtraTime { get; init; }
+	public int ExtraTimeHalfCount { get; init; } = 2;
+	public int ExtraTimeHalfDurationMinutes { get; init; } = 15;
+	public bool AllowPenaltyShootout { get; init; }
+	public int WinPoints { get; init; } = 3;
+	public int DrawPoints { get; init; } = 1;
+	public int LossPoints { get; init; }
+	public TeamCategory TeamCategory { get; init; } = TeamCategory.Adult;
+}
+
+public class FootballTournamentSeed
+{
+	public string Name { get; init; } = "2026 Football Cup";
+	public string StartDate { get; init; } = "2026-08-01";
+	public string EndDate { get; init; } = "2026-08-31";
+	public string? Venue { get; init; }
+	public string? ContentHtml { get; init; }
+
+	public int GroupStageNumberOfHalves { get; init; } = 2;
+	public int GroupStageHalfDurationMinutes { get; init; } = 25;
+	public int GroupStagePlayersOnField { get; init; } = 5;
+	public bool GroupStageRequireGoalkeeper { get; init; } = true;
+	public int GroupStageMaxSubstitutions { get; init; }
+	public bool GroupStageRequireOfficialsToStart { get; init; }
+	public bool GroupStageAllowExtraTime { get; init; }
+	public int GroupStageExtraTimeHalfCount { get; init; } = 2;
+	public int GroupStageExtraTimeHalfDurationMinutes { get; init; } = 5;
+	public bool GroupStageAllowPenaltyShootout { get; init; }
+
+	public int PlayoffNumberOfHalves { get; init; } = 2;
+	public int PlayoffHalfDurationMinutes { get; init; } = 25;
+	public int PlayoffPlayersOnField { get; init; } = 5;
+	public bool PlayoffRequireGoalkeeper { get; init; } = true;
+	public int PlayoffMaxSubstitutions { get; init; }
+	public bool PlayoffRequireOfficialsToStart { get; init; }
+	public bool PlayoffAllowExtraTime { get; init; } = true;
+	public int PlayoffExtraTimeHalfCount { get; init; } = 2;
+	public int PlayoffExtraTimeHalfDurationMinutes { get; init; } = 5;
+	public bool PlayoffAllowPenaltyShootout { get; init; } = true;
+
+	public int TeamsAdvancingPerGroup { get; init; } = 2;
+	public bool HasPlayoffStage { get; init; } = true;
+	public bool HasThirdPlaceMatch { get; init; }
+	public TeamCategory TeamCategory { get; init; } = TeamCategory.Adult;
+
+	/// <summary>
+	/// When true, the seeder transitions the tournament to GroupStage (if Draft), schedules every
+	/// group-stage match in the past, and simulates each one through to completion.
+	/// </summary>
+	public bool AllGroupMatchesCompleted { get; init; }
+
+	public List<FootballTournamentGroupSeed> Groups { get; init; } = new List<FootballTournamentGroupSeed>();
+}
+
+public class FootballTournamentGroupSeed
+{
+	public string Name { get; init; } = "Group A";
+	public List<string> TeamNames { get; init; } = new List<string>();
+}
+
+public class FootballTeamSeed
+{
+	public string Name { get; init; } = "Helsinki FC";
+	public string DivisionName { get; init; } = string.Empty;
+	public string ClubName { get; init; } = string.Empty;
+	public string HomeArena { get; init; } = "Main Arena";
+	public string PrimaryJerseyColor { get; init; } = "Red";
+	public string? SecondaryJerseyColor { get; init; } = "White";
+	public TeamCategory Category { get; init; } = TeamCategory.Adult;
+	public List<FootballTeamPlayerByEmailSeed> Players { get; init; } = new List<FootballTeamPlayerByEmailSeed>();
+}
+
+public class FootballTeamPlayerByEmailSeed
+{
+	public string PersonEmail { get; init; } = string.Empty;
+	public FootballPosition Position { get; init; } = FootballPosition.Forward;
+	public int JerseyNumber { get; init; } = 10;
+}
+
+public class FootballMatchSeed
 {
 	public string HomeTeamName { get; init; } = string.Empty;
 	public string AwayTeamName { get; init; } = string.Empty;

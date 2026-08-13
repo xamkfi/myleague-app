@@ -25,11 +25,24 @@ public sealed class SeederConfiguration
     public List<FloorballTournamentSeed> FloorballTournaments { get; set; } = new List<FloorballTournamentSeed>();
     public List<FloorballTeamSeed> FloorballTeams { get; set; } = new List<FloorballTeamSeed>();
     public List<FloorballMatchSeed> FloorballMatches { get; set; } = new List<FloorballMatchSeed>();
+    public List<FootballSeasonSeed> FootballSeasons { get; set; } = new List<FootballSeasonSeed>();
+    public List<FootballTournamentSeed> FootballTournaments { get; set; } = new List<FootballTournamentSeed>();
+    public List<FootballTeamSeed> FootballTeams { get; set; } = new List<FootballTeamSeed>();
+    public List<FootballMatchSeed> FootballMatches { get; set; } = new List<FootballMatchSeed>();
 
-    public static SeederConfiguration Load()
+    public static SeederConfiguration LoadFootball()
     {
-        // Build path to data/testdata.json relative to the base directory
-        string testDataPath = Path.Combine(AppContext.BaseDirectory, "data", "testdata.json");
+        return Load("testdata-football.json");
+    }
+
+    public static SeederConfiguration Load(string dataFileName = "testdata.json")
+    {
+        if (string.IsNullOrWhiteSpace(dataFileName))
+        {
+            dataFileName = "testdata.json";
+        }
+
+        string testDataPath = Path.Combine(AppContext.BaseDirectory, "data", dataFileName);
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.SetBasePath(AppContext.BaseDirectory);

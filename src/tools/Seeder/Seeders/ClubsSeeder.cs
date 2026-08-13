@@ -13,21 +13,12 @@ public static class ClubsSeeder
 
 		foreach (ClubSeed club in config.Clubs)
 		{
-            // Idempotent check by name
-            HttpResponseMessage listResp = await http.GetAsync("api/clubs");
-            if (listResp.IsSuccessStatusCode)
+            ClubDto? existingClub = await FindClubByNameAsync(http, jsonOptions, club.Name);
+            if (existingClub != null)
             {
-                ApiResponse<List<ClubDto>>? listApi = await listResp.Content.ReadFromJsonAsync<ApiResponse<List<ClubDto>>>(jsonOptions);
-                if (listApi != null && listApi.Success && listApi.Data != null)
-                {
-                    ClubDto? existingClub = listApi.Data.FirstOrDefault(c => string.Equals(c.Name, club.Name, StringComparison.OrdinalIgnoreCase));
-                    if (existingClub != null)
-                    {
-                        created.Add(existingClub);
-                        Console.WriteLine("Club exists, skipping: " + existingClub.Name + " (" + existingClub.Id + ")");
-                        continue;
-                    }
-                }
+                created.Add(existingClub);
+                Console.WriteLine("Club exists, skipping: " + existingClub.Name + " (" + existingClub.Id + ")");
+                continue;
             }
 
 			CreateClubRequest request = new CreateClubRequest
@@ -55,6 +46,23 @@ public static class ClubsSeeder
 		}
 
 		return created;
+	}
+
+	private static async Task<ClubDto?> FindClubByNameAsync(HttpClient http, JsonSerializerOptions jsonOptions, string name)
+	{
+		HttpResponseMessage searchResp = await http.GetAsync("api/clubs/search?name=" + Uri.EscapeDataString(name));
+		if (!searchResp.IsSuccessStatusCode)
+		{
+			return null;
+		}
+
+		ApiResponse<List<ClubDto>>? searchApi = await searchResp.Content.ReadFromJsonAsync<ApiResponse<List<ClubDto>>>(jsonOptions);
+		if (searchApi == null || !searchApi.Success || searchApi.Data == null)
+		{
+			return null;
+		}
+
+		return searchApi.Data.FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase));
 	}
 }
 

@@ -7,6 +7,7 @@ using Application.Interfaces.Auth;
 using Application.Interfaces.Common;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
+using Domain.Repositories.Football;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ using MyLeague.Infrastructure.HealthChecks;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories.Common;
 using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
+using MyLeague.Infrastructure.Persistence.Repositories.Football;
 using MyLeague.Infrastructure.Persistence.UnitOfWork;
 using MyLeague.Infrastructure.Services.Auth;
 using MyLeague.Infrastructure.Services.Common;
@@ -54,6 +56,11 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     connectionString,
                     b => b.MigrationsAssembly(typeof(FloorballDbContext).Assembly.FullName)));
 
+            services.AddDbContext<FootballDbContext>(options =>
+                options.UseNpgsql(
+                    connectionString,
+                    b => b.MigrationsAssembly(typeof(FootballDbContext).Assembly.FullName)));
+
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();
             services.AddScoped<IPersonRepository, PersonRepository>();
@@ -72,6 +79,15 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballTournamentRepository, FloorballTournamentRepository>();
             services.AddScoped<IFloorballCompetitionDivisionRepository, FloorballCompetitionDivisionRepository>();
             services.AddScoped<IFloorballStatisticsRepository, FloorballStatisticsRepository>();
+            services.AddScoped<IFootballPlayerRepository, FootballPlayerRepository>();
+            services.AddScoped<IFootballTeamRepository, FootballTeamRepository>();
+            services.AddScoped<IFootballTeamManagerRepository, FootballTeamManagerRepository>();
+            services.AddScoped<IFootballRefereeRepository, FootballRefereeRepository>();
+            services.AddScoped<IFootballMatchRepository, FootballMatchRepository>();
+            services.AddScoped<IFootballCompetitionRepository, FootballCompetitionRepository>();
+            services.AddScoped<IFootballTournamentRepository, FootballTournamentRepository>();
+            services.AddScoped<IFootballCompetitionDivisionRepository, FootballCompetitionDivisionRepository>();
+            services.AddScoped<IFootballStatisticsRepository, FootballStatisticsRepository>();
             services.AddScoped<IImageStorageService>(sp =>
             {
                 IConfiguration config = sp.GetRequiredService<IConfiguration>();
@@ -130,6 +146,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             // Add unit of work
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
             services.AddScoped<IFloorballUnitOfWork, FloorballUnitOfWork>();
+            services.AddScoped<IFootballUnitOfWork, FootballUnitOfWork>();
 
 
             // Add domain events / SignalR
@@ -148,6 +165,9 @@ namespace MyLeague.Infrastructure.DependencyInjections
 
                     FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
                     floorballDbContext.Database.Migrate();
+
+                    FootballDbContext footballDbContext = scope.ServiceProvider.GetRequiredService<FootballDbContext>();
+                    footballDbContext.Database.Migrate();
 
                     // Seed default users after migrations
                     DatabaseSeeder seeder = new();
