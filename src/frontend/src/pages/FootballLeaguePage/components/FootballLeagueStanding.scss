@@ -1,6 +1,6 @@
 @use 'sass:map';
 @use '@variables' as *;
-@use '../../styles/common' as *;
+@use '../../../styles/common' as *;
 
 .standing-container {
   @include container;

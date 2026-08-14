@@ -22,6 +22,12 @@ public class IdMapStore
     /// <summary>"Unknown scorer" player per team (old team id -> player id).</summary>
     public Dictionary<int, Guid> UnknownPlayers { get; set; } = [];
 
+    /// <summary>
+    /// Extra unique "Tuntematon" players used to pad a football lineup when the real roster
+    /// is smaller than PlayersOnField. Keyed by old team id.
+    /// </summary>
+    public Dictionary<int, List<Guid>> ExtraUnknownPlayers { get; set; } = [];
+
     public class PersonMapping
     {
         public Guid PersonId { get; set; }
@@ -54,6 +60,7 @@ public class IdMapStore
                     Seasons = loaded.Seasons,
                     ProcessedMatches = loaded.ProcessedMatches,
                     UnknownPlayers = loaded.UnknownPlayers,
+                    ExtraUnknownPlayers = loaded.ExtraUnknownPlayers ?? [],
                 };
                 return store;
             }

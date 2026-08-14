@@ -1,6 +1,6 @@
 @use 'sass:map';
 @use '@variables' as *;
-@use '../../styles/common' as *;
+@use '../../../styles/common' as *;
 
 .results-section, .fixtures-section {
   background: $color-white;

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Domain.Enums.Football;
 using JoomleagueImporter.Sql;
 
 namespace JoomleagueImporter.Models;
@@ -18,6 +19,8 @@ public class JoomleagueDatabase
     public const int EventPowerPlayAssist = 5;
     public const int EventShortHandedAssist = 7;
     public const int EventShortHandedGoal = 8;
+    public const int EventRedCard = 9;
+    public const int EventYellowCard = 10;
 
     public static readonly int[] GoalEventTypes = [EventGoal, EventPowerPlayGoal, EventShortHandedGoal];
     public static readonly int[] AssistEventTypes = [EventAssist, EventPowerPlayAssist, EventShortHandedAssist];
@@ -36,6 +39,14 @@ public class JoomleagueDatabase
     /// <summary>project_position ids whose position is a goalkeeper position.</summary>
     public HashSet<int> GoalkeeperProjectPositionIds { get; } = [];
 
+    /// <summary>project_position id → football position inferred from the JoomLeague position name.</summary>
+    public Dictionary<int, FootballPosition> FootballPositionByProjectPositionId { get; } = [];
+
+    public HashSet<int> FootballGoalEventTypeIds { get; } = [..GoalEventTypes];
+    public HashSet<int> FootballAssistEventTypeIds { get; } = [..AssistEventTypes];
+    public HashSet<int> FootballYellowCardEventTypeIds { get; } = [EventYellowCard];
+    public HashSet<int> FootballRedCardEventTypeIds { get; } = [EventRedCard];
+
     private static readonly string[] TableNames =
     [
         "jos_joomleague_club",
@@ -50,6 +61,7 @@ public class JoomleagueDatabase
         "jos_joomleague_playground",
         "jos_joomleague_project_position",
         "jos_joomleague_position",
+        "jos_joomleague_eventtype",
     ];
 
     public static JoomleagueDatabase Load(string dumpFilePath)
@@ -227,31 +239,50 @@ public class JoomleagueDatabase
                 db.Playgrounds[Int(r[id])] = Str(r[name]).Trim();
         }
 
-        // Goalkeeper detection: project_position -> position whose name contains "maalivahti".
+        // Position mapping: project_position -> position name (goalkeeper / outfield / football roles).
         ParsedTable positions = tables["jos_joomleague_position"];
+        Dictionary<int, FootballPosition> footballPositionByPositionId = [];
         HashSet<int> goaliePositionIds = [];
+        if (positions.Columns.Count > 0)
         {
             int id = positions.ColumnIndex("id"), name = positions.ColumnIndex("name");
             foreach (string?[] r in positions.Rows)
             {
-                if (Str(r[name]).Contains("maalivahti", StringComparison.OrdinalIgnoreCase) ||
-                    Str(r[name]).Contains("goalkeeper", StringComparison.OrdinalIgnoreCase))
-                {
+                FootballPosition mapped = MapFootballPosition(Str(r[name]));
+                footballPositionByPositionId[Int(r[id])] = mapped;
+                if (mapped == FootballPosition.Goalkeeper)
                     goaliePositionIds.Add(Int(r[id]));
-                }
             }
         }
         ParsedTable projectPositions = tables["jos_joomleague_project_position"];
+        if (projectPositions.Columns.Count > 0)
         {
             int id = projectPositions.ColumnIndex("id"), posId = projectPositions.ColumnIndex("position_id");
             foreach (string?[] r in projectPositions.Rows)
             {
-                if (goaliePositionIds.Contains(Int(r[posId])))
-                    db.GoalkeeperProjectPositionIds.Add(Int(r[id]));
+                int projectPositionId = Int(r[id]);
+                int positionId = Int(r[posId]);
+                if (goaliePositionIds.Contains(positionId))
+                    db.GoalkeeperProjectPositionIds.Add(projectPositionId);
+                if (footballPositionByPositionId.TryGetValue(positionId, out FootballPosition mapped))
+                    db.FootballPositionByProjectPositionId[projectPositionId] = mapped;
             }
         }
 
+        ParseEventTypes(tables["jos_joomleague_eventtype"], db);
+
         return db;
+    }
+
+    public FootballPosition ResolveFootballPosition(int? projectPositionId)
+    {
+        if (!projectPositionId.HasValue)
+            return FootballPosition.Forward;
+        if (FootballPositionByProjectPositionId.TryGetValue(projectPositionId.Value, out FootballPosition mapped))
+            return mapped;
+        if (GoalkeeperProjectPositionIds.Contains(projectPositionId.Value))
+            return FootballPosition.Goalkeeper;
+        return FootballPosition.Forward;
     }
 
     /// <summary>
@@ -314,12 +345,13 @@ public class JoomleagueDatabase
                             continue;
                         if (!IsImportablePerson(person))
                             continue;
+                        FootballPosition footballPosition = ResolveFootballPosition(tp.ProjectPositionId);
                         pti.Roster.Add(new RosterEntry
                         {
                             TeamPlayer = tp,
                             Person = person,
-                            IsGoalkeeper = tp.ProjectPositionId.HasValue &&
-                                           GoalkeeperProjectPositionIds.Contains(tp.ProjectPositionId.Value),
+                            IsGoalkeeper = footballPosition == FootballPosition.Goalkeeper,
+                            FootballPosition = footballPosition,
                         });
                     }
                 }
@@ -365,7 +397,75 @@ public class JoomleagueDatabase
             }
         }
 
+        HashSet<int> teamsWithRoster = set.Projects
+            .SelectMany(p => p.Teams.Values)
+            .Where(t => t.Roster.Count > 0)
+            .Select(t => t.Team.Id)
+            .ToHashSet();
+        foreach (int teamId in set.UniqueTeams.Keys.ToList())
+        {
+            if (teamsWithRoster.Contains(teamId))
+                continue;
+            set.UniqueTeams.Remove(teamId);
+            set.SkippedEmptyRosterTeams++;
+        }
+
         return set;
+    }
+
+    private static void ParseEventTypes(ParsedTable eventTypes, JoomleagueDatabase db)
+    {
+        if (eventTypes.Columns.Count == 0)
+            return;
+
+        int id = eventTypes.ColumnIndex("id");
+        int name = eventTypes.ColumnIndex("name");
+        foreach (string?[] r in eventTypes.Rows)
+        {
+            int eventTypeId = Int(r[id]);
+            string eventName = Str(r[name]);
+            if (eventName.Contains("keltainen", StringComparison.OrdinalIgnoreCase) ||
+                eventName.Contains("yellow", StringComparison.OrdinalIgnoreCase))
+            {
+                db.FootballYellowCardEventTypeIds.Add(eventTypeId);
+            }
+            else if (eventName.Contains("punainen", StringComparison.OrdinalIgnoreCase) ||
+                     eventName.Contains("red", StringComparison.OrdinalIgnoreCase))
+            {
+                db.FootballRedCardEventTypeIds.Add(eventTypeId);
+            }
+            else if (eventName.Contains("syöttö", StringComparison.OrdinalIgnoreCase) ||
+                     eventName.Contains("syotto", StringComparison.OrdinalIgnoreCase) ||
+                     eventName.Contains("assist", StringComparison.OrdinalIgnoreCase))
+            {
+                db.FootballAssistEventTypeIds.Add(eventTypeId);
+            }
+            else if (eventName.Contains("maali", StringComparison.OrdinalIgnoreCase) ||
+                     eventName.Contains("goal", StringComparison.OrdinalIgnoreCase))
+            {
+                db.FootballGoalEventTypeIds.Add(eventTypeId);
+            }
+        }
+    }
+
+    private static FootballPosition MapFootballPosition(string name)
+    {
+        if (name.Contains("maalivahti", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("goalkeeper", StringComparison.OrdinalIgnoreCase))
+            return FootballPosition.Goalkeeper;
+        if (name.Contains("puolustaja", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("defender", StringComparison.OrdinalIgnoreCase))
+            return FootballPosition.Defender;
+        if (name.Contains("keskikenttä", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("keskikentta", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("midfielder", StringComparison.OrdinalIgnoreCase))
+            return FootballPosition.Midfielder;
+        if (name.Contains("hyökkääjä", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("hyokkaaja", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("forward", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("striker", StringComparison.OrdinalIgnoreCase))
+            return FootballPosition.Forward;
+        return FootballPosition.Forward;
     }
 
     private static bool IsImportablePerson(OldPerson person)
@@ -406,6 +506,7 @@ public class FloorballImportSet
     public List<ProjectImport> Projects { get; } = [];
     public Dictionary<int, OldTeam> UniqueTeams { get; } = [];
     public Dictionary<int, OldPerson> UniquePersons { get; } = [];
+    public int SkippedEmptyRosterTeams { get; set; }
 
     public int TotalMatches => Projects.Sum(p => p.Matches.Count);
     public int TotalEvents => Projects.Sum(p => p.Matches.Sum(m => m.Events.Count));
@@ -433,6 +534,7 @@ public class RosterEntry
     public required OldTeamPlayer TeamPlayer { get; init; }
     public required OldPerson Person { get; init; }
     public bool IsGoalkeeper { get; init; }
+    public FootballPosition FootballPosition { get; init; } = FootballPosition.Forward;
 }
 
 public class MatchImport

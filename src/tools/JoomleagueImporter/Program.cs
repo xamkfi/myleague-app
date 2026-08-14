@@ -1,5 +1,6 @@
 using Application.Features.Common.Divisions.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Football.Seasons.DTOs;
 using JoomleagueImporter.Import;
 using JoomleagueImporter.Models;
 using Microsoft.Extensions.Configuration;
@@ -8,12 +9,15 @@ namespace JoomleagueImporter;
 
 public static class Program
 {
+    private const string SportFloorball = "floorball";
+    private const string SportFootball = "football";
+
     public static async Task<int> Main(string[] args)
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         Console.WriteLine("==========================================================");
         Console.WriteLine("  JoomLeague SQL Dump Importer");
-        Console.WriteLine("  Imports floorball data from an old JoomLeague MySQL dump");
+        Console.WriteLine("  Imports floorball or football data from a JoomLeague dump");
         Console.WriteLine("==========================================================\n");
 
         IConfigurationRoot config = new ConfigurationBuilder()
@@ -22,14 +26,20 @@ public static class Program
             .AddEnvironmentVariables()
             .Build();
 
+        string sport = ResolveSport(args, config);
+        bool isFootball = string.Equals(sport, SportFootball, StringComparison.OrdinalIgnoreCase);
+
         string dumpPath = config["JoomleagueImporter:DumpFilePath"] ?? "";
-        string includeFilter = config["JoomleagueImporter:ProjectNameFilter"] ?? "salibandy|sähly";
-        string? excludeFilter = config["JoomleagueImporter:ProjectNameExcludeFilter"];
+        string includeFilter = isFootball
+            ? (config["JoomleagueImporter:Football:ProjectNameFilter"] ?? "jalkapallo|football|futis")
+            : (config["JoomleagueImporter:ProjectNameFilter"] ?? "salibandy|sähly");
+        string? excludeFilter = isFootball
+            ? (config["JoomleagueImporter:Football:ProjectNameExcludeFilter"] ?? "manager")
+            : config["JoomleagueImporter:ProjectNameExcludeFilter"];
         string? projectIdFilter = config["JoomleagueImporter:ProjectIdFilter"];
         bool dryRun = bool.TryParse(config["JoomleagueImporter:DryRun"], out bool dr) && dr;
         bool fillUnknownGoals = !bool.TryParse(config["JoomleagueImporter:FillUnknownGoals"], out bool fug) || fug;
 
-        // Old JoomLeague match ids whose events should be wiped and re-imported (repair mode).
         HashSet<int> repairMatchIds = (config["JoomleagueImporter:RepairMatches"] ?? "")
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(s => int.TryParse(s, out int id) ? id : -1)
@@ -48,7 +58,7 @@ public static class Program
             return 1;
         }
 
-        // ── Phase 1: Parse the dump ──────────────────────────
+        Console.WriteLine($"Sport: {sport}");
         Console.WriteLine($"Parsing dump: {dumpPath}");
         DateTime parseStart = DateTime.Now;
         JoomleagueDatabase db = JoomleagueDatabase.Load(dumpPath);
@@ -58,7 +68,7 @@ public static class Program
 
         FloorballImportSet set = db.BuildImportSet(includeFilter, excludeFilter, projectIdFilter);
 
-        Console.WriteLine($"Selected {set.Projects.Count} floorball projects " +
+        Console.WriteLine($"Selected {set.Projects.Count} {sport} projects " +
                           $"(filter: '{includeFilter}', exclude: '{excludeFilter}'):\n");
         Console.WriteLine($"  {"ID",4}  {"Project",-44} {"Cat",6} {"Teams",5} {"Match",6} {"Event",6}");
         foreach (ProjectImport pi in set.Projects)
@@ -69,7 +79,11 @@ public static class Program
         }
         Console.WriteLine();
         Console.WriteLine($"Totals: {set.UniqueTeams.Count} unique teams, {set.UniquePersons.Count} unique persons, " +
-                          $"{set.TotalMatches} matches, {set.TotalEvents} events.\n");
+                          $"{set.TotalMatches} matches, {set.TotalEvents} events.");
+        if (set.SkippedEmptyRosterTeams > 0)
+            Console.WriteLine($"Skipped {set.SkippedEmptyRosterTeams} team(s) with 0 importable roster players.\n");
+        else
+            Console.WriteLine();
 
         if (dryRun)
         {
@@ -83,7 +97,6 @@ public static class Program
             return 0;
         }
 
-        // ── Phase 2: Confirm and authenticate ────────────────
         string apiBaseUrl = PromptForApiUrl(config["JoomleagueImporter:ApiBaseUrl"] ?? "http://localhost:8080/");
         string loginEmail = ResolveLoginEmail(config);
 
@@ -96,9 +109,7 @@ public static class Program
         }
         Console.WriteLine();
 
-        string idMapPath = config["JoomleagueImporter:IdMapPath"] is { Length: > 0 } p
-            ? p
-            : Path.Combine(AppContext.BaseDirectory, "id-map.json");
+        string idMapPath = ResolveIdMapPath(config, isFootball);
         IdMapStore idMap = IdMapStore.LoadOrCreate(idMapPath);
         Console.WriteLine($"Id map: {idMapPath} " +
                           $"({idMap.Persons.Count} persons, {idMap.Teams.Count} teams, {idMap.ProcessedMatches.Count} matches already imported)\n");
@@ -111,42 +122,10 @@ public static class Program
             using ApiClient api = new(apiBaseUrl);
             await api.AuthenticateAsync(loginEmail);
 
-            EntityImporter entities = new(api, idMap, log);
+            if (isFootball)
+                return await RunFootballImportAsync(api, idMap, log, db, set, fillUnknownGoals, repairMatchIds, repairAll);
 
-            // ── Phase 3: Base entities ───────────────────────
-            DivisionDto division = await entities.GetOrCreateImportDivisionAsync();
-            await entities.ImportClubsAsync(set, db);
-            await entities.ImportPersonsAndPlayersAsync(set);
-            await entities.ImportTeamsAsync(set, db, division);
-            Guid refereeId = await entities.GetOrCreateImportRefereeAsync();
-
-            // ── Phase 4: Seasons & matches ───────────────────
-            MatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
-            if (repairAll)
-                Console.WriteLine("Repair mode: re-importing events for ALL previously processed matches.");
-            else if (repairMatchIds.Count > 0)
-                Console.WriteLine($"Repair mode: re-importing events for {repairMatchIds.Count} match(es): {string.Join(", ", repairMatchIds)}");
-
-            foreach (ProjectImport pi in set.Projects)
-            {
-                Console.WriteLine($"\n=== {pi.Project.Name} (JL project {pi.Project.Id}, {pi.Matches.Count} matches) ===");
-                FloorballSeasonDto? season = await entities.ImportSeasonAsync(pi, division);
-                if (season == null)
-                {
-                    Console.WriteLine("  SKIP: season could not be created.");
-                    continue;
-                }
-                await matches.ImportProjectMatchesAsync(pi, season, refereeId);
-            }
-
-            Console.WriteLine("\n==========================================================");
-            Console.WriteLine("  Import complete!");
-            Console.WriteLine($"  Matches: {matches.Succeeded} completed, {matches.ScheduledOnly} scheduled-only, " +
-                              $"{matches.Skipped} skipped, {matches.Repaired} repaired, {matches.Failed} failed.");
-            if (log.ErrorCount > 0)
-                Console.WriteLine($"  {log.ErrorCount} errors logged to: {log.LogPath}");
-            Console.WriteLine("==========================================================");
-            return 0;
+            return await RunFloorballImportAsync(api, idMap, log, db, set, fillUnknownGoals, repairMatchIds, repairAll);
         }
         catch (Exception ex)
         {
@@ -154,6 +133,141 @@ public static class Program
             Console.Error.WriteLine(ex.StackTrace);
             return 1;
         }
+    }
+
+    private static async Task<int> RunFloorballImportAsync(
+        ApiClient api,
+        IdMapStore idMap,
+        ImportLogger log,
+        JoomleagueDatabase db,
+        FloorballImportSet set,
+        bool fillUnknownGoals,
+        HashSet<int> repairMatchIds,
+        bool repairAll)
+    {
+        EntityImporter entities = new(api, idMap, log);
+
+        DivisionDto division = await entities.GetOrCreateImportDivisionAsync();
+        await entities.ImportClubsAsync(set, db);
+        await entities.ImportPersonsAndPlayersAsync(set);
+        await entities.ImportTeamsAsync(set, db, division);
+        Guid refereeId = await entities.GetOrCreateImportRefereeAsync();
+
+        MatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
+        PrintRepairMode(repairAll, repairMatchIds);
+
+        foreach (ProjectImport pi in set.Projects)
+        {
+            Console.WriteLine($"\n=== {pi.Project.Name} (JL project {pi.Project.Id}, {pi.Matches.Count} matches) ===");
+            FloorballSeasonDto? season = await entities.ImportSeasonAsync(pi, division);
+            if (season == null)
+            {
+                Console.WriteLine("  SKIP: season could not be created.");
+                continue;
+            }
+            await matches.ImportProjectMatchesAsync(pi, season, refereeId);
+        }
+
+        PrintImportComplete(matches.Succeeded, matches.ScheduledOnly, matches.Skipped, matches.Repaired, matches.Failed, log);
+        return 0;
+    }
+
+    private static async Task<int> RunFootballImportAsync(
+        ApiClient api,
+        IdMapStore idMap,
+        ImportLogger log,
+        JoomleagueDatabase db,
+        FloorballImportSet set,
+        bool fillUnknownGoals,
+        HashSet<int> repairMatchIds,
+        bool repairAll)
+    {
+        FootballEntityImporter entities = new(api, idMap, log);
+
+        DivisionDto division = await entities.GetOrCreateImportDivisionAsync();
+        await entities.ImportClubsAsync(set, db);
+        await entities.ImportPersonsAndPlayersAsync(set);
+        await entities.ImportTeamsAsync(set, db, division);
+        Guid refereeId = await entities.GetOrCreateImportRefereeAsync();
+
+        FootballMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
+        PrintRepairMode(repairAll, repairMatchIds);
+
+        foreach (ProjectImport pi in set.Projects)
+        {
+            Console.WriteLine($"\n=== {pi.Project.Name} (JL project {pi.Project.Id}, {pi.Matches.Count} matches) ===");
+            FootballSeasonDto? season = await entities.ImportSeasonAsync(pi, division);
+            if (season == null)
+            {
+                Console.WriteLine("  SKIP: season could not be created.");
+                continue;
+            }
+            await matches.ImportProjectMatchesAsync(pi, season, refereeId);
+        }
+
+        PrintImportComplete(matches.Succeeded, matches.ScheduledOnly, matches.Skipped, matches.Repaired, matches.Failed, log);
+        return 0;
+    }
+
+    private static void PrintRepairMode(bool repairAll, HashSet<int> repairMatchIds)
+    {
+        if (repairAll)
+            Console.WriteLine("Repair mode: re-importing events for ALL previously processed matches.");
+        else if (repairMatchIds.Count > 0)
+            Console.WriteLine($"Repair mode: re-importing events for {repairMatchIds.Count} match(es): {string.Join(", ", repairMatchIds)}");
+    }
+
+    private static void PrintImportComplete(
+        int succeeded,
+        int scheduledOnly,
+        int skipped,
+        int repaired,
+        int failed,
+        ImportLogger log)
+    {
+        Console.WriteLine("\n==========================================================");
+        Console.WriteLine("  Import complete!");
+        Console.WriteLine($"  Matches: {succeeded} completed, {scheduledOnly} scheduled-only, " +
+                          $"{skipped} skipped, {repaired} repaired, {failed} failed.");
+        if (log.ErrorCount > 0)
+            Console.WriteLine($"  {log.ErrorCount} errors logged to: {log.LogPath}");
+        Console.WriteLine("==========================================================");
+    }
+
+    private static string ResolveSport(string[] args, IConfiguration config)
+    {
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (string.Equals(args[i], "--sport", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
+                return NormalizeSport(args[i + 1]);
+            if (args[i].StartsWith("--sport=", StringComparison.OrdinalIgnoreCase))
+                return NormalizeSport(args[i]["--sport=".Length..]);
+        }
+
+        return NormalizeSport(config["JoomleagueImporter:Sport"]);
+    }
+
+    private static string NormalizeSport(string? value)
+    {
+        if (string.Equals(value, SportFootball, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(value, "jalkapallo", StringComparison.OrdinalIgnoreCase))
+            return SportFootball;
+        return SportFloorball;
+    }
+
+    private static string ResolveIdMapPath(IConfiguration config, bool isFootball)
+    {
+        if (isFootball)
+        {
+            string? footballPath = config["JoomleagueImporter:Football:IdMapPath"];
+            if (!string.IsNullOrWhiteSpace(footballPath))
+                return footballPath;
+            return Path.Combine(AppContext.BaseDirectory, "id-map-football.json");
+        }
+
+        return config["JoomleagueImporter:IdMapPath"] is { Length: > 0 } p
+            ? p
+            : Path.Combine(AppContext.BaseDirectory, "id-map.json");
     }
 
     private static string PromptForApiUrl(string defaultUrl)

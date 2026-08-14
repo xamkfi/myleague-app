@@ -11,6 +11,13 @@ using Application.Features.Floorball.Players.DTOs;
 using Application.Features.Floorball.Referees.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Football.Matches.DTOs;
+using Application.Features.Football.Players.DTOs;
+using Application.Features.Football.Referees.DTOs;
+using Application.Features.Football.Seasons.DTOs;
+using Application.Features.Football.Teams.DTOs;
+using Domain.Enums.Common;
+using Domain.Enums.Football;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
 
@@ -380,7 +387,285 @@ public class ApiClient : IDisposable
         return await OkOrWarn(resp, "DeletePenaltyEvent");
     }
 
-    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Football players ─────────────────────────────────────
+
+    public async Task<List<FootballPlayerDto>> GetFootballPlayersAsync() =>
+        await GetPaginatedListAsync<FootballPlayerDto>("api/FootballPlayer?Page=1&PageSize=50&IsActive=");
+
+    public async Task<FootballPlayerDto?> CreateFootballPlayerAsync(Guid personId)
+    {
+        HttpResponseMessage resp = await _http.PostAsJsonAsync("api/FootballPlayer", new { personId });
+        return await ReadDataOrNull<FootballPlayerDto>(resp, $"Create football player for person {personId}");
+    }
+
+    // ── Football teams ───────────────────────────────────────
+
+    public async Task<List<Application.Features.Football.Teams.DTOs.FootballTeamSummaryDto>> GetFootballTeamsAsync() =>
+        await GetPaginatedListAsync<Application.Features.Football.Teams.DTOs.FootballTeamSummaryDto>(
+            "api/FootballTeam/without-roster?Page=1&PageSize=50");
+
+    public async Task<FootballTeamDto?> CreateFootballTeamAsync(
+        string name,
+        string shortName,
+        Guid clubId,
+        Guid? divisionId,
+        TeamCategory teamCategory = TeamCategory.Adult)
+    {
+        HttpResponseMessage resp = await _http.PostAsJsonAsync("api/FootballTeam", new
+        {
+            name,
+            clubId,
+            divisionId,
+            homeArena = "MAHL Arena",
+            primaryJerseyColor = "",
+            category = teamCategory.ToString(),
+            shortName,
+        });
+        return await ReadDataOrNull<FootballTeamDto>(resp, $"Create football team '{name}'");
+    }
+
+    public async Task<bool> AddFootballPlayerToTeamAsync(Guid teamId, Guid playerId, int position, int? jerseyNumber)
+    {
+        string url = $"api/FootballTeam/{teamId}/players/{playerId}?position={position}";
+        if (jerseyNumber.HasValue)
+            url += $"&jerseyNumber={jerseyNumber.Value}";
+
+        HttpResponseMessage resp = await _http.PostAsync(url, null);
+        if (!resp.IsSuccessStatusCode)
+        {
+            string body = await resp.Content.ReadAsStringAsync();
+            if (body.Contains("is already in the roster", StringComparison.OrdinalIgnoreCase)) return true;
+
+            if (jerseyNumber.HasValue &&
+                body.Contains("Jersey number", StringComparison.OrdinalIgnoreCase))
+            {
+                return await AddFootballPlayerToTeamAsync(teamId, playerId, position, null);
+            }
+
+            Console.WriteLine($"  WARN: Add football player to team failed: {Truncate(body)}");
+            return false;
+        }
+        return true;
+    }
+
+    // ── Football referees ────────────────────────────────────
+
+    public async Task<List<FootballRefereeDto>> GetFootballRefereesAsync() =>
+        await GetPaginatedListAsync<FootballRefereeDto>("api/FootballReferee?page=1&PageSize=50");
+
+    public async Task<FootballRefereeDto?> CreateFootballRefereeAsync(Guid personId)
+    {
+        HttpResponseMessage resp = await _http.PostAsJsonAsync("api/FootballReferee", new
+        {
+            personId,
+            licenseIssueDate = "2020-01-01",
+            licenseExpiryDate = "2035-12-31",
+        });
+        return await ReadDataOrNull<FootballRefereeDto>(resp, $"Create football referee for person {personId}");
+    }
+
+    // ── Football seasons ─────────────────────────────────────
+
+    public async Task<List<FootballSeasonDto>> GetFootballSeasonsAsync() =>
+        await GetUnpaginatedListAsync<FootballSeasonDto>("api/FootballSeason");
+
+    public async Task<FootballSeasonDto?> CreateFootballSeasonAsync(
+        string name,
+        Guid divisionId,
+        DateTime startDate,
+        DateTime endDate,
+        int numberOfHalves,
+        int halfDurationMinutes,
+        int playersOnField,
+        TeamCategory teamCategory = TeamCategory.Adult)
+    {
+        HttpResponseMessage resp = await _http.PostAsJsonAsync("api/FootballSeason", new
+        {
+            name,
+            divisionIds = new[] { divisionId },
+            startDate = startDate.ToString("yyyy-MM-dd"),
+            endDate = endDate.ToString("yyyy-MM-dd"),
+            numberOfHalves,
+            halfDurationMinutes,
+            playersOnField,
+            requireGoalkeeper = true,
+            requireOfficialsToStart = false,
+            allowExtraTime = false,
+            allowPenaltyShootout = false,
+            teamCategory = teamCategory.ToString(),
+        });
+        return await ReadDataOrNull<FootballSeasonDto>(resp, $"Create football season '{name}'");
+    }
+
+    public async Task<FootballSeasonDto?> UpdateFootballSeasonAsync(
+        FootballSeasonDto season,
+        TeamCategory teamCategory)
+    {
+        HttpResponseMessage resp = await _http.PutAsJsonAsync($"api/FootballSeason/{season.Id}", new
+        {
+            name = season.Name,
+            startDate = season.StartDate.ToString("yyyy-MM-dd"),
+            endDate = season.EndDate.ToString("yyyy-MM-dd"),
+            numberOfHalves = season.MatchRules.NumberOfHalves,
+            halfDurationMinutes = season.MatchRules.HalfDurationMinutes,
+            playersOnField = season.MatchRules.PlayersOnField,
+            requireGoalkeeper = season.MatchRules.RequireGoalkeeper,
+            maxSubstitutions = season.MatchRules.MaxSubstitutions,
+            requireOfficialsToStart = season.MatchRules.RequireOfficialsToStart,
+            allowExtraTime = season.MatchRules.AllowExtraTime,
+            extraTimeHalfCount = season.MatchRules.ExtraTimeHalfCount,
+            extraTimeHalfDurationMinutes = season.MatchRules.ExtraTimeHalfDurationMinutes,
+            allowPenaltyShootout = season.MatchRules.AllowPenaltyShootout,
+            teamCategory = teamCategory.ToString(),
+        });
+        return await ReadDataOrNull<FootballSeasonDto>(resp, $"Update football season '{season.Name}' category");
+    }
+
+    public async Task<bool> AddTeamToFootballSeasonAsync(Guid seasonId, Guid teamId)
+    {
+        HttpResponseMessage resp = await _http.PostAsync($"api/FootballSeason/{seasonId}/teams/{teamId}", null);
+        return await OkOrAlready(resp, "AddTeamToFootballSeason");
+    }
+
+    public async Task<bool> AddTeamToFootballSeasonDivisionAsync(Guid seasonId, Guid divisionId, Guid teamId)
+    {
+        HttpResponseMessage resp = await _http.PostAsync(
+            $"api/FootballSeason/{seasonId}/divisions/{divisionId}/teams/{teamId}", null);
+        return await OkOrAlready(resp, "AddTeamToFootballSeasonDivision");
+    }
+
+    // ── Football matches ─────────────────────────────────────
+
+    public async Task<FootballMatchDto?> CreateFootballMatchAsync(
+        Guid competitionId,
+        Guid homeTeamId,
+        Guid awayTeamId,
+        Guid refereeId,
+        DateTime scheduledDateTime,
+        string? venue)
+    {
+        HttpResponseMessage resp = await _http.PostAsJsonAsync("api/football-matches", new
+        {
+            competitionId,
+            homeTeamId,
+            awayTeamId,
+            refereeId,
+            scheduledDateTime = scheduledDateTime.ToString("yyyy-MM-ddTHH:mm:ss"),
+            venue,
+        });
+        return await ReadDataOrNull<FootballMatchDto>(resp, "Create football match");
+    }
+
+    public async Task<bool> SetFootballLineupAsync(
+        Guid matchId,
+        Guid teamId,
+        IReadOnlyList<(Guid PlayerId, FootballPosition Position, bool IsOnField)> players)
+    {
+        object request = new
+        {
+            players = players.Select(p => new
+            {
+                playerId = p.PlayerId,
+                position = p.Position.ToString(),
+                isOnField = p.IsOnField,
+            }),
+        };
+        HttpResponseMessage resp = await _http.PutAsJsonAsync(
+            $"api/football-matches/{matchId}/teams/{teamId}/lineup", request);
+        return await OkOrWarn(resp, "SetFootballLineup");
+    }
+
+    public async Task<bool> StartFootballMatchAsync(Guid matchId)
+    {
+        HttpResponseMessage resp = await _http.PutAsync($"api/football-matches/{matchId}/start", null);
+        return await OkOrWarn(resp, "StartFootballMatch");
+    }
+
+    public async Task<bool> StartFootballPeriodAsync(Guid matchId, int periodNumber)
+    {
+        HttpResponseMessage resp = await _http.PostAsync(
+            $"api/football-matches/{matchId}/events/periods/{periodNumber}/start", null);
+        return resp.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> EndFootballPeriodAsync(Guid matchId, int periodNumber)
+    {
+        HttpResponseMessage resp = await _http.PostAsync(
+            $"api/football-matches/{matchId}/events/periods/{periodNumber}/end", null);
+        return resp.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> RecordFootballGoalAsync(
+        Guid matchId,
+        Guid scoringTeamId,
+        Guid scoringPlayerId,
+        Guid? assistingPlayerId,
+        int periodNumber,
+        int timeInSeconds)
+    {
+        object request = new
+        {
+            matchId,
+            scoringTeamId,
+            scoringPlayerId,
+            assistingPlayerId,
+            periodNumber,
+            timeInSeconds,
+        };
+        return await PostWithRetryAsync($"api/football-matches/{matchId}/events/goal", request, "RecordFootballGoal");
+    }
+
+    public async Task<bool> RecordFootballCardAsync(
+        Guid matchId,
+        Guid teamId,
+        Guid playerId,
+        FootballCardType cardType,
+        int periodNumber,
+        int timeInSeconds)
+    {
+        object request = new
+        {
+            matchId,
+            teamId,
+            playerId,
+            cardType = cardType.ToString(),
+            periodNumber,
+            timeInSeconds,
+        };
+        return await PostWithRetryAsync($"api/football-matches/{matchId}/events/card", request, "RecordFootballCard");
+    }
+
+    public async Task<bool> CompleteFootballMatchAsync(Guid matchId)
+    {
+        HttpResponseMessage resp = await _http.PutAsync($"api/football-matches/{matchId}/complete", null);
+        return await OkOrWarn(resp, "CompleteFootballMatch");
+    }
+
+    public async Task<FootballMatchDto?> GetFootballMatchByIdAsync(Guid matchId)
+    {
+        HttpResponseMessage resp = await _http.GetAsync($"api/football-matches/by-id/{matchId}");
+        return await ReadDataOrNull<FootballMatchDto>(resp, $"Get football match {matchId}");
+    }
+
+    public async Task<bool> ReopenFootballMatchAsync(Guid matchId)
+    {
+        HttpResponseMessage resp = await _http.PutAsync($"api/football-matches/{matchId}/reopen", null);
+        return await OkOrWarn(resp, "ReopenFootballMatch");
+    }
+
+    public async Task<bool> DeleteFootballGoalEventAsync(Guid matchId, Guid goalEventId)
+    {
+        HttpResponseMessage resp = await _http.DeleteAsync($"api/football-matches/{matchId}/events/goal/{goalEventId}");
+        return await OkOrWarn(resp, "DeleteFootballGoalEvent");
+    }
+
+    public async Task<bool> DeleteFootballCardEventAsync(Guid matchId, Guid cardEventId)
+    {
+        HttpResponseMessage resp = await _http.DeleteAsync($"api/football-matches/{matchId}/events/card/{cardEventId}");
+        return await OkOrWarn(resp, "DeleteFootballCardEvent");
+    }
+
+    // ── Helpers ──────────────────────────────────────────────
 
     private async Task<bool> PostWithRetryAsync(string url, object payload, string operationName, int maxRetries = 5)
     {
@@ -424,6 +709,16 @@ public class ApiClient : IDisposable
         }
 
         return all;
+    }
+
+    private async Task<List<T>> GetUnpaginatedListAsync<T>(string url)
+    {
+        HttpResponseMessage resp = await _http.GetAsync(url);
+        if (!resp.IsSuccessStatusCode)
+            return [];
+
+        ApiResponse<List<T>>? api = await resp.Content.ReadFromJsonAsync<ApiResponse<List<T>>>(_json);
+        return api?.Data ?? [];
     }
 
     private async Task<T?> ReadDataOrNull<T>(HttpResponseMessage resp, string operation) where T : class
