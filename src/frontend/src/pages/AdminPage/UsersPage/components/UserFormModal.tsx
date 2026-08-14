@@ -1,16 +1,29 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { SystemUser, UserRole } from '../../../../types/admin/userTypes';
+import type { SystemUser, UserRole, TeamAssignment } from '../../../../types/admin/userTypes';
 import type { Person } from '../../../../types/admin/personTypes';
 import { personApi } from '../../../../api/admin/personApi';
+import { floorballTeamNameSearchService } from '../../../../api/floorball/floorballTeamNameSearchService';
+import { footballTeamNameSearchService } from '../../../../api/football/footballTeamNameSearchService';
 
 const MAX_PAGE_SIZE = 50;
+
+interface TeamNameOption {
+  id: string;
+  name: string;
+}
 
 interface UserFormModalProps {
   isOpen: boolean;
   user: SystemUser | null;
   existingPersonIds: string[];
-  onSave: (email: string, personId: string, role: UserRole, isActive: boolean) => Promise<void>;
+  onSave: (
+    email: string,
+    personId: string,
+    role: UserRole,
+    isActive: boolean,
+    teamAssignments?: TeamAssignment[],
+  ) => Promise<void>;
   onCancel: () => void;
   onResendInvitation?: (user: SystemUser) => void;
   isResendingInvitation?: boolean;
@@ -38,7 +51,15 @@ const UserFormModal = ({
   const [loadingPersons, setLoadingPersons] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; person?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; person?: string; teams?: string }>({});
+
+  // Team leader team assignment state (create mode only)
+  const [floorballTeams, setFloorballTeams] = useState<TeamNameOption[]>([]);
+  const [footballTeams, setFootballTeams] = useState<TeamNameOption[]>([]);
+  const [teamsLoaded, setTeamsLoaded] = useState(false);
+  const [teamFilter, setTeamFilter] = useState('');
+  const [selectedFloorballTeamIds, setSelectedFloorballTeamIds] = useState<Set<string>>(new Set());
+  const [selectedFootballTeamIds, setSelectedFootballTeamIds] = useState<Set<string>>(new Set());
 
   const debounceTimerRef = useRef<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -57,6 +78,9 @@ const UserFormModal = ({
       setIsDropdownOpen(false);
       setErrors({});
       setSaving(false);
+      setTeamFilter('');
+      setSelectedFloorballTeamIds(new Set());
+      setSelectedFootballTeamIds(new Set());
 
       document.body.style.overflow = 'hidden';
     } else {
@@ -100,6 +124,46 @@ const UserFormModal = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, isDropdownOpen]);
+
+  // Load all team names for the team leader pickers once, when the role is first selected.
+  useEffect(() => {
+    if (!isOpen || isEditMode || role !== 'TeamLeader' || teamsLoaded) return;
+
+    let cancelled = false;
+    const loadTeams = async () => {
+      try {
+        const [floorballResponse, footballResponse] = await Promise.all([
+          floorballTeamNameSearchService.getTeamNames(''),
+          footballTeamNameSearchService.getTeamNames(''),
+        ]);
+        if (cancelled) return;
+        setFloorballTeams((floorballResponse.data ?? []).map((team) => ({ id: team.id, name: team.name })));
+        setFootballTeams((footballResponse.data ?? []).map((team) => ({ id: team.id, name: team.name })));
+        setTeamsLoaded(true);
+      } catch (err) {
+        console.error('Failed to load team names for team leader assignment:', err);
+      }
+    };
+
+    void loadTeams();
+    return () => { cancelled = true; };
+  }, [isOpen, isEditMode, role, teamsLoaded]);
+
+  const toggleTeamSelection = (sport: 'floorball' | 'football', teamId: string) => {
+    const setter = sport === 'floorball' ? setSelectedFloorballTeamIds : setSelectedFootballTeamIds;
+    setter((prev) => {
+      const next = new Set(prev);
+      if (next.has(teamId)) {
+        next.delete(teamId);
+      } else {
+        next.add(teamId);
+      }
+      return next;
+    });
+    if (errors.teams) {
+      setErrors((prev) => ({ ...prev, teams: undefined }));
+    }
+  };
 
   const fetchPersons = useCallback(async (searchTerm: string) => {
     try {
@@ -175,7 +239,7 @@ const UserFormModal = ({
   const existingSet = useMemo(() => new Set(existingPersonIds), [existingPersonIds]);
 
   const validate = (): boolean => {
-    const newErrors: { email?: string; person?: string } = {};
+    const newErrors: { email?: string; person?: string; teams?: string } = {};
 
     if (!email.trim()) {
       newErrors.email = t('admin.users.form.emailRequired', 'Email is required');
@@ -187,6 +251,11 @@ const UserFormModal = ({
       newErrors.person = t('admin.users.form.personRequired', 'Person is required');
     }
 
+    if (!isEditMode && role === 'TeamLeader'
+      && selectedFloorballTeamIds.size === 0 && selectedFootballTeamIds.size === 0) {
+      newErrors.teams = t('admin.users.form.teamsRequired', 'Select at least one team for the team leader');
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -195,9 +264,17 @@ const UserFormModal = ({
     e.preventDefault();
     if (!validate()) return;
 
+    const teamAssignments: TeamAssignment[] | undefined =
+      !isEditMode && role === 'TeamLeader'
+        ? [
+            ...Array.from(selectedFloorballTeamIds).map((teamId): TeamAssignment => ({ sport: 'floorball', teamId })),
+            ...Array.from(selectedFootballTeamIds).map((teamId): TeamAssignment => ({ sport: 'football', teamId })),
+          ]
+        : undefined;
+
     try {
       setSaving(true);
-      await onSave(email.trim(), selectedPersonId, role, isActive);
+      await onSave(email.trim(), selectedPersonId, role, isActive, teamAssignments);
     } catch {
       // Parent handles the error
     } finally {
@@ -395,8 +472,87 @@ const UserFormModal = ({
                 <option value="SystemAdmin">
                   {t('admin.users.roles.systemAdmin', 'System Admin')}
                 </option>
+                <option value="TeamLeader">
+                  {t('admin.users.roles.teamLeader', 'Team Leader')}
+                </option>
               </select>
             </div>
+
+            {/* Team assignments for new team leaders */}
+            {!isEditMode && role === 'TeamLeader' && (
+              <div className="user-form-group">
+                <label>
+                  {t('admin.users.form.teams', 'Teams to manage')} *
+                </label>
+                <div className="user-form-team-picker">
+                  <input
+                    type="text"
+                    className="user-form-input"
+                    placeholder={t('admin.users.form.teamFilterPlaceholder', 'Filter teams...')}
+                    value={teamFilter}
+                    onChange={(e) => setTeamFilter(e.target.value)}
+                  />
+                  {!teamsLoaded ? (
+                    <div className="user-form-team-picker__loading">
+                      {t('common.loading', 'Loading...')}
+                    </div>
+                  ) : (
+                    <div className="user-form-team-picker__lists">
+                      {([
+                        {
+                          sport: 'floorball' as const,
+                          title: t('admin.users.form.floorballTeams', 'Floorball teams'),
+                          teams: floorballTeams,
+                          selected: selectedFloorballTeamIds,
+                        },
+                        {
+                          sport: 'football' as const,
+                          title: t('admin.users.form.footballTeams', 'Football teams'),
+                          teams: footballTeams,
+                          selected: selectedFootballTeamIds,
+                        },
+                      ]).map(({ sport, title, teams, selected }) => {
+                        const filtered = teamFilter.trim()
+                          ? teams.filter((team) =>
+                              team.name.toLowerCase().includes(teamFilter.trim().toLowerCase()))
+                          : teams;
+                        return (
+                          <div key={sport} className="user-form-team-picker__section">
+                            <div className="user-form-team-picker__title">
+                              {title}
+                              {selected.size > 0 && (
+                                <span className="user-form-team-picker__count">{selected.size}</span>
+                              )}
+                            </div>
+                            <div className="user-form-team-picker__list">
+                              {filtered.length === 0 ? (
+                                <div className="user-form-team-picker__empty">
+                                  {t('admin.users.form.noTeamsFound', 'No teams found')}
+                                </div>
+                              ) : (
+                                filtered.map((team) => (
+                                  <label key={team.id} className="user-form-team-picker__item">
+                                    <input
+                                      type="checkbox"
+                                      checked={selected.has(team.id)}
+                                      onChange={() => toggleTeamSelection(sport, team.id)}
+                                    />
+                                    <span>{team.name}</span>
+                                  </label>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                {errors.teams && (
+                  <span className="user-form-error">{errors.teams}</span>
+                )}
+              </div>
+            )}
 
             {/* IsActive toggle */}
             <div className="user-form-group">

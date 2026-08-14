@@ -37,6 +37,7 @@ public static class DependencyInjection
         
         // Register application services
         services.AddScoped<IPaginationService, PaginationService>();
+        services.AddScoped<ITeamLeaderAccessService, TeamLeaderAccessService>();
         
         // Register timer services
         services.AddScoped<IMatchTimerService, PersistentMatchTimerService>();

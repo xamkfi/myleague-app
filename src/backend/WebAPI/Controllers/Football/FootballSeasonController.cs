@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Application.Features.Football.Seasons.Commands;
 using Application.Features.Football.Seasons.DTOs;
@@ -90,7 +91,7 @@ public class FootballSeasonController : BaseApiController
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -135,7 +136,7 @@ public class FootballSeasonController : BaseApiController
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -172,7 +173,7 @@ public class FootballSeasonController : BaseApiController
     }
 
     [HttpPut("{id:guid}/activate")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballSeasonDto>>> ActivateSeason(Guid id)
     {
@@ -181,7 +182,7 @@ public class FootballSeasonController : BaseApiController
     }
 
     [HttpPut("{id:guid}/deactivate")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballSeasonDto>>> DeactivateSeason(Guid id)
     {
@@ -190,7 +191,7 @@ public class FootballSeasonController : BaseApiController
     }
 
     [HttpPut("{id:guid}/complete")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballSeasonDto>>> CompleteSeason(Guid id)
     {
@@ -200,7 +201,7 @@ public class FootballSeasonController : BaseApiController
 
     [Obsolete("Use AddTeamToSeasonDivision instead to assign teams to a specific division within the season.")]
     [HttpPost("{competitionId:guid}/teams/{teamId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballSeasonDto>>> AddTeamToSeason(Guid competitionId, Guid teamId)
     {
@@ -209,7 +210,7 @@ public class FootballSeasonController : BaseApiController
     }
 
     [HttpDelete("{competitionId:guid}/teams/{teamId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballSeasonDto>>> RemoveTeamFromSeason(Guid competitionId, Guid teamId)
     {
@@ -218,7 +219,7 @@ public class FootballSeasonController : BaseApiController
     }
 
     [HttpPost("{competitionId:guid}/divisions/{divisionId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse>> AddDivisionToSeason(Guid competitionId, Guid divisionId)
     {
@@ -227,7 +228,7 @@ public class FootballSeasonController : BaseApiController
     }
 
     [HttpDelete("{competitionId:guid}/divisions/{divisionId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse>> RemoveDivisionFromSeason(Guid competitionId, Guid divisionId)
     {
@@ -236,7 +237,7 @@ public class FootballSeasonController : BaseApiController
     }
 
     [HttpPost("{competitionId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse>> AddTeamToSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
     {
@@ -245,7 +246,7 @@ public class FootballSeasonController : BaseApiController
     }
 
     [HttpDelete("{competitionId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse>> RemoveTeamFromSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
     {
@@ -254,7 +255,7 @@ public class FootballSeasonController : BaseApiController
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse>> DeleteSeason(Guid id)
     {

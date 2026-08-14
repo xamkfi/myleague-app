@@ -1,0 +1,155 @@
+.team-leader-layout {
+  min-height: 100vh;
+  background: #f5f6f8;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.team-leader-header {
+  background: #1c2233;
+  color: #fff;
+
+  .team-leader-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .team-leader-brand {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+
+    .team-leader-brand-name {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+
+    .team-leader-brand-sub {
+      font-size: 0.78rem;
+      opacity: 0.75;
+    }
+  }
+
+  .team-leader-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    .team-leader-user {
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+
+    .team-leader-logout {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.22);
+      }
+    }
+  }
+}
+
+.team-leader-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+.team-leader-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1c2233;
+  margin: 0 0 20px;
+}
+
+// Shared utilities used across all team leader pages (loaded with the template).
+
+.team-leader-loading,
+.team-leader-empty {
+  padding: 24px;
+  background: #fff;
+  border-radius: 10px;
+  color: #6e6d75;
+  text-align: center;
+}
+
+.team-leader-error {
+  padding: 14px 18px;
+  background: #fdecec;
+  border: 1px solid #f5b5b5;
+  border-radius: 8px;
+  color: #b42222;
+  margin-bottom: 18px;
+}
+
+.team-leader-back-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: #2258b4;
+  font-size: 0.88rem;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.team-leader-button {
+  display: inline-block;
+  text-align: center;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s ease;
+
+  &--primary {
+    background: #1c2233;
+    color: #fff;
+
+    &:hover {
+      background: #2d3650;
+    }
+  }
+
+  &--secondary {
+    background: #eef0f4;
+    color: #1c2233;
+
+    &:hover {
+      background: #e0e3ea;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.team-leader-announced-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #1d7a3d;
+  background: #e7f8ec;
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}

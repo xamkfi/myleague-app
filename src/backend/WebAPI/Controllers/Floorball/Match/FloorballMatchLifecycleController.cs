@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
@@ -17,7 +18,7 @@ namespace WebAPI.Controllers.Floorball.Match
     /// <c>{matchId}</c>.
     /// </summary>
     [Route("api/floorball-matches/{matchId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     public class FloorballMatchLifecycleController : BaseApiController
     {
         private readonly IMediator _mediator;

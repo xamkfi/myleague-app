@@ -16,7 +16,12 @@ using Application.Features.Common.Divisions.Mappings;
 using Application.Features.Common.News.Mappings;
 using Application.Interfaces.Auth;
 using Domain.Entities.Common;
+using Domain.Entities.Floorball;
+using Domain.Entities.Football.Teams;
+using Domain.Enums.Common;
 using Domain.Repositories.Common;
+using Domain.Repositories.Floorball;
+using Domain.Repositories.Football;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -34,6 +39,10 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
     private readonly FrontendConfiguration _frontendConfig;
+    private readonly IFloorballTeamManagerRepository _floorballTeamManagerRepository;
+    private readonly IFootballTeamManagerRepository _footballTeamManagerRepository;
+    private readonly IFloorballUnitOfWork _floorballUnitOfWork;
+    private readonly IFootballUnitOfWork _footballUnitOfWork;
     private readonly ILogger<CreateUserHandler> _logger;
 
     public CreateUserHandler(
@@ -42,6 +51,10 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
         IUnitOfWork unitOfWork,
         IEmailService emailService,
         IOptions<FrontendConfiguration> frontendConfig,
+        IFloorballTeamManagerRepository floorballTeamManagerRepository,
+        IFootballTeamManagerRepository footballTeamManagerRepository,
+        IFloorballUnitOfWork floorballUnitOfWork,
+        IFootballUnitOfWork footballUnitOfWork,
         ILogger<CreateUserHandler> logger)
     {
         _userRepository = userRepository;
@@ -49,6 +62,10 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
         _unitOfWork = unitOfWork;
         _emailService = emailService;
         _frontendConfig = frontendConfig.Value;
+        _floorballTeamManagerRepository = floorballTeamManagerRepository;
+        _footballTeamManagerRepository = footballTeamManagerRepository;
+        _floorballUnitOfWork = floorballUnitOfWork;
+        _footballUnitOfWork = footballUnitOfWork;
         _logger = logger;
     }
 
@@ -97,8 +114,18 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
                 return Result<UserDto>.Failure("Failed to retrieve the created user.");
             }
 
-            // Send invitation email with verification link
-            string verificationUrl = $"{_frontendConfig.BaseUrl}/admin/verify-email?token={Uri.EscapeDataString(token)}";
+            // Team leaders get manager links to the teams they were invited for
+            if (request.Role == UserRole.TeamLeader && request.TeamAssignments is { Count: > 0 })
+            {
+                await CreateTeamManagerLinksAsync(request.PersonId, request.TeamAssignments, cancellationToken);
+            }
+
+            // Send invitation email with verification link. Team leaders verify through their
+            // own area so they land on the team leader login afterwards.
+            string verifyPath = request.Role == UserRole.TeamLeader
+                ? "/team-leader/verify-email"
+                : "/admin/verify-email";
+            string verificationUrl = $"{_frontendConfig.BaseUrl}{verifyPath}?token={Uri.EscapeDataString(token)}";
             await _emailService.SendAdminInvitationAsync(
                 createdUser.Email,
                 person.FirstName,
@@ -116,6 +143,67 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
         {
             _logger.LogError(ex, "Error occurred while creating user: {Email}", request.Email);
             return Result<UserDto>.Failure("An error occurred while creating the user.");
+        }
+    }
+
+    /// <summary>
+    /// Creates (or reactivates) the team manager link rows that grant the invited team leader
+    /// access to the requested teams.
+    /// </summary>
+    private async Task CreateTeamManagerLinksAsync(
+        Guid personId,
+        IReadOnlyList<TeamAssignmentDto> assignments,
+        CancellationToken cancellationToken)
+    {
+        bool floorballTouched = false;
+        bool footballTouched = false;
+
+        foreach (TeamAssignmentDto assignment in assignments)
+        {
+            if (string.Equals(assignment.Sport, "floorball", StringComparison.OrdinalIgnoreCase))
+            {
+                FloorballTeamManager? existing = await _floorballTeamManagerRepository.GetByPersonAndTeamAsync(personId, assignment.TeamId);
+                if (existing == null)
+                {
+                    await _floorballTeamManagerRepository.AddAsync(new FloorballTeamManager(personId, assignment.TeamId));
+                    floorballTouched = true;
+                }
+                else if (!existing.IsActive)
+                {
+                    existing.UpdateActiveStatus(true);
+                    await _floorballTeamManagerRepository.UpdateAsync(existing);
+                    floorballTouched = true;
+                }
+            }
+            else if (string.Equals(assignment.Sport, "football", StringComparison.OrdinalIgnoreCase))
+            {
+                FootballTeamManager? existing = await _footballTeamManagerRepository.GetByPersonAndTeamAsync(personId, assignment.TeamId);
+                if (existing == null)
+                {
+                    await _footballTeamManagerRepository.AddAsync(new FootballTeamManager(personId, assignment.TeamId));
+                    footballTouched = true;
+                }
+                else if (!existing.IsActive)
+                {
+                    existing.UpdateActiveStatus(true);
+                    await _footballTeamManagerRepository.UpdateAsync(existing);
+                    footballTouched = true;
+                }
+            }
+            else
+            {
+                _logger.LogWarning("Unknown sport '{Sport}' in team assignment, skipping", assignment.Sport);
+            }
+        }
+
+        if (floorballTouched)
+        {
+            await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        if (footballTouched)
+        {
+            await _footballUnitOfWork.SaveChangesAsync(cancellationToken);
         }
     }
 

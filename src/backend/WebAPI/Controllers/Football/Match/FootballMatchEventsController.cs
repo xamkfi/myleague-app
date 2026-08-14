@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Application.Features.Football.Matches.Commands;
 using Application.Features.Football.Matches.DTOs;
@@ -12,7 +13,7 @@ using WebAPI.Services;
 namespace WebAPI.Controllers.Football;
 
 [Route("api/football-matches/{matchId:guid}/events")]
-[Authorize]
+[Authorize(Roles = AuthRoles.AdminOnly)]
 public class FootballMatchEventsController : BaseApiController
 {
     private readonly IMediator _mediator;

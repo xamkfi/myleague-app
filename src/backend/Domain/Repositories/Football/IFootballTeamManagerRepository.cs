@@ -10,6 +10,9 @@ public interface IFootballTeamManagerRepository
 {
     Task<FootballTeamManager?> GetByIdAsync(Guid id);
     Task<FootballTeamManager?> GetByPersonIdAsync(Guid personId);
+    Task<IEnumerable<FootballTeamManager>> GetAllByPersonIdAsync(Guid personId);
+    Task<bool> IsActiveManagerOfTeamAsync(Guid personId, Guid teamId);
+    Task<FootballTeamManager?> GetByPersonAndTeamAsync(Guid personId, Guid teamId);
     Task<IEnumerable<FootballTeamManager>> GetAllAsync();
     Task<PagedResult<FootballTeamManager>> GetPagedAsync(
         int page,

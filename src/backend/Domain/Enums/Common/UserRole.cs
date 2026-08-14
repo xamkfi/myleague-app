@@ -13,5 +13,10 @@ public enum UserRole
     /// <summary>
     /// System administrator - full access to all features
     /// </summary>
-    SystemAdmin = 1
+    SystemAdmin = 1,
+
+    /// <summary>
+    /// Team leader - can manage jersey numbers and announce match rosters for their own teams
+    /// </summary>
+    TeamLeader = 2
 }

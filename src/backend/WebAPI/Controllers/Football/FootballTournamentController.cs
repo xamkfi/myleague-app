@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Application.Features.Football.Tournaments.Commands;
 using Application.Features.Football.Tournaments.DTOs;
@@ -80,7 +81,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -138,7 +139,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpPut("{competitionId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -189,7 +190,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpDelete("{competitionId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -205,7 +206,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpPost("{competitionId:guid}/start-group-stage")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -221,7 +222,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpPut("{competitionId:guid}/playoff-schedule")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -246,7 +247,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpPost("{competitionId:guid}/start-playoff-stage")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -276,7 +277,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpPost("{competitionId:guid}/complete")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -292,7 +293,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpPost("{competitionId:guid}/cancel")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -308,7 +309,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpPost("{competitionId:guid}/groups")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -327,7 +328,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpDelete("{competitionId:guid}/groups/{groupId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -343,7 +344,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpPost("{competitionId:guid}/groups/{groupId:guid}/teams")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -359,7 +360,7 @@ public class FootballTournamentController : BaseApiController
     }
 
     [HttpDelete("{competitionId:guid}/groups/{groupId:guid}/teams/{teamId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Application.Features.Football.TeamManagers.Commands;
 using Application.Features.Football.TeamManagers.DTOs;
@@ -13,7 +14,7 @@ namespace WebAPI.Controllers.Football
     /// <summary>
     /// Controller for managing football team managers
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [Route("api/[controller]")]
     public class FootballTeamManagerController : BaseApiController
     {

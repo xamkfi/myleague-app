@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Application.DTOs.Common;
 using Application.Features.Common.RulesSection.Commands;
@@ -91,7 +92,7 @@ public class RulesSectionController : BaseApiController
     /// <param name="request">Rules section creation request</param>
     /// <returns>Created rules section details</returns>
     [HttpPost]
-    [Authorize(Roles = "SystemAdmin,ClubAdmin")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<RulesSectionDto>>> CreateSection(
@@ -126,7 +127,7 @@ public class RulesSectionController : BaseApiController
     /// <param name="request">Updated rules section data</param>
     /// <returns>Updated rules section details</returns>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "SystemAdmin,ClubAdmin")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status404NotFound)]
@@ -169,7 +170,7 @@ public class RulesSectionController : BaseApiController
     /// <param name="id">The rules section ID</param>
     /// <returns>True if the section was deleted</returns>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "SystemAdmin,ClubAdmin")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
@@ -201,7 +202,7 @@ public class RulesSectionController : BaseApiController
     /// <param name="request">Rule HTML content to add</param>
     /// <returns>Updated rules section details</returns>
     [HttpPost("{id:guid}/rules")]
-    [Authorize(Roles = "SystemAdmin,ClubAdmin")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<RulesSectionDto>>> AddRule(
@@ -232,7 +233,7 @@ public class RulesSectionController : BaseApiController
     /// <param name="request">Updated rule HTML content</param>
     /// <returns>Updated rules section details</returns>
     [HttpPut("{id:guid}/rules/{ruleId}")]
-    [Authorize(Roles = "SystemAdmin,ClubAdmin")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status404NotFound)]
@@ -275,7 +276,7 @@ public class RulesSectionController : BaseApiController
     /// <param name="ruleId">The rule identifier</param>
     /// <returns>Updated rules section details</returns>
     [HttpDelete("{id:guid}/rules/{ruleId}")]
-    [Authorize(Roles = "SystemAdmin,ClubAdmin")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<RulesSectionDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<RulesSectionDto>>> DeleteRule(Guid id, string ruleId)

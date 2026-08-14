@@ -1,3 +1,4 @@
+using Domain.Constants;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -157,7 +158,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Create season request</param>
         /// <returns>Created season details</returns>
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -204,7 +205,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Update season request</param>
         /// <returns>Updated season details</returns>
         [HttpPut("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -242,7 +243,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Activated season details</returns>
         [HttpPut("{id:guid}/activate")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -263,7 +264,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Deactivated season details</returns>
         [HttpPut("{id:guid}/deactivate")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -284,7 +285,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Completed season details</returns>
         [HttpPut("{id:guid}/complete")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -308,7 +309,7 @@ namespace WebAPI.Controllers.Floorball
         /// <returns>Updated season details</returns>
         [Obsolete("Use AddTeamToSeasonDivision instead to assign teams to a specific division within the season.")]
         [HttpPost("{competitionId:guid}/teams/{teamId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -330,7 +331,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="teamId">Team ID</param>
         /// <returns>Updated season details</returns>
         [HttpDelete("{competitionId:guid}/teams/{teamId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -351,7 +352,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="competitionId">Season ID</param>
         /// <param name="divisionId">Division ID</param>
         [HttpPost("{competitionId:guid}/divisions/{divisionId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> AddDivisionToSeason(Guid competitionId, Guid divisionId)
@@ -369,7 +370,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="competitionId">Season ID</param>
         /// <param name="divisionId">Division ID</param>
         [HttpDelete("{competitionId:guid}/divisions/{divisionId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> RemoveDivisionFromSeason(Guid competitionId, Guid divisionId)
@@ -388,7 +389,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="divisionId">Division ID</param>
         /// <param name="teamId">Team ID</param>
         [HttpPost("{competitionId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> AddTeamToSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
@@ -407,7 +408,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="divisionId">Division ID</param>
         /// <param name="teamId">Team ID</param>
         [HttpDelete("{competitionId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> RemoveTeamFromSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
@@ -425,7 +426,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Success message</returns>
         [HttpDelete("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

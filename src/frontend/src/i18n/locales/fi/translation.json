@@ -354,13 +354,24 @@
       "addUser": "Lisää käyttäjä",
       "noData": "Järjestelmäkäyttäjiä ei löytynyt.",
       "noSearchResults": "Yksikään käyttäjä ei vastaa hakuasi.",
+      "invitationResent": "Kutsusähköposti lähetetty uudelleen osoitteeseen {{email}}.",
+      "confirmRevokeTeamLeader": "Poistetaanko joukkueenjohtajan oikeudet käyttäjältä {{email}}? Tili poistetaan käytöstä eikä hän voi enää kirjautua sisään.",
       "table": {
         "person": "Henkilö",
         "email": "Sähköposti",
         "role": "Rooli",
         "status": "Tila",
         "lastLogin": "Viimeisin kirjautuminen",
-        "never": "Ei koskaan"
+        "never": "Ei koskaan",
+        "verified": "Vahvistettu",
+        "pending": "Odottaa",
+        "emailPending": "Sähköposti vahvistamatta"
+      },
+      "actions": {
+        "menu": "Käyttäjän toimintovalikko",
+        "resendInvitation": "Lähetä kutsu uudelleen",
+        "sendingInvitation": "Lähetetään...",
+        "revokeTeamLeader": "Poista joukkueenjohtajan oikeudet"
       },
       "form": {
         "createTitle": "Lisää käyttäjä",
@@ -369,18 +380,28 @@
         "emailPlaceholder": "käyttäjä@esimerkki.fi",
         "emailRequired": "Sähköposti on pakollinen",
         "emailInvalid": "Virheellinen sähköpostiosoite",
+        "emailVerified": "Sähköposti vahvistettu",
         "selectPerson": "Henkilö",
         "searchPerson": "Hae henkilöitä...",
         "noPerson": "Vapaita henkilöitä ei löytynyt",
         "personRequired": "Henkilö on pakollinen",
         "role": "Rooli",
         "hasAccount": "Käyttäjätili on jo olemassa",
+        "status": "Tila",
+        "statusCreateInfo": "Uudet käyttäjät ovat passiivisia, kunnes he vahvistavat sähköpostinsa.",
+        "teams": "Hallinnoitavat joukkueet",
+        "teamFilterPlaceholder": "Suodata joukkueita...",
+        "floorballTeams": "Salibandyjoukkueet",
+        "footballTeams": "Jalkapallojoukkueet",
+        "noTeamsFound": "Joukkueita ei löytynyt",
+        "teamsRequired": "Valitse joukkueenjohtajalle vähintään yksi joukkue",
         "save": "Tallenna",
         "saving": "Tallennetaan..."
       },
       "roles": {
         "systemAdmin": "Järjestelmänvalvoja",
-        "clubAdmin": "Seuran ylläpitäjä"
+        "clubAdmin": "Seuran ylläpitäjä",
+        "teamLeader": "Joukkueenjohtaja"
       },
       "confirmDelete": {
         "title": "Poista käyttäjä",
@@ -391,7 +412,9 @@
         "load": "Käyttäjien lataaminen epäonnistui. Yritä uudelleen.",
         "create": "Käyttäjän luominen epäonnistui. Yritä uudelleen.",
         "update": "Käyttäjän päivittäminen epäonnistui. Yritä uudelleen.",
-        "delete": "Käyttäjän poistaminen epäonnistui. Yritä uudelleen."
+        "delete": "Käyttäjän poistaminen epäonnistui. Yritä uudelleen.",
+        "resend": "Kutsun uudelleenlähetys epäonnistui. Yritä uudelleen.",
+        "revoke": "Joukkueenjohtajan oikeuksien poistaminen epäonnistui. Yritä uudelleen."
       },
       "success": {
         "create": "Käyttäjä luotu onnistuneesti.",
@@ -1822,7 +1845,52 @@
     "back": "Takaisin",
     "codeSent": "Kirjautumiskoodi on lähetetty sähköpostiisi.",
     "unexpectedError": "Odottamaton virhe tapahtui.",
-    "logout": "Kirjaudu ulos"
+    "logout": "Kirjaudu ulos",
+    "teamLeaderLoginTitle": "Joukkueenjohtajan kirjautuminen"
+  },
+  "teamLeader": {
+    "view": "Joukkueenjohtajan näkymä",
+    "logout": "Kirjaudu ulos",
+    "myTeams": "Omat joukkueet",
+    "loadError": "Joukkueiden lataaminen epäonnistui",
+    "noTeams": "Sinua ei ole tällä hetkellä määritetty minkään joukkueen joukkueenjohtajaksi. Ota yhteyttä ylläpitäjään.",
+    "sportFloorball": "Salibandy",
+    "sportFootball": "Jalkapallo",
+    "editRoster": "Kokoonpano ja pelinumerot",
+    "upcomingMatches": "Tulevat ottelut",
+    "noUpcomingMatches": "Ei tulevia otteluita.",
+    "rosterAnnounced": "Kokoonpano ilmoitettu",
+    "announceRoster": "Ilmoita kokoonpano",
+    "editAnnouncedRoster": "Muokkaa kokoonpanoa",
+    "announceRosterTitle": "Ilmoita ottelukokoonpano",
+    "backToTeams": "Takaisin omiin joukkueisiin",
+    "loadMatchError": "Ottelun lataaminen epäonnistui",
+    "rosterSaved": "Ottelukokoonpano on ilmoitettu. Se näkyy nyt ottelunäkymässä.",
+    "rosterSaveError": "Ottelukokoonpanon ilmoittaminen epäonnistui",
+    "matchNotScheduled": "Kokoonpanoa ei voi enää muuttaa, koska ottelu ei ole ajastettu-tilassa.",
+    "goalie": "Maalivahti",
+    "noGoalie": "Ei valittua maalivahtia",
+    "floorballRosterHint": "Valitse ottelun kenttäpelaajat ja aseta heidän roolinsa. Maalivahti valitaan erikseen yllä.",
+    "footballRosterHint": "Valitse ottelun pelaajat, aseta heidän pelipaikkansa ja merkitse avauskokoonpano.",
+    "inRoster": "Kokoonpanossa",
+    "playerName": "Pelaaja",
+    "matchPosition": "Pelipaikka ottelussa",
+    "starting": "Avauksessa",
+    "emptyRoster": "Tällä joukkueella ei ole vielä pelaajia kokoonpanossa.",
+    "selectedPlayers": "Valitut pelaajat",
+    "saving": "Tallennetaan...",
+    "saved": "Tallennettu",
+    "updateRoster": "Päivitä ilmoitettu kokoonpano",
+    "rosterTitle": "Kokoonpano",
+    "loadRosterError": "Kokoonpanon lataaminen epäonnistui",
+    "rosterHint": "Voit muuttaa pelaajiesi pelinumeroita. Jokainen numero voi olla käytössä vain kerran joukkuetta kohden.",
+    "jerseyUpdateError": "Pelinumeron päivittäminen epäonnistui",
+    "jerseyNumber": "Pelinumero",
+    "position": "Pelipaikka",
+    "status": "Tila",
+    "noNumber": "—",
+    "active": "Aktiivinen",
+    "inactive": "Ei aktiivinen"
   },
   "football": {
     "management": {

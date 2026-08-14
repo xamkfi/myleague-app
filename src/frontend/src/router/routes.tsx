@@ -102,6 +102,11 @@ const FootballCreateMatchPage = lazyWithRetry(() => import('../pages/AdminPage/F
 const FootballEditMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/EditMatchPage/EditMatchPage'));
 const FootballManageMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/ManageMatchPage/ManageMatchPage'));
 
+// Team leader pages
+const TeamLeaderPage = lazyWithRetry(() => import('../pages/TeamLeaderPage/TeamLeaderPage'));
+const TeamLeaderRosterPage = lazyWithRetry(() => import('../pages/TeamLeaderPage/TeamLeaderRosterPage/TeamLeaderRosterPage'));
+const TeamLeaderMatchRosterPage = lazyWithRetry(() => import('../pages/TeamLeaderPage/TeamLeaderMatchRosterPage/TeamLeaderMatchRosterPage'));
+
 // Public football pages
 const FootballPage = lazyWithRetry(() => import('../pages/FootballPage/FootballPage'));
 const FootballLeaguePage = lazyWithRetry(() => import('../pages/FootballLeaguePage/FootballLeaguePage'));
@@ -128,6 +133,46 @@ export const routes: RouteObject[] = [
   {
     path: '/admin/verify-email',
     element: <SuspenseWrapper><VerifyEmailPage /></SuspenseWrapper>
+  },
+  // Team leader login (public)
+  {
+    path: '/team-leader/login',
+    element: <SuspenseWrapper><LoginPage variant="teamLeader" /></SuspenseWrapper>
+  },
+  // Team leader email verification (public – linked from invitation email)
+  {
+    path: '/team-leader/verify-email',
+    element: <SuspenseWrapper><VerifyEmailPage variant="teamLeader" /></SuspenseWrapper>
+  },
+  // Protected team leader routes (admins may also access them)
+  {
+    path: '/team-leader',
+    children: [
+      {
+        index: true,
+        element: (
+          <ProtectedRoute allowedRoles={['TeamLeader', 'ClubAdmin', 'SystemAdmin']} loginPath="/team-leader/login">
+            <SuspenseWrapper><TeamLeaderPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'teams/:sport/:teamId/roster',
+        element: (
+          <ProtectedRoute allowedRoles={['TeamLeader', 'ClubAdmin', 'SystemAdmin']} loginPath="/team-leader/login">
+            <SuspenseWrapper><TeamLeaderRosterPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'teams/:sport/:teamId/matches/:matchId/roster',
+        element: (
+          <ProtectedRoute allowedRoles={['TeamLeader', 'ClubAdmin', 'SystemAdmin']} loginPath="/team-leader/login">
+            <SuspenseWrapper><TeamLeaderMatchRosterPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      }
+    ]
   },
   // Protected admin routes
   {

@@ -32,6 +32,42 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         }
 
         /// <summary>
+        /// Gets all football team manager rows for a person
+        /// </summary>
+        /// <param name="personId">The person ID</param>
+        /// <returns>All team manager rows for the person</returns>
+        public async Task<IEnumerable<FootballTeamManager>> GetAllByPersonIdAsync(Guid personId)
+        {
+            return await _entities
+                .Where(tm => tm.PersonId == personId)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Checks whether a person is an active manager of a specific team
+        /// </summary>
+        /// <param name="personId">The person ID</param>
+        /// <param name="teamId">The team ID</param>
+        /// <returns>True if an active manager row exists for the person and team</returns>
+        public async Task<bool> IsActiveManagerOfTeamAsync(Guid personId, Guid teamId)
+        {
+            return await _entities
+                .AnyAsync(tm => tm.PersonId == personId && tm.TeamId == teamId && tm.IsActive);
+        }
+
+        /// <summary>
+        /// Gets a football team manager row for a specific person and team
+        /// </summary>
+        /// <param name="personId">The person ID</param>
+        /// <param name="teamId">The team ID</param>
+        /// <returns>The team manager row if found, null otherwise</returns>
+        public async Task<FootballTeamManager?> GetByPersonAndTeamAsync(Guid personId, Guid teamId)
+        {
+            return await _entities
+                .FirstOrDefaultAsync(tm => tm.PersonId == personId && tm.TeamId == teamId);
+        }
+
+        /// <summary>
         /// Gets paginated football team managers with filtering support
         /// </summary>
         /// <param name="page">Page number (1-based)</param>

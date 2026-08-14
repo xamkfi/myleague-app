@@ -1,3 +1,4 @@
+using Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -75,7 +76,7 @@ public class ClubsController : BaseApiController
     /// <param name="request">Club creation request</param>
     /// <returns>Created club details</returns>
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status500InternalServerError)]
@@ -113,7 +114,7 @@ public class ClubsController : BaseApiController
     /// <param name="file">The image file to upload</param>
     /// <returns>The URL of the uploaded image</returns>
     [HttpPost("upload-image")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
@@ -176,7 +177,7 @@ public class ClubsController : BaseApiController
     /// <param name="request">Club update request</param>
     /// <returns>Updated club details</returns>
     [HttpPut("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status404NotFound)]
@@ -207,7 +208,7 @@ public class ClubsController : BaseApiController
     /// <param name="id">Club ID</param>
     /// <returns>Success confirmation</returns>
     [HttpDelete("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -228,7 +229,7 @@ public class ClubsController : BaseApiController
     /// <param name="logoUrl">New logo URL</param>
     /// <returns>Updated club details</returns>
     [HttpPatch("{id:guid}/logo")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<ClubDto>), StatusCodes.Status404NotFound)]

@@ -1,0 +1,96 @@
+@use '../TeamLeaderRosterPage/TeamLeaderRosterPage.scss';
+
+.team-leader-success {
+  padding: 14px 18px;
+  background: #e7f8ec;
+  border: 1px solid #a8dcb9;
+  border-radius: 8px;
+  color: #1d7a3d;
+  margin-bottom: 18px;
+}
+
+.team-leader-match-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  .team-leader-match-teams {
+    font-weight: 700;
+    color: #1c2233;
+  }
+
+  .team-leader-match-meta {
+    color: #6e6d75;
+    font-size: 0.88rem;
+  }
+}
+
+.team-leader-goalie-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .team-leader-goalie-label {
+    font-weight: 600;
+    color: #1c2233;
+    font-size: 0.9rem;
+  }
+}
+
+.team-leader-position-select {
+  padding: 6px 8px;
+  border: 1px solid #d5d8e0;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  background: #fff;
+  min-width: 140px;
+
+  &:disabled {
+    opacity: 0.55;
+  }
+}
+
+.team-leader-select-col {
+  width: 90px;
+}
+
+.team-leader-jersey-badge {
+  display: inline-block;
+  min-width: 30px;
+  margin-right: 8px;
+  font-weight: 700;
+  color: #2258b4;
+}
+
+.team-leader-roster-row--goalie td {
+  background: #f2f7ff;
+}
+
+.team-leader-goalie-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #2258b4;
+  background: #e7f0fd;
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.team-leader-save-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+
+  .team-leader-selected-count {
+    color: #6e6d75;
+    font-size: 0.88rem;
+  }
+}

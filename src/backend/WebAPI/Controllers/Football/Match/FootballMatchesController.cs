@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Application.Features.Football.Matches.Commands;
 using Application.Features.Football.Matches.DTOs;
@@ -101,7 +102,7 @@ public class FootballMatchesController : BaseApiController
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status201Created)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> CreateMatch(
         [FromBody] CreateFootballMatchRequest request,
@@ -148,7 +149,7 @@ public class FootballMatchesController : BaseApiController
     }
 
     [HttpPut]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> UpdateMatch(
         [FromBody] UpdateFootballMatchRequest request,
@@ -169,7 +170,7 @@ public class FootballMatchesController : BaseApiController
     }
 
     [HttpDelete("{matchId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse>> DeleteMatch(Guid matchId, CancellationToken cancellationToken)
     {

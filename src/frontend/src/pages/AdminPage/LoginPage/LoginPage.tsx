@@ -8,10 +8,16 @@ import './LoginPage.scss';
 
 type LoginStep = 'email' | 'code';
 
-function LoginPage() {
+interface LoginPageProps {
+  /** Which area this login belongs to. Controls the redirect target and labels. */
+  variant?: 'admin' | 'teamLeader';
+}
+
+function LoginPage({ variant = 'admin' }: LoginPageProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
+  const isTeamLeader = variant === 'teamLeader';
 
   const [step, setStep] = useState<LoginStep>('email');
   const [email, setEmail] = useState('');
@@ -62,7 +68,7 @@ function LoginPage() {
     try {
       const tokens = await authService.verifyLoginCode(email.trim(), code.trim());
       await login(tokens);
-      navigate('/admin', { replace: true });
+      navigate(isTeamLeader ? '/team-leader' : '/admin', { replace: true });
     } catch (err: unknown) {
       setError(parseApiError(err));
     } finally {
@@ -85,12 +91,20 @@ function LoginPage() {
             <h1 className="login-brand">MAHL</h1>
             <LanguageToggle />
           </div>
-          <p className="login-brand-sub">{t('admin.view', 'Admin view')}</p>
+          <p className="login-brand-sub">
+            {isTeamLeader
+              ? t('teamLeader.view', 'Team leader view')
+              : t('admin.view', 'Admin view')}
+          </p>
         </div>
 
         <div className="login-card">
           <div className="login-header">
-            <h2 className="login-title">{t('auth.loginTitle', 'Admin Login')}</h2>
+            <h2 className="login-title">
+              {isTeamLeader
+                ? t('auth.teamLeaderLoginTitle', 'Team Leader Login')
+                : t('auth.loginTitle', 'Admin Login')}
+            </h2>
             <p className="login-subtitle">
               {step === 'email'
                 ? t('auth.loginSubtitle', 'Enter your email to receive a login code.')

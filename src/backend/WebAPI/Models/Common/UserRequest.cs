@@ -26,6 +26,29 @@ public record CreateUserRequest
     /// Gets the role of the user (defaults to ClubAdmin)
     /// </summary>
     public UserRole Role { get; init; } = UserRole.ClubAdmin;
+
+    /// <summary>
+    /// Teams the invited team leader should manage. Only used when Role is TeamLeader.
+    /// </summary>
+    public List<TeamAssignmentRequest>? TeamAssignments { get; init; }
+}
+
+/// <summary>
+/// A single team assignment for a team leader invitation.
+/// </summary>
+public record TeamAssignmentRequest
+{
+    /// <summary>
+    /// The sport of the team: "floorball" or "football"
+    /// </summary>
+    [Required(ErrorMessage = "Sport is required")]
+    public string Sport { get; init; } = string.Empty;
+
+    /// <summary>
+    /// The team ID
+    /// </summary>
+    [Required(ErrorMessage = "Team ID is required")]
+    public Guid TeamId { get; init; }
 }
 
 /// <summary>

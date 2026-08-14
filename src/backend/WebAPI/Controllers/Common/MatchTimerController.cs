@@ -1,3 +1,4 @@
+using Domain.Constants;
 using System;
 using System.Threading.Tasks;
 using Application.Features.Common.MatchTimer.Services;
@@ -12,7 +13,7 @@ namespace WebAPI.Controllers.Common
     /// <summary>
     /// Controller for managing match timers with RESTful routes
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [Route("api/matches/{matchId:guid}/timer")]
     public class MatchTimerController : BaseApiController
     {

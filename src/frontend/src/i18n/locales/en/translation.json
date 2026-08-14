@@ -354,13 +354,24 @@
       "addUser": "Add User",
       "noData": "No system users found yet.",
       "noSearchResults": "No users match your filters.",
+      "invitationResent": "Invitation email resent to {{email}}.",
+      "confirmRevokeTeamLeader": "Revoke team leader access for {{email}}? Their account will be deactivated and they will no longer be able to sign in.",
       "table": {
         "person": "Person",
         "email": "Email",
         "role": "Role",
         "status": "Status",
         "lastLogin": "Last Login",
-        "never": "Never"
+        "never": "Never",
+        "verified": "Verified",
+        "pending": "Pending",
+        "emailPending": "Email unverified"
+      },
+      "actions": {
+        "menu": "User actions menu",
+        "resendInvitation": "Resend Invitation",
+        "sendingInvitation": "Sending...",
+        "revokeTeamLeader": "Revoke team leader access"
       },
       "form": {
         "createTitle": "Add User",
@@ -369,18 +380,28 @@
         "emailPlaceholder": "user@example.com",
         "emailRequired": "Email is required",
         "emailInvalid": "Invalid email format",
+        "emailVerified": "Email Verified",
         "selectPerson": "Person",
         "searchPerson": "Search persons...",
         "noPerson": "No available persons found",
         "personRequired": "Person is required",
         "role": "Role",
         "hasAccount": "Already has an account",
+        "status": "Status",
+        "statusCreateInfo": "New users are inactive until they verify their email.",
+        "teams": "Teams to manage",
+        "teamFilterPlaceholder": "Filter teams...",
+        "floorballTeams": "Floorball teams",
+        "footballTeams": "Football teams",
+        "noTeamsFound": "No teams found",
+        "teamsRequired": "Select at least one team for the team leader",
         "save": "Save",
         "saving": "Saving..."
       },
       "roles": {
         "systemAdmin": "System Admin",
-        "clubAdmin": "Club Admin"
+        "clubAdmin": "Club Admin",
+        "teamLeader": "Team Leader"
       },
       "confirmDelete": {
         "title": "Delete user",
@@ -391,7 +412,9 @@
         "load": "Failed to load users. Please try again.",
         "create": "Failed to create user. Please try again.",
         "update": "Failed to update user. Please try again.",
-        "delete": "Failed to delete user. Please try again."
+        "delete": "Failed to delete user. Please try again.",
+        "resend": "Failed to resend invitation. Please try again.",
+        "revoke": "Failed to revoke team leader access. Please try again."
       },
       "success": {
         "create": "User created successfully.",
@@ -1840,7 +1863,52 @@
     "back": "Back",
     "codeSent": "A login code has been sent to your email.",
     "unexpectedError": "An unexpected error occurred.",
-    "logout": "Log out"
+    "logout": "Log out",
+    "teamLeaderLoginTitle": "Team Leader Login"
+  },
+  "teamLeader": {
+    "view": "Team leader view",
+    "logout": "Log out",
+    "myTeams": "My teams",
+    "loadError": "Failed to load your teams",
+    "noTeams": "You are not currently assigned as a team leader for any team. Please contact an administrator.",
+    "sportFloorball": "Floorball",
+    "sportFootball": "Football",
+    "editRoster": "Roster & jersey numbers",
+    "upcomingMatches": "Upcoming matches",
+    "noUpcomingMatches": "No upcoming matches.",
+    "rosterAnnounced": "Roster announced",
+    "announceRoster": "Announce roster",
+    "editAnnouncedRoster": "Edit roster",
+    "announceRosterTitle": "Announce match roster",
+    "backToTeams": "Back to my teams",
+    "loadMatchError": "Failed to load the match",
+    "rosterSaved": "The match roster has been announced. It is now visible in the match view.",
+    "rosterSaveError": "Failed to announce the match roster",
+    "matchNotScheduled": "The roster can no longer be changed because the match is not in the scheduled state.",
+    "goalie": "Goalie",
+    "noGoalie": "No goalie selected",
+    "floorballRosterHint": "Select the field players for this match and set their role. The goalie is selected separately above.",
+    "footballRosterHint": "Select the players for this match, set their position, and mark the starting lineup.",
+    "inRoster": "In roster",
+    "playerName": "Player",
+    "matchPosition": "Match position",
+    "starting": "Starting",
+    "emptyRoster": "This team has no players on its roster yet.",
+    "selectedPlayers": "Selected players",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "updateRoster": "Update announced roster",
+    "rosterTitle": "Roster",
+    "loadRosterError": "Failed to load the roster",
+    "rosterHint": "You can change the jersey numbers of your players. Each number can only be used once per team.",
+    "jerseyUpdateError": "Failed to update the jersey number",
+    "jerseyNumber": "Jersey #",
+    "position": "Position",
+    "status": "Status",
+    "noNumber": "—",
+    "active": "Active",
+    "inactive": "Inactive"
   },
   "football": {
     "management": {
