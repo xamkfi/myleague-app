@@ -250,6 +250,194 @@ public static class HockeyTeamsSeeder
         }
     }
 
+    /// <summary>
+    /// Seeds 1–2 team lines and optional head coach staff (idempotent by line name / PersonId).
+    /// </summary>
+    public static async Task SeedLinesAndStaffAsync(
+        HttpClient http,
+        JsonSerializerOptions jsonOptions,
+        List<HockeyTeamSeed> teamSeeds,
+        List<HockeyTeamDto> teams,
+        Dictionary<string, Guid> emailToPersonId)
+    {
+        foreach (HockeyTeamSeed teamSeed in teamSeeds)
+        {
+            HockeyTeamDto? listed = teams.FirstOrDefault(t =>
+                string.Equals(t.Name, teamSeed.Name, StringComparison.OrdinalIgnoreCase));
+            if (listed == null)
+            {
+                continue;
+            }
+
+            HockeyTeamDto? team = await GetTeamByIdAsync(http, jsonOptions, listed.Id) ?? listed;
+            await EnsureLinesAsync(http, jsonOptions, team);
+            await EnsureStaffAsync(http, jsonOptions, team, teamSeed, emailToPersonId);
+        }
+    }
+
+    private static async Task EnsureLinesAsync(HttpClient http, JsonSerializerOptions jsonOptions, HockeyTeamDto team)
+    {
+        List<HockeyTeamPlayerDto> active = team.Roster.Where(p => p.IsActive).ToList();
+        List<HockeyTeamPlayerDto> forwards = active
+            .Where(p => IsForward(p.Position))
+            .Take(3)
+            .ToList();
+        List<HockeyTeamPlayerDto> defense = active
+            .Where(p => string.Equals(p.Position, "Defenseman", StringComparison.OrdinalIgnoreCase))
+            .Take(2)
+            .ToList();
+
+        if (forwards.Count >= 3 && !team.Lines.Any(l => string.Equals(l.Name, "Line 1", StringComparison.OrdinalIgnoreCase)))
+        {
+            HockeyLineDto? line1 = await CreateLineAsync(http, jsonOptions, team.Id, "Line 1", 1, HockeyLineType.ForwardLine);
+            if (line1 != null)
+            {
+                await AddLinePlayerAsync(http, team.Id, line1.Id, forwards[0].Id, HockeyLineSlot.Center, 0);
+                await AddLinePlayerAsync(http, team.Id, line1.Id, forwards[1].Id, HockeyLineSlot.LeftWing, 1);
+                await AddLinePlayerAsync(http, team.Id, line1.Id, forwards[2].Id, HockeyLineSlot.RightWing, 2);
+                Console.WriteLine("Created Line 1 for " + team.Name);
+            }
+        }
+        else if (team.Lines.Any(l => string.Equals(l.Name, "Line 1", StringComparison.OrdinalIgnoreCase)))
+        {
+            Console.WriteLine("Line 1 exists on " + team.Name + ", skipping");
+        }
+
+        if (defense.Count >= 2 && !team.Lines.Any(l => string.Equals(l.Name, "Pair 1", StringComparison.OrdinalIgnoreCase)))
+        {
+            HockeyLineDto? pair = await CreateLineAsync(http, jsonOptions, team.Id, "Pair 1", 2, HockeyLineType.DefensePair);
+            if (pair != null)
+            {
+                await AddLinePlayerAsync(http, team.Id, pair.Id, defense[0].Id, HockeyLineSlot.LeftDefense, 0);
+                await AddLinePlayerAsync(http, team.Id, pair.Id, defense[1].Id, HockeyLineSlot.RightDefense, 1);
+                Console.WriteLine("Created Pair 1 for " + team.Name);
+            }
+        }
+        else if (team.Lines.Any(l => string.Equals(l.Name, "Pair 1", StringComparison.OrdinalIgnoreCase)))
+        {
+            Console.WriteLine("Pair 1 exists on " + team.Name + ", skipping");
+        }
+    }
+
+    private static async Task EnsureStaffAsync(
+        HttpClient http,
+        JsonSerializerOptions jsonOptions,
+        HockeyTeamDto team,
+        HockeyTeamSeed teamSeed,
+        Dictionary<string, Guid> emailToPersonId)
+    {
+        if (string.IsNullOrWhiteSpace(teamSeed.StaffPersonEmail))
+        {
+            return;
+        }
+
+        if (!emailToPersonId.TryGetValue(teamSeed.StaffPersonEmail, out Guid personId))
+        {
+            HttpResponseMessage personResp = await http.GetAsync(
+                "api/persons/by-email?email=" + Uri.EscapeDataString(teamSeed.StaffPersonEmail));
+            if (!personResp.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Warning: staff person not found for " + teamSeed.StaffPersonEmail);
+                return;
+            }
+
+            ApiResponse<PersonDto>? personApi = await personResp.Content.ReadFromJsonAsync<ApiResponse<PersonDto>>(jsonOptions);
+            if (personApi?.Data == null)
+            {
+                return;
+            }
+
+            personId = personApi.Data.Id;
+            emailToPersonId[teamSeed.StaffPersonEmail] = personId;
+        }
+
+        if (team.StaffMembers.Any(s => s.PersonId == personId && s.IsActive))
+        {
+            Console.WriteLine("Staff already on " + team.Name + " for person " + personId + ", skipping");
+            return;
+        }
+
+        AddHockeyTeamStaffRequest request = new AddHockeyTeamStaffRequest
+        {
+            PersonId = personId,
+            Role = HockeyTeamStaffRole.HeadCoach
+        };
+        HttpResponseMessage response = await http.PostAsJsonAsync("api/HockeyTeam/" + team.Id + "/staff", request);
+        if (!response.IsSuccessStatusCode)
+        {
+            string body = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("Warning: add staff failed for " + team.Name + ": " + Truncate(body));
+            return;
+        }
+
+        Console.WriteLine("Added HeadCoach staff to " + team.Name);
+    }
+
+    private static async Task<HockeyLineDto?> CreateLineAsync(
+        HttpClient http,
+        JsonSerializerOptions jsonOptions,
+        Guid teamId,
+        string name,
+        int lineNumber,
+        HockeyLineType lineType)
+    {
+        AddHockeyLineRequest request = new AddHockeyLineRequest
+        {
+            Name = name,
+            LineNumber = lineNumber,
+            LineType = lineType
+        };
+        HttpResponseMessage response = await http.PostAsJsonAsync("api/HockeyTeam/" + teamId + "/lines", request);
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Warning: create line failed: " + await response.Content.ReadAsStringAsync());
+            return null;
+        }
+
+        ApiResponse<HockeyTeamDto>? api = await response.Content.ReadFromJsonAsync<ApiResponse<HockeyTeamDto>>(jsonOptions);
+        return api?.Data?.Lines.FirstOrDefault(l => string.Equals(l.Name, name, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static async Task AddLinePlayerAsync(
+        HttpClient http,
+        Guid teamId,
+        Guid lineId,
+        Guid teamPlayerId,
+        HockeyLineSlot slot,
+        int order)
+    {
+        AddPlayerToHockeyLineRequest request = new AddPlayerToHockeyLineRequest
+        {
+            TeamPlayerId = teamPlayerId,
+            Slot = slot,
+            Order = order
+        };
+        HttpResponseMessage response = await http.PostAsJsonAsync(
+            "api/HockeyTeam/" + teamId + "/lines/" + lineId + "/players",
+            request);
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Warning: add line player failed: " + await response.Content.ReadAsStringAsync());
+        }
+    }
+
+    private static async Task<HockeyTeamDto?> GetTeamByIdAsync(HttpClient http, JsonSerializerOptions jsonOptions, Guid teamId)
+    {
+        HttpResponseMessage resp = await http.GetAsync("api/HockeyTeam/" + teamId);
+        if (!resp.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        ApiResponse<HockeyTeamDto>? api = await resp.Content.ReadFromJsonAsync<ApiResponse<HockeyTeamDto>>(jsonOptions);
+        return api?.Data;
+    }
+
+    private static bool IsForward(string position) =>
+        string.Equals(position, "Center", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(position, "LeftWing", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(position, "RightWing", StringComparison.OrdinalIgnoreCase);
+
     private static async Task<Guid> ResolveOrCreatePlayerIdAsync(
         HttpClient http,
         JsonSerializerOptions jsonOptions,

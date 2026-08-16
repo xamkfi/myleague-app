@@ -21,5 +21,8 @@ public class HockeyLineConfiguration : BaseEntityConfiguration<HockeyLine>
             .WithOne(lp => lp.Line)
             .HasForeignKey(lp => lp.LineId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(l => l.Players)
+            .HasField("_players")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

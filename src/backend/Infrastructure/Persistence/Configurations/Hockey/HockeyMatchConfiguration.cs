@@ -45,16 +45,29 @@ public class HockeyMatchConfiguration : BaseEntityConfiguration<HockeyMatch>
             .WithOne(t => t.Match)
             .HasForeignKey(t => t.MatchId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(m => m.MatchTeams)
+            .HasField("_matchTeams")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasMany(m => m.Officials)
             .WithOne(o => o.Match)
             .HasForeignKey(o => o.MatchId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(m => m.Officials)
+            .HasField("_officials")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasMany(m => m.PeriodScores)
             .WithOne(p => p.Match)
             .HasForeignKey(p => p.MatchId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(m => m.PeriodScores)
+            .HasField("_periodScores")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Navigation(m => m.Events)
+            .HasField("_events")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasOne(m => m.CompetitionDivision)
             .WithMany()

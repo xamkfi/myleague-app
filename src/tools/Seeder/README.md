@@ -27,9 +27,11 @@ The seeder creates entities in the following order. Each phase corresponds to a 
 
 #### Hockey pipeline (`Seeders/Hockey/`)
 
-Use `SportType: "Icehockey"` for Common Divisions (not `"Hockey"`). Officials/referees are **not** seeded — there is no Hockey Official CRUD API.
+Use `SportType: "Icehockey"` for Common Divisions (not `"Hockey"`).
 
-Hockey match creation is two-step (`POST api/HockeyMatch` then `PUT …/teams`). After finished season/tournament matches, the seeder calls `POST api/HockeyStatistics/matches/{id}/recalculate` and once per competition `…/competitions/{id}/recalculate`.
+Hockey match creation is two-step (`POST api/HockeyMatch` then `PUT …/teams`). Finished season/tournament matches run a **richer simulation**: confirm dressed roster (≥15 + goalie under default competition roster rules), attach an official, set active goalies, optional match line / on-ice, then faceoff / shot / goal / penalty / period scores → finish → stats recalculate.
+
+Team seed also creates **Line 1** + **Pair 1** and a **HeadCoach** staff member per Liiga team (`StaffPersons` + `StaffPersonEmail`). Officials come from the first four `RefereePersons` via `POST api/HockeyOfficial`.
 
 ```bash
 dotnet run --project src/tools/Seeder/Seeder.csproj -- --scope=hockey

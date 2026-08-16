@@ -174,6 +174,8 @@ public class HockeyTeamSeed
 	public string PrimaryJerseyColor { get; init; } = "Blue";
 	public string? SecondaryJerseyColor { get; init; } = "Orange";
 	public TeamCategory Category { get; init; } = TeamCategory.Adult;
+	/// <summary>Optional head coach Person email from StaffPersons.</summary>
+	public string? StaffPersonEmail { get; init; }
 	public List<HockeyTeamPlayerByEmailSeed> Players { get; init; } = new List<HockeyTeamPlayerByEmailSeed>();
 }
 

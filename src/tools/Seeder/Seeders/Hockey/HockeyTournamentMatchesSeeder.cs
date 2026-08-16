@@ -21,7 +21,8 @@ public static class HockeyTournamentMatchesSeeder
         JsonSerializerOptions jsonOptions,
         List<HockeyTournamentDto> tournaments,
         List<HockeyTeamDto> teams,
-        IReadOnlyList<HockeyTournamentSeed>? tournamentSeeds = null)
+        IReadOnlyList<HockeyTournamentSeed>? tournamentSeeds = null,
+        IReadOnlyList<Application.Features.Hockey.Officials.DTOs.HockeyOfficialDto>? officials = null)
     {
         int createdCount = 0;
         if (tournaments.Count == 0)
@@ -118,7 +119,8 @@ public static class HockeyTournamentMatchesSeeder
                 {
                     try
                     {
-                        await HockeyMatchSimulation.SimulateCompletedAsync(http, jsonOptions, matchDto, rosterCache);
+                        await HockeyMatchSimulation.SimulateCompletedAsync(
+                            http, jsonOptions, matchDto, rosterCache, officials);
                         competitionsNeedingRecalc.Add(tournament.Id);
                     }
                     catch (Exception ex)

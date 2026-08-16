@@ -21,11 +21,17 @@ public class HockeyOnIceStateConfiguration : BaseEntityConfiguration<HockeyOnIce
             .WithOne(p => p.OnIceState)
             .HasForeignKey(p => p.OnIceStateId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(s => s.PlayersOnIce)
+            .HasField("_playersOnIce")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasMany(s => s.ChangeLog)
             .WithOne(c => c.OnIceState)
             .HasForeignKey(c => c.OnIceStateId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(s => s.ChangeLog)
+            .HasField("_changeLog")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasIndex(s => s.MatchTeamId)
             .IsUnique()

@@ -23,6 +23,9 @@ public class HockeyMatchLineConfiguration : BaseEntityConfiguration<HockeyMatchL
             .WithOne(p => p.MatchLine)
             .HasForeignKey(p => p.MatchLineId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(l => l.Players)
+            .HasField("_players")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasIndex(l => l.MatchTeamId)
             .HasDatabaseName("IX_HockeyMatchLines_MatchTeamId");

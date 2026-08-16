@@ -27,4 +27,10 @@ public class HockeyPlayerRepository : IHockeyPlayerRepository
         return await _dbContext.HockeyPlayers
             .FirstOrDefaultAsync(p => p.Id == id);
     }
+
+    public async Task<HockeyPlayer?> GetByPersonIdAsync(Guid personId)
+    {
+        return await _dbContext.HockeyPlayers
+            .FirstOrDefaultAsync(p => p.PersonId == personId);
+    }
 }

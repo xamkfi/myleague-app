@@ -22,6 +22,9 @@ public class HockeyMatchPlayerSelectionConfiguration : BaseEntityConfiguration<H
             .WithOne(p => p.MatchPlayerSelection)
             .HasForeignKey(p => p.MatchPlayerSelectionId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(s => s.ActivePlayers)
+            .HasField("_activePlayers")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasIndex(s => s.MatchTeamId)
             .IsUnique()

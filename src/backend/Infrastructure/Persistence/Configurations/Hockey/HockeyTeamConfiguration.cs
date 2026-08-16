@@ -31,15 +31,24 @@ public class HockeyTeamConfiguration : IEntityTypeConfiguration<HockeyTeam>
             .WithOne(tp => tp.Team)
             .HasForeignKey(tp => tp.TeamId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(t => t.Roster)
+            .HasField("_roster")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasMany(t => t.Lines)
             .WithOne(l => l.Team)
             .HasForeignKey(l => l.TeamId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(t => t.Lines)
+            .HasField("_lines")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasMany(t => t.StaffMembers)
             .WithOne(s => s.Team)
             .HasForeignKey(s => s.TeamId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(t => t.StaffMembers)
+            .HasField("_staff")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

@@ -43,6 +43,16 @@ public class CreateHockeyPlayerHandler : IRequestHandler<CreateHockeyPlayerComma
                 return Result<HockeyPlayerDto>.NotFound("Person", request.PersonId);
             }
 
+            HockeyPlayer? existing = await _playerRepository.GetByPersonIdAsync(request.PersonId);
+            if (existing is not null)
+            {
+                _logger.LogInformation(
+                    "Hockey player already exists for person {PersonId} ({PlayerId}), returning existing",
+                    request.PersonId,
+                    existing.Id);
+                return Result<HockeyPlayerDto>.Success(HockeyPlayerMapper.ToDto(existing));
+            }
+
             HockeyPlayer player = new(
                 request.PersonId,
                 request.PrimaryPosition,

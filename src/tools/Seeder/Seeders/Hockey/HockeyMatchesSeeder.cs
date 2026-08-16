@@ -16,7 +16,8 @@ public static class HockeyMatchesSeeder
         JsonSerializerOptions jsonOptions,
         List<HockeyMatchSeed> matches,
         List<HockeySeasonDto> seasons,
-        List<HockeyTeamDto> teams)
+        List<HockeyTeamDto> teams,
+        IReadOnlyList<Application.Features.Hockey.Officials.DTOs.HockeyOfficialDto>? officials = null)
     {
         List<HockeyMatchDto> created = new List<HockeyMatchDto>();
         HashSet<Guid> competitionsNeedingRecalc = new HashSet<Guid>();
@@ -31,22 +32,42 @@ public static class HockeyMatchesSeeder
             HockeyCompetitionDivisionDto? division = season.Divisions.FirstOrDefault(d => d.IsActive);
             Guid? competitionDivisionId = division?.Id;
 
-            List<HockeyMatchDto> existingMatches = await LoadCompetitionMatchesAsync(http, jsonOptions, season.Id);
-            HockeyMatchDto? existing = existingMatches.FirstOrDefault(m =>
-                m.HomeTeamId == homeTeamId && m.AwayTeamId == awayTeamId);
-            if (existing != null)
-            {
-                created.Add(existing);
-                Console.WriteLine("Hockey match exists, skipping: " + match.HomeTeamName + " vs " + match.AwayTeamName + " (" + existing.Id + ")");
-                continue;
-            }
-
             if (!DateTime.TryParse(match.ScheduledDateTime, out DateTime scheduled))
             {
                 throw new InvalidOperationException("Invalid ScheduledDateTime for hockey match " + match.HomeTeamName + " vs " + match.AwayTeamName);
             }
 
             scheduled = DateTime.SpecifyKind(scheduled, DateTimeKind.Utc);
+
+            List<HockeyMatchDto> existingMatches = await LoadCompetitionMatchesAsync(http, jsonOptions, season.Id);
+            HockeyMatchDto? existing = existingMatches.FirstOrDefault(m =>
+                m.HomeTeamId == homeTeamId && m.AwayTeamId == awayTeamId);
+            if (existing != null)
+            {
+                created.Add(existing);
+                Console.WriteLine("Hockey match exists, skipping create: " + match.HomeTeamName + " vs " + match.AwayTeamName + " (" + existing.Id + ")");
+
+                if (match.SimulateCompleted || scheduled <= DateTime.UtcNow.AddMinutes(-5))
+                {
+                    try
+                    {
+                        HockeyMatchDto simulated = await HockeyMatchSimulation.SimulateCompletedAsync(
+                            http, jsonOptions, existing, rosterCache, officials);
+                        competitionsNeedingRecalc.Add(season.Id);
+                        if (!string.Equals(existing.Status, "Finished", StringComparison.OrdinalIgnoreCase) ||
+                            simulated.Officials.Count > existing.Officials.Count)
+                        {
+                            Console.WriteLine("Simulated / refreshed hockey match " + simulated.Id);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Warning: failed to simulate existing hockey match " + existing.Id + ": " + ex.Message);
+                    }
+                }
+
+                continue;
+            }
 
             CreateHockeyMatchRequest createReq = new CreateHockeyMatchRequest
             {
@@ -89,7 +110,8 @@ public static class HockeyMatchesSeeder
             {
                 try
                 {
-                    matchDto = await HockeyMatchSimulation.SimulateCompletedAsync(http, jsonOptions, matchDto, rosterCache);
+                    matchDto = await HockeyMatchSimulation.SimulateCompletedAsync(
+                        http, jsonOptions, matchDto, rosterCache, officials);
                     competitionsNeedingRecalc.Add(season.Id);
                     Console.WriteLine("Simulated finished hockey match " + matchDto.Id);
                 }

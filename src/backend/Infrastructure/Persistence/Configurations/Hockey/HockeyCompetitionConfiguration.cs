@@ -38,22 +38,34 @@ public class HockeyCompetitionConfiguration : IEntityTypeConfiguration<HockeyCom
             .WithOne(t => t.Competition)
             .HasForeignKey(t => t.CompetitionId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(c => c.Teams)
+            .HasField("_teams")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasMany(c => c.Matches)
             .WithOne(m => m.Competition)
             .HasForeignKey(m => m.CompetitionId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(c => c.Matches)
+            .HasField("_matches")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasMany(c => c.Divisions)
             .WithOne(d => d.Competition)
             .HasForeignKey(d => d.CompetitionId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(c => c.Divisions)
+            .HasField("_divisions")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasMany(c => c.PlayoffSeries)
             .WithOne(s => s.Competition)
             .HasForeignKey(s => s.CompetitionId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(c => c.PlayoffSeries)
+            .HasField("_playoffSeries")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         ValueConverter<List<HockeyPlayoffScheduleSlot>, string> playoffScheduleConverter = new(
             slots => JsonSerializer.Serialize(slots ?? new List<HockeyPlayoffScheduleSlot>(), PlayoffSlotJsonOptions),

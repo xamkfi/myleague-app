@@ -10,4 +10,6 @@ public interface IHockeyPlayerRepository
     Task AddAsync(HockeyPlayer player);
 
     Task<HockeyPlayer?> GetByIdAsync(Guid id);
+
+    Task<HockeyPlayer?> GetByPersonIdAsync(Guid personId);
 }

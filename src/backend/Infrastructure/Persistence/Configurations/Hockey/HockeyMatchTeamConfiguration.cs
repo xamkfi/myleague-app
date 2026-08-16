@@ -36,6 +36,9 @@ public class HockeyMatchTeamConfiguration : BaseEntityConfiguration<HockeyMatchT
             .WithOne(l => l.MatchTeam)
             .HasForeignKey(l => l.MatchTeamId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(t => t.Lines)
+            .HasField("_lines")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasOne(t => t.OnIceState)
             .WithOne(s => s.MatchTeam)
