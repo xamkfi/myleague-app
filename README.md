@@ -35,6 +35,7 @@ MyLeague is a comprehensive league management system designed for organizing and
 
 MyLeague follows **Clean Architecture** principles with **Domain-Driven Design (DDD)**, **Event Sourcing**, and **CQRS** patterns:
 
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Presentation Layer                       │
