@@ -5,6 +5,7 @@ using Application.Features.Hockey.Matches.Mappings;
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
 using Domain.Repositories.Hockey;
+using Domain.ValueObjects.Hockey.Rules;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -37,6 +38,9 @@ public class CreateHockeyMatchHandler : IRequestHandler<CreateHockeyMatchCommand
         try
         {
             HockeyCompetition? competition = null;
+            HockeyMatchRules? matchRules = null;
+            bool usesLineManagement = false;
+
             if (request.CompetitionId is Guid competitionId)
             {
                 competition = await _competitionRepository.GetByIdAsync(competitionId);
@@ -50,16 +54,22 @@ public class CreateHockeyMatchHandler : IRequestHandler<CreateHockeyMatchCommand
                     return Result<HockeyMatchDto>.Failure(
                         $"Cannot create a match for a competition in status {competition.Status}.");
                 }
+
+                HockeyCompetitionRules effective = competition.GetEffectiveRules();
+                matchRules = effective.MatchRules;
+                usesLineManagement = effective.RosterRules.LineManagementEnabled;
             }
 
             HockeyMatch match = new(
                 request.ScheduledStartTime,
                 request.MatchType,
+                matchRules: matchRules,
                 competitionId: request.CompetitionId,
                 competitionDivisionId: request.CompetitionDivisionId,
                 tournamentGroupId: request.TournamentGroupId,
                 playoffSeriesId: request.PlayoffSeriesId,
-                venue: request.Venue);
+                venue: request.Venue,
+                usesLineManagement: usesLineManagement);
 
             if (competition is not null)
             {

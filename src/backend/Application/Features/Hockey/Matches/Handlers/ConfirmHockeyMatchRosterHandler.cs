@@ -2,9 +2,13 @@ using Application.Common;
 using Application.Features.Hockey.Matches.Commands;
 using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Matches.Mappings;
+using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Teams;
+using Domain.Enums.Hockey.Teams;
 using Domain.Repositories.Hockey;
+using Domain.Services.Hockey;
+using Domain.ValueObjects.Hockey.Rules;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -18,17 +22,21 @@ public class ConfirmHockeyMatchRosterHandler
 {
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyTeamRepository _teamRepository;
+    private readonly IHockeyCompetitionRepository _competitionRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
     private readonly ILogger<ConfirmHockeyMatchRosterHandler> _logger;
+    private readonly HockeyRosterValidationService _rosterValidation = new();
 
     public ConfirmHockeyMatchRosterHandler(
         IHockeyMatchRepository matchRepository,
         IHockeyTeamRepository teamRepository,
+        IHockeyCompetitionRepository competitionRepository,
         IHockeyUnitOfWork unitOfWork,
         ILogger<ConfirmHockeyMatchRosterHandler> logger)
     {
         _matchRepository = matchRepository;
         _teamRepository = teamRepository;
+        _competitionRepository = competitionRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -57,6 +65,18 @@ public class ConfirmHockeyMatchRosterHandler
                 return Result<HockeyMatchDto>.NotFound("HockeyTeam", matchTeam.TeamId);
             }
 
+            HockeyRosterRules rosterRules = HockeyRosterRules.Default();
+            if (match.CompetitionId is Guid competitionId)
+            {
+                HockeyCompetition? competition = await _competitionRepository.GetByIdAsync(competitionId);
+                if (competition is null)
+                {
+                    return Result<HockeyMatchDto>.NotFound("HockeyCompetition", competitionId);
+                }
+
+                rosterRules = competition.GetEffectiveRules().RosterRules;
+            }
+
             HockeyMatchPlayerSelection selection = matchTeam.CreateOrReplacePlayerSelection(
                 request.Source,
                 request.ConfirmedByUserId);
@@ -69,7 +89,16 @@ public class ConfirmHockeyMatchRosterHandler
                     return Result<HockeyMatchDto>.NotFound("HockeyTeamPlayer", teamPlayerId);
                 }
 
-                selection.AddActivePlayer(teamPlayer);
+                bool isGoalie = teamPlayer.Position == HockeyPosition.Goalie;
+                selection.AddActivePlayer(teamPlayer, isGoalie: isGoalie);
+            }
+
+            HockeyDomainValidationResult validation = _rosterValidation.ValidateMatchSelection(selection, rosterRules);
+            if (!validation.IsValid)
+            {
+                return Result<HockeyMatchDto>.Failure(
+                    string.Join(" ", validation.Errors),
+                    validation.Errors);
             }
 
             selection.Confirm(request.ConfirmedByUserId);

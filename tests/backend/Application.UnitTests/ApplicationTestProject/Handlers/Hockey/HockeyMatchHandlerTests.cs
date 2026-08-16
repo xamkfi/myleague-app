@@ -4,13 +4,16 @@ using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Matches.Handlers;
 using Application.Features.Hockey.Matches.Queries;
 using Domain.Entities.Common;
+using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Matches.Events;
 using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Common;
+using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Teams;
 using Domain.Enums.Hockey.Matches;
 using Domain.Repositories.Hockey;
+using Domain.ValueObjects.Hockey.Rules;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -28,6 +31,66 @@ public class HockeyMatchHandlerTests
             new DateTime(2026, 10, 1, 18, 0, 0, DateTimeKind.Utc),
             HockeyMatchType.Friendly,
             venue: "Nokia Arena");
+
+    private static HockeyCompetitionRules CreateTestCompetitionRules(
+        int regularPeriodLengthMinutes = 20,
+        int minDressedPlayers = 1,
+        bool requiresGoalie = false,
+        bool lineManagementEnabled = false) =>
+        new(
+            "Test rules",
+            null,
+            HockeyRuleBookSource.LeagueSpecific,
+            new HockeyMatchRules(
+                3,
+                regularPeriodLengthMinutes,
+                5,
+                stopClock: true,
+                overtimeEnabled: true,
+                shootoutEnabled: true,
+                offsideEnabled: true,
+                delayedOffsideEnabled: true,
+                HockeyIcingRule.Hybrid,
+                penaltyShotEnabled: true,
+                goaliePullAllowed: true),
+            HockeyStandingRules.Default(),
+            new HockeyRosterRules(
+                maxDressedPlayers: 20,
+                maxDressedGoalies: 2,
+                minDressedPlayers: minDressedPlayers,
+                requiresGoalie: requiresGoalie,
+                maxCaptains: 1,
+                maxAlternateCaptains: 2,
+                canGoalieBeCaptain: false,
+                allowGuestPlayers: false,
+                lineManagementEnabled: lineManagementEnabled),
+            HockeyVideoReviewRules.Disabled(),
+            HockeyContactRules.Default());
+
+    private static HockeySeason CreateTestSeason(HockeyCompetitionRules? rules = null) =>
+        new(
+            "Liiga 2026-2027",
+            new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc),
+            seasonCode: "26-27",
+            competitionRules: rules ?? CreateTestCompetitionRules());
+
+    private static HockeyMatch CreateCompetitionMatch(HockeySeason season) =>
+        new(
+            new DateTime(2026, 10, 1, 18, 0, 0, DateTimeKind.Utc),
+            HockeyMatchType.League,
+            matchRules: season.GetEffectiveRules().MatchRules,
+            competitionId: season.Id,
+            venue: "Nokia Arena",
+            usesLineManagement: season.GetEffectiveRules().RosterRules.LineManagementEnabled);
+
+    private ConfirmHockeyMatchRosterHandler CreateConfirmRosterHandler() =>
+        new(
+            _matchRepo.Object,
+            _teamRepo.Object,
+            _competitionRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<ConfirmHockeyMatchRosterHandler>>());
 
     [Fact]
     public async Task Create_StandaloneMatch_AddsAndSaves()
@@ -74,6 +137,37 @@ public class HockeyMatchHandlerTests
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Contain("not found");
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Create_CompetitionMatch_CopiesEffectiveMatchRulesAndLineManagement()
+    {
+        HockeySeason season = CreateTestSeason(
+            CreateTestCompetitionRules(
+                regularPeriodLengthMinutes: 15,
+                lineManagementEnabled: true));
+        _competitionRepo.Setup(r => r.GetByIdAsync(season.Id)).ReturnsAsync(season);
+
+        CreateHockeyMatchHandler handler = new(
+            _matchRepo.Object,
+            _competitionRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<CreateHockeyMatchHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new CreateHockeyMatchCommand(
+                new DateTime(2026, 10, 1, 18, 0, 0, DateTimeKind.Utc),
+                HockeyMatchType.League,
+                CompetitionId: season.Id,
+                Venue: "Nokia Arena"),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        HockeyMatch created = season.Matches.Should().ContainSingle().Subject;
+        created.MatchRules.RegularPeriodLengthMinutes.Should().Be(15);
+        created.UsesLineManagement.Should().BeTrue();
+        _matchRepo.Verify(r => r.AddAsync(It.IsAny<HockeyMatch>()), Times.Never);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -145,6 +239,90 @@ public class HockeyMatchHandlerTests
     [Fact]
     public async Task ConfirmRoster_ValidPlayers_Confirms()
     {
+        HockeySeason season = CreateTestSeason(
+            CreateTestCompetitionRules(minDressedPlayers: 1, requiresGoalie: false));
+        HockeyMatch match = CreateCompetitionMatch(season);
+        Club club = new("Tappara HC");
+        HockeyTeam team = new("Tappara", club, TeamCategory.Adult);
+        HockeyCompetitionTeam competitionTeam = season.AddTeam(team.Id);
+        HockeyPlayer player = new(Guid.NewGuid(), HockeyPosition.Center);
+        HockeyTeamPlayer teamPlayer = team.AddPlayer(player, HockeyPosition.Center, jerseyNumber: 12);
+
+        match.AssignMatchTeam(team.Id, HockeyTeamSlot.Home, competitionTeam);
+        HockeyMatchTeam matchTeam = match.HomeMatchTeam!;
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+        _teamRepo.Setup(r => r.GetByIdAsync(team.Id)).ReturnsAsync(team);
+        _competitionRepo.Setup(r => r.GetByIdAsync(season.Id)).ReturnsAsync(season);
+
+        Result<HockeyMatchDto> result = await CreateConfirmRosterHandler().Handle(
+            new ConfirmHockeyMatchRosterCommand(match.Id, matchTeam.Id, new[] { teamPlayer.Id }),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.MatchTeams.Should().ContainSingle(t => t.Id == matchTeam.Id && t.IsConfirmedRoster);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmRoster_GoaliePosition_SetsIsGoalie()
+    {
+        HockeySeason season = CreateTestSeason(
+            CreateTestCompetitionRules(minDressedPlayers: 1, requiresGoalie: true));
+        HockeyMatch match = CreateCompetitionMatch(season);
+        Club club = new("Tappara HC");
+        HockeyTeam team = new("Tappara", club, TeamCategory.Adult);
+        HockeyCompetitionTeam competitionTeam = season.AddTeam(team.Id);
+        HockeyPlayer player = new(Guid.NewGuid(), HockeyPosition.Goalie);
+        HockeyTeamPlayer teamPlayer = team.AddPlayer(player, HockeyPosition.Goalie, jerseyNumber: 30);
+
+        match.AssignMatchTeam(team.Id, HockeyTeamSlot.Home, competitionTeam);
+        HockeyMatchTeam matchTeam = match.HomeMatchTeam!;
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+        _teamRepo.Setup(r => r.GetByIdAsync(team.Id)).ReturnsAsync(team);
+        _competitionRepo.Setup(r => r.GetByIdAsync(season.Id)).ReturnsAsync(season);
+
+        Result<HockeyMatchDto> result = await CreateConfirmRosterHandler().Handle(
+            new ConfirmHockeyMatchRosterCommand(match.Id, matchTeam.Id, new[] { teamPlayer.Id }),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.MatchTeams.Single(t => t.Id == matchTeam.Id)
+            .ActivePlayers.Should().ContainSingle(p => p.TeamPlayerId == teamPlayer.Id && p.IsGoalie);
+    }
+
+    [Fact]
+    public async Task ConfirmRoster_BelowMinDressed_Fails()
+    {
+        HockeySeason season = CreateTestSeason(
+            CreateTestCompetitionRules(minDressedPlayers: 3, requiresGoalie: false));
+        HockeyMatch match = CreateCompetitionMatch(season);
+        Club club = new("Tappara HC");
+        HockeyTeam team = new("Tappara", club, TeamCategory.Adult);
+        HockeyCompetitionTeam competitionTeam = season.AddTeam(team.Id);
+        HockeyPlayer player = new(Guid.NewGuid(), HockeyPosition.Center);
+        HockeyTeamPlayer teamPlayer = team.AddPlayer(player, HockeyPosition.Center, jerseyNumber: 12);
+
+        match.AssignMatchTeam(team.Id, HockeyTeamSlot.Home, competitionTeam);
+        HockeyMatchTeam matchTeam = match.HomeMatchTeam!;
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+        _teamRepo.Setup(r => r.GetByIdAsync(team.Id)).ReturnsAsync(team);
+        _competitionRepo.Setup(r => r.GetByIdAsync(season.Id)).ReturnsAsync(season);
+
+        Result<HockeyMatchDto> result = await CreateConfirmRosterHandler().Handle(
+            new ConfirmHockeyMatchRosterCommand(match.Id, matchTeam.Id, new[] { teamPlayer.Id }),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("minimum dressed players");
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ConfirmRoster_Standalone_UsesDefaultRules_RequiresGoalieAndMinDressed()
+    {
         HockeyMatch match = CreateStandaloneMatch();
         Club club = new("Tappara HC");
         HockeyTeam team = new("Tappara", club, TeamCategory.Adult);
@@ -157,19 +335,14 @@ public class HockeyMatchHandlerTests
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
         _teamRepo.Setup(r => r.GetByIdAsync(team.Id)).ReturnsAsync(team);
 
-        ConfirmHockeyMatchRosterHandler handler = new(
-            _matchRepo.Object,
-            _teamRepo.Object,
-            _unitOfWork.Object,
-            Mock.Of<ILogger<ConfirmHockeyMatchRosterHandler>>());
-
-        Result<HockeyMatchDto> result = await handler.Handle(
+        Result<HockeyMatchDto> result = await CreateConfirmRosterHandler().Handle(
             new ConfirmHockeyMatchRosterCommand(match.Id, matchTeam.Id, new[] { teamPlayer.Id }),
             CancellationToken.None);
 
-        result.IsSuccess.Should().BeTrue();
-        result.Data!.MatchTeams.Should().ContainSingle(t => t.Id == matchTeam.Id && t.IsConfirmedRoster);
-        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("minimum dressed players");
+        result.Error.Should().Contain("goalie");
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
