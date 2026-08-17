@@ -23,7 +23,6 @@ public class RecalculateHockeyCompetitionStatisticsHandler
     private readonly IHockeyTeamRepository _teamRepository;
     private readonly IHockeyStatisticsRepository _statisticsRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
-    private readonly HockeyStatisticsCalculationService _calculationService;
     private readonly ILogger<RecalculateHockeyCompetitionStatisticsHandler> _logger;
 
     public RecalculateHockeyCompetitionStatisticsHandler(
@@ -39,7 +38,6 @@ public class RecalculateHockeyCompetitionStatisticsHandler
         _teamRepository = teamRepository;
         _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
-        _calculationService = new HockeyStatisticsCalculationService();
         _logger = logger;
     }
 
@@ -82,16 +80,16 @@ public class RecalculateHockeyCompetitionStatisticsHandler
                 foreach (HockeyMatchTeam matchTeam in match.MatchTeams)
                 {
                     if (match.CountsTowardTeamStatistics)
-                        matchTeamStats.Add(_calculationService.BuildMatchTeamStatistics(match, matchTeam));
+                        matchTeamStats.Add(HockeyStatisticsCalculationService.BuildMatchTeamStatistics(match, matchTeam));
 
                     if (matchTeam.PlayerSelection is null)
                         continue;
 
                     if (match.CountsTowardPlayerStatistics)
-                        matchPlayerStats.AddRange(_calculationService.BuildMatchPlayerStatistics(match, matchTeam));
+                        matchPlayerStats.AddRange(HockeyStatisticsCalculationService.BuildMatchPlayerStatistics(match, matchTeam));
 
                     if (match.CountsTowardGoalieStatistics)
-                        matchGoalieStats.AddRange(_calculationService.BuildGoalieMatchStatistics(match, matchTeam));
+                        matchGoalieStats.AddRange(HockeyStatisticsCalculationService.BuildGoalieMatchStatistics(match, matchTeam));
                 }
             }
 
@@ -107,7 +105,7 @@ public class RecalculateHockeyCompetitionStatisticsHandler
                 .ToHashSet();
 
             List<HockeyTeamCompetitionStatistics> teamAggregates = teamIds
-                .Select(teamId => _calculationService.AggregateTeamCompetitionStatistics(
+                .Select(teamId => HockeyStatisticsCalculationService.AggregateTeamCompetitionStatistics(
                     teamId,
                     request.CompetitionId,
                     request.Scope,
@@ -123,7 +121,7 @@ public class RecalculateHockeyCompetitionStatisticsHandler
 
             List<HockeyPlayerCompetitionStatistics> playerAggregates = matchPlayerStats
                 .GroupBy(s => new { s.PlayerId, s.TeamId, s.TeamPlayerId })
-                .Select(g => _calculationService.AggregatePlayerCompetitionStatistics(
+                .Select(g => HockeyStatisticsCalculationService.AggregatePlayerCompetitionStatistics(
                     g.Key.PlayerId,
                     g.Key.TeamId,
                     g.Key.TeamPlayerId,
@@ -137,7 +135,7 @@ public class RecalculateHockeyCompetitionStatisticsHandler
 
             List<HockeyGoalieCompetitionStatistics> goalieAggregates = matchGoalieStats
                 .GroupBy(s => new { s.PlayerId, s.TeamId, s.TeamPlayerId })
-                .Select(g => _calculationService.AggregateGoalieCompetitionStatistics(
+                .Select(g => HockeyStatisticsCalculationService.AggregateGoalieCompetitionStatistics(
                     g.Key.PlayerId,
                     g.Key.TeamId,
                     g.Key.TeamPlayerId,

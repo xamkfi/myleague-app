@@ -69,6 +69,7 @@ public static class Program
 
 			FloorballSeedResult? floorballResult = null;
 			FootballSeedResult? footballResult = null;
+			HockeySeedResult? hockeyResult = null;
 
 			if (seedFloorball)
 			{
@@ -88,144 +89,28 @@ public static class Program
 				footballResult = await SeedFootballAsync(http, jsonOptions, footballConfig, scope);
 			}
 
-			// --- Hockey phases (after Floorball; independent except shared Persons/Clubs/Divisions) ---
-			List<HockeyPlayerDto> hockeyPlayers = new List<HockeyPlayerDto>();
-			Dictionary<string, Guid> hockeyEmailToPlayerId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
-			Dictionary<string, Guid> hockeyEmailToPersonId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
-			List<HockeyOfficialDto> hockeyOfficials = new List<HockeyOfficialDto>();
-			List<HockeyTeamDto> hockeyTeams = new List<HockeyTeamDto>();
-			List<HockeySeasonDto> hockeySeasons = new List<HockeySeasonDto>();
-			List<HockeyMatchDto> hockeyMatches = new List<HockeyMatchDto>();
-			List<HockeyTournamentDto> hockeyTournaments = new List<HockeyTournamentDto>();
-			int hockeyTournamentMatchesCreated = 0;
+			bool seedHockey = scope.HasFlag(SeedScope.HockeyPlayers)
+				|| scope.HasFlag(SeedScope.HockeyTeams)
+				|| scope.HasFlag(SeedScope.HockeySeasons)
+				|| scope.HasFlag(SeedScope.HockeySeasonMatches)
+				|| scope.HasFlag(SeedScope.HockeyTournaments);
 
-			if (scope.HasFlag(SeedScope.HockeyPlayers))
+			if (seedHockey)
 			{
-				HashSet<string> rosterEmails = config.HockeyTeams
-					.SelectMany(t => t.Players)
-					.Select(p => p.PersonEmail)
-					.Where(e => !string.IsNullOrWhiteSpace(e))
-					.ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-				List<PersonSeed> rosterPersonSeeds = config.PlayerPersons
-					.Concat(config.GoaliePersons)
-					.Where(p => p.ContactInfo?.Email != null && rosterEmails.Contains(p.ContactInfo.Email))
-					.GroupBy(p => p.ContactInfo!.Email!, StringComparer.OrdinalIgnoreCase)
-					.Select(g => g.First())
-					.ToList();
-
-				if (rosterPersonSeeds.Count == 0 && rosterEmails.Count > 0)
-				{
-					throw new InvalidOperationException(
-						"HockeyTeams roster emails were not found in PlayerPersons/GoaliePersons. Add matching PersonSeed entries or reuse floorball person emails.");
-				}
-
-				(List<PersonDto> hockeyPersons, Dictionary<string, Guid> personEmailMap) =
-					await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, rosterPersonSeeds);
-				hockeyEmailToPersonId = personEmailMap;
-
-				(hockeyPlayers, hockeyEmailToPlayerId) = await HockeyPlayersSeeder.SeedAsync(
-					http, jsonOptions, hockeyPersons, hockeyEmailToPersonId, config.HockeyTeams);
-
-				HashSet<string> staffEmails = config.HockeyTeams
-					.Select(t => t.StaffPersonEmail)
-					.Where(e => !string.IsNullOrWhiteSpace(e))
-					.ToHashSet(StringComparer.OrdinalIgnoreCase)!;
-				List<PersonSeed> staffPersonSeeds = config.StaffPersons
-					.Where(p => p.ContactInfo?.Email != null && staffEmails.Contains(p.ContactInfo.Email))
-					.GroupBy(p => p.ContactInfo!.Email!, StringComparer.OrdinalIgnoreCase)
-					.Select(g => g.First())
-					.ToList();
-				if (staffPersonSeeds.Count > 0)
-				{
-					(_, Dictionary<string, Guid> staffEmailMap) =
-						await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, staffPersonSeeds);
-					foreach (KeyValuePair<string, Guid> pair in staffEmailMap)
-					{
-						hockeyEmailToPersonId[pair.Key] = pair.Value;
-					}
-				}
-
-				// Official persons from RefereePersons (first 4) — HockeyAll does not include PlayersReferees.
-				List<PersonSeed> officialPersonSeeds = config.RefereePersons.Take(4).ToList();
-				if (officialPersonSeeds.Count > 0)
-				{
-					(_, Dictionary<string, Guid> officialEmailMap) =
-						await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, officialPersonSeeds);
-					foreach (KeyValuePair<string, Guid> pair in officialEmailMap)
-					{
-						hockeyEmailToPersonId[pair.Key] = pair.Value;
-					}
-
-					List<Guid> officialPersonIds = officialPersonSeeds
-						.Select(p => p.ContactInfo?.Email)
-						.Where(e => !string.IsNullOrWhiteSpace(e) && officialEmailMap.ContainsKey(e!))
-						.Select(e => officialEmailMap[e!])
-						.ToList();
-					hockeyOfficials = await HockeyOfficialsSeeder.SeedAsync(http, jsonOptions, officialPersonIds);
-				}
+				SeederConfiguration hockeyConfig = SeederConfiguration.Load();
+				hockeyConfig.BaseUrl = baseUrl;
+				Configuration = hockeyConfig;
+				Console.WriteLine("\n--- Hockey seed ---");
+				hockeyResult = await SeedHockeyAsync(
+					http,
+					jsonOptions,
+					hockeyConfig,
+					scope,
+					floorballResult?.Clubs ?? footballResult?.Clubs ?? [],
+					floorballResult?.Divisions ?? footballResult?.Divisions ?? []);
 			}
 
-			if (scope.HasFlag(SeedScope.HockeyTeams))
-			{
-				hockeyTeams = await HockeyTeamsSeeder.SeedTeamsAsync(http, jsonOptions, config.HockeyTeams, divisionResults, clubResults);
-			}
-
-			if (scope.HasFlag(SeedScope.HockeySeasons))
-			{
-				hockeySeasons = await HockeySeasonsSeeder.SeedAsync(http, jsonOptions, config.HockeySeasons, divisionResults);
-				await HockeyTeamsSeeder.AssignTeamsToSeasonsAsync(
-					http, jsonOptions, hockeySeasons, config.HockeyTeams, hockeyTeams, divisionResults);
-			}
-
-			if (scope.HasFlag(SeedScope.HockeyTeams))
-			{
-				foreach (HockeyTeamSeed teamSeed in config.HockeyTeams)
-				{
-					HockeyTeamDto? team = hockeyTeams.FirstOrDefault(t => string.Equals(t.Name, teamSeed.Name, StringComparison.OrdinalIgnoreCase));
-					if (team != null)
-					{
-						await HockeyTeamsSeeder.AddPlayersAsync(http, jsonOptions, team.Id, teamSeed.Players, hockeyEmailToPlayerId);
-					}
-				}
-
-				await HockeyTeamsSeeder.SeedLinesAndStaffAsync(
-					http, jsonOptions, config.HockeyTeams, hockeyTeams, hockeyEmailToPersonId);
-			}
-
-			if (scope.HasFlag(SeedScope.HockeySeasonMatches))
-			{
-				hockeyMatches = await HockeyMatchesSeeder.SeedAsync(
-					http, jsonOptions, config.HockeyMatches, hockeySeasons, hockeyTeams, hockeyOfficials);
-			}
-
-			if (scope.HasFlag(SeedScope.HockeyTournaments))
-			{
-				hockeyTournaments = await HockeyTournamentsSeeder.SeedAsync(
-					http, jsonOptions, config.HockeyTournaments, hockeyTeams);
-				hockeyTournamentMatchesCreated = await HockeyTournamentMatchesSeeder.SeedAsync(
-					http, jsonOptions, hockeyTournaments, hockeyTeams, config.HockeyTournaments, hockeyOfficials);
-			}
-
-			Console.WriteLine("\nSummary:");
-			WriteSummaryLine("Persons created:", scope.HasFlag(SeedScope.Persons), basePersons.Count);
-			WriteSummaryLine("Clubs created:", scope.HasFlag(SeedScope.Clubs), clubResults.Count);
-			WriteSummaryLine("Divisions created:", scope.HasFlag(SeedScope.Divisions), divisionResults.Count);
-			WriteSummaryLine("Floorball players created:", scope.HasFlag(SeedScope.PlayersReferees), players.Count);
-			WriteSummaryLine("Floorball referees created:", scope.HasFlag(SeedScope.PlayersReferees), referees.Count);
-			WriteSummaryLine("Seasons created:", scope.HasFlag(SeedScope.Seasons), seasons.Count);
-			WriteSummaryLine("Teams created:", scope.HasFlag(SeedScope.Teams), teams.Count);
-			WriteSummaryLine("Matches created:", scope.HasFlag(SeedScope.SeasonMatches), matches.Count);
-			WriteSummaryLine("Tournaments created:", scope.HasFlag(SeedScope.Tournaments), tournaments.Count);
-			WriteSummaryLine("Tournament matches created:", scope.HasFlag(SeedScope.Tournaments), tournamentMatchesCreated);
-			WriteSummaryLine("Hockey players created:", scope.HasFlag(SeedScope.HockeyPlayers), hockeyPlayers.Count);
-			WriteSummaryLine("Hockey officials created:", scope.HasFlag(SeedScope.HockeyPlayers), hockeyOfficials.Count);
-			WriteSummaryLine("Hockey teams created:", scope.HasFlag(SeedScope.HockeyTeams), hockeyTeams.Count);
-			WriteSummaryLine("Hockey seasons created:", scope.HasFlag(SeedScope.HockeySeasons), hockeySeasons.Count);
-			WriteSummaryLine("Hockey matches created:", scope.HasFlag(SeedScope.HockeySeasonMatches), hockeyMatches.Count);
-			WriteSummaryLine("Hockey tournaments created:", scope.HasFlag(SeedScope.HockeyTournaments), hockeyTournaments.Count);
-			WriteSummaryLine("Hockey tournament matches:", scope.HasFlag(SeedScope.HockeyTournaments), hockeyTournamentMatchesCreated);
-			WriteCombinedSummary(scope, seedFloorball, seedFootball, floorballResult, footballResult);
+			WriteCombinedSummary(scope, seedFloorball, seedFootball, seedHockey, floorballResult, footballResult, hockeyResult);
 
 			http.Dispose();
 			return 0;
@@ -701,6 +586,135 @@ public static class Program
 		return result;
 	}
 
+	private static async Task<HockeySeedResult> SeedHockeyAsync(
+		HttpClient http,
+		JsonSerializerOptions jsonOptions,
+		SeederConfiguration config,
+		SeedScope scope,
+		IReadOnlyList<ClubDto> existingClubs,
+		IReadOnlyList<DivisionDto> existingDivisions)
+	{
+		HockeySeedResult result = new HockeySeedResult();
+		List<ClubDto> clubs = existingClubs.Count > 0
+			? existingClubs.ToList()
+			: await ClubsSeeder.SeedAsync(http, jsonOptions, config);
+		List<DivisionDto> divisions = existingDivisions.Count > 0
+			? existingDivisions.ToList()
+			: await DivisionsSeeder.SeedAsync(http, jsonOptions, config);
+
+		Dictionary<string, Guid> hockeyEmailToPlayerId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+		Dictionary<string, Guid> hockeyEmailToPersonId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+
+		if (scope.HasFlag(SeedScope.HockeyPlayers))
+		{
+			HashSet<string> rosterEmails = config.HockeyTeams
+				.SelectMany(t => t.Players)
+				.Select(p => p.PersonEmail)
+				.Where(e => !string.IsNullOrWhiteSpace(e))
+				.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+			List<PersonSeed> rosterPersonSeeds = config.PlayerPersons
+				.Concat(config.GoaliePersons)
+				.Where(p => p.ContactInfo?.Email != null && rosterEmails.Contains(p.ContactInfo.Email))
+				.GroupBy(p => p.ContactInfo!.Email!, StringComparer.OrdinalIgnoreCase)
+				.Select(g => g.First())
+				.ToList();
+
+			if (rosterPersonSeeds.Count == 0 && rosterEmails.Count > 0)
+			{
+				throw new InvalidOperationException(
+					"HockeyTeams roster emails were not found in PlayerPersons/GoaliePersons. Add matching PersonSeed entries or reuse floorball person emails.");
+			}
+
+			(List<PersonDto> hockeyPersons, Dictionary<string, Guid> personEmailMap) =
+				await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, rosterPersonSeeds);
+			hockeyEmailToPersonId = personEmailMap;
+
+			(result.Players, hockeyEmailToPlayerId) = await HockeyPlayersSeeder.SeedAsync(
+				http, jsonOptions, hockeyPersons, hockeyEmailToPersonId, config.HockeyTeams);
+
+			HashSet<string> staffEmails = config.HockeyTeams
+				.Select(t => t.StaffPersonEmail)
+				.Where(e => !string.IsNullOrWhiteSpace(e))
+				.ToHashSet(StringComparer.OrdinalIgnoreCase)!;
+			List<PersonSeed> staffPersonSeeds = config.StaffPersons
+				.Where(p => p.ContactInfo?.Email != null && staffEmails.Contains(p.ContactInfo.Email))
+				.GroupBy(p => p.ContactInfo!.Email!, StringComparer.OrdinalIgnoreCase)
+				.Select(g => g.First())
+				.ToList();
+			if (staffPersonSeeds.Count > 0)
+			{
+				(_, Dictionary<string, Guid> staffEmailMap) =
+					await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, staffPersonSeeds);
+				foreach (KeyValuePair<string, Guid> pair in staffEmailMap)
+				{
+					hockeyEmailToPersonId[pair.Key] = pair.Value;
+				}
+			}
+
+			List<PersonSeed> officialPersonSeeds = config.RefereePersons.Take(4).ToList();
+			if (officialPersonSeeds.Count > 0)
+			{
+				(_, Dictionary<string, Guid> officialEmailMap) =
+					await PersonsSeeder.SeedListWithEmailMapAsync(http, jsonOptions, officialPersonSeeds);
+				foreach (KeyValuePair<string, Guid> pair in officialEmailMap)
+				{
+					hockeyEmailToPersonId[pair.Key] = pair.Value;
+				}
+
+				List<Guid> officialPersonIds = officialPersonSeeds
+					.Select(p => p.ContactInfo?.Email)
+					.Where(e => !string.IsNullOrWhiteSpace(e) && officialEmailMap.ContainsKey(e!))
+					.Select(e => officialEmailMap[e!])
+					.ToList();
+				result.Officials = await HockeyOfficialsSeeder.SeedAsync(http, jsonOptions, officialPersonIds);
+			}
+		}
+
+		if (scope.HasFlag(SeedScope.HockeyTeams))
+		{
+			result.Teams = await HockeyTeamsSeeder.SeedTeamsAsync(http, jsonOptions, config.HockeyTeams, divisions, clubs);
+		}
+
+		if (scope.HasFlag(SeedScope.HockeySeasons))
+		{
+			result.Seasons = await HockeySeasonsSeeder.SeedAsync(http, jsonOptions, config.HockeySeasons, divisions);
+			await HockeyTeamsSeeder.AssignTeamsToSeasonsAsync(
+				http, jsonOptions, result.Seasons, config.HockeyTeams, result.Teams, divisions);
+		}
+
+		if (scope.HasFlag(SeedScope.HockeyTeams))
+		{
+			foreach (HockeyTeamSeed teamSeed in config.HockeyTeams)
+			{
+				HockeyTeamDto? team = result.Teams.FirstOrDefault(t => string.Equals(t.Name, teamSeed.Name, StringComparison.OrdinalIgnoreCase));
+				if (team != null)
+				{
+					await HockeyTeamsSeeder.AddPlayersAsync(http, jsonOptions, team.Id, teamSeed.Players, hockeyEmailToPlayerId);
+				}
+			}
+
+			await HockeyTeamsSeeder.SeedLinesAndStaffAsync(
+				http, jsonOptions, config.HockeyTeams, result.Teams, hockeyEmailToPersonId);
+		}
+
+		if (scope.HasFlag(SeedScope.HockeySeasonMatches))
+		{
+			result.Matches = await HockeyMatchesSeeder.SeedAsync(
+				http, jsonOptions, config.HockeyMatches, result.Seasons, result.Teams, result.Officials);
+		}
+
+		if (scope.HasFlag(SeedScope.HockeyTournaments))
+		{
+			result.Tournaments = await HockeyTournamentsSeeder.SeedAsync(
+				http, jsonOptions, config.HockeyTournaments, result.Teams);
+			result.TournamentMatchesCreated = await HockeyTournamentMatchesSeeder.SeedAsync(
+				http, jsonOptions, result.Tournaments, result.Teams, config.HockeyTournaments, result.Officials);
+		}
+
+		return result;
+	}
+
 	private static SeedSport ParseSportOrExit(string[] args)
 	{
 		string? cliValue = TryGetNamedArg(args, "--sport");
@@ -753,8 +767,10 @@ public static class Program
 		SeedScope scope,
 		bool seedFloorball,
 		bool seedFootball,
+		bool seedHockey,
 		FloorballSeedResult? floorball,
-		FootballSeedResult? football)
+		FootballSeedResult? football,
+		HockeySeedResult? hockey)
 	{
 		Console.WriteLine("\nSummary:");
 
@@ -786,6 +802,17 @@ public static class Program
 			WriteSummaryLine("Football tournaments created:", scope.HasFlag(SeedScope.Tournaments), football?.Tournaments.Count ?? 0);
 			WriteSummaryLine("Football tournament matches:", scope.HasFlag(SeedScope.Tournaments), football?.TournamentMatchesCreated ?? 0);
 		}
+
+		if (seedHockey)
+		{
+			WriteSummaryLine("Hockey players created:", scope.HasFlag(SeedScope.HockeyPlayers), hockey?.Players.Count ?? 0);
+			WriteSummaryLine("Hockey officials created:", scope.HasFlag(SeedScope.HockeyPlayers), hockey?.Officials.Count ?? 0);
+			WriteSummaryLine("Hockey teams created:", scope.HasFlag(SeedScope.HockeyTeams), hockey?.Teams.Count ?? 0);
+			WriteSummaryLine("Hockey seasons created:", scope.HasFlag(SeedScope.HockeySeasons), hockey?.Seasons.Count ?? 0);
+			WriteSummaryLine("Hockey matches created:", scope.HasFlag(SeedScope.HockeySeasonMatches), hockey?.Matches.Count ?? 0);
+			WriteSummaryLine("Hockey tournaments created:", scope.HasFlag(SeedScope.HockeyTournaments), hockey?.Tournaments.Count ?? 0);
+			WriteSummaryLine("Hockey tournament matches:", scope.HasFlag(SeedScope.HockeyTournaments), hockey?.TournamentMatchesCreated ?? 0);
+		}
 	}
 
 	private sealed class FloorballSeedResult
@@ -813,6 +840,17 @@ public static class Program
 		public List<FootballTeamDto> Teams { get; set; } = new List<FootballTeamDto>();
 		public List<FootballMatchDto> Matches { get; set; } = new List<FootballMatchDto>();
 		public List<FootballTournamentDto> Tournaments { get; set; } = new List<FootballTournamentDto>();
+		public int TournamentMatchesCreated { get; set; }
+	}
+
+	private sealed class HockeySeedResult
+	{
+		public List<HockeyPlayerDto> Players { get; set; } = new List<HockeyPlayerDto>();
+		public List<HockeyOfficialDto> Officials { get; set; } = new List<HockeyOfficialDto>();
+		public List<HockeyTeamDto> Teams { get; set; } = new List<HockeyTeamDto>();
+		public List<HockeySeasonDto> Seasons { get; set; } = new List<HockeySeasonDto>();
+		public List<HockeyMatchDto> Matches { get; set; } = new List<HockeyMatchDto>();
+		public List<HockeyTournamentDto> Tournaments { get; set; } = new List<HockeyTournamentDto>();
 		public int TournamentMatchesCreated { get; set; }
 	}
 

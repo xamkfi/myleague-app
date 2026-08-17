@@ -20,7 +20,6 @@ public class RecordHockeyVideoReviewHandler
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
     private readonly ILogger<RecordHockeyVideoReviewHandler> _logger;
-    private readonly HockeyMatchValidationService _validationService = new();
 
     public RecordHockeyVideoReviewHandler(
         IHockeyMatchRepository matchRepository,
@@ -59,7 +58,7 @@ public class RecordHockeyVideoReviewHandler
             match.AddEvent(review);
             _matchRepository.MarkEventAsAdded(review);
 
-            HockeyDomainValidationResult validation = _validationService.ValidateEventPlayerReferences(match);
+            HockeyDomainValidationResult validation = HockeyMatchValidationService.ValidateEventPlayerReferences(match);
             if (!validation.IsValid)
             {
                 return Result<HockeyMatchDto>.Failure(string.Join(" ", validation.Errors), validation.Errors);

@@ -160,6 +160,11 @@ public class HockeyTournamentSeed
 }
 
 public class HockeyTournamentGroupSeed
+{
+	public string Name { get; init; } = "Group A";
+	public List<string> TeamNames { get; init; } = new List<string>();
+}
+
 public class FootballSeasonSeed
 {
 	public string Name { get; init; } = "2026 Football Championship";
@@ -256,6 +261,16 @@ public class HockeyTeamPlayerByEmailSeed
 }
 
 public class HockeyMatchSeed
+{
+	public string HomeTeamName { get; init; } = string.Empty;
+	public string AwayTeamName { get; init; } = string.Empty;
+	public string SeasonName { get; init; } = string.Empty;
+	public string ScheduledDateTime { get; init; } = string.Empty;
+	public string? Venue { get; init; }
+	/// <summary>When true, simulate the match to Finished and recalculate stats.</summary>
+	public bool SimulateCompleted { get; init; } = false;
+}
+
 public class FootballTeamSeed
 {
 	public string Name { get; init; } = "Helsinki FC";

@@ -57,6 +57,7 @@ public class HockeyTournamentController : BaseApiController
     /// Gets a hockey tournament by id.
     /// </summary>
     /// <param name="id">Tournament id</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -71,6 +72,7 @@ public class HockeyTournamentController : BaseApiController
     /// Creates a new hockey tournament.
     /// </summary>
     /// <param name="request">Tournament create payload</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     [Authorize]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status201Created)]

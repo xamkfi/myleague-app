@@ -20,7 +20,6 @@ public class RecordHockeyShootoutAttemptHandler
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
     private readonly ILogger<RecordHockeyShootoutAttemptHandler> _logger;
-    private readonly HockeyMatchValidationService _validationService = new();
 
     public RecordHockeyShootoutAttemptHandler(
         IHockeyMatchRepository matchRepository,
@@ -58,7 +57,7 @@ public class RecordHockeyShootoutAttemptHandler
             match.AddEvent(attempt);
             _matchRepository.MarkEventAsAdded(attempt);
 
-            HockeyDomainValidationResult validation = _validationService.ValidateEventPlayerReferences(match);
+            HockeyDomainValidationResult validation = HockeyMatchValidationService.ValidateEventPlayerReferences(match);
             if (!validation.IsValid)
             {
                 return Result<HockeyMatchDto>.Failure(string.Join(" ", validation.Errors), validation.Errors);

@@ -19,7 +19,6 @@ public class RecordHockeyStoppageHandler : IRequestHandler<RecordHockeyStoppageC
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
     private readonly ILogger<RecordHockeyStoppageHandler> _logger;
-    private readonly HockeyMatchValidationService _validationService = new();
 
     public RecordHockeyStoppageHandler(
         IHockeyMatchRepository matchRepository,
@@ -56,7 +55,7 @@ public class RecordHockeyStoppageHandler : IRequestHandler<RecordHockeyStoppageC
             match.AddEvent(stoppage);
             _matchRepository.MarkEventAsAdded(stoppage);
 
-            HockeyDomainValidationResult validation = _validationService.ValidateEventPlayerReferences(match);
+            HockeyDomainValidationResult validation = HockeyMatchValidationService.ValidateEventPlayerReferences(match);
             if (!validation.IsValid)
             {
                 return Result<HockeyMatchDto>.Failure(string.Join(" ", validation.Errors), validation.Errors);

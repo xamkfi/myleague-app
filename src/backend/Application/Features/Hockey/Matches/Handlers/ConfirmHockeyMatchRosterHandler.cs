@@ -25,7 +25,6 @@ public class ConfirmHockeyMatchRosterHandler
     private readonly IHockeyCompetitionRepository _competitionRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
     private readonly ILogger<ConfirmHockeyMatchRosterHandler> _logger;
-    private readonly HockeyRosterValidationService _rosterValidation = new();
 
     public ConfirmHockeyMatchRosterHandler(
         IHockeyMatchRepository matchRepository,
@@ -93,7 +92,7 @@ public class ConfirmHockeyMatchRosterHandler
                 selection.AddActivePlayer(teamPlayer, isGoalie: isGoalie);
             }
 
-            HockeyDomainValidationResult validation = _rosterValidation.ValidateMatchSelection(selection, rosterRules);
+            HockeyDomainValidationResult validation = HockeyRosterValidationService.ValidateMatchSelection(selection, rosterRules);
             if (!validation.IsValid)
             {
                 return Result<HockeyMatchDto>.Failure(

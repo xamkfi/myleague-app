@@ -57,6 +57,7 @@ public class HockeySeasonController : BaseApiController
     /// Gets a hockey season by id.
     /// </summary>
     /// <param name="id">Season id</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -71,6 +72,7 @@ public class HockeySeasonController : BaseApiController
     /// Creates a new hockey season.
     /// </summary>
     /// <param name="request">Season create payload</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     [Authorize]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status201Created)]
@@ -211,6 +213,7 @@ public class HockeySeasonController : BaseApiController
     /// </summary>
     /// <param name="competitionId">Season (competition) id</param>
     /// <param name="request">Team id and optional seed</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     [Authorize]
     [HttpPost("{competitionId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionTeamDto>), StatusCodes.Status200OK)]

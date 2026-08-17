@@ -182,9 +182,10 @@ public class HockeyStatisticsHandlerTests
 
         result.IsSuccess.Should().BeTrue();
         capturedTeams.Should().NotBeNull();
-        capturedTeams!.Should().HaveCount(2);
-        capturedTeams.Select(t => t.StandingRank).Should().BeEquivalentTo(new[] { 1, 2 });
-        capturedTeams.Single(t => t.TeamId == home.Id).StandingRank.Should().Be(1);
+        List<HockeyTeamCompetitionStatistics> rankedTeams = capturedTeams!;
+        rankedTeams.Should().HaveCount(2);
+        rankedTeams.Select(t => t.StandingRank).Should().BeEquivalentTo(new[] { 1, 2 });
+        rankedTeams.Single(t => t.TeamId == home.Id).StandingRank.Should().Be(1);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 

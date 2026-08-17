@@ -234,7 +234,7 @@ public class HockeyTeam : BaseEntity
             p.JerseyNumber == jerseyNumber &&
             p.Id != excludeTeamPlayerId);
 
-    private void ValidateRosterStatus(HockeyRosterStatus rosterStatus, HockeyRosterRules? rosterRules)
+    private static void ValidateRosterStatus(HockeyRosterStatus rosterStatus, HockeyRosterRules? rosterRules)
     {
         if (rosterRules is null)
             return;
@@ -260,8 +260,9 @@ public class HockeyTeam : BaseEntity
             throw new InvalidOperationException("Goalies cannot be captain under current roster rules.");
         }
 
-        IEnumerable<HockeyTeamPlayer> scope = _roster.Where(p =>
-            p.IsActive && p.CompetitionId == competitionId && p.Id != teamPlayer.Id);
+        List<HockeyTeamPlayer> scope = _roster
+            .Where(p => p.IsActive && p.CompetitionId == competitionId && p.Id != teamPlayer.Id)
+            .ToList();
 
         if (rosterRules is not null)
         {

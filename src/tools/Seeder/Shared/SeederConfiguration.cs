@@ -36,7 +36,6 @@ public sealed class SeederConfiguration
     public List<HockeyTeamSeed> HockeyTeams { get; set; } = new List<HockeyTeamSeed>();
     public List<HockeyMatchSeed> HockeyMatches { get; set; } = new List<HockeyMatchSeed>();
 
-    public static SeederConfiguration Load()
     public static SeederConfiguration LoadFootball()
     {
         return Load("testdata-football.json");

@@ -19,7 +19,6 @@ public class RecordHockeyTimeoutHandler : IRequestHandler<RecordHockeyTimeoutCom
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
     private readonly ILogger<RecordHockeyTimeoutHandler> _logger;
-    private readonly HockeyMatchValidationService _validationService = new();
 
     public RecordHockeyTimeoutHandler(
         IHockeyMatchRepository matchRepository,
@@ -51,7 +50,7 @@ public class RecordHockeyTimeoutHandler : IRequestHandler<RecordHockeyTimeoutCom
             match.AddEvent(timeout);
             _matchRepository.MarkEventAsAdded(timeout);
 
-            HockeyDomainValidationResult validation = _validationService.ValidateEventPlayerReferences(match);
+            HockeyDomainValidationResult validation = HockeyMatchValidationService.ValidateEventPlayerReferences(match);
             if (!validation.IsValid)
             {
                 return Result<HockeyMatchDto>.Failure(string.Join(" ", validation.Errors), validation.Errors);

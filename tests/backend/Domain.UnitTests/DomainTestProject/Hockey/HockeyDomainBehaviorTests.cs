@@ -190,9 +190,8 @@ public class HockeyDomainBehaviorTests
         match.AddEvent(review);
 
         HockeyCoachChallengeRules rules = HockeyTestHelpers.FailedChallengeBenchMinorRules();
-        HockeyCoachChallengeService service = new();
 
-        HockeyCoachChallengeResult result = service.HandleFailedChallenge(
+        HockeyCoachChallengeResult result = HockeyCoachChallengeService.HandleFailedChallenge(
             match,
             review,
             rules,

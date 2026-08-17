@@ -24,7 +24,6 @@ public class AddHomeAwayTeamsToHockeyMatchHandler
     private readonly IHockeyCompetitionRepository _competitionRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
     private readonly ILogger<AddHomeAwayTeamsToHockeyMatchHandler> _logger;
-    private readonly HockeyMatchValidationService _validationService = new();
 
     public AddHomeAwayTeamsToHockeyMatchHandler(
         IHockeyMatchRepository matchRepository,
@@ -95,7 +94,7 @@ public class AddHomeAwayTeamsToHockeyMatchHandler
             match.AssignMatchTeam(request.HomeTeamId, HockeyTeamSlot.Home, homeCompetitionTeam);
             match.AssignMatchTeam(request.AwayTeamId, HockeyTeamSlot.Away, awayCompetitionTeam);
 
-            HockeyDomainValidationResult validation = _validationService.ValidateHomeAway(match);
+            HockeyDomainValidationResult validation = HockeyMatchValidationService.ValidateHomeAway(match);
             if (!validation.IsValid)
             {
                 return Result<HockeyMatchDto>.Failure(string.Join(" ", validation.Errors), validation.Errors);

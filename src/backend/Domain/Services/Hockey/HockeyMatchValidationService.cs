@@ -8,11 +8,9 @@ namespace Domain.Services.Hockey;
 /// <summary>
 /// Cross-aggregate validation for match structure, active players and event references.
 /// </summary>
-public class HockeyMatchValidationService
+public static class HockeyMatchValidationService
 {
-    private readonly HockeyCompetitionValidationService _competitionValidation = new();
-
-    public HockeyDomainValidationResult ValidateHomeAway(HockeyMatch match)
+    public static HockeyDomainValidationResult ValidateHomeAway(HockeyMatch match)
     {
         ArgumentNullException.ThrowIfNull(match);
         List<string> errors = new();
@@ -39,7 +37,7 @@ public class HockeyMatchValidationService
             : HockeyDomainValidationResult.Fail(errors);
     }
 
-    public HockeyDomainValidationResult ValidateMatchContext(
+    public static HockeyDomainValidationResult ValidateMatchContext(
         HockeyMatch match,
         HockeyCompetition? competition = null)
     {
@@ -64,8 +62,8 @@ public class HockeyMatchValidationService
         }
         else if (competition is not null)
         {
-            HockeyDomainValidationResult context = _competitionValidation
-                .ValidateMatchCompetitionContext(competition, match);
+            HockeyDomainValidationResult context =
+                HockeyCompetitionValidationService.ValidateMatchCompetitionContext(competition, match);
             if (!context.IsValid)
                 errors.AddRange(context.Errors);
         }
@@ -75,7 +73,7 @@ public class HockeyMatchValidationService
             : HockeyDomainValidationResult.Fail(errors);
     }
 
-    public HockeyDomainValidationResult ValidateActivePlayers(HockeyMatch match)
+    public static HockeyDomainValidationResult ValidateActivePlayers(HockeyMatch match)
     {
         ArgumentNullException.ThrowIfNull(match);
         List<string> errors = new();
@@ -92,7 +90,7 @@ public class HockeyMatchValidationService
             : HockeyDomainValidationResult.Fail(errors);
     }
 
-    public HockeyDomainValidationResult ValidateActivePlayers(HockeyMatchTeam matchTeam)
+    public static HockeyDomainValidationResult ValidateActivePlayers(HockeyMatchTeam matchTeam)
     {
         ArgumentNullException.ThrowIfNull(matchTeam);
         List<string> errors = new();
@@ -119,7 +117,7 @@ public class HockeyMatchValidationService
             : HockeyDomainValidationResult.Fail(errors);
     }
 
-    public HockeyDomainValidationResult ValidateEventPlayerReferences(HockeyMatch match)
+    public static HockeyDomainValidationResult ValidateEventPlayerReferences(HockeyMatch match)
     {
         ArgumentNullException.ThrowIfNull(match);
         List<string> errors = new();

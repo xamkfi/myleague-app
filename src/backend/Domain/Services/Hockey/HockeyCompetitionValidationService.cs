@@ -7,9 +7,9 @@ namespace Domain.Services.Hockey;
 /// <summary>
 /// Cross-aggregate validation for competition membership and match competition context.
 /// </summary>
-public class HockeyCompetitionValidationService
+public static class HockeyCompetitionValidationService
 {
-    public HockeyDomainValidationResult ValidateCompetitionTeam(
+    public static HockeyDomainValidationResult ValidateCompetitionTeam(
         HockeyCompetition competition,
         Guid competitionTeamId)
     {
@@ -33,7 +33,7 @@ public class HockeyCompetitionValidationService
             : HockeyDomainValidationResult.Fail(errors);
     }
 
-    public HockeyDomainValidationResult ValidateDivisionContext(
+    public static HockeyDomainValidationResult ValidateDivisionContext(
         HockeyCompetition competition,
         Guid competitionDivisionId,
         Guid? competitionTeamId = null)
@@ -67,7 +67,7 @@ public class HockeyCompetitionValidationService
             : HockeyDomainValidationResult.Fail(errors);
     }
 
-    public HockeyDomainValidationResult ValidateTournamentGroupContext(
+    public static HockeyDomainValidationResult ValidateTournamentGroupContext(
         HockeyTournament tournament,
         Guid tournamentGroupId,
         Guid? competitionTeamId = null)
@@ -98,7 +98,7 @@ public class HockeyCompetitionValidationService
             : HockeyDomainValidationResult.Fail(errors);
     }
 
-    public HockeyDomainValidationResult ValidatePlayoffSeriesContext(
+    public static HockeyDomainValidationResult ValidatePlayoffSeriesContext(
         HockeyCompetition competition,
         Guid playoffSeriesId,
         Guid? homeCompetitionTeamId = null,
@@ -143,7 +143,7 @@ public class HockeyCompetitionValidationService
             : HockeyDomainValidationResult.Fail(errors);
     }
 
-    public HockeyDomainValidationResult ValidateMatchCompetitionContext(
+    public static HockeyDomainValidationResult ValidateMatchCompetitionContext(
         HockeyCompetition competition,
         HockeyMatch match)
     {

@@ -463,10 +463,25 @@ public class UpdateHockeyCompetitionRulesRequest
     [Required]
     public HockeyRuleBookSource RuleBookSource { get; set; }
 
+    /// <summary>
+    /// Match Rules.
+    /// </summary>
     public HockeyMatchRulesInputDto? MatchRules { get; set; }
+    /// <summary>
+    /// Standing Rules.
+    /// </summary>
     public HockeyStandingRulesInputDto? StandingRules { get; set; }
+    /// <summary>
+    /// Roster Rules.
+    /// </summary>
     public HockeyRosterRulesInputDto? RosterRules { get; set; }
+    /// <summary>
+    /// Video Review Rules.
+    /// </summary>
     public HockeyVideoReviewRulesInputDto? VideoReviewRules { get; set; }
+    /// <summary>
+    /// Contact Rules.
+    /// </summary>
     public HockeyContactRulesInputDto? ContactRules { get; set; }
 }
 
@@ -614,17 +629,38 @@ public class SetHockeyTournamentPlayoffScheduleRequest
 /// </summary>
 public class CreateHockeyMatchRequest
 {
+    /// <summary>
+    /// Scheduled Start Time.
+    /// </summary>
     [Required]
     public DateTime ScheduledStartTime { get; set; }
 
+    /// <summary>
+    /// Match Type.
+    /// </summary>
     [Required]
     public HockeyMatchType MatchType { get; set; }
 
+    /// <summary>
+    /// Competition Id.
+    /// </summary>
     public Guid? CompetitionId { get; set; }
+    /// <summary>
+    /// Competition Division Id.
+    /// </summary>
     public Guid? CompetitionDivisionId { get; set; }
+    /// <summary>
+    /// Tournament Group Id.
+    /// </summary>
     public Guid? TournamentGroupId { get; set; }
+    /// <summary>
+    /// Playoff Series Id.
+    /// </summary>
     public Guid? PlayoffSeriesId { get; set; }
 
+    /// <summary>
+    /// Venue.
+    /// </summary>
     [StringLength(200)]
     public string? Venue { get; set; }
 }
@@ -634,9 +670,15 @@ public class CreateHockeyMatchRequest
 /// </summary>
 public class AddHomeAwayTeamsToHockeyMatchRequest
 {
+    /// <summary>
+    /// Home Team Id.
+    /// </summary>
     [Required]
     public Guid HomeTeamId { get; set; }
 
+    /// <summary>
+    /// Away Team Id.
+    /// </summary>
     [Required]
     public Guid AwayTeamId { get; set; }
 }
@@ -646,14 +688,26 @@ public class AddHomeAwayTeamsToHockeyMatchRequest
 /// </summary>
 public class ConfirmHockeyMatchRosterRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Team Player Ids.
+    /// </summary>
     [Required]
     public List<Guid> TeamPlayerIds { get; set; } = new();
 
+    /// <summary>
+    /// Confirmed By User Id.
+    /// </summary>
     public Guid? ConfirmedByUserId { get; set; }
 
+    /// <summary>
+    /// Source.
+    /// </summary>
     public HockeyPlayerSelectionSource Source { get; set; } = HockeyPlayerSelectionSource.Manual;
 }
 
@@ -662,25 +716,55 @@ public class ConfirmHockeyMatchRosterRequest
 /// </summary>
 public class RecordHockeyGoalRequest
 {
+    /// <summary>
+    /// Scoring Match Team Id.
+    /// </summary>
     [Required]
     public Guid ScoringMatchTeamId { get; set; }
 
+    /// <summary>
+    /// Scorer Active Player Id.
+    /// </summary>
     [Required]
     public Guid ScorerActivePlayerId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Goal Strength.
+    /// </summary>
     [Required]
     public HockeyGoalStrength GoalStrength { get; set; }
 
+    /// <summary>
+    /// Primary Assist Active Player Id.
+    /// </summary>
     public Guid? PrimaryAssistActivePlayerId { get; set; }
+    /// <summary>
+    /// Secondary Assist Active Player Id.
+    /// </summary>
     public Guid? SecondaryAssistActivePlayerId { get; set; }
+    /// <summary>
+    /// Goalie Active Player Id.
+    /// </summary>
     public Guid? GoalieActivePlayerId { get; set; }
+    /// <summary>
+    /// Was Empty Net.
+    /// </summary>
     public bool WasEmptyNet { get; set; }
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -689,25 +773,55 @@ public class RecordHockeyGoalRequest
 /// </summary>
 public class UpdateHockeyGoalRequest
 {
+    /// <summary>
+    /// Scoring Match Team Id.
+    /// </summary>
     [Required]
     public Guid ScoringMatchTeamId { get; set; }
 
+    /// <summary>
+    /// Scorer Active Player Id.
+    /// </summary>
     [Required]
     public Guid ScorerActivePlayerId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Goal Strength.
+    /// </summary>
     [Required]
     public HockeyGoalStrength GoalStrength { get; set; }
 
+    /// <summary>
+    /// Primary Assist Active Player Id.
+    /// </summary>
     public Guid? PrimaryAssistActivePlayerId { get; set; }
+    /// <summary>
+    /// Secondary Assist Active Player Id.
+    /// </summary>
     public Guid? SecondaryAssistActivePlayerId { get; set; }
+    /// <summary>
+    /// Goalie Active Player Id.
+    /// </summary>
     public Guid? GoalieActivePlayerId { get; set; }
+    /// <summary>
+    /// Was Empty Net.
+    /// </summary>
     public bool WasEmptyNet { get; set; }
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -716,27 +830,57 @@ public class UpdateHockeyGoalRequest
 /// </summary>
 public class RecordHockeyPenaltyRequest
 {
+    /// <summary>
+    /// Penalty Match Team Id.
+    /// </summary>
     [Required]
     public Guid PenaltyMatchTeamId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Severity.
+    /// </summary>
     [Required]
     public HockeyPenaltySeverity Severity { get; set; }
 
+    /// <summary>
+    /// Offence.
+    /// </summary>
     [Required]
     public HockeyPenaltyOffence Offence { get; set; }
 
+    /// <summary>
+    /// Penalty Minutes.
+    /// </summary>
     [Required]
     public int PenaltyMinutes { get; set; }
 
+    /// <summary>
+    /// Penalized Active Player Id.
+    /// </summary>
     public Guid? PenalizedActivePlayerId { get; set; }
+    /// <summary>
+    /// Served By Active Player Id.
+    /// </summary>
     public Guid? ServedByActivePlayerId { get; set; }
+    /// <summary>
+    /// Is Bench Penalty.
+    /// </summary>
     public bool IsBenchPenalty { get; set; }
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -745,27 +889,57 @@ public class RecordHockeyPenaltyRequest
 /// </summary>
 public class UpdateHockeyPenaltyRequest
 {
+    /// <summary>
+    /// Penalty Match Team Id.
+    /// </summary>
     [Required]
     public Guid PenaltyMatchTeamId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Severity.
+    /// </summary>
     [Required]
     public HockeyPenaltySeverity Severity { get; set; }
 
+    /// <summary>
+    /// Offence.
+    /// </summary>
     [Required]
     public HockeyPenaltyOffence Offence { get; set; }
 
+    /// <summary>
+    /// Penalty Minutes.
+    /// </summary>
     [Required]
     public int PenaltyMinutes { get; set; }
 
+    /// <summary>
+    /// Penalized Active Player Id.
+    /// </summary>
     public Guid? PenalizedActivePlayerId { get; set; }
+    /// <summary>
+    /// Served By Active Player Id.
+    /// </summary>
     public Guid? ServedByActivePlayerId { get; set; }
+    /// <summary>
+    /// Is Bench Penalty.
+    /// </summary>
     public bool IsBenchPenalty { get; set; }
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -774,21 +948,45 @@ public class UpdateHockeyPenaltyRequest
 /// </summary>
 public class RecordHockeyShotRequest
 {
+    /// <summary>
+    /// Shooting Match Team Id.
+    /// </summary>
     [Required]
     public Guid ShootingMatchTeamId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Shot Result.
+    /// </summary>
     [Required]
     public HockeyShotResult ShotResult { get; set; }
 
+    /// <summary>
+    /// Counts As Shot On Goal.
+    /// </summary>
     public bool CountsAsShotOnGoal { get; set; } = true;
+    /// <summary>
+    /// Shooter Active Player Id.
+    /// </summary>
     public Guid? ShooterActivePlayerId { get; set; }
+    /// <summary>
+    /// Goalie Active Player Id.
+    /// </summary>
     public Guid? GoalieActivePlayerId { get; set; }
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -797,21 +995,45 @@ public class RecordHockeyShotRequest
 /// </summary>
 public class UpdateHockeyShotRequest
 {
+    /// <summary>
+    /// Shooting Match Team Id.
+    /// </summary>
     [Required]
     public Guid ShootingMatchTeamId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Shot Result.
+    /// </summary>
     [Required]
     public HockeyShotResult ShotResult { get; set; }
 
+    /// <summary>
+    /// Counts As Shot On Goal.
+    /// </summary>
     public bool CountsAsShotOnGoal { get; set; } = true;
+    /// <summary>
+    /// Shooter Active Player Id.
+    /// </summary>
     public Guid? ShooterActivePlayerId { get; set; }
+    /// <summary>
+    /// Goalie Active Player Id.
+    /// </summary>
     public Guid? GoalieActivePlayerId { get; set; }
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -820,24 +1042,51 @@ public class UpdateHockeyShotRequest
 /// </summary>
 public class RecordHockeyVideoReviewRequest
 {
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Review Type.
+    /// </summary>
     [Required]
     public HockeyVideoReviewType ReviewType { get; set; }
 
+    /// <summary>
+    /// Original Decision.
+    /// </summary>
     [Required]
     public HockeyReviewDecision OriginalDecision { get; set; }
 
+    /// <summary>
+    /// Final Decision.
+    /// </summary>
     [Required]
     public HockeyReviewDecision FinalDecision { get; set; }
 
+    /// <summary>
+    /// Is Coach Challenge.
+    /// </summary>
     public bool IsCoachChallenge { get; set; }
+    /// <summary>
+    /// Was Successful.
+    /// </summary>
     public bool WasSuccessful { get; set; }
+    /// <summary>
+    /// Requested By Match Team Id.
+    /// </summary>
     public Guid? RequestedByMatchTeamId { get; set; }
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -846,6 +1095,9 @@ public class RecordHockeyVideoReviewRequest
 /// </summary>
 public class MarkHockeyMatchStartedRequest
 {
+    /// <summary>
+    /// Actual Start Time.
+    /// </summary>
     public DateTime? ActualStartTime { get; set; }
 }
 
@@ -854,7 +1106,13 @@ public class MarkHockeyMatchStartedRequest
 /// </summary>
 public class MarkHockeyMatchFinishedRequest
 {
+    /// <summary>
+    /// Actual End Time.
+    /// </summary>
     public DateTime? ActualEndTime { get; set; }
+    /// <summary>
+    /// Result Type.
+    /// </summary>
     public HockeyMatchResultType? ResultType { get; set; }
 }
 
@@ -863,6 +1121,9 @@ public class MarkHockeyMatchFinishedRequest
 /// </summary>
 public class SetHockeyMatchStatusRequest
 {
+    /// <summary>
+    /// Status.
+    /// </summary>
     [Required]
     public HockeyMatchStatus Status { get; set; }
 }
@@ -872,6 +1133,9 @@ public class SetHockeyMatchStatusRequest
 /// </summary>
 public class SetHockeyMatchResultTypeRequest
 {
+    /// <summary>
+    /// Result Type.
+    /// </summary>
     public HockeyMatchResultType? ResultType { get; set; }
 }
 
@@ -880,6 +1144,9 @@ public class SetHockeyMatchResultTypeRequest
 /// </summary>
 public class SetHockeyMatchCurrentPeriodRequest
 {
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 }
@@ -889,6 +1156,9 @@ public class SetHockeyMatchCurrentPeriodRequest
 /// </summary>
 public class SetHockeyMatchBooleanFlagRequest
 {
+    /// <summary>
+    /// Value.
+    /// </summary>
     [Required]
     public bool Value { get; set; }
 }
@@ -898,6 +1168,9 @@ public class SetHockeyMatchBooleanFlagRequest
 /// </summary>
 public class UpdateHockeyMatchVenueRequest
 {
+    /// <summary>
+    /// Venue.
+    /// </summary>
     [StringLength(200)]
     public string? Venue { get; set; }
 }
@@ -907,6 +1180,9 @@ public class UpdateHockeyMatchVenueRequest
 /// </summary>
 public class UpdateHockeyMatchScheduledStartRequest
 {
+    /// <summary>
+    /// Scheduled Start Time.
+    /// </summary>
     [Required]
     public DateTime ScheduledStartTime { get; set; }
 }
@@ -916,9 +1192,15 @@ public class UpdateHockeyMatchScheduledStartRequest
 /// </summary>
 public class SetHockeyMatchTeamGoalsRequest
 {
+    /// <summary>
+    /// Team Slot.
+    /// </summary>
     [Required]
     public HockeyTeamSlot TeamSlot { get; set; }
 
+    /// <summary>
+    /// Goals.
+    /// </summary>
     [Required]
     public int Goals { get; set; }
 }
@@ -928,12 +1210,21 @@ public class SetHockeyMatchTeamGoalsRequest
 /// </summary>
 public class AddHockeyMatchOfficialRequest
 {
+    /// <summary>
+    /// Official Id.
+    /// </summary>
     [Required]
     public Guid OfficialId { get; set; }
 
+    /// <summary>
+    /// Role.
+    /// </summary>
     [Required]
     public HockeyOfficialRole Role { get; set; }
 
+    /// <summary>
+    /// Is Main Official.
+    /// </summary>
     public bool IsMainOfficial { get; set; }
 }
 
@@ -942,9 +1233,15 @@ public class AddHockeyMatchOfficialRequest
 /// </summary>
 public class AddHockeyPeriodScoreRequest
 {
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Period Type.
+    /// </summary>
     [Required]
     public HockeyPeriodType PeriodType { get; set; }
 }
@@ -954,15 +1251,27 @@ public class AddHockeyPeriodScoreRequest
 /// </summary>
 public class RecordHockeyPeriodEventRequest
 {
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Action.
+    /// </summary>
     [Required]
     public HockeyPeriodAction Action { get; set; }
 
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -971,26 +1280,53 @@ public class RecordHockeyPeriodEventRequest
 /// </summary>
 public class RecordHockeyFaceoffRequest
 {
+    /// <summary>
+    /// Winning Match Team Id.
+    /// </summary>
     [Required]
     public Guid WinningMatchTeamId { get; set; }
 
+    /// <summary>
+    /// Losing Match Team Id.
+    /// </summary>
     [Required]
     public Guid LosingMatchTeamId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Zone.
+    /// </summary>
     [Required]
     public HockeyFaceoffZone Zone { get; set; }
 
+    /// <summary>
+    /// Spot.
+    /// </summary>
     [Required]
     public HockeyFaceoffSpot Spot { get; set; }
 
+    /// <summary>
+    /// Winning Active Player Id.
+    /// </summary>
     public Guid? WinningActivePlayerId { get; set; }
+    /// <summary>
+    /// Losing Active Player Id.
+    /// </summary>
     public Guid? LosingActivePlayerId { get; set; }
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -999,20 +1335,47 @@ public class RecordHockeyFaceoffRequest
 /// </summary>
 public class RecordHockeyStoppageRequest
 {
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Reason.
+    /// </summary>
     [Required]
     public HockeyStoppageReason Reason { get; set; }
 
+    /// <summary>
+    /// Responsible Match Team Id.
+    /// </summary>
     public Guid? ResponsibleMatchTeamId { get; set; }
+    /// <summary>
+    /// Responsible Active Player Id.
+    /// </summary>
     public Guid? ResponsibleActivePlayerId { get; set; }
+    /// <summary>
+    /// Next Faceoff Zone.
+    /// </summary>
     public HockeyFaceoffZone? NextFaceoffZone { get; set; }
+    /// <summary>
+    /// Next Faceoff Spot.
+    /// </summary>
     public HockeyFaceoffSpot? NextFaceoffSpot { get; set; }
+    /// <summary>
+    /// Rule Reference.
+    /// </summary>
     public string? RuleReference { get; set; }
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -1021,15 +1384,27 @@ public class RecordHockeyStoppageRequest
 /// </summary>
 public class RecordHockeyTimeoutRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -1038,18 +1413,39 @@ public class RecordHockeyTimeoutRequest
 /// </summary>
 public class RecordHockeyGoalieChangeRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Outgoing Goalie Active Player Id.
+    /// </summary>
     public Guid? OutgoingGoalieActivePlayerId { get; set; }
+    /// <summary>
+    /// Incoming Goalie Active Player Id.
+    /// </summary>
     public Guid? IncomingGoalieActivePlayerId { get; set; }
+    /// <summary>
+    /// Reason.
+    /// </summary>
     public string? Reason { get; set; }
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -1058,27 +1454,51 @@ public class RecordHockeyGoalieChangeRequest
 /// </summary>
 public class RecordHockeyShootoutAttemptRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Shooter Active Player Id.
+    /// </summary>
     [Required]
     public Guid ShooterActivePlayerId { get; set; }
 
+    /// <summary>
+    /// Goalie Active Player Id.
+    /// </summary>
     [Required]
     public Guid GoalieActivePlayerId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     [Required]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     [Required]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Shot Order.
+    /// </summary>
     [Required]
     public int ShotOrder { get; set; }
 
+    /// <summary>
+    /// Result.
+    /// </summary>
     [Required]
     public HockeyShootoutAttemptResult Result { get; set; }
 
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string? Description { get; set; }
 }
 
@@ -1087,20 +1507,53 @@ public class RecordHockeyShootoutAttemptRequest
 /// </summary>
 public class RecordHockeyFailedCoachChallengePenaltyRequest
 {
+    /// <summary>
+    /// Video Review Id.
+    /// </summary>
     [Required]
     public Guid VideoReviewId { get; set; }
 
+    /// <summary>
+    /// Penalty Match Team Id.
+    /// </summary>
     [Required]
     public Guid PenaltyMatchTeamId { get; set; }
 
+    /// <summary>
+    /// Enabled.
+    /// </summary>
     public bool Enabled { get; set; } = true;
+    /// <summary>
+    /// Max Challenges Per Team.
+    /// </summary>
     public int MaxChallengesPerTeam { get; set; } = 1;
+    /// <summary>
+    /// Lose Challenge After Failed.
+    /// </summary>
     public bool LoseChallengeAfterFailed { get; set; } = true;
+    /// <summary>
+    /// Penalty For Failed Challenge.
+    /// </summary>
     public bool PenaltyForFailedChallenge { get; set; } = true;
+    /// <summary>
+    /// Failed Challenge Penalty Minutes.
+    /// </summary>
     public int FailedChallengePenaltyMinutes { get; set; } = 2;
+    /// <summary>
+    /// Failed Challenge Penalty Offence.
+    /// </summary>
     public HockeyPenaltyOffence FailedChallengePenaltyOffence { get; set; } = HockeyPenaltyOffence.DelayOfGame;
+    /// <summary>
+    /// Failed Challenge Penalty Severity.
+    /// </summary>
     public HockeyPenaltySeverity FailedChallengePenaltySeverity { get; set; } = HockeyPenaltySeverity.Minor;
+    /// <summary>
+    /// Allow Challenge In Overtime.
+    /// </summary>
     public bool AllowChallengeInOvertime { get; set; } = true;
+    /// <summary>
+    /// Allow Challenge In Shootout.
+    /// </summary>
     public bool AllowChallengeInShootout { get; set; }
 }
 
@@ -1109,17 +1562,32 @@ public class RecordHockeyFailedCoachChallengePenaltyRequest
 /// </summary>
 public class AddHockeyMatchLineRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Line display name.
+    /// </summary>
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Line Type.
+    /// </summary>
     [Required]
     public HockeyLineType LineType { get; set; }
 
+    /// <summary>
+    /// Line Number.
+    /// </summary>
     public int? LineNumber { get; set; }
+    /// <summary>
+    /// Notes.
+    /// </summary>
     public string? Notes { get; set; }
 }
 
@@ -1128,13 +1596,25 @@ public class AddHockeyMatchLineRequest
 /// </summary>
 public class AddHockeyMatchLinePlayerRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Match Active Player Id.
+    /// </summary>
     [Required]
     public Guid MatchActivePlayerId { get; set; }
 
+    /// <summary>
+    /// Slot.
+    /// </summary>
     public HockeyLineSlot? Slot { get; set; }
+    /// <summary>
+    /// Order.
+    /// </summary>
     public int? Order { get; set; }
 }
 
@@ -1143,9 +1623,15 @@ public class AddHockeyMatchLinePlayerRequest
 /// </summary>
 public class UpdateHockeyMatchLineNameRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Line display name.
+    /// </summary>
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
@@ -1156,9 +1642,15 @@ public class UpdateHockeyMatchLineNameRequest
 /// </summary>
 public class UpdateHockeyMatchLineNotesRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Notes.
+    /// </summary>
     public string? Notes { get; set; }
 }
 
@@ -1167,9 +1659,15 @@ public class UpdateHockeyMatchLineNotesRequest
 /// </summary>
 public class HockeyMatchTeamIdRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// User Id.
+    /// </summary>
     public Guid? UserId { get; set; }
 }
 
@@ -1178,18 +1676,45 @@ public class HockeyMatchTeamIdRequest
 /// </summary>
 public class AddHockeyMatchPlayerToIceRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Match Active Player Id.
+    /// </summary>
     [Required]
     public Guid MatchActivePlayerId { get; set; }
 
+    /// <summary>
+    /// Slot.
+    /// </summary>
     public HockeyIceSlot? Slot { get; set; }
+    /// <summary>
+    /// Order.
+    /// </summary>
     public int? Order { get; set; }
+    /// <summary>
+    /// Is Goalie.
+    /// </summary>
     public bool? IsGoalie { get; set; }
+    /// <summary>
+    /// Is Extra Attacker.
+    /// </summary>
     public bool IsExtraAttacker { get; set; }
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     public int? PeriodNumber { get; set; }
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     public int? TimeInSeconds { get; set; }
+    /// <summary>
+    /// User Id.
+    /// </summary>
     public Guid? UserId { get; set; }
 }
 
@@ -1198,14 +1723,29 @@ public class AddHockeyMatchPlayerToIceRequest
 /// </summary>
 public class RemoveHockeyMatchPlayerFromIceRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Match Active Player Id.
+    /// </summary>
     [Required]
     public Guid MatchActivePlayerId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     public int? PeriodNumber { get; set; }
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     public int? TimeInSeconds { get; set; }
+    /// <summary>
+    /// User Id.
+    /// </summary>
     public Guid? UserId { get; set; }
 }
 
@@ -1214,11 +1754,23 @@ public class RemoveHockeyMatchPlayerFromIceRequest
 /// </summary>
 public class HockeyMatchIceActionRequest
 {
+    /// <summary>
+    /// Match Team Id.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Period Number.
+    /// </summary>
     public int? PeriodNumber { get; set; }
+    /// <summary>
+    /// Time In Seconds.
+    /// </summary>
     public int? TimeInSeconds { get; set; }
+    /// <summary>
+    /// User Id.
+    /// </summary>
     public Guid? UserId { get; set; }
 }
 
@@ -1227,9 +1779,15 @@ public class HockeyMatchIceActionRequest
 /// </summary>
 public class HockeyMatchTeamPlayerRequest
 {
+    /// <summary>
+    /// Match-team row that owns the roster player.
+    /// </summary>
     [Required]
     public Guid MatchTeamId { get; set; }
 
+    /// <summary>
+    /// Active roster player to set as goalie or deactivate.
+    /// </summary>
     [Required]
     public Guid MatchActivePlayerId { get; set; }
 }
@@ -1239,9 +1797,24 @@ public class HockeyMatchTeamPlayerRequest
 /// </summary>
 public class RecalculateHockeyCompetitionStatisticsRequest
 {
+    /// <summary>
+    /// Statistics scope to recalculate. Defaults to the whole competition.
+    /// </summary>
     public HockeyStatisticsScope Scope { get; set; } = HockeyStatisticsScope.Competition;
+
+    /// <summary>
+    /// Optional season division to limit the recalculation.
+    /// </summary>
     public Guid? CompetitionDivisionId { get; set; }
+
+    /// <summary>
+    /// Optional tournament group to limit the recalculation.
+    /// </summary>
     public Guid? TournamentGroupId { get; set; }
+
+    /// <summary>
+    /// Optional playoff series to limit the recalculation.
+    /// </summary>
     public Guid? PlayoffSeriesId { get; set; }
 }
 
@@ -1250,9 +1823,24 @@ public class RecalculateHockeyCompetitionStatisticsRequest
 /// </summary>
 public class ResetHockeyCompetitionStatisticsRequest
 {
+    /// <summary>
+    /// Statistics scope to reset. When omitted, the handler uses the competition default.
+    /// </summary>
     public HockeyStatisticsScope? Scope { get; set; }
+
+    /// <summary>
+    /// Optional season division to limit the reset.
+    /// </summary>
     public Guid? CompetitionDivisionId { get; set; }
+
+    /// <summary>
+    /// Optional tournament group to limit the reset.
+    /// </summary>
     public Guid? TournamentGroupId { get; set; }
+
+    /// <summary>
+    /// Optional playoff series to limit the reset.
+    /// </summary>
     public Guid? PlayoffSeriesId { get; set; }
 }
 

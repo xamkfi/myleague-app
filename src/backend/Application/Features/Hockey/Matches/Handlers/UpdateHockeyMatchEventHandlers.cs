@@ -18,7 +18,6 @@ public class UpdateHockeyGoalHandler : IRequestHandler<UpdateHockeyGoalCommand, 
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateHockeyGoalHandler> _logger;
-    private readonly HockeyMatchValidationService _validationService = new();
 
     public UpdateHockeyGoalHandler(
         IHockeyMatchRepository matchRepository,
@@ -53,7 +52,7 @@ public class UpdateHockeyGoalHandler : IRequestHandler<UpdateHockeyGoalCommand, 
                 request.WasEmptyNet,
                 request.Description);
 
-            HockeyDomainValidationResult validation = _validationService.ValidateEventPlayerReferences(match);
+            HockeyDomainValidationResult validation = HockeyMatchValidationService.ValidateEventPlayerReferences(match);
             if (!validation.IsValid)
                 return Result<HockeyMatchDto>.Failure(string.Join(" ", validation.Errors), validation.Errors);
 
@@ -90,7 +89,6 @@ public class UpdateHockeyPenaltyHandler : IRequestHandler<UpdateHockeyPenaltyCom
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateHockeyPenaltyHandler> _logger;
-    private readonly HockeyMatchValidationService _validationService = new();
 
     public UpdateHockeyPenaltyHandler(
         IHockeyMatchRepository matchRepository,
@@ -125,7 +123,7 @@ public class UpdateHockeyPenaltyHandler : IRequestHandler<UpdateHockeyPenaltyCom
                 request.IsBenchPenalty,
                 request.Description);
 
-            HockeyDomainValidationResult validation = _validationService.ValidateEventPlayerReferences(match);
+            HockeyDomainValidationResult validation = HockeyMatchValidationService.ValidateEventPlayerReferences(match);
             if (!validation.IsValid)
                 return Result<HockeyMatchDto>.Failure(string.Join(" ", validation.Errors), validation.Errors);
 
@@ -162,7 +160,6 @@ public class UpdateHockeyShotHandler : IRequestHandler<UpdateHockeyShotCommand, 
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateHockeyShotHandler> _logger;
-    private readonly HockeyMatchValidationService _validationService = new();
 
     public UpdateHockeyShotHandler(
         IHockeyMatchRepository matchRepository,
@@ -195,7 +192,7 @@ public class UpdateHockeyShotHandler : IRequestHandler<UpdateHockeyShotCommand, 
                 request.GoalieActivePlayerId,
                 request.Description);
 
-            HockeyDomainValidationResult validation = _validationService.ValidateEventPlayerReferences(match);
+            HockeyDomainValidationResult validation = HockeyMatchValidationService.ValidateEventPlayerReferences(match);
             if (!validation.IsValid)
                 return Result<HockeyMatchDto>.Failure(string.Join(" ", validation.Errors), validation.Errors);
 

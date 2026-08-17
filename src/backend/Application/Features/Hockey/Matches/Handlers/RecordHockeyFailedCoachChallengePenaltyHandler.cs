@@ -21,7 +21,6 @@ public class RecordHockeyFailedCoachChallengePenaltyHandler
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
     private readonly ILogger<RecordHockeyFailedCoachChallengePenaltyHandler> _logger;
-    private readonly HockeyMatchValidationService _validationService = new();
 
     public RecordHockeyFailedCoachChallengePenaltyHandler(
         IHockeyMatchRepository matchRepository,
@@ -69,7 +68,7 @@ public class RecordHockeyFailedCoachChallengePenaltyHandler
                 request.PenaltyMatchTeamId);
             _matchRepository.MarkEventAsAdded(penalty);
 
-            HockeyDomainValidationResult validation = _validationService.ValidateEventPlayerReferences(match);
+            HockeyDomainValidationResult validation = HockeyMatchValidationService.ValidateEventPlayerReferences(match);
             if (!validation.IsValid)
             {
                 return Result<HockeyMatchDto>.Failure(string.Join(" ", validation.Errors), validation.Errors);

@@ -19,7 +19,6 @@ public class RecalculateHockeyMatchStatisticsHandler
     private readonly IHockeyTeamRepository _teamRepository;
     private readonly IHockeyStatisticsRepository _statisticsRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
-    private readonly HockeyStatisticsCalculationService _calculationService;
     private readonly ILogger<RecalculateHockeyMatchStatisticsHandler> _logger;
 
     public RecalculateHockeyMatchStatisticsHandler(
@@ -33,7 +32,6 @@ public class RecalculateHockeyMatchStatisticsHandler
         _teamRepository = teamRepository;
         _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
-        _calculationService = new HockeyStatisticsCalculationService();
         _logger = logger;
     }
 
@@ -55,12 +53,12 @@ public class RecalculateHockeyMatchStatisticsHandler
 
             foreach (HockeyMatchTeam matchTeam in match.MatchTeams)
             {
-                teams.Add(_calculationService.BuildMatchTeamStatistics(match, matchTeam));
+                teams.Add(HockeyStatisticsCalculationService.BuildMatchTeamStatistics(match, matchTeam));
                 if (matchTeam.PlayerSelection is null)
                     continue;
 
-                players.AddRange(_calculationService.BuildMatchPlayerStatistics(match, matchTeam));
-                goalies.AddRange(_calculationService.BuildGoalieMatchStatistics(match, matchTeam));
+                players.AddRange(HockeyStatisticsCalculationService.BuildMatchPlayerStatistics(match, matchTeam));
+                goalies.AddRange(HockeyStatisticsCalculationService.BuildGoalieMatchStatistics(match, matchTeam));
             }
 
             await _statisticsRepository.ReplaceMatchStatisticsAsync(match.Id, teams, players, goalies);

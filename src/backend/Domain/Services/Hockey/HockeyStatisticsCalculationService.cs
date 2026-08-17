@@ -12,9 +12,9 @@ namespace Domain.Services.Hockey;
 /// In-memory statistics calculation from match events into match and competition stats entities.
 /// Does not persist; Application/Infrastructure owns storage.
 /// </summary>
-public class HockeyStatisticsCalculationService
+public static class HockeyStatisticsCalculationService
 {
-    public HockeyMatchTeamStatistics BuildMatchTeamStatistics(HockeyMatch match, HockeyMatchTeam matchTeam)
+    public static HockeyMatchTeamStatistics BuildMatchTeamStatistics(HockeyMatch match, HockeyMatchTeam matchTeam)
     {
         ArgumentNullException.ThrowIfNull(match);
         ArgumentNullException.ThrowIfNull(matchTeam);
@@ -76,7 +76,7 @@ public class HockeyStatisticsCalculationService
         return stats;
     }
 
-    public IReadOnlyList<HockeyMatchPlayerStatistics> BuildMatchPlayerStatistics(
+    public static IReadOnlyList<HockeyMatchPlayerStatistics> BuildMatchPlayerStatistics(
         HockeyMatch match,
         HockeyMatchTeam matchTeam)
     {
@@ -140,7 +140,7 @@ public class HockeyStatisticsCalculationService
         return results;
     }
 
-    public IReadOnlyList<HockeyGoalieMatchStatistics> BuildGoalieMatchStatistics(
+    public static IReadOnlyList<HockeyGoalieMatchStatistics> BuildGoalieMatchStatistics(
         HockeyMatch match,
         HockeyMatchTeam matchTeam)
     {
@@ -208,7 +208,7 @@ public class HockeyStatisticsCalculationService
         return results;
     }
 
-    public HockeyPlayerCompetitionStatistics AggregatePlayerCompetitionStatistics(
+    public static HockeyPlayerCompetitionStatistics AggregatePlayerCompetitionStatistics(
         Guid playerId,
         Guid teamId,
         Guid teamPlayerId,
@@ -253,7 +253,7 @@ public class HockeyStatisticsCalculationService
         return aggregate;
     }
 
-    public HockeyGoalieCompetitionStatistics AggregateGoalieCompetitionStatistics(
+    public static HockeyGoalieCompetitionStatistics AggregateGoalieCompetitionStatistics(
         Guid playerId,
         Guid teamId,
         Guid teamPlayerId,
@@ -295,7 +295,7 @@ public class HockeyStatisticsCalculationService
         return aggregate;
     }
 
-    public HockeyTeamCompetitionStatistics AggregateTeamCompetitionStatistics(
+    public static HockeyTeamCompetitionStatistics AggregateTeamCompetitionStatistics(
         Guid teamId,
         Guid competitionId,
         HockeyStatisticsScope scope,

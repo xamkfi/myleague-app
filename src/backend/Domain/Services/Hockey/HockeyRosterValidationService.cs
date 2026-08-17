@@ -8,9 +8,9 @@ namespace Domain.Services.Hockey;
 /// <summary>
 /// Validates team and match-day rosters against <see cref="HockeyRosterRules"/>.
 /// </summary>
-public class HockeyRosterValidationService
+public static class HockeyRosterValidationService
 {
-    public HockeyDomainValidationResult ValidateTeamRoster(
+    public static HockeyDomainValidationResult ValidateTeamRoster(
         HockeyTeam team,
         HockeyRosterRules rules,
         Guid? competitionId = null)
@@ -65,7 +65,7 @@ public class HockeyRosterValidationService
             : HockeyDomainValidationResult.Fail(errors);
     }
 
-    public HockeyDomainValidationResult ValidateMatchSelection(
+    public static HockeyDomainValidationResult ValidateMatchSelection(
         HockeyMatchPlayerSelection selection,
         HockeyRosterRules rules)
     {

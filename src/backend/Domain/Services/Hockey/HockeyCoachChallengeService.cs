@@ -20,9 +20,9 @@ public sealed class HockeyCoachChallengeResult
 /// <summary>
 /// Orchestrates coach-challenge eligibility and failed-challenge penalties.
 /// </summary>
-public class HockeyCoachChallengeService
+public static class HockeyCoachChallengeService
 {
-    public bool CanChallenge(
+    public static bool CanChallenge(
         HockeyMatch match,
         Guid challengingMatchTeamId,
         HockeyVideoReviewType reviewType,
@@ -31,7 +31,7 @@ public class HockeyCoachChallengeService
         return ValidateChallengeAllowed(match, challengingMatchTeamId, reviewType, videoReviewRules).IsValid;
     }
 
-    public HockeyDomainValidationResult ValidateChallengeAllowed(
+    public static HockeyDomainValidationResult ValidateChallengeAllowed(
         HockeyMatch match,
         Guid challengingMatchTeamId,
         HockeyVideoReviewType reviewType,
@@ -75,7 +75,7 @@ public class HockeyCoachChallengeService
             : HockeyDomainValidationResult.Fail(errors);
     }
 
-    public int GetRemainingChallenges(
+    public static int GetRemainingChallenges(
         HockeyMatch match,
         Guid challengingMatchTeamId,
         HockeyCoachChallengeRules challengeRules)
@@ -87,7 +87,7 @@ public class HockeyCoachChallengeService
         return remaining < 0 ? 0 : remaining;
     }
 
-    public HockeyCoachChallengeResult HandleFailedChallenge(
+    public static HockeyCoachChallengeResult HandleFailedChallenge(
         HockeyMatch match,
         HockeyVideoReview review,
         HockeyCoachChallengeRules rules,
