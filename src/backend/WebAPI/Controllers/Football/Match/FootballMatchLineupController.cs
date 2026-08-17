@@ -11,6 +11,9 @@ using WebAPI.Models.Football;
 
 namespace WebAPI.Controllers.Football.Match;
 
+/// <summary>
+/// Controller for managing football match lineups
+/// </summary>
 [Route("api/football-matches/{matchId:guid}/teams/{teamId:guid}")]
 [Authorize(Roles = AuthRoles.AdminOnly)]
 public class FootballMatchLineupController : BaseApiController
@@ -18,6 +21,9 @@ public class FootballMatchLineupController : BaseApiController
     private readonly IMediator _mediator;
     private readonly ILogger<FootballMatchLineupController> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the FootballMatchLineupController class
+    /// </summary>
     public FootballMatchLineupController(
         IMediator mediator,
         ILogger<FootballMatchLineupController> logger)
@@ -26,6 +32,9 @@ public class FootballMatchLineupController : BaseApiController
         _logger = logger;
     }
 
+    /// <summary>
+    /// Set lineup
+    /// </summary>
     [HttpPut("lineup")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> SetLineup(

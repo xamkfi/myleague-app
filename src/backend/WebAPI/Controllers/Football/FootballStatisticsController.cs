@@ -19,6 +19,9 @@ public class FootballStatisticsController : BaseApiController
     private readonly IMediator _mediator;
     private readonly ILogger<FootballStatisticsController> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the FootballStatisticsController class
+    /// </summary>
     public FootballStatisticsController(IMediator mediator, ILogger<FootballStatisticsController> logger)
     {
         _mediator = mediator;

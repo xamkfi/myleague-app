@@ -21,6 +21,9 @@ public class FootballTournamentController : BaseApiController
     private readonly IMediator _mediator;
     private readonly ILogger<FootballTournamentController> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the FootballTournamentController class
+    /// </summary>
     public FootballTournamentController(IMediator mediator, ILogger<FootballTournamentController> logger)
     {
         _mediator = mediator;
@@ -38,6 +41,9 @@ public class FootballTournamentController : BaseApiController
             .ToList();
     }
 
+    /// <summary>
+    /// Get all tournaments
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<FootballTournamentDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -52,6 +58,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Football tournaments retrieved successfully", "Failed to retrieve football tournaments");
     }
 
+    /// <summary>
+    /// Get active tournaments
+    /// </summary>
     [HttpGet("active")]
     [ProducesResponseType(typeof(ApiResponse<List<FootballTournamentDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -66,6 +75,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Active football tournaments retrieved successfully", "Failed to retrieve active football tournaments");
     }
 
+    /// <summary>
+    /// Get tournament by id
+    /// </summary>
     [HttpGet("{competitionId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -80,6 +92,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Football tournament retrieved successfully", "Failed to retrieve football tournament");
     }
 
+    /// <summary>
+    /// Create tournament
+    /// </summary>
     [HttpPost]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status201Created)]
@@ -138,6 +153,9 @@ public class FootballTournamentController : BaseApiController
         return ToErrorResponse(result, "Failed to create football tournament");
     }
 
+    /// <summary>
+    /// Update tournament
+    /// </summary>
     [HttpPut("{competitionId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
@@ -189,6 +207,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Football tournament updated successfully", "Failed to update football tournament");
     }
 
+    /// <summary>
+    /// Delete tournament
+    /// </summary>
     [HttpDelete("{competitionId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
@@ -205,6 +226,9 @@ public class FootballTournamentController : BaseApiController
         return HandleVoidResult(result, "Football tournament deleted successfully", "Failed to delete football tournament");
     }
 
+    /// <summary>
+    /// Start tournament group stage
+    /// </summary>
     [HttpPost("{competitionId:guid}/start-group-stage")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
@@ -221,6 +245,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Tournament group stage started successfully", "Failed to start tournament group stage");
     }
 
+    /// <summary>
+    /// Update playoff schedule
+    /// </summary>
     [HttpPut("{competitionId:guid}/playoff-schedule")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
@@ -246,6 +273,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Tournament playoff schedule updated successfully", "Failed to update tournament playoff schedule");
     }
 
+    /// <summary>
+    /// Start tournament playoff stage
+    /// </summary>
     [HttpPost("{competitionId:guid}/start-playoff-stage")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
@@ -262,6 +292,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Tournament playoff stage started successfully", "Failed to start tournament playoff stage");
     }
 
+    /// <summary>
+    /// Get tournament playoff bracket
+    /// </summary>
     [HttpGet("{competitionId:guid}/playoff-bracket")]
     [ProducesResponseType(typeof(ApiResponse<FootballPlayoffBracketDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -276,6 +309,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Tournament playoff bracket retrieved successfully", "Failed to retrieve tournament playoff bracket");
     }
 
+    /// <summary>
+    /// Complete tournament
+    /// </summary>
     [HttpPost("{competitionId:guid}/complete")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
@@ -292,6 +328,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Football tournament completed successfully", "Failed to complete football tournament");
     }
 
+    /// <summary>
+    /// Cancel tournament
+    /// </summary>
     [HttpPost("{competitionId:guid}/cancel")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
@@ -308,6 +347,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Football tournament cancelled successfully", "Failed to cancel football tournament");
     }
 
+    /// <summary>
+    /// Add group to tournament
+    /// </summary>
     [HttpPost("{competitionId:guid}/groups")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
@@ -327,6 +369,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Group added to tournament successfully", "Failed to add group to tournament");
     }
 
+    /// <summary>
+    /// Remove group from tournament
+    /// </summary>
     [HttpDelete("{competitionId:guid}/groups/{groupId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
@@ -343,6 +388,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Group removed from tournament successfully", "Failed to remove group from tournament");
     }
 
+    /// <summary>
+    /// Add team to tournament group
+    /// </summary>
     [HttpPost("{competitionId:guid}/groups/{groupId:guid}/teams")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
@@ -359,6 +407,9 @@ public class FootballTournamentController : BaseApiController
         return HandleResult(result, "Team added to tournament group successfully", "Failed to add team to tournament group");
     }
 
+    /// <summary>
+    /// Remove team from tournament group
+    /// </summary>
     [HttpDelete("{competitionId:guid}/groups/{groupId:guid}/teams/{teamId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]

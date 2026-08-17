@@ -11,6 +11,9 @@ using WebAPI.Models.Football;
 
 namespace WebAPI.Controllers.Football.Match;
 
+/// <summary>
+/// Controller for football match lifecycle operations
+/// </summary>
 [Route("api/football-matches/{matchId:guid}")]
 [Authorize(Roles = AuthRoles.AdminOnly)]
 public class FootballMatchLifecycleController : BaseApiController
@@ -18,6 +21,9 @@ public class FootballMatchLifecycleController : BaseApiController
     private readonly IMediator _mediator;
     private readonly ILogger<FootballMatchLifecycleController> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the FootballMatchLifecycleController class
+    /// </summary>
     public FootballMatchLifecycleController(
         IMediator mediator,
         ILogger<FootballMatchLifecycleController> logger)
@@ -26,6 +32,9 @@ public class FootballMatchLifecycleController : BaseApiController
         _logger = logger;
     }
 
+    /// <summary>
+    /// Start match
+    /// </summary>
     [HttpPut("start")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> StartMatch(
@@ -36,6 +45,9 @@ public class FootballMatchLifecycleController : BaseApiController
         return HandleResult(result, "Football match started successfully", "Failed to start football match");
     }
 
+    /// <summary>
+    /// Complete match
+    /// </summary>
     [HttpPut("complete")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> CompleteMatch(
@@ -46,6 +58,9 @@ public class FootballMatchLifecycleController : BaseApiController
         return HandleResult(result, "Completed football match successfully", "Failed to complete football match");
     }
 
+    /// <summary>
+    /// Reopen match
+    /// </summary>
     [HttpPut("reopen")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> ReopenMatch(
@@ -56,6 +71,9 @@ public class FootballMatchLifecycleController : BaseApiController
         return HandleResult(result, "Reopened football match successfully", "Failed to reopen football match");
     }
 
+    /// <summary>
+    /// Postpone
+    /// </summary>
     [HttpPost("postpone")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> Postpone(
@@ -66,6 +84,9 @@ public class FootballMatchLifecycleController : BaseApiController
         return HandleResult(result, "Match postponed successfully", "Failed to postpone match");
     }
 
+    /// <summary>
+    /// Cancel
+    /// </summary>
     [HttpPost("cancel")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> Cancel(
@@ -76,6 +97,9 @@ public class FootballMatchLifecycleController : BaseApiController
         return HandleResult(result, "Match canceled successfully", "Failed to cancel match");
     }
 
+    /// <summary>
+    /// Reactivate
+    /// </summary>
     [HttpPost("reactivate")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> Reactivate(
@@ -86,6 +110,9 @@ public class FootballMatchLifecycleController : BaseApiController
         return HandleResult(result, "Match reactivated successfully", "Failed to reactivate match");
     }
 
+    /// <summary>
+    /// Assign teams
+    /// </summary>
     [HttpPut("teams")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> AssignTeams(

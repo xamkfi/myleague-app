@@ -11,6 +11,9 @@ using WebAPI.Models.Football;
 
 namespace WebAPI.Controllers.Football.Match;
 
+/// <summary>
+/// Controller for managing football match officials
+/// </summary>
 [Route("api/football-matches/{matchId:guid}/officials")]
 [Authorize(Roles = AuthRoles.AdminOnly)]
 public class FootballMatchOfficialsController : BaseApiController
@@ -18,6 +21,9 @@ public class FootballMatchOfficialsController : BaseApiController
     private readonly IMediator _mediator;
     private readonly ILogger<FootballMatchOfficialsController> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the FootballMatchOfficialsController class
+    /// </summary>
     public FootballMatchOfficialsController(
         IMediator mediator,
         ILogger<FootballMatchOfficialsController> logger)
@@ -26,6 +32,9 @@ public class FootballMatchOfficialsController : BaseApiController
         _logger = logger;
     }
 
+    /// <summary>
+    /// Add official
+    /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> AddOfficial(
@@ -38,6 +47,9 @@ public class FootballMatchOfficialsController : BaseApiController
         return HandleResult(result, "Official added successfully", "Failed to add official");
     }
 
+    /// <summary>
+    /// Update officials
+    /// </summary>
     [HttpPut]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> UpdateOfficials(
@@ -51,6 +63,9 @@ public class FootballMatchOfficialsController : BaseApiController
         return HandleResult(result, "Officials updated successfully", "Failed to update officials");
     }
 
+    /// <summary>
+    /// Remove official
+    /// </summary>
     [HttpDelete("{refereeId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> RemoveOfficial(
@@ -63,6 +78,9 @@ public class FootballMatchOfficialsController : BaseApiController
         return HandleResult(result, "Official removed successfully", "Failed to remove official");
     }
 
+    /// <summary>
+    /// Set referee
+    /// </summary>
     [HttpPut("referee/{refereeId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> SetReferee(

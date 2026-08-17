@@ -12,6 +12,9 @@ using WebAPI.Services;
 
 namespace WebAPI.Controllers.Football;
 
+/// <summary>
+/// Controller for managing football match events
+/// </summary>
 [Route("api/football-matches/{matchId:guid}/events")]
 [Authorize(Roles = AuthRoles.AdminOnly)]
 public class FootballMatchEventsController : BaseApiController
@@ -20,6 +23,9 @@ public class FootballMatchEventsController : BaseApiController
     private readonly ILogger<FootballMatchEventsController> _logger;
     private readonly IMatchEventRateLimiter _rateLimiter;
 
+    /// <summary>
+    /// Initializes a new instance of the FootballMatchEventsController class
+    /// </summary>
     public FootballMatchEventsController(
         IMediator mediator,
         ILogger<FootballMatchEventsController> logger,
@@ -30,6 +36,9 @@ public class FootballMatchEventsController : BaseApiController
         _rateLimiter = rateLimiter;
     }
 
+    /// <summary>
+    /// Record goal
+    /// </summary>
     [HttpPost("goal")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status429TooManyRequests)]
@@ -60,6 +69,9 @@ public class FootballMatchEventsController : BaseApiController
         return HandleResult(result, "Goal recorded successfully", "Failed to record goal");
     }
 
+    /// <summary>
+    /// Record card
+    /// </summary>
     [HttpPost("card")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status429TooManyRequests)]
@@ -89,6 +101,9 @@ public class FootballMatchEventsController : BaseApiController
         return HandleResult(result, "Card recorded successfully", "Failed to record card");
     }
 
+    /// <summary>
+    /// Record substitution
+    /// </summary>
     [HttpPost("substitution")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> RecordSubstitution(
@@ -109,6 +124,9 @@ public class FootballMatchEventsController : BaseApiController
         return HandleResult(result, "Substitution recorded successfully", "Failed to record substitution");
     }
 
+    /// <summary>
+    /// Delete goal
+    /// </summary>
     [HttpDelete("goal/{goalEventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> DeleteGoal(
@@ -120,6 +138,9 @@ public class FootballMatchEventsController : BaseApiController
         return HandleResult(result, "Goal deleted successfully", "Failed to delete goal");
     }
 
+    /// <summary>
+    /// Delete card
+    /// </summary>
     [HttpDelete("card/{cardEventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> DeleteCard(
@@ -131,6 +152,9 @@ public class FootballMatchEventsController : BaseApiController
         return HandleResult(result, "Card deleted successfully", "Failed to delete card");
     }
 
+    /// <summary>
+    /// Delete substitution
+    /// </summary>
     [HttpDelete("substitution/{substitutionEventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> DeleteSubstitution(
@@ -143,6 +167,9 @@ public class FootballMatchEventsController : BaseApiController
         return HandleResult(result, "Substitution deleted successfully", "Failed to delete substitution");
     }
 
+    /// <summary>
+    /// Record extra time
+    /// </summary>
     [HttpPost("extra-time")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> RecordExtraTime(
@@ -153,6 +180,9 @@ public class FootballMatchEventsController : BaseApiController
         return HandleResult(result, "Extra time recorded successfully", "Failed to record extra time");
     }
 
+    /// <summary>
+    /// Record penalty shootout
+    /// </summary>
     [HttpPost("penalty-shootout")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> RecordPenaltyShootout(
@@ -163,6 +193,9 @@ public class FootballMatchEventsController : BaseApiController
         return HandleResult(result, "Penalty shootout recorded successfully", "Failed to record penalty shootout");
     }
 
+    /// <summary>
+    /// Start period
+    /// </summary>
     [HttpPost("periods/{periodNumber:int}/start")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> StartPeriod(
@@ -174,6 +207,9 @@ public class FootballMatchEventsController : BaseApiController
         return HandleResult(result, "Period started successfully", "Failed to start period");
     }
 
+    /// <summary>
+    /// End period
+    /// </summary>
     [HttpPost("periods/{periodNumber:int}/end")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> EndPeriod(

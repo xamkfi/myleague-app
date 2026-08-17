@@ -14,18 +14,27 @@ using WebAPI.Models.Football;
 
 namespace WebAPI.Controllers.Football;
 
+/// <summary>
+/// Controller for managing football seasons
+/// </summary>
 [Route("api/[controller]")]
 public class FootballSeasonController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<FootballSeasonController> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the FootballSeasonController class
+    /// </summary>
     public FootballSeasonController(IMediator mediator, ILogger<FootballSeasonController> logger)
     {
         _mediator = mediator;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Get all seasons
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<FootballSeasonDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -35,6 +44,9 @@ public class FootballSeasonController : BaseApiController
         return HandleListResult(result, "Football seasons retrieved successfully", "Failed to retrieve football seasons");
     }
 
+    /// <summary>
+    /// Get season years
+    /// </summary>
     [HttpGet("years")]
     [ProducesResponseType(typeof(ApiResponse<List<FootballSeasonYearDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -44,6 +56,9 @@ public class FootballSeasonController : BaseApiController
         return HandleListResult(result, "Football season years retrieved successfully", "Failed to retrieve football season years");
     }
 
+    /// <summary>
+    /// Get seasons paged
+    /// </summary>
     [HttpGet("paged")]
     [ProducesResponseType(typeof(PaginatedApiResponse<FootballSeasonSummaryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(PaginatedApiResponse<FootballSeasonSummaryDto>), StatusCodes.Status400BadRequest)]
@@ -61,6 +76,9 @@ public class FootballSeasonController : BaseApiController
         return HandlePaginatedResult(result, "Football seasons retrieved successfully", "Failed to retrieve football seasons");
     }
 
+    /// <summary>
+    /// Get active seasons
+    /// </summary>
     [HttpGet("active")]
     [ProducesResponseType(typeof(ApiResponse<List<FootballSeasonDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -70,6 +88,9 @@ public class FootballSeasonController : BaseApiController
         return HandleListResult(result, "Active football seasons retrieved successfully", "Failed to retrieve active football seasons");
     }
 
+    /// <summary>
+    /// Get season by id
+    /// </summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -80,6 +101,9 @@ public class FootballSeasonController : BaseApiController
         return HandleResult(result, "Football season retrieved successfully", "Failed to retrieve football season");
     }
 
+    /// <summary>
+    /// Get seasons by division
+    /// </summary>
     [HttpGet("by-division/{division}")]
     [ProducesResponseType(typeof(ApiResponse<List<FootballSeasonDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -90,6 +114,9 @@ public class FootballSeasonController : BaseApiController
         return HandleListResult(result, "Football seasons retrieved successfully", "Failed to retrieve football seasons");
     }
 
+    /// <summary>
+    /// Create season
+    /// </summary>
     [HttpPost]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status201Created)]
@@ -135,6 +162,9 @@ public class FootballSeasonController : BaseApiController
         return ToErrorResponse(result, "Failed to create football season");
     }
 
+    /// <summary>
+    /// Update season
+    /// </summary>
     [HttpPut("{id:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
@@ -172,6 +202,9 @@ public class FootballSeasonController : BaseApiController
         return HandleResult(result, "Football season updated successfully", "Failed to update football season");
     }
 
+    /// <summary>
+    /// Activate season
+    /// </summary>
     [HttpPut("{id:guid}/activate")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
@@ -181,6 +214,9 @@ public class FootballSeasonController : BaseApiController
         return HandleResult(result, "Football season activated successfully", "Failed to activate football season");
     }
 
+    /// <summary>
+    /// Deactivate season
+    /// </summary>
     [HttpPut("{id:guid}/deactivate")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
@@ -190,6 +226,9 @@ public class FootballSeasonController : BaseApiController
         return HandleResult(result, "Football season deactivated successfully", "Failed to deactivate football season");
     }
 
+    /// <summary>
+    /// Complete season
+    /// </summary>
     [HttpPut("{id:guid}/complete")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
@@ -199,6 +238,9 @@ public class FootballSeasonController : BaseApiController
         return HandleResult(result, "Football season completed successfully", "Failed to complete football season");
     }
 
+    /// <summary>
+    /// Add team to season
+    /// </summary>
     [Obsolete("Use AddTeamToSeasonDivision instead to assign teams to a specific division within the season.")]
     [HttpPost("{competitionId:guid}/teams/{teamId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
@@ -209,6 +251,9 @@ public class FootballSeasonController : BaseApiController
         return HandleResult(result, "Team added to football season successfully", "Failed to add team to football season");
     }
 
+    /// <summary>
+    /// Remove team from season
+    /// </summary>
     [HttpDelete("{competitionId:guid}/teams/{teamId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
@@ -218,6 +263,9 @@ public class FootballSeasonController : BaseApiController
         return HandleResult(result, "Team removed from football season successfully", "Failed to remove team from football season");
     }
 
+    /// <summary>
+    /// Add division to season
+    /// </summary>
     [HttpPost("{competitionId:guid}/divisions/{divisionId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
@@ -227,6 +275,9 @@ public class FootballSeasonController : BaseApiController
         return HandleVoidResult(result, "Division added to football season successfully", "Failed to add division to season");
     }
 
+    /// <summary>
+    /// Remove division from season
+    /// </summary>
     [HttpDelete("{competitionId:guid}/divisions/{divisionId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
@@ -236,6 +287,9 @@ public class FootballSeasonController : BaseApiController
         return HandleVoidResult(result, "Division removed from football season successfully", "Failed to remove division from season");
     }
 
+    /// <summary>
+    /// Add team to season division
+    /// </summary>
     [HttpPost("{competitionId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
@@ -245,6 +299,9 @@ public class FootballSeasonController : BaseApiController
         return HandleVoidResult(result, "Team added to season division successfully", "Failed to add team to season division");
     }
 
+    /// <summary>
+    /// Remove team from season division
+    /// </summary>
     [HttpDelete("{competitionId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
@@ -254,6 +311,9 @@ public class FootballSeasonController : BaseApiController
         return HandleVoidResult(result, "Team removed from season division successfully", "Failed to remove team from season division");
     }
 
+    /// <summary>
+    /// Delete season
+    /// </summary>
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]

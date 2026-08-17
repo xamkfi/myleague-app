@@ -15,18 +15,27 @@ using WebAPI.Models.Football;
 
 namespace WebAPI.Controllers.Football;
 
+/// <summary>
+/// Controller for managing football matches
+/// </summary>
 [Route("api/football-matches")]
 public class FootballMatchesController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<FootballMatchesController> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the FootballMatchesController class
+    /// </summary>
     public FootballMatchesController(IMediator mediator, ILogger<FootballMatchesController> logger)
     {
         _mediator = mediator;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Get all matches
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PaginatedApiResponse<FootballMatchDto>>> GetAllMatches(
@@ -51,6 +60,9 @@ public class FootballMatchesController : BaseApiController
         return HandlePaginatedResult(result, "Football matches retrieved successfully", "Failed to retrieve football matches");
     }
 
+    /// <summary>
+    /// Get match by id
+    /// </summary>
     [HttpGet("by-id/{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> GetMatchById(
@@ -61,6 +73,9 @@ public class FootballMatchesController : BaseApiController
         return HandleResult(result, "Football match retrieved successfully", "Football match not found");
     }
 
+    /// <summary>
+    /// Get match by season
+    /// </summary>
     [HttpGet("by-competitionId/{competitionId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<List<FootballMatchDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<FootballMatchDto>>>> GetMatchBySeason(
@@ -72,6 +87,9 @@ public class FootballMatchesController : BaseApiController
         return HandleListResult(result, "Retrieved football matches with season ID successfully", "Failed to retrieve football matches");
     }
 
+    /// <summary>
+    /// Get match by team
+    /// </summary>
     [HttpGet("by-team/{teamId:guid}")]
     [ProducesResponseType(typeof(PaginatedApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PaginatedApiResponse<FootballMatchDto>>> GetMatchByTeam(
@@ -90,6 +108,9 @@ public class FootballMatchesController : BaseApiController
         return HandlePaginatedResult(result, "Retrieved football matches with team ID successfully", "Failed to retrieve football matches with team ID");
     }
 
+    /// <summary>
+    /// Get todays matches by team
+    /// </summary>
     [HttpGet("by-team/{teamId:guid}/today")]
     [ProducesResponseType(typeof(ApiResponse<List<FootballMatchDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<FootballMatchDto>>>> GetTodaysMatchesByTeam(
@@ -101,6 +122,9 @@ public class FootballMatchesController : BaseApiController
         return HandleListResult(result, "Retrieved today's football matches with team ID successfully", "Failed to retrieve today's football matches with team ID");
     }
 
+    /// <summary>
+    /// Create match
+    /// </summary>
     [HttpPost]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status201Created)]
@@ -148,6 +172,9 @@ public class FootballMatchesController : BaseApiController
         return ToErrorResponse(result, "Failed to create football match");
     }
 
+    /// <summary>
+    /// Update match
+    /// </summary>
     [HttpPut]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
@@ -169,6 +196,9 @@ public class FootballMatchesController : BaseApiController
         return HandleResult(result, "Football match updated successfully", "Failed to update football match");
     }
 
+    /// <summary>
+    /// Delete match
+    /// </summary>
     [HttpDelete("{matchId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]

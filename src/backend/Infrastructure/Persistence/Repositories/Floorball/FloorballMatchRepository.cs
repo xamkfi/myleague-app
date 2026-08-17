@@ -160,9 +160,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
                 string searchTerm = searchQuery.Trim().ToLower();
-                query = query.Where(m => 
-                    m.HomeTeam.Name.ToLower().Contains(searchTerm) || 
-                    m.AwayTeam.Name.ToLower().Contains(searchTerm)
+                query = query.Where(m =>
+                    (m.HomeTeam != null && m.HomeTeam.Name.ToLower().Contains(searchTerm)) ||
+                    (m.AwayTeam != null && m.AwayTeam.Name.ToLower().Contains(searchTerm))
                 );
             }
 

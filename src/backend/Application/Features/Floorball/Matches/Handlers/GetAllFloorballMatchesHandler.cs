@@ -117,7 +117,9 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
             else
             {
                 List<Guid> clubIds = matches
-                    .SelectMany(m => new[] { m.HomeTeam.ClubId, m.AwayTeam.ClubId })
+                    .SelectMany(m => new Guid?[] { m.HomeTeam?.ClubId, m.AwayTeam?.ClubId })
+                    .Where(id => id.HasValue)
+                    .Select(id => id!.Value)
                     .Distinct()
                     .ToList();
 

@@ -162,8 +162,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
             {
                 string searchTerm = searchQuery.Trim().ToLower();
                 query = query.Where(m =>
-                    m.HomeTeam.Name.ToLower().Contains(searchTerm) ||
-                    m.AwayTeam.Name.ToLower().Contains(searchTerm)
+                    (m.HomeTeam != null && m.HomeTeam.Name.ToLower().Contains(searchTerm)) ||
+                    (m.AwayTeam != null && m.AwayTeam.Name.ToLower().Contains(searchTerm))
                 );
             }
 
