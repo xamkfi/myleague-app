@@ -21,6 +21,7 @@ export interface FloorballTournamentDto {
    * Empty array when no schedule was provided.
    */
   playoffSchedule: PlayoffScheduleSlotDto[];
+  teamCategory?: string;
 }
 
 export interface PlayoffScheduleSlotDto {
@@ -133,6 +134,7 @@ export interface CreateFloorballTournamentRequest {
    * placeholder row on the public tournament schedule so end-users see the full programme.
    */
   playoffSchedule?: PlayoffScheduleSlotRequest[];
+  teamCategory?: string;
 }
 
 export interface PlayoffScheduleSlotRequest {

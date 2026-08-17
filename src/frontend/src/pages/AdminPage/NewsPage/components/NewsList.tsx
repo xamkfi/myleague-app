@@ -6,6 +6,7 @@ import { newsService, archiveNewsService, restoreNewsService, deleteNewsService 
 import Pagination from '../../../../components/Pagination';
 import ActionsDropdown from '../../../../components/ActionsDropdown/ActionsDropdown';
 import BulkActionsBar from '../../../../components/BulkActionsBar/BulkActionsBar';
+import TeamCategoryBadge from '../../../../components/TeamCategoryBadge/TeamCategoryBadge';
 import '../../../../styles/AdminTable.scss';
 import "../styles/NewsList.scss";
 
@@ -15,6 +16,7 @@ interface NewsListProps {
     sportCategory: string;
     searchTerm: string;
     includeArchived: boolean;
+    teamCategories?: string[];
   };
 }
 
@@ -41,6 +43,7 @@ const NewsList = ({ filters }: NewsListProps) => {
         sportCategory: filters?.sportCategory ?? '',
         searchTerm: filters?.searchTerm ?? '',
         includeArchived: filters?.includeArchived ?? true,
+        teamCategories: filters?.teamCategories,
         page,
         pageSize: size
       });
@@ -282,6 +285,7 @@ const NewsList = ({ filters }: NewsListProps) => {
                 <td>{article.author || '-'}</td>
                 <td>
                   <div className="categories">
+                    <TeamCategoryBadge category={article.teamCategory} />
                     {article.category && (
                       <span className="admin-tag admin-tag--blue">{article.category}</span>
                     )}

@@ -1,0 +1,245 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../../styles/common' as *;
+
+// Styles specifically for the ResultsSection component
+.results-section {
+   .results-container {
+      @include container;
+   }
+
+   .matches-grid {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+   }
+
+
+
+   // Loading, error and no matches states
+   .loading-state,
+   .error-state,
+   .no-matches {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #666;
+
+      .retry-button {
+         margin-top: 1rem;
+         padding: 0.75rem 1.5rem;
+         background: #007bff;
+         color: white;
+         border: none;
+         border-radius: 6px;
+         cursor: pointer;
+         font-size: map.get($font-sizes, 'base');
+         transition: background-color 0.2s ease;
+
+         &:hover {
+            background: #0056b3;
+         }
+      }
+   }
+
+   .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding: 1rem;
+
+      .pagination-btn {
+         padding: 0.75rem 1.5rem;
+         background: #007bff;
+         color: white;
+         border: none;
+         border-radius: 6px;
+         cursor: pointer;
+         font-size: map.get($font-sizes, 'sm');
+         font-weight: 500;
+         transition: all 0.2s ease;
+
+         &:hover:not(:disabled) {
+            background: #0056b3;
+            transform: translateY(-1px);
+         }
+
+         &:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+         }
+      }
+
+      .page-info {
+         color: #666;
+         font-weight: 500;
+         margin: 0 1rem;
+      }
+   }
+   .results-header {
+      text-align: left;
+      border-radius: map.get($border-radius, "sm");
+      margin-bottom: map.get($spacing, "sm");
+      color: $color-blue-deep;
+      font-size: map.get($font-sizes, "lg");
+      font-weight: map.get($font-weights, "bold");
+   }
+   .results-season-header {
+      display: flex;
+      align-items: center;
+      background: $color-banner-bg;
+      color: $color-banner-text;
+      font-weight: 600;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: map.get($font-sizes, 'md');
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+      cursor: pointer;
+      transition: filter 0.2s ease, transform 0.05s ease;
+
+      &:hover {
+        filter: brightness(1.05);
+        text-decoration: underline;
+      }
+
+      &:active {
+        transform: scale(0.995);
+      }
+      &:first-child{
+         margin-top: 0;
+      }
+   }
+}
+
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
+@media (max-width: 768px) {
+   .results-section {
+      .results-container {
+         padding: map.get($spacing, 'sm');
+      }
+
+      .results-header {
+         font-size: map.get($font-sizes, 'md');
+         text-align: center;
+         margin-bottom: map.get($spacing, 'sm');
+      }
+
+      .results-season-header {
+         font-size: map.get($font-sizes, 'sm');
+         padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+         text-align: center;
+      }
+
+      .matches-grid {
+         margin-bottom: map.get($spacing, 'sm');
+      }
+
+      .pagination {
+         flex-direction: column;
+         gap: map.get($spacing, 'sm');
+         margin-top: map.get($spacing, 'md');
+         padding: map.get($spacing, 'sm');
+
+         .pagination-btn {
+            padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+            font-size: map.get($font-sizes, 'sm');
+         }
+
+         .page-info {
+            margin: 0;
+            font-size: map.get($font-sizes, 'sm');
+         }
+      }
+
+      .loading-state,
+      .error-state,
+      .no-matches {
+         padding: map.get($spacing, 'lg') map.get($spacing, 'sm');
+         font-size: map.get($font-sizes, 'sm');
+
+         .retry-button {
+            padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+            font-size: map.get($font-sizes, 'sm');
+         }
+      }
+   }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+   .results-section {
+      .results-container {
+         padding: map.get($spacing, 'xs');
+      }
+
+      .results-header {
+         font-size: map.get($font-sizes, 'sm');
+         margin-bottom: map.get($spacing, 'xs');
+      }
+
+      .results-season-header {
+         font-size: map.get($font-sizes, 'xs');
+         padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+      }
+
+      .matches-grid {
+         margin-bottom: map.get($spacing, 'xs');
+      }
+
+      .pagination {
+         gap: map.get($spacing, 'xs');
+         margin-top: map.get($spacing, 'sm');
+         padding: map.get($spacing, 'xs');
+
+         .pagination-btn {
+            padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+            font-size: map.get($font-sizes, 'xs');
+         }
+
+         .page-info {
+            font-size: map.get($font-sizes, 'xs');
+         }
+      }
+
+      .loading-state,
+      .error-state,
+      .no-matches {
+         padding: map.get($spacing, 'md') map.get($spacing, 'xs');
+         font-size: map.get($font-sizes, 'xs');
+
+         .retry-button {
+            padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+            font-size: map.get($font-sizes, 'xs');
+         }
+      }
+   }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+   .results-section {
+      .results-container {
+         padding: map.get($spacing, 'xxs');
+      }
+
+      .results-header {
+         font-size: map.get($font-sizes, 'xs');
+      }
+
+      .results-season-header {
+         font-size: map.get($font-sizes, 'xs');
+         padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+      }
+
+      .pagination {
+         .pagination-btn {
+            padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+            font-size: map.get($font-sizes, 'xs');
+         }
+      }
+   }
+}

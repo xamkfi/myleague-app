@@ -1,3 +1,4 @@
+using Domain.Constants;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -56,11 +57,12 @@ namespace WebAPI.Controllers.Floorball
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTournamentDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballTournamentDto>>>> GetAllTournaments()
+        public async Task<ActionResult<ApiResponse<List<FloorballTournamentDto>>>> GetAllTournaments(
+            [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null)
         {
             _logger.LogInformation("Getting all floorball tournaments");
 
-            GetAllFloorballTournamentsQuery query = new GetAllFloorballTournamentsQuery();
+            GetAllFloorballTournamentsQuery query = new GetAllFloorballTournamentsQuery(teamCategory);
             Result<List<FloorballTournamentDto>> result = await _mediator.Send(query);
 
             return HandleResult(result, "Floorball tournaments retrieved successfully", "Failed to retrieve floorball tournaments");
@@ -73,11 +75,12 @@ namespace WebAPI.Controllers.Floorball
         [HttpGet("active")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTournamentDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballTournamentDto>>>> GetActiveTournaments()
+        public async Task<ActionResult<ApiResponse<List<FloorballTournamentDto>>>> GetActiveTournaments(
+            [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null)
         {
             _logger.LogInformation("Getting active floorball tournaments");
 
-            GetActiveFloorballTournamentsQuery query = new GetActiveFloorballTournamentsQuery();
+            GetActiveFloorballTournamentsQuery query = new GetActiveFloorballTournamentsQuery(teamCategory);
             Result<List<FloorballTournamentDto>> result = await _mediator.Send(query);
 
             return HandleResult(result, "Active floorball tournaments retrieved successfully", "Failed to retrieve active floorball tournaments");
@@ -108,7 +111,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Create tournament request</param>
         /// <returns>Created tournament details</returns>
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -137,7 +140,8 @@ namespace WebAPI.Controllers.Floorball
                 request.TeamsAdvancingPerGroup,
                 request.HasPlayoffStage,
                 request.HasThirdPlaceMatch,
-                scheduleSlots
+                scheduleSlots,
+                request.TeamCategory ?? Domain.Enums.Common.TeamCategory.Adult
             );
 
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
@@ -161,7 +165,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Update tournament request</param>
         /// <returns>Updated tournament details</returns>
         [HttpPut("{competitionId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -192,7 +196,8 @@ namespace WebAPI.Controllers.Floorball
                 request.TeamsAdvancingPerGroup,
                 request.HasPlayoffStage,
                 request.HasThirdPlaceMatch,
-                scheduleSlots
+                scheduleSlots,
+                request.TeamCategory
             );
 
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
@@ -206,7 +211,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="competitionId">Tournament ID</param>
         /// <returns>Success message</returns>
         [HttpDelete("{competitionId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -227,7 +232,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="competitionId">Tournament ID</param>
         /// <returns>Updated tournament details</returns>
         [HttpPost("{competitionId:guid}/start-group-stage")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -252,7 +257,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Full replacement slot list</param>
         /// <returns>Updated tournament with the new schedule reflected in its DTO</returns>
         [HttpPut("{competitionId:guid}/playoff-schedule")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -284,7 +289,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="competitionId">Tournament ID</param>
         /// <returns>Updated tournament details</returns>
         [HttpPost("{competitionId:guid}/start-playoff-stage")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -325,7 +330,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="competitionId">Tournament ID</param>
         /// <returns>Updated tournament details</returns>
         [HttpPost("{competitionId:guid}/complete")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -346,7 +351,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="competitionId">Tournament ID</param>
         /// <returns>Updated tournament details</returns>
         [HttpPost("{competitionId:guid}/cancel")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -368,7 +373,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Add group request</param>
         /// <returns>Success message</returns>
         [HttpPost("{competitionId:guid}/groups")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -393,7 +398,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="groupId">Group ID</param>
         /// <returns>Success message</returns>
         [HttpDelete("{competitionId:guid}/groups/{groupId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -416,7 +421,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Add team request</param>
         /// <returns>Success message</returns>
         [HttpPost("{competitionId:guid}/groups/{groupId:guid}/teams")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -439,7 +444,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="teamId">Team ID</param>
         /// <returns>Success message</returns>
         [HttpDelete("{competitionId:guid}/groups/{groupId:guid}/teams/{teamId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

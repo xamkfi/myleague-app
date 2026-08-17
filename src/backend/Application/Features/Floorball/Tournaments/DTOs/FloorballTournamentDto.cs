@@ -1,4 +1,5 @@
 using Application.Features.Floorball.Matches.DTOs;
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 
 namespace Application.Features.Floorball.Tournaments.DTOs;
@@ -30,6 +31,7 @@ public record PlayoffScheduleSlotDto(
 /// <param name="TeamCount">Total number of teams across all groups</param>
 /// <param name="MatchCount">Total number of matches in the tournament</param>
 /// <param name="PlayoffSchedule">Optional pre-defined playoff schedule (empty when the bracket should be auto-scheduled)</param>
+/// <param name="TeamCategory">Audience / age-group category</param>
 public record FloorballTournamentDto(
     Guid Id,
     string Name,
@@ -44,4 +46,5 @@ public record FloorballTournamentDto(
     List<FloorballTournamentGroupDto> Groups,
     int TeamCount,
     int MatchCount,
-    List<PlayoffScheduleSlotDto> PlayoffSchedule);
+    List<PlayoffScheduleSlotDto> PlayoffSchedule,
+    TeamCategory TeamCategory);

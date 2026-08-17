@@ -102,7 +102,13 @@ const UsersPage = () => {
     setEditingUser(null);
   };
 
-  const handleSaveUser = async (email: string, personId: string, role: UserRole, isActive: boolean) => {
+  const handleSaveUser = async (
+    email: string,
+    personId: string,
+    role: UserRole,
+    isActive: boolean,
+    clubAssignments?: string[],
+  ) => {
     try {
       setError(null);
 
@@ -112,7 +118,7 @@ const UsersPage = () => {
           prev.map((u) => (u.id === updated.id ? updated : u)),
         );
       } else {
-        const created = await userService.create({ email, personId, role });
+        const created = await userService.create({ email, personId, role, clubAssignments });
         setUsers((prev) => [...prev, created]);
       }
 
@@ -162,6 +168,36 @@ const UsersPage = () => {
       setIsDeleting(false);
     }
   };
+
+  // --- Revoke club admin handler ---
+
+  const handleRevokeClubAdmin = useCallback(async (user: SystemUser) => {
+    const confirmed = window.confirm(
+      t(
+        'admin.users.confirmRevokeClubAdmin',
+        'Revoke club admin access for {{email}}? Their account will be deactivated and they will no longer be able to sign in.',
+        { email: user.email },
+      ),
+    );
+    if (!confirmed) return;
+
+    try {
+      setError(null);
+      const updated = await userService.update(user.id, {
+        email: user.email,
+        role: user.role,
+        isActive: false,
+      });
+      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+    } catch (err) {
+      console.error('Failed to revoke club admin access', err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('admin.users.errors.revoke', 'Failed to revoke club admin access. Please try again.'),
+      );
+    }
+  }, [t]);
 
   // --- Resend invitation handler ---
 
@@ -316,6 +352,7 @@ const UsersPage = () => {
           onEdit={openEditModal}
           onDelete={openDeleteModal}
           onResendInvitation={handleResendInvitation}
+          onRevokeClubAdmin={handleRevokeClubAdmin}
           resendingUserId={resendingUserId}
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}

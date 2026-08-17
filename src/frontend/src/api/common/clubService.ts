@@ -1,6 +1,7 @@
 import { VITE_API_URL } from "../../constants/config";
 import { parseErrorResponse } from "../utils/ParseErrorResponse";
 import { authFetch } from '../utils/authFetch';
+import type { ClubAdminUser } from '../../types/clubAdmin/clubAdminTypes';
 
 export interface Club {
   id: string;
@@ -183,6 +184,33 @@ export const clubService = {
       throw new Error(errorMessage || 'Failed to search clubs');
     }
     return data.data || [];
+  },
+
+  /** Gets the active club admins of a club. */
+  getAdmins: async (id: string): Promise<ClubAdminUser[]> => {
+    const response = await authFetch(`${VITE_API_URL}/Clubs/${id}/admins`);
+    const data = await response.json();
+    if (!response.ok || !data?.success) {
+      const errorMessage = await parseErrorResponse(data, 'Failed to fetch club admins');
+      throw new Error(errorMessage || 'Failed to fetch club admins');
+    }
+    return data.data || [];
+  },
+
+  /** Replaces the set of club admins of a club with the given users. */
+  setAdmins: async (id: string, userIds: string[]): Promise<void> => {
+    const response = await authFetch(`${VITE_API_URL}/Clubs/${id}/admins`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userIds })
+    });
+    const data = await response.json();
+    if (!response.ok || !data?.success) {
+      const errorMessage = await parseErrorResponse(data, 'Failed to update club admins');
+      throw new Error(errorMessage || 'Failed to update club admins');
+    }
   },
 
   /** Upload a club logo image; returns the URL of the uploaded image in storage. */

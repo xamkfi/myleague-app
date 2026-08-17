@@ -40,6 +40,7 @@ export interface GetFloorballPlayersRequest {
   position?: FloorballPosition;
   teamId?: string;
   searchTerm?: string;
+  signal?: AbortSignal;
 }
 
 export interface UpdateFloorballPlayerRequest {
@@ -129,11 +130,10 @@ export const floorballPlayerService = {
       if (params?.searchTerm) searchParams.append('searchTerm', params.searchTerm);
 
       const url = `${API_URL}/FloorballPlayer?${searchParams.toString()}`;
-      const response = await authFetch(url);
+      const response = await authFetch(url, { signal: params?.signal });
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error Response:', errorText);
         throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to fetch floorball players'}`);
       }
       
@@ -145,7 +145,9 @@ export const floorballPlayerService = {
       
       return apiResponse;
     } catch (error) {
-      console.error('Error in floorballPlayerService.getAll:', error);
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error;
+      }
       throw error;
     }
   },
@@ -154,20 +156,11 @@ export const floorballPlayerService = {
    * Get players by team ID
    */
   getByTeamId: async (teamId: string): Promise<FloorballPlayerDto[]> => {
-    try {
-      console.log('Fetching players for team ID:', teamId);
-      
-      const response = await floorballPlayerService.getAll({
-        teamId,
-        pageSize: 50 // Use max allowed page size to get as many players as possible
-      });
-      
-      console.log('Players fetched for team:', response.data?.length || 0);
-      return response.data || [];
-    } catch (error) {
-      console.error('Error in floorballPlayerService.getByTeamId:', error);
-      throw error;
-    }
+    const response = await floorballPlayerService.getAll({
+      teamId,
+      pageSize: 50,
+    });
+    return response.data || [];
   },
 
   /**

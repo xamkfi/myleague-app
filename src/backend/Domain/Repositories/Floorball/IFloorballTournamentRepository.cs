@@ -102,14 +102,18 @@ public interface IFloorballTournamentRepository
     /// </summary>
     /// <param name="ct">Cancellation token</param>
     /// <returns>A list of all floorball tournaments</returns>
-    Task<List<FloorballTournament>> GetAllAsync(CancellationToken ct = default);
+    Task<List<FloorballTournament>> GetAllAsync(
+        Domain.Enums.Common.TeamCategory? teamCategory = null,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Gets active floorball tournaments (not completed)
     /// </summary>
     /// <param name="ct">Cancellation token</param>
     /// <returns>A list of active floorball tournaments</returns>
-    Task<List<FloorballTournament>> GetActiveAsync(CancellationToken ct = default);
+    Task<List<FloorballTournament>> GetActiveAsync(
+        Domain.Enums.Common.TeamCategory? teamCategory = null,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Adds a new floorball tournament

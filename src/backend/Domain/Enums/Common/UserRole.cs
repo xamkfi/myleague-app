@@ -6,7 +6,8 @@ namespace Domain.Enums.Common;
 public enum UserRole
 {
     /// <summary>
-    /// Club administrator - can manage their club's data
+    /// Club administrator - can edit their own club's information (not delete it) and manage
+    /// the teams under the club: jersey numbers and match roster/lineup announcements
     /// </summary>
     ClubAdmin = 0,
 

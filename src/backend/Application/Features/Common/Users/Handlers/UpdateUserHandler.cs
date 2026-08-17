@@ -26,15 +26,18 @@ namespace Application.Features.Common.Users.Handlers;
 public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, Result<UserDto>>
 {
     private readonly IUserRepository _userRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateUserHandler> _logger;
 
     public UpdateUserHandler(
         IUserRepository userRepository,
+        IRefreshTokenRepository refreshTokenRepository,
         IUnitOfWork unitOfWork,
         ILogger<UpdateUserHandler> logger)
     {
         _userRepository = userRepository;
+        _refreshTokenRepository = refreshTokenRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -58,10 +61,24 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, Result<UserD
                 return Result<UserDto>.Failure($"A user with the email '{request.Email}' already exists.");
             }
 
+            bool roleChanged = user.Role != request.Role;
+            bool deactivated = user.IsActive && !request.IsActive;
+
             UserMapper.UpdateFromCommand(user, request);
 
             _logger.LogInformation("Updating user: {Email} (ID: {UserId})", user.Email, user.Id);
             await _userRepository.UpdateAsync(user);
+
+            // When privileges are revoked (role change or deactivation), revoke refresh tokens
+            // so the old access ends as soon as the current access token expires.
+            if (roleChanged || deactivated)
+            {
+                _logger.LogInformation(
+                    "Revoking refresh tokens for user {UserId} (role changed: {RoleChanged}, deactivated: {Deactivated})",
+                    user.Id, roleChanged, deactivated);
+                await _refreshTokenRepository.RevokeAllByUserIdAsync(user.Id);
+            }
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             User? updatedUser = await _userRepository.GetByIdAsync(user.Id);

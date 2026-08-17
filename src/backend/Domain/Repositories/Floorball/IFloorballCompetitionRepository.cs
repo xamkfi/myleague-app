@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Entities.Common;
 
@@ -85,4 +86,21 @@ public interface IFloorballCompetitionRepository
     /// <param name="id">The competition ID</param>
     /// <returns>True if the competition exists, false otherwise</returns>
     Task<bool> ExistsAsync(Guid id);
+
+    /// <summary>
+    /// Gets lightweight date summaries for league seasons (excludes tournaments).
+    /// </summary>
+    Task<IReadOnlyList<FloorballSeasonDateSummary>> GetSeasonDateSummariesAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a paged list of league seasons, optionally filtered by season-year bounds.
+    /// </summary>
+    Task<PagedResult<FloorballSeason>> GetSeasonsPagedAsync(
+        int page,
+        int pageSize,
+        int? startYear,
+        int? endYear,
+        Domain.Enums.Common.TeamCategory? teamCategory = null,
+        CancellationToken cancellationToken = default);
 } 

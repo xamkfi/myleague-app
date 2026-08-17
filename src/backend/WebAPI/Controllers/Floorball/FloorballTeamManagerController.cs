@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Application.Features.Floorball.TeamManagers.Commands;
 using Application.Features.Floorball.TeamManagers.DTOs;
@@ -13,7 +14,7 @@ namespace WebAPI.Controllers.Floorball
     /// <summary>
     /// Controller for managing floorball team managers
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [Route("api/[controller]")]
     public class FloorballTeamManagerController : BaseApiController
     {

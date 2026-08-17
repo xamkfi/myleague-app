@@ -26,4 +26,5 @@ public record UpdateNewsArticleCommand(
     string? Author = null,
     string? Category = null,
     string? SportCategory = null,
-    IReadOnlyList<string>? Tags = null) : IRequest<Result<NewsArticleDto>>; 
+    IReadOnlyList<string>? Tags = null,
+    string? TeamCategory = null) : IRequest<Result<NewsArticleDto>>; 

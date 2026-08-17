@@ -12,10 +12,13 @@ export interface AuthUserPerson {
   role: number;
 }
 
+export type AuthUserRole = 'ClubAdmin' | 'SystemAdmin';
+
 export interface AuthUser {
   id: string;
   email: string;
   personId: string;
+  role: AuthUserRole;
   isActive: boolean;
   lastLoginAt: string | null;
   person: AuthUserPerson;

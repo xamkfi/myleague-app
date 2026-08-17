@@ -26,6 +26,11 @@ public record CreateUserRequest
     /// Gets the role of the user (defaults to ClubAdmin)
     /// </summary>
     public UserRole Role { get; init; } = UserRole.ClubAdmin;
+
+    /// <summary>
+    /// Clubs the invited club admin should manage. Only used when Role is ClubAdmin.
+    /// </summary>
+    public List<Guid>? ClubAssignments { get; init; }
 }
 
 /// <summary>

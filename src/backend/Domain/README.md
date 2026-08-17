@@ -125,6 +125,12 @@ The domain uses a carefully crafted **ubiquitous language** shared between devel
 - Official assignment and management
 - Team and league administration
 
+### Football (Hobby)
+- Parallel vertical slice under `Entities/Football/` (Competitions, Matches, Teams, Statistics)
+- Configurable half length and players-on-field (5v5–11v11)
+- Cards, substitutions, extra time and penalty shootouts
+- Standing points come from `FootballStandingRules` (default 3–1–0)
+
 ### Hockey (In Development)
 - Domain folder structure in place; entities and services to be added incrementally
 - Follows Floorball patterns with grouped subfolders under `Hockey/`

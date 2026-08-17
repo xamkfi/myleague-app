@@ -5,10 +5,12 @@ import LanguageToggle from '../LanguageToggle/LanguageToggle';
 import './Navbar.scss';
 import SearchBar from '../SearchBar';
 import { MAHL_INFO_PAGES } from '../../constants/mahlInfoPages';
+import AudienceSwitcher from '../AudienceSwitcher/AudienceSwitcher';
 
 // Sports configuration
 const SPORTS_CONFIG = [
   { id: 'floorball', path: '/sports/floorball', translationKey: 'sports.floorball' },
+  { id: 'football', path: '/sports/football', translationKey: 'sports.football' },
   { id: 'icehockey', path: '/sports/icehockey', translationKey: 'sports.iceHockey', disabled: true }
 ];
 
@@ -37,7 +39,7 @@ function Navbar() {
   const sportsDropdownRef = useRef<HTMLLIElement>(null);
   const mahlDropdownRef = useRef<HTMLLIElement>(null);
   const isMobile = useIsMobile();
-  
+
   // Add hamburger menu toggle
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -84,6 +86,7 @@ function Navbar() {
         <Link to="/" onClick={closeMobileMenu}>
           <h1>MAHL</h1>
         </Link>
+        <AudienceSwitcher />
       </div>
       
       {/* Mobile hamburger button */}
@@ -184,6 +187,11 @@ function Navbar() {
       {/* Mobile menu overlay */}
       <div className={`navbar-mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="mobile-menu-content">
+          <div className="mobile-audience">
+            <span className="mobile-audience-label">{t('audience.switcherLabel')}</span>
+            <AudienceSwitcher variant="block" />
+          </div>
+
           {/* Mobile search bar - same component instance as desktop (only one SearchBar mounts) */}
           <div className="mobile-search">
             {isMobile && <SearchBar />}

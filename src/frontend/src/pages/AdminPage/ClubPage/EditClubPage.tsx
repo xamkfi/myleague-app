@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import AdminPageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import ClubForm from './ClubForm';
+import ClubAdminsPicker, { type ClubAdminSelection } from './ClubAdminsPicker';
+import { resolveClubAdminUserIds } from './resolveClubAdminUserIds';
 import { clubService, type Club, type ClubRequest } from '../../../api/common/clubService';
 
 function toDateInputValue(iso: string | null | undefined): string {
@@ -25,14 +27,25 @@ function EditClubPage() {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [club, setClub] = useState<Club | null>(null);
+  const [admins, setAdmins] = useState<ClubAdminSelection[]>([]);
 
   useEffect(() => {
     const load = async () => {
       if (!id) return;
       setError(null);
       try {
-        const data = await clubService.getById(id);
+        const [data, admins] = await Promise.all([
+          clubService.getById(id),
+          clubService.getAdmins(id),
+        ]);
         setClub(data);
+        setAdmins(admins.map((admin) => ({
+          userId: admin.userId,
+          personId: admin.personId,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
+          email: admin.email,
+        })));
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
@@ -64,6 +77,8 @@ function EditClubPage() {
     setSubmitting(true);
     try {
       await clubService.update(id, payload);
+      const userIds = await resolveClubAdminUserIds(admins, id);
+      await clubService.setAdmins(id, userIds);
       navigate(`/admin/clubs/${id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -89,12 +104,15 @@ function EditClubPage() {
         <ErrorPopup message={error} />
         {loading && <p>{t('common.loading', 'Loading...')}</p>}
         {!loading && initialValues && (
-          <ClubForm
-            initialValues={initialValues}
-            submitting={submitting}
-            onSubmit={handleSubmit}
-            onDelete={handleDelete}
-          />
+          <>
+            <ClubAdminsPicker selectedAdmins={admins} onChange={setAdmins} />
+            <ClubForm
+              initialValues={initialValues}
+              submitting={submitting}
+              onSubmit={handleSubmit}
+              onDelete={handleDelete}
+            />
+          </>
         )}
       </div>
     </AdminPageTemplate>

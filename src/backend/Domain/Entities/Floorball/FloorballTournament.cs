@@ -1,3 +1,4 @@
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 using Domain.ValueObjects.Floorball;
 
@@ -79,8 +80,9 @@ public class FloorballTournament : FloorballCompetition
         string? venue = null,
         string? contentHtml = null,
         FloorballTournamentRules? tournamentRules = null,
-        IEnumerable<PlayoffScheduleSlot>? playoffSchedule = null)
-        : base(name, startDate, endDate, tournamentRules?.GroupStageMatchRules)
+        IEnumerable<PlayoffScheduleSlot>? playoffSchedule = null,
+        TeamCategory teamCategory = TeamCategory.Adult)
+        : base(name, startDate, endDate, tournamentRules?.GroupStageMatchRules, teamCategory)
     {
         Venue = venue;
         ContentHtml = contentHtml;

@@ -156,123 +156,138 @@
     "fi": "Suomi",
     "switchLanguage": "Vaihda kieli"
   },
+  "audience": {
+    "adult": "Aikuiset",
+    "youth": "Nuoret",
+    "women": "Naiset",
+    "select": "Valitse",
+    "selected": "Valittu",
+    "switcherLabel": "Ikäryhmä",
+    "filterLabel": "Valitse näytettävä ikäryhmä",
+    "filterHint": "Voit valita yhden tai useamman. Tyhjä valinta näyttää kaikki.",
+    "intro": "Valitse kohderyhmä nähdäksesi siihen liittyvät tiedot ja teeman.",
+    "descriptions": {
+      "adult": "Aikuisten sarjat ja uutiset (sininen teema).",
+      "youth": "Nuorten ja lasten sarjat ja uutiset (vihreä teema).",
+      "women": "Naisten sarjat ja uutiset (pinkki teema)."
+    }
+  },
   "infoPages": {
     "loadFailed": "Sivun lataus epäonnistui.",
     "emptyContent": "Sivun sisältöä ei ole vielä julkaistu."
   },
   "rules": {
-  "title": "Säännöt",
-  "defaultTitle": "Säännöt",
-  "publicTitle": "MAHL Säännöt",
-  "publicIntro": "Tältä sivulta löydät MAHL-toimintaan liittyvät yleissäännöt, lajikohtaiset säännöt sekä muut sääntökokonaisuudet.",
-  "generalRules": "MAHL yleissääntöjä",
-  "sectionKicker": "Säännöstö",
-  "ruleCountLabel": "sääntöä",
-  "sectionTabs": "Sääntöosion valinta",
-  "selectSport": "Valitse laji",
-  "noRules": "Sääntöjä ei ole vielä lisätty.",
-  "mahlNavigation": "MAHL navigaatio",
-  "mahlNav": {
-    "summary": "Summary",
-    "finance": "Seuran talous",
-    "partners": "Kumppanuudet",
-    "responsibility": "Vastuullisuus",
-    "rules": "Säännöt"
-  },
-  "loading": "Ladataan sääntöjä...",
-  "loadFailed": "Sääntöjen lataaminen epäonnistui.",
-  "admin": {
-    "pageTitle": "Sääntöjen hallinta",
-    "managementTitle": "Sääntöjen hallinta",
-    "managementDescription": "Julkaise sääntöjä julkiselle sääntösivulle.",
-    "loadFailed": "Sääntöjen sisällön lataaminen epäonnistui.",
-    "noPublishedRules": "Julkaistuja sääntöjä ei ole.",
-    "typeRuleToAdd": "Kirjoita lisättävä sääntö.",
-    "addRuleBeforeSaving": "Lisää ensin sääntö ennen tallennusta.",
-    "rulesPublishedSuccessfully": "Säännöt julkaistiin onnistuneesti!",
-    "saveFailed": "Sääntöjen tallentaminen epäonnistui.",
-    "lastUpdate": "Viimeisin päivitys",
-    "noRulesAddedYet": "Sääntöjä ei ole vielä lisätty.",
-    "editor": "Muokkaaja",
-    "unknown": "Tuntematon",
-    "ruleUpdatedSuccessfully": "Sääntö päivitettiin onnistuneesti!",
-    "updateRuleFailed": "Säännön päivittäminen epäonnistui.",
-    "confirmDeleteRule": "Haluatko varmasti poistaa tämän säännön: {{ruleName}}?",
-    "ruleDeletedSuccessfully": "Sääntö poistettiin onnistuneesti!",
-    "deleteRuleFailed": "Säännön poistaminen epäonnistui.",
-    "editRule": "Muokkaa sääntöä",
-    "saveRule": "Tallenna sääntö",
-    "saving": "Tallennetaan...",
-    "searchPlaceholder": "Hae sääntöjä...",
-    "publish": "Julkaise",
-    "publishing": "Julkaistaan...",
-    "addRule": "Lisää uusi sääntö",
-    "createRuleTitle": "Määritä uusi sääntö",
-    "createRuleDescription": "Kirjoita säännön sisältö ennen sen lisäämistä esikatseluun.",
-    "typeRulePlaceholder": "Kirjoita tähän...",
-    "preview": "Esikatselu",
-    "noPreviewRules": "Ei sääntöjä esikatseltavaksi.",
-    "publishedRules": "Julkaistut säännöt",
-    "allCategories": "Kaikki kategoriat",
-    "category": "Kategoria",
-    "categories": {
-      "general": "Yleinen",
-      "fees": "Maksut",
-      "validation": "Validointi",
-      "calculation": "Laskenta"
+    "title": "Säännöt",
+    "defaultTitle": "Säännöt",
+    "publicTitle": "MAHL Säännöt",
+    "publicIntro": "Tältä sivulta löydät MAHL-toimintaan liittyvät yleissäännöt, lajikohtaiset säännöt sekä muut sääntökokonaisuudet.",
+    "generalRules": "MAHL yleissääntöjä",
+    "sectionKicker": "Säännöstö",
+    "ruleCountLabel": "sääntöä",
+    "sectionTabs": "Sääntöosion valinta",
+    "selectSport": "Valitse laji",
+    "noRules": "Sääntöjä ei ole vielä lisätty.",
+    "mahlNavigation": "MAHL navigaatio",
+    "mahlNav": {
+      "summary": "Summary",
+      "finance": "Seuran talous",
+      "partners": "Kumppanuudet",
+      "responsibility": "Vastuullisuus",
+      "rules": "Säännöt"
     },
-    "editRuleTitle": "Muokkaa sääntöä",
-    "editRuleDescription": "Päivitä sääntö ennen sen siirtämistä esikatseluun.",
-    "selectCategory": "Valitse kategoria",
-    "rule": "Sääntö",
-    "subtitle": "Hallitse sääntöjä",
-    "confirmPublish": "Haluatko varmasti julkaista säännöt?",
-    "confirmDiscardChanges": "Sinulla on tallentamattomia muutoksia.",
-    "section": "Sääntöosio",
-    "allSections": "Kaikki osiot",
-    "unknownSection": "Tuntematon osio",
-    "selectSectionFirst": "Valitse ensin sääntöosio.",
-    "manageSections": "Hallitse osioita",
-    "manageRules": "Hallitse sääntöjä",
-    "sectionsTitle": "Sääntöosiot",
-    "topLevelSections": "Päävälilehdet",
-    "sportSections": "Lajikohtaiset säännöt",
-    "sortOrder": "Järjestys",
-    "sectionTitle": "Otsikko",
-    "sectionType": "Osion tyyppi",
-    "addSection": "Lisää osio",
-    "editSection": "Muokkaa sääntöosiota",
-    "createSection": "Luo osio",
-    "sectionTitleRequired": "Osion otsikko on pakollinen.",
-    "sectionSavedSuccessfully": "Sääntöosio tallennettiin onnistuneesti.",
-    "sectionSaveFailed": "Sääntöosion tallentaminen epäonnistui.",
-    "sectionDeletedSuccessfully": "Sääntöosio poistettiin onnistuneesti.",
-    "sectionDeleteFailed": "Sääntöosion poistaminen epäonnistui.",
-    "confirmDeleteSection": "Haluatko varmasti poistaa osion: {{title}}?",
-    "sportSectionHint": "Laji lisätään Lajikohtaiset säännöt -osion alle.",
-    "confirmUpdateRule": "Haluatko varmasti päivittää tämän säännön?",
-    "confirmPublishSingleRule": "Haluatko varmasti julkaista tämän säännön?",
-    "publishRule": "Julkaise sääntö",
-    "updateRule": "Päivitä sääntö",
-    "editMode": "Muokkaustila",
-    "createMode": "Luontitila",
-    "sectionTypes": {
-      "Global": "Yleissäännöt",
-      "SportGroup": "Lajikohtaiset säännöt",
-      "Sport": "Lajikohtainen laji",
-      "Validation": "Vahvistukset",
-      "Companion": "Kumppanuudet",
-      "Fee": "Maksut"
-    },
-    "table": {
+    "loading": "Ladataan sääntöjä...",
+    "loadFailed": "Sääntöjen lataaminen epäonnistui.",
+    "admin": {
+      "pageTitle": "Sääntöjen hallinta",
+      "managementTitle": "Sääntöjen hallinta",
+      "managementDescription": "Julkaise sääntöjä julkiselle sääntösivulle.",
+      "loadFailed": "Sääntöjen sisällön lataaminen epäonnistui.",
+      "noPublishedRules": "Julkaistuja sääntöjä ei ole.",
+      "typeRuleToAdd": "Kirjoita lisättävä sääntö.",
+      "addRuleBeforeSaving": "Lisää ensin sääntö ennen tallennusta.",
+      "rulesPublishedSuccessfully": "Säännöt julkaistiin onnistuneesti!",
+      "saveFailed": "Sääntöjen tallentaminen epäonnistui.",
+      "lastUpdate": "Viimeisin päivitys",
+      "noRulesAddedYet": "Sääntöjä ei ole vielä lisätty.",
+      "editor": "Muokkaaja",
+      "unknown": "Tuntematon",
+      "ruleUpdatedSuccessfully": "Sääntö päivitettiin onnistuneesti!",
+      "updateRuleFailed": "Säännön päivittäminen epäonnistui.",
+      "confirmDeleteRule": "Haluatko varmasti poistaa tämän säännön: {{ruleName}}?",
+      "ruleDeletedSuccessfully": "Sääntö poistettiin onnistuneesti!",
+      "deleteRuleFailed": "Säännön poistaminen epäonnistui.",
+      "editRule": "Muokkaa sääntöä",
+      "saveRule": "Tallenna sääntö",
+      "saving": "Tallennetaan...",
+      "searchPlaceholder": "Hae sääntöjä...",
+      "publish": "Julkaise",
+      "publishing": "Julkaistaan...",
+      "addRule": "Lisää uusi sääntö",
+      "createRuleTitle": "Määritä uusi sääntö",
+      "createRuleDescription": "Kirjoita säännön sisältö ennen sen lisäämistä esikatseluun.",
+      "typeRulePlaceholder": "Kirjoita tähän...",
+      "preview": "Esikatselu",
+      "noPreviewRules": "Ei sääntöjä esikatseltavaksi.",
+      "publishedRules": "Julkaistut säännöt",
+      "allCategories": "Kaikki kategoriat",
+      "category": "Kategoria",
+      "categories": {
+        "general": "Yleinen",
+        "fees": "Maksut",
+        "validation": "Validointi",
+        "calculation": "Laskenta"
+      },
+      "editRuleTitle": "Muokkaa sääntöä",
+      "editRuleDescription": "Päivitä sääntö ennen sen siirtämistä esikatseluun.",
+      "selectCategory": "Valitse kategoria",
       "rule": "Sääntö",
-      "section": "Osio",
-      "order": "Järjestys",
-      "actions": "Toiminnot"
+      "subtitle": "Hallitse sääntöjä",
+      "confirmPublish": "Haluatko varmasti julkaista säännöt?",
+      "confirmDiscardChanges": "Sinulla on tallentamattomia muutoksia.",
+      "section": "Sääntöosio",
+      "allSections": "Kaikki osiot",
+      "unknownSection": "Tuntematon osio",
+      "selectSectionFirst": "Valitse ensin sääntöosio.",
+      "manageSections": "Hallitse osioita",
+      "manageRules": "Hallitse sääntöjä",
+      "sectionsTitle": "Sääntöosiot",
+      "topLevelSections": "Päävälilehdet",
+      "sportSections": "Lajikohtaiset säännöt",
+      "sortOrder": "Järjestys",
+      "sectionTitle": "Otsikko",
+      "sectionType": "Osion tyyppi",
+      "addSection": "Lisää osio",
+      "editSection": "Muokkaa sääntöosiota",
+      "createSection": "Luo osio",
+      "sectionTitleRequired": "Osion otsikko on pakollinen.",
+      "sectionSavedSuccessfully": "Sääntöosio tallennettiin onnistuneesti.",
+      "sectionSaveFailed": "Sääntöosion tallentaminen epäonnistui.",
+      "sectionDeletedSuccessfully": "Sääntöosio poistettiin onnistuneesti.",
+      "sectionDeleteFailed": "Sääntöosion poistaminen epäonnistui.",
+      "confirmDeleteSection": "Haluatko varmasti poistaa osion: {{title}}?",
+      "sportSectionHint": "Laji lisätään Lajikohtaiset säännöt -osion alle.",
+      "confirmUpdateRule": "Haluatko varmasti päivittää tämän säännön?",
+      "confirmPublishSingleRule": "Haluatko varmasti julkaista tämän säännön?",
+      "publishRule": "Julkaise sääntö",
+      "updateRule": "Päivitä sääntö",
+      "editMode": "Muokkaustila",
+      "createMode": "Luontitila",
+      "sectionTypes": {
+        "Global": "Yleissäännöt",
+        "SportGroup": "Lajikohtaiset säännöt",
+        "Sport": "Lajikohtainen laji",
+        "Validation": "Vahvistukset",
+        "Companion": "Kumppanuudet",
+        "Fee": "Maksut"
+      },
+      "table": {
+        "rule": "Sääntö",
+        "section": "Osio",
+        "order": "Järjestys",
+        "actions": "Toiminnot"
+      }
     }
-  }
-},
-
+  },
   "admin": {
     "title": "Hallintapaneeli",
     "database": "Tietokanta",
@@ -292,6 +307,8 @@
       "manageDivisions": "Hallitse sarjoja",
       "floorball": "Salibandy",
       "manageFloorball": "Hallitse salibandya",
+      "football": "Jalkapallo",
+      "manageFootball": "Hallitse jalkapalloa",
       "clubs": "Seurat",
       "manageClubs": "Hallitse seuroja",
       "users": "Järjestelmäkäyttäjät",
@@ -337,13 +354,24 @@
       "addUser": "Lisää käyttäjä",
       "noData": "Järjestelmäkäyttäjiä ei löytynyt.",
       "noSearchResults": "Yksikään käyttäjä ei vastaa hakuasi.",
+      "invitationResent": "Kutsusähköposti lähetetty uudelleen osoitteeseen {{email}}.",
+      "confirmRevokeClubAdmin": "Poistetaanko seuran ylläpitäjän oikeudet käyttäjältä {{email}}? Tili poistetaan käytöstä eikä hän voi enää kirjautua sisään.",
       "table": {
         "person": "Henkilö",
         "email": "Sähköposti",
         "role": "Rooli",
         "status": "Tila",
         "lastLogin": "Viimeisin kirjautuminen",
-        "never": "Ei koskaan"
+        "never": "Ei koskaan",
+        "verified": "Vahvistettu",
+        "pending": "Odottaa",
+        "emailPending": "Sähköposti vahvistamatta"
+      },
+      "actions": {
+        "menu": "Käyttäjän toimintovalikko",
+        "resendInvitation": "Lähetä kutsu uudelleen",
+        "sendingInvitation": "Lähetetään...",
+        "revokeClubAdmin": "Poista seuran ylläpitäjän oikeudet"
       },
       "form": {
         "createTitle": "Lisää käyttäjä",
@@ -352,18 +380,26 @@
         "emailPlaceholder": "käyttäjä@esimerkki.fi",
         "emailRequired": "Sähköposti on pakollinen",
         "emailInvalid": "Virheellinen sähköpostiosoite",
+        "emailVerified": "Sähköposti vahvistettu",
         "selectPerson": "Henkilö",
         "searchPerson": "Hae henkilöitä...",
         "noPerson": "Vapaita henkilöitä ei löytynyt",
         "personRequired": "Henkilö on pakollinen",
         "role": "Rooli",
         "hasAccount": "Käyttäjätili on jo olemassa",
+        "status": "Tila",
+        "statusCreateInfo": "Uudet käyttäjät ovat passiivisia, kunnes he vahvistavat sähköpostinsa.",
+        "clubs": "Hallinnoitavat seurat",
+        "clubFilterPlaceholder": "Suodata seuroja...",
+        "clubsTitle": "Seurat",
+        "noClubsFound": "Seuroja ei löytynyt",
+        "clubsHint": "Voit myös määrittää seuran ylläpitäjät myöhemmin seuran muokkaussivulta.",
         "save": "Tallenna",
         "saving": "Tallennetaan..."
       },
       "roles": {
-        "systemAdmin": "Järjestelmänvalvoja",
-        "clubAdmin": "Seuran ylläpitäjä"
+    "systemAdmin": "Järjestelmänvalvoja",
+    "clubAdmin": "Seuran ylläpitäjä"
       },
       "confirmDelete": {
         "title": "Poista käyttäjä",
@@ -374,7 +410,9 @@
         "load": "Käyttäjien lataaminen epäonnistui. Yritä uudelleen.",
         "create": "Käyttäjän luominen epäonnistui. Yritä uudelleen.",
         "update": "Käyttäjän päivittäminen epäonnistui. Yritä uudelleen.",
-        "delete": "Käyttäjän poistaminen epäonnistui. Yritä uudelleen."
+        "delete": "Käyttäjän poistaminen epäonnistui. Yritä uudelleen.",
+        "resend": "Kutsun uudelleenlähetys epäonnistui. Yritä uudelleen.",
+        "revoke": "Seuran ylläpitäjän oikeuksien poistaminen epäonnistui. Yritä uudelleen."
       },
       "success": {
         "create": "Käyttäjä luotu onnistuneesti.",
@@ -430,7 +468,7 @@
         "sportHint": "Sarjan lajia ei voi muuttaa jälkikäteen."
       }
     },
-    "persons":{
+    "persons": {
       "title": "Henkilöiden hallinta",
       "subtitle": "Hallitse Henkilöitä",
       "searchPlaceholder": "Etsi henkilöitä nimellä...",
@@ -442,16 +480,16 @@
         "editTitle": "Muokkaa Henkilöä",
         "close": "Sulje"
       },
-      "status":{
+      "status": {
         "registered": "Kyllä",
         "notRegistered": "Ei"
       },
-      "success":{
+      "success": {
         "registered": "Henkilö rekisteröity.",
         "unregister": "Henkilön rekisteröinti poistettu.",
         "roleUpdated": "Henkilön rooli päivitetty."
       },
-      "table":{
+      "table": {
         "name": "Nimi",
         "birthDate": "Syntymäpäivä",
         "email": "Sähköposti",
@@ -459,7 +497,7 @@
         "role": "Rooli",
         "actions": "Toiminnot"
       },
-      "roles":{
+      "roles": {
         "user": "Käyttäjä",
         "admin": "Ylläpitäjä",
         "superAdmin": "Päällikkö"
@@ -470,7 +508,7 @@
       "form": {
         "basicInfo": "Perustiedot",
         "firstName": "Etunimi",
-        "lastName": "Sukunimi", 
+        "lastName": "Sukunimi",
         "birthDate": "Syntymäpäivä",
         "isRegistered": "Rekisteröity",
         "dateFormat": "Muoto: pp-kk-vvvv",
@@ -495,6 +533,7 @@
         "jerseyNumberHint": "Valinnainen: 1-99",
         "positions": {
           "none": "Ei pelipaikkaa",
+          "midfielder": "Keskikenttä",
           "center": "Keskihyökkääjä",
           "winger": "Laitahyökkääjä",
           "forward": "Hyökkääjä",
@@ -520,7 +559,7 @@
         "firstNameRequired": "Etunimi on pakollinen",
         "firstNameTooLong": "Etunimi ei voi olla yli {{max}} merkkiä",
         "lastNameRequired": "Sukunimi on pakollinen",
-        "lastNameTooLong": "Sukunimi ei voi olla yli {{max}} merkkiä", 
+        "lastNameTooLong": "Sukunimi ei voi olla yli {{max}} merkkiä",
         "birthDateRequired": "Syntymäpäivä on pakollinen",
         "invalidDate": "Virheellinen päivämäärämuoto",
         "birthDateFuture": "Syntymäpäivä ei voi olla tulevaisuudessa",
@@ -530,7 +569,7 @@
         "street2TooLong": "Katuosoite 2 ei voi olla yli {{max}} merkkiä",
         "cityRequired": "Kaupunki on pakollinen",
         "cityTooLong": "Kaupunki ei voi olla yli {{max}} merkkiä",
-        "postalCodeRequired": "Postinumero on pakollinen", 
+        "postalCodeRequired": "Postinumero on pakollinen",
         "postalCodeTooLong": "Postinumero ei voi olla yli {{max}} merkkiä",
         "countryRequired": "Maa on pakollinen",
         "countryTooLong": "Maa ei voi olla yli {{max}} merkkiä",
@@ -556,7 +595,7 @@
       "uploadFailed": "Kuvan lataus epäonnistui.",
       "placeholder": "Kirjoita sisältö tähän..."
     },
-    "news":{
+    "news": {
       "pageTitle": "Uutisten Hallinta",
       "createNew": "Luo Uusi",
       "create": "Luo Uutisartikkeli",
@@ -591,7 +630,7 @@
       "update": "Päivitä Artikkeli",
       "preview": "Esikatselu",
       "edit_content": "Muokkaa Sisältöä",
-      "untitled": "Nimetön Artikkeli", 
+      "untitled": "Nimetön Artikkeli",
       "no_content": "Sisältöä ei ole vielä kirjoitettu...",
       "loading_article": "Ladataan artikkelia...",
       "preview_mode": "Esikatselutila",
@@ -668,6 +707,25 @@
     }
   },
   "clubs": {
+    "admins": {
+      "title": "Seuran ylläpitäjät",
+      "hint": "Seuran ylläpitäjät voivat muokata seuran tietoja sekä hallita seuran joukkueiden kokoonpanoja ja ottelukokoonpanoja.",
+      "addButton": "Lisää ylläpitäjä",
+      "modalTitle": "Hallitse seuran ylläpitäjiä",
+      "currentTitle": "Nykyiset ylläpitäjät",
+      "searchTitle": "Hae henkilöitä",
+      "searchPlaceholder": "Hae henkilöitä nimellä...",
+      "noneSelected": "Ylläpitäjiä ei ole vielä määritetty.",
+      "noPersons": "Henkilöitä ei löytynyt.",
+      "add": "Lisää",
+      "added": "Lisätty",
+      "remove": "Poista",
+      "emailRequired": "Tällä henkilöllä ei ole sähköpostiosoitetta, joten häntä ei voi kutsua seuran ylläpitäjäksi.",
+      "searchError": "Henkilöiden haku epäonnistui",
+      "loadError": "Käyttäjien lataaminen epäonnistui",
+      "saveError": "Seuran ylläpitäjien päivittäminen epäonnistui",
+      "cardHint": "Nämä käyttäjät voivat muokata seuran tietoja ja hallita joukkueiden kokoonpanoja."
+    },
     "manage": {
       "title": "Seurojen Hallinta"
     },
@@ -715,7 +773,8 @@
       "foundingDate": "Perustettu",
       "teams": "Joukkueet",
       "noTeams": "Ei joukkueita vielä",
-      "members": "Jäseniä"
+      "members": "Jäseniä",
+      "backToClubs": "Takaisin seuroihin"
     },
     "deleteClubButton": "Poista seura",
     "confirmDeleteTitle": "Poista seura?",
@@ -765,7 +824,7 @@
       "noMembers": "Ei",
       "primary": "Ensisijainen",
       "secondary": "Toissijainen",
-      "name": "Joukkueen Nimi", 
+      "name": "Joukkueen Nimi",
       "namePlaceholder": "Anna joukkueen nimi",
       "club": "Seura",
       "selectClub": "Valitse seura",
@@ -1479,6 +1538,7 @@
     "save": "Tallenna",
     "deleting": "Poistetaan...",
     "cancel": "Peruuta",
+    "done": "Valmis",
     "preview": "Esikatselu",
     "active": "Aktiivinen",
     "inactive": "Ei-aktiivinen",
@@ -1516,14 +1576,14 @@
       "pageOf": "Sivu {{current}} / {{total}}"
     }
   },
-  "newsPage":{
+  "newsPage": {
     "category": {
       "all": "Kaikki"
     },
     "sportCategory": {
       "floorball": "Salibandy",
       "hockey": "Jääkiekko",
-      "football": "Jalkapallo" 
+      "football": "Jalkapallo"
     },
     "search": "Hae",
     "searchPlaceholder": "Hae uutisia...",
@@ -1622,6 +1682,7 @@
       "None": "EI ROOLIA",
       "Goalkeeper": "MAALIVAHTI",
       "Defender": "PUOLUSTAJA",
+      "Midfielder": "KESKIKENTTÄ",
       "Center": "KESKIKENTTÄ",
       "Forward": "HYÖKKÄÄJÄ"
     },
@@ -1642,36 +1703,76 @@
   "sports": {
     "allSports": "Kaikki lajit",
     "floorball": "Salibandy",
+    "football": "Jalkapallo",
     "iceHockey": "Jääkiekko"
   },
   "sportsPage": {
     "title": "Lajit",
     "description": "MAHL lajit jakaantuvat eri urheilulajeihin. Valitse laji nähdäksesi sarjat, ottelut ja tilastot.",
     "floorballDescription": "Salibandy on nopeatempinen sisäurheilulaji, jossa kaksi joukkuetta kilpailee maalien tekemisessä.",
+    "footballDescription": "Jalkapallo on joukkuelaji, jossa kaksi joukkuetta kilpailee maalien tekemisessä.",
     "iceHockeyDescription": "Jääkiekko on intensiivinen joukkuelaji jäällä.",
     "viewLeagues": "Näytä sarjat",
     "comingSoon": "Tulossa pian"
   },
   "floorballPage": {
     "title": "Salibandy",
-    "description": "Selaa salibandyn sarjoja, sarjataulukoita ja tilastoja.",
     "loading": "Ladataan sarjoja...",
     "error": "Sarjojen lataus epäonnistui",
     "retry": "Yritä uudelleen",
-    "noSeasons": "Ei sarjoja saatavilla",
-    "active": "Aktiivinen",
-    "completed": "Päättynyt",
-    "fixtures": "Otteluohjelma",
-    "standings": "Sarjataulukko",
-    "playerStats": "Pelaajatilastot",
-    "goalieStats": "Maalivahtitilastot",
-    "teamStats": "Joukkuetilastot",
-    "standingsTitle": "SARJATAULUKKO",
-    "loadingStandings": "Ladataan sarjataulukkoa...",
-    "team": "JOUKKUE",
+    "noSeasonsForYear": "Tälle kaudelle ei löytynyt sarjoja",
+    "seasonYears": "Kausivuodet",
+    "seasonLabel": "Kausi",
+    "standingsTitle": "Sarjataulukko",
+    "teamShort": "Joukkue",
+    "gdShort": "ME",
+    "ptsShort": "P",
+    "noStandings": "Sarjataulukkoa ei ole vielä saatavilla",
+    "viewFullTable": "Koko taulukko",
+    "upcomingMatches": "Tulevat ottelut",
+    "tbd": "Avoin",
+    "archiveTitle": "Kausiarkisto {{year}}",
+    "archiveText": "Selaat menneen kauden sarjoja. Sarjataulukot ja tilastot löytyvät oikealta.",
+    "backToCurrent": "Takaisin kauteen {{year}}",
+    "info": {
+      "introTitle": "MAHL Salibandy 2025–2026 | Saimaanportti",
+      "intro1": "Ole nopea ja varaa paikkasi jo hyvissä ajoin kaupungin kovimmassa salibandysarjassa. Kausi 2025-2026 pelataan samalla kaavalla kun pari edellistäkin kautta eli kaikki lisenssipelaajat ovat vapautettuja sarjatasosta riippumatta! Joukkueissa voi olla rajaton määrä lisenssipelaajia, mutta pelikohtaisesti maksimissaan kolme (3). Kausi aloitetaan tasonmittauspeleillä, jonka jälkeen pelataan sekä liigan että divarin mestaruudesta!",
+      "intro2": "Jokaisen joukkueen tulee nimetä 2 tuomaria, jotka sitoutuvat viheltämään osan kauden otteluista. Tuomareille maksetaan peleistä normaalikorvaus (10e/ottelu). Tarvittaessa MAHL kouluttaa tuomarit syksyllä.",
+      "intro3": "Sarjamaksuun sisältyy myös osallistumisoikeus PMT Festival salibandyturnaukseen, joka järjestetään keväällä 2026 Saimaa Stadiumilla.",
+      "seriesTitle": "Sarjainfo",
+      "series1": "Tavoitellaan mukaan 12-16 joukkuetta. Kauden alkuun tasonmittauspelit, jonka jälkeen jakaannutaan liigaan ja divariin. Sarjakausi huipentuu loppupeleihin. Pelit perjantai-iltaisin klo 18-22, ottelut pelataan uudella Saimaan Portin koululla, jossa on mattoalusta.",
+      "series2": "Lopullinen sarjamuoto sekä mitallipelien pelaamismuoto määräytyy joukkuemäärän mukaan. Otteluita joukkueelle kertyy kauden aikana n. 16-24 kappaletta.",
+      "series3": "Lisenssipelaajat sallittuja sarjatasosta riippumatta. Joukkueessa voi olla rajaton määrä lisenssipelaajia, mutta pelikohtaisesti maksimissaan kolme (3). Maalivahteja EI LASKETA lisenssipelaajiksi. Alle 18 vuotiaita ei lasketa lisenssipelaajiksi, vaikka pelaisivatkin korkeammalla tasolla. Myöskään naisia tai 1986 syntyneitä miehiä ei lasketa lisenssipelaajiksi. Lainavahdin käyttö MAHL salibandyssä on sallittua.",
+      "series4": "Salibandyn PMT turnaus sisältyy joukkuemaksuun! Joukkuemaksu sisältää osallistumisoikeuden toukokuussa järjestettävään PMT festival turnaukseen. Turnaus järjestetään Saimaa Stadiumilla toukokuussa 2026. Lisäinfoa turnauksesta keväällä.",
+      "loanTitle": "Lainapelaajat",
+      "loan1": "Kaudelle 2025-2026 stuntataan lainapelaajien pankkia. Mikäli pelipäivänä joukkueella on pulaa pelaajista voi joukkue täydentää rosteriaan lainapelaajista siten, että pelaamassa olevan rosterin koko on 1+10 pelaajaa. Homma toimii siten, että JoJo ilmoittaa Mahl:lle tarvittavan lainapelaajien määrän ja MAHL hoitaa lainapelaajat otteluihin. MAHL laskuttaa lainapelaajat. Tästä vielä lisäinfoa ennen kauden alkua.",
+      "feeTitle": "Joukkuemaksu",
+      "fee1": "Osallistumismaksu 1200-2000 €, alv. 0% (Lopullinen hinta selviää joukkuemäärän ja sarjamuodon varmistuttua).",
+      "fee2": "Puolet joukkuemaksusta tulee olla hoidettuna lokakuun 2025 loppuun mennessä. Loput joukkuemaksusta tulee olla hoidettuna tammikuun 2026 loppuun mennessä.",
+      "fee3": "Joukkuemaksu sisältää osallistumisoikeuden PMT festival salibandyturnaukseen. Joukkueiden laskutus tapahtuu suomisportin kautta. Jojoihin ollaan yhteydessä laskutuksesta kauden alussa.",
+      "contactTitle": "Lisätietoja salibandykaudesta antaa"
+    }
+  },
+  "footballPage": {
+    "title": "Jalkapallo",
+    "loading": "Ladataan sarjoja...",
+    "error": "Sarjojen lataus epäonnistui",
+    "retry": "Yritä uudelleen",
+    "noSeasonsForYear": "Tälle kaudelle ei löytynyt sarjoja",
+    "seasonYears": "Kausivuodet",
+    "seasonLabel": "Kausi",
+    "standingsTitle": "Sarjataulukko",
+    "teamShort": "Joukkue",
     "gamesShort": "O",
-    "pointsShort": "PTS",
-    "viewFullTable": ">> koko taulukko"
+    "gdShort": "ME",
+    "ptsShort": "P",
+    "noStandings": "Sarjataulukkoa ei ole vielä saatavilla",
+    "viewFullTable": "Koko taulukko",
+    "upcomingMatches": "Tulevat ottelut",
+    "tbd": "Avoin",
+    "archiveTitle": "Kausiarkisto {{year}}",
+    "archiveText": "Selaat menneen kauden sarjoja. Sarjataulukot ja tilastot löytyvät oikealta.",
+    "backToCurrent": "Takaisin kauteen {{year}}"
   },
   "leaguePage": {
     "title": "Sarja",
@@ -1762,7 +1863,805 @@
     "verifying": "Vahvistetaan...",
     "back": "Takaisin",
     "codeSent": "Kirjautumiskoodi on lähetetty sähköpostiisi.",
+    "codeAutoFilled": "Kehitystila: kirjautumiskoodi täytettiin automaattisesti. Sähköpostia ei lähetetty.",
     "unexpectedError": "Odottamaton virhe tapahtui.",
-    "logout": "Kirjaudu ulos"
+    "logout": "Kirjaudu ulos",
+    "clubAdminLoginTitle": "Seuran ylläpitäjän kirjautuminen"
+  },
+  "clubAdmin": {
+    "view": "Seuran ylläpitäjän näkymä",
+    "logout": "Kirjaudu ulos",
+    "myClubs": "Omat seurat",
+    "loadError": "Seurojen lataaminen epäonnistui",
+    "noClubs": "Sinua ei ole tällä hetkellä määritetty minkään seuran ylläpitäjäksi. Ota yhteyttä ylläpitäjään.",
+    "noTeams": "Tällä seuralla ei ole vielä joukkueita.",
+    "editClubInfo": "Muokkaa seuran tietoja",
+    "clubInfoTitle": "Seuran tiedot",
+    "clubInfoSaved": "Seuran tiedot on tallennettu.",
+    "loadClubError": "Seuran lataaminen epäonnistui",
+    "backToClubs": "Takaisin omiin seuroihin",
+    "sportFloorball": "Salibandy",
+    "sportFootball": "Jalkapallo",
+    "editRoster": "Kokoonpano ja pelinumerot",
+    "upcomingMatches": "Tulevat ottelut",
+    "noUpcomingMatches": "Ei tulevia otteluita.",
+    "rosterAnnounced": "Kokoonpano ilmoitettu",
+    "announceRoster": "Ilmoita kokoonpano",
+    "editAnnouncedRoster": "Muokkaa kokoonpanoa",
+    "announceRosterTitle": "Ilmoita ottelukokoonpano",
+    "loadMatchError": "Ottelun lataaminen epäonnistui",
+    "rosterSaved": "Ottelukokoonpano on ilmoitettu. Se näkyy nyt ottelunäkymässä.",
+    "rosterSaveError": "Ottelukokoonpanon ilmoittaminen epäonnistui",
+    "matchNotScheduled": "Kokoonpanoa ei voi enää muuttaa, koska ottelu ei ole ajastettu-tilassa.",
+    "goalie": "Maalivahti",
+    "noGoalie": "Ei valittua maalivahtia",
+    "floorballRosterHint": "Valitse ottelun kenttäpelaajat ja aseta heidän roolinsa. Maalivahti valitaan erikseen yllä.",
+    "footballRosterHint": "Valitse ottelun pelaajat, aseta heidän pelipaikkansa ja merkitse avauskokoonpano.",
+    "inRoster": "Kokoonpanossa",
+    "playerName": "Pelaaja",
+    "matchPosition": "Pelipaikka ottelussa",
+    "starting": "Avauksessa",
+    "emptyRoster": "Tällä joukkueella ei ole vielä pelaajia kokoonpanossa.",
+    "selectedPlayers": "Valitut pelaajat",
+    "saving": "Tallennetaan...",
+    "saved": "Tallennettu",
+    "updateRoster": "Päivitä ilmoitettu kokoonpano",
+    "rosterTitle": "Kokoonpano",
+    "loadRosterError": "Kokoonpanon lataaminen epäonnistui",
+    "rosterHint": "Voit muuttaa pelaajiesi pelinumeroita. Jokainen numero voi olla käytössä vain kerran joukkuetta kohden.",
+    "jerseyUpdateError": "Pelinumeron päivittäminen epäonnistui",
+    "jerseyNumber": "Pelinumero",
+    "position": "Pelipaikka",
+    "status": "Tila",
+    "noNumber": "—",
+    "active": "Aktiivinen",
+    "inactive": "Ei aktiivinen"
+  },
+  "football": {
+    "management": {
+      "title": "Jalkapallon Hallinta",
+      "legend": {
+        "availableNow": "Saatavilla Nyt",
+        "comingSoon": "Tulossa Pian"
+      },
+      "badges": {
+        "ready": "✨ Valmis!",
+        "soon": "🚧 Pian"
+      },
+      "comingSoonAlert": "🚧 {{featureName}} tulossa pian! 🚧\n\nKehitystiimimme työskentelee kovasti tuodakseen sinulle tämän ominaisuuden. Pysy kuulolla päivityksistä! 🎯",
+      "actions": {
+        "teams": "Joukkueet",
+        "manageTeams": "Hallitse joukkueita",
+        "managePlayers": "Hallitse pelaajia",
+        "manageSeasons": "Hallitse kausia",
+        "manageTournaments": "Hallitse turnauksia",
+        "manageMatches": "Hallitse otteluita",
+        "manageReferees": "Hallitse tuomareita",
+        "players": "Hallitse Pelaajia",
+        "coaches": "Hallitse Valmentajia",
+        "teamManagers": "Hallitse Joukkueenjohtajia",
+        "referees": "Hallitse Tuomareita",
+        "matches": "Hallitse Otteluita",
+        "matchEvents": "Hallitse Ottelutapahtumia",
+        "seasons": "Hallitse Kausia",
+        "seasonMatches": "Hallitse Kauden Otteluita",
+        "tournaments": "Hallitse Turnauksia",
+        "tournamentMatches": "Hallitse Turnausten Otteluita"
+      }
+    },
+    "teams": {
+      "title": "Hallitse Joukkueita",
+      "totalCount": "Yhteensä: {{count}} joukkuetta",
+      "createNew": "Luo Uusi Joukkue",
+      "searchPlaceholder": "Hae joukkueita nimellä...",
+      "noTeams": "Joukkueita ei löytynyt",
+      "players": "Joukkueen Pelaajat",
+      "hasMembers": "Kyllä",
+      "noMembers": "Ei",
+      "primary": "Ensisijainen",
+      "secondary": "Toissijainen",
+      "name": "Joukkueen Nimi",
+      "namePlaceholder": "Anna joukkueen nimi",
+      "club": "Seura",
+      "selectClub": "Valitse seura",
+      "division": "Sarja",
+      "selectDivision": "Valitse sarja...",
+      "category": "Kategoria",
+      "homeArena": "Kotikenttä",
+      "homeArenaPlaceholder": "Anna kotikenttä",
+      "optional": "Valinnainen",
+      "secondaryColorTooShort": "Toissijaisen värin tulee olla vähintään 2 merkkiä",
+      "secondaryColorTooLong": "Toissijaisen värin tulee olla enintään 50 merkkiä",
+      "confirmDelete": "Oletko varma että haluat poistaa joukkueen \"{{name}}\"?",
+      "table": {
+        "name": "Joukkueen Nimi",
+        "club": "Seura",
+        "division": "Sarja",
+        "homeArena": "Kotihalli",
+        "activeMembers": "Aktiivisia Jäseniä",
+        "actions": "Muut"
+      },
+      "assignPlayerToTeam": "Määritä Joukkueeseen",
+      "assignPlayersToTeam": "Määritä Pelaajat Joukkueeseen",
+      "selectTeam": "Valitse Joukkue",
+      "chooseTeam": "Valitse joukkue...",
+      "addToRoster": "Lisää Kokoonpanoon",
+      "errors": {
+        "loadFailed": "Joukkueiden lataus epäonnistui",
+        "selectTeam": "Valitse joukkue",
+        "invalidJerseyNumber": "Pelinumeron täytyy olla välillä 1-99"
+      },
+      "requestedJerseyTooltip": "Tuonnissa pyydettiin pelinumeroa #{{requested}}, mutta se oli varattu — pelaajalle annettiin #{{assigned}}. Vaihda numeroa poistaaksesi tämä huomautus.",
+      "requestedJerseyBadge": "pyydetty #{{requested}}"
+    },
+    "divisions": {
+      "men": "Miehet",
+      "women": "Naiset",
+      "youth": "Nuoret",
+      "junior": "Juniorit"
+    },
+    "players": {
+      "title": "Hallitse Jalkapallopelaajia",
+      "totalCount": "{{count}} pelaajaa",
+      "createNew": "Luo Uusi Pelaaja",
+      "noPlayers": "Pelaajia ei löytynyt.",
+      "createFromPerson": "Luo Pelaaja Olemassaolevista Henkilöistä",
+      "createNewPerson": "Luo Uusi Henkilö",
+      "searchPersons": "Hae saatavilla olevia henkilöitä...",
+      "searchPlayers": "Hae pelaajia...",
+      "selected": "{{count}} valittu",
+      "selectedPlayers": "{{count}} pelaajaa valittu",
+      "selectAll": "Valitse kaikki",
+      "selectAllVisible": "Valitse kaikki näkyvät henkilöt",
+      "createPlayer": "Luo Pelaaja",
+      "createPlayers": "Luo Monta Pelaajaa",
+      "playerCreated": "{{personName}} on nyt jalkapallopelaaja!",
+      "playersCreated": "{{personName}} ovat nyt jalkapallopelaajia!",
+      "personCreated": "{{personName}} luotu onnistuneesti! Voit nyt luoda heistä pelaajan.",
+      "noPersonsFound": "Hakua vastaavia henkilöitä ei löytynyt",
+      "noPersonsAvailable": "Ei saatavilla olevia henkilöitä muutettavaksi pelaajiksi. Kaikki henkilöt ovat jo pelaajia.",
+      "backToPersonSelection": "Takaisin Henkilövalintaan",
+      "backToPlayerCreation": "Takaisin Pelaajan Luontiin",
+      "table": {
+        "name": "Nimi",
+        "position": "Pelipaikka",
+        "status": "Tila",
+        "actions": "Toiminnot"
+      },
+      "position": "Pelipaikka",
+      "games": "Pelit",
+      "goals": "Maalit",
+      "assists": "Syötöt",
+      "penalties": "Kortit",
+      "confirmDelete": {
+        "title": "Vahvista Poisto",
+        "message": "Oletko varma että haluat poistaa pelaajan {{playerName}}?",
+        "warning": "Tätä toimintoa ei voi perua."
+      },
+      "noPlayersInTeam": "Tällä joukkueella ei ole vielä pelaajia määritelty.",
+      "addPlayersHelp": "Käytä muokkaa-painiketta hallitaksesi joukkueen kokoonpanoa ja lisätäksesi pelaajia.",
+      "actions": {
+        "menu": "Pelaajan toimintovalikko",
+        "activate": "Aktivoi Pelaaja",
+        "deactivate": "Deaktivoi Pelaaja",
+        "bulkActivate": "Aktivoi Valitut ({{count}})",
+        "bulkDeactivate": "Deaktivoi Valitut ({{count}})",
+        "bulkDelete": "Poista Valitut ({{count}})",
+        "bulkAssignToTeam": "Määritä Joukkueeseen ({{count}})"
+      },
+      "errors": {
+        "loadPlayers": "Pelaajien lataus epäonnistui. Yritä uudelleen.",
+        "deleteFailed": "Pelaajan poisto epäonnistui. Yritä uudelleen."
+      }
+    },
+    "positions": {
+      "none": "Ei määritelty",
+      "defender": "Puolustaja",
+      "goalkeeper": "Maalivahti",
+      "forward": "Hyökkääjä",
+      "midfielder": "Keskikenttä"
+    },
+    "seasons": {
+      "title": "Hallitse Kausia",
+      "totalCount": "{{count}} kautta",
+      "createNew": "Luo Uusi Kausi",
+      "showActiveOnly": "Näytä Vain Aktiiviset",
+      "backToList": "Takaisin kausilistaan",
+      "division": "Sarja",
+      "matchesInProgress_one": "{{count}} ottelu käynnissä",
+      "matchesInProgress_other": "{{count}} ottelua käynnissä",
+      "fields": {
+        "name": "Nimi",
+        "division": "Sarja",
+        "startDate": "Alkaa",
+        "endDate": "Päättyy",
+        "teams": "Joukkueet"
+      },
+      "status": {
+        "active": "Aktiivinen",
+        "inactive": "Ei-aktiivinen",
+        "completed": "Päättynyt"
+      },
+      "create": {
+        "title": "Luo Uusi Kausi",
+        "info": "Kausi luodaan oletuksena ei-aktiivisena"
+      },
+      "placeholders": {
+        "name": "Anna kauden nimi",
+        "selectDivision": "Valitse sarja"
+      },
+      "errors": {
+        "networkError": "Verkkovirhe. Tarkista yhteytesi ja yritä uudelleen.",
+        "validationError": "Virheellistä tietoa annettu. Tarkista syötteesi ja yritä uudelleen.",
+        "conflictError": "Kausi päällekkäisillä päivämäärillä on jo olemassa.",
+        "serverError": "Palvelinvirhe. Yritä myöhemmin uudelleen.",
+        "overlappingDates": "Kausi on jo olemassa, joka menee päällekkäin määritettyjen päivämäärien kanssa."
+      },
+      "validation": {
+        "nameRequired": "Kauden nimi on pakollinen.",
+        "nameTooLong": "Kauden nimi ei voi ylittää 100 merkkiä.",
+        "divisionRequired": "Valitse kelvollinen sarja.",
+        "startDateRequired": "Aloituspäivä on pakollinen.",
+        "endDateRequired": "Päättymispäivä on pakollinen."
+      }
+    },
+    "tournaments": {
+      "title": "Hallitse Turnauksia",
+      "totalCount": "{{count}} turnausta",
+      "createNew": "Luo Uusi Turnaus",
+      "editTitle": "Muokkaa Turnausta",
+      "createTitle": "Luo Uusi Turnaus",
+      "noTournaments": "Turnauksia ei löytynyt",
+      "noGroups": "Ei lohkoja",
+      "import": {
+        "button": "Tuo JSON-tiedostosta",
+        "buttonTooltip": "Luo turnaus lähettämällä JSON-tiedosto (myleague-muoto).",
+        "title": "Tuo turnaus JSON-tiedostosta",
+        "dropzone": "Pudota JSON-tiedosto tähän tai napsauta valitaksesi.",
+        "chooseFile": "Valitse tiedosto",
+        "downloadSample": "Lataa esimerkki-JSON",
+        "invalidTitle": "JSON-tiedoston tarkistus epäonnistui",
+        "invalidJson": "Tiedosto ei ole kelvollinen JSON: {{msg}}",
+        "tournamentName": "Turnauksen nimi",
+        "tournamentVenue": "Pelipaikka",
+        "tournamentVenuePlaceholder": "esim. Kampparit Areena",
+        "tournamentVenueHint": "Esitäytetään JSON-tiedostosta, jos arvo löytyy. Käytetään turnauksen pelipaikkana ja oletuksena otteluiden sijaintina.",
+        "tournamentCategory": "Turnauksen tyyppi",
+        "tournamentCategoryHint": "Käytetään luotaviin joukkueisiin (olemassa olevat säilyttävät oman tyyppinsä).",
+        "previewNote": "Olemassa olevat seurat/joukkueet (haku nimellä) käytetään uudelleen. Vain puuttuvat luodaan.",
+        "autoRevert": "Peruuta automaattisesti, jos jokin vaihe epäonnistuu",
+        "startImport": "Aloita tuonti",
+        "starting": "Käynnistetään...",
+        "successTitle": "Tuonti valmis",
+        "failedTitle": "Tuonti epäonnistui",
+        "failedNote": "{{count}} kohdetta luotiin ennen virhettä. Voit perua ne.",
+        "aborted": "Käyttäjä peruutti tuonnin.",
+        "unknownError": "Tuonti epäonnistui tuntemattomasta syystä.",
+        "revertStart": "Perutaan luotuja kohteita...",
+        "revertAll": "Peru kaikki muutokset",
+        "reverting": "Perutaan...",
+        "revertedTitle": "Peruutus valmis",
+        "revertedSummary": "Poistettu {{deleted}} kohdetta. {{failed}} epäonnistunutta — katso loki.",
+        "openTournament": "Avaa turnaus",
+        "counts": {
+          "clubs": "Seurat",
+          "divisions": "Divisioonat",
+          "teams": "Joukkueet",
+          "players": "Pelaajat",
+          "tournament": "Turnaus",
+          "groups": "Lohkot",
+          "assignments": "Lohkoon liitokset",
+          "matches": "Ottelut",
+          "playoffSlots": "Pudotuspeliotteluiden paikat"
+        },
+        "phases": {
+          "players": "Pelaajat"
+        },
+        "playerRosterNote": "Pelaajakokoonpanot (jos mukana JSONissa) luodaan ja liitetään joukkueisiin automaattisesti. Olemassa olevia pelaajia (nimen mukaan) käytetään uudelleen.",
+        "playoffSlotsNote": "Pudotuspeliotteluiden paikat näkyvät otteluohjelmassa \"TBD vs TBD\" -paikanvarauksina. Oikeat joukkueet täydennetään automaattisesti, kun pudotuspelivaihe käynnistetään.",
+        "playoffSlotsIgnoredNote": "Pudotuspelit on poistettu käytöstä tästä tuonnista — JSONin {{count}} pudotuspelipaikkaa ohitetaan.",
+        "hasPlayoffStage": "Turnauksessa on pudotuspelivaihe",
+        "hasPlayoffStageHintOn": "Käytössä vakio-pudotuspelisäännöt: lohkovaiheen jälkeen pudotuspeleihin pitää saada 2, 4 tai 8 joukkuetta (lohkosta jatkavat × lohkojen määrä).",
+        "hasPlayoffStageHintOff": "Pelkkä lohkovaihe: lohkossa voi olla mikä tahansa määrä joukkueita ja JSONin pudotuspeliaikataulu (jos sellainen on) ohitetaan.",
+        "aiHelp": {
+          "title": "Ei vielä JSON-tiedostoa? Generoi sellainen tekoälyllä",
+          "step1": "Kopioi alla oleva prompti \"Kopioi prompti\" -napilla (tai lataa se tiedostona, jos kopiointi ei onnistu).",
+          "step2": "Avaa ChatGPT, Claude, Gemini tai muu kuvia tukeva tekoäly ja liitä prompti (Ctrl/Cmd + V).",
+          "step3": "Liitä viestiin kuvakaappaus tai valokuva turnauksen otteluohjelmasta (ja mahdollisista joukkueiden rosterilistoista) ja lähetä viesti.",
+          "step4": "Tallenna tekoälyn vastaus .json-tiedostona ja pudota se yllä olevaan alueeseen.",
+          "copyPrompt": "Kopioi AI-prompti leikepöydälle",
+          "downloadPrompt": "Lataa AI-prompti .txt-tiedostona",
+          "copiedToast": "Prompti kopioitu leikepöydälle. Liitä se AI-keskusteluun (Ctrl/Cmd + V) ja lisää otteluohjelman kuva mukaan.",
+          "downloadedToast": "Prompti ladattiin .txt-tiedostona. Avaa tiedosto, kopioi sisältö ja liitä se AI-keskusteluun.",
+          "errorToast": "Promptia ei voitu kopioida eikä ladata. Yritä uudelleen \"Lataa\"-napilla."
+        }
+      },
+      "playoffSchedule": {
+        "title": "Suunnitellut pudotuspeliottelut",
+        "hint": "Joukkueet täydennetään automaattisesti lohkovaiheen päätyttyä.",
+        "toggleShow": "Näytä pudotuspeliaikataulu ({{count}} ottelua)",
+        "toggleHide": "Piilota pudotuspeliaikataulu",
+        "tbd": "TBD",
+        "placeholderTooltip": "Tämä on suunniteltu pudotuspeliotteluiden paikka. Varsinainen ottelu luodaan, kun lohkovaihe päättyy.",
+        "rounds": {
+          "qf": "PF",
+          "sf": "VE",
+          "thirdPlace": "Pronssiottelu",
+          "final": "Finaali"
+        }
+      },
+      "playoffScheduleManager": {
+        "title": "Suunniteltu pudotuspeliaikataulu",
+        "hint": "Aseta jokaiselle pudotuspelikierrokselle alkamisaika ja halutessasi pelipaikka. Joukkueet täydennetään automaattisesti, kun pudotuspelivaihe käynnistetään; tällä välin paikat näkyvät otteluohjelmassa \"TBD vs TBD\" -paikanvarauksina.",
+        "lockedHint": "Pudotuspelikaavio on jo luotu, joten suunniteltua aikataulua ei voi enää muokata. Muokkaa yksittäisiä otteluita otteluluettelosta.",
+        "disabledHint": "Tällä turnauksella ei ole pudotuspelivaihetta käytössä. Ota se käyttöön Turnauksen tiedot -välilehdellä voidaksesi suunnitella pudotuspeliotteluita.",
+        "fillSuggested": "Täytä puuttuvat paikat",
+        "fillSuggestedTooltip": "Lisää puuttuvat pudotuspelipaikat turnauksen sääntöjen mukaan.",
+        "savedSuccess": "Pudotuspeliaikataulu tallennettu.",
+        "empty": "Pudotuspelipaikkoja ei ole vielä suunniteltu.",
+        "errors": {
+          "unsupportedSize": "Aikataulua ei voi ehdottaa: jatkoonpääsijät × lohkojen määrä pitää olla 2, 4 tai 8 (nyt: {{count}}).",
+          "missingTime": "Jokaisella pudotuspelipaikalla pitää olla alkamisaika.",
+          "duplicateSlot": "Päällekkäisiä pudotuspelipaikkoja: {{slots}}"
+        },
+        "fields": {
+          "round": "Kierros",
+          "order": "Järjestys",
+          "scheduledDateTime": "Päivä ja kellonaika",
+          "venue": "Pelipaikka (valinnainen)"
+        },
+        "placeholders": {
+          "venue": "esim. Kenttä 1"
+        },
+        "rounds": {
+          "QuarterFinal": "Puolivälierä",
+          "SemiFinal": "Välierä",
+          "ThirdPlaceMatch": "Pronssiottelu",
+          "Final": "Finaali"
+        },
+        "addRound": {
+          "QuarterFinal": "Lisää puolivälierä",
+          "SemiFinal": "Lisää välierä",
+          "ThirdPlaceMatch": "Lisää pronssiottelu",
+          "Final": "Lisää finaali"
+        },
+        "removeRowAriaLabel": "Poista tämä pudotuspelipaikka",
+        "removeRowTooltip": "Poista tämä pudotuspelipaikka aikataulusta"
+      },
+      "matchesInProgress_one": "{{count}} ottelu käynnissä",
+      "matchesInProgress_other": "{{count}} ottelua käynnissä",
+      "showOngoingOnly": "Näytä Vain Käynnissä Olevat",
+      "filterByStatus": "Suodata tilan mukaan",
+      "allStatuses": "Kaikki tilat",
+      "selectAll": "Valitse kaikki turnaukset",
+      "statusLabel": "Tila",
+      "teamsCount": "{{count}} joukkuetta",
+      "matchesCount": "{{count}} ottelua",
+      "backToList": "Takaisin turnauslistaan",
+      "fields": {
+        "name": "Nimi",
+        "venue": "Pelipaikka",
+        "groups": "Lohkot",
+        "startDate": "Alkaa",
+        "endDate": "Päättyy",
+        "teams": "Joukkueet",
+        "matches": "Ottelut",
+        "status": "Tila"
+      },
+      "tabs": {
+        "details": "Turnauksen Tiedot",
+        "groups": "Hallitse Lohkoja",
+        "teams": "Hallitse Joukkueita",
+        "matches": "Ottelut",
+        "bracket": "Pudotuspelikaavio"
+      },
+      "matchesTab": {
+        "empty": "Tähän turnaukseen ei ole vielä lisätty otteluita.",
+        "createFirst": "Luo ensimmäinen ottelu",
+        "createNew": "Luo uusi ottelu"
+      },
+      "sections": {
+        "basicInfo": "Perustiedot",
+        "schedule": "Aikataulu",
+        "groupStageRules": "Alkulohkojen Säännöt",
+        "playoffRules": "Pudotuspelien Säännöt",
+        "structure": "Rakenne"
+      },
+      "bracket": {
+        "empty": "Pudotuspelikaaviota ei ole vielä luotu. Käynnistä pudotuspelivaihe Tiedot-välilehdeltä."
+      },
+      "status": {
+        "draft": "Luonnos",
+        "groupStage": "Alkulohkot",
+        "playoffStage": "Pudotuspelit",
+        "completed": "Päättynyt",
+        "cancelled": "Peruttu"
+      },
+      "lifecycle": {
+        "startGroupStage": "Aloita Alkulohkot",
+        "startPlayoffStage": "Aloita Pudotuspelit",
+        "complete": "Päätä Turnaus",
+        "cancel": "Peru Turnaus",
+        "delete": "Poista turnaus",
+        "moreActions": "Lisätoiminnot",
+        "matchesLoadError": "Otteluiden tilan lataaminen epäonnistui — esiehtoja ei voida vahvistaa. Tarkista ottelujen tilanne ennen lifecycle-toimintoja.",
+        "startGroupStageSuccess": "Alkulohkot aloitettu onnistuneesti.",
+        "startPlayoffStageSuccess": "Pudotuspelit aloitettu onnistuneesti.",
+        "completeSuccess": "Turnaus päätetty onnistuneesti.",
+        "cancelSuccess": "Turnaus peruttu onnistuneesti.",
+        "statusDescription": {
+          "draft": "Turnaus on luonnostilassa. Lisää lohkot ja joukkueet, ja aloita sitten alkulohkot, jotta ottelut voidaan aikatauluttaa.",
+          "groupStageWithPlayoff": "Alkulohkot käynnissä. Kun kaikki alkulohkojen ottelut on pelattu loppuun, voit siirtyä pudotuspeleihin.",
+          "groupStageNoPlayoff": "Alkulohkot käynnissä. Kun kaikki ottelut on pelattu loppuun, voit päättää turnauksen.",
+          "playoffStage": "Pudotuspelit käynnissä. Päätä turnaus, kun kaikki pudotuspeliottelut ovat ratkenneet.",
+          "completed": "Turnaus on päättynyt. Lifecycle-toimintoja ei ole enää saatavilla.",
+          "cancelled": "Turnaus on peruttu. Lifecycle-toimintoja ei ole enää saatavilla."
+        },
+        "tooltip": {
+          "startGroupStage": "Merkitsee turnauksen aktiiviseksi ja paljastaa ottelut yleisösivuilla.",
+          "startPlayoffStage": "Laskee sarjataulukot, luo pudotuspelikaavion ja aikatauluttaa pudotuspeliottelut. Vaatii, että kaikki alkulohkojen ottelut on pelattu.",
+          "complete": "Sulkee turnauksen. Vaatii että kaikki ottelut on pelattu loppuun.",
+          "cancel": "Peruu turnauksen. Toiminto on lopullinen eikä sitä voi peruuttaa.",
+          "delete": "Poistaa turnauksen pysyvästi. Toimintoa ei voi peruuttaa."
+        },
+        "disabled": {
+          "noGroups": "Lisää ainakin yksi lohko, jotta voit aloittaa alkulohkot.",
+          "loadingMatches": "Ladataan otteluiden tila...",
+          "unsupportedPlayoffSize": "Pudotuspelikaavion koko ei ole tuettu ({{size}}). Säädä lohkoja tai jatkajia per lohko niin, että summa on 2, 4 tai 8.",
+          "noGroupStageMatches": "Yhtään alkulohkon ottelua ei ole vielä luotu.",
+          "groupStageInProgress": "{{completed}}/{{total}} alkulohkon ottelua pelattu. Pelaa kaikki loppuun ennen pudotuspelejä.",
+          "noMatches": "Turnauksessa ei ole vielä otteluita.",
+          "matchesInProgress": "{{completed}}/{{total}} ottelua pelattu. Pelaa kaikki loppuun ennen päättämistä."
+        },
+        "prereq": {
+          "tournamentInDraft": "Turnaus on luonnostilassa.",
+          "hasAtLeastOneGroup": "Turnauksessa on vähintään yksi lohko.",
+          "hasPlayoffStageEnabled": "Turnauksessa on pudotuspelivaihe käytössä.",
+          "supportedPlayoffSize": "Pudotuspelikaavion koko on tuettu (2, 4 tai 8 joukkuetta). Nyt: {{size}}.",
+          "allGroupStageMatchesDone": "Kaikki alkulohkojen ottelut on pelattu loppuun ({{completed}}/{{total}}).",
+          "tournamentIsRunning": "Turnaus on käynnissä (alkulohkot tai pudotuspelit).",
+          "allMatchesDone": "Kaikki ottelut on pelattu loppuun ({{completed}}/{{total}})."
+        },
+        "confirm": {
+          "startGroupStage": {
+            "title": "Aloita alkulohkot",
+            "description": "Merkitsee turnauksen aktiiviseksi. Tämän jälkeen aikataulu ja otteluiden tiedot näkyvät yleisösivuilla.",
+            "confirm": "Aloita alkulohkot"
+          },
+          "startPlayoffStage": {
+            "title": "Aloita pudotuspelit",
+            "description": "Laskee sarjataulukot, luo pudotuspelikaavion ja aikatauluttaa pudotuspeliottelut. Toimintoa ei voi peruuttaa ilman erillisiä toimia.",
+            "confirm": "Aloita pudotuspelit"
+          },
+          "complete": {
+            "title": "Päätä turnaus",
+            "description": "Sulkee turnauksen lopullisesti. Tämän jälkeen otteluita tai pisteitä ei enää muuteta.",
+            "confirm": "Päätä turnaus"
+          },
+          "cancel": {
+            "title": "Peru turnaus",
+            "description": "Peruu turnauksen. Tämä on lopullinen toiminto, eikä sitä voi peruuttaa ilman tietokantatoimia. Otteluiden tiedot säilyvät, mutta turnaus merkitään peruutetuksi.",
+            "confirm": "Kyllä, peru turnaus",
+            "acknowledge": "Ymmärrän, että turnauksen peruminen on lopullinen toiminto."
+          },
+          "delete": {
+            "title": "Poista turnaus",
+            "description": "Poistaa turnauksen \"{{name}}\" pysyvästi. Kaikki turnauksen lohkot, joukkueliitokset ja ottelut poistetaan eikä toimintoa voi peruuttaa.",
+            "confirm": "Kyllä, poista turnaus",
+            "acknowledge": "Ymmärrän, että turnauksen poistaminen on lopullinen toiminto."
+          }
+        }
+      },
+      "actions": {
+        "menu": "Turnauksen toimintovalikko",
+        "manageMatches": "Hallitse turnauksen otteluita",
+        "bulkDelete": "Poista ({{count}})",
+        "openEdit": "Avaa ja muokkaa turnausta"
+      },
+      "errors": {
+        "networkError": "Verkkovirhe. Tarkista yhteytesi ja yritä uudelleen.",
+        "validationError": "Virheellistä tietoa annettu. Tarkista syötteesi ja yritä uudelleen.",
+        "notFound": "Turnausta ei löytynyt. Se on saatettu poistaa.",
+        "serverError": "Palvelinvirhe. Yritä myöhemmin uudelleen.",
+        "operationFailed": "Toiminto epäonnistui. Yritä uudelleen."
+      },
+      "confirmDelete": {
+        "title": "Vahvista Poisto",
+        "message": "Oletko varma että haluat poistaa turnauksen \"{{name}}\"?",
+        "warning": "Tätä toimintoa ei voi perua."
+      },
+      "teamGroup": {
+        "removeTeam": "Poista lohkosta",
+        "removeTeamTooltip": "Poista joukkue tästä lohkosta",
+        "removeTeamDisabledReason": "Joukkueita ei voi poistaa kun alkulohkot on aloitettu.",
+        "confirmRemoveTitle": "Poista joukkue lohkosta",
+        "confirmRemoveBody": "Poista {{teamName}} lohkosta {{groupName}}?",
+        "confirmRemoveDetail": "Joukkue palautuu valittavissa oleviin joukkueisiin alla.",
+        "confirmButton": "Poista lohkosta",
+        "teamRemovedSuccess": "Joukkue poistettu lohkosta."
+      }
+    },
+    "categories": {
+      "adult": "Aikuiset",
+      "youth": "Nuoret",
+      "women": "Naiset"
+    },
+    "referees": {
+      "title": "Hallitse Jalkapallotuomareita",
+      "totalCount": "{{count}} tuomaria",
+      "createNew": "Luo Uusi Tuomari",
+      "createFromPerson": "Luo Tuomari Olemassaolevista Henkilöistä",
+      "createRefereeFor": "Luo Tuomari Henkilölle {{name}}",
+      "searchPersons": "Hae saatavilla olevia henkilöitä...",
+      "selectPerson": "Valitse",
+      "createReferee": "Luo Tuomari",
+      "refereeCreated": "{{personName}} on nyt jalkapallotuomari!",
+      "noPersonsFound": "Hakua vastaavia henkilöitä ei löytynyt",
+      "noPersonsAvailable": "Ei saatavilla olevia henkilöitä muutettavaksi tuomareiksi. Kaikki henkilöt ovat jo tuomareita.",
+      "licenseIssueDate": "Lisenssin Myöntämispäivä",
+      "licenseExpiryDate": "Lisenssin Vanhentumispäivä",
+      "noReferees": "Tuomareita ei löytynyt.",
+      "table": {
+        "name": "Nimi",
+        "status": "Tila",
+        "licenseExpiry": "Lisenssin Vanhentuminen",
+        "matchesOfficiated": "Ottelut",
+        "actions": "Toiminnot"
+      },
+      "license": {
+        "valid": "Voimassa",
+        "expired": "Vanhentunut",
+        "expiring": "Vanhenee Pian"
+      },
+      "errors": {
+        "loadReferees": "Tuomareiden lataus epäonnistui. Yritä uudelleen.",
+        "deleteFailed": "Tuomarin poisto epäonnistui. Yritä uudelleen."
+      }
+    },
+    "matches": {
+      "title": "Otteluiden Hallinta",
+      "subtitle": "Hallitse jalkapallootteluita, seuraa live-pelejä ja organisoi kautesi",
+      "seasonTitle": "Kauden Otteluiden Hallinta",
+      "seasonSubtitle": "Hallitse otteluita, jotka on aikataulutettu kausien sisällä",
+      "tournamentTitle": "Turnausten Otteluiden Hallinta",
+      "tournamentSubtitle": "Hallitse otteluita, jotka on aikataulutettu turnausten sisällä",
+      "loading": "Ladataan otteluita...",
+      "noMatchesFound": "Otteluita ei löytynyt",
+      "noMatchesForSeason": "Valitulle kaudelle ei löytynyt otteluita",
+      "createFirstMatch": "Luo ensimmäinen ottelusi aloittaaksesi",
+      "createNewMatch": "Luo Uusi Ottelu",
+      "goLive": "🟢 Aloita Live",
+      "live": "🔴 Live",
+      "edit": "✏️ Muokkaa",
+      "tbd": "TBD",
+      "noScore": "-",
+      "table": {
+        "match": "Ottelu",
+        "dateTime": "Päiväys & Aika",
+        "venue": "Paikka",
+        "score": "Tulos",
+        "status": "Tila",
+        "actions": "Toiminnot"
+      },
+      "columns": {
+        "match": "Ottelu",
+        "season": "Kausi",
+        "dateTime": "Päiväys & Aika",
+        "venue": "Paikka",
+        "score": "Tulos",
+        "status": "Tila"
+      },
+      "tabs": {
+        "all": "Kaikki",
+        "ongoing": "Käynnissä",
+        "scheduled": "Tulevat",
+        "completed": "Päättyneet",
+        "cancelled": "Perutut",
+        "ariaLabel": "Suodata ottelut tilan mukaan"
+      },
+      "create": {
+        "title": "Luo Uusi Ottelu",
+        "seasonTitle": "Luo Kauden Ottelu",
+        "tournamentTitle": "Luo Turnausottelu",
+        "submit": "Luo Ottelu",
+        "season": "Kausi",
+        "homeTeam": "Kotijoukkue",
+        "awayTeam": "Vierasjoukkue",
+        "referee": "Tuomari",
+        "dateTime": "Päiväys & Aika",
+        "venue": "Paikka",
+        "createMatch": "Luo Ottelu",
+        "lockedCompetitionTooltip": "Turnaus on lukittu kontekstista, ei voi muuttaa"
+      },
+      "fields": {
+        "season": "Kausi",
+        "tournament": "Turnaus",
+        "division": "Sarja",
+        "group": "Lohko",
+        "homeTeam": "Kotijoukkue",
+        "awayTeam": "Vierasjoukkue",
+        "referee": "Tuomari",
+        "dateTime": "Päiväys ja kellonaika",
+        "venue": "Pelipaikka"
+      },
+      "sections": {
+        "matches": "Ottelut",
+        "ongoing": "Käynnissä olevat ottelut",
+        "scheduled": "Aikataulutetut ottelut",
+        "completed": "Päättyneet ottelut",
+        "cancelled": "Peruutetut ottelut",
+        "seasonDivision": "Kausi & Sarja",
+        "tournamentGroup": "Turnaus & Lohko",
+        "teams": "Joukkueet",
+        "schedule": "Aikataulu & Pelipaikka",
+        "referee": "Tuomari"
+      },
+      "placeholders": {
+        "selectSeason": "-- Valitse kausi --",
+        "selectTournament": "-- Valitse turnaus --",
+        "selectDivision": "-- Valitse sarja --",
+        "selectGroup": "-- Valitse lohko --",
+        "selectHomeTeam": "-- Valitse kotijoukkue --",
+        "selectAwayTeam": "-- Valitse vierasjoukkue --",
+        "selectReferee": "Valitse Tuomari",
+        "noReferee": "-- Ei tuomaria (lisätään myöhemmin) --",
+        "searchSeasons": "Hae kausia...",
+        "searchTeams": "Hae joukkueita...",
+        "searchReferees": "Hae tuomareita...",
+        "hoursPlaceholder": "TT",
+        "minutesPlaceholder": "MM",
+        "venue": "Anna pelipaikan nimi",
+        "venuePlaceholder": "Anna paikka (valinnainen)"
+      },
+      "validation": {
+        "fillRequired": "Täytä kaikki pakolliset kentät",
+        "sameTeam": "Koti- ja vierasjoukkue eivät voi olla sama",
+        "sameTeams": "Koti- ja vierasjoukkue eivät voi olla sama",
+        "validDateTime": "Anna kelvollinen päiväys ja aika",
+        "dateTimeRequired": "Anna kelvollinen päiväys ja aika",
+        "seasonRequired": "Valitse kausi.",
+        "tournamentRequired": "Valitse turnaus.",
+        "divisionRequired": "Valitse sarja.",
+        "groupRequired": "Valitse lohko.",
+        "homeTeamRequired": "Valitse kotijoukkue.",
+        "awayTeamRequired": "Valitse vierasjoukkue.",
+        "createFailed": "Ottelun luominen epäonnistui"
+      },
+      "noGroupsInTournament": "Turnauksessa ei ole vielä lohkoja. Lisää lohkot ensin turnauksen muokkausnäkymästä.",
+      "noDivisionsInSeason": "Kaudella ei ole sarjoja. Lisää sarjat ensin kauteen.",
+      "notEnoughTeams": "Sarjassa pitää olla vähintään 2 joukkuetta. Lisää joukkueet sarjaan ensin.",
+      "notEnoughTeamsInGroup": "Lohkossa pitää olla vähintään 2 joukkuetta. Lisää joukkueet lohkoon turnauksen muokkausnäkymästä.",
+      "loadingTournamentDetails": "Ladataan turnauksen tietoja...",
+      "refereeHint": "Voit lisätä tuomarin myöhemmin ottelun tietosivulta.",
+      "created": "Ottelu luotu onnistuneesti!",
+      "matchForm": {
+        "loading": "Ladataan ottelua...",
+        "notLoaded": "Ottelun tietojen lataus epäonnistui.",
+        "editSeasonMatch": "Muokkaa kauden ottelua",
+        "editTournamentMatch": "Muokkaa turnausottelua",
+        "season": "Kausi",
+        "tournament": "Turnaus",
+        "selectSeason": "Valitse kausi",
+        "selectTournament": "Valitse turnaus",
+        "searchSeasons": "Hae kausia...",
+        "searchTournaments": "Hae turnauksia...",
+        "noSeasons": "Kausia ei löytynyt",
+        "noTournaments": "Turnauksia ei löytynyt"
+      },
+      "emptyStates": {
+        "noSeasons": "Kausia ei löytynyt",
+        "noTeams": "Joukkueita ei löytynyt",
+        "noReferees": "Tuomareita ei löytynyt"
+      },
+      "stats": {
+        "totalMatches": "Otteluita Yhteensä",
+        "seasonMatches": "Kauden Ottelut",
+        "completed": "Päättyneet",
+        "scheduled": "Aikataulutetut",
+        "inProgress": "Käynnissä",
+        "cancelled": "Peruutetut",
+        "createNew": "Luo Uusi"
+      },
+      "filters": {
+        "filterBySeason": "Suodata Kauden Mukaan:",
+        "filterByTournament": "Suodata Turnauksen Mukaan:",
+        "allSeasons": "Kaikki Kaudet",
+        "allTournaments": "Kaikki Turnaukset",
+        "allCompetitions": "Kaikki Kilpailut",
+        "searchByTeam": "Hae joukkueen mukaan:",
+        "searchPlaceholder": "Hae joukkueiden nimiä..."
+      },
+      "status": {
+        "Scheduled": "Aikataulutettu",
+        "InProgress": "Käynnissä",
+        "Completed": "Päättynyt",
+        "Cancelled": "Peruttu",
+        "Postponed": "Lykätty"
+      },
+      "actions": {
+        "open": "Avaa ottelu",
+        "manage": "Hallitse",
+        "live": "Live-näkymä",
+        "start": "Käynnistä ottelu",
+        "cancel": "Peruuta ottelu",
+        "reactivate": "Aktivoi ottelu uudelleen",
+        "edit": "Muokkaa ottelun tietoja",
+        "menu": "Ottelun toiminnot"
+      },
+      "confirmCancel": {
+        "title": "Peruuta ottelu",
+        "message": "Haluatko varmasti peruuttaa tämän ottelun? Ottelu merkitään peruutetuksi.",
+        "confirm": "Kyllä, peruuta ottelu"
+      },
+      "confirmReactivate": {
+        "title": "Aktivoi ottelu uudelleen",
+        "message": "Haluatko varmasti aktivoida tämän ottelun uudelleen? Ottelu palautetaan aikataulutetuksi.",
+        "confirm": "Kyllä, aktivoi uudelleen"
+      },
+      "manage": {
+        "finished": "PÄÄTTYNYT",
+        "reopenMatch": "Avaa ottelu",
+        "reopenMatchTitle": "Avaa ottelu uudelleen muokattavaksi",
+        "matchOfficials": "OTTELUN TUOMARIT",
+        "addReferee": "Lisää tuomari",
+        "removeReferee": "Poista tuomari",
+        "selectReferee": "VALITSE TUOMARI",
+        "saving": "Tallennetaan...",
+        "noOfficials": "Ei valittuja tuomareita.",
+        "confirmReopen": {
+          "title": "Avaa ottelu muokattavaksi",
+          "message": "Haluatko varmasti avata tämän ottelun uudelleen? Ottelu siirretään takaisin Käynnissä-tilaan, jolloin voit muokata ottelutapahtumia tai jatkaa peliä (esim. jos ottelu päättyi vahingossa).",
+          "warning": "Ottelukohtaiset joukkue-, pelaaja- ja maalivahtitilastot perutaan ja päivitetään uudelleen, kun ottelu päätetään seuraavan kerran.",
+          "confirm": "Kyllä, avaa ottelu"
+        }
+      },
+      "cancelling": "Peruutetaan...",
+      "reactivating": "Aktivoidaan uudelleen...",
+      "creating": "Luodaan...",
+      "updating": "Päivitetään...",
+      "createMatch": "Luo ottelu",
+      "updateMatch": "Päivitä ottelu",
+      "matchCount": "ottelua",
+      "lineup": {
+        "activeLineup": "Aktiivinen kentällinen",
+        "editLineup": "Muokkaa kentällisiä",
+        "editLineupTitle": "Muokkaa aktiivista kentällistä",
+        "homeTeam": "Kotijoukkue",
+        "awayTeam": "Vierasjoukkue",
+        "playerCount_one": "{{count}} pelaaja",
+        "playerCount_other": "{{count}} pelaajaa",
+        "playerCount": "{{count}} pelaajaa",
+        "noPlayersSelected": "Ei valittuja kenttäpelaajia. Avaa \"Muokkaa kentällistä\" asettaaksesi kentällisen.",
+        "goalkeeper": "Maalivahti",
+        "selectGoalkeeper": "Valitse maalivahti",
+        "selectGoalkeeperRequired": "Maalivahti on pakollinen ottelun aloittamiseksi",
+        "noGoalkeeper": "Maalivahtia ei ole valittu (vaaditaan ottelun aloittamiseksi)",
+        "players": "Kenttäpelaajat",
+        "player": "Pelaaja",
+        "position": "Pelipaikka",
+        "searchPlayers": "Hae pelaajia nimellä...",
+        "allPositions": "Kaikki pelipaikat",
+        "fieldPlayers": "Kenttäpelaajat",
+        "goalkeepersOnly": "Maalivahdit",
+        "noPlayersFound": "Yksikään pelaaja ei vastaa hakuehtoja.",
+        "noAvailablePlayers": "Hakuehtoihin sopivia pelaajia ei ole enää lisättävissä.",
+        "noTeamPlayers": "Joukkueessa ei ole pelaajia.",
+        "noPlayersInLineup": "Kentällistä ei ole vielä valittu — lisää pelaajia alla olevasta listasta.",
+        "selectedPlayers": "Valitut pelaajat",
+        "selectedCount": "{{count}} valittu",
+        "addPlayer": "Lisää",
+        "removePlayer": "Poista kentälliseltä",
+        "action": "Toiminto",
+        "defenders": "Puolustajat",
+        "forwards": "Hyökkääjät",
+        "noDefenders": "Ei valittuja puolustajia.",
+        "noForwards": "Ei valittuja hyökkääjiä.",
+        "addAs": {
+          "Defender": "Puolustaja",
+          "Forward": "Hyökkääjä"
+        },
+        "saveLineup": "Tallenna kentällinen"
+      }
+    }
   }
-} 
+}

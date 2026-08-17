@@ -84,6 +84,16 @@ const AdminPage = () => {
             </div>
             <img src={SportsIcon} alt="Floorball" className="button-icon" />
           </button>
+          <button
+            className="admin-action-button"
+            onClick={() => navigate('/admin/football')}
+          >
+            <div className="button-text">
+              <span className="button-title">{t('admin.actions.football', 'Football')}</span>
+              <span className="button-subtitle">{t('admin.actions.manageFootball', 'Manage football')}</span>
+            </div>
+            <img src={SportsIcon} alt="Football" className="button-icon" />
+          </button>
         </div>
       </div>
     </AdminPageTemplate>

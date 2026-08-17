@@ -30,12 +30,14 @@ const FloorballSeasonsPage = () => {
     // Filter states
     showActiveOnly,
     divisionFilter,
+    categoryFilter,
 
     // Modal states
     showDeleteModal,
 
     // Actions
     setDivisionFilter,
+    setCategoryFilter,
     handleShowActiveOnlyChange,
     handleDeleteSeason,
     handleActivateToggle,
@@ -126,6 +128,8 @@ const FloorballSeasonsPage = () => {
           divisionFilter={divisionFilter}
           onDivisionFilterChange={setDivisionFilter}
           uniqueDivisions={uniqueDivisions}
+          categoryFilter={categoryFilter}
+          onCategoryFilterChange={setCategoryFilter}
         />
 
         {/*

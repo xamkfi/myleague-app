@@ -120,4 +120,15 @@ public record UpdateClubRequest
     [EmailAddress(ErrorMessage = "Please provide a valid email address")]
     [StringLength(100, ErrorMessage = "Contact email cannot exceed 100 characters")]
     public string? ContactEmail { get; init; }
-} 
+}
+
+/// <summary>
+/// Request model for replacing the set of club admins of a club
+/// </summary>
+public record SetClubAdminsRequest
+{
+    /// <summary>
+    /// The user IDs that should administer the club
+    /// </summary>
+    public List<Guid>? UserIds { get; init; }
+}

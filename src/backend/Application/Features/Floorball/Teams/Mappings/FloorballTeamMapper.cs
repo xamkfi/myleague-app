@@ -91,7 +91,8 @@ public static class FloorballTeamMapper
                     // the "needs admin review" highlight on the roster page.
                     RequestedJerseyNumber: p.HasJerseyNumberSubstituted ? p.RequestedJerseyNumber : null
                 );
-            }).ToList().AsReadOnly()
+            }).ToList().AsReadOnly(),
+            team.TeamCategory
         );
     }
     // Without player names (for existing handlers like Update)

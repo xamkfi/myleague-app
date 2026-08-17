@@ -1,0 +1,78 @@
+.club-admin-roster-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.club-admin-roster-hint {
+  color: #6e6d75;
+  font-size: 0.88rem;
+  margin: 0 0 16px;
+}
+
+.club-admin-roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid #eef0f4;
+    color: #6e6d75;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f1f4;
+    color: #1c2233;
+    vertical-align: middle;
+  }
+
+  .club-admin-roster-jersey-col {
+    width: 160px;
+  }
+
+  .club-admin-roster-row--inactive td {
+    opacity: 0.55;
+  }
+
+  .club-admin-roster-empty {
+    text-align: center;
+    color: #6e6d75;
+    padding: 24px;
+  }
+}
+
+.club-admin-jersey-select {
+  width: 72px;
+  padding: 6px 8px;
+  border: 1px solid #d5d8e0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: #fff;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.club-admin-jersey-status {
+  margin-left: 8px;
+  font-size: 0.78rem;
+  color: #6e6d75;
+
+  &--saved {
+    color: #1d7a3d;
+  }
+}
+
+.club-admin-jersey-row-error {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: #b42222;
+}

@@ -54,10 +54,18 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("TeamCategory")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Adult");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TeamCategory");
 
                     b.ToTable("FloorballCompetitions", "floorball");
 

@@ -1,3 +1,4 @@
+using Domain.Constants;
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -39,7 +40,7 @@ public class InfoPageContentController : BaseApiController
     /// </summary>
     /// <returns>List of all info page contents</returns>
     [HttpGet]
-    [Authorize(Roles = "SystemAdmin,ClubAdmin")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<InfoPageContentDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<InfoPageContentDto>>>> GetAllInfoPageContents()
     {
@@ -108,7 +109,7 @@ public class InfoPageContentController : BaseApiController
     /// <param name="request">Updated page title and content</param>
     /// <returns>Updated info page content</returns>
     [HttpPut("{slug}")]
-    [Authorize(Roles = "SystemAdmin,ClubAdmin")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<InfoPageContentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<InfoPageContentDto>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<InfoPageContentDto>>> UpdateInfoPageContent(

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { FloorballTournamentDto } from '../../../../../types/floorball/tournamentTypes';
 import LiveDot from '../../../../../components/LiveDot/LiveDot';
+import TeamCategoryBadge from '../../../../../components/TeamCategoryBadge/TeamCategoryBadge';
 import { useInProgressMatches } from '../../../../../hooks/useInProgressMatches';
 import '../../../../../styles/AdminTable.scss';
 
@@ -88,6 +89,7 @@ export const TournamentsTable = ({
                     />
                   )}
                   <span>{tournament.name}</span>
+                  <TeamCategoryBadge category={tournament.teamCategory} />
                 </span>
               </td>
               <td>

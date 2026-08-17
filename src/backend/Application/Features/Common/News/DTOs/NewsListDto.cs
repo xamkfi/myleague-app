@@ -16,4 +16,5 @@ public record NewsArticleListDto(
     string? Category,
     string? SportCategory,
     IReadOnlyList<string> Tags,
-    bool IsArchived); 
+    bool IsArchived,
+    string? TeamCategory); 

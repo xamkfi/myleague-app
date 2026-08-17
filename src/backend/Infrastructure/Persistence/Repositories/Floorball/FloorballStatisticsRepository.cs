@@ -366,17 +366,28 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     {
         List<FloorballPlayerSeasonStatistics> statsToProcess = statistics.ToList();
         
+        // Track keys added within this batch so duplicate roster entries don't cause duplicate inserts.
+        HashSet<(Guid, Guid, Guid)> addedInBatch = [];
+
         foreach (FloorballPlayerSeasonStatistics stat in statsToProcess)
         {
+            if (!addedInBatch.Add((stat.PlayerId, stat.TeamId, stat.CompetitionId)))
+            {
+                continue;
+            }
+
             FloorballPlayerSeasonStatistics? existing = await GetPlayerSeasonStatisticsAsync(stat.PlayerId, stat.TeamId, stat.CompetitionId, cancellationToken);
             
             if (existing == null)
             {
                 await _context.FloorballPlayerSeasonStatistics.AddAsync(stat, cancellationToken);
             }
-            else
+            else if (!ReferenceEquals(existing, stat))
             {
-                _context.Entry(existing).CurrentValues.SetValues(stat);
+                // The incoming row is a freshly initialized (zeroed) statistics entry created by
+                // AddTeamToSeason; overwriting the tracked row would both clear accumulated stats
+                // and attempt to modify the primary key. Keep the existing row untouched.
+                continue;
             }
         }
         
@@ -388,17 +399,25 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     {
         List<FloorballGoalieSeasonStatistics> statsToProcess = statistics.ToList();
         
+        HashSet<(Guid, Guid, Guid)> addedInBatch = [];
+
         foreach (FloorballGoalieSeasonStatistics stat in statsToProcess)
         {
+            if (!addedInBatch.Add((stat.PlayerId, stat.TeamId, stat.CompetitionId)))
+            {
+                continue;
+            }
+
             FloorballGoalieSeasonStatistics? existing = await GetGoalieSeasonStatisticsAsync(stat.PlayerId, stat.TeamId, stat.CompetitionId, cancellationToken);
             
             if (existing == null)
             {
                 await _context.FloorballGoalieSeasonStatistics.AddAsync(stat, cancellationToken);
             }
-            else
+            else if (!ReferenceEquals(existing, stat))
             {
-                _context.Entry(existing).CurrentValues.SetValues(stat);
+                // Keep the existing tracked row; overwriting it would modify the primary key.
+                continue;
             }
         }
         

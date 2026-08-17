@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Application.Features.Common.Users.Commands;
 using Application.Features.Common.Users.DTOs;
@@ -13,7 +14,7 @@ namespace WebAPI.Controllers.Common;
 /// <summary>
 /// Controller for managing users
 /// </summary>
-[Authorize]
+[Authorize(Roles = AuthRoles.AdminOnly)]
 [Route("api/[controller]")]
 public class UsersController : BaseApiController
 {
@@ -124,7 +125,11 @@ public class UsersController : BaseApiController
     {
         _logger.LogInformation("Creating new user: {Email}", SanitizeForLog(request.Email));
 
-        CreateUserCommand command = new(request.Email, request.PersonId, request.Role);
+        CreateUserCommand command = new(
+            request.Email,
+            request.PersonId,
+            request.Role,
+            request.ClubAssignments);
         Result<UserDto> result = await _mediator.Send(command);
 
         if (result.IsSuccess && result.Data is not null)

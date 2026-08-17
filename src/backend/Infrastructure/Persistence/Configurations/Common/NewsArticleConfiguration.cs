@@ -70,6 +70,13 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
                     v => v != null ? Enum.Parse<SportsCategory>(v) : null)
                 .HasMaxLength(50);
 
+            // TeamCategory property - optional audience filter, enum stored as string
+            builder.Property(n => n.TeamCategory)
+                .HasConversion(
+                    v => v.HasValue ? v.Value.ToString() : null,
+                    v => v != null ? Enum.Parse<TeamCategory>(v) : null)
+                .HasMaxLength(50);
+
             // IsArchived property - required boolean with default false
             builder.Property(n => n.IsArchived)
                 .IsRequired()
@@ -101,6 +108,10 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
             // Index for filtering by sport category
             builder.HasIndex(n => n.SportCategory)
                 .HasDatabaseName("IX_News_SportCategory");
+
+            // Index for filtering by audience / age-group category
+            builder.HasIndex(n => n.TeamCategory)
+                .HasDatabaseName("IX_News_TeamCategory");
 
             // Index for filtering by author
             builder.HasIndex(n => n.Author)

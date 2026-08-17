@@ -8,10 +8,16 @@ import './LoginPage.scss';
 
 type LoginStep = 'email' | 'code';
 
-function LoginPage() {
+interface LoginPageProps {
+  /** Which area this login belongs to. Controls the redirect target and labels. */
+  variant?: 'admin' | 'clubAdmin';
+}
+
+function LoginPage({ variant = 'admin' }: LoginPageProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
+  const isClubAdmin = variant === 'clubAdmin';
 
   const [step, setStep] = useState<LoginStep>('email');
   const [email, setEmail] = useState('');
@@ -40,12 +46,17 @@ function LoginPage() {
 
     try {
       const result = await authService.requestLoginCode(email.trim());
-      setSuccessMessage(t('auth.codeSent', 'A login code has been sent to your email.'));
       setStep('code');
 
-      // Auto-fill the code field when the backend AutoFillLoginCode flag is enabled
+      // Auto-fill the code field when the backend AutoFillLoginCode flag is enabled (dev only)
       if (result.autoFillCode) {
         setCode(result.autoFillCode);
+        setSuccessMessage(t(
+          'auth.codeAutoFilled',
+          'Development: the login code was filled automatically. No email was sent.',
+        ));
+      } else {
+        setSuccessMessage(t('auth.codeSent', 'A login code has been sent to your email.'));
       }
     } catch (err: unknown) {
       setError(parseApiError(err));
@@ -62,7 +73,7 @@ function LoginPage() {
     try {
       const tokens = await authService.verifyLoginCode(email.trim(), code.trim());
       await login(tokens);
-      navigate('/admin', { replace: true });
+      navigate(isClubAdmin ? '/club-admin' : '/admin', { replace: true });
     } catch (err: unknown) {
       setError(parseApiError(err));
     } finally {
@@ -85,12 +96,20 @@ function LoginPage() {
             <h1 className="login-brand">MAHL</h1>
             <LanguageToggle />
           </div>
-          <p className="login-brand-sub">{t('admin.view', 'Admin view')}</p>
+          <p className="login-brand-sub">
+            {isClubAdmin
+              ? t('clubAdmin.view', 'Club admin view')
+              : t('admin.view', 'Admin view')}
+          </p>
         </div>
 
         <div className="login-card">
           <div className="login-header">
-            <h2 className="login-title">{t('auth.loginTitle', 'Admin Login')}</h2>
+            <h2 className="login-title">
+              {isClubAdmin
+                ? t('auth.clubAdminLoginTitle', 'Club Admin Login')
+                : t('auth.loginTitle', 'Admin Login')}
+            </h2>
             <p className="login-subtitle">
               {step === 'email'
                 ? t('auth.loginSubtitle', 'Enter your email to receive a login code.')
