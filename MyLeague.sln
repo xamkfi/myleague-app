@@ -51,6 +51,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoomleagueImporter", "src\tools\JoomleagueImporter\JoomleagueImporter.csproj", "{77778871-6EB0-4DAD-859A-2BB3EAEF72A2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TournamentExporter", "src\tools\TournamentExporter\TournamentExporter.csproj", "{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -229,6 +231,18 @@ Global
 		{77778871-6EB0-4DAD-859A-2BB3EAEF72A2}.Release|x64.Build.0 = Release|Any CPU
 		{77778871-6EB0-4DAD-859A-2BB3EAEF72A2}.Release|x86.ActiveCfg = Release|Any CPU
 		{77778871-6EB0-4DAD-859A-2BB3EAEF72A2}.Release|x86.Build.0 = Release|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Debug|x64.Build.0 = Debug|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Debug|x86.Build.0 = Debug|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Release|x64.ActiveCfg = Release|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Release|x64.Build.0 = Release|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Release|x86.ActiveCfg = Release|Any CPU
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -254,6 +268,7 @@ Global
 		{15282438-62C3-040C-E194-7DD3DB5A5ABA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{F89E9D26-497B-4CDB-8B08-23ABB406BE6D} = {15282438-62C3-040C-E194-7DD3DB5A5ABA}
 		{77778871-6EB0-4DAD-859A-2BB3EAEF72A2} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
+		{0D666B1D-1296-4240-8F7B-72B7A1BFDD18} = {DCB6FCB8-FF92-AC57-0842-1F72A354D6B1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9D660FA3-5546-4139-9D40-5ADC755D63C4}
