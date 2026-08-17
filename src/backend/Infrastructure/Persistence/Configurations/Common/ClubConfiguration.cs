@@ -51,6 +51,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
 
             // Ignore navigation properties to prevent cross-context entity discovery
             builder.Ignore(c => c.FloorballTeams);
+            builder.Ignore(c => c.HockeyTeams);
         }
     }
 } 

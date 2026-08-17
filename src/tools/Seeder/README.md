@@ -18,8 +18,26 @@ The seeder creates entities in the following order. Each phase corresponds to a 
 | 6 | Seasons + team-to-season-division assignments | `Seasons` | `Persons`, `Clubs`, `Divisions`, `PlayersReferees`, `Teams` |
 | 7 | Season matches | `SeasonMatches` | all of the above |
 | 8 | Tournaments + groups + tournament group-stage matches | `Tournaments` | `Persons`, `Clubs`, `Divisions`, `PlayersReferees`, `Teams` |
+| H1 | Hockey players | `HockeyPlayers` | `Persons` |
+| H2 | Hockey teams + rosters + season assignment | `HockeyTeams` / `HockeySeasons` | shared + `HockeyPlayers` |
+| H3 | Hockey season matches (+ stats recalculate) | `HockeySeasonMatches` | hockey seasons + teams |
+| H4 | Hockey tournaments + group-stage matches | `HockeyTournaments` | hockey teams |
 
 `Tournaments` is a single inseparable phase: tournament records and their group-stage matches are always seeded together by `FloorballTournamentMatchesSeeder`. Past-dated tournament matches are simulated through to completion so the tournament page has populated statistics; future-dated matches stay in `Scheduled` state.
+
+#### Hockey pipeline (`Seeders/Hockey/`)
+
+Use `SportType: "Icehockey"` for Common Divisions (not `"Hockey"`).
+
+Hockey match creation is two-step (`POST api/HockeyMatch` then `PUT …/teams`). Finished season/tournament matches run a **richer simulation**: confirm dressed roster (≥15 + goalie under default competition roster rules), attach an official, set active goalies, optional match line / on-ice, then faceoff / shot / goal / penalty / period scores → finish → stats recalculate.
+
+Team seed also creates **Line 1** + **Pair 1** and a **HeadCoach** staff member per Liiga team (`StaffPersons` + `StaffPersonEmail`). Officials come from the first four `RefereePersons` via `POST api/HockeyOfficial`.
+
+```bash
+dotnet run --project src/tools/Seeder/Seeder.csproj -- --scope=hockey
+```
+
+Tokens `hockey` and `hockeyall` both resolve to `HockeyAll` (shared Persons/Clubs/Divisions + all hockey phases). Floorball `--scope=all` is unchanged and does **not** run hockey phases.
 
 ### Scope Selection
 
@@ -39,12 +57,13 @@ What do you want to seed? (auto-resolves dependencies)
  6) Kaudet (Seasons + team-to-season assignment) — needs 1, 2, 3, 5
  7) Kausi-ottelut (Season matches) — needs 1, 2, 3, 4, 5, 6
  8) Turnaukset ja turnausottelut — needs 1, 2, 3, 4, 5
- 9) Kaikki (Everything)
+ 9) Kaikki Floorball (Everything floorball)
+ 10) Hockey kaikki (HockeyAll) — Icehockey pipeline
 
-Enter selection: comma-separated numbers (e.g. "1,2,5") or "9" / "all" / blank for all.
-> 5
+Enter selection: comma-separated numbers (e.g. "1,2,5") or "9" / "all" / "10" / "hockey" / blank for floorball all.
+> 10
 
-Selected: Teams. Auto-included: Persons, Clubs, Divisions, PlayersReferees.
+Selected: HockeyAll. Auto-included: …
 Proceed? (Y/n):
 ```
 
@@ -55,8 +74,11 @@ Selecting any phase implicitly pulls in its prerequisites. Phases that aren't in
 Pass `--scope=...` to skip both the menu and the proceed-confirmation. This is intended for CI/scripts:
 
 ```bash
-# All phases (same as choosing "9" / "all" / blank in the menu)
+# All floorball phases (same as choosing "9" / "all" / blank in the menu)
 dotnet run --project src/tools/Seeder/Seeder.csproj -- --scope=all
+
+# Full hockey pipeline (Icehockey division → teams → season → matches → tournament)
+dotnet run --project src/tools/Seeder/Seeder.csproj -- --scope=hockey
 
 # Only seed tournaments (auto-pulls Persons, Clubs, Divisions, PlayersReferees, Teams)
 dotnet run --project src/tools/Seeder/Seeder.csproj -- --scope=tournaments
@@ -66,7 +88,7 @@ dotnet run --project src/tools/Seeder/Seeder.csproj -- --scope=persons,clubs,div
 dotnet run --project src/tools/Seeder/Seeder.csproj -- --scope persons,teams
 ```
 
-Valid tokens (case-insensitive): `persons`, `clubs`, `divisions`, `playersreferees`, `teams`, `seasons`, `seasonmatches`, `tournaments`, `all`. Unknown tokens cause the seeder to exit with code `2`.
+Valid tokens (case-insensitive): `persons`, `clubs`, `divisions`, `playersreferees`, `teams`, `seasons`, `seasonmatches`, `tournaments`, `all`, `hockey`, `hockeyall`, `hockeyplayers`, `hockeyteams`, `hockeyseasons`, `hockeyseasonmatches`, `hockeytournaments`. Unknown tokens cause the seeder to exit with code `2`.
 
 #### Sport selection (`--sport`)
 
@@ -94,6 +116,7 @@ Football persons use `@fb.fi` / `@fb-ref.fi` emails so `--sport=all` does not co
 
 #### Using Test Data File (Recommended)
 
+The seeder automatically loads comprehensive test data from `data/testdata.json` if present. This file contains base persons, player/goalie/referee persons, clubs, divisions (Floorball + Icehockey), floorball seasons/teams/matches/tournaments, and a compact hockey dataset (`HockeySeasons`, `HockeyTeams`, `HockeyMatches`, `HockeyTournaments`). It is the canonical data set for local development and is what the menu/`--scope` selections operate against.
 The seeder automatically loads comprehensive test data from `data/testdata.json` (floorball) and/or `data/testdata-football.json` (football) depending on `--sport`. These files contain persons, clubs, divisions, seasons, teams (with rosters), season matches and tournaments (with groups). They are the canonical data sets for local development and are what the menu/`--scope` selections operate against.
 
 Each file is layered on top of `appsettings.json` and `appsettings.Development.json` via `ConfigurationBuilder`, so anything you put into either of those will be merged with the selected testdata file.
@@ -115,7 +138,11 @@ You can also configure (or override) via `appsettings.json` / `appsettings.Devel
     "FloorballSeasons": [ ... ],
     "FloorballTeams": [ ... ],
     "FloorballMatches": [ ... ],
-    "FloorballTournaments": [ ... ]
+    "FloorballTournaments": [ ... ],
+    "HockeySeasons": [ ... ],
+    "HockeyTeams": [ ... ],
+    "HockeyMatches": [ ... ],
+    "HockeyTournaments": [ ... ]
   }
 }
 ```
@@ -144,6 +171,9 @@ All seeders perform idempotent checks before creating entities, so re-running th
 - Teams: checked by name + club + division.
 - Season matches: checked by season + home team + away team.
 - Tournaments: checked by name; groups and team assignments are checked by name / team ID before insertion.
+- Hockey players: resolved via team roster → `GET api/HockeyPlayer/{id}` (no list API).
+- Hockey teams / seasons / tournaments: by name (and club/division where applicable).
+- Hockey matches: via `GET api/HockeyMatch/competition/{id}` matching home/away.
 
 #### Known caveat
 
@@ -151,6 +181,8 @@ All seeders perform idempotent checks before creating entities, so re-running th
 
 - Run a clean seed (drop the database first).
 - Or run with a narrower scope that excludes `Seasons`.
+
+Hockey season-team assignment is more careful (checks competition-team + division membership first), but a failed duplicate add can still surface as a warning/abort depending on API response — same clean-seed workaround applies.
 
 ### Summary output
 
@@ -168,6 +200,9 @@ Summary:
   Matches created:            (skipped)
   Tournaments created:        (skipped)
   Tournament matches created: (skipped)
+  Hockey players created:     (skipped)
+  Hockey teams created:       (skipped)
+  …
 ```
 
 ### Exit codes

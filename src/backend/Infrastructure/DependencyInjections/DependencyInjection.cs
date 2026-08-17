@@ -7,6 +7,7 @@ using Application.Interfaces.Auth;
 using Application.Interfaces.Common;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
+using Domain.Repositories.Hockey;
 using Domain.Repositories.Football;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +20,7 @@ using MyLeague.Infrastructure.HealthChecks;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories.Common;
 using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
+using MyLeague.Infrastructure.Persistence.Repositories.Hockey;
 using MyLeague.Infrastructure.Persistence.Repositories.Football;
 using MyLeague.Infrastructure.Persistence.UnitOfWork;
 using MyLeague.Infrastructure.Services.Auth;
@@ -56,6 +58,16 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     connectionString,
                     b => b.MigrationsAssembly(typeof(FloorballDbContext).Assembly.FullName)));
 
+            services.AddDbContext<HockeyDbContext>(options =>
+            {
+                options.UseNpgsql(
+                    connectionString,
+                    b => b.MigrationsAssembly(typeof(HockeyDbContext).Assembly.FullName));
+                // Nested owned HockeyCoachChallengeRules generates truncated Postgres identifiers that
+                // leave a permanent model/snapshot drift in EF tooling; do not block startup migrate.
+                options.ConfigureWarnings(w =>
+                    w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+            });
             services.AddDbContext<FootballDbContext>(options =>
                 options.UseNpgsql(
                     connectionString,
@@ -80,6 +92,12 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballTournamentRepository, FloorballTournamentRepository>();
             services.AddScoped<IFloorballCompetitionDivisionRepository, FloorballCompetitionDivisionRepository>();
             services.AddScoped<IFloorballStatisticsRepository, FloorballStatisticsRepository>();
+            services.AddScoped<IHockeyCompetitionRepository, HockeyCompetitionRepository>();
+            services.AddScoped<IHockeyTeamRepository, HockeyTeamRepository>();
+            services.AddScoped<IHockeyPlayerRepository, HockeyPlayerRepository>();
+            services.AddScoped<IHockeyOfficialRepository, HockeyOfficialRepository>();
+            services.AddScoped<IHockeyMatchRepository, HockeyMatchRepository>();
+            services.AddScoped<IHockeyStatisticsRepository, HockeyStatisticsRepository>();
             services.AddScoped<IFootballPlayerRepository, FootballPlayerRepository>();
             services.AddScoped<IFootballTeamRepository, FootballTeamRepository>();
             services.AddScoped<IFootballTeamManagerRepository, FootballTeamManagerRepository>();
@@ -144,6 +162,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             // Add unit of work
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
             services.AddScoped<IFloorballUnitOfWork, FloorballUnitOfWork>();
+            services.AddScoped<IHockeyUnitOfWork, HockeyUnitOfWork>();
             services.AddScoped<IFootballUnitOfWork, FootballUnitOfWork>();
 
 
@@ -164,6 +183,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
                     floorballDbContext.Database.Migrate();
 
+                    HockeyDbContext hockeyDbContext = scope.ServiceProvider.GetRequiredService<HockeyDbContext>();
+                    hockeyDbContext.Database.Migrate();
                     FootballDbContext footballDbContext = scope.ServiceProvider.GetRequiredService<FootballDbContext>();
                     footballDbContext.Database.Migrate();
 
