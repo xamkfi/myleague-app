@@ -63,8 +63,8 @@ public class ResendAdminInvitationHandler : IRequestHandler<ResendAdminInvitatio
             await _userRepository.UpdateAsync(user);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            string verifyPath = user.Role == UserRole.TeamLeader
-                ? "/team-leader/verify-email"
+            string verifyPath = user.Role == UserRole.ClubAdmin
+                ? "/club-admin/verify-email"
                 : "/admin/verify-email";
             string verificationUrl = $"{_frontendConfig.BaseUrl}{verifyPath}?token={Uri.EscapeDataString(token)}";
             await _emailService.SendAdminInvitationAsync(

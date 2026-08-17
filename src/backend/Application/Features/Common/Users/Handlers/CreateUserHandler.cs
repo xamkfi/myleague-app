@@ -16,12 +16,8 @@ using Application.Features.Common.Divisions.Mappings;
 using Application.Features.Common.News.Mappings;
 using Application.Interfaces.Auth;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
-using Domain.Entities.Football.Teams;
 using Domain.Enums.Common;
 using Domain.Repositories.Common;
-using Domain.Repositories.Floorball;
-using Domain.Repositories.Football;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -39,10 +35,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
     private readonly FrontendConfiguration _frontendConfig;
-    private readonly IFloorballTeamManagerRepository _floorballTeamManagerRepository;
-    private readonly IFootballTeamManagerRepository _footballTeamManagerRepository;
-    private readonly IFloorballUnitOfWork _floorballUnitOfWork;
-    private readonly IFootballUnitOfWork _footballUnitOfWork;
+    private readonly IClubManagerRepository _clubManagerRepository;
     private readonly ILogger<CreateUserHandler> _logger;
 
     public CreateUserHandler(
@@ -51,10 +44,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
         IUnitOfWork unitOfWork,
         IEmailService emailService,
         IOptions<FrontendConfiguration> frontendConfig,
-        IFloorballTeamManagerRepository floorballTeamManagerRepository,
-        IFootballTeamManagerRepository footballTeamManagerRepository,
-        IFloorballUnitOfWork floorballUnitOfWork,
-        IFootballUnitOfWork footballUnitOfWork,
+        IClubManagerRepository clubManagerRepository,
         ILogger<CreateUserHandler> logger)
     {
         _userRepository = userRepository;
@@ -62,10 +52,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
         _unitOfWork = unitOfWork;
         _emailService = emailService;
         _frontendConfig = frontendConfig.Value;
-        _floorballTeamManagerRepository = floorballTeamManagerRepository;
-        _footballTeamManagerRepository = footballTeamManagerRepository;
-        _floorballUnitOfWork = floorballUnitOfWork;
-        _footballUnitOfWork = footballUnitOfWork;
+        _clubManagerRepository = clubManagerRepository;
         _logger = logger;
     }
 
@@ -114,16 +101,16 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
                 return Result<UserDto>.Failure("Failed to retrieve the created user.");
             }
 
-            // Team leaders get manager links to the teams they were invited for
-            if (request.Role == UserRole.TeamLeader && request.TeamAssignments is { Count: > 0 })
+            // Club admins get manager links to the clubs they were invited for
+            if (request.Role == UserRole.ClubAdmin && request.ClubAssignments is { Count: > 0 })
             {
-                await CreateTeamManagerLinksAsync(request.PersonId, request.TeamAssignments, cancellationToken);
+                await CreateClubManagerLinksAsync(request.PersonId, request.ClubAssignments, cancellationToken);
             }
 
-            // Send invitation email with verification link. Team leaders verify through their
-            // own area so they land on the team leader login afterwards.
-            string verifyPath = request.Role == UserRole.TeamLeader
-                ? "/team-leader/verify-email"
+            // Send invitation email with verification link. Club admins verify through their
+            // own area so they land on the club admin login afterwards.
+            string verifyPath = request.Role == UserRole.ClubAdmin
+                ? "/club-admin/verify-email"
                 : "/admin/verify-email";
             string verificationUrl = $"{_frontendConfig.BaseUrl}{verifyPath}?token={Uri.EscapeDataString(token)}";
             await _emailService.SendAdminInvitationAsync(
@@ -147,63 +134,35 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
     }
 
     /// <summary>
-    /// Creates (or reactivates) the team manager link rows that grant the invited team leader
-    /// access to the requested teams.
+    /// Creates (or reactivates) the club manager link rows that grant the invited club admin
+    /// access to the requested clubs.
     /// </summary>
-    private async Task CreateTeamManagerLinksAsync(
+    private async Task CreateClubManagerLinksAsync(
         Guid personId,
-        IReadOnlyList<TeamAssignmentDto> assignments,
+        IReadOnlyList<Guid> clubIds,
         CancellationToken cancellationToken)
     {
-        bool floorballTouched = false;
-        bool footballTouched = false;
+        bool touched = false;
 
-        foreach (TeamAssignmentDto assignment in assignments)
+        foreach (Guid clubId in clubIds.Distinct())
         {
-            if (string.Equals(assignment.Sport, "floorball", StringComparison.OrdinalIgnoreCase))
+            ClubManager? existing = await _clubManagerRepository.GetByPersonAndClubAsync(personId, clubId);
+            if (existing == null)
             {
-                FloorballTeamManager? existing = await _floorballTeamManagerRepository.GetByPersonAndTeamAsync(personId, assignment.TeamId);
-                if (existing == null)
-                {
-                    await _floorballTeamManagerRepository.AddAsync(new FloorballTeamManager(personId, assignment.TeamId));
-                    floorballTouched = true;
-                }
-                else if (!existing.IsActive)
-                {
-                    existing.UpdateActiveStatus(true);
-                    await _floorballTeamManagerRepository.UpdateAsync(existing);
-                    floorballTouched = true;
-                }
+                await _clubManagerRepository.AddAsync(new ClubManager(personId, clubId));
+                touched = true;
             }
-            else if (string.Equals(assignment.Sport, "football", StringComparison.OrdinalIgnoreCase))
+            else if (!existing.IsActive)
             {
-                FootballTeamManager? existing = await _footballTeamManagerRepository.GetByPersonAndTeamAsync(personId, assignment.TeamId);
-                if (existing == null)
-                {
-                    await _footballTeamManagerRepository.AddAsync(new FootballTeamManager(personId, assignment.TeamId));
-                    footballTouched = true;
-                }
-                else if (!existing.IsActive)
-                {
-                    existing.UpdateActiveStatus(true);
-                    await _footballTeamManagerRepository.UpdateAsync(existing);
-                    footballTouched = true;
-                }
-            }
-            else
-            {
-                _logger.LogWarning("Unknown sport '{Sport}' in team assignment, skipping", assignment.Sport);
+                existing.UpdateActiveStatus(true);
+                await _clubManagerRepository.UpdateAsync(existing);
+                touched = true;
             }
         }
 
-        if (floorballTouched)
+        if (touched)
         {
-            await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
-        }
-
-        if (footballTouched)
-        {
-            await _footballUnitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
     }
 

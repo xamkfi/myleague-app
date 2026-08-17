@@ -6,7 +6,7 @@ import Button from '../../../components/Button/Button';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import AddIcon from '../../../assets/basicIcons/add.svg';
 import { userService } from '../../../api/admin/userService';
-import type { SystemUser, UserRole, TeamAssignment } from '../../../types/admin/userTypes';
+import type { SystemUser, UserRole } from '../../../types/admin/userTypes';
 import UsersTable from './components/UsersTable';
 import UserFormModal from './components/UserFormModal';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
@@ -107,7 +107,7 @@ const UsersPage = () => {
     personId: string,
     role: UserRole,
     isActive: boolean,
-    teamAssignments?: TeamAssignment[],
+    clubAssignments?: string[],
   ) => {
     try {
       setError(null);
@@ -118,7 +118,7 @@ const UsersPage = () => {
           prev.map((u) => (u.id === updated.id ? updated : u)),
         );
       } else {
-        const created = await userService.create({ email, personId, role, teamAssignments });
+        const created = await userService.create({ email, personId, role, clubAssignments });
         setUsers((prev) => [...prev, created]);
       }
 
@@ -169,13 +169,13 @@ const UsersPage = () => {
     }
   };
 
-  // --- Revoke team leader handler ---
+  // --- Revoke club admin handler ---
 
-  const handleRevokeTeamLeader = useCallback(async (user: SystemUser) => {
+  const handleRevokeClubAdmin = useCallback(async (user: SystemUser) => {
     const confirmed = window.confirm(
       t(
-        'admin.users.confirmRevokeTeamLeader',
-        'Revoke team leader access for {{email}}? Their account will be deactivated and they will no longer be able to sign in.',
+        'admin.users.confirmRevokeClubAdmin',
+        'Revoke club admin access for {{email}}? Their account will be deactivated and they will no longer be able to sign in.',
         { email: user.email },
       ),
     );
@@ -190,11 +190,11 @@ const UsersPage = () => {
       });
       setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
     } catch (err) {
-      console.error('Failed to revoke team leader access', err);
+      console.error('Failed to revoke club admin access', err);
       setError(
         err instanceof Error
           ? err.message
-          : t('admin.users.errors.revoke', 'Failed to revoke team leader access. Please try again.'),
+          : t('admin.users.errors.revoke', 'Failed to revoke club admin access. Please try again.'),
       );
     }
   }, [t]);
@@ -352,7 +352,7 @@ const UsersPage = () => {
           onEdit={openEditModal}
           onDelete={openDeleteModal}
           onResendInvitation={handleResendInvitation}
-          onRevokeTeamLeader={handleRevokeTeamLeader}
+          onRevokeClubAdmin={handleRevokeClubAdmin}
           resendingUserId={resendingUserId}
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}

@@ -24,6 +24,7 @@ export const footballTeamService = {
     if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
     if (params?.clubId) searchParams.append('clubId', params.clubId);
     if (params?.division) searchParams.append('division', params.division);
+    if (params?.searchTerm) searchParams.append('searchTerm', params.searchTerm);
     params?.teamCategories?.forEach(category => searchParams.append('teamCategory', category));
 
     const url = `${API_URL}/FootballTeam${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;

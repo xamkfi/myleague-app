@@ -53,7 +53,8 @@ namespace WebAPI.Controllers.Floorball
                 request.PageSize,
                 request.ClubId,
                 request.Division,
-                request.TeamCategories));
+                request.TeamCategories,
+                request.SearchTerm));
 
             return HandlePaginatedResult(result, "Floorball teams retrieved successfully", "Failed to retrieve floorball teams");
         }

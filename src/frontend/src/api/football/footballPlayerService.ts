@@ -40,6 +40,7 @@ export interface GetFootballPlayersRequest {
   position?: FootballPosition;
   teamId?: string;
   searchTerm?: string;
+  signal?: AbortSignal;
 }
 
 export interface UpdateFootballPlayerRequest {
@@ -131,11 +132,10 @@ export const footballPlayerService = {
       if (params?.searchTerm) searchParams.append('searchTerm', params.searchTerm);
 
       const url = `${API_URL}/FootballPlayer?${searchParams.toString()}`;
-      const response = await authFetch(url);
+      const response = await authFetch(url, { signal: params?.signal });
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error Response:', errorText);
         throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to fetch Football players'}`);
       }
       
@@ -147,7 +147,9 @@ export const footballPlayerService = {
       
       return apiResponse;
     } catch (error) {
-      console.error('Error in footballPlayerService.getAll:', error);
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error;
+      }
       throw error;
     }
   },

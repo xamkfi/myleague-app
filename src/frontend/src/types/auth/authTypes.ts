@@ -12,7 +12,7 @@ export interface AuthUserPerson {
   role: number;
 }
 
-export type AuthUserRole = 'ClubAdmin' | 'SystemAdmin' | 'TeamLeader';
+export type AuthUserRole = 'ClubAdmin' | 'SystemAdmin';
 
 export interface AuthUser {
   id: string;

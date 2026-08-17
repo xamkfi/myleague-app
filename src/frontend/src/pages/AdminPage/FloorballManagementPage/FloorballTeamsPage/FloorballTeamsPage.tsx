@@ -21,132 +21,84 @@ const FloorballTeamsPage = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [pageSize, setPageSize] = useState(50);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<TeamCategory[]>([]);
+  const [reloadToken, setReloadToken] = useState(0);
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Fetch teams data
-  const fetchTeams = async (
-    page: number = 1,
-    size: number = pageSize,
-    categories: TeamCategory[] = categoryFilter
-  ) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response: PaginatedApiResponse<FloorballTeam> = await floorballTeamService.getAll({
-        page,
-        pageSize: size,
-        teamCategories: categories.length > 0 ? categories : undefined
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      const nextSearch = searchTerm.trim();
+      setDebouncedSearch((previous) => {
+        if (previous !== nextSearch) {
+          setCurrentPage(1);
+        }
+        return nextSearch;
       });
-      
-      // Ensure we have valid response data
-      if (response?.data && Array.isArray(response.data)) {
-        setTeams(response.data);
-        setCurrentPage(response.pagination?.currentPage || 1);
-        setTotalPages(response.pagination?.totalPages || 1);
-        setTotalCount(response.pagination?.totalCount || 0);
-      } else {
-        // Handle case where response structure is unexpected
-        setTeams([]);
-        setCurrentPage(1);
-        setTotalPages(1);
-        setTotalCount(0);
-        setError('Invalid response format from server');
-      }
-    } catch (err) {
-      // Ensure teams is always an array even on error
-      setTeams([]);
-      setCurrentPage(1);
-      setTotalPages(1);
-      setTotalCount(0);
-      setError(err instanceof Error ? err.message : 'Failed to fetch teams');
-      console.error('Error fetching teams:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, 300);
 
-  // Fetch all teams (no pagination) - used for search
-  const fetchAllTeams = async (categories: TeamCategory[] = categoryFilter) => {
-    try {
-      setLoading(true);
-      setError(null);
+    return () => window.clearTimeout(timeoutId);
+  }, [searchTerm]);
 
-      const pageSizeBatch = 100; // Use reasonable page size within backend limit
-      let page = 1;
-      let allTeams: FloorballTeam[] = [];
-      let hasNextPage = true;
+  useEffect(() => {
+    let cancelled = false;
 
-      while (hasNextPage) {
+    const loadTeams = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
         const response: PaginatedApiResponse<FloorballTeam> = await floorballTeamService.getAll({
-          page,
-          pageSize: pageSizeBatch,
-          teamCategories: categories.length > 0 ? categories : undefined,
+          page: currentPage,
+          pageSize,
+          teamCategories: categoryFilter.length > 0 ? categoryFilter : undefined,
+          searchTerm: debouncedSearch || undefined,
         });
 
+        if (cancelled) {
+          return;
+        }
+
         if (response?.data && Array.isArray(response.data)) {
-          allTeams = allTeams.concat(response.data);
-          hasNextPage = response.pagination?.hasNextPage ?? false;
-          page += 1;
+          setTeams(response.data);
+          setTotalPages(response.pagination?.totalPages || 1);
+          setTotalCount(response.pagination?.totalCount || 0);
         } else {
-          throw new Error('Invalid response format from server');
+          setTeams([]);
+          setTotalPages(1);
+          setTotalCount(0);
+          setError('Invalid response format from server');
+        }
+      } catch (err) {
+        if (cancelled) {
+          return;
+        }
+        setTeams([]);
+        setTotalPages(1);
+        setTotalCount(0);
+        setError(err instanceof Error ? err.message : 'Failed to fetch teams');
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
         }
       }
+    };
 
-      setTeams(allTeams);
-      setCurrentPage(1);
-      setTotalPages(1);
-      setTotalCount(allTeams.length);
-    } catch (err) {
-      setTeams([]);
-      setCurrentPage(1);
-      setTotalPages(1);
-      setTotalCount(0);
-      setError(err instanceof Error ? err.message : 'Failed to fetch all teams');
-      console.error('Error fetching all teams:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    void loadTeams();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentPage, pageSize, debouncedSearch, categoryFilter, reloadToken]);
 
-  // Load teams on component mount  
-  useEffect(() => {
-    fetchTeams();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Filter teams by search term (client-side)
-  const filteredTeams = teams.filter(team =>
-    team.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Handle category filter change (multi-select); refetch with the new filter
   const handleCategoryFilterChange = (categories: string[]) => {
-    const typedCategories = categories as TeamCategory[];
-    setCategoryFilter(typedCategories);
-
-    if (searchTerm.trim()) {
-      fetchAllTeams(typedCategories);
-    } else {
-      fetchTeams(1, pageSize, typedCategories);
-    }
+    setCategoryFilter(categories as TeamCategory[]);
+    setCurrentPage(1);
   };
 
-  // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-
-    // If searching, load all teams to search across the full dataset
-    if (term.trim()) {
-      // Debounce not implemented for simplicity; could be added
-      fetchAllTeams();
-    } else {
-      // Reset to paginated data when search is cleared
-      fetchTeams(1, pageSize);
-    }
+    setSearchTerm(e.target.value);
   };
 
   // Handle edit team
@@ -173,8 +125,7 @@ const FloorballTeamsPage = () => {
         updated.delete(teamId);
         return updated;
       });
-      // Refresh the teams list
-      await fetchTeams(currentPage, pageSize);
+      setReloadToken((token) => token + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete team');
       console.error('Error deleting team:', err);
@@ -183,14 +134,12 @@ const FloorballTeamsPage = () => {
 
   // Handle page change
   const handlePageChange = (page: number) => {
-    fetchTeams(page, pageSize);
+    setCurrentPage(page);
   };
 
-  // Handle page size change
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);
-    setCurrentPage(1); // Reset to first page when changing page size
-    fetchTeams(1, newPageSize);
+    setCurrentPage(1);
   };
 
   // Handle create team
@@ -212,7 +161,7 @@ const FloorballTeamsPage = () => {
   };
 
   const selectAll = () => {
-    setSelectedIds(new Set(filteredTeams.map(t => t.id)));
+    setSelectedIds(new Set(teams.map((team) => team.id)));
   };
 
   const clearSelection = () => {
@@ -235,7 +184,7 @@ const FloorballTeamsPage = () => {
         await floorballTeamService.delete(id);
       }
       setSelectedIds(new Set());
-      await fetchTeams(currentPage, pageSize);
+      setReloadToken((token) => token + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete teams');
       console.error('Error bulk deleting teams:', err);
@@ -285,7 +234,7 @@ const FloorballTeamsPage = () => {
 
         {/* Teams table */}
         <TeamsTable
-          teams={filteredTeams}
+          teams={teams}
           onEdit={handleEdit}
           onEditRoster={handleEditRoster}
           onDelete={handleDelete}

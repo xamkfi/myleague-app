@@ -71,6 +71,37 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.ToTable("Clubs", "common");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Common.ClubManager", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClubId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClubId");
+
+                    b.HasIndex("PersonId", "ClubId")
+                        .IsUnique();
+
+                    b.ToTable("ClubManagers", "common");
+                });
+
             modelBuilder.Entity("Domain.Entities.Common.Division", b =>
                 {
                     b.Property<Guid>("Id")
@@ -533,6 +564,21 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasDatabaseName("IX_User_Audit");
 
                     b.ToTable("Users", "common");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Common.ClubManager", b =>
+                {
+                    b.HasOne("Domain.Entities.Common.Club", null)
+                        .WithMany()
+                        .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Common.Person", null)
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.Common.Person", b =>

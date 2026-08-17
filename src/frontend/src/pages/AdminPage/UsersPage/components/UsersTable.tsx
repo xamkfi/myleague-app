@@ -9,7 +9,7 @@ interface UsersTableProps {
   onEdit: (user: SystemUser) => void;
   onDelete: (user: SystemUser) => void;
   onResendInvitation: (user: SystemUser) => void;
-  onRevokeTeamLeader: (user: SystemUser) => void;
+  onRevokeClubAdmin: (user: SystemUser) => void;
   resendingUserId: string | null;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -23,7 +23,7 @@ const UsersTable = ({
   onEdit,
   onDelete,
   onResendInvitation,
-  onRevokeTeamLeader,
+  onRevokeClubAdmin,
   resendingUserId,
   selectedIds,
   onToggleSelect,
@@ -57,13 +57,11 @@ const UsersTable = ({
 
   const getRoleBadgeClass = (role: string) => {
     if (role === 'SystemAdmin') return 'admin-badge--system';
-    if (role === 'TeamLeader') return 'admin-badge--leader';
     return 'admin-badge--club';
   };
 
   const getRoleLabel = (role: string) => {
     if (role === 'SystemAdmin') return t('admin.users.roles.systemAdmin', 'System Admin');
-    if (role === 'TeamLeader') return t('admin.users.roles.teamLeader', 'Team Leader');
     return t('admin.users.roles.clubAdmin', 'Club Admin');
   };
 
@@ -162,10 +160,10 @@ const UsersTable = ({
                               disabled: resendingUserId === user.id,
                             }]
                           : []),
-                        ...(user.role === 'TeamLeader' && user.isActive
+                        ...(user.role === 'ClubAdmin' && user.isActive
                           ? [{
-                              label: t('admin.users.actions.revokeTeamLeader', 'Revoke team leader access'),
-                              onClick: () => onRevokeTeamLeader(user),
+                              label: t('admin.users.actions.revokeClubAdmin', 'Revoke club admin access'),
+                              onClick: () => onRevokeClubAdmin(user),
                               variant: 'danger' as const,
                             }]
                           : []),

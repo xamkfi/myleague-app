@@ -21,7 +21,8 @@ namespace Application.Features.Football.Teams.Queries
         int PageSize = 0, // 0 means use default from configuration
         Guid? ClubId = null,
         string? Division = null,
-        IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? TeamCategories = null
+        IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? TeamCategories = null,
+        string? SearchTerm = null
     ) : IRequest<Result<PagedResult<FootballTeamDto>>>
     {
         /// <summary>

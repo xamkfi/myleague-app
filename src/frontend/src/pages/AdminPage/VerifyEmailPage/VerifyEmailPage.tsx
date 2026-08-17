@@ -7,11 +7,11 @@ type VerificationState = 'loading' | 'success' | 'error';
 
 interface VerifyEmailPageProps {
   /** Which area this verification belongs to. Controls labels and the login link. */
-  variant?: 'admin' | 'teamLeader';
+  variant?: 'admin' | 'clubAdmin';
 }
 
 function VerifyEmailPage({ variant = 'admin' }: VerifyEmailPageProps) {
-  const isTeamLeader = variant === 'teamLeader';
+  const isClubAdmin = variant === 'clubAdmin';
   const [searchParams] = useSearchParams();
   const [state, setState] = useState<VerificationState>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -47,7 +47,7 @@ function VerifyEmailPage({ variant = 'admin' }: VerifyEmailPageProps) {
       <div className="verify-email-center">
         <div className="verify-email-top">
           <h1 className="verify-email-brand">MAHL</h1>
-          <p className="verify-email-brand-sub">{isTeamLeader ? 'Team leader invitation' : 'Admin invitation'}</p>
+          <p className="verify-email-brand-sub">{isClubAdmin ? 'Club admin invitation' : 'Admin invitation'}</p>
         </div>
 
         <div className="verify-email-card">
@@ -63,8 +63,8 @@ function VerifyEmailPage({ variant = 'admin' }: VerifyEmailPageProps) {
               <span className="verify-email-icon" role="img" aria-label="Success">✅</span>
               <h2 className="verify-email-title">Email verified!</h2>
               <p className="verify-email-message">
-                {isTeamLeader
-                  ? 'Your account is now active. Here is how to log in to the team leader area:'
+                {isClubAdmin
+                  ? 'Your account is now active. Here is how to log in to the club admin area:'
                   : 'Your account is now active. Here is how to log in to the admin panel:'}
               </p>
 
@@ -74,14 +74,14 @@ function VerifyEmailPage({ variant = 'admin' }: VerifyEmailPageProps) {
                   <li>Click the button below to go to the login page.</li>
                   <li>Enter the email address where you received this invitation.</li>
                   <li>You will receive a <strong>6-digit login code</strong> by email.</li>
-                  <li>{isTeamLeader
-                    ? 'Enter the code on the login page to access the team leader area.'
+                  <li>{isClubAdmin
+                    ? 'Enter the code on the login page to access the club admin area.'
                     : 'Enter the code on the login page to access the admin panel.'}</li>
                 </ol>
               </div>
 
-              <Link to={isTeamLeader ? '/team-leader/login' : '/admin/login'} className="verify-email-button">
-                {isTeamLeader ? 'Go to team leader login' : 'Go to admin login'}
+              <Link to={isClubAdmin ? '/club-admin/login' : '/admin/login'} className="verify-email-button">
+                {isClubAdmin ? 'Go to club admin login' : 'Go to admin login'}
               </Link>
             </>
           )}

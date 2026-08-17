@@ -293,6 +293,24 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             return PagedResult.Create(items, totalCount, page, pageSize);
         }
 
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<Guid>> GetIdsByNameContainsAsync(string searchTerm, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return Array.Empty<Guid>();
+            }
+
+            string lowercasedTerm = searchTerm.Trim().ToLower();
+
+            return await _entities
+                .Where(p =>
+                    (p.FirstName.ToLower() + " " + p.LastName.ToLower()).Contains(lowercasedTerm) ||
+                    (p.LastName.ToLower() + " " + p.FirstName.ToLower()).Contains(lowercasedTerm))
+                .Select(p => p.Id)
+                .ToListAsync(cancellationToken);
+        }
+
         /// <summary>
         /// Checks if a person exists
         /// </summary>

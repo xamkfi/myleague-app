@@ -23,9 +23,9 @@ const AddPlayerToRosterPage = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentTeam, setCurrentTeam] = useState<FootballTeam | null>(null);
-  const [allPlayers, setAllPlayers] = useState<FootballPlayerDto[]>([]);
   const [displayedPlayers, setDisplayedPlayers] = useState<FootballPlayerDto[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -48,123 +48,69 @@ const AddPlayerToRosterPage = () => {
     }
   }, [teamId]);
 
-  // Fetch ALL players (chunked approach like FootballPlayersPage)
-  const fetchAllPlayers = useCallback(async (team: FootballTeam) => {
-    try {
-      setLoadingPlayers(true);
-      
-      let allPlayersData: FootballPlayerDto[] = [];
-      let currentFetchPage = 1;
-      let hasMoreData = true;
-      
-      // First, get the total count
-      const firstResponse = await footballPlayerService.getAll({
-        page: 1,
-        pageSize: 50,
-      });
-      
-      if (!firstResponse.data) {
-        setAllPlayers([]);
-        return [];
-      }
-      
-      allPlayersData = [...firstResponse.data];
-      const fetchTotalPages = firstResponse.pagination.totalPages || 1;
-      
-      // Fetch remaining pages
-      currentFetchPage = 2;
-      while (currentFetchPage <= fetchTotalPages && hasMoreData) {
-        try {
-          const response = await footballPlayerService.getAll({
-            page: currentFetchPage,
-            pageSize: 50,
-          });
-          
-          if (response.data && response.data.length > 0) {
-            allPlayersData = [...allPlayersData, ...response.data];
-            currentFetchPage++;
-          } else {
-            hasMoreData = false;
-          }
-        } catch (pageErr) {
-          console.error(`Error fetching page ${currentFetchPage}:`, pageErr);
-          hasMoreData = false;
-        }
-      }
-      
-      // Filter out players already in the team
-      const teamPlayerIds = new Set(team.roster?.map(p => p.playerId) || []);
-      const availablePlayers = allPlayersData.filter(player => !teamPlayerIds.has(player.id));
-      
-      setAllPlayers(availablePlayers);
-      setError(null);
-      return availablePlayers;
-      
-    } catch (err) {
-      console.error('Error loading players:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load players');
-      return [];
-    } finally {
-      setLoadingPlayers(false);
-    }
-  }, []);
-
-  // Apply search and pagination to display players
-  const updateDisplayedPlayers = useCallback((players: FootballPlayerDto[], search: string, page: number) => {
-    let filtered = players;
-    
-    // Apply search filter
-    if (search) {
-      const searchLower = search.toLowerCase().trim();
-      filtered = players.filter(player => {
-        if (!player || !player.person) return false;
-        
-        const firstName = player.person.firstName || '';
-        const lastName = player.person.lastName || '';
-        const fullName = player.person.fullName || `${firstName} ${lastName}`.trim();
-        
-        return fullName.toLowerCase().includes(searchLower) ||
-               firstName.toLowerCase().includes(searchLower) ||
-               lastName.toLowerCase().includes(searchLower);
-      });
-    }
-    
-    // Calculate pagination
-    const totalCount = filtered.length;
-    const calculatedTotalPages = Math.ceil(totalCount / pageSize) || 1;
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedPlayers = filtered.slice(startIndex, endIndex);
-    
-    setDisplayedPlayers(paginatedPlayers);
-    setTotalPages(calculatedTotalPages);
-  }, [pageSize]);
-
   useEffect(() => {
     loadTeamData();
   }, [loadTeamData]);
 
-  // Load all players when team is loaded
   useEffect(() => {
-    if (currentTeam) {
-      fetchAllPlayers(currentTeam);
-    }
-  }, [currentTeam, fetchAllPlayers]);
+    const timeoutId = window.setTimeout(() => {
+      const nextSearch = searchTerm.trim().length >= 2 ? searchTerm.trim() : '';
+      setDebouncedSearch((previous) => {
+        if (previous !== nextSearch) {
+          setCurrentPage(1);
+        }
+        return nextSearch;
+      });
+    }, 300);
 
-  // Update displayed players when search or pagination changes
-  useEffect(() => {
-    if (allPlayers.length > 0) {
-      updateDisplayedPlayers(allPlayers, searchTerm, currentPage);
-    } else if (!loadingPlayers && currentTeam) {
-      setDisplayedPlayers([]);
-      setTotalPages(1);
-    }
-  }, [allPlayers, searchTerm, currentPage, updateDisplayedPlayers, loadingPlayers, currentTeam]);
-
-  // Reset to page 1 when search changes
-  useEffect(() => {
-    setCurrentPage(1);
+    return () => window.clearTimeout(timeoutId);
   }, [searchTerm]);
+
+  useEffect(() => {
+    if (!currentTeam) {
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+    const teamPlayerIds = new Set(currentTeam.roster?.map((player) => player.playerId) ?? []);
+
+    const loadPlayers = async () => {
+      try {
+        setLoadingPlayers(true);
+        const response = await footballPlayerService.getAll({
+          page: currentPage,
+          pageSize,
+          searchTerm: debouncedSearch || undefined,
+          signal: controller.signal,
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        const availablePlayers = (response.data ?? []).filter((player) => !teamPlayerIds.has(player.id));
+        setDisplayedPlayers(availablePlayers);
+        setTotalPages(response.pagination.totalPages || 1);
+        setError(null);
+      } catch (err: unknown) {
+        if (cancelled || (err instanceof DOMException && err.name === 'AbortError')) {
+          return;
+        }
+        setError(err instanceof Error ? err.message : 'Failed to load players');
+      } finally {
+        if (!cancelled) {
+          setLoadingPlayers(false);
+        }
+      }
+    };
+
+    void loadPlayers();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [currentTeam, currentPage, pageSize, debouncedSearch]);
 
   // Selection management functions
   const togglePlayerSelection = (playerId: string) => {

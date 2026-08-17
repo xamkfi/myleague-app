@@ -8,27 +8,22 @@ namespace Domain.Constants;
 public static class AuthRoles
 {
     /// <summary>
-    /// Club administrator role name
+    /// Club administrator role name (club-scoped: manages one or more clubs and their teams)
     /// </summary>
     public const string ClubAdmin = "ClubAdmin";
 
     /// <summary>
-    /// System administrator role name
+    /// System administrator role name (site admin)
     /// </summary>
     public const string SystemAdmin = "SystemAdmin";
 
     /// <summary>
-    /// Team leader role name
+    /// Roles allowed on endpoints restricted to site administrators
     /// </summary>
-    public const string TeamLeader = "TeamLeader";
+    public const string AdminOnly = SystemAdmin;
 
     /// <summary>
-    /// Comma-separated list for endpoints restricted to administrators
+    /// Comma-separated list for endpoints available to club admins and site administrators
     /// </summary>
-    public const string AdminOnly = ClubAdmin + "," + SystemAdmin;
-
-    /// <summary>
-    /// Comma-separated list for endpoints available to team leaders and administrators
-    /// </summary>
-    public const string TeamLeaderOrAdmin = TeamLeader + "," + AdminOnly;
+    public const string ClubAdminOrAdmin = ClubAdmin + "," + SystemAdmin;
 }

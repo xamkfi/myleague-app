@@ -355,7 +355,7 @@
       "noData": "Järjestelmäkäyttäjiä ei löytynyt.",
       "noSearchResults": "Yksikään käyttäjä ei vastaa hakuasi.",
       "invitationResent": "Kutsusähköposti lähetetty uudelleen osoitteeseen {{email}}.",
-      "confirmRevokeTeamLeader": "Poistetaanko joukkueenjohtajan oikeudet käyttäjältä {{email}}? Tili poistetaan käytöstä eikä hän voi enää kirjautua sisään.",
+      "confirmRevokeClubAdmin": "Poistetaanko seuran ylläpitäjän oikeudet käyttäjältä {{email}}? Tili poistetaan käytöstä eikä hän voi enää kirjautua sisään.",
       "table": {
         "person": "Henkilö",
         "email": "Sähköposti",
@@ -371,7 +371,7 @@
         "menu": "Käyttäjän toimintovalikko",
         "resendInvitation": "Lähetä kutsu uudelleen",
         "sendingInvitation": "Lähetetään...",
-        "revokeTeamLeader": "Poista joukkueenjohtajan oikeudet"
+        "revokeClubAdmin": "Poista seuran ylläpitäjän oikeudet"
       },
       "form": {
         "createTitle": "Lisää käyttäjä",
@@ -389,19 +389,17 @@
         "hasAccount": "Käyttäjätili on jo olemassa",
         "status": "Tila",
         "statusCreateInfo": "Uudet käyttäjät ovat passiivisia, kunnes he vahvistavat sähköpostinsa.",
-        "teams": "Hallinnoitavat joukkueet",
-        "teamFilterPlaceholder": "Suodata joukkueita...",
-        "floorballTeams": "Salibandyjoukkueet",
-        "footballTeams": "Jalkapallojoukkueet",
-        "noTeamsFound": "Joukkueita ei löytynyt",
-        "teamsRequired": "Valitse joukkueenjohtajalle vähintään yksi joukkue",
+        "clubs": "Hallinnoitavat seurat",
+        "clubFilterPlaceholder": "Suodata seuroja...",
+        "clubsTitle": "Seurat",
+        "noClubsFound": "Seuroja ei löytynyt",
+        "clubsHint": "Voit myös määrittää seuran ylläpitäjät myöhemmin seuran muokkaussivulta.",
         "save": "Tallenna",
         "saving": "Tallennetaan..."
       },
       "roles": {
-        "systemAdmin": "Järjestelmänvalvoja",
-        "clubAdmin": "Seuran ylläpitäjä",
-        "teamLeader": "Joukkueenjohtaja"
+    "systemAdmin": "Järjestelmänvalvoja",
+    "clubAdmin": "Seuran ylläpitäjä"
       },
       "confirmDelete": {
         "title": "Poista käyttäjä",
@@ -414,7 +412,7 @@
         "update": "Käyttäjän päivittäminen epäonnistui. Yritä uudelleen.",
         "delete": "Käyttäjän poistaminen epäonnistui. Yritä uudelleen.",
         "resend": "Kutsun uudelleenlähetys epäonnistui. Yritä uudelleen.",
-        "revoke": "Joukkueenjohtajan oikeuksien poistaminen epäonnistui. Yritä uudelleen."
+        "revoke": "Seuran ylläpitäjän oikeuksien poistaminen epäonnistui. Yritä uudelleen."
       },
       "success": {
         "create": "Käyttäjä luotu onnistuneesti.",
@@ -709,6 +707,25 @@
     }
   },
   "clubs": {
+    "admins": {
+      "title": "Seuran ylläpitäjät",
+      "hint": "Seuran ylläpitäjät voivat muokata seuran tietoja sekä hallita seuran joukkueiden kokoonpanoja ja ottelukokoonpanoja.",
+      "addButton": "Lisää ylläpitäjä",
+      "modalTitle": "Hallitse seuran ylläpitäjiä",
+      "currentTitle": "Nykyiset ylläpitäjät",
+      "searchTitle": "Hae henkilöitä",
+      "searchPlaceholder": "Hae henkilöitä nimellä...",
+      "noneSelected": "Ylläpitäjiä ei ole vielä määritetty.",
+      "noPersons": "Henkilöitä ei löytynyt.",
+      "add": "Lisää",
+      "added": "Lisätty",
+      "remove": "Poista",
+      "emailRequired": "Tällä henkilöllä ei ole sähköpostiosoitetta, joten häntä ei voi kutsua seuran ylläpitäjäksi.",
+      "searchError": "Henkilöiden haku epäonnistui",
+      "loadError": "Käyttäjien lataaminen epäonnistui",
+      "saveError": "Seuran ylläpitäjien päivittäminen epäonnistui",
+      "cardHint": "Nämä käyttäjät voivat muokata seuran tietoja ja hallita joukkueiden kokoonpanoja."
+    },
     "manage": {
       "title": "Seurojen Hallinta"
     },
@@ -756,7 +773,8 @@
       "foundingDate": "Perustettu",
       "teams": "Joukkueet",
       "noTeams": "Ei joukkueita vielä",
-      "members": "Jäseniä"
+      "members": "Jäseniä",
+      "backToClubs": "Takaisin seuroihin"
     },
     "deleteClubButton": "Poista seura",
     "confirmDeleteTitle": "Poista seura?",
@@ -1520,6 +1538,7 @@
     "save": "Tallenna",
     "deleting": "Poistetaan...",
     "cancel": "Peruuta",
+    "done": "Valmis",
     "preview": "Esikatselu",
     "active": "Aktiivinen",
     "inactive": "Ei-aktiivinen",
@@ -1844,16 +1863,23 @@
     "verifying": "Vahvistetaan...",
     "back": "Takaisin",
     "codeSent": "Kirjautumiskoodi on lähetetty sähköpostiisi.",
+    "codeAutoFilled": "Kehitystila: kirjautumiskoodi täytettiin automaattisesti. Sähköpostia ei lähetetty.",
     "unexpectedError": "Odottamaton virhe tapahtui.",
     "logout": "Kirjaudu ulos",
-    "teamLeaderLoginTitle": "Joukkueenjohtajan kirjautuminen"
+    "clubAdminLoginTitle": "Seuran ylläpitäjän kirjautuminen"
   },
-  "teamLeader": {
-    "view": "Joukkueenjohtajan näkymä",
+  "clubAdmin": {
+    "view": "Seuran ylläpitäjän näkymä",
     "logout": "Kirjaudu ulos",
-    "myTeams": "Omat joukkueet",
-    "loadError": "Joukkueiden lataaminen epäonnistui",
-    "noTeams": "Sinua ei ole tällä hetkellä määritetty minkään joukkueen joukkueenjohtajaksi. Ota yhteyttä ylläpitäjään.",
+    "myClubs": "Omat seurat",
+    "loadError": "Seurojen lataaminen epäonnistui",
+    "noClubs": "Sinua ei ole tällä hetkellä määritetty minkään seuran ylläpitäjäksi. Ota yhteyttä ylläpitäjään.",
+    "noTeams": "Tällä seuralla ei ole vielä joukkueita.",
+    "editClubInfo": "Muokkaa seuran tietoja",
+    "clubInfoTitle": "Seuran tiedot",
+    "clubInfoSaved": "Seuran tiedot on tallennettu.",
+    "loadClubError": "Seuran lataaminen epäonnistui",
+    "backToClubs": "Takaisin omiin seuroihin",
     "sportFloorball": "Salibandy",
     "sportFootball": "Jalkapallo",
     "editRoster": "Kokoonpano ja pelinumerot",
@@ -1863,7 +1889,6 @@
     "announceRoster": "Ilmoita kokoonpano",
     "editAnnouncedRoster": "Muokkaa kokoonpanoa",
     "announceRosterTitle": "Ilmoita ottelukokoonpano",
-    "backToTeams": "Takaisin omiin joukkueisiin",
     "loadMatchError": "Ottelun lataaminen epäonnistui",
     "rosterSaved": "Ottelukokoonpano on ilmoitettu. Se näkyy nyt ottelunäkymässä.",
     "rosterSaveError": "Ottelukokoonpanon ilmoittaminen epäonnistui",

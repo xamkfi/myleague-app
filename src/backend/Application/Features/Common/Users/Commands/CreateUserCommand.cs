@@ -16,12 +16,12 @@ namespace Application.Features.Common.Users.Commands;
 /// Command for creating a new user
 /// </summary>
 /// <remarks>
-/// <paramref name="TeamAssignments"/> is only used when <paramref name="Role"/> is
-/// <see cref="UserRole.TeamLeader"/>: for each assignment an active team manager link is
-/// created (or reactivated) so the new team leader can manage those teams.
+/// <paramref name="ClubAssignments"/> is only used when <paramref name="Role"/> is
+/// <see cref="UserRole.ClubAdmin"/>: for each club an active club manager link is
+/// created (or reactivated) so the new club admin can manage that club and its teams.
 /// </remarks>
 public record CreateUserCommand(
     string Email,
     Guid PersonId,
     UserRole Role = UserRole.ClubAdmin,
-    IReadOnlyList<TeamAssignmentDto>? TeamAssignments = null) : IRequest<Result<UserDto>>;
+    IReadOnlyList<Guid>? ClubAssignments = null) : IRequest<Result<UserDto>>;

@@ -129,7 +129,7 @@ public class UsersController : BaseApiController
             request.Email,
             request.PersonId,
             request.Role,
-            request.TeamAssignments?.Select(a => new TeamAssignmentDto(a.Sport, a.TeamId)).ToList());
+            request.ClubAssignments);
         Result<UserDto> result = await _mediator.Send(command);
 
         if (result.IsSuccess && result.Data is not null)

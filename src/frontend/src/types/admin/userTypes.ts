@@ -1,9 +1,4 @@
-export type UserRole = 'ClubAdmin' | 'SystemAdmin' | 'TeamLeader';
-
-export interface TeamAssignment {
-  sport: 'floorball' | 'football';
-  teamId: string;
-}
+export type UserRole = 'ClubAdmin' | 'SystemAdmin';
 
 export interface SystemUserPerson {
   id: string;
@@ -28,8 +23,8 @@ export interface CreateUserPayload {
   email: string;
   personId: string;
   role: UserRole;
-  /** Teams the invited team leader should manage. Only used when role is TeamLeader. */
-  teamAssignments?: TeamAssignment[];
+  /** Clubs the invited club admin should manage. Only used when role is ClubAdmin. */
+  clubAssignments?: string[];
 }
 
 export interface UpdateUserPayload {

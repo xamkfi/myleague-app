@@ -1,6 +1,7 @@
 using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
+using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -13,12 +14,30 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
     /// </summary>
     public class FloorballPlayerRepository : RepositoryBase<FloorballPlayer, FloorballDbContext>, IFloorballPlayerRepository
     {
-        /// <summary>
-        /// Initializes a new instance of the FloorballPlayerRepository class
-        /// </summary>
-        /// <param name="dbContext">The database context</param>
-        public FloorballPlayerRepository(FloorballDbContext dbContext) : base(dbContext)
+        private readonly IPersonRepository _personRepository;
+
+        public FloorballPlayerRepository(FloorballDbContext dbContext, IPersonRepository personRepository) : base(dbContext)
         {
+            _personRepository = personRepository;
+        }
+
+        private async Task<IQueryable<FloorballPlayer>> ApplyPersonNameSearchAsync(
+            IQueryable<FloorballPlayer> query,
+            string? searchTerm,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return query;
+            }
+
+            IReadOnlyList<Guid> personIds = await _personRepository.GetIdsByNameContainsAsync(searchTerm, cancellationToken);
+            if (personIds.Count == 0)
+            {
+                return query.Where(player => false);
+            }
+
+            return query.Where(player => personIds.Contains(player.PersonId));
         }
 
         /// <summary>
@@ -121,13 +140,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 }
             }
 
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                // Note: Search by person name is not available since Person navigation property is ignored
-                // This would require a separate query to the Person repository or a different approach
-                // For now, we'll skip the search functionality to prevent query errors
-                // TODO: Implement search functionality using PersonRepository
-            }
+            query = await ApplyPersonNameSearchAsync(query, searchTerm, cancellationToken);
 
             // Apply ordering by player ID since Person properties are not available
             query = query.OrderBy(p => p.Id);
@@ -227,13 +240,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 }
             }
 
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                // Note: Search by person name is not available since Person navigation property is ignored
-                // This would require a separate query to the Person repository or a different approach
-                // For now, we'll skip the search functionality to prevent query errors
-                // TODO: Implement search functionality using PersonRepository
-            }
+            query = await ApplyPersonNameSearchAsync(query, searchTerm, cancellationToken);
 
             // Apply ordering by player ID since Person properties are not available
             query = query.OrderBy(p => p.Id);
@@ -314,13 +321,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 }
             }
 
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                // Note: Search by person name is not available since Person navigation property is ignored
-                // This would require a separate query to the Person repository or a different approach
-                // For now, we'll skip the search functionality to prevent query errors
-                // TODO: Implement search functionality using PersonRepository
-            }
+            query = await ApplyPersonNameSearchAsync(query, searchTerm, cancellationToken);
 
             return await query.CountAsync(cancellationToken);
         }
@@ -498,14 +499,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <returns>A collection of floorball players matching the search term</returns>
         public async Task<IEnumerable<FloorballPlayer>> SearchByNameAsync(string searchTerm)
         {
-            if (string.IsNullOrEmpty(searchTerm))
-                return await GetAllAsync();
-                
-            // Note: Search by person name is not available since Person navigation property is ignored
-            // This would require a separate query to the Person repository or a different approach
-            // For now, return all players to prevent query errors
-            // TODO: Implement search functionality using PersonRepository
-            return await GetAllAsync();
+            IQueryable<FloorballPlayer> query = await ApplyPersonNameSearchAsync(_entities.AsQueryable(), searchTerm, CancellationToken.None);
+            return await query.ToListAsync();
         }
 
         /// <summary>

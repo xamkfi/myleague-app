@@ -29,6 +29,11 @@ namespace WebAPI.Models.Football
         /// </summary>
         [FromQuery(Name = "teamCategory")]
         public List<TeamCategory>? TeamCategories { get; init; }
+
+        /// <summary>
+        /// Optional team name search filter
+        /// </summary>
+        public string? SearchTerm { get; init; }
     }
 
     /// <summary>

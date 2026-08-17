@@ -102,10 +102,11 @@ const FootballCreateMatchPage = lazyWithRetry(() => import('../pages/AdminPage/F
 const FootballEditMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/EditMatchPage/EditMatchPage'));
 const FootballManageMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/ManageMatchPage/ManageMatchPage'));
 
-// Team leader pages
-const TeamLeaderPage = lazyWithRetry(() => import('../pages/TeamLeaderPage/TeamLeaderPage'));
-const TeamLeaderRosterPage = lazyWithRetry(() => import('../pages/TeamLeaderPage/TeamLeaderRosterPage/TeamLeaderRosterPage'));
-const TeamLeaderMatchRosterPage = lazyWithRetry(() => import('../pages/TeamLeaderPage/TeamLeaderMatchRosterPage/TeamLeaderMatchRosterPage'));
+// Club admin pages
+const ClubAdminPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminPage'));
+const ClubAdminClubInfoPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminClubInfoPage/ClubAdminClubInfoPage'));
+const ClubAdminRosterPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminRosterPage/ClubAdminRosterPage'));
+const ClubAdminMatchRosterPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminMatchRosterPage/ClubAdminMatchRosterPage'));
 
 // Public football pages
 const FootballPage = lazyWithRetry(() => import('../pages/FootballPage/FootballPage'));
@@ -134,41 +135,49 @@ export const routes: RouteObject[] = [
     path: '/admin/verify-email',
     element: <SuspenseWrapper><VerifyEmailPage /></SuspenseWrapper>
   },
-  // Team leader login (public)
+  // Club admin login (public)
   {
-    path: '/team-leader/login',
-    element: <SuspenseWrapper><LoginPage variant="teamLeader" /></SuspenseWrapper>
+    path: '/club-admin/login',
+    element: <SuspenseWrapper><LoginPage variant="clubAdmin" /></SuspenseWrapper>
   },
-  // Team leader email verification (public – linked from invitation email)
+  // Club admin email verification (public – linked from invitation email)
   {
-    path: '/team-leader/verify-email',
-    element: <SuspenseWrapper><VerifyEmailPage variant="teamLeader" /></SuspenseWrapper>
+    path: '/club-admin/verify-email',
+    element: <SuspenseWrapper><VerifyEmailPage variant="clubAdmin" /></SuspenseWrapper>
   },
-  // Protected team leader routes (admins may also access them)
+  // Protected club admin routes (site admins may also access them)
   {
-    path: '/team-leader',
+    path: '/club-admin',
     children: [
       {
         index: true,
         element: (
-          <ProtectedRoute allowedRoles={['TeamLeader', 'ClubAdmin', 'SystemAdmin']} loginPath="/team-leader/login">
-            <SuspenseWrapper><TeamLeaderPage /></SuspenseWrapper>
+          <ProtectedRoute allowedRoles={['ClubAdmin', 'SystemAdmin']} loginPath="/club-admin/login">
+            <SuspenseWrapper><ClubAdminPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'clubs/:clubId/info',
+        element: (
+          <ProtectedRoute allowedRoles={['ClubAdmin', 'SystemAdmin']} loginPath="/club-admin/login">
+            <SuspenseWrapper><ClubAdminClubInfoPage /></SuspenseWrapper>
           </ProtectedRoute>
         )
       },
       {
         path: 'teams/:sport/:teamId/roster',
         element: (
-          <ProtectedRoute allowedRoles={['TeamLeader', 'ClubAdmin', 'SystemAdmin']} loginPath="/team-leader/login">
-            <SuspenseWrapper><TeamLeaderRosterPage /></SuspenseWrapper>
+          <ProtectedRoute allowedRoles={['ClubAdmin', 'SystemAdmin']} loginPath="/club-admin/login">
+            <SuspenseWrapper><ClubAdminRosterPage /></SuspenseWrapper>
           </ProtectedRoute>
         )
       },
       {
         path: 'teams/:sport/:teamId/matches/:matchId/roster',
         element: (
-          <ProtectedRoute allowedRoles={['TeamLeader', 'ClubAdmin', 'SystemAdmin']} loginPath="/team-leader/login">
-            <SuspenseWrapper><TeamLeaderMatchRosterPage /></SuspenseWrapper>
+          <ProtectedRoute allowedRoles={['ClubAdmin', 'SystemAdmin']} loginPath="/club-admin/login">
+            <SuspenseWrapper><ClubAdminMatchRosterPage /></SuspenseWrapper>
           </ProtectedRoute>
         )
       }

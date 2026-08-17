@@ -63,6 +63,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
 
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();
+            services.AddScoped<IClubManagerRepository, ClubManagerRepository>();
             services.AddScoped<IPersonRepository, PersonRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
@@ -117,12 +118,9 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IEmailService>(sp =>
             {
                 IWebHostEnvironment env = sp.GetRequiredService<IWebHostEnvironment>();
-                IConfiguration config = sp.GetRequiredService<IConfiguration>();
 
-                // Use console logging in development when Azure Communication Services is not configured
-                bool hasAzureConfig = !string.IsNullOrWhiteSpace(
-                    config.GetSection("AzureCommunicationServices:ConnectionString").Value);
-                bool useConsole = env.IsDevelopment() && !hasAzureConfig;
+                // Development never sends real emails; login codes are auto-filled instead.
+                bool useConsole = env.IsDevelopment();
 
                 if (useConsole)
                 {

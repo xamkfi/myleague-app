@@ -101,6 +101,7 @@ public class GetAllFootballTeamsHandler : BasePagedQueryHandler<GetAllFootballTe
             PagedResult<FootballTeam> pagedTeams = await _teamRepository.GetPagedAsync(
                 page: request.Page,
                 pageSize: actualPageSize,
+                searchTerm: request.SearchTerm ?? string.Empty,
                 clubId: request.ClubId,
                 divisionId: divisionId,
                 teamCategories: request.TeamCategories,

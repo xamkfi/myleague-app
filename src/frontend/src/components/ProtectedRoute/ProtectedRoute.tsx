@@ -5,15 +5,15 @@ import type { AuthUserRole } from '../../types/auth/authTypes';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   /**
-   * Roles allowed to view the route. Defaults to admin roles so all existing
-   * admin routes stay admin-only. Team leader routes must pass roles explicitly.
+   * Roles allowed to view the route. Defaults to the site admin role so all existing
+   * admin routes stay admin-only. Club admin routes must pass roles explicitly.
    */
   allowedRoles?: AuthUserRole[];
   /** Login page to redirect unauthenticated users to. */
   loginPath?: string;
 }
 
-const DEFAULT_ALLOWED_ROLES: AuthUserRole[] = ['ClubAdmin', 'SystemAdmin'];
+const DEFAULT_ALLOWED_ROLES: AuthUserRole[] = ['SystemAdmin'];
 
 function ProtectedRoute({
   children,
@@ -43,7 +43,7 @@ function ProtectedRoute({
 
   if (user && !allowedRoles.includes(user.role)) {
     // Authenticated but not allowed here: send the user to their own home area.
-    const home = user.role === 'TeamLeader' ? '/team-leader' : '/admin';
+    const home = user.role === 'ClubAdmin' ? '/club-admin' : '/admin';
     return <Navigate to={home} replace />;
   }
 

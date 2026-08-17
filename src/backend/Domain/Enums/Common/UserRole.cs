@@ -6,17 +6,13 @@ namespace Domain.Enums.Common;
 public enum UserRole
 {
     /// <summary>
-    /// Club administrator - can manage their club's data
+    /// Club administrator - can edit their own club's information (not delete it) and manage
+    /// the teams under the club: jersey numbers and match roster/lineup announcements
     /// </summary>
     ClubAdmin = 0,
 
     /// <summary>
     /// System administrator - full access to all features
     /// </summary>
-    SystemAdmin = 1,
-
-    /// <summary>
-    /// Team leader - can manage jersey numbers and announce match rosters for their own teams
-    /// </summary>
-    TeamLeader = 2
+    SystemAdmin = 1
 }
