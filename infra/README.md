@@ -92,6 +92,8 @@ Alert costs: metric alert rules ~$0.10/month each, availability test pennies at 
 
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
+| `backend-ci.yaml` / `frontend-ci.yaml` | Push and PRs to `master` and `development` | Build, lint/tests, Docker startup checks |
+| `protect-master.yml` | PRs targeting `master` | Fails unless the source branch is `development` |
 | `infra-deploy.yml` | Manual (choose env + component); PRs touching `infra/**` | Provisions Azure resources via Bicep. PRs get template validation + what-if against staging |
 | `deploy-backend.yml` | Auto to **staging** after Backend CI on `development`; manual for staging/prod | Builds and zip-deploys the API, health-checks it, then runs smoke tests |
 | `deploy-frontend.yml` | Auto to **staging** after Frontend CI on `development`; manual for staging/prod | Builds the SPA with the right `VITE_API_URL`, deploys to SWA, then smoke tests it |
@@ -161,6 +163,20 @@ az role assignment create --assignee $APP_ID --role Contributor \
 | `VITE_API_URL` | Optional override; defaults to `https://myleague-{env}-api.azurewebsites.net/api` |
 
 The old `AZURE_WEBAPP_PUBLISH_PROFILE` and `AZURE_STATIC_WEB_APP_TOKEN` secrets are no longer used and can be deleted.
+
+### Branch protection (one-time, GitHub Settings)
+
+Workflows cannot stop a direct `git push` to `master`. Set this in the repo: **Settings → Rules → Rulesets** (or **Settings → Branches → Add branch protection rule**) for `master`:
+
+1. **Restrict deletions** and **Block force pushes**
+2. **Restrict who can push** — leave the allow-list empty (or only org admins). This is what blocks `git push origin master`.
+3. **Require a pull request before merging**
+4. **Require status checks to pass** and add at least:
+   - `PR must come from development` (from `protect-master.yml`)
+   - `Build and Test` from Backend CI and Frontend CI (names as shown in Actions)
+5. **Do not allow bypassing the above settings** (uncheck admin bypass if you want even admins to go through a PR)
+
+Release path after that: feature branch → PR into `development` → PR from `development` into `master`. Feature-to-master PRs fail the `protect-master` check.
 
 ### First-time provisioning order
 
