@@ -48,8 +48,10 @@ export interface RichTextEditorProps {
 }
 
 /** Returns a sanitized, inert HTML tree. Never written into the live document. */
-const parseEditorHtmlRoot = (html: string): HTMLElement =>
-  DOMPurify.sanitize(html, { RETURN_DOM: true });
+const parseEditorHtmlRoot = (html: string): Element => {
+  const sanitized: Node = DOMPurify.sanitize(html, { RETURN_DOM: true });
+  return sanitized instanceof Element ? sanitized : document.createElement('div');
+};
 
 const extractImageUrls = (html: string): string[] => {
   if (!html) return [];
