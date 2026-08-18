@@ -7,6 +7,7 @@ import TeamPlayersRow from './TeamPlayersRow';
 import Pagination from '../../../../../components/Pagination';
 import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
 import BulkActionsBar from '../../../../../components/BulkActionsBar/BulkActionsBar';
+import TeamCategoryBadge from '../../../../../components/TeamCategoryBadge/TeamCategoryBadge';
 import '../../../../../styles/AdminTable.scss';
 import './TeamsTable.scss';
 
@@ -164,6 +165,7 @@ const TeamsTable = ({
                               {expandedTeams.has(team.id) && !closingTeams.has(team.id) ? '▼' : '▶'}
                             </span>
                             <span className="admin-table__name">{team.name}</span>
+                            <TeamCategoryBadge category={team.teamCategory} />
                           </div>
                           <div className="jersey-colors">
                             <span

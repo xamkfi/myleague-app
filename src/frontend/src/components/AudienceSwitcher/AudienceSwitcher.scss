@@ -1,0 +1,126 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+// Audience (age group) selector shown directly under the MAHL wordmark. The trigger
+// always reveals the active group so the current theme colour is explained, not just shown.
+.audience-switcher {
+  position: relative;
+
+  &__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+    padding: 0.2rem 0.45rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: map.get($border-radius, 'xl');
+    background: rgba(255, 255, 255, 0.12);
+    color: $color-white;
+    font-family: $font-family-body;
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'medium');
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color $transition-default, border-color $transition-default;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: map.get($border-radius, 'full');
+    background: var(--brand-light, #{$color-blue-light});
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+    flex-shrink: 0;
+
+    &--option {
+      box-shadow: none;
+
+      &[data-audience-dot='adult'] {
+        background: #1c356d;
+      }
+      &[data-audience-dot='youth'] {
+        background: #4e8100;
+      }
+      &[data-audience-dot='women'] {
+        background: #dd1e84;
+      }
+    }
+  }
+
+  &__value {
+    white-space: nowrap;
+  }
+
+  &__caret {
+    transition: transform $transition-default;
+  }
+
+  &.open &__caret {
+    transform: rotate(180deg);
+  }
+
+  &__menu {
+    position: absolute;
+    top: calc(100% + #{map.get($spacing, 'xxs')});
+    left: 0;
+    min-width: 160px;
+    margin: 0;
+    padding: map.get($spacing, 'xxs') 0;
+    list-style: none;
+    background: $color-white;
+    border-radius: map.get($border-radius, 'sm');
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1100;
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    width: 100%;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border: none;
+    background: transparent;
+    color: $color-navbar;
+    font-family: $font-family-body;
+    font-size: map.get($font-sizes, 'sm');
+    text-align: left;
+    cursor: pointer;
+    transition: background-color $transition-default;
+
+    &:hover {
+      background: rgba($color-navbar, 0.1);
+    }
+
+    &.selected {
+      font-weight: map.get($font-weights, 'bold');
+    }
+  }
+
+  // Mobile menu variant: full-width control with the menu pushed inline.
+  &--block {
+    width: 100%;
+
+    .audience-switcher__trigger {
+      width: 100%;
+      justify-content: space-between;
+      padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+      font-size: map.get($font-sizes, 'base');
+      border-radius: map.get($border-radius, 'lg');
+    }
+
+    .audience-switcher__value {
+      flex: 1;
+      text-align: left;
+    }
+
+    .audience-switcher__menu {
+      width: 100%;
+    }
+  }
+}

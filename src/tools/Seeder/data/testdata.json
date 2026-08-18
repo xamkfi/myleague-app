@@ -126,6 +126,13 @@
       { "FirstName": "Edvin", "LastName": "Ojanen", "BirthDate": "1982-05-29", "IsRegistered": true, "ContactInfo": { "Email": "edvin.ojanen@referee.fi" } }
     ],
 
+    "StaffPersons": [
+      { "FirstName": "Jukka", "LastName": "Jalonen", "BirthDate": "1972-11-02", "IsRegistered": true, "ContactInfo": { "Email": "jukka.jalonen@coach.fi" } },
+      { "FirstName": "Raimo", "LastName": "Summanen", "BirthDate": "1962-03-02", "IsRegistered": true, "ContactInfo": { "Email": "raimo.summanen@coach.fi" } },
+      { "FirstName": "Antti", "LastName": "Pennanen", "BirthDate": "1979-02-05", "IsRegistered": true, "ContactInfo": { "Email": "antti.pennanen@coach.fi" } },
+      { "FirstName": "Lauri", "LastName": "Marjamäki", "BirthDate": "1977-05-29", "IsRegistered": true, "ContactInfo": { "Email": "lauri.marjamaki@coach.fi" } }
+    ],
+
     "Clubs": [
       { "Name": "Helsinki Hammers", "City": "Helsinki", "Country": "Finland", "FoundingDate": "1990-01-01T00:00:00Z", "WebsiteUrl": "https://helsinkihammers.fi", "LogoUrl": "https://example.com/logo-hammers.png", "ContactEmail": "info@helsinkihammers.fi" },
       { "Name": "Tampere Titans", "City": "Tampere", "Country": "Finland", "FoundingDate": "1992-03-15T00:00:00Z", "WebsiteUrl": "https://tamperetitans.fi", "LogoUrl": "https://example.com/logo-titans.png", "ContactEmail": "info@tamperetitans.fi" },
@@ -140,7 +147,8 @@
     ],
 
     "Divisions": [
-      { "Name": "Championship Division", "Description": "Top tier championship floorball league", "Level": 1, "SportType": "Floorball" }
+      { "Name": "Championship Division", "Description": "Top tier championship floorball league", "Level": 1, "SportType": "Floorball" },
+      { "Name": "Liiga Division", "Description": "Top tier ice hockey league", "Level": 1, "SportType": "Icehockey" }
     ],
 
     "FloorballSeasons": [
@@ -573,6 +581,187 @@
       { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-08T18:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
       { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-09T14:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "tapio.heinonen@referee.fi" },
       { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-09T16:00:00", "Venue": "Lahti Arena", "RefereeEmail": "veikko.koivisto@referee.fi" }
+    ],
+
+    "HockeySeasons": [
+      {
+        "Name": "2026-27 Liiga Season",
+        "StartDate": "2026-09-01",
+        "EndDate": "2027-04-30",
+        "SeasonCode": "2026-27-H",
+        "DivisionNames": ["Liiga Division"]
+      }
+    ],
+
+    "HockeyTournaments": [
+      {
+        "Name": "Christmas Hockey Cup 2026",
+        "StartDate": "2026-12-10",
+        "EndDate": "2026-12-20",
+        "Venue": "Nokia Arena",
+        "ContentHtml": "<p>Small invitational ice hockey cup.</p>",
+        "AllGroupMatchesCompleted": false,
+        "Groups": [
+          {
+            "Name": "Group A",
+            "TeamNames": ["Tappara HC", "Ilves HC"]
+          },
+          {
+            "Name": "Group B",
+            "TeamNames": ["HIFK Ice", "Kärpät HC"]
+          }
+        ]
+      }
+    ],
+
+    "HockeyTeams": [
+      {
+        "Name": "Tappara HC",
+        "ShortName": "TAP",
+        "DivisionName": "Liiga Division",
+        "ClubName": "Tampere Titans",
+        "HomeArena": "Nokia Arena",
+        "PrimaryJerseyColor": "Blue",
+        "SecondaryJerseyColor": "Orange",
+        "Category": 0,
+        "StaffPersonEmail": "jukka.jalonen@coach.fi",
+        "Players": [
+          { "PersonEmail": "aleksi.virtanen@team1.fi", "Position": 2, "JerseyNumber": 9 },
+          { "PersonEmail": "mikko.korhonen@team1.fi", "Position": 3, "JerseyNumber": 11 },
+          { "PersonEmail": "juha.laine@team1.fi", "Position": 4, "JerseyNumber": 15 },
+          { "PersonEmail": "antti.jarvinen@team1.fi", "Position": 1, "JerseyNumber": 5 },
+          { "PersonEmail": "ville.nieminen@team1.fi", "Position": 1, "JerseyNumber": 7 },
+          { "PersonEmail": "tero.makinen@team1.fi", "Position": 2, "JerseyNumber": 13 },
+          { "PersonEmail": "petri.heikkinen@team1.fi", "Position": 3, "JerseyNumber": 18 },
+          { "PersonEmail": "sami.lehtonen@team1.fi", "Position": 4, "JerseyNumber": 20 },
+          { "PersonEmail": "tapio.ruuska@team5.fi", "Position": 2, "JerseyNumber": 51 },
+          { "PersonEmail": "veikko.kuusela@team5.fi", "Position": 3, "JerseyNumber": 52 },
+          { "PersonEmail": "aarne.seppala@team5.fi", "Position": 4, "JerseyNumber": 53 },
+          { "PersonEmail": "niilo.harju@team5.fi", "Position": 1, "JerseyNumber": 54 },
+          { "PersonEmail": "onni.kivinen@team5.fi", "Position": 1, "JerseyNumber": 55 },
+          { "PersonEmail": "reino.tuominen@team5.fi", "Position": 2, "JerseyNumber": 56 },
+          { "PersonEmail": "sakari.ojala@team5.fi", "Position": 3, "JerseyNumber": 57 },
+          { "PersonEmail": "jussi.vehvilainen@team1.fi", "Position": 0, "JerseyNumber": 1 },
+          { "PersonEmail": "arto.mikkola@team1.fi", "Position": 0, "JerseyNumber": 29 }
+        ]
+      },
+      {
+        "Name": "Ilves HC",
+        "ShortName": "ILV",
+        "DivisionName": "Liiga Division",
+        "ClubName": "Tampere Titans",
+        "HomeArena": "Hakametsä",
+        "PrimaryJerseyColor": "Green",
+        "SecondaryJerseyColor": "Yellow",
+        "Category": 0,
+        "StaffPersonEmail": "raimo.summanen@coach.fi",
+        "Players": [
+          { "PersonEmail": "janne.aalto@team2.fi", "Position": 2, "JerseyNumber": 19 },
+          { "PersonEmail": "kari.rantanen@team2.fi", "Position": 3, "JerseyNumber": 21 },
+          { "PersonEmail": "markus.salonen@team2.fi", "Position": 4, "JerseyNumber": 23 },
+          { "PersonEmail": "lauri.koskinen@team2.fi", "Position": 1, "JerseyNumber": 4 },
+          { "PersonEmail": "olli.hamalainen@team2.fi", "Position": 1, "JerseyNumber": 6 },
+          { "PersonEmail": "tuomas.pitkanen@team2.fi", "Position": 2, "JerseyNumber": 25 },
+          { "PersonEmail": "henri.lindgren@team2.fi", "Position": 3, "JerseyNumber": 27 },
+          { "PersonEmail": "eero.toivonen@team2.fi", "Position": 4, "JerseyNumber": 28 },
+          { "PersonEmail": "urho.kallio@team6.fi", "Position": 2, "JerseyNumber": 51 },
+          { "PersonEmail": "vaino.rinne@team6.fi", "Position": 3, "JerseyNumber": 52 },
+          { "PersonEmail": "yrjo.vuori@team6.fi", "Position": 4, "JerseyNumber": 53 },
+          { "PersonEmail": "akseli.makela@team6.fi", "Position": 1, "JerseyNumber": 54 },
+          { "PersonEmail": "elias.kinnunen@team6.fi", "Position": 1, "JerseyNumber": 55 },
+          { "PersonEmail": "frans.ranta@team6.fi", "Position": 2, "JerseyNumber": 56 },
+          { "PersonEmail": "gustav.aho@team6.fi", "Position": 3, "JerseyNumber": 57 },
+          { "PersonEmail": "harri.rautiainen@team2.fi", "Position": 0, "JerseyNumber": 30 },
+          { "PersonEmail": "jouko.ahtiainen@team2.fi", "Position": 0, "JerseyNumber": 32 }
+        ]
+      },
+      {
+        "Name": "HIFK Ice",
+        "ShortName": "HIF",
+        "DivisionName": "Liiga Division",
+        "ClubName": "Helsinki Hammers",
+        "HomeArena": "Helsinki Ice Hall",
+        "PrimaryJerseyColor": "Red",
+        "SecondaryJerseyColor": "White",
+        "Category": 0,
+        "StaffPersonEmail": "antti.pennanen@coach.fi",
+        "Players": [
+          { "PersonEmail": "matti.karjalainen@team3.fi", "Position": 2, "JerseyNumber": 12 },
+          { "PersonEmail": "pekka.vaisanen@team3.fi", "Position": 3, "JerseyNumber": 14 },
+          { "PersonEmail": "tommi.lahtinen@team3.fi", "Position": 4, "JerseyNumber": 16 },
+          { "PersonEmail": "jukka.savolainen@team3.fi", "Position": 1, "JerseyNumber": 3 },
+          { "PersonEmail": "esa.peltola@team3.fi", "Position": 1, "JerseyNumber": 8 },
+          { "PersonEmail": "risto.hiltunen@team3.fi", "Position": 2, "JerseyNumber": 24 },
+          { "PersonEmail": "vesa.niskanen@team3.fi", "Position": 3, "JerseyNumber": 26 },
+          { "PersonEmail": "ilkka.leppanen@team3.fi", "Position": 4, "JerseyNumber": 29 },
+          { "PersonEmail": "iivari.pesonen@team7.fi", "Position": 2, "JerseyNumber": 51 },
+          { "PersonEmail": "jaakko.salo@team7.fi", "Position": 3, "JerseyNumber": 52 },
+          { "PersonEmail": "kauko.miettinen@team7.fi", "Position": 4, "JerseyNumber": 53 },
+          { "PersonEmail": "launo.valtonen@team7.fi", "Position": 1, "JerseyNumber": 54 },
+          { "PersonEmail": "mauno.aaltonen@team7.fi", "Position": 1, "JerseyNumber": 55 },
+          { "PersonEmail": "niiles.paavilainen@team7.fi", "Position": 2, "JerseyNumber": 56 },
+          { "PersonEmail": "otso.rautio@team7.fi", "Position": 3, "JerseyNumber": 57 },
+          { "PersonEmail": "keijo.turunen@team3.fi", "Position": 0, "JerseyNumber": 31 },
+          { "PersonEmail": "leo.manninen@team3.fi", "Position": 0, "JerseyNumber": 33 }
+        ]
+      },
+      {
+        "Name": "Kärpät HC",
+        "ShortName": "KAR",
+        "DivisionName": "Liiga Division",
+        "ClubName": "Oulu Outlaws",
+        "HomeArena": "Oulun Energia Areena",
+        "PrimaryJerseyColor": "Black",
+        "SecondaryJerseyColor": "Yellow",
+        "Category": 0,
+        "StaffPersonEmail": "lauri.marjamaki@coach.fi",
+        "Players": [
+          { "PersonEmail": "teemu.hakala@team4.fi", "Position": 2, "JerseyNumber": 10 },
+          { "PersonEmail": "jari.mattila@team4.fi", "Position": 3, "JerseyNumber": 17 },
+          { "PersonEmail": "kimmo.nurmi@team4.fi", "Position": 4, "JerseyNumber": 22 },
+          { "PersonEmail": "hannu.oksanen@team4.fi", "Position": 1, "JerseyNumber": 2 },
+          { "PersonEmail": "seppo.partanen@team4.fi", "Position": 1, "JerseyNumber": 44 },
+          { "PersonEmail": "raimo.laaksonen@team4.fi", "Position": 2, "JerseyNumber": 18 },
+          { "PersonEmail": "paavo.mustonen@team4.fi", "Position": 3, "JerseyNumber": 21 },
+          { "PersonEmail": "kalevi.saarinen@team4.fi", "Position": 4, "JerseyNumber": 27 },
+          { "PersonEmail": "rauli.jokinen@team8.fi", "Position": 2, "JerseyNumber": 51 },
+          { "PersonEmail": "santeri.ketola@team8.fi", "Position": 3, "JerseyNumber": 52 },
+          { "PersonEmail": "taavi.laakso@team8.fi", "Position": 4, "JerseyNumber": 53 },
+          { "PersonEmail": "ukko.makitalo@team8.fi", "Position": 1, "JerseyNumber": 54 },
+          { "PersonEmail": "vilho.niemi@team8.fi", "Position": 1, "JerseyNumber": 55 },
+          { "PersonEmail": "wiljami.ollikainen@team8.fi", "Position": 2, "JerseyNumber": 56 },
+          { "PersonEmail": "aapo.pulkkinen@team8.fi", "Position": 3, "JerseyNumber": 57 },
+          { "PersonEmail": "olavi.eriksson@team4.fi", "Position": 0, "JerseyNumber": 35 },
+          { "PersonEmail": "pentti.korpela@team4.fi", "Position": 0, "JerseyNumber": 36 }
+        ]
+      }
+    ],
+
+    "HockeyMatches": [
+      {
+        "HomeTeamName": "Tappara HC",
+        "AwayTeamName": "Ilves HC",
+        "SeasonName": "2026-27 Liiga Season",
+        "ScheduledDateTime": "2026-10-15T16:00:00Z",
+        "Venue": "Nokia Arena",
+        "SimulateCompleted": true
+      },
+      {
+        "HomeTeamName": "HIFK Ice",
+        "AwayTeamName": "Kärpät HC",
+        "SeasonName": "2026-27 Liiga Season",
+        "ScheduledDateTime": "2026-10-16T17:00:00Z",
+        "Venue": "Helsinki Ice Hall",
+        "SimulateCompleted": true
+      },
+      {
+        "HomeTeamName": "Ilves HC",
+        "AwayTeamName": "HIFK Ice",
+        "SeasonName": "2026-27 Liiga Season",
+        "ScheduledDateTime": "2027-01-20T16:00:00Z",
+        "Venue": "Hakametsä",
+        "SimulateCompleted": false
+      }
     ]
   }
 }

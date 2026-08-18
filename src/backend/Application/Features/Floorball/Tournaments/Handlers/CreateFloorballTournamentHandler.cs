@@ -88,7 +88,8 @@ public class CreateFloorballTournamentHandler : IRequestHandler<CreateFloorballT
                 request.Venue,
                 request.ContentHtml,
                 tournamentRules,
-                playoffSchedule);
+                playoffSchedule,
+                request.TeamCategory);
 
             _logger.LogInformation("Creating new floorball tournament: {Name}", request.Name);
             await _tournamentRepository.AddAsync(tournament);

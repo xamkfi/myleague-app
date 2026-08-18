@@ -1,0 +1,469 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../styles/common' as *;
+
+.player-page {
+  width: 100%;
+}
+
+.player-loading,
+.player-error {
+  padding: map.get($spacing, 'lg');
+  text-align: center;
+  color: $color-text-muted;
+}
+
+.player-container {
+  @include container;
+  font-size: map.get($font-sizes, "sm");
+  margin-bottom: map.get($spacing, "md");
+  margin-top: map.get($spacing, "md");
+  color: $color-neutral-black;
+}
+
+// ── Player Header ──
+
+.player-info-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: map.get($spacing, 'lg');
+  margin-bottom: map.get($spacing, 'lg');
+}
+
+.player-info-box {
+  flex: 1;
+  background-color: $color-white;
+  border-radius: map.get($border-radius, 'md');
+  padding: map.get($spacing, 'lg');
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'lg');
+  box-shadow: $box-shadow-drop-1;
+}
+
+.player-avatar-large {
+  width: 100px;
+  height: 100px;
+  border-radius: map.get($border-radius, 'md');
+  background-color: #e0e0e0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  &.player-avatar--creator {
+    border: 2px solid $color-primary;
+    background-color: $color-neutral-black;
+  }
+}
+
+.creator-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.team-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: map.get($border-radius, 'sm');
+}
+
+.player-details {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'sm');
+}
+
+.player-name {
+  font-size: map.get($font-sizes, 'xl');
+  font-weight: map.get($font-weights, 'bold');
+  color: $color-blue-deep;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'sm');
+
+  &--creator {
+    background: linear-gradient(135deg, $color-blue-deep, #b8860b, $color-blue-deep);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: creator-shimmer 4s ease-in-out infinite;
+  }
+}
+
+.creator-title {
+  -webkit-text-fill-color: #b8860b;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'semibold');
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.12), rgba(255, 215, 0, 0.08));
+  padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+  border-radius: map.get($border-radius, 'xl');
+  border: 1px solid rgba(184, 134, 11, 0.25);
+  white-space: nowrap;
+  filter: drop-shadow(0 0 3px rgba(184, 134, 11, 0.3));
+}
+
+@keyframes creator-shimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
+}
+
+.player-details-row {
+  display: flex;
+  gap: map.get($spacing, 'sm');
+  align-items: center;
+}
+
+.player-team,
+.player-position,
+.player-jersey {
+  font-size: map.get($font-sizes, 'md');
+  color: $color-text-muted;
+  font-weight: map.get($font-weights, 'normal');
+}
+
+.player-stats-box {
+  width: 300px;
+  background-color: $color-white;
+  border: 1px solid #e0e0e0;
+  border-radius: map.get($border-radius, 'md');
+  padding: map.get($spacing, 'lg');
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'md');
+  box-shadow: $box-shadow-drop-1;
+  flex-shrink: 0;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: map.get($spacing, 'sm');
+}
+
+.stat-label {
+  font-size: map.get($font-sizes, 'sm');
+  color: $color-text-muted;
+  font-weight: map.get($font-weights, 'normal');
+  flex-shrink: 0;
+}
+
+.stat-value {
+  font-size: map.get($font-sizes, 'sm');
+  color: $color-text-primary;
+  font-weight: map.get($font-weights, 'normal');
+  text-align: right;
+
+  &.active {
+    color: $color-green-primary;
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &.inactive {
+    color: $color-red-primary;
+    font-weight: map.get($font-weights, 'medium');
+  }
+}
+
+// ── Career Summary Boxes ──
+
+.career-stats-section {
+  width: 100%;
+
+  h3 {
+    text-align: left;
+    margin-bottom: map.get($spacing, "sm");
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, "lg");
+    font-weight: map.get($font-weights, "bold");
+  }
+}
+
+.stats {
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: map.get($spacing, 'base');
+    width: 100%;
+  }
+
+  &-box {
+    background-color: $color-background-light;
+    padding: map.get($spacing, 'base');
+    border-radius: map.get($border-radius, 'sm');
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    border: 1px solid $color-border;
+  }
+
+  &-label {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+    margin-top: map.get($spacing, 'xs');
+  }
+
+  &-value {
+    font-size: map.get($font-sizes, 'xl');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+  }
+}
+
+// ── Section Block (shared by all table sections) ──
+
+.section-block {
+  width: 100%;
+
+  h3 {
+    text-align: left;
+    margin-bottom: map.get($spacing, "sm");
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, "lg");
+    font-weight: map.get($font-weights, "bold");
+  }
+}
+
+// ── Statistics Tables ──
+
+.stats-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: map.get($font-sizes, 'sm');
+
+  thead {
+    tr {
+      background: $color-banner-bg;
+      color: $color-banner-text;
+    }
+
+    th {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'xs');
+      font-weight: map.get($font-weights, 'bold');
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      font-size: map.get($font-sizes, 'xs');
+      white-space: nowrap;
+      border-bottom: 2px solid $color-border;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.025);
+      }
+    }
+
+    td {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'xs');
+      color: $color-text-primary;
+      white-space: nowrap;
+    }
+  }
+
+  tfoot {
+    .totals-row {
+      background-color: rgba(0, 0, 0, 0.04);
+      font-weight: map.get($font-weights, 'bold');
+
+      td {
+        padding: map.get($spacing, 'sm') map.get($spacing, 'xs');
+        border-top: 2px solid $color-border;
+      }
+    }
+  }
+
+  .col-num {
+    text-align: center;
+    min-width: 36px;
+  }
+
+  .col-date {
+    text-align: left;
+    min-width: 120px;
+  }
+
+  .col-team {
+    text-align: left;
+    min-width: 100px;
+  }
+
+  .col-score {
+    text-align: center;
+    min-width: 60px;
+    font-weight: map.get($font-weights, 'bold');
+  }
+
+  .col-season {
+    text-align: left;
+    min-width: 120px;
+  }
+
+  .col-position {
+    text-align: left;
+    min-width: 100px;
+  }
+
+  .col-league {
+    text-align: left;
+    min-width: 100px;
+  }
+}
+
+.team-cell {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'xs');
+}
+
+.team-logo-small {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.team-link {
+  color: $color-blue-deep;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ── Career Timeline Table ──
+
+.career-timeline-table {
+  tbody td {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'xs');
+  }
+}
+
+// ── Pagination ──
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: map.get($spacing, 'xs');
+  margin-top: map.get($spacing, 'md');
+}
+
+.pagination-btn {
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: map.get($border-radius, 'sm');
+  padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+  font-size: map.get($font-sizes, 'sm');
+  color: $color-blue-deep;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  min-width: 32px;
+  text-align: center;
+
+  &:hover:not(:disabled) {
+    background-color: $color-blue-deep;
+    color: $color-white;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.pagination-info {
+  font-size: map.get($font-sizes, 'sm');
+  color: $color-text-muted;
+  padding: 0 map.get($spacing, 'sm');
+  white-space: nowrap;
+}
+
+// ── No Data Message ──
+
+.no-data-message {
+  color: $color-text-muted;
+  font-size: map.get($font-sizes, 'sm');
+  padding: map.get($spacing, 'lg');
+  text-align: center;
+  background-color: $color-background-light;
+  border-radius: map.get($border-radius, 'sm');
+  border: 1px solid $color-border;
+}
+
+// ── Responsive ──
+
+@media (max-width: 768px) {
+  .player-info-layout {
+    flex-direction: column;
+    gap: map.get($spacing, 'md');
+  }
+
+  .player-info-box {
+    flex-direction: column;
+    text-align: center;
+    gap: map.get($spacing, 'md');
+  }
+
+  .player-avatar-large {
+    width: 80px;
+    height: 80px;
+    align-self: center;
+  }
+
+  .player-stats-box {
+    width: 100%;
+  }
+
+  .player-details-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: map.get($spacing, 'xs');
+  }
+
+  .stats {
+    &-grid {
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+  }
+
+  .stats-table {
+    font-size: map.get($font-sizes, 'xs');
+
+    thead th {
+      padding: map.get($spacing, 'xs') 2px;
+      font-size: 10px;
+    }
+
+    tbody td,
+    tfoot td {
+      padding: map.get($spacing, 'xs') 2px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .stats {
+    &-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}

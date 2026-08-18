@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import ReactQuill from 'react-quill';
 import { useTranslation } from 'react-i18next';
+import DOMPurify from 'dompurify';
 import 'react-quill/dist/quill.snow.css';
 
 import { handleImageUploadService } from '../../api/admin/News/handleImageUploadService';
@@ -46,23 +47,24 @@ export interface RichTextEditorProps {
   className?: string;
 }
 
-/** Parses editor content in an inert HTML document without interpolating into a wrapper template. */
-const parseEditorHtmlDocument = (html: string): Document => {
-  return new DOMParser().parseFromString(html, 'text/html');
+/** Returns a sanitized, inert HTML tree. Never written into the live document. */
+const parseEditorHtmlRoot = (html: string): Element => {
+  const sanitized: Node = DOMPurify.sanitize(html, { RETURN_DOM: true });
+  return sanitized instanceof Element ? sanitized : document.createElement('div');
 };
 
 const extractImageUrls = (html: string): string[] => {
   if (!html) return [];
-  const doc = parseEditorHtmlDocument(html);
-  return Array.from(doc.getElementsByTagName('img'))
+  const root = parseEditorHtmlRoot(html);
+  return Array.from(root.getElementsByTagName('img'))
     .map((img) => img.getAttribute('src') ?? '')
     .filter(Boolean);
 };
 
 const extractMatchResults = (html: string): MatchResultValue[] => {
   if (!html) return [];
-  const doc = parseEditorHtmlDocument(html);
-  const containers = Array.from(doc.getElementsByTagName('span')).filter((element) =>
+  const root = parseEditorHtmlRoot(html);
+  const containers = Array.from(root.getElementsByTagName('span')).filter((element) =>
     (element.getAttribute('class') ?? '').split(/\s+/).includes('match-result-table-container')
   );
   const results: MatchResultValue[] = [];

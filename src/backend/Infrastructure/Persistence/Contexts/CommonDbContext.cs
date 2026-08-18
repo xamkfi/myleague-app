@@ -34,6 +34,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<Club> Clubs { get; set; }
 
         /// <summary>
+        /// Gets or sets the ClubManagers DbSet.
+        /// </summary>
+        public DbSet<ClubManager> ClubManagers { get; set; }
+
+        /// <summary>
         /// Gets or sets the NewsArticles DbSet.
         /// </summary>
         public DbSet<NewsArticle> NewsArticles { get; set; }
@@ -59,7 +64,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         /// <summary>
-        /// Gets or sets the TimerStates DbSet.
+        /// Gets  or sets the TimerStates DbSet.
         /// </summary>
         public DbSet<TimerState> TimerStates { get; set; }
 
@@ -112,6 +117,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new PersonConfiguration());
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new ClubConfiguration());
+            modelBuilder.ApplyConfiguration(new ClubManagerConfiguration());
             modelBuilder.ApplyConfiguration(new NewsArticleConfiguration());
             modelBuilder.ApplyConfiguration(new InfoPageContentConfiguration());
             modelBuilder.ApplyConfiguration(new RulesSectionConfiguration());

@@ -53,7 +53,7 @@ public class VerifyLoginCodeHandler : IRequestHandler<VerifyLoginCodeCommand, Re
                 return Result<AuthTokenDto>.Failure("Invalid email or login code.");
             }
 
-            if (!user.IsActive)
+            if (!user.IsActive && !_loginCodeConfig.AutoFillLoginCode)
             {
                 return Result<AuthTokenDto>.Failure("This account has been deactivated.");
             }

@@ -215,7 +215,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Collection of news articles</returns>
-        public async Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, IReadOnlyCollection<string>? teamCategories = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -268,6 +268,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     query = query.Where(n => EF.Functions.ILike(n.Author ?? "", $"%{author}%"));
                 }
 
+                query = ApplyTeamCategoryFilter(query, teamCategories);
+
                 // Apply pagination
                 int skip = (page - 1) * pageSize;
 
@@ -293,7 +295,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Total count of matching news articles</returns>
-        public async Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, CancellationToken cancellationToken = default)
+        public async Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, IReadOnlyCollection<string>? teamCategories = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -334,6 +336,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     query = query.Where(n => EF.Functions.ILike(n.Author ?? "", $"%{author}%"));
                 }
 
+                query = ApplyTeamCategoryFilter(query, teamCategories);
+
                 return await query.CountAsync(cancellationToken);
             }
             catch (Exception ex)
@@ -341,6 +345,57 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 _logger.LogError(ex, "Error occurred while counting news articles with filters. Category: {Category}, SportCategory: {SportCategory}, Author: {Author}", category, sportCategory, author);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Parses team category filter values into enum values, ignoring invalid input
+        /// </summary>
+        private static List<TeamCategory> ParseTeamCategories(IReadOnlyCollection<string>? teamCategories)
+        {
+            List<TeamCategory> parsed = new List<TeamCategory>();
+
+            if (teamCategories is null)
+            {
+                return parsed;
+            }
+
+            foreach (string value in teamCategories)
+            {
+                if (!string.IsNullOrWhiteSpace(value)
+                    && Enum.TryParse<TeamCategory>(value, true, out TeamCategory category)
+                    && !parsed.Contains(category))
+                {
+                    parsed.Add(category);
+                }
+            }
+
+            return parsed;
+        }
+
+        /// <summary>
+        /// Filters articles for the selected audiences. Articles with no team category are shown to everyone.
+        /// Uses equality predicates instead of Contains() so Npgsql can translate the nullable
+        /// string-converted TeamCategory column.
+        /// </summary>
+        private static IQueryable<NewsArticle> ApplyTeamCategoryFilter(
+            IQueryable<NewsArticle> query,
+            IReadOnlyCollection<string>? teamCategories)
+        {
+            List<TeamCategory> parsed = ParseTeamCategories(teamCategories);
+            if (parsed.Count == 0)
+            {
+                return query;
+            }
+
+            bool includeAdult = parsed.Contains(TeamCategory.Adult);
+            bool includeYouth = parsed.Contains(TeamCategory.Youth);
+            bool includeWomen = parsed.Contains(TeamCategory.Women);
+
+            return query.Where(n =>
+                n.TeamCategory == null
+                || (includeAdult && n.TeamCategory == TeamCategory.Adult)
+                || (includeYouth && n.TeamCategory == TeamCategory.Youth)
+                || (includeWomen && n.TeamCategory == TeamCategory.Women));
         }
 
         /// <summary>

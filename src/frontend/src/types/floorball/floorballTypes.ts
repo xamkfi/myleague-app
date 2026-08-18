@@ -135,6 +135,8 @@ export interface GetFloorballTeamsRequest {
   pageSize?: number;
   clubId?: string;
   division?: string;
+  teamCategories?: TeamCategory[];
+  searchTerm?: string;
 }
 
 export interface FloorballTeamRequest {
@@ -369,4 +371,5 @@ export interface GetFloorballMatchesRequest {
   searchQuery?: string;
   tournamentGroupId?: string;
   competitionType?: FloorballCompetitionType;
+  teamCategory?: TeamCategory;
 } 

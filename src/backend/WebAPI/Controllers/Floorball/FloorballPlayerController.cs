@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Domain.Common;
 using Application.Features.Floorball.Players.Commands;
@@ -103,7 +104,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Create player request</param>
         /// <returns>Created player details</returns>
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -123,7 +124,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Update player request</param>
         /// <returns>Updated player details</returns>
         [HttpPut("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballPlayerDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -165,7 +166,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Player ID</param>
         /// <returns>Success message</returns>
         [HttpDelete("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

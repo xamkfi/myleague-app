@@ -5,6 +5,7 @@ import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import { floorballTournamentService } from '../../api/floorball/floorballTournamentService';
 import type { FloorballTournamentDto } from '../../types/floorball/tournamentTypes';
+import { useAudience } from '../../context/AudienceContext';
 import './TournamentsPage.scss';
 
 type LifecycleStatus = 'upcoming' | 'ongoing' | 'past';
@@ -54,6 +55,7 @@ function truncate(text: string, max: number): string {
 
 function TournamentsPage() {
   const { t } = useTranslation();
+  const { audience } = useAudience();
 
   const [tournaments, setTournaments] = useState<FloorballTournamentDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ function TournamentsPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await floorballTournamentService.getAll();
+      const response = await floorballTournamentService.getAll(audience.teamCategory);
       // Show upcoming + ongoing first, then past (sorted by start date asc within each group).
       const all = response.data ?? [];
       const sorted = [...all].sort((a, b) => {
@@ -82,7 +84,7 @@ function TournamentsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [audience.teamCategory]);
 
   useEffect(() => {
     fetchTournaments();

@@ -18,7 +18,8 @@
     "playoffAllowShootout": true,
     "teamsAdvancingPerGroup": 2,
     "hasPlayoffStage": true,
-    "hasThirdPlaceMatch": true
+    "hasThirdPlaceMatch": true,
+    "teamCategory": "Adult"
   },
   "clubs": [
     { "name": "Huru-Ukot", "city": "Mikkeli", "country": "Finland" },
@@ -31,14 +32,14 @@
     { "name": "Minttusilmät", "city": "Mikkeli", "country": "Finland" }
   ],
   "teams": [
-    { "name": "Huru-Ukot",      "clubName": "Huru-Ukot" },
-    { "name": "Weikkoset",      "clubName": "Weikkoset" },
-    { "name": "MAHL",           "clubName": "MAHL" },
-    { "name": "Rahula Academy", "clubName": "Rahula Academy" },
-    { "name": "Hazard",         "clubName": "Hazard" },
-    { "name": "XAMK",           "clubName": "XAMK" },
-    { "name": "Pirkan sinine",  "clubName": "Pirkan sinine" },
-    { "name": "Minttusilmät",   "clubName": "Minttusilmät" }
+    { "name": "Huru-Ukot",      "clubName": "Huru-Ukot",      "category": "Adult" },
+    { "name": "Weikkoset",      "clubName": "Weikkoset",      "category": "Adult" },
+    { "name": "MAHL",           "clubName": "MAHL",           "category": "Adult" },
+    { "name": "Rahula Academy", "clubName": "Rahula Academy", "category": "Adult" },
+    { "name": "Hazard",         "clubName": "Hazard",         "category": "Adult" },
+    { "name": "XAMK",           "clubName": "XAMK",           "category": "Adult" },
+    { "name": "Pirkan sinine",  "clubName": "Pirkan sinine",  "category": "Adult" },
+    { "name": "Minttusilmät",   "clubName": "Minttusilmät",   "category": "Adult" }
   ],
   "groups": [
     {

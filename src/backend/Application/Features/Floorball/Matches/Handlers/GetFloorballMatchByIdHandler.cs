@@ -124,13 +124,19 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
             }
 
             // Load clubs for logo resolution (cross-context)
-            List<Guid> clubIds = new List<Guid> { match.HomeTeam.ClubId, match.AwayTeam.ClubId }
+            List<Guid> clubIds = new Guid?[] { match.HomeTeam?.ClubId, match.AwayTeam?.ClubId }
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
                 .Distinct()
                 .ToList();
             Dictionary<Guid, Club> clubLookup = await _clubRepository.GetByIdsAsync(clubIds, cancellationToken);
 
-            clubLookup.TryGetValue(match.HomeTeam.ClubId, out Club? homeClub);
-            clubLookup.TryGetValue(match.AwayTeam.ClubId, out Club? awayClub);
+            Club? homeClub = match.HomeTeam != null && clubLookup.TryGetValue(match.HomeTeam.ClubId, out Club? resolvedHomeClub)
+                ? resolvedHomeClub
+                : null;
+            Club? awayClub = match.AwayTeam != null && clubLookup.TryGetValue(match.AwayTeam.ClubId, out Club? resolvedAwayClub)
+                ? resolvedAwayClub
+                : null;
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, playerPersonLookup, homeClub, awayClub);
             _logger.LogInformation("Successfully retrieved floorball match: {MatchId}", match.Id);

@@ -1,0 +1,461 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../styles/common' as *;
+
+.football-team-page {
+  width: 100%;
+  max-width: $max-width-page;
+  margin: 0 auto;
+  color: $color-neutral-white;
+  position: relative;
+
+  // Hero Image Background
+  .hero-image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: url('http://www.mahl.fi/images/Kausi_2024-2025/SB_Hurut_Minttu.png') center 15%;
+    background-color: $color-blue-light;
+    background-blend-mode: multiply;
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    min-height: 1rem;
+    margin-bottom: 2rem;
+    overflow: hidden;
+
+    .hero-image {
+      z-index: -1;
+      background-color: $color-blue-deep;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(207, 218, 239, 0.00) 0%, rgba(42, 74, 131, 0.80) 75%, rgba(12, 29, 62, 0.80) 100%) center center;
+      backdrop-filter: blur(4px);
+      background-size: cover;
+    
+    }
+
+    // Team Header inside hero container
+    .team-header {
+      display: flex;
+      z-index: 1;
+      margin: map.get($spacing, 'base') 0px 0px 0px;
+      padding: 0px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      align-content: center;
+      border: none !important;
+      max-width: $max-width-page;
+      width: 100%;
+
+      .header-content {
+        padding: map.get($spacing, 'lg');
+        display: flex;
+        width: 100%;
+        color: $color-neutral-white;
+        justify-content: flex-start;
+        align-items: flex-end;
+        gap: map.get($spacing, 'lg');
+      }
+
+      .team-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: map.get($spacing, 'sm');
+
+        h1 {
+          font-size: map.get($font-sizes, 'xl');
+          font-weight: map.get($font-weights, 'bold');
+          text-align: left;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .division-link {
+          background: rgba($color-white, 0.15);
+          color: $color-white;
+          border: none;
+          padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+          border-radius: map.get($border-radius, 'sm');
+          backdrop-filter: blur(4px);
+          font-size: map.get($font-sizes, 'sm');
+          font-weight: map.get($font-weights, 'medium');
+          cursor: pointer;
+          transition: background 0.2s ease;
+          text-transform: capitalize;
+
+          &:hover {
+            background: rgba($color-white, 0.3);
+          }
+        }
+      }
+
+      // Team branding inside hero
+      .team-branding {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: map.get($spacing, 'base');
+        min-width: 192px;
+        min-height: 192px;
+        >*{
+          min-width: 192px;
+          min-height: 192px;
+        }
+        .football-page-team-logo {          
+          flex-shrink: 0;
+          
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 2px solid $color-border;
+            background: $color-background-light;
+            padding: map.get($spacing, 'xs');
+            @include transition(transform);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+            &:hover {
+              transform: scale(1.05);
+            }
+          }
+          
+          .logo-placeholder {
+            width: 100%;
+            height: 100%;
+            background: $color-background-light;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: $color-text-muted;
+            font-size: map.get($font-sizes, 'base');
+            text-align: center;
+            padding: map.get($spacing, 'xs');
+            font-weight: map.get($font-weights, 'medium');
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          }
+        }
+
+
+      }
+    }
+  }
+
+  // Loading and Error States
+  .loading-state,
+  .error-state,
+  .not-found-state {
+    text-align: center;
+    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+    color: $color-neutral-dark-grey;
+
+    h2 {
+      color: $color-text-primary;
+      margin-bottom: map.get($spacing, 'base');
+    }
+
+    .back-button {
+      margin-top: map.get($spacing, 'md');
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+      background: $color-blue-light;
+      color: $color-white;
+      border: none;
+      border-radius: map.get($border-radius, 'sm');
+      cursor: pointer;
+      font-size: map.get($font-sizes, 'base');
+      @include transition(background-color);
+
+      &:hover {
+        background: $color-blue-medium;
+      }
+    }
+  }
+
+  // Left-aligned navigation container
+  .left-navigation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 100%;
+    padding-left: map.get($spacing, 'lg');
+    max-width: $max-width-page;
+  }
+
+  // Breadcrumb Navigation
+  .breadcrumb {
+    margin-bottom: map.get($spacing, 'sm');
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'sm');
+
+    .club-link {
+      background: none;
+      border: none;
+      color: $color-blue-background;
+      cursor: pointer;
+      font-size: inherit;
+      text-decoration: underline;
+      padding: 0;
+
+      &:hover {
+        color: $color-blue-light;
+      }
+    }
+
+    .separator {
+      color: $color-neutral-medium-grey;
+      font-weight: map.get($font-weights, 'bold');
+    }
+
+    .current {
+      color: $color-neutral-medium-grey;
+      font-weight: map.get($font-weights, 'medium');
+    }
+  }
+
+
+
+  // Tab Content Container
+  .tab-content-container {
+    background: transparent;
+    padding: map.get($spacing, 'lg') 0px;
+  }
+
+  // Tab Content Section
+  .tab-content {
+    background: $color-white;
+    border-radius: map.get($border-radius, 'sm');
+    padding: map.get($spacing, 'lg');
+    min-height: 250px;
+    box-shadow: 0 2px 4px $color-box-shadow;
+    margin-bottom: map.get($spacing, 'lg');
+    transition: all 0.3s ease;
+
+    h3 {
+      color: $color-text-primary;
+      margin-bottom: map.get($spacing, 'md');
+      font-size: map.get($font-sizes, 'lg');
+      font-weight: map.get($font-weights, 'bold');
+    }
+
+    // Other sections (roster, stats, standings)
+    .roster-section,
+    .stats-section,
+    .standings-section,
+    .default-section {
+      text-align: center;
+      //padding: map.get($spacing, 'base') map.get($spacing, 'base');
+      color: $color-neutral-dark-grey;
+
+      h3 {
+        color: $color-text-primary;
+        margin-bottom: map.get($spacing, 'base');
+      }
+
+      p {
+        font-size: 1.1rem;
+        line-height: $line-height-relaxed;
+      }
+    }
+  }
+
+  // Responsive Design
+}
+
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
+@media (max-width: 768px) {
+  .football-team-page {
+    padding: 0;
+
+    .hero-image-container {
+      min-height: 300px;
+      margin-bottom: map.get($spacing, 'sm');
+      
+      .team-header {
+        margin-top: map.get($spacing, 'md');
+        padding: 0 map.get($spacing, 'sm');
+        
+        .left-navigation-container {
+          padding-left: map.get($spacing, 'sm');
+          margin-bottom: map.get($spacing, 'sm');
+          
+          .breadcrumb {
+            margin-bottom: map.get($spacing, 'sm');
+            font-size: map.get($font-sizes, 'xs');
+          }
+        }
+        
+        .header-content {
+          flex-direction: column;
+          padding: map.get($spacing, 'sm');
+          gap: map.get($spacing, 'md');
+          align-items: center;
+        }
+
+        .team-branding {
+          align-self: center;
+          min-width: 120px;
+          min-height: 120px;
+          
+          .football-page-team-logo {
+            min-width: 120px;
+            min-height: 120px;
+            
+            img {
+              width: 120px;
+              height: 120px;
+              border-radius: map.get($border-radius, 'sm');
+            }
+            
+            .logo-placeholder {
+              width: 120px;
+              height: 120px;
+              font-size: map.get($font-sizes, 'sm');
+              border-radius: map.get($border-radius, 'sm');
+            }
+          }
+        }
+
+        .team-info {
+          align-items: center;
+          text-align: center;
+          
+          h1 { 
+            font-size: map.get($font-sizes, 'lg');
+          }
+        }
+
+      }
+    }
+
+    .tab-content-container {
+      padding: map.get($spacing, 'sm') 0;
+    }
+
+    .tab-content { 
+      padding: map.get($spacing, 'sm');
+      margin: 0 map.get($spacing, 'sm');
+      border-radius: map.get($border-radius, 'lg');
+    }
+
+    // Removed standings overrides to keep LeagueStanding consistent across pages
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .football-team-page {
+    .hero-image-container {
+      min-height: 280px;
+      
+      .team-header {
+        margin-top: map.get($spacing, 'sm');
+        padding: 0 map.get($spacing, 'xs');
+        
+        .left-navigation-container {
+          padding-left: map.get($spacing, 'xs');
+          
+          .breadcrumb {
+            font-size: map.get($font-sizes, 'xs');
+            margin-bottom: map.get($spacing, 'xs');
+          }
+        }
+        
+        .header-content {
+          padding: map.get($spacing, 'xs');
+          gap: map.get($spacing, 'sm');
+        }
+
+        .team-branding {
+          min-width: 100px;
+          min-height: 100px;
+          
+          .football-page-team-logo {
+            min-width: 100px;
+            min-height: 100px;
+            
+            img {
+              width: 100px;
+              height: 100px;
+            }
+            
+            .logo-placeholder {
+              width: 100px;
+              height: 100px;
+              font-size: map.get($font-sizes, 'xs');
+            }
+          }
+        }
+
+        .team-info {
+          h1 { 
+            font-size: map.get($font-sizes, 'md');
+          }
+        }
+      }
+    }
+
+    .tab-content-container {
+      padding: map.get($spacing, 'xs') 0;
+    }
+
+    .tab-content { 
+      padding: map.get($spacing, 'xs');
+      margin: 0 map.get($spacing, 'xs');
+    }
+
+    // Removed standings overrides to keep LeagueStanding consistent across pages
+  }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+  .football-team-page {
+    .hero-image-container {
+      min-height: 250px;
+      
+      .team-header {
+        .team-branding {
+          min-width: 80px;
+          min-height: 80px;
+          
+          .football-page-team-logo {
+            min-width: 80px;
+            min-height: 80px;
+            
+            img {
+              width: 80px;
+              height: 80px;
+            }
+            
+            .logo-placeholder {
+              width: 80px;
+              height: 80px;
+              font-size: map.get($font-sizes, 'xs');
+            }
+          }
+        }
+
+        .team-info {
+          h1 { 
+            font-size: map.get($font-sizes, 'sm');
+          }
+        }
+      }
+    }
+  }
+}

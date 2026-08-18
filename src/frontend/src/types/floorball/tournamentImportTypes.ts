@@ -72,6 +72,11 @@ export interface TournamentImportTournamentSection {
   teamsAdvancingPerGroup: number;
   hasPlayoffStage: boolean;
   hasThirdPlaceMatch: boolean;
+  /**
+   * Audience / age-group for the tournament itself. The admin import modal pre-fills
+   * its "Tournament type" dropdown from this value. Defaults to Adult when omitted.
+   */
+  teamCategory?: TeamCategory;
 }
 
 export interface TournamentImportClub {

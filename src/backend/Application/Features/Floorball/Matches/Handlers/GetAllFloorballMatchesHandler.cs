@@ -100,6 +100,7 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
                 searchQuery: request.SearchQuery,
                 tournamentGroupId: request.TournamentGroupId,
                 competitionType: request.CompetitionType,
+                teamCategory: request.TeamCategory,
                 cancellationToken: cancellationToken);
 
             // Check for cancellation after database operations
@@ -116,7 +117,9 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
             else
             {
                 List<Guid> clubIds = matches
-                    .SelectMany(m => new[] { m.HomeTeam.ClubId, m.AwayTeam.ClubId })
+                    .SelectMany(m => new Guid?[] { m.HomeTeam?.ClubId, m.AwayTeam?.ClubId })
+                    .Where(id => id.HasValue)
+                    .Select(id => id!.Value)
                     .Distinct()
                     .ToList();
 

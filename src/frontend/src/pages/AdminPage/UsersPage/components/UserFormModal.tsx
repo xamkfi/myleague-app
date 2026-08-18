@@ -3,14 +3,26 @@ import { useTranslation } from 'react-i18next';
 import type { SystemUser, UserRole } from '../../../../types/admin/userTypes';
 import type { Person } from '../../../../types/admin/personTypes';
 import { personApi } from '../../../../api/admin/personApi';
+import { clubService } from '../../../../api/common/clubService';
 
 const MAX_PAGE_SIZE = 50;
+
+interface ClubOption {
+  id: string;
+  name: string;
+}
 
 interface UserFormModalProps {
   isOpen: boolean;
   user: SystemUser | null;
   existingPersonIds: string[];
-  onSave: (email: string, personId: string, role: UserRole, isActive: boolean) => Promise<void>;
+  onSave: (
+    email: string,
+    personId: string,
+    role: UserRole,
+    isActive: boolean,
+    clubAssignments?: string[],
+  ) => Promise<void>;
   onCancel: () => void;
   onResendInvitation?: (user: SystemUser) => void;
   isResendingInvitation?: boolean;
@@ -38,7 +50,13 @@ const UserFormModal = ({
   const [loadingPersons, setLoadingPersons] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; person?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; person?: string; clubs?: string }>({});
+
+  // Club admin club assignment state (create mode only)
+  const [clubs, setClubs] = useState<ClubOption[]>([]);
+  const [clubsLoaded, setClubsLoaded] = useState(false);
+  const [clubFilter, setClubFilter] = useState('');
+  const [selectedClubIds, setSelectedClubIds] = useState<Set<string>>(new Set());
 
   const debounceTimerRef = useRef<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -57,6 +75,8 @@ const UserFormModal = ({
       setIsDropdownOpen(false);
       setErrors({});
       setSaving(false);
+      setClubFilter('');
+      setSelectedClubIds(new Set());
 
       document.body.style.overflow = 'hidden';
     } else {
@@ -100,6 +120,41 @@ const UserFormModal = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, isDropdownOpen]);
+
+  // Load all club names for the club admin picker once, when the role is first selected.
+  useEffect(() => {
+    if (!isOpen || isEditMode || role !== 'ClubAdmin' || clubsLoaded) return;
+
+    let cancelled = false;
+    const loadClubs = async () => {
+      try {
+        const allClubs = await clubService.getAll();
+        if (cancelled) return;
+        setClubs(allClubs.map((club) => ({ id: club.id, name: club.name })));
+        setClubsLoaded(true);
+      } catch (err) {
+        console.error('Failed to load clubs for club admin assignment:', err);
+      }
+    };
+
+    void loadClubs();
+    return () => { cancelled = true; };
+  }, [isOpen, isEditMode, role, clubsLoaded]);
+
+  const toggleClubSelection = (clubId: string) => {
+    setSelectedClubIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(clubId)) {
+        next.delete(clubId);
+      } else {
+        next.add(clubId);
+      }
+      return next;
+    });
+    if (errors.clubs) {
+      setErrors((prev) => ({ ...prev, clubs: undefined }));
+    }
+  };
 
   const fetchPersons = useCallback(async (searchTerm: string) => {
     try {
@@ -175,7 +230,7 @@ const UserFormModal = ({
   const existingSet = useMemo(() => new Set(existingPersonIds), [existingPersonIds]);
 
   const validate = (): boolean => {
-    const newErrors: { email?: string; person?: string } = {};
+    const newErrors: { email?: string; person?: string; clubs?: string } = {};
 
     if (!email.trim()) {
       newErrors.email = t('admin.users.form.emailRequired', 'Email is required');
@@ -195,9 +250,14 @@ const UserFormModal = ({
     e.preventDefault();
     if (!validate()) return;
 
+    const clubAssignments: string[] | undefined =
+      !isEditMode && role === 'ClubAdmin' && selectedClubIds.size > 0
+        ? Array.from(selectedClubIds)
+        : undefined;
+
     try {
       setSaving(true);
-      await onSave(email.trim(), selectedPersonId, role, isActive);
+      await onSave(email.trim(), selectedPersonId, role, isActive, clubAssignments);
     } catch {
       // Parent handles the error
     } finally {
@@ -397,6 +457,70 @@ const UserFormModal = ({
                 </option>
               </select>
             </div>
+
+            {/* Club assignments for new club admins */}
+            {!isEditMode && role === 'ClubAdmin' && (
+              <div className="user-form-group">
+                <label>
+                  {t('admin.users.form.clubs', 'Clubs to manage')}
+                </label>
+                <div className="user-form-team-picker">
+                  <input
+                    type="text"
+                    className="user-form-input"
+                    placeholder={t('admin.users.form.clubFilterPlaceholder', 'Filter clubs...')}
+                    value={clubFilter}
+                    onChange={(e) => setClubFilter(e.target.value)}
+                  />
+                  {!clubsLoaded ? (
+                    <div className="user-form-team-picker__loading">
+                      {t('common.loading', 'Loading...')}
+                    </div>
+                  ) : (
+                    <div className="user-form-team-picker__lists">
+                      <div className="user-form-team-picker__section">
+                        <div className="user-form-team-picker__title">
+                          {t('admin.users.form.clubsTitle', 'Clubs')}
+                          {selectedClubIds.size > 0 && (
+                            <span className="user-form-team-picker__count">{selectedClubIds.size}</span>
+                          )}
+                        </div>
+                        <div className="user-form-team-picker__list">
+                          {(clubFilter.trim()
+                            ? clubs.filter((club) =>
+                                club.name.toLowerCase().includes(clubFilter.trim().toLowerCase()))
+                            : clubs
+                          ).map((club) => (
+                            <label key={club.id} className="user-form-team-picker__item">
+                              <input
+                                type="checkbox"
+                                checked={selectedClubIds.has(club.id)}
+                                onChange={() => toggleClubSelection(club.id)}
+                              />
+                              <span>{club.name}</span>
+                            </label>
+                          ))}
+                          {clubs.length === 0 && (
+                            <div className="user-form-team-picker__empty">
+                              {t('admin.users.form.noClubsFound', 'No clubs found')}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="user-form-status-info">
+                  {t(
+                    'admin.users.form.clubsHint',
+                    'You can also assign club admins later from the club edit page.',
+                  )}
+                </div>
+                {errors.clubs && (
+                  <span className="user-form-error">{errors.clubs}</span>
+                )}
+              </div>
+            )}
 
             {/* IsActive toggle */}
             <div className="user-form-group">

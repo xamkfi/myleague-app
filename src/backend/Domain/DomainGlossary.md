@@ -94,6 +94,17 @@ Rich formatted content of a news article stored as HTML markup, allowing for pro
 ## News Summary
 An optional brief description or excerpt of a news article used for preview purposes in lists, feeds, or search results.
 
+## Football
+
+### FootballMatch
+A hobby football game between two teams. Tracks scores, halves, cards, substitutions, extra time and penalty shootouts. Match rules (half length, players on field, substitution limit) are snapshotted from the competition.
+
+### FootballMatchRules
+Configurable match timing and roster rules: number of halves, half duration, players on field (5–11), unlimited or limited substitutions, extra time and penalty shootout flags.
+
+### FootballStandingRules
+Point allocation for league tables. Default is 3 points for a win, 1 for a draw, 0 for a loss.
+
 ## Aggregate Roots
 
 The following entities serve as aggregate roots in our domain model:

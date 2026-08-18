@@ -10,6 +10,7 @@ import MiniCalendar from './components/MiniCalendar';
 import EventAgendaList from './components/EventAgendaList';
 import CalendarFilters from './components/CalendarFilters';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import { useAudience } from '../../context/AudienceContext';
 import './EventCalendarPage.scss';
 
 interface SeasonOption {
@@ -28,6 +29,7 @@ function getMonthBounds(year: number, month: number): { startDate: string; endDa
 
 function EventCalendarPage() {
   const { t } = useTranslation();
+  const { audience } = useAudience();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -39,13 +41,16 @@ function EventCalendarPage() {
 
   const fetchSeasons = useCallback(async () => {
     try {
+      // Active seasons endpoint has no teamCategory filter yet; filter client-side.
       const response = await floorballSeasonService.getActive();
-      const list = response.data ?? [];
+      const list = (response.data ?? []).filter(
+        (s) => !s.teamCategory || s.teamCategory === audience.teamCategory,
+      );
       setSeasons(list.map((s) => ({ id: s.id, name: s.name })));
     } catch {
       // Non-critical: seasons filter just won't show options
     }
-  }, []);
+  }, [audience.teamCategory]);
 
   const fetchEvents = useCallback(async (y: number, m: number) => {
     setIsLoading(true);
@@ -57,6 +62,7 @@ function EventCalendarPage() {
         endDate,
         pageSize: 100,
         sortOrder: 'asc',
+        teamCategory: audience.teamCategory,
       });
       const list = response.data ?? [];
       setAllEvents(list.map(mapFloorballMatchToCalendarEvent));
@@ -66,7 +72,7 @@ function EventCalendarPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [t]);
+  }, [t, audience.teamCategory]);
 
   useEffect(() => {
     fetchSeasons();

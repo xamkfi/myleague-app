@@ -6,6 +6,7 @@ import NewsCard from './components/NewsCard';
 import NewsCardSkeleton from './components/NewsCardSkeleton';
 import NewsFilter from './components/NewsFilter';
 import { newsService, type NewsArticleDto, type NewsParameters, type PaginatedNewsResponse, getMainNewsArticle } from '../../api/news/newsService';
+import { useAudience } from '../../context/AudienceContext';
 import { useNavigate } from 'react-router-dom';
 import Pagination from '../../components/Pagination';
 import defaultNewsImage from '../../assets/defaultImage.jpg';
@@ -13,6 +14,7 @@ import defaultNewsImage from '../../assets/defaultImage.jpg';
 function NewsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { audience } = useAudience();
   const [newsList, setNewsList] = useState<NewsArticleDto[]>([]);
   const [mainNews, setMainNews] = useState<NewsArticleDto | null>(null);
   const [filters, setFilters] = useState<NewsParameters>({
@@ -32,7 +34,8 @@ function NewsPage() {
       const response = await newsService({
         ...filters,
         page: currentPage,
-        pageSize: pageSize
+        pageSize: pageSize,
+        teamCategory: audience.teamCategory,
       });
       
       console.log('API Response:', response);
@@ -63,7 +66,7 @@ function NewsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, currentPage, pageSize]);
+  }, [filters, currentPage, pageSize, audience.teamCategory]);
 
   useEffect(() => {
     RetrieveNews();

@@ -4,7 +4,10 @@ using Domain.ValueObjects.Hockey.Rules;
 namespace Domain.Entities.Hockey.Competitions;
 
 /// <summary>
-/// Represents a standalone hockey tournament with its own lifecycle.
+/// Represents a standalone hockey tournament with its own lifecycle and group-stage structure.
+/// Owns <see cref="HockeyTournamentGroup"/> collections used during the group stage.
+/// Teams enter groups via <see cref="AddTeamToGroup"/>, which requires an active
+/// <see cref="HockeyCompetitionTeam"/> and enforces one active group per team.
 /// </summary>
 public class HockeyTournament : HockeyCompetition
 {
@@ -13,6 +16,10 @@ public class HockeyTournament : HockeyCompetition
     public HockeyTournamentStage CurrentStage { get; private set; }
     public HockeyTournamentRules TournamentRules { get; private set; } = null!;
     public Guid? ChampionCompetitionTeamId { get; private set; }
+
+    /// <summary>Gets the tournament groups (lohkot) used during the group stage.</summary>
+    public IReadOnlyCollection<HockeyTournamentGroup> Groups => _groups.AsReadOnly();
+    private protected readonly List<HockeyTournamentGroup> _groups = new();
 
     private HockeyTournament() : base()
     {
@@ -92,8 +99,73 @@ public class HockeyTournament : HockeyCompetition
     {
         if (championCompetitionTeamId == Guid.Empty)
             throw new ArgumentException("Champion competition team id cannot be empty.", nameof(championCompetitionTeamId));
+        if (Status != HockeyCompetitionStatus.Completed)
+            throw new InvalidOperationException("Champion can only be set for a completed tournament.");
 
         ChampionCompetitionTeamId = championCompetitionTeamId;
+    }
+
+    public HockeyTournamentGroup AddGroup(string name)
+    {
+        EnsureMutable();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Group name cannot be null or empty.", nameof(name));
+
+        int nextSortOrder = _groups.Count;
+        HockeyTournamentGroup group = new(Id, name, nextSortOrder);
+        _groups.Add(group);
+        return group;
+    }
+
+    public void RemoveGroup(Guid groupId)
+    {
+        EnsureMutable();
+        HockeyTournamentGroup? group = _groups.FirstOrDefault(g => g.Id == groupId)
+            ?? throw new InvalidOperationException("Group is not part of this tournament.");
+
+        _groups.Remove(group);
+    }
+
+    public HockeyTournamentGroup? GetGroup(Guid groupId) =>
+        _groups.FirstOrDefault(g => g.Id == groupId);
+
+    /// <summary>
+    /// Adds a competition team to a group. Validates that the team is an active
+    /// member of this tournament and not already in another active group.
+    /// </summary>
+    public HockeyTournamentGroupTeam AddTeamToGroup(Guid groupId, Guid competitionTeamId, int? seed = null)
+    {
+        EnsureMutable();
+        ValidateCompetitionTeam(competitionTeamId);
+
+        if (_groups.Any(g => g.HasActiveTeam(competitionTeamId)))
+            throw new InvalidOperationException("Competition team is already assigned to a group.");
+
+        HockeyTournamentGroup group = GetGroup(groupId)
+            ?? throw new InvalidOperationException("Group is not part of this tournament.");
+
+        return group.AddTeam(competitionTeamId, seed);
+    }
+
+    public void RemoveTeamFromGroup(Guid groupId, Guid competitionTeamId)
+    {
+        EnsureMutable();
+        HockeyTournamentGroup group = GetGroup(groupId)
+            ?? throw new InvalidOperationException("Group is not part of this tournament.");
+
+        group.RemoveTeam(competitionTeamId);
+    }
+
+    /// <summary>
+    /// Extends base removal checks with active tournament group memberships.
+    /// A team cannot leave the competition while still placed in a group.
+    /// </summary>
+    private protected override bool HasBlockingTeamReferences(HockeyCompetitionTeam competitionTeam)
+    {
+        if (base.HasBlockingTeamReferences(competitionTeam))
+            return true;
+
+        return _groups.Any(g => g.HasActiveTeam(competitionTeam.Id));
     }
 
     public override HockeyCompetitionRules GetEffectiveRules()

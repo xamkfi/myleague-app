@@ -40,7 +40,8 @@ export const TOURNAMENT_IMPORT_AI_PROMPT: string = `You are converting a floorba
     "playoffAllowShootout": boolean,                 // typical: true
     "teamsAdvancingPerGroup": number,                // teams per group that go to playoffs (usually 2)
     "hasPlayoffStage": boolean,                      // false if it's group stage only
-    "hasThirdPlaceMatch": boolean                    // true if there is a bronze match
+    "hasThirdPlaceMatch": boolean,                   // true if there is a bronze match
+    "teamCategory"?: "Adult" | "Youth" | "Women"     // optional; pre-fills the import modal. Infer from the title (Miehet→Adult, Naiset→Women)
   },
   "clubs": [                                          // one entry per unique club. fields beyond "name" are optional
     { "name": string, "city"?: string, "country"?: string, "websiteUrl"?: string, "logoUrl"?: string, "contactEmail"?: string }
@@ -49,7 +50,7 @@ export const TOURNAMENT_IMPORT_AI_PROMPT: string = `You are converting a floorba
     {
       "name": string,                                 // team name as printed on the schedule
       "clubName": string,                             // must match a name in "clubs"
-      "category"?: "Adult" | "Youth" | "Women",       // optional override; if every team is the same, you can omit this and the admin selects it in the UI
+      "category"?: "Adult" | "Youth" | "Women",       // optional per-team override; otherwise tournament.teamCategory / the admin dropdown is used
       "homeArena"?: string,                           // optional, only if printed on the sheet
       "primaryJerseyColor"?: string,                  // optional
       "secondaryJerseyColor"?: string,                // optional

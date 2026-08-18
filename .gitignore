@@ -372,4 +372,5 @@ src/backend/WebAPI/app.zip
 src/backend/Application/refactor-namespaces.ps1
 .gitignore
 src/backend/Application/fix-usings.ps1
-/src/frontend/.pnpm-store/v11
+/src/frontend/.pnpm-store/
+src/tools/TournamentExporter/exports/

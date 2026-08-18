@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import { FloorballMatchStatus } from '../../types/floorball/floorballTypes';
+import { useAudience } from '../../context/AudienceContext';
 import MatchPanelCard from './MatchPanelCard';
 import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import './MatchesPanel.scss';
@@ -27,6 +28,8 @@ interface PaginatedSectionState {
 
 function MatchesPanel() {
   const { t } = useTranslation();
+  const { audience } = useAudience();
+  const teamCategory = audience.teamCategory;
 
   const [liveMatches, setLiveMatches] = useState<FloorballMatchDto[]>([]);
   const [upcoming, setUpcoming] = useState<PaginatedSectionState>({
@@ -58,16 +61,19 @@ function MatchesPanel() {
           status: FloorballMatchStatus.InProgress,
           sortOrder: 'asc',
           pageSize: 100,
+          teamCategory,
         }),
         floorballMatchService.getAll({
           status: FloorballMatchStatus.Scheduled,
           sortOrder: 'asc',
           pageSize: INITIAL_VISIBLE,
+          teamCategory,
         }),
         floorballMatchService.getAll({
           status: FloorballMatchStatus.Completed,
           sortOrder: 'desc',
           pageSize: INITIAL_VISIBLE,
+          teamCategory,
         }),
       ]);
 
@@ -97,7 +103,7 @@ function MatchesPanel() {
     } finally {
       setIsLoading(false);
     }
-  }, [t]);
+  }, [t, teamCategory]);
 
   useEffect(() => {
     fetchInitial();
@@ -122,6 +128,7 @@ function MatchesPanel() {
             kind === 'upcoming' ? FloorballMatchStatus.Scheduled : FloorballMatchStatus.Completed,
           sortOrder: kind === 'upcoming' ? 'asc' : 'desc',
           pageSize: nextSize,
+          teamCategory,
         });
 
         if (response.success && response.data) {
@@ -139,7 +146,7 @@ function MatchesPanel() {
         setSection({ ...current, isLoadingMore: false });
       }
     },
-    [upcoming, completed]
+    [upcoming, completed, teamCategory]
   );
 
   const collapse = useCallback((kind: 'upcoming' | 'completed') => {

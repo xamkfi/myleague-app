@@ -241,9 +241,12 @@ public abstract class BaseApiController : ControllerBase
             return "null";
         }
 
+        // Use the two-argument Replace overloads so CodeQL models this as a
+        // log-forging sanitizer (the StringComparison overload is not modeled).
         return value.ToString()!
-            .Replace("\r", string.Empty, StringComparison.Ordinal)
-            .Replace("\n", string.Empty, StringComparison.Ordinal);
+            .Replace(Environment.NewLine, string.Empty)
+            .Replace("\r", string.Empty)
+            .Replace("\n", string.Empty);
     }
 
     private static bool IsNotFoundMessage(string message) =>

@@ -13,7 +13,11 @@ import { personApi } from '../../../../../api/admin/personApi';
 import { floorballPlayerService } from '../../../../../api/floorball/floorballPlayerService';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
 import { floorballTeamSearchService } from '../../../../../api/floorball/floorballTeamSearchService';
+import { footballPlayerService } from '../../../../../api/football/footballPlayerService';
+import { footballTeamService } from '../../../../../api/football/footballTeamService';
+import { footballTeamSearchService } from '../../../../../api/football/footballTeamSearchService';
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
+import { FootballPosition } from '../../../../../types/football/footballTypes';
 import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import './PersonForm.scss';
@@ -335,7 +339,9 @@ const PersonForm = ({
       // Validate jersey number uniqueness within selected team before creating person
       if (formData.teamId && formData.jerseyNumber !== undefined) {
         try {
-          const team = await floorballTeamService.getById(formData.teamId);
+          const team = selectedSport === 'Football'
+            ? await footballTeamService.getById(formData.teamId)
+            : await floorballTeamService.getById(formData.teamId);
           const numberTaken = team?.roster?.some(player => player.jerseyNumber === formData.jerseyNumber);
           if (numberTaken) {
             const takenMsg = t('admin.persons.validation.jerseyNumberTaken') || 'Jersey number already in use for this team';
@@ -376,18 +382,27 @@ const PersonForm = ({
       // Step 2: If team is selected, create FloorballPlayer and add to team
       if (formData.teamId && formData.position && !isEditMode) {
         try {
-          // Create FloorballPlayer
-          const createdPlayer = await floorballPlayerService.create({
-            personId: createdPerson.id
-          });
-
-          // Add player to team with position and optional jersey number
-          await floorballTeamService.addPlayerToTeam(
-            formData.teamId,
-            createdPlayer.id,
-            formData.position as FloorballPosition,
-            formData.jerseyNumber
-          );
+          if (selectedSport === 'Football') {
+            const createdPlayer = await footballPlayerService.create({
+              personId: createdPerson.id
+            });
+            await footballTeamService.addPlayerToTeam(
+              formData.teamId,
+              createdPlayer.id,
+              formData.position as FootballPosition,
+              formData.jerseyNumber
+            );
+          } else {
+            const createdPlayer = await floorballPlayerService.create({
+              personId: createdPerson.id
+            });
+            await floorballTeamService.addPlayerToTeam(
+              formData.teamId,
+              createdPlayer.id,
+              formData.position as FloorballPosition,
+              formData.jerseyNumber
+            );
+          }
 
           // Success message could be enhanced here to show team assignment
           console.log(`Person created and added to team with position ${formData.position}`);
@@ -438,9 +453,11 @@ const PersonForm = ({
     if (!selectedSport) {
       return { data: [], pagination: { hasNextPage: false, totalCount: 0 } };
     }
-    // TODO: Add other sports here
     if (selectedSport === 'Floorball') {
       return floorballTeamSearchService.searchTeams(query, page);
+    }
+    if (selectedSport === 'Football') {
+      return footballTeamSearchService.searchTeams(query, page);
     }
     return { data: [], pagination: { hasNextPage: false, totalCount: 0 } };
   };
@@ -740,7 +757,7 @@ const PersonForm = ({
                   className={fieldErrors.position ? 'person-error' : ''}
                 >
                   <option value="">{t('admin.persons.form.selectPosition')}</option>
-                  {Object.values(FloorballPosition).map(pos => (
+                  {Object.values(selectedSport === 'Football' ? FootballPosition : FloorballPosition).map(pos => (
                     <option key={pos} value={pos}>
                       {t(`admin.persons.form.positions.${pos.toLowerCase()}`)}
                     </option>

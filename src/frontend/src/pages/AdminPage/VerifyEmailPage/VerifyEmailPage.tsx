@@ -5,7 +5,13 @@ import './VerifyEmailPage.scss';
 
 type VerificationState = 'loading' | 'success' | 'error';
 
-function VerifyEmailPage() {
+interface VerifyEmailPageProps {
+  /** Which area this verification belongs to. Controls labels and the login link. */
+  variant?: 'admin' | 'clubAdmin';
+}
+
+function VerifyEmailPage({ variant = 'admin' }: VerifyEmailPageProps) {
+  const isClubAdmin = variant === 'clubAdmin';
   const [searchParams] = useSearchParams();
   const [state, setState] = useState<VerificationState>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -41,7 +47,7 @@ function VerifyEmailPage() {
       <div className="verify-email-center">
         <div className="verify-email-top">
           <h1 className="verify-email-brand">MAHL</h1>
-          <p className="verify-email-brand-sub">Admin invitation</p>
+          <p className="verify-email-brand-sub">{isClubAdmin ? 'Club admin invitation' : 'Admin invitation'}</p>
         </div>
 
         <div className="verify-email-card">
@@ -57,7 +63,9 @@ function VerifyEmailPage() {
               <span className="verify-email-icon" role="img" aria-label="Success">✅</span>
               <h2 className="verify-email-title">Email verified!</h2>
               <p className="verify-email-message">
-                Your account is now active. Here is how to log in to the admin panel:
+                {isClubAdmin
+                  ? 'Your account is now active. Here is how to log in to the club admin area:'
+                  : 'Your account is now active. Here is how to log in to the admin panel:'}
               </p>
 
               <div className="verify-email-instructions">
@@ -66,12 +74,14 @@ function VerifyEmailPage() {
                   <li>Click the button below to go to the login page.</li>
                   <li>Enter the email address where you received this invitation.</li>
                   <li>You will receive a <strong>6-digit login code</strong> by email.</li>
-                  <li>Enter the code on the login page to access the admin panel.</li>
+                  <li>{isClubAdmin
+                    ? 'Enter the code on the login page to access the club admin area.'
+                    : 'Enter the code on the login page to access the admin panel.'}</li>
                 </ol>
               </div>
 
-              <Link to="/admin/login" className="verify-email-button">
-                Go to admin login
+              <Link to={isClubAdmin ? '/club-admin/login' : '/admin/login'} className="verify-email-button">
+                {isClubAdmin ? 'Go to club admin login' : 'Go to admin login'}
               </Link>
             </>
           )}

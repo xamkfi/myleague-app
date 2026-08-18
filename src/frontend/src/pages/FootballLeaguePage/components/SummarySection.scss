@@ -1,0 +1,250 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.summary-section {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'lg');
+
+  // Stat cards row
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: map.get($spacing, 'md');
+  }
+
+  &__stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: map.get($spacing, 'md') map.get($spacing, 'sm');
+    background: $color-neutral-light-grey;
+    border-radius: map.get($border-radius, 'lg');
+    border: 1px solid $color-neutral-medium-grey;
+    text-align: center;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      box-shadow: $box-shadow-drop-1;
+      transform: translateY(-2px);
+    }
+  }
+
+  &__stat-value {
+    font-size: map.get($font-sizes, 'xl');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-blue-deep;
+    line-height: 1.1;
+    margin-bottom: map.get($spacing, 'xxs');
+  }
+
+  &__stat-label {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-neutral-dark-grey;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  // Compact standings table
+  &__standings {
+    background: $color-white;
+    border-radius: map.get($border-radius, 'lg');
+    border: 1px solid $color-neutral-medium-grey;
+    overflow: hidden;
+  }
+
+  &__standings-header {
+    background: $color-banner-bg;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+  }
+
+  &__standings-title {
+    margin: 0;
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__standings-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      tr {
+        background: $color-blue-background;
+      }
+
+      th {
+        padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+        font-size: map.get($font-sizes, 'xs');
+        font-weight: map.get($font-weights, 'semibold');
+        color: $color-blue-deep;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: center;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid rgba($color-neutral-medium-grey, 0.5);
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: rgba($color-blue-background, 0.3);
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+
+      td {
+        padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+        font-size: map.get($font-sizes, 'sm');
+        color: $color-neutral-black;
+        text-align: center;
+      }
+    }
+  }
+
+  &__col-rank {
+    width: 40px;
+    text-align: center !important;
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-neutral-dark-grey;
+  }
+
+  &__col-team {
+    text-align: left !important;
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &__col-gp,
+  &__col-w,
+  &__col-d,
+  &__col-l {
+    width: 50px;
+    text-align: center !important;
+    color: $color-neutral-dark-grey;
+  }
+
+  &__col-pts {
+    width: 55px;
+    text-align: center !important;
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-blue-secondary;
+  }
+
+  &__team-info {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__team-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid $color-neutral-medium-grey;
+    background-color: $color-neutral-light-grey;
+  }
+
+  &__team-logo-empty {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1px solid $color-neutral-medium-grey;
+    background-color: $color-neutral-light-grey;
+  }
+
+  &__team-name {
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-neutral-black;
+  }
+
+  &__view-full {
+    display: block;
+    width: 100%;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    background: transparent;
+    border: none;
+    border-top: 1px solid rgba($color-neutral-medium-grey, 0.5);
+    color: $color-blue-secondary;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    text-align: right;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+
+    &:hover {
+      color: $color-blue-secondary-muted;
+      background-color: rgba($color-blue-background, 0.2);
+    }
+  }
+
+  // Loading / error / empty states
+  &__loading,
+  &__error,
+  &__empty {
+    padding: map.get($spacing, 'lg');
+    text-align: center;
+    color: $color-neutral-dark-grey;
+    font-size: map.get($font-sizes, 'base');
+  }
+
+  &__error {
+    color: $color-red-primary;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .summary-section {
+    gap: map.get($spacing, 'md');
+
+    &__stats {
+      grid-template-columns: repeat(2, 1fr);
+      gap: map.get($spacing, 'sm');
+    }
+
+    &__stat-value {
+      font-size: map.get($font-sizes, 'lg');
+    }
+
+    &__stat-label {
+      font-size: map.get($font-sizes, 'xs');
+    }
+
+    &__standings-table {
+      thead th {
+        padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+        font-size: map.get($font-sizes, 'xs');
+      }
+
+      tbody td {
+        padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+        font-size: map.get($font-sizes, 'xs');
+      }
+    }
+
+    &__col-w,
+    &__col-d,
+    &__col-l {
+      display: none;
+    }
+
+    thead th.summary-section__col-w,
+    thead th.summary-section__col-d,
+    thead th.summary-section__col-l {
+      display: none;
+    }
+  }
+}

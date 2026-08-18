@@ -1,0 +1,213 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../../styles/common' as *;
+
+.match-row {
+  font-size: map.get($font-sizes, "sm");
+  display: grid;
+  color: $color-neutral-black;
+  grid-template-columns: minmax(100px, 120px) minmax(60px, 400px) repeat(3, minmax(100px, 110px));
+  grid-template-areas: "date homeTeam awayTeam score seperator status";
+  padding: map.get($spacing, "xs") 0;
+  box-shadow: 0 0 0px rgba(0, 0, 0, 0);
+  transform: scale(1);
+  border-bottom: 1px solid $color-neutral-medium-grey;
+  border-radius: 0;
+  transition:
+    background-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    border 0.25s ease;
+
+    &:hover {
+      cursor: pointer;
+      background-color: $color-neutral-medium-grey;
+      box-shadow: 0 0 32px $color-box-shadow;
+      border-radius: map.get($border-radius, "lg");
+      transform: scale(1.005);
+      z-index: 10;
+      position: relative;
+    }
+
+    // Placeholder rows (e.g. pre-defined playoff slots whose real match hasn't been generated
+    // yet) are muted and non-interactive — they exist only to advertise the planned kickoff
+    // time, not as a clickable destination.
+    &.match-row--placeholder {
+      opacity: 0.7;
+      font-style: italic;
+
+      &:hover {
+        cursor: default;
+        background-color: transparent;
+        box-shadow: 0 0 0px rgba(0, 0, 0, 0);
+        transform: scale(1);
+      }
+    }
+  
+}
+
+.match-row-date {
+  display: flex;
+  gap: map.get($spacing, "xs");
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  color: $color-neutral-dark-grey;
+  grid-area: date;
+  text-align: left;
+}
+
+.match-row-date-day {
+  font-weight: map.get($font-weights, "medium");
+}
+
+.match-row-date-time {
+
+}
+
+.match-row-teams-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.match-row-home-team {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: map.get($spacing, "sm");
+  justify-content: flex-start;
+  grid-area: homeTeam;
+  text-align: left;
+
+  img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    border-radius: 50%;
+  }
+}
+
+.match-row-away-team {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: map.get($spacing, "sm");
+  justify-content: flex-start;
+  grid-area: awayTeam;
+
+  img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    border-radius: 50%;
+  }
+}
+
+// Winner highlight for team names
+.match-row-winner {
+  font-weight: map.get($font-weights, "bold");
+}
+
+.match-row-total-score-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.match-row-home-total-score {
+  font-weight: map.get($font-weights, "bold");
+  grid-area: homeScore;
+}
+
+.match-row-away-total-score {
+  font-weight: map.get($font-weights, "bold");
+  grid-area: awayScore;
+}
+
+// Winner score highlight
+.match-row-score-winner {
+  color: $color-blue-deep;
+}
+
+.match-row-period-score-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.match-row-period {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 map.get($spacing, "xs");
+}
+
+.match-row-period-header {
+  font-size: map.get($font-sizes, "xs");
+  font-weight: map.get($font-weights, "semibold");
+  color: $color-neutral-dark-grey;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 1px;
+}
+
+.match-row-home-period-score {
+  font-size: map.get($font-sizes, "xs");
+  color: $color-neutral-dark-grey;
+}
+
+.match-row-away-period-score {
+  font-size: map.get($font-sizes, "xs");
+  color: $color-neutral-dark-grey;
+}
+
+.match-row-status {
+  grid-area: status;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid $color-neutral-medium-grey;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .match-row {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "date"
+      "teams"
+      "score"
+      "status";
+    gap: map.get($spacing, "xs");
+    padding: map.get($spacing, "sm");
+  }
+
+  .match-row-teams-container {
+    grid-area: teams;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .match-row-total-score-container {
+    grid-area: score;
+    flex-direction: row;
+    justify-content: center;
+    gap: map.get($spacing, "md");
+  }
+
+  .match-row-period-score-container {
+    display: none;
+  }
+
+  .match-row-status {
+    grid-area: status;
+    border-left: none;
+    border-top: 1px solid $color-neutral-medium-grey;
+    padding-top: map.get($spacing, "xs");
+  }
+}

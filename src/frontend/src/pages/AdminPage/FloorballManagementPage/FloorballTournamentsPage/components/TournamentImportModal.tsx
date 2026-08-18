@@ -5,6 +5,7 @@ import {
   getDryRunCounts,
   importTournament,
   inferHasPlayoffStage,
+  inferTeamCategory,
   revertImport,
   validatePayload,
 } from '../../../../../api/floorball/tournamentImportService';
@@ -163,6 +164,7 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
     }
     setTournamentNameOverride(result.payload.tournament.name);
     setVenueOverride(result.payload.tournament.venue?.trim() ?? '');
+    setDefaultTeamCategory(inferTeamCategory(result.payload));
     setHasPlayoffStage(inferHasPlayoffStage(result.payload));
     setState({
       kind: 'preview',
@@ -432,7 +434,7 @@ export const TournamentImportModal = ({ onClose, onImported }: TournamentImportM
                 <option value={TeamCategory.Women}>{t('floorball.categories.women', 'Women')}</option>
               </select>
               <span className="import-modal__field-hint">
-                {t('floorball.tournaments.import.tournamentCategoryHint', 'Applied to newly created teams (existing teams keep their category).')}
+                {t('floorball.tournaments.import.tournamentCategoryHint', 'Applied to the tournament and to newly created teams (existing teams keep their category).')}
               </span>
             </label>
             <label className="import-modal__checkbox import-modal__checkbox--featured">

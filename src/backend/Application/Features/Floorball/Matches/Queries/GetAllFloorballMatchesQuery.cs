@@ -31,7 +31,8 @@ namespace Application.Features.Floorball.Matches.Queries
         string? SearchQuery = null, // Search by team names (case-insensitive, partial match)
         FloorballMatchStatus? Status = null,
         Guid? TournamentGroupId = null,
-        FloorballCompetitionType? CompetitionType = null
+        FloorballCompetitionType? CompetitionType = null,
+        Domain.Enums.Common.TeamCategory? TeamCategory = null
     ) : IRequest<Result<PagedResult<FloorballMatchDto>>>
     {
         /// <summary>

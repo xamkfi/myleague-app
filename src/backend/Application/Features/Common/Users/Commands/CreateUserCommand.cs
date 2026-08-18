@@ -15,7 +15,13 @@ namespace Application.Features.Common.Users.Commands;
 /// <summary>
 /// Command for creating a new user
 /// </summary>
+/// <remarks>
+/// <paramref name="ClubAssignments"/> is only used when <paramref name="Role"/> is
+/// <see cref="UserRole.ClubAdmin"/>: for each club an active club manager link is
+/// created (or reactivated) so the new club admin can manage that club and its teams.
+/// </remarks>
 public record CreateUserCommand(
     string Email,
     Guid PersonId,
-    UserRole Role = UserRole.ClubAdmin) : IRequest<Result<UserDto>>;
+    UserRole Role = UserRole.ClubAdmin,
+    IReadOnlyList<Guid>? ClubAssignments = null) : IRequest<Result<UserDto>>;

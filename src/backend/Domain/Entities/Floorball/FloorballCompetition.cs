@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Domain.Enums.Common;
 using Domain.ValueObjects.Floorball;
 
 namespace Domain.Entities.Floorball;
@@ -36,6 +37,11 @@ public abstract class FloorballCompetition : BaseEntity
     public bool IsCompleted { get; protected set; }
 
     /// <summary>
+    /// Gets the audience / age-group category this competition belongs to (Adult, Youth, Women).
+    /// </summary>
+    public TeamCategory TeamCategory { get; protected set; }
+
+    /// <summary>
     /// Gets the teams participating in this competition
     /// </summary>
     public IReadOnlyCollection<FloorballTeam> Teams => _teams.AsReadOnly();
@@ -64,6 +70,7 @@ public abstract class FloorballCompetition : BaseEntity
         EndDate = default;
         IsActive = false;
         IsCompleted = false;
+        TeamCategory = TeamCategory.Adult;
         MatchRules = FloorballMatchRules.Default();
         _teams = new List<FloorballTeam>();
         _matches = new List<FloorballMatch>();
@@ -72,7 +79,12 @@ public abstract class FloorballCompetition : BaseEntity
     /// <summary>
     /// Initializes a new instance of the FloorballCompetition class
     /// </summary>
-    protected FloorballCompetition(string name, DateTime startDate, DateTime endDate, FloorballMatchRules? matchRules = null)
+    protected FloorballCompetition(
+        string name,
+        DateTime startDate,
+        DateTime endDate,
+        FloorballMatchRules? matchRules = null,
+        TeamCategory teamCategory = TeamCategory.Adult)
     {
         ArgumentNullException.ThrowIfNull(name);
         if (string.IsNullOrWhiteSpace(name))
@@ -88,6 +100,7 @@ public abstract class FloorballCompetition : BaseEntity
         EndDate = endDate;
         IsActive = false;
         IsCompleted = false;
+        TeamCategory = teamCategory;
         MatchRules = matchRules ?? FloorballMatchRules.Default();
         _teams = new List<FloorballTeam>();
         _matches = new List<FloorballMatch>();
@@ -134,6 +147,17 @@ public abstract class FloorballCompetition : BaseEntity
             throw new InvalidOperationException("Cannot update match rules for a completed competition.");
 
         MatchRules = matchRules;
+    }
+
+    /// <summary>
+    /// Updates the audience / age-group category for this competition.
+    /// </summary>
+    public void UpdateTeamCategory(TeamCategory teamCategory)
+    {
+        if (IsCompleted)
+            throw new InvalidOperationException("Cannot update team category for a completed competition.");
+
+        TeamCategory = teamCategory;
     }
 
     /// <summary>

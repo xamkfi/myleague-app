@@ -1,0 +1,706 @@
+@use "sass:map";
+@use '@variables' as *;
+
+// ══════════════════════════════════════
+// Success toast (shared)
+// ══════════════════════════════════════
+.success-toast {
+  position: fixed;
+  top: map.get($spacing, 'lg');
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1002;
+  padding: map.get($spacing, 'base') map.get($spacing, 'md');
+  background-color: $color-green-almost;
+  color: $color-green-muted;
+  border: 1px solid $color-green-pale;
+  border-radius: map.get($border-radius, 'sm');
+  box-shadow: $box-shadow-drop-1;
+  animation: slideInDown 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards;
+
+  p { margin: 0; font-weight: map.get($font-weights, 'medium'); font-size: map.get($font-sizes, 'sm'); white-space: nowrap; }
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// ══════════════════════════════════════
+// Page container & loading
+// ══════════════════════════════════════
+.edit-season-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: map.get($spacing, 'lg');
+}
+
+.edit-season-loading,
+.edit-season-error {
+  text-align: center;
+  padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+  color: $color-text-muted;
+}
+
+.edit-season-back {
+  margin-bottom: map.get($spacing, 'base');
+
+  // Modifier used on the tournament edit page where we need both a "back" link and a
+  // "manage matches" CTA in the same row. Lays them out as a wrapping flex row so the
+  // primary CTA stays close to the back button on wide viewports but reflows on narrow ones.
+  &--with-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: map.get($spacing, 'sm');
+  }
+
+  .back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-blue-darkest;
+    background: $color-white;
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'sm');
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+    &:hover {
+      background-color: $color-blue-darkest;
+      color: $color-white;
+      border-color: $color-blue-darkest;
+    }
+
+    // Filled CTA variant used for primary actions (e.g. "Manage matches") inside the back row.
+    // Mirrors the hover state of the default back-button so the row stays visually consistent.
+    &--primary {
+      background-color: $color-blue-darkest;
+      color: $color-white;
+      border-color: $color-blue-darkest;
+
+      &:hover {
+        background-color: darken($color-blue-darkest, 5%);
+        border-color: darken($color-blue-darkest, 5%);
+        color: $color-white;
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════
+// Tab navigation
+// ══════════════════════════════════════
+.tab-navigation {
+  display: flex;
+  margin-bottom: 0;
+  border-bottom: 1px solid $color-border;
+  background: $color-white;
+  border-radius: $border-radius-default $border-radius-default 0 0;
+  box-shadow: $box-shadow-drop-1;
+  overflow: hidden;
+}
+
+.tab-button {
+  flex: 1;
+  padding: map.get($spacing, 'base') map.get($spacing, 'md');
+  background: $color-neutral-light-grey;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: $color-text-muted;
+  font-weight: map.get($font-weights, 'medium');
+  font-size: map.get($font-sizes, 'sm');
+  cursor: pointer;
+  @include transition(all);
+
+  &:hover:not(:disabled) { background: $color-neutral-medium-grey-alpha; color: $color-text-primary; }
+  &.active { background: $color-white; color: $color-blue-light; border-bottom-color: $color-blue-light; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ══════════════════════════════════════
+// Content container
+// ══════════════════════════════════════
+.edit-season-content {
+  background: $color-white;
+  border-radius: 0 0 $border-radius-default $border-radius-default;
+  box-shadow: $box-shadow-drop-1;
+  overflow: hidden;
+}
+
+// ══════════════════════════════════════
+// Season Details form
+// ══════════════════════════════════════
+.edit-season-form {
+  padding: map.get($spacing, 'lg');
+
+  .form-section {
+    margin-bottom: map.get($spacing, 'md');
+    &:last-of-type { margin-bottom: 0; }
+  }
+
+  .form-section__title {
+    display: flex; align-items: center; gap: map.get($spacing, 'xs');
+    margin: 0 0 map.get($spacing, 'base') 0;
+    padding-bottom: map.get($spacing, 'xs');
+    border-bottom: 2px solid $color-neutral-medium-grey;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-medium;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    i { font-size: map.get($font-sizes, 'sm'); opacity: 0.7; }
+  }
+
+  .form-group {
+    margin-bottom: map.get($spacing, 'md');
+    label {
+      display: block; margin-bottom: map.get($spacing, 'xs');
+      font-weight: map.get($font-weights, 'semibold');
+      color: $color-text-primary; font-size: map.get($font-sizes, 'sm');
+    }
+    input[type="text"], input[type="date"], input[type="number"], select {
+      width: 100%; padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      border: 1px solid $color-border; border-radius: map.get($border-radius, 'sm');
+      background-color: $color-white; color: $color-text-primary;
+      font-size: map.get($font-sizes, 'base'); @include transition(border-color); box-sizing: border-box;
+      &:focus { outline: none; border-color: $color-blue-light; box-shadow: 0 0 0 3px rgba(74,103,159,0.1); }
+      &:disabled { background-color: $color-background-light; color: $color-text-muted; cursor: not-allowed; }
+    }
+    select { cursor: pointer; &:disabled { cursor: not-allowed; } }
+    &--indented { margin-left: map.get($spacing, 'md'); padding-left: map.get($spacing, 'base'); border-left: 2px solid $color-neutral-medium-grey; }
+
+    .divisions-checkbox-list {
+      border: 1px solid $color-border; border-radius: map.get($border-radius, 'sm');
+      background-color: $color-white; padding: map.get($spacing, 'sm');
+      max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: map.get($spacing, 'xs');
+      .no-divisions { padding: map.get($spacing, 'sm'); color: $color-text-muted; text-align: center; margin: 0; font-size: map.get($font-sizes, 'sm'); }
+      .division-checkbox-item {
+        display: flex; align-items: center; gap: map.get($spacing, 'xs');
+        padding: map.get($spacing, 'xs'); border-radius: map.get($border-radius, 'sm');
+        cursor: pointer; @include transition(background-color);
+        &:hover { background-color: $color-neutral-light-grey; }
+        input[type="checkbox"] { width: auto; margin: 0; cursor: pointer; accent-color: $color-blue-light; }
+        .checkbox-label { flex: 1; font-size: map.get($font-sizes, 'base'); color: $color-text-primary; user-select: none; }
+      }
+    }
+    .selected-count { margin-top: map.get($spacing, 'xs'); font-size: map.get($font-sizes, 'sm'); color: $color-text-muted; font-style: italic; }
+  }
+
+  .form-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: map.get($spacing, 'md');
+    @media (max-width: map.get($breakpoints, 'tablet')) { grid-template-columns: 1fr; }
+  }
+
+  .toggle-container {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: map.get($spacing, 'base'); padding: map.get($spacing, 'sm') 0;
+    .toggle-label { font-weight: map.get($font-weights, 'semibold'); color: $color-text-primary; font-size: map.get($font-sizes, 'sm'); margin: 0; }
+  }
+
+  .toggle-switch {
+    position: relative; width: 48px; height: 26px; border-radius: 13px;
+    border: none; background: $color-neutral-medium-grey; cursor: pointer; padding: 0;
+    @include transition(background-color); flex-shrink: 0;
+    .toggle-switch__slider {
+      position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+      border-radius: 50%; background: $color-white; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      @include transition(transform);
+    }
+    &.active { background: $color-blue-light; .toggle-switch__slider { transform: translateX(22px); } }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+    &:not(:disabled):hover { background: $color-neutral-dark-grey; }
+    &.active:not(:disabled):hover { background: $color-blue-medium; }
+  }
+
+  .info-message {
+    background: $color-blue-secondary-almost; border: 1px solid $color-blue-secondary-pale;
+    border-radius: map.get($border-radius, 'sm'); padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+    display: flex; align-items: center; gap: map.get($spacing, 'xs');
+    color: $color-blue-secondary-muted; font-size: map.get($font-sizes, 'sm');
+    i { color: $color-blue-secondary; flex-shrink: 0; }
+  }
+
+  .form-actions {
+    display: flex; justify-content: flex-end; gap: map.get($spacing, 'base');
+    margin-top: map.get($spacing, 'lg'); padding-top: map.get($spacing, 'md'); border-top: 1px solid $color-border;
+    .btn {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md'); border: none;
+      border-radius: map.get($border-radius, 'sm'); font-size: map.get($font-sizes, 'base');
+      font-weight: map.get($font-weights, 'medium'); cursor: pointer; @include transition(all);
+      min-width: 120px; display: flex; align-items: center; justify-content: center; gap: map.get($spacing, 'xs');
+      &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+      &.btn-secondary { background-color: $color-button-secondary; color: $color-white; &:hover:not(:disabled) { background-color: $color-primary-dark; } }
+      &.btn-primary { background-color: $color-blue-light; color: $color-white;
+        &:hover:not(:disabled) { background-color: $color-blue-medium; transform: translateY(-1px); box-shadow: $box-shadow-drop-1; }
+        &:active:not(:disabled) { transform: translateY(0); }
+      }
+      i.fa-spinner { animation: spin 1s linear infinite; }
+    }
+  }
+}
+
+// ══════════════════════════════════════
+// Divisions management tab
+// ══════════════════════════════════════
+.divisions-management {
+  padding: map.get($spacing, 'lg');
+
+  .current-divisions-section, .available-divisions-section {
+    margin-bottom: map.get($spacing, 'lg');
+    h4 {
+      margin: 0 0 map.get($spacing, 'base') 0; color: $color-text-primary;
+      font-weight: map.get($font-weights, 'semibold'); font-size: map.get($font-sizes, 'sm');
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding-bottom: map.get($spacing, 'xs'); border-bottom: 2px solid $color-neutral-medium-grey;
+    }
+    .no-divisions {
+      color: $color-text-muted; font-style: italic; text-align: center;
+      padding: map.get($spacing, 'lg'); background: $color-neutral-light-grey;
+      border-radius: map.get($border-radius, 'sm'); border: 2px dashed $color-border;
+    }
+  }
+
+  .divisions-list {
+    display: flex; flex-direction: column; gap: map.get($spacing, 'sm');
+    max-height: 400px; overflow-y: auto; padding: map.get($spacing, 'xs');
+    background: $color-neutral-light-grey; border-radius: map.get($border-radius, 'sm');
+  }
+
+  .division-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: map.get($spacing, 'base'); background: $color-white;
+    border: 1px solid $color-border; border-radius: map.get($border-radius, 'sm');
+    @include transition(all);
+    &:hover { border-color: $color-neutral-dark-grey; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  }
+
+  .division-info {
+    flex: 1; display: flex; flex-direction: column; gap: map.get($spacing, 'xxs');
+    .division-name { font-weight: map.get($font-weights, 'semibold'); color: $color-text-primary; }
+    .division-team-count { font-size: map.get($font-sizes, 'sm'); color: $color-text-muted; }
+  }
+
+  .btn {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'base'); border: none;
+    border-radius: map.get($border-radius, 'sm'); font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium'); cursor: pointer; @include transition(all);
+    display: flex; align-items: center; gap: map.get($spacing, 'xxs');
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+    &.btn-danger { background-color: $color-red-primary; color: $color-white; &:hover:not(:disabled) { background-color: $color-red-muted; } }
+    &.btn-primary { background-color: $color-blue-light; color: $color-white; &:hover:not(:disabled) { background-color: $color-blue-medium; } }
+  }
+}
+
+// ══════════════════════════════════════
+// Teams management tab (tm- prefix)
+// ══════════════════════════════════════
+.teams-management {
+  padding: map.get($spacing, 'lg');
+}
+
+// ── Empty state ──
+.tm-empty-state {
+  text-align: center;
+  padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+  background: $color-neutral-light-grey;
+  border-radius: map.get($border-radius, 'sm');
+  border: 2px dashed $color-border;
+
+  > i { font-size: 2.5rem; color: $color-text-muted; margin-bottom: map.get($spacing, 'sm'); display: block; opacity: 0.4; }
+  h4 { margin: 0 0 map.get($spacing, 'xs'); color: $color-text-primary; font-size: map.get($font-sizes, 'base'); }
+  p { color: $color-text-muted; margin-bottom: map.get($spacing, 'md'); font-size: map.get($font-sizes, 'sm'); }
+  .btn-primary {
+    background-color: $color-blue-light; color: $color-white; border: none;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md'); border-radius: map.get($border-radius, 'sm');
+    cursor: pointer; font-size: map.get($font-sizes, 'base'); font-weight: map.get($font-weights, 'medium');
+    display: inline-flex; align-items: center; gap: map.get($spacing, 'xs'); @include transition(all);
+    &:hover { background-color: $color-blue-medium; transform: translateY(-1px); box-shadow: $box-shadow-drop-1; }
+  }
+}
+
+// ── Division selector ──
+.tm-division-selector {
+  margin-bottom: map.get($spacing, 'lg');
+  padding-bottom: map.get($spacing, 'md');
+  border-bottom: 1px solid $color-border;
+
+  &__label {
+    display: block;
+    margin-bottom: map.get($spacing, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__options {
+    display: flex;
+    gap: map.get($spacing, 'sm');
+    flex-wrap: wrap;
+  }
+}
+
+.tm-division-pill {
+  display: inline-flex; align-items: center; gap: map.get($spacing, 'xs');
+  padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+  border: 2px solid $color-border;
+  border-radius: 100px;
+  background: $color-white;
+  cursor: pointer;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'medium');
+  color: $color-text-primary;
+  @include transition(all);
+
+  &:hover { border-color: $color-blue-light; background: rgba(74,103,159,0.04); }
+
+  &.active {
+    border-color: $color-blue-light;
+    background: $color-blue-light;
+    color: $color-white;
+  }
+
+  &__badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 22px; padding: 0 6px;
+    border-radius: 11px;
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'bold');
+    background: $color-neutral-medium-grey; color: $color-text-primary;
+  }
+
+  &.active &__badge {
+    background: rgba(255,255,255,0.25); color: $color-white;
+  }
+}
+
+// ── Section (current teams / add teams) ──
+.tm-section {
+  margin-bottom: map.get($spacing, 'lg');
+
+  &__header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: map.get($spacing, 'base');
+    padding-bottom: map.get($spacing, 'xs');
+    border-bottom: 2px solid $color-neutral-medium-grey;
+
+    h4 {
+      margin: 0; display: flex; align-items: center; gap: map.get($spacing, 'xs');
+      font-size: map.get($font-sizes, 'sm'); font-weight: map.get($font-weights, 'semibold');
+      color: $color-blue-medium; text-transform: uppercase; letter-spacing: 0.04em;
+      i { opacity: 0.7; }
+    }
+  }
+
+  &__count {
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &__empty {
+    text-align: center;
+    padding: map.get($spacing, 'lg') map.get($spacing, 'md');
+    background: $color-neutral-light-grey;
+    border-radius: map.get($border-radius, 'sm');
+    border: 2px dashed $color-border;
+    p { margin: 0; color: $color-text-muted; font-size: map.get($font-sizes, 'sm'); }
+  }
+}
+
+// ── Team grid (chips for current teams in division) ──
+.tm-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: map.get($spacing, 'sm');
+}
+
+.tm-team-chip {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: map.get($border-radius, 'sm');
+  @include transition(all);
+
+  &:hover {
+    border-color: $color-neutral-dark-grey;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  &__info {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: 1px;
+  }
+
+  &__name {
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-primary;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  &__club {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-text-muted;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  &__remove {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border: none; border-radius: 50%;
+    background: transparent;
+    color: $color-text-muted;
+    cursor: pointer;
+    @include transition(all);
+    margin-left: map.get($spacing, 'sm');
+
+    &:hover:not(:disabled) { background: $color-red-primary; color: $color-white; }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    i { font-size: map.get($font-sizes, 'xs'); }
+  }
+}
+
+// ── Filters row ──
+.tm-filters {
+  display: flex; gap: map.get($spacing, 'sm'); margin-bottom: map.get($spacing, 'base');
+
+  &__search {
+    flex: 1; position: relative;
+
+    > i {
+      position: absolute; left: map.get($spacing, 'sm'); top: 50%; transform: translateY(-50%);
+      color: $color-text-muted; font-size: map.get($font-sizes, 'sm'); pointer-events: none;
+    }
+
+    input {
+      width: 100%; padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      padding-left: map.get($spacing, 'xl');
+      border: 1px solid $color-border; border-radius: map.get($border-radius, 'sm');
+      background-color: $color-white; color: $color-text-primary; font-size: map.get($font-sizes, 'sm');
+      @include transition(border-color); box-sizing: border-box;
+      &:focus { outline: none; border-color: $color-blue-light; box-shadow: 0 0 0 2px rgba(74,103,159,0.1); }
+      &::placeholder { color: $color-placeholder; }
+    }
+  }
+
+  &__clear {
+    position: absolute; right: map.get($spacing, 'xs'); top: 50%; transform: translateY(-50%);
+    border: none; background: none; color: $color-text-muted; cursor: pointer;
+    padding: 4px; border-radius: 50%; font-size: map.get($font-sizes, 'xs');
+    @include transition(color);
+    &:hover { color: $color-text-primary; }
+  }
+
+  &__category {
+    min-width: 140px; padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+    border: 1px solid $color-border; border-radius: map.get($border-radius, 'sm');
+    background-color: $color-white; color: $color-text-primary; font-size: map.get($font-sizes, 'sm');
+    cursor: pointer; @include transition(border-color); box-sizing: border-box;
+    &:focus { outline: none; border-color: $color-blue-light; box-shadow: 0 0 0 2px rgba(74,103,159,0.1); }
+  }
+
+  @media (max-width: map.get($breakpoints, 'mobile')) {
+    flex-direction: column;
+    &__category { min-width: auto; width: 100%; }
+  }
+}
+
+// ── Multi-select action bar ──
+.tm-action-bar {
+  display: flex; align-items: center; gap: map.get($spacing, 'base');
+  padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+  background: $color-blue-background;
+  border: 1px solid rgba(74,103,159,0.2);
+  border-radius: map.get($border-radius, 'sm');
+  margin-bottom: map.get($spacing, 'base');
+
+  > span {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-deep;
+  }
+
+  .btn {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'base'); border: none;
+    border-radius: map.get($border-radius, 'sm'); font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium'); cursor: pointer; @include transition(all);
+    display: inline-flex; align-items: center; gap: map.get($spacing, 'xxs');
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+    &.btn-primary { background-color: $color-blue-light; color: $color-white; &:hover:not(:disabled) { background-color: $color-blue-medium; } }
+    i.fa-spinner { animation: spin 1s linear infinite; }
+  }
+
+  &__clear {
+    margin-left: auto;
+    border: none; background: none;
+    color: $color-text-muted; font-size: map.get($font-sizes, 'sm');
+    cursor: pointer; text-decoration: underline;
+    @include transition(color);
+    &:hover { color: $color-text-primary; }
+  }
+}
+
+// ── Loading ──
+.tm-loading {
+  text-align: center;
+  padding: map.get($spacing, 'xl') map.get($spacing, 'md');
+  color: $color-text-muted;
+  i { font-size: 1.25rem; margin-bottom: map.get($spacing, 'sm'); display: block; animation: spin 1s linear infinite; }
+  p { margin: 0; font-size: map.get($font-sizes, 'sm'); }
+}
+
+// ── Teams table ──
+.tm-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid $color-border;
+  border-radius: map.get($border-radius, 'sm');
+}
+
+.tm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: map.get($font-sizes, 'sm');
+
+  thead {
+    background: $color-neutral-light-grey;
+    th {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      text-align: left;
+      font-weight: map.get($font-weights, 'semibold');
+      color: $color-text-primary;
+      text-transform: uppercase;
+      font-size: map.get($font-sizes, 'xs');
+      letter-spacing: 0.04em;
+      border-bottom: 2px solid $color-border;
+      white-space: nowrap;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid $color-border;
+      @include transition(background-color);
+
+      &:last-child { border-bottom: none; }
+      &:hover { background-color: $color-neutral-light-grey; }
+      &.selected { background-color: $color-blue-background; }
+      &.in-season {
+        background-color: $color-neutral-light-grey;
+        opacity: 0.7;
+      }
+    }
+
+    td {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      color: $color-text-primary;
+      vertical-align: middle;
+    }
+  }
+
+  &__checkbox {
+    width: 40px;
+    text-align: center !important;
+    input[type="checkbox"] {
+      width: 16px; height: 16px;
+      cursor: pointer;
+      accent-color: $color-blue-light;
+      &:disabled { cursor: not-allowed; opacity: 0.4; }
+    }
+  }
+
+  &__team-name {
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-text-primary;
+  }
+
+  &__short-name {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-text-muted;
+    margin-left: map.get($spacing, 'xxs');
+  }
+
+  &__club {
+    color: $color-text-muted;
+  }
+
+  &__status {
+    width: 100px;
+    text-align: center !important;
+  }
+
+  &__actions {
+    width: 80px;
+    text-align: right !important;
+
+    .btn {
+      padding: map.get($spacing, 'xxs') map.get($spacing, 'sm'); border: none;
+      border-radius: map.get($border-radius, 'sm'); font-size: map.get($font-sizes, 'xs');
+      font-weight: map.get($font-weights, 'medium'); cursor: pointer; @include transition(all);
+      display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
+      &.btn-primary { background-color: $color-blue-light; color: $color-white; &:hover:not(:disabled) { background-color: $color-blue-medium; } }
+      i.fa-spinner { animation: spin 1s linear infinite; }
+    }
+  }
+}
+
+// ── Category & status badges ──
+.tm-category-badge {
+  display: inline-block;
+  font-size: map.get($font-sizes, 'xs');
+  font-weight: map.get($font-weights, 'medium');
+  padding: 2px map.get($spacing, 'xs');
+  border-radius: map.get($border-radius, 'sm');
+  background-color: $color-neutral-light-grey;
+  color: $color-text-primary;
+  text-transform: capitalize;
+}
+
+.tm-status-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: map.get($font-sizes, 'xs');
+  font-weight: map.get($font-weights, 'medium');
+  padding: 2px map.get($spacing, 'xs');
+  border-radius: map.get($border-radius, 'sm');
+
+  &--added {
+    background-color: $color-green-almost;
+    color: $color-green-muted;
+    i { font-size: 10px; }
+  }
+}
+
+// ══════════════════════════════════════
+// Responsive
+// ══════════════════════════════════════
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .edit-season-container { padding: map.get($spacing, 'base'); }
+  .edit-season-form { padding: map.get($spacing, 'md'); }
+  .teams-management, .divisions-management { padding: map.get($spacing, 'md'); }
+  .edit-season-form .form-actions { flex-direction: column; .btn { width: 100%; } }
+  .tm-team-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: map.get($breakpoints, 'mobile')) {
+  .edit-season-container { padding: map.get($spacing, 'xs'); }
+  .tab-navigation { border-radius: map.get($border-radius, 'sm') map.get($border-radius, 'sm') 0 0; }
+  .edit-season-content { border-radius: 0 0 map.get($border-radius, 'sm') map.get($border-radius, 'sm'); }
+  .edit-season-form, .teams-management, .divisions-management { padding: map.get($spacing, 'base'); }
+  .tm-division-selector__options { flex-direction: column; }
+  .tm-action-bar { flex-wrap: wrap; }
+}

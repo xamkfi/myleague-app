@@ -93,7 +93,8 @@ public static class FloorballSeasonMapper
             seasonDivisions,
             FloorballTeamMapper.ToDtos(teamsToMap, clubs, new Dictionary<Guid, Person>()).ToList().AsReadOnly(),
             FloorballMatchMapper.ToDtos(season.Matches).ToList().AsReadOnly(),
-            matchRulesDto
+            matchRulesDto,
+            season.TeamCategory
         );
     }
 
@@ -137,7 +138,8 @@ public static class FloorballSeasonMapper
          command.Name,
          startDateUtc,
          endDateUtc,
-         matchRules
+         matchRules,
+         command.TeamCategory
      );
     }
 
@@ -186,5 +188,9 @@ public static class FloorballSeasonMapper
             command.OvertimeDurationMinutes,
             command.AllowShootout);
         season.UpdateMatchRules(matchRules);
+        if (command.TeamCategory.HasValue)
+        {
+            season.UpdateTeamCategory(command.TeamCategory.Value);
+        }
     }
 } 

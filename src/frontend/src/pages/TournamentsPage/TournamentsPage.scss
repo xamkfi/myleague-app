@@ -13,7 +13,7 @@
   padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'lg');
 
   &__header {
-    background: linear-gradient(135deg, $color-blue-deep 0%, $color-blue-darkest 100%);
+    background: $color-banner-bg;
     border-radius: map.get($border-radius, 'lg');
     padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
     margin-bottom: map.get($spacing, 'xl');
@@ -90,7 +90,7 @@
 // Mirrors .season-card from FloorballPage so users see one consistent surface
 // across "Sarjat" and "Turnaukset".
 .tournament-card {
-  background: $color-blue-darkest;
+  background: $color-brand-darkest;
   border-radius: map.get($border-radius, 'lg');
   overflow: hidden;
   border: 1px solid rgba($color-white, 0.1);
@@ -102,7 +102,7 @@
     align-items: center;
     justify-content: space-between;
     padding: map.get($spacing, 'md') map.get($spacing, 'lg');
-    background: linear-gradient(90deg, $color-blue-deep 0%, $color-blue-darkest 100%);
+    background: $color-banner-bg;
     gap: map.get($spacing, 'sm');
   }
 
