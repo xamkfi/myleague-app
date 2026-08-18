@@ -23,7 +23,7 @@ function FootballTeamPage() {
   const { t } = useTranslation();
 
   const [team, setTeam] = useState<FootballTeam | null>(null);
-  const [matches, setMatches] = useState<FootballMatchDto[] | null>(null)
+  const [matches, setMatches] = useState<FootballMatchDto[] | null>(null);
   const [teamStatistics, setTeamStatistics] = useState<FootballTeamSeasonStatisticsDto | null>(null);
   const [seasonSummary, setSeasonSummary] = useState<FootballSeasonStatisticsSummaryDto | null>(null);
   const [currentSeason, setCurrentSeason] = useState<FootballSeasonDto | null>(null);

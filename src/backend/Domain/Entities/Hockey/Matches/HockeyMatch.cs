@@ -153,15 +153,16 @@ public class HockeyMatch : BaseEntity
         Guid? competitionTeamId = null;
         if (CompetitionId is Guid competitionId)
         {
-            ArgumentNullException.ThrowIfNull(competitionTeam);
-            if (competitionTeam.CompetitionId != competitionId)
+            if (competitionTeam is not HockeyCompetitionTeam assignedTeam)
+                throw new ArgumentNullException(nameof(competitionTeam));
+            if (assignedTeam.CompetitionId != competitionId)
                 throw new InvalidOperationException("Competition team must belong to the same competition as the match.");
-            if (competitionTeam.TeamId != teamId)
+            if (assignedTeam.TeamId != teamId)
                 throw new InvalidOperationException("Competition team must reference the same team id.");
-            if (!competitionTeam.IsActive)
+            if (!assignedTeam.IsActive)
                 throw new InvalidOperationException("Competition team is not active.");
 
-            competitionTeamId = competitionTeam.Id;
+            competitionTeamId = assignedTeam.Id;
         }
         else if (competitionTeam is not null)
         {

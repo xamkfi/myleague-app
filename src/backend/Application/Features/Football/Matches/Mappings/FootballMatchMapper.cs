@@ -78,16 +78,19 @@ public static class FootballMatchMapper
         Uri? homeTeamLogo = match.HomeTeam?.GetEffectiveLogoUrl(homeClub?.LogoUrl);
         Uri? awayTeamLogo = match.AwayTeam?.GetEffectiveLogoUrl(awayClub?.LogoUrl);
 
-        List<FootballLineupPlayerDto> homeLineup = match.HomeTeamId.HasValue
+        Guid? homeTeamId = match.HomeTeamId;
+        Guid? awayTeamId = match.AwayTeamId;
+
+        List<FootballLineupPlayerDto> homeLineup = homeTeamId is Guid homeId
             ? match.Lineup
-                .Where(p => p.TeamId == match.HomeTeamId.Value)
+                .Where(p => p.TeamId == homeId)
                 .Select(p => new FootballLineupPlayerDto(p.PlayerId, p.Position, p.IsOnField, p.IsSentOff))
                 .ToList()
             : new List<FootballLineupPlayerDto>();
 
-        List<FootballLineupPlayerDto> awayLineup = match.AwayTeamId.HasValue
+        List<FootballLineupPlayerDto> awayLineup = awayTeamId is Guid awayId
             ? match.Lineup
-                .Where(p => p.TeamId == match.AwayTeamId.Value)
+                .Where(p => p.TeamId == awayId)
                 .Select(p => new FootballLineupPlayerDto(p.PlayerId, p.Position, p.IsOnField, p.IsSentOff))
                 .ToList()
             : new List<FootballLineupPlayerDto>();

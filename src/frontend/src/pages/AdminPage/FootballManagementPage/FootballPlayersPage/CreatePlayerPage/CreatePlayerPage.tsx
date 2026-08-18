@@ -167,7 +167,7 @@ const CreatePlayerPage = () => {
       setError(null);
       
       let personsData: Person[];
-      let paginationMetadata = { totalCount: 0, totalPages: 1 };
+      let paginationMetadata: { totalCount: number; totalPages: number };
       
       // Conditionally fetch based on search term (require at least 2 characters)
       const trimmedSearchTerm = debouncedSearchTerm.trim();
