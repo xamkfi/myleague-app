@@ -475,11 +475,11 @@ namespace WebAPI.Controllers.Common
 
             if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? imageUri))
             {
-                _logger.LogError("Failed to parse URL: '{url}'", SanitizeForLog(url));
-                return BadRequest(ApiResponse<string>.ErrorResponse($"Invalid URL format: {url}"));
+                _logger.LogError("Failed to parse image deletion URL");
+                return BadRequest(ApiResponse<string>.ErrorResponse("Invalid URL format"));
             }
 
-            _logger.LogInformation("Successfully parsed Uri: {parsedUri}", imageUri);
+            _logger.LogInformation("Successfully parsed image deletion URL");
             try
             {
                 DeleteImageCommand command = new DeleteImageCommand(imageUri);

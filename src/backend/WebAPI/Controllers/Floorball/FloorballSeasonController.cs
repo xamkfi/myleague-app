@@ -1,5 +1,6 @@
 using Domain.Constants;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Application.Common;
@@ -7,6 +8,7 @@ using Application.Features.Floorball.Seasons.Commands;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Seasons.Queries;
 using Domain.Common;
+using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -85,7 +87,7 @@ namespace WebAPI.Controllers.Floorball
                 "Getting paged floorball seasons - Page: {Page}, PageSize: {PageSize}, SeasonYear: {SeasonYear}",
                 request.Page,
                 request.PageSize,
-                request.SeasonYear);
+                FormatSeasonYearForLog(request.SeasonYear));
 
             GetFloorballSeasonsPagedQuery query = new GetFloorballSeasonsPagedQuery(
                 request.Page,
@@ -439,6 +441,26 @@ namespace WebAPI.Controllers.Floorball
             Result result = await _mediator.Send(command);
 
             return HandleVoidResult(result, "Floorball season deleted successfully", "Failed to delete floorball season");
+        }
+
+        /// <summary>
+        /// Rebuilds a season-year label from parsed integers so user-controlled query text is never written to logs.
+        /// </summary>
+        private static string FormatSeasonYearForLog(string? seasonYear)
+        {
+            if (string.IsNullOrWhiteSpace(seasonYear))
+            {
+                return "all";
+            }
+
+            if (!FloorballSeasonYear.TryParse(seasonYear, out int startYear, out int endYear))
+            {
+                return "invalid";
+            }
+
+            return startYear == endYear
+                ? startYear.ToString(CultureInfo.InvariantCulture)
+                : string.Create(CultureInfo.InvariantCulture, $"{startYear}-{endYear}");
         }
     }
 }
