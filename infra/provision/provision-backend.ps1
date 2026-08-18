@@ -8,7 +8,7 @@
     This does NOT deploy the application code - use the deploy scripts for that.
 
 .PARAMETER Environment
-    The environment to provision (dev, staging, prod). Default: dev
+    The environment to provision (staging, prod). Default: staging
 
 .PARAMETER Location
     The Azure region for resources. Default: westeurope
@@ -27,22 +27,26 @@
     The admin email for database seeding (optional).
     If set, an admin user with this email is created on first startup.
 
+.PARAMETER AlertEmail
+    The admin email that receives monitoring alerts (health, errors, DB, cost).
+    If not provided, you will be prompted. Leave empty to skip deploying alerts.
+
 .PARAMETER SkipLogin
     Skip the Azure login check (use if already logged in).
 
 .EXAMPLE
     .\provision-backend.ps1
-    # Interactive provisioning with prompts
+    # Interactive provisioning with prompts (staging)
 
 .EXAMPLE
-    .\provision-backend.ps1 -Environment staging -Location northeurope
-    # Provision staging in North Europe
+    .\provision-backend.ps1 -Environment prod -AlertEmail admin@example.com
+    # Provision production with monitoring alerts to admin@example.com
 #>
 
 param(
     [Parameter()]
-    [ValidateSet('dev', 'staging', 'prod')]
-    [string]$Environment = 'dev',
+    [ValidateSet('staging', 'prod')]
+    [string]$Environment = 'staging',
 
     [Parameter()]
     [string]$Location = 'westeurope',
@@ -58,6 +62,9 @@ param(
 
     [Parameter()]
     [string]$SeedAdminEmail,
+
+    [Parameter()]
+    [string]$AlertEmail,
 
     [Parameter()]
     [switch]$SkipLogin
@@ -216,6 +223,18 @@ if (-not $SeedAdminEmail) {
     $SeedAdminEmail = Read-Host "Enter admin email (or press Enter to skip)"
 }
 
+# Get Alert Email (optional but recommended)
+if (-not $AlertEmail) {
+    Write-Host ""
+    Write-Host "Monitoring Alert Email (recommended):" -ForegroundColor Yellow
+    Write-Host "  - Receives automatic alerts: app down, HTTP 5xx spikes, slow responses,"
+    Write-Host "    CPU/memory pressure, database issues, and cost budget warnings"
+    Write-Host "  - Leave empty to skip deploying monitoring alerts"
+    Write-Host ""
+
+    $AlertEmail = Read-Host "Enter alert email (or press Enter to skip)"
+}
+
 Write-Success "Parameters configured"
 
 # ============================================================================
@@ -245,7 +264,12 @@ Write-Step "Provisioning infrastructure (this may take 5-10 minutes)..."
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $templateFile = Join-Path $scriptDir "backend.bicep"
-$parametersFile = Join-Path $scriptDir "backend.bicepparam"
+$parametersFile = Join-Path $scriptDir "backend.$Environment.bicepparam"
+
+if (-not (Test-Path $parametersFile)) {
+    Write-ErrorMsg "Parameter file not found: $parametersFile"
+    exit 1
+}
 
 # Validate template first
 Write-Host "  Validating template..." -ForegroundColor Gray
@@ -256,6 +280,7 @@ az deployment group validate `
     --parameters postgresAdminPassword=$PostgresPassword `
     --parameters jwtSecretKey=$JwtSecretKey `
     --parameters seedAdminEmail=$SeedAdminEmail `
+    --parameters alertEmail=$AlertEmail `
     --parameters location=$Location `
     --parameters environmentName=$Environment `
     --output none
@@ -275,6 +300,7 @@ $deploymentOutput = az deployment group create `
     --parameters postgresAdminPassword=$PostgresPassword `
     --parameters jwtSecretKey=$JwtSecretKey `
     --parameters seedAdminEmail=$SeedAdminEmail `
+    --parameters alertEmail=$AlertEmail `
     --parameters location=$Location `
     --parameters environmentName=$Environment `
     --name "myleague-$Environment-$(Get-Date -Format 'yyyyMMdd-HHmmss')" `

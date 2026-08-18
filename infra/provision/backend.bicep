@@ -72,6 +72,23 @@ param seedAdminEmail string = ''
 @description('The base URL of the frontend application (e.g. https://calm-tree-06b4ac003.2.azurestaticapps.net)')
 param frontendBaseUrl string = ''
 
+@description('The admin email that receives monitoring alerts. Leave empty to skip deploying alerts.')
+param alertEmail string = ''
+
+@description('Deploy an external availability (uptime) test. Recommended for prod only.')
+param enableAvailabilityTest bool = false
+
+@description('Monthly cost budget for this resource group in USD (email notifications at 80% and 100%)')
+param monthlyBudgetAmount int = 35
+
+@description('PostgreSQL backup retention in days (7-35)')
+@minValue(7)
+@maxValue(35)
+param postgresBackupRetentionDays int = 7
+
+@description('Daily ingestion cap in GB for the Log Analytics workspace backing Application Insights')
+param appInsightsDailyCapGb int = 1
+
 // ============================================================================
 // Variables
 // ============================================================================
@@ -125,6 +142,7 @@ module postgres 'modules/postgresql.bicep' = {
     skuTier: 'Burstable'
     storageSizeGB: 32
     postgresVersion: '16'
+    backupRetentionDays: postgresBackupRetentionDays
     tags: tags
   }
 }
@@ -159,7 +177,7 @@ module applicationInsights 'modules/application-insights.bicep' = {
     workspaceName: logAnalyticsWorkspaceName
     location: location
     retentionInDays: 30
-    dailyQuotaGb: 1
+    dailyQuotaGb: appInsightsDailyCapGb
     tags: tags
   }
 }
@@ -182,6 +200,26 @@ module appService 'modules/app-service.bicep' = {
     seedAdminEmail: seedAdminEmail
     frontendBaseUrl: frontendBaseUrl
     appInsightsConnectionString: applicationInsights.outputs.connectionString
+    tags: tags
+  }
+}
+
+// Monitoring & alerting (action group, metric alerts, availability test,
+// smart detection, cost budget). Only deployed when an alert email is set.
+module monitoring 'modules/monitoring-alerts.bicep' = if (alertEmail != '') {
+  name: 'monitoringAlerts'
+  params: {
+    namePrefix: resourcePrefix
+    location: location
+    alertEmail: alertEmail
+    appServiceId: appService.outputs.id
+    appServicePlanId: appServicePlan.outputs.id
+    postgresServerId: postgres.outputs.id
+    appInsightsId: applicationInsights.outputs.id
+    appInsightsName: applicationInsights.outputs.name
+    apiHostname: appService.outputs.hostname
+    enableAvailabilityTest: enableAvailabilityTest
+    monthlyBudgetAmount: monthlyBudgetAmount
     tags: tags
   }
 }

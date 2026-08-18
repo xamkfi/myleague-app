@@ -43,6 +43,11 @@ param storageSizeGB int = 32
 ])
 param postgresVersion string = '16'
 
+@description('Backup retention in days (7-35)')
+@minValue(7)
+@maxValue(35)
+param backupRetentionDays int = 7
+
 @description('Tags to apply to the PostgreSQL server')
 param tags object = {}
 
@@ -62,7 +67,7 @@ resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-pr
       storageSizeGB: storageSizeGB
     }
     backup: {
-      backupRetentionDays: 7
+      backupRetentionDays: backupRetentionDays
       geoRedundantBackup: 'Disabled'
     }
     highAvailability: {

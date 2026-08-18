@@ -6,12 +6,13 @@
 # Usage: ./provision-backend.sh [options]
 #
 # Options:
-#   -e, --environment   Environment (dev, staging, prod). Default: dev
+#   -e, --environment   Environment (staging, prod). Default: staging
 #   -l, --location      Azure region. Default: westeurope
 #   -g, --resource-group Override resource group name
 #   -p, --password      PostgreSQL admin password (will prompt if not provided)
 #   -j, --jwt-secret    JWT secret key for token signing (min 32 chars, prompted if not provided)
 #   -a, --admin-email   Admin email for database seeding (optional)
+#   -m, --alert-email   Admin email for monitoring alerts (optional, prompted if not provided)
 #   -s, --skip-login    Skip Azure login check
 #   -h, --help          Show this help message
 # ============================================================================
@@ -19,12 +20,13 @@
 set -e
 
 # Default values
-ENVIRONMENT="dev"
+ENVIRONMENT="staging"
 LOCATION="westeurope"
 RESOURCE_GROUP=""
 POSTGRES_PASSWORD=""
 JWT_SECRET_KEY=""
 SEED_ADMIN_EMAIL=""
+ALERT_EMAIL=""
 SKIP_LOGIN=false
 
 # Colors
@@ -68,6 +70,10 @@ while [[ $# -gt 0 ]]; do
             SEED_ADMIN_EMAIL="$2"
             shift 2
             ;;
+        -m|--alert-email)
+            ALERT_EMAIL="$2"
+            shift 2
+            ;;
         -s|--skip-login)
             SKIP_LOGIN=true
             shift
@@ -76,12 +82,13 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: ./provision-backend.sh [options]"
             echo ""
             echo "Options:"
-            echo "  -e, --environment   Environment (dev, staging, prod). Default: dev"
+            echo "  -e, --environment   Environment (staging, prod). Default: staging"
             echo "  -l, --location      Azure region. Default: westeurope"
             echo "  -g, --resource-group Override resource group name"
             echo "  -p, --password      PostgreSQL admin password"
             echo "  -j, --jwt-secret    JWT secret key (min 32 chars)"
             echo "  -a, --admin-email   Admin email for database seeding (optional)"
+            echo "  -m, --alert-email   Admin email for monitoring alerts (optional)"
             echo "  -s, --skip-login    Skip Azure login check"
             echo "  -h, --help          Show this help message"
             exit 0
@@ -94,8 +101,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate environment
-if [[ ! "$ENVIRONMENT" =~ ^(dev|staging|prod)$ ]]; then
-    print_error "Invalid environment. Must be: dev, staging, or prod"
+if [[ ! "$ENVIRONMENT" =~ ^(staging|prod)$ ]]; then
+    print_error "Invalid environment. Must be: staging or prod"
     exit 1
 fi
 
@@ -215,6 +222,18 @@ if [ -z "$SEED_ADMIN_EMAIL" ]; then
     read -p "Enter admin email (or press Enter to skip): " SEED_ADMIN_EMAIL
 fi
 
+# Get Alert Email (optional but recommended)
+if [ -z "$ALERT_EMAIL" ]; then
+    echo ""
+    echo -e "${YELLOW}Monitoring Alert Email (recommended):${NC}"
+    echo "  - Receives automatic alerts: app down, HTTP 5xx spikes, slow responses,"
+    echo "    CPU/memory pressure, database issues, and cost budget warnings"
+    echo "  - Leave empty to skip deploying monitoring alerts"
+    echo ""
+
+    read -p "Enter alert email (or press Enter to skip): " ALERT_EMAIL
+fi
+
 print_success "Parameters configured"
 
 # ============================================================================
@@ -238,8 +257,13 @@ print_step "Provisioning infrastructure (this may take 5-10 minutes)..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE_FILE="$SCRIPT_DIR/backend.bicep"
-PARAMETERS_FILE="$SCRIPT_DIR/backend.bicepparam"
+PARAMETERS_FILE="$SCRIPT_DIR/backend.${ENVIRONMENT}.bicepparam"
 DEPLOYMENT_NAME="myleague-${ENVIRONMENT}-$(date +%Y%m%d-%H%M%S)"
+
+if [ ! -f "$PARAMETERS_FILE" ]; then
+    print_error "Parameter file not found: $PARAMETERS_FILE"
+    exit 1
+fi
 
 # Validate template
 echo "  Validating template..."
@@ -250,6 +274,7 @@ az deployment group validate \
     --parameters postgresAdminPassword="$POSTGRES_PASSWORD" \
     --parameters jwtSecretKey="$JWT_SECRET_KEY" \
     --parameters seedAdminEmail="$SEED_ADMIN_EMAIL" \
+    --parameters alertEmail="$ALERT_EMAIL" \
     --parameters location="$LOCATION" \
     --parameters environmentName="$ENVIRONMENT" \
     --output none
@@ -265,6 +290,7 @@ az deployment group create \
     --parameters postgresAdminPassword="$POSTGRES_PASSWORD" \
     --parameters jwtSecretKey="$JWT_SECRET_KEY" \
     --parameters seedAdminEmail="$SEED_ADMIN_EMAIL" \
+    --parameters alertEmail="$ALERT_EMAIL" \
     --parameters location="$LOCATION" \
     --parameters environmentName="$ENVIRONMENT" \
     --name "$DEPLOYMENT_NAME" \

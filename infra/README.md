@@ -1,6 +1,25 @@
 # MyLeague Azure Infrastructure
 
-This directory contains infrastructure provisioning (Bicep/IaC) and application deployment scripts, organized into separate folders.
+This directory contains infrastructure provisioning (Bicep/IaC) and application deployment scripts.
+
+## Environment Strategy
+
+| Environment | Where | Purpose | Monthly cost |
+|-------------|-------|---------|--------------|
+| **Local dev** | `docker-compose up` at repo root | Day-to-day development (Postgres, Seq, API, frontend) | $0 |
+| **Staging** | Azure (`myleague-staging-rg`) | Pre-release testing, auto-deployed from the `development` branch | ~$26 |
+| **Prod** | Azure (`myleague-prod-rg`) | Production, manual deploys gated by approval | ~$27 |
+
+There is deliberately no cloud dev environment - local docker-compose covers it.
+
+**Cost tip:** stop the staging App Service when nobody is testing:
+
+```bash
+az webapp stop --name myleague-staging-api --resource-group myleague-staging-rg
+az webapp start --name myleague-staging-api --resource-group myleague-staging-rg
+```
+
+(The PostgreSQL Flexible Server can also be stopped for up to 7 days: `az postgres flexible-server stop --name myleague-staging-postgres --resource-group myleague-staging-rg`.)
 
 ## Folder Structure
 
@@ -8,291 +27,269 @@ This directory contains infrastructure provisioning (Bicep/IaC) and application 
 infra/
 ├── provision/                        # Infrastructure provisioning (Bicep + scripts)
 │   ├── backend.bicep                 # Backend infrastructure template
-│   ├── backend.bicepparam            # Backend parameters (dev)
+│   ├── backend.staging.bicepparam    # Backend parameters (staging)
+│   ├── backend.prod.bicepparam       # Backend parameters (prod)
 │   ├── frontend.bicep                # Frontend infrastructure template (SWA)
-│   ├── frontend.bicepparam           # Frontend parameters (dev)
-│   ├── provision-backend.ps1         # Provision backend infra (Windows)
-│   ├── provision-backend.sh          # Provision backend infra (Linux/macOS)
-│   ├── provision-frontend.ps1        # Provision frontend infra (Windows)
+│   ├── frontend.staging.bicepparam   # Frontend parameters (staging)
+│   ├── frontend.prod.bicepparam      # Frontend parameters (prod)
+│   ├── provision-backend.ps1 / .sh   # Provision backend infra manually
+│   ├── provision-frontend.ps1        # Provision frontend infra manually
 │   └── modules/
-│       ├── app-service-plan.bicep    # App Service Plan module
-│       ├── app-service.bicep         # App Service module
-│       ├── communication-services.bicep  # Azure Communication Services (Email)
-│       ├── postgresql.bicep          # PostgreSQL module
-│       ├── static-web-app.bicep      # Static Web App module
-│       └── storage-account.bicep     # Storage Account module
-├── deploy/                           # Application deployment scripts
-│   ├── deploy-backend.ps1           # Build & deploy .NET API to App Service (interactive)
-│   └── deploy-frontend.ps1          # Build & deploy React app to SWA (interactive)
+│       ├── app-service-plan.bicep    # App Service Plan
+│       ├── app-service.bicep         # App Service (API)
+│       ├── application-insights.bicep # App Insights + Log Analytics
+│       ├── communication-services.bicep # Azure Communication Services (Email)
+│       ├── monitoring-alerts.bicep   # Action group, alerts, uptime test, budget
+│       ├── postgresql.bicep          # PostgreSQL Flexible Server
+│       ├── static-web-app.bicep      # Static Web App
+│       └── storage-account.bicep     # Storage Account (image uploads)
+├── deploy/                           # Manual application deployment scripts
+│   ├── deploy-backend.ps1
+│   └── deploy-frontend.ps1
 └── README.md
 ```
 
-**`provision/`** = Create or update Azure resources (Bicep infrastructure-as-code)
-**`deploy/`** = Build and deploy application code to existing Azure resources
+The preferred way to provision and deploy is via GitHub Actions (see below). The PowerShell/bash scripts remain for manual/emergency use.
 
-## Architecture
+## Architecture (per environment)
 
 ### Backend
-- **App Service Plan** (Basic B1) - Hosts the .NET 9 API
-- **App Service** - The MyLeague API application
-- **PostgreSQL Flexible Server** (Burstable B1ms) - Database server
-- **Storage Account** - Image uploads
-- **Azure Communication Services** - Email delivery (login codes)
-  - Email Service with Azure-managed domain (auto-verified)
-  - DoNotReply sender username
+- **App Service Plan** (Basic B1, Linux) - hosts the .NET 9 API
+  - Keep instance count at **1**: SignalR uses an in-memory timer store, so scaling out requires a Redis/Azure SignalR backplane first
+- **App Service** - the MyLeague API (`myleague-{env}-api`)
+- **PostgreSQL Flexible Server** (Burstable B1ms) - database
+- **Storage Account** - image uploads
+- **Azure Communication Services** - email delivery (login codes), Azure-managed domain
+- **Application Insights + Log Analytics** - telemetry (30-day retention, 1 GB/day cap)
+- **Monitoring & alerting** - see below
 
 ### Frontend
-- **Azure Static Web App** (Free tier) - Hosts the React SPA
+- **Azure Static Web App** (Free tier) - hosts the React SPA (`myleague-{env}-web`)
 
-## Prerequisites
+## Monitoring & Alerting
 
-1. **Azure CLI** - Install from https://docs.microsoft.com/en-us/cli/azure/install-azure-cli
-2. **Azure Subscription** - You need an active Azure subscription
-3. **Bicep CLI** - Usually included with Azure CLI
-4. **.NET 9 SDK** - For backend builds (https://dotnet.microsoft.com/download)
-5. **pnpm** - For frontend builds (https://pnpm.io/installation)
-6. **SWA CLI** - For frontend deployment (`npm install -g @azure/static-web-apps-cli`)
+Deployed by [provision/modules/monitoring-alerts.bicep](provision/modules/monitoring-alerts.bicep) whenever the `alertEmail` parameter is set. All alerts email the admin via a shared Action Group.
 
-## Quick Start
+| Alert | Signal | Threshold | Severity |
+|-------|--------|-----------|----------|
+| Health check failing | App Service `HealthCheckStatus` | < 100 for 5 min | 1 (critical) |
+| Site down (prod only) | Availability test on `/health/ready` from 3 EU regions, every 5 min | 2+ locations failing | 1 (critical) |
+| Postgres disk filling | `storage_percent` | > 80% | 1 (critical) |
+| HTTP 5xx spike | `Http5xx` | > 10 in 5 min | 2 |
+| Server exceptions spike | App Insights `exceptions/server` | > 10 in 15 min | 2 |
+| Postgres CPU | `cpu_percent` | > 90% for 15 min | 2 |
+| Postgres failed connections | `connections_failed` | > 10 in 15 min | 2 |
+| Slow responses | `HttpResponseTime` | avg > 5s for 15 min | 3 |
+| Plan CPU / memory | `CpuPercentage` / `MemoryPercentage` | > 85% for 15 min | 3 |
+| Failure Anomalies | App Insights Smart Detection (ML-based) | automatic | 3 |
+| Cost budget | Resource group spend | 80% and 100% of $35/month | notification |
 
-### 1. Provision Backend Infrastructure
+Additional useful metrics with no extra setup: the App Insights dashboards (Failures, Performance, Live Metrics) and the health check UI at `https://myleague-{env}-api.azurewebsites.net/health-ui`.
 
-```powershell
-cd infra/provision
-.\provision-backend.ps1
-```
+Alert costs: metric alert rules ~$0.10/month each, availability test pennies at 5-min frequency, smart detection and budgets free. Total ~$1-2/month.
 
-Or on Linux/macOS:
+## CI/CD (GitHub Actions)
+
+| Workflow | Trigger | What it does |
+|----------|---------|--------------|
+| `infra-deploy.yml` | Manual (choose env + component); PRs touching `infra/**` | Provisions Azure resources via Bicep. PRs get template validation + what-if against staging |
+| `deploy-backend.yml` | Auto to **staging** after Backend CI on `development`; manual for staging/prod | Builds and zip-deploys the API, health-checks it, then runs smoke tests |
+| `deploy-frontend.yml` | Auto to **staging** after Frontend CI on `development`; manual for staging/prod | Builds the SPA with the right `VITE_API_URL`, deploys to SWA, then smoke tests it |
+
+After every backend deploy, a smoke-test job hits the live environment with public read-only requests: liveness/readiness (includes DB health), `GET /api/News`, `GET /api/Clubs`, `GET /api/Divisions` (valid JSON expected), an admin endpoint without a token (must return 401 - proves auth is enforced), and an unknown route (must return 404). The frontend deploy verifies the SPA loads (HTTP 200 with the React root element) both on `/` and on a deep link like `/clubs` (SPA fallback). Any failed check fails the workflow, so a broken staging or prod deploy is visible immediately - and on prod the deploy job's approval gate means the smoke failure emails/notifies right after an intentional release.
+
+All workflows authenticate with **OIDC** (federated credentials) - no publish profiles or long-lived secrets. Prod deploys are gated by required reviewers on the `prod` GitHub environment.
+
+### One-time OIDC setup
+
+1. Create an Entra ID app registration and service principal:
 
 ```bash
-cd infra/provision
-chmod +x provision-backend.sh
-./provision-backend.sh
+az ad app create --display-name "myleague-github-actions"
+APP_ID=$(az ad app list --display-name "myleague-github-actions" --query "[0].appId" -o tsv)
+az ad sp create --id $APP_ID
 ```
 
-The script will interactively prompt for:
-- **PostgreSQL admin password** (min 8 characters)
-- **JWT secret key** (min 32 characters, used for HMAC-SHA256 token signing)
-- **Admin seed email** (optional, creates an admin user on first startup)
+2. Add federated credentials for each GitHub environment (replace `<owner>/<repo>`):
 
-This provisions all backend resources including Azure Communication Services for email delivery.
+```bash
+az ad app federated-credential create --id $APP_ID --parameters '{
+  "name": "github-env-staging",
+  "issuer": "https://token.actions.githubusercontent.com",
+  "subject": "repo:<owner>/<repo>:environment:staging",
+  "audiences": ["api://AzureADTokenExchange"]
+}'
 
-### 2. Deploy Backend Application
+az ad app federated-credential create --id $APP_ID --parameters '{
+  "name": "github-env-prod",
+  "issuer": "https://token.actions.githubusercontent.com",
+  "subject": "repo:<owner>/<repo>:environment:prod",
+  "audiences": ["api://AzureADTokenExchange"]
+}'
+```
+
+3. Create the resource groups and grant the service principal Contributor on them:
+
+```bash
+SUB_ID=$(az account show --query id -o tsv)
+az group create --name myleague-staging-rg --location westeurope
+az group create --name myleague-prod-rg --location westeurope
+az role assignment create --assignee $APP_ID --role Contributor \
+  --scope /subscriptions/$SUB_ID/resourceGroups/myleague-staging-rg
+az role assignment create --assignee $APP_ID --role Contributor \
+  --scope /subscriptions/$SUB_ID/resourceGroups/myleague-prod-rg
+```
+
+4. In GitHub, create environments `staging` and `prod` (Settings > Environments). On `prod`, add **required reviewers**. Configure each environment:
+
+**Secrets** (per environment):
+
+| Secret | Value |
+|--------|-------|
+| `AZURE_CLIENT_ID` | The app registration's application (client) ID |
+| `AZURE_TENANT_ID` | Your Entra tenant ID |
+| `AZURE_SUBSCRIPTION_ID` | Your subscription ID |
+| `POSTGRES_ADMIN_PASSWORD` | PostgreSQL admin password (unique per env) |
+| `JWT_SECRET_KEY` | JWT signing key, min 32 chars (unique per env) |
+
+**Variables** (per environment):
+
+| Variable | Value |
+|----------|-------|
+| `ALERT_EMAIL` | Admin email that receives monitoring alerts |
+| `SEED_ADMIN_EMAIL` | Initial admin user email (optional) |
+| `VITE_API_URL` | Optional override; defaults to `https://myleague-{env}-api.azurewebsites.net/api` |
+
+The old `AZURE_WEBAPP_PUBLISH_PROFILE` and `AZURE_STATIC_WEB_APP_TOKEN` secrets are no longer used and can be deleted.
+
+### First-time provisioning order
+
+1. Run `infra-deploy.yml` with component **backend** - creates API, DB, storage, email, monitoring
+2. Run `infra-deploy.yml` with component **frontend** - creates the SWA; note the generated URL from the job summary
+3. Add the SWA URL to `allowedOrigins` and `frontendBaseUrl` in `backend.{env}.bicepparam`, merge, and re-run the backend provision (CORS + email links need it)
+4. Run `deploy-backend.yml` and `deploy-frontend.yml`
+
+## Manual Provisioning (fallback)
+
+```powershell
+cd infra/provision
+.\provision-backend.ps1 -Environment staging   # or prod
+.\provision-frontend.ps1 -Environment staging
+```
+
+The backend script prompts for the PostgreSQL password, JWT secret key, seed admin email, and the monitoring alert email. Linux/macOS: `./provision-backend.sh -e staging`.
+
+Manual app deployment:
 
 ```powershell
 cd infra/deploy
-.\deploy-backend.ps1
-```
-
-The script will:
-1. Build and publish the .NET API
-2. List available App Services and let you pick one
-3. Deploy via zip deploy
-4. Optionally run EF Core database migrations
-5. Run a health check
-
-### 3. Provision Frontend Infrastructure
-
-```powershell
-cd infra/provision
-.\provision-frontend.ps1
-```
-
-### 4. Deploy Frontend Application
-
-```powershell
-cd infra/deploy
+.\deploy-backend.ps1 -Environment staging
 .\deploy-frontend.ps1
 ```
 
-The deploy script is interactive and will:
-1. Ask for the backend API base URL (e.g. `https://myleague-dev-api.azurewebsites.net`)
-2. Ask whether to append `/api` to the URL
-3. List available Azure Static Web Apps and let you pick one
-4. Build the React app and deploy it
-
-## Script Reference
-
-### Provision Scripts (infra/provision/)
-
-| Script | Description |
-|--------|-------------|
-| `provision-backend.ps1` | Provisions backend infra (App Service, PostgreSQL, Storage, ACS Email) |
-| `provision-backend.sh` | Same as above, for Linux/macOS |
-| `provision-frontend.ps1` | Provisions frontend infra (Azure Static Web App) |
-
-#### Backend Provision Options
-
-| Option | Description |
-|--------|-------------|
-| `-Environment dev` | Target environment (dev, staging, prod) |
-| `-Location westeurope` | Azure region |
-| `-ResourceGroupName mygroup` | Override resource group name |
-| `-PostgresPassword "pass"` | PostgreSQL password (prompted if not provided) |
-| `-JwtSecretKey "key"` | JWT secret key, min 32 chars (prompted if not provided) |
-| `-SeedAdminEmail "email"` | Admin email for seeding (prompted if not provided) |
-| `-SkipLogin` | Skip Azure login check |
-
-#### Frontend Provision Options
-
-| Option | Description |
-|--------|-------------|
-| `-Environment dev` | Target environment (dev, staging, prod) |
-| `-Location westeurope` | Azure region |
-| `-ApiBackendUrl "url"` | Backend API URL (auto-detected if not provided) |
-| `-SkipLogin` | Skip Azure login check |
-
-### Deploy Scripts (infra/deploy/)
-
-| Script | Description |
-|--------|-------------|
-| `deploy-backend.ps1` | Builds and deploys .NET API to an existing App Service |
-| `deploy-frontend.ps1` | Builds and deploys React app to an existing SWA |
-
-#### Backend Deploy Options
-
-| Option | Description |
-|--------|-------------|
-| `-Environment dev` | Target environment (dev, staging, prod) |
-| `-ResourceGroupName "rg"` | Resource group (default: myleague-{env}-rg) |
-| `-AppServiceName "name"` | Target App Service (lists available if not provided) |
-| `-SkipLogin` | Skip Azure login check |
-| `-SkipMigrations` | Skip the migration prompt |
-| `-RunMigrations` | Automatically run migrations |
-
-#### Frontend Deploy Options
-
-| Option | Description |
-|--------|-------------|
-| `-ApiBaseUrl "url"` | Backend API base URL (prompted if not provided) |
-| `-AppendApi` | Append /api to the URL (prompted if not provided) |
-| `-NoAppendApi` | Do not append /api |
-| `-StaticWebAppName "name"` | Target SWA (lists available if not provided) |
-| `-ResourceGroupName "rg"` | Resource group for the SWA |
-| `-DeploymentToken "token"` | SWA deployment token (auto-fetched if not provided) |
-| `-SkipLogin` | Skip Azure login check |
-
 ## Authentication Configuration
 
-The provisioning scripts automatically configure the following authentication settings on the App Service:
+The provisioning templates configure the following on the App Service:
 
 | Setting | Source | Description |
 |---------|--------|-------------|
-| `Jwt__SecretKey` | Prompted during provisioning | HMAC-SHA256 signing key (min 32 chars) |
-| `Jwt__Issuer` | Default: `MyLeague` | JWT token issuer |
-| `Jwt__Audience` | Default: `MyLeague` | JWT token audience |
+| `Jwt__SecretKey` | Secret at deploy time | HMAC-SHA256 signing key (min 32 chars) |
+| `Jwt__Issuer` / `Jwt__Audience` | Default: `MyLeague` | JWT token issuer/audience |
 | `AzureCommunicationServices__ConnectionString` | Auto from ACS module | ACS connection string |
 | `AzureCommunicationServices__SenderAddress` | Auto from ACS domain | Email sender (DoNotReply@...) |
-| `Seed__AdminEmail` | Prompted during provisioning | Initial admin user email |
-| `LoginCode__AutoFillLoginCode` | Manual (default `false`) | When `true`, the `/api/Auth/login` response includes the generated code so the admin login page auto-fills it (skips checking email). Convenient for internal/test environments. **Must stay `false` in any publicly reachable production environment** -- it exposes the login code to anyone who can call the endpoint with a known email. |
-
-**JWT Secret Key Requirements:**
-- Must be at least 32 characters
-- Used for HMAC-SHA256 token signing
-- Should be unique per environment
-- Keep it secret -- do not commit to source control
+| `Seed__AdminEmail` | Variable at deploy time | Initial admin user email |
+| `LoginCode__AutoFillLoginCode` | Manual (default `false`) | When `true`, the `/api/Auth/login` response includes the generated code (skips email). Convenient for internal test environments. **Must stay `false` in any publicly reachable production environment** - it exposes the login code to anyone who can call the endpoint with a known email. |
 
 ### Toggling the login-code auto-fill flag in Azure
 
-The backend reads `LoginCode:AutoFillLoginCode` from configuration. To turn it on/off for an
-existing App Service without redeploying:
-
 ```bash
-# Enable auto-fill (returns the login code in the /api/Auth/login response)
+# Enable auto-fill (e.g. on staging for easier testing)
 az webapp config appsettings set \
-  --resource-group myleague-dev-rg \
-  --name myleague-dev-api \
+  --resource-group myleague-staging-rg \
+  --name myleague-staging-api \
   --settings LoginCode__AutoFillLoginCode=true
 
-# Disable it (default, code is only delivered via email)
+# Disable it (default; the code is only delivered via email)
 az webapp config appsettings set \
-  --resource-group myleague-dev-rg \
-  --name myleague-dev-api \
+  --resource-group myleague-staging-rg \
+  --name myleague-staging-api \
   --settings LoginCode__AutoFillLoginCode=false
 ```
 
-Changing an app setting restarts the App Service automatically. Note the double underscore --
-that is the .NET configuration convention for nested sections (`LoginCode:AutoFillLoginCode`).
+Changing an app setting restarts the App Service automatically.
 
-## Manual Deployment
+## Estimated Costs (per environment)
 
-### Deploy Backend Application
-
-After provisioning backend infrastructure:
-
-```powershell
-# Navigate to the WebAPI project
-cd src/backend/WebAPI
-
-# Publish the application
-dotnet publish -c Release -o ./publish
-
-# Create a zip file
-Compress-Archive -Path ./publish/* -DestinationPath ./app.zip -Force
-
-# Deploy to Azure
-az webapp deploy --resource-group myleague-dev-rg --name myleague-dev-api --src-path ./app.zip --type zip
-```
-
-### Run Database Migrations
-
-```powershell
-$env:ConnectionStrings__DefaultConnection = "Host=myleague-dev-postgres.postgres.database.azure.com;Database=myleague;Username=myleagueadmin;Password=YourPassword;SSL Mode=Require;Trust Server Certificate=true"
-
-cd src/backend/WebAPI
-dotnet ef database update --project ../Infrastructure/Infrastructure.csproj
-```
-
-## Estimated Costs
-
-| Resource | SKU | Monthly Cost (approx) |
+| Resource | SKU | Monthly cost (approx) |
 |----------|-----|----------------------|
 | App Service Plan | Basic B1 | ~$13 |
-| PostgreSQL Flexible Server | Burstable B1ms | ~$12 |
+| PostgreSQL Flexible Server | Burstable B1ms + 32 GB | ~$12 |
 | Static Web App | Free | $0 |
-| Storage Account | Standard_LRS | ~$0.02/GB/month |
+| Storage Account | Standard_LRS | ~$0.02/GB |
 | Communication Services | Pay-as-you-go | ~$0 (100 free emails/day) |
-| **Total** | | **~$25/month** |
+| Log Analytics / App Insights | Capped at 1 GB/day | ~$0-2 at this scale |
+| Alerts + availability test (prod) | Metric alerts + standard test | ~$1-2 |
+| **Total** | | **~$26-28/month** |
+
+Both environments together: **~$55/month**. A budget alert fires at 80% of $35 per resource group, so unexpected growth is flagged before it hurts.
 
 ## Troubleshooting
 
-### View App Service Logs
+### View App Service logs
 
 ```bash
-az webapp log tail --resource-group myleague-dev-rg --name myleague-dev-api
+az webapp log tail --resource-group myleague-staging-rg --name myleague-staging-api
 ```
 
-### Check API Health
+### Check API health
 
 ```bash
-curl https://myleague-dev-api.azurewebsites.net/health/ready
+curl https://myleague-staging-api.azurewebsites.net/health/ready
 ```
 
-### Connect to PostgreSQL
+### Connect to PostgreSQL from your machine
 
 ```bash
 az postgres flexible-server firewall-rule create \
-  --resource-group myleague-dev-rg \
-  --name myleague-dev-postgres \
+  --resource-group myleague-staging-rg \
+  --name myleague-staging-postgres \
   --rule-name AllowMyIP \
   --start-ip-address <your-ip> \
   --end-ip-address <your-ip>
 ```
 
-### Check ACS Email Configuration
+### Run database migrations manually
+
+```powershell
+$env:ConnectionStrings__DefaultConnection = "Host=myleague-staging-postgres.postgres.database.azure.com;Database=myleague;Username=myleagueadmin;Password=YourPassword;SSL Mode=Require;Trust Server Certificate=true"
+
+cd src/backend/WebAPI
+dotnet ef database update --project ../Infrastructure/Infrastructure.csproj
+```
+
+(Note: the API also applies migrations automatically at startup.)
+
+### Check ACS email configuration
 
 ```bash
-# View Communication Service details
-az communication show --name myleague-dev-comm --resource-group myleague-dev-rg
+az communication show --name myleague-staging-comm --resource-group myleague-staging-rg
+az webapp config appsettings list --name myleague-staging-api --resource-group myleague-staging-rg \
+  --query "[?name=='AzureCommunicationServices__SenderAddress']"
+```
 
-# Check App Service settings
-az webapp config appsettings list --name myleague-dev-api --resource-group myleague-dev-rg --query "[?name=='AzureCommunicationServices__SenderAddress']"
+### Test that alerts work
+
+```bash
+# Stop the API; the health check alert (severity 1) should email within ~5-10 minutes
+az webapp stop --name myleague-staging-api --resource-group myleague-staging-rg
+# ...wait for the email, then:
+az webapp start --name myleague-staging-api --resource-group myleague-staging-rg
 ```
 
 ## Clean Up
 
-To delete all resources:
+To delete all resources for an environment:
 
 ```bash
-az group delete --name myleague-dev-rg --yes --no-wait
+az group delete --name myleague-staging-rg --yes --no-wait
 ```
