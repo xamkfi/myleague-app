@@ -1,6 +1,6 @@
-# MyLeague Azure Infrastructure
+# Azure infrastructure
 
-This directory contains infrastructure provisioning (Bicep/IaC) and application deployment scripts.
+Bicep templates and deploy scripts for MyLeague staging and production. Local Docker setup and app overview: [root README](../README.md).
 
 ## Environment Strategy
 
@@ -27,11 +27,14 @@ az webapp start --name myleague-staging-api --resource-group myleague-staging-rg
 infra/
 ├── provision/                        # Infrastructure provisioning (Bicep + scripts)
 │   ├── backend.bicep                 # Backend infrastructure template
+│   ├── backend.bicepparam            # Shared / default backend params
 │   ├── backend.staging.bicepparam    # Backend parameters (staging)
 │   ├── backend.prod.bicepparam       # Backend parameters (prod)
 │   ├── frontend.bicep                # Frontend infrastructure template (SWA)
-│   ├── frontend.staging.bicepparam   # Frontend parameters (staging)
-│   ├── frontend.prod.bicepparam      # Frontend parameters (prod)
+│   ├── frontend.bicepparam
+│   ├── frontend.staging.bicepparam
+│   ├── frontend.prod.bicepparam
+│   ├── app-insights-only.bicep       # Standalone App Insights (optional)
 │   ├── provision-backend.ps1 / .sh   # Provision backend infra manually
 │   ├── provision-frontend.ps1        # Provision frontend infra manually
 │   └── modules/

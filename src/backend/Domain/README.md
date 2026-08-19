@@ -1,183 +1,71 @@
-# Domain Layer - League Management System
+# Domain layer
 
-## Overview
+Core business model for MyLeague. This project has no infrastructure or UI dependencies. It defines entities, value objects, enums, and repository contracts used by Application and Infrastructure.
 
-This is the **Domain Layer** of a comprehensive league management system designed for ice hockey and floorball sports. The domain layer implements Domain-Driven Design (DDD) principles and includes event sourcing capabilities to manage complex business logic and maintain a complete audit trail of all domain events.
+See the [root README](../../../README.md) for how this layer fits the solution, and [FeatureDevelopmentGuide.md](./FeatureDevelopmentGuide.md) when adding a feature.
 
-## 🏗️ Architecture
+## Design
 
-This domain layer follows **Clean Architecture** and **Domain-Driven Design** principles:
+- **Entities** — Identity and lifecycle (clubs, persons, teams, matches, competitions)
+- **Value objects** — Immutable descriptors (addresses, match rules, standing rules)
+- **Aggregates** — Cluster related objects; persist through repository interfaces
+- **Enums** — Sport-specific statuses, positions, event types, lifecycle states
 
-- **Entities**: Core business objects with identity and lifecycle
-- **Value Objects**: Immutable objects that describe characteristics
-- **Aggregates**: Clusters of related entities and value objects
-- **Domain Events**: Record significant business occurrences
-- **Repositories**: Abstraction for data persistence
-- **Event Sourcing**: Complete event history with aggregate reconstruction
+Seasons and tournaments inherit a sport-specific `*Competition` base (`FloorballCompetition`, `FootballCompetition`, `HockeyCompetition`) and are stored with EF Core TPH. Matches and statistics reference a `CompetitionId`, so the same query stack works for league seasons and tournaments.
 
-## 🚀 Technology Stack
+Match **events** (goals, penalties, cards, shots, and so on) are persisted entities, not an event-sourced store. There is no `EventSourcing` folder in this project.
 
-- **.NET 9.0** - Latest .NET framework
-- **C# 13** - Modern C# language features
-- **Nullable Reference Types** - Enhanced null safety
-- **Code Analysis** - Static analysis with Microsoft.CodeAnalysis.NetAnalyzers
+## Technology
 
-## 📁 Project Structure
+- .NET 9 / C# 13
+- Nullable reference types
+- Microsoft.CodeAnalysis analyzers
+
+## Structure
 
 ```
 Domain/
-├── Entities/           # Core business entities
-│   ├── Common/         # Shared entities (Person, Club, etc.)
-│   ├── Floorball/      # Floorball-specific entities (flat structure)
-│   └── Hockey/         # Hockey-specific entities (grouped by subdomain)
-│       ├── Competitions/
-│       ├── Teams/
-│       ├── Matches/
-│       └── Statistics/
-├── ValueObjects/       # Immutable value objects
-│   ├── Common/         # Shared value objects (Address, ContactInfo)
-│   ├── Floorball/      # Floorball-specific value objects
-│   └── Hockey/         # Hockey-specific value objects
-│       ├── Rules/
-│       ├── Matches/
-│       ├── Statistics/
-│       └── Common/
-├── Enums/             # Domain enumerations
-│   ├── Common/         # Shared enums (SportsCategory, etc.)
-│   ├── Floorball/      # Floorball-specific enums
-│   └── Hockey/         # Hockey-specific enums
-│       ├── Competitions/
-│       ├── Teams/
-│       ├── Matches/
-│       └── Statistics/
-├── Services/           # Domain service interfaces
-│   └── Hockey/         # Hockey-specific services
-├── Repositories/      # Repository interface definitions
-│   ├── Common/         # Shared repository interfaces
-│   ├── Floorball/      # Floorball-specific repositories
-│   └── Hockey/         # Hockey-specific repositories
-└── DomainGlossary.md  # Ubiquitous language definitions
+├── Entities/
+│   ├── Common/          # Person, Club, User, Division, News, Rules, Info pages, …
+│   ├── Floorball/       # Flat layout: teams, matches, competitions, stats
+│   ├── Football/        # Competitions, Matches, Teams, Statistics
+│   └── Hockey/          # Competitions, Matches, Teams, Statistics
+├── ValueObjects/        # Common + per-sport (rules, addresses, match values)
+├── Enums/               # Common + per-sport
+├── Repositories/        # Interfaces only
+├── Services/            # Domain service contracts (hockey and shared)
+├── Constants/
+└── DomainGlossary.md    # Ubiquitous language
 ```
 
-### Hockey naming conventions
+Hockey types use the `Hockey` prefix (`HockeyTeam`, `HockeyMatchStatus`). Namespaces follow folders, for example `Domain.Entities.Hockey.Teams`.
 
-All ice hockey domain types use the `Hockey` prefix (e.g. `HockeyTeam`, `HockeyMatchStatus`). Namespaces follow the folder structure:
+## Sports
 
-| Folder | Namespace example |
-|--------|-------------------|
-| `Entities/Hockey/Teams/` | `Domain.Entities.Hockey.Teams` |
-| `Enums/Hockey/Matches/` | `Domain.Enums.Hockey.Matches` |
-| `ValueObjects/Hockey/Rules/` | `Domain.ValueObjects.Hockey.Rules` |
-| `Services/Hockey/` | `Domain.Services.Hockey` |
-| `Repositories/Hockey/` | `Domain.Repositories.Hockey` |
+| Sport | Status in domain | Notes |
+|-------|------------------|--------|
+| Floorball | Primary | Full match events, periods, referees, TPH competitions |
+| Football | Hobby / complete slice | Configurable half length and players-on-field (5v5–11v11); cards, substitutions, extra time, shootouts; `FootballStandingRules` (default 3–1–0) |
+| Ice hockey | Complete backend model | Lines, on-ice, faceoffs, shots, penalties, goalie tracking; public UI is not enabled yet |
 
-## 🎯 Core Domain Concepts
+### Typical aggregate roots
 
-### Aggregate Roots
-The following entities serve as aggregate roots in our domain model:
+- **Club**, **Person**, **User**, **Division**
+- **FloorballSeason** / **FloorballTournament**, **FloorballMatch**, **FloorballTeam**, **FloorballPlayer**, **FloorballReferee**
+- Parallel football and hockey competition, match, team, and player roots
 
-1. **Club** - Manages organizational membership and teams
-2. **Person** - Manages individual identity and contact information
-3. **FloorballSeason** - Manages competition schedules and participating teams
-4. **FloorballMatch** - Manages match data, events, and state transitions
-5. **FloorballTeam** - Manages team roster and details
-6. **FloorballPlayer** - Manages player-specific attributes and statistics
-7. **FloorballTeamManager** - Manages team operations and administration
-8. **FloorballReferee** - Officiates matches with licensing and experience tracking
+## Build and test
 
-### Key Value Objects
-- **Address** - Physical location information
-- **ContactInfo** - Email and phone contact details
-- **Position** - Player position preferences and assignments
-- **Score** - Match scoring information
-- **FloorballTeamPlayer** - Player-team association with statistics
-
-### Domain Events
-- **Match Events**: Creation, scheduling, status changes
-- **Game Events**: Goals scored, penalties assigned
-- **Assignment Events**: Official and player assignments
-
-## 🔄 Event Sourcing
-
-The domain includes sophisticated event sourcing capabilities:
-
-- **EventSourcedAggregate** - Base class for event-sourced aggregates
-- **AggregateRoot** - Foundation for traditional aggregates
-- **IEventStore** - Interface for event persistence
-- **EventSourcedFloorballMatch** - Full event-sourced match implementation
-
-### Benefits of Event Sourcing
-- **Complete Audit Trail** - Every state change is recorded
-- **Temporal Queries** - Query system state at any point in time
-- **Replay Capability** - Reconstruct aggregates from events
-- **Integration** - Easy integration with external systems via events
-
-## 📖 Ubiquitous Language
-
-The domain uses a carefully crafted **ubiquitous language** shared between developers and domain experts. All terms are documented in the `DomainGlossary.md` file, ensuring consistent communication and understanding across the team.
-
-## 🏒 Sports Support
-
-### Floorball (Primary Focus)
-- Complete match management with periods and events
-- Player positions: Forward, Center, Defender, Goalkeeper
-- Comprehensive penalty system
-- Official assignment and management
-- Team and league administration
-
-### Football (Hobby)
-- Parallel vertical slice under `Entities/Football/` (Competitions, Matches, Teams, Statistics)
-- Configurable half length and players-on-field (5v5–11v11)
-- Cards, substitutions, extra time and penalty shootouts
-- Standing points come from `FootballStandingRules` (default 3–1–0)
-
-### Hockey (In Development)
-- Domain folder structure in place; entities and services to be added incrementally
-- Follows Floorball patterns with grouped subfolders under `Hockey/`
-- All types prefixed with `Hockey`
-
-## 🛡️ Code Quality
-
-This project maintains high code quality standards:
-
-- **Nullable Reference Types** enabled for null safety
-- **Code Style Enforcement** during build
-- **Comprehensive Analysis** with all Microsoft analyzers
-- **Consistent Formatting** and naming conventions
-
-## 🚀 Getting Started
-
-### Prerequisites
-- .NET 9.0 SDK or later
-- IDE with C# support (Visual Studio, VS Code, Rider)
-
-### Building the Project
 ```bash
 dotnet build
+dotnet test tests/backend/Domain.UnitTests/
 ```
 
-### Running Tests
-```bash
-dotnet test
-```
+## Contributing
 
-## 📚 Learn More
+1. Keep business rules on entities; do not leak EF or HTTP types here.
+2. Update [DomainGlossary.md](./DomainGlossary.md) when you add terms.
+3. Add unit tests for state transitions and invariants.
+4. Follow the existing per-sport folder layout.
 
-- Review the `DomainGlossary.md` for detailed domain terminology
-- Explore entity implementations to understand business rules
-- Study event sourcing patterns in the EventSourcing folder
-- Check domain events for integration patterns
-
-## 🤝 Contributing
-
-When contributing to this domain layer:
-
-1. Follow DDD principles and maintain aggregate boundaries
-2. Update the domain glossary when introducing new concepts
-3. Ensure all domain events are properly defined
-4. Maintain ubiquitous language consistency
-5. Add comprehensive unit tests for business logic
-
-## 📄 License
-
-This project is part of the League Management System application. 
+This project is part of MyLeague. See the [root README](../../../README.md).

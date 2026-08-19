@@ -1,6 +1,8 @@
-## Seeder
+# Seeder
 
-Run ordered HTTP seeding against the WebAPI to create a complete development / test dataset. Phases can be selected interactively or via the `--scope=...` CLI flag, and dependencies are resolved automatically. Use `--sport=floorball|football|all` to choose which dataset to seed (default `floorball`).
+HTTP seeder for a complete development / test dataset. Stack setup: [root README](../../../README.md).
+
+Phases can be selected interactively or with `--scope=...`; dependencies are resolved automatically. Use `--sport=floorball|football|all` to choose the dataset (default `floorball`).
 
 > **Admins:** if you only need a single tournament populated (e.g. in production / Azure where running this console tool is impractical), use **Admin → Floorball → Tournaments → Import from JSON** in the web UI instead. It accepts a JSON file (one tournament per file), can also create player rosters and pre-schedule playoff matches automatically, shows live progress, and offers a one-click revert. A downloadable sample is linked from the modal. See `src/frontend/src/types/floorball/tournamentImportTypes.ts` for the schema; generate the actual import files with an AI prompt that targets that schema.
 
@@ -114,10 +116,9 @@ Football persons use `@fb.fi` / `@fb-ref.fi` emails so `--sport=all` does not co
 
 ### Configure
 
-#### Using Test Data File (Recommended)
+#### Using a test data file (recommended)
 
-The seeder automatically loads comprehensive test data from `data/testdata.json` if present. This file contains base persons, player/goalie/referee persons, clubs, divisions (Floorball + Icehockey), floorball seasons/teams/matches/tournaments, and a compact hockey dataset (`HockeySeasons`, `HockeyTeams`, `HockeyMatches`, `HockeyTournaments`). It is the canonical data set for local development and is what the menu/`--scope` selections operate against.
-The seeder automatically loads comprehensive test data from `data/testdata.json` (floorball) and/or `data/testdata-football.json` (football) depending on `--sport`. These files contain persons, clubs, divisions, seasons, teams (with rosters), season matches and tournaments (with groups). They are the canonical data sets for local development and are what the menu/`--scope` selections operate against.
+The seeder loads `data/testdata.json` (floorball + compact hockey) and/or `data/testdata-football.json` depending on `--sport`. These files hold persons, clubs, divisions, seasons, teams (with rosters), season matches, and tournaments (with groups). They are the canonical local-development datasets that the menu and `--scope` selections operate against.
 
 Each file is layered on top of `appsettings.json` and `appsettings.Development.json` via `ConfigurationBuilder`, so anything you put into either of those will be merged with the selected testdata file.
 
