@@ -1,0 +1,35 @@
+---
+description: xUnit, FluentAssertions, Moq, and test placement
+globs: tests/**/*.cs
+alwaysApply: false
+---
+
+# Testing
+
+| Layer | Project | What to cover |
+|-------|---------|----------------|
+| Domain | `tests/backend/Domain.UnitTests/DomainTestProject` | constructors, invariants, state transitions |
+| Application | `tests/backend/Application.UnitTests/ApplicationTestProject` | handlers (success + failure), validators, mappers |
+| WebAPI | `tests/backend/WebAPI.UnitTests/WebApiTestProject` | controller result mapping, rate limiter |
+| Persistence | `tests/backend/Infrastructure.IntegrationTests/...` | repositories / EF mappings (InMemory via `BaseIntegrationTest`) |
+
+xUnit + FluentAssertions + Moq. Explicit types. Name tests `Method_Scenario_Expected`. Frontend has no unit-test runner — `pnpm lint` and `pnpm build` are the gate.
+
+```csharp
+[Fact]
+public async Task Handle_WithNonExistentClub_ShouldReturnFailure()
+{
+    _clubRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
+        .ReturnsAsync((Club?)null);
+
+    Result<ClubDto> result = await _handler.Handle(command, CancellationToken.None);
+
+    result.IsSuccess.Should().BeFalse();
+    _teamRepositoryMock.Verify(x => x.AddAsync(It.IsAny<FloorballTeam>()), Times.Never);
+}
+```
+
+- Mock repositories and unit-of-work, not DbContext, in Application tests
+- Validator tests: valid case + `[Theory]` for each failing rule
+- Do not assert on log text unless the log is the behavior
+- Mirror a new sport feature with tests beside the closest existing hockey/floorball/football suite
