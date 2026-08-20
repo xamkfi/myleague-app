@@ -1,0 +1,32 @@
+---
+description: MyLeague Clean Architecture, CQRS, and multi-sport boundaries
+alwaysApply: true
+---
+
+# Architecture
+
+Dependency direction: **WebAPI / Frontend → Application → Domain**. Infrastructure implements Domain/Application interfaces. Controllers never call repositories or DbContexts.
+
+## Feature slices
+
+Put new work next to its sport or shared area:
+
+- `Application/Features/Common/` — clubs, persons, users, news, divisions, search, auth-adjacent shared types
+- `Application/Features/{Floorball,Football,Hockey}/` — teams, players, officials, seasons, tournaments, matches, statistics
+- Mirror the same split in `Domain/Entities`, `WebAPI/Controllers`, and `src/frontend/src/{api,pages}`
+
+Seasons and tournaments inherit a sport-specific `*Competition` and persist with **TPH**. Matches, standings, and stats take a `competitionId` that works for both league seasons and tournaments.
+
+## Persistence
+
+Four EF Core contexts share one PostgreSQL database (`DefaultConnection`): `CommonDbContext`, `FloorballDbContext`, `FootballDbContext`, `HockeyDbContext`. Do not add a navigation that would pull another context's entity into the model — use `Guid` FKs and `builder.Ignore(...)`.
+
+## Real-time and auth
+
+Live match updates go through SignalR hub `/api/hubs/domainevent` (JWT via `access_token`). Passwordless email code + JWT + refresh-token rotation. Roles: `SystemAdmin`, `ClubAdmin` (`Domain.Constants.AuthRoles`).
+
+## Do not
+
+- Introduce AutoMapper, a fifth DbContext, or event sourcing
+- Enable public ice hockey UI without an explicit request
+- Put business rules in controllers or FluentValidation that belong on the entity
