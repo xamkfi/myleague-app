@@ -7,7 +7,7 @@
     This does NOT deploy the application code - use infra/deploy/deploy-frontend.ps1 for that.
 
 .PARAMETER Environment
-    The environment to provision (dev, staging, prod). Default: dev
+    The environment to provision (staging, prod). Default: staging
 
 .PARAMETER Location
     The Azure region for resources. Default: westeurope
@@ -30,8 +30,8 @@
 
 param(
     [Parameter()]
-    [ValidateSet('dev', 'staging', 'prod')]
-    [string]$Environment = 'dev',
+    [ValidateSet('staging', 'prod')]
+    [string]$Environment = 'staging',
 
     [Parameter()]
     [string]$Location = 'westeurope',
@@ -184,7 +184,12 @@ Write-Step "Provisioning frontend infrastructure..."
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $templateFile = Join-Path $scriptDir "frontend.bicep"
-$parametersFile = Join-Path $scriptDir "frontend.bicepparam"
+$parametersFile = Join-Path $scriptDir "frontend.$Environment.bicepparam"
+
+if (-not (Test-Path $parametersFile)) {
+    Write-ErrorMsg "Parameter file not found: $parametersFile"
+    exit 1
+}
 
 # Validate template first
 Write-Host "  Validating template..." -ForegroundColor Gray
@@ -264,8 +269,8 @@ Write-Host @"
    .\deploy-frontend.ps1
 
 2. Update backend CORS settings:
-   Add '$frontendUrl' to the allowedOrigins in provision\backend.bicepparam
-   Then re-provision the backend.
+   Add '$frontendUrl' to the allowedOrigins in provision\backend.$Environment.bicepparam
+   (and set frontendBaseUrl there too), then re-provision the backend.
 
 3. View your application:
    $frontendUrl

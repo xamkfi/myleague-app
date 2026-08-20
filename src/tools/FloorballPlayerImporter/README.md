@@ -1,6 +1,6 @@
-# Floorball Player Importer
+# FloorballPlayerImporter
 
-A console tool for importing floorball players from JSON files. The tool searches for existing persons by name, creates FloorballPlayer entities if needed, and assigns them to teams with jersey numbers and positions.
+Console tool that imports floorball players from JSON roster files. It looks up persons by name, creates `FloorballPlayer` records if needed, and assigns jersey numbers and positions. Stack setup: [root README](../../../README.md).
 
 ## Features
 
@@ -183,8 +183,10 @@ The tool references:
 - Update the JSON file to use different jersey numbers
 - Only jersey #0 can be assigned to multiple players
 
-## Related Tools
+## Related tools
 
-- **DataImporter**: Import persons from .jlg XML files
-- **Seeder**: Seed initial data including persons, clubs, teams, and players
+- [Seeder](../Seeder/README.md) — persons, clubs, teams, players, matches
+- [DataImporter](../DataImporter/README.md) — persons from `.jlg` XML
+- [JoomleagueImporter](../JoomleagueImporter/README.md) — JoomLeague SQL dumps
+- [Root README](../../../README.md)
 
