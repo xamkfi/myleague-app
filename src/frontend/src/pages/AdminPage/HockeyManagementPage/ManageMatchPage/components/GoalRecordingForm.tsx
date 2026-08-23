@@ -10,10 +10,12 @@ interface GoalRecordingFormProps {
   players: HockeyFormPlayer[];
   playerId: string;
   assistId: string;
+  secondaryAssistId: string;
   goalStrength: HockeyGoalStrength;
   loading: boolean;
   onPlayerChange: (playerId: string) => void;
   onAssistChange: (assistId: string) => void;
+  onSecondaryAssistChange: (assistId: string) => void;
   onStrengthChange: (strength: HockeyGoalStrength) => void;
   onRecordGoal: () => Promise<void>;
   onClose: () => void;
@@ -25,10 +27,12 @@ function GoalRecordingForm({
   players,
   playerId,
   assistId,
+  secondaryAssistId,
   goalStrength,
   loading,
   onPlayerChange,
   onAssistChange,
+  onSecondaryAssistChange,
   onStrengthChange,
   onRecordGoal,
   onClose,
@@ -114,7 +118,24 @@ function GoalRecordingForm({
                   onChange={(event) => onAssistChange(event.target.value)}
                 >
                   <option value="">{t('hockey.matches.noAssist', 'No assist')}</option>
-                  {sortedPlayers.filter((player) => player.id !== playerId).map((player) => (
+                  {sortedPlayers.filter((player) => player.id !== playerId && player.id !== secondaryAssistId).map((player) => (
+                    <option key={player.id} value={player.id}>{formatPlayerOptionLabel(player)}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="secondary-assisting-player">
+                  {t('hockey.matches.secondaryAssistingPlayer', 'Second assist')}{' '}
+                  <span className="field-hint">({t('hockey.matches.optional', 'optional')})</span>
+                </label>
+                <select
+                  id="secondary-assisting-player"
+                  className={`select-field${secondaryAssistId ? '' : ' is-placeholder'}`}
+                  value={secondaryAssistId}
+                  onChange={(event) => onSecondaryAssistChange(event.target.value)}
+                >
+                  <option value="">{t('hockey.matches.noAssist', 'No assist')}</option>
+                  {sortedPlayers.filter((player) => player.id !== playerId && player.id !== assistId).map((player) => (
                     <option key={player.id} value={player.id}>{formatPlayerOptionLabel(player)}</option>
                   ))}
                 </select>

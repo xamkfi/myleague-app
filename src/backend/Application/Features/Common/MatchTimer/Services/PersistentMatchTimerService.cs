@@ -117,8 +117,11 @@ namespace Application.Features.Common.MatchTimer.Services
                     timerState.StartedAt = DateTime.UtcNow;
                 }
 
-                // Update period and start via domain method (initializes runtime stopwatch and clears PausedAt)
-                timerState.PeriodNumber = periodNumber;
+                // Keep the existing period when the caller resumes without one (e.g. after a whistle).
+                if (periodNumber.HasValue)
+                {
+                    timerState.PeriodNumber = periodNumber;
+                }
                 timerState.Start();
 
                 _logger.LogInformation("Timer state after start - IsRunning: {IsRunning}, StartedAt: {StartedAt}, PausedAt: {PausedAt}, TotalPausedDuration: {TotalPausedDuration}", 

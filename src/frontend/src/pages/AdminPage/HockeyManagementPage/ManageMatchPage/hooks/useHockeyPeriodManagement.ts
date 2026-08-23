@@ -224,17 +224,24 @@ export function useHockeyPeriodManagement({
     for (const eventItem of match.events) {
       if (eventItem.eventType !== 'Period') continue;
       const description = eventItem.description ?? '';
-      started.add(eventItem.periodNumber);
-      if (description.includes('Ended')) {
+      if (
+        description === 'PeriodStarted'
+        || description === 'OvertimeStarted'
+        || description === 'ShootoutStarted'
+        || description === 'IntermissionStarted'
+      ) {
+        started.add(eventItem.periodNumber);
+      }
+      // Only an explicit PeriodEnded event closes a period. Stoppages (offside,
+      // icing) and period-score rows must not force the next period.
+      if (description === 'PeriodEnded') {
+        started.add(eventItem.periodNumber);
         ended.add(eventItem.periodNumber);
       }
     }
 
     for (const score of match.periodScores) {
       started.add(score.periodNumber);
-      if (score.isCompleted) {
-        ended.add(score.periodNumber);
-      }
     }
 
     const current = match.currentPeriodNumber || 1;

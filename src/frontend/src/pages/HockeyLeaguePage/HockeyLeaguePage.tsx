@@ -17,7 +17,7 @@ import type {
   HockeyTeamCompetitionStatisticsDto,
 } from '../../types/hockey/hockeyTypes';
 import { isHockeyMatchFinished, shouldRefreshHockeyMatches } from '../../types/hockey/hockeyTypes';
-import { loadHockeyRosterNameMaps, loadTeamNameMap } from '../../utils/hockeyLookups';
+import { loadHockeyRosterNameMaps, loadTeamNameMap, mergeHockeyPlayerFaceoffWins } from '../../utils/hockeyLookups';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
 import '../LeaguePage/LeaguePage.scss';
 import '../LeaguePage/components/SummarySection.scss';
@@ -64,7 +64,7 @@ function HockeyLeaguePage() {
       setSeason(loaded);
       setMatches(matchList);
       setStandings(standingList);
-      setPlayers(playerList);
+      setPlayers(mergeHockeyPlayerFaceoffWins(playerList, matchList));
       setGoalies(goalieList);
       setTeamNames(await loadTeamNameMap(teams));
       const names = await loadHockeyRosterNameMaps(teams);

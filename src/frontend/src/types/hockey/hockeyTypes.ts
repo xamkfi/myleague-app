@@ -463,6 +463,7 @@ export interface HockeyMatchEventDto {
   gameTimeSeconds: number;
   matchTeamId: string | null;
   matchActivePlayerId: string | null;
+  losingActivePlayerId?: string | null;
   description: string | null;
 }
 
@@ -663,6 +664,8 @@ export interface HockeyPlayerCompetitionStatisticsDto {
   points: number;
   penaltyMinutes: number;
   plusMinusRating: number;
+  faceoffWins: number;
+  faceoffAttempts: number;
 }
 
 export interface HockeyGoalieCompetitionStatisticsDto {
@@ -727,10 +730,13 @@ export interface HockeyMatchStatisticsDto {
   players: Array<{
     playerId: string;
     teamId: string;
+    matchActivePlayerId?: string;
     goals: number;
     assists: number;
     points: number;
     penaltyMinutes: number;
+    faceoffWins: number;
+    faceoffAttempts: number;
   }>;
   goalies: Array<{
     playerId: string;

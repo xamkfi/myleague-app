@@ -74,10 +74,10 @@ const LiveMatchTimer = ({
   // Build dynamic period labels
   const periodLabels: Record<number, string> = {};
   for (let i = 1; i <= numberOfPeriods; i++) {
-    periodLabels[i] = `Period ${i}`;
+    periodLabels[i] = t('hockey.matches.periodN', 'Period {{number}}', { number: i });
   }
-  periodLabels[overtimePeriodNumber] = 'Overtime';
-  periodLabels[shootoutPeriodNumber] = 'Shootout';
+  periodLabels[overtimePeriodNumber] = t('hockey.matches.overtime', 'Overtime');
+  periodLabels[shootoutPeriodNumber] = t('hockey.matches.shootout', 'Shootout');
 
   // The clock display is continuous across periods, so the "should this period end now"
   // alert has to compare the in-period elapsed time (total elapsed minus the current
@@ -86,6 +86,11 @@ const LiveMatchTimer = ({
   // seconds had been played in that period.
   const isInShootout = currentPeriod === shootoutPeriodNumber;
   const isInOvertime = currentPeriod === overtimePeriodNumber;
+  const clockPeriodLabel = isInShootout
+    ? t('hockey.matches.shootoutShort', 'SO')
+    : isInOvertime
+      ? t('hockey.matches.overtimeShort', 'OT')
+      : t('hockey.matches.periodShort', 'P{{number}}', { number: currentPeriod });
   const inPeriodElapsedSeconds: number = Math.max(0, elapsedTimeSeconds - currentPeriodStartSeconds);
   const currentPeriodDurationSeconds = isInOvertime ? overtimeDurationSeconds : periodDurationSeconds;
   const shouldPeriodEnd = inPeriodElapsedSeconds >= currentPeriodDurationSeconds && !isInShootout;
@@ -162,27 +167,33 @@ const LiveMatchTimer = ({
             </div>
             ) : (
                 <div className={`clock-digits${shouldPeriodEnd ? ' timer-digits--critical' : ''}`}>
-                  <MemoizedTimer
-                    key={`timer-${currentMatch.id}`}
-                    matchId={currentMatch.id}
-                periodNumber={currentPeriod}
-                    isActive={isOpen}
-                onTimerUpdate={handleTimerUpdate}
-                onGetCurrentTime={handleGetCurrentTime}
-                onGetCurrentElapsedSeconds={handleGetCurrentElapsedSeconds}
-                onGetToggleFunction={handleGetToggleFunction}
-                onGetResetFunction={handleGetResetFunction}
-                onGetStartFunction={handleGetStartFunction}
-                onGetStopFunction={handleGetStopFunction}
-                    controlsEnabled={controlsEnabled}
-                    keybindsEnabled={keybindsEnabled}
-                    periodStartSeconds={currentPeriodStartSeconds}
-                    onPeriodControlClick={onPeriodControlClick}
-                    canEndPeriod={canEndPeriod}
-                    getPeriodControlButtonText={getPeriodControlButtonText}
-                    periodLoading={periodLoading}
-                    nextPeriodToStart={nextPeriodToStart}
-                  />
+                  <div className="clock-readout">
+                    <span className="clock-period-badge" aria-label={periodLabels[currentPeriod]}>
+                      {clockPeriodLabel}
+                    </span>
+                    <MemoizedTimer
+                      key={`timer-${currentMatch.id}`}
+                      matchId={currentMatch.id}
+                      periodNumber={currentPeriod}
+                      isActive={isOpen}
+                      onTimerUpdate={handleTimerUpdate}
+                      onGetCurrentTime={handleGetCurrentTime}
+                      onGetCurrentElapsedSeconds={handleGetCurrentElapsedSeconds}
+                      onGetToggleFunction={handleGetToggleFunction}
+                      onGetResetFunction={handleGetResetFunction}
+                      onGetStartFunction={handleGetStartFunction}
+                      onGetStopFunction={handleGetStopFunction}
+                      controlsEnabled={controlsEnabled}
+                      keybindsEnabled={keybindsEnabled}
+                      periodStartSeconds={currentPeriodStartSeconds}
+                      clockDisplayMode="period"
+                      onPeriodControlClick={onPeriodControlClick}
+                      canEndPeriod={canEndPeriod}
+                      getPeriodControlButtonText={getPeriodControlButtonText}
+                      periodLoading={periodLoading}
+                      nextPeriodToStart={nextPeriodToStart}
+                    />
+                  </div>
                 </div>
             )}
           </div>

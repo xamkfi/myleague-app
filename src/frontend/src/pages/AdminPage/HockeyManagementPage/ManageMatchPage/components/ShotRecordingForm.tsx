@@ -5,6 +5,8 @@ import {
   hockeyShotCreditsGoalieSave,
   type HockeyShotResult,
 } from '../../../../../types/hockey/hockeyTypes';
+
+const SHOT_RESULTS_FOR_FORM = HOCKEY_SHOT_RESULTS.filter((result) => result !== 'Goal');
 import './ShotRecordingForm.scss';
 import { formatPlayerOptionLabel, sortPlayersForSelect, type HockeyFormPlayer } from './eventFormHelpers';
 
@@ -43,6 +45,12 @@ function ShotRecordingForm({
       firstFieldRef.current?.focus();
     }
   }, [showShotForm]);
+
+  useEffect(() => {
+    if (showShotForm && shotResult === 'Goal') {
+      onResultChange('Saved');
+    }
+  }, [showShotForm, shotResult, onResultChange]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
     if (event.key === 'Escape') {
@@ -107,7 +115,7 @@ function ShotRecordingForm({
                   value={shotResult}
                   onChange={(event) => onResultChange(event.target.value as HockeyShotResult)}
                 >
-                  {HOCKEY_SHOT_RESULTS.map((item) => (
+                  {SHOT_RESULTS_FOR_FORM.map((item) => (
                     <option key={item} value={item}>
                       {t(`hockey.matches.shotResults.${item}`, item)}
                     </option>

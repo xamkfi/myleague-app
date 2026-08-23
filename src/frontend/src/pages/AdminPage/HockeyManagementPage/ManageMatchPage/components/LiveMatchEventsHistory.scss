@@ -242,6 +242,73 @@
     color: $color-text-muted;
     font-size: 13px;
   }
+
+  &__periods {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  &__period {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: 8px;
+    background: #f8fafc;
+  }
+
+  &__period-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__period-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-neutral-black;
+  }
+
+  &__period-count {
+    font-size: 12px;
+    color: $color-neutral-dark-grey;
+  }
+
+  &__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: $color-neutral-white;
+    border-radius: 6px;
+    padding: 4px 8px;
+  }
+
+  &__expand {
+    align-self: flex-start;
+    border: none;
+    background: transparent;
+    color: #4338ca;
+    font-size: 12px;
+    font-weight: map.get($font-weights, 'semibold');
+    cursor: pointer;
+    padding: 4px 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__more-hint {
+    margin: 0;
+    font-size: 12px;
+    color: $color-neutral-dark-grey;
+  }
 }
 
 

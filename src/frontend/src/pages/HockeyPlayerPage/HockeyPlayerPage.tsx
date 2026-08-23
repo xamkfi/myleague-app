@@ -18,7 +18,14 @@ import type {
 } from '../../types/hockey/hockeyTypes';
 import { isHockeyMatchFinished } from '../../types/hockey/hockeyTypes';
 import { getTeamSlug } from '../../utils/slugUtils';
-import { formatHockeyDate } from '../../utils/hockeyLookups';
+import {
+  countHockeyFaceoffsForActivePlayers,
+  formatHockeyDate,
+  formatHockeyFaceoffPercentage,
+  mergeHockeyFaceoffTally,
+  type HockeyFaceoffTally,
+} from '../../utils/hockeyLookups';
+import StatAbbr from '../../components/StatAbbr/StatAbbr';
 import '../FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage.scss';
 
 const MATCHES_PER_PAGE = 20;
@@ -43,10 +50,13 @@ interface PlayerMatchRow {
   homeName: string;
   awayName: string;
   competitionName: string;
+  teamId: string;
   goals: number;
   assists: number;
   points: number;
   penaltyMinutes: number;
+  faceoffWins: number;
+  faceoffAttempts: number;
 }
 
 function calculateAge(birthDate: string | null): number | null {
@@ -63,13 +73,61 @@ function calculateAge(birthDate: string | null): number | null {
   return age;
 }
 
-async function loadCompetitionName(competitionId: string): Promise<string> {
+async function loadCompetitionNameMap(): Promise<Map<string, string>> {
+  const [seasons, tournaments] = await Promise.all([
+    hockeySeasonService.getAll().catch(() => []),
+    hockeyTournamentService.getAll().catch(() => []),
+  ]);
+  const names = new Map<string, string>();
+  for (const season of seasons) {
+    names.set(season.id, season.name);
+  }
+  for (const tournament of tournaments) {
+    names.set(tournament.id, tournament.name);
+  }
+  return names;
+}
+
+async function resolveCompetitionName(
+  competitionId: string,
+  names: Map<string, string>,
+): Promise<string> {
+  const cached = names.get(competitionId);
+  if (cached) {
+    return cached;
+  }
   const season = await hockeySeasonService.getById(competitionId).catch(() => null);
   if (season) {
+    names.set(competitionId, season.name);
     return season.name;
   }
   const tournament = await hockeyTournamentService.getById(competitionId).catch(() => null);
-  return tournament?.name ?? competitionId.slice(0, 8);
+  const name = tournament?.name ?? competitionId;
+  names.set(competitionId, name);
+  return name;
+}
+
+function pickCareerValue(...values: number[]): number {
+  return values.reduce((highest, value) => Math.max(highest, value), 0);
+}
+
+function countFaceoffs(
+  match: HockeyMatchDto,
+  teamPlayerIds: Set<string>,
+  recordedWins: number | undefined,
+  recordedAttempts: number | undefined,
+): HockeyFaceoffTally {
+  const activeIds = new Set(
+    match.matchTeams.flatMap((side) =>
+      side.activePlayers
+        .filter((entry) => teamPlayerIds.has(entry.teamPlayerId))
+        .map((entry) => entry.id),
+    ),
+  );
+  return mergeHockeyFaceoffTally(
+    { wins: recordedWins ?? 0, attempts: recordedAttempts ?? 0 },
+    countHockeyFaceoffsForActivePlayers(match, activeIds),
+  );
 }
 
 function competitionPath(competitionId: string): string {
@@ -119,22 +177,47 @@ function HockeyPlayerPage() {
         setName(t('hockey.players.title', 'Player'));
       }
 
-      const allTeams = await hockeyTeamService.getAll();
+      const [allTeams, competitionNames] = await Promise.all([
+        hockeyTeamService.getAll(),
+        loadCompetitionNameMap(),
+      ]);
       const playerTeams = allTeams.filter((team) => team.roster.some((row) => row.playerId === loaded.id));
       setTeams(playerTeams);
       const teamNames = new Map(allTeams.map((team) => [team.id, team.name]));
 
-      const competitionIds = [...new Set(
-        playerTeams.flatMap((team) => team.roster
-          .filter((row) => row.playerId === loaded.id && row.competitionId)
-          .map((row) => row.competitionId as string)),
-      )];
+      const rosterCompetitionIds = playerTeams.flatMap((team) => team.roster
+        .filter((row) => row.playerId === loaded.id && row.competitionId)
+        .map((row) => row.competitionId as string));
+
+      const matchesById = new Map<string, HockeyMatchDto>();
+      const teamMatchLists = await Promise.all(
+        playerTeams.map((team) => hockeyMatchService.getByTeam(team.id).catch(() => [] as HockeyMatchDto[])),
+      );
+      for (const list of teamMatchLists) {
+        for (const match of list) {
+          matchesById.set(match.id, match);
+        }
+      }
+
+      const teamPlayerIds = new Set(
+        playerTeams.flatMap((team) => team.roster.filter((row) => row.playerId === loaded.id).map((row) => row.id)),
+      );
+      const played = [...matchesById.values()]
+        .filter((match) => match.matchTeams.some((side) =>
+          side.activePlayers.some((entry) => teamPlayerIds.has(entry.teamPlayerId))))
+        .sort((a, b) => new Date(b.scheduledStartTime).getTime() - new Date(a.scheduledStartTime).getTime())
+        .slice(0, 50);
+
+      const matchCompetitionIds = played
+        .map((match) => match.competitionId)
+        .filter((competitionId): competitionId is string => Boolean(competitionId));
+      const competitionIds = [...new Set([...rosterCompetitionIds, ...matchCompetitionIds])];
 
       const seasons = await Promise.all(competitionIds.map(async (competitionId) => {
         const [playerStats, goalieStats, competitionName] = await Promise.all([
           hockeyStatisticsService.getPlayers(competitionId, loaded.id).catch(() => []),
           hockeyStatisticsService.getGoalies(competitionId, loaded.id).catch(() => []),
-          loadCompetitionName(competitionId),
+          resolveCompetitionName(competitionId, competitionNames),
         ]);
         return { competitionId, competitionName, playerStats, goalieStats };
       }));
@@ -160,47 +243,109 @@ function HockeyPlayerPage() {
           });
         }
       }
-      setSeasonRows(nextSeasons);
-      setGoalieRows(nextGoalies);
-
-      const matchesById = new Map<string, HockeyMatchDto>();
-      const teamMatchLists = await Promise.all(
-        playerTeams.map((team) => hockeyMatchService.getByTeam(team.id).catch(() => [] as HockeyMatchDto[])),
-      );
-      for (const list of teamMatchLists) {
-        for (const match of list) {
-          matchesById.set(match.id, match);
-        }
-      }
-
-      const teamPlayerIds = new Set(
-        playerTeams.flatMap((team) => team.roster.filter((row) => row.playerId === loaded.id).map((row) => row.id)),
-      );
-      const played = [...matchesById.values()]
-        .filter((match) => match.matchTeams.some((side) =>
-          side.activePlayers.some((entry) => teamPlayerIds.has(entry.teamPlayerId))))
-        .sort((a, b) => new Date(b.scheduledStartTime).getTime() - new Date(a.scheduledStartTime).getTime())
-        .slice(0, 50);
 
       const history = await mapInBatches(played, 8, async (match) => {
         const box = isHockeyMatchFinished(match.status) || match.status !== 'Scheduled'
           ? await hockeyStatisticsService.getMatchStats(match.id).catch(() => null)
           : null;
         const row = box?.players.find((item) => item.playerId === loaded.id);
+        const playerSide = match.matchTeams.find((side) =>
+          side.activePlayers.some((entry) => teamPlayerIds.has(entry.teamPlayerId)));
+        const faceoffs = countFaceoffs(
+          match,
+          teamPlayerIds,
+          row?.faceoffWins,
+          row?.faceoffAttempts,
+        );
         return {
           match,
           homeName: match.homeTeamId ? teamNames.get(match.homeTeamId) ?? 'TBD' : 'TBD',
           awayName: match.awayTeamId ? teamNames.get(match.awayTeamId) ?? 'TBD' : 'TBD',
           competitionName: match.competitionId
-            ? (seasons.find((item) => item.competitionId === match.competitionId)?.competitionName
-              ?? match.competitionId.slice(0, 8))
+            ? await resolveCompetitionName(match.competitionId, competitionNames)
             : '',
+          teamId: playerSide?.teamId ?? '',
           goals: row?.goals ?? 0,
           assists: row?.assists ?? 0,
           points: row?.points ?? 0,
           penaltyMinutes: row?.penaltyMinutes ?? 0,
+          faceoffWins: faceoffs.wins,
+          faceoffAttempts: faceoffs.attempts,
         };
       });
+
+      if (nextSeasons.length > 0) {
+        const faceoffsByKey = new Map<string, { wins: number; attempts: number }>();
+        for (const row of history) {
+          const competitionId = row.match.competitionId;
+          if (!competitionId) {
+            continue;
+          }
+          const key = `${competitionId}:${row.teamId}`;
+          const current = faceoffsByKey.get(key) ?? { wins: 0, attempts: 0 };
+          faceoffsByKey.set(key, {
+            wins: current.wins + row.faceoffWins,
+            attempts: current.attempts + row.faceoffAttempts,
+          });
+        }
+        for (const season of nextSeasons) {
+          if ((season.stats.faceoffAttempts ?? 0) === 0) {
+            const fromMatches = faceoffsByKey.get(`${season.competitionId}:${season.teamId}`);
+            season.stats = {
+              ...season.stats,
+              faceoffWins: fromMatches?.wins ?? 0,
+              faceoffAttempts: fromMatches?.attempts ?? 0,
+            };
+          }
+        }
+      }
+
+      if (nextSeasons.length === 0) {
+        const derived = new Map<string, SeasonRow>();
+        for (const row of history) {
+          const competitionId = row.match.competitionId;
+          if (!competitionId) {
+            continue;
+          }
+          const key = `${competitionId}:${row.teamId}`;
+          const existing = derived.get(key);
+          if (existing) {
+            existing.stats.gamesPlayed += 1;
+            existing.stats.goals += row.goals;
+            existing.stats.assists += row.assists;
+            existing.stats.points += row.points;
+            existing.stats.penaltyMinutes += row.penaltyMinutes;
+            existing.stats.faceoffWins += row.faceoffWins;
+            existing.stats.faceoffAttempts += row.faceoffAttempts;
+          } else {
+            derived.set(key, {
+              competitionId,
+              competitionName: row.competitionName,
+              teamId: row.teamId,
+              teamName: teamNames.get(row.teamId) ?? row.teamId.slice(0, 8),
+              stats: {
+                id: `derived-${key}`,
+                playerId: loaded.id,
+                teamId: row.teamId,
+                teamPlayerId: '',
+                competitionId,
+                gamesPlayed: 1,
+                goals: row.goals,
+                assists: row.assists,
+                points: row.points,
+                penaltyMinutes: row.penaltyMinutes,
+                plusMinusRating: 0,
+                faceoffWins: row.faceoffWins,
+                faceoffAttempts: row.faceoffAttempts,
+              },
+            });
+          }
+        }
+        nextSeasons.push(...derived.values());
+      }
+
+      setSeasonRows(nextSeasons);
+      setGoalieRows(nextGoalies);
       setMatchRows(history);
     };
     void load()
@@ -217,8 +362,10 @@ function HockeyPlayerPage() {
       assists: sum.assists + row.stats.assists,
       points: sum.points + row.stats.points,
       penaltyMinutes: sum.penaltyMinutes + row.stats.penaltyMinutes,
+      faceoffWins: sum.faceoffWins + (row.stats.faceoffWins ?? 0),
+      faceoffAttempts: sum.faceoffAttempts + (row.stats.faceoffAttempts ?? 0),
     }),
-    { gamesPlayed: 0, goals: 0, assists: 0, points: 0, penaltyMinutes: 0 },
+    { gamesPlayed: 0, goals: 0, assists: 0, points: 0, penaltyMinutes: 0, faceoffWins: 0, faceoffAttempts: 0 },
   ), [seasonRows]);
   const matchTotals = useMemo(() => matchRows.reduce(
     (sum, row) => ({
@@ -226,15 +373,20 @@ function HockeyPlayerPage() {
       assists: sum.assists + row.assists,
       points: sum.points + row.points,
       penaltyMinutes: sum.penaltyMinutes + row.penaltyMinutes,
+      faceoffWins: sum.faceoffWins + row.faceoffWins,
+      faceoffAttempts: sum.faceoffAttempts + row.faceoffAttempts,
     }),
-    { goals: 0, assists: 0, points: 0, penaltyMinutes: 0 },
+    { goals: 0, assists: 0, points: 0, penaltyMinutes: 0, faceoffWins: 0, faceoffAttempts: 0 },
   ), [matchRows]);
   const totalMatchPages = Math.max(1, Math.ceil(matchRows.length / MATCHES_PER_PAGE));
   const paginatedMatches = matchRows.slice((matchPage - 1) * MATCHES_PER_PAGE, matchPage * MATCHES_PER_PAGE);
-  const careerGames = player?.careerGamesPlayed || totals.gamesPlayed;
-  const careerGoals = player?.careerGoals || totals.goals;
-  const careerAssists = player?.careerAssists || totals.assists;
-  const careerPim = player?.careerPenaltyMinutes || totals.penaltyMinutes;
+  const careerGames = pickCareerValue(player?.careerGamesPlayed ?? 0, totals.gamesPlayed, matchRows.length);
+  const careerGoals = pickCareerValue(player?.careerGoals ?? 0, totals.goals, matchTotals.goals);
+  const careerAssists = pickCareerValue(player?.careerAssists ?? 0, totals.assists, matchTotals.assists);
+  const careerPim = pickCareerValue(player?.careerPenaltyMinutes ?? 0, totals.penaltyMinutes, matchTotals.penaltyMinutes);
+  const careerFaceoffs = totals.faceoffAttempts > 0
+    ? { wins: totals.faceoffWins, attempts: totals.faceoffAttempts }
+    : { wins: matchTotals.faceoffWins, attempts: matchTotals.faceoffAttempts };
 
   if (loading) {
     return (
@@ -292,23 +444,39 @@ function HockeyPlayerPage() {
                 <div className="stats-grid">
                   <div className="stats-box">
                     <div className="stats-value">{careerGames}</div>
-                    <div className="stats-label">{t('hockeyPage.colGp', 'GP')}</div>
+                    <div className="stats-label">
+                      <StatAbbr abbr={t('hockeyPage.colGp', 'GP')} title={t('hockeyPage.colGpTitle', 'Games played')} />
+                    </div>
                   </div>
                   <div className="stats-box">
                     <div className="stats-value">{careerGoals}</div>
-                    <div className="stats-label">{t('hockeyPage.colG', 'G')}</div>
+                    <div className="stats-label">
+                      <StatAbbr abbr={t('hockeyPage.colG', 'G')} title={t('hockeyPage.colGTitle', 'Goals')} />
+                    </div>
                   </div>
                   <div className="stats-box">
                     <div className="stats-value">{careerAssists}</div>
-                    <div className="stats-label">{t('hockeyPage.colA', 'A')}</div>
+                    <div className="stats-label">
+                      <StatAbbr abbr={t('hockeyPage.colA', 'A')} title={t('hockeyPage.colATitle', 'Assists')} />
+                    </div>
                   </div>
                   <div className="stats-box">
                     <div className="stats-value">{careerGoals + careerAssists}</div>
-                    <div className="stats-label">{t('hockeyPage.colP', 'P')}</div>
+                    <div className="stats-label">
+                      <StatAbbr abbr={t('hockeyPage.colP', 'P')} title={t('hockeyPage.colPTitle', 'Points')} />
+                    </div>
                   </div>
                   <div className="stats-box">
                     <div className="stats-value">{careerPim}</div>
-                    <div className="stats-label">{t('hockeyPage.colPim', 'PIM')}</div>
+                    <div className="stats-label">
+                      <StatAbbr abbr={t('hockeyPage.colPim', 'PIM')} title={t('hockeyPage.colPimTitle', 'Penalty minutes')} />
+                    </div>
+                  </div>
+                  <div className="stats-box">
+                    <div className="stats-value">{formatHockeyFaceoffPercentage(careerFaceoffs.wins, careerFaceoffs.attempts)}</div>
+                    <div className="stats-label">
+                      <StatAbbr abbr={t('hockeyPage.colFo', 'FO%')} title={t('hockeyPage.colFoTitle', 'Faceoff win percentage')} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -323,12 +491,12 @@ function HockeyPlayerPage() {
                         <tr>
                           <th className="col-season">{t('hockey.players.season', 'Season')}</th>
                           <th className="col-team">{t('hockey.players.team', 'Team')}</th>
-                          <th className="col-num">{t('hockeyPage.colGp', 'GP')}</th>
-                          <th className="col-num">{t('hockeyPage.colW', 'W')}</th>
-                          <th className="col-num">{t('hockeyPage.colL', 'L')}</th>
-                          <th className="col-num">{t('hockeyPage.colSvPct', 'SV%')}</th>
-                          <th className="col-num">{t('hockeyPage.colGaa', 'GAA')}</th>
-                          <th className="col-num">{t('hockeyPage.colSo', 'SO')}</th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colGp', 'GP')} title={t('hockeyPage.colGpTitle', 'Games played')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colW', 'W')} title={t('hockeyPage.colWTitle', 'Wins')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colL', 'L')} title={t('hockeyPage.colLTitle', 'Losses')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colSvPct', 'SV%')} title={t('hockeyPage.colSvPctTitle', 'Save percentage')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colGaa', 'GAA')} title={t('hockeyPage.colGaaTitle', 'Goals against average')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colSo', 'SO')} title={t('hockeyPage.colSoTitle', 'Shutouts')} /></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -365,10 +533,11 @@ function HockeyPlayerPage() {
                           <th className="col-team">{t('hockeyPage.home', 'Home')}</th>
                           <th className="col-score">{t('hockeyPage.score', 'Score')}</th>
                           <th className="col-team">{t('hockeyPage.away', 'Away')}</th>
-                          <th className="col-num">{t('hockeyPage.colG', 'G')}</th>
-                          <th className="col-num">{t('hockeyPage.colA', 'A')}</th>
-                          <th className="col-num">{t('hockeyPage.colP', 'P')}</th>
-                          <th className="col-num">{t('hockeyPage.colPim', 'PIM')}</th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colG', 'G')} title={t('hockeyPage.colGTitle', 'Goals')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colA', 'A')} title={t('hockeyPage.colATitle', 'Assists')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colP', 'P')} title={t('hockeyPage.colPTitle', 'Points')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colPim', 'PIM')} title={t('hockeyPage.colPimTitle', 'Penalty minutes')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colFo', 'FO%')} title={t('hockeyPage.colFoTitle', 'Faceoff win percentage')} /></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -393,6 +562,7 @@ function HockeyPlayerPage() {
                             <td className="col-num">{row.assists}</td>
                             <td className="col-num">{row.points}</td>
                             <td className="col-num">{row.penaltyMinutes}</td>
+                            <td className="col-num">{formatHockeyFaceoffPercentage(row.faceoffWins, row.faceoffAttempts)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -403,6 +573,7 @@ function HockeyPlayerPage() {
                           <td className="col-num">{matchTotals.assists}</td>
                           <td className="col-num">{matchTotals.points}</td>
                           <td className="col-num">{matchTotals.penaltyMinutes}</td>
+                          <td className="col-num">{formatHockeyFaceoffPercentage(matchTotals.faceoffWins, matchTotals.faceoffAttempts)}</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -431,12 +602,13 @@ function HockeyPlayerPage() {
                         <tr>
                           <th className="col-season">{t('hockey.players.season', 'Season')}</th>
                           <th className="col-team">{t('hockey.players.team', 'Team')}</th>
-                          <th className="col-num">{t('hockeyPage.colGp', 'GP')}</th>
-                          <th className="col-num">{t('hockeyPage.colG', 'G')}</th>
-                          <th className="col-num">{t('hockeyPage.colA', 'A')}</th>
-                          <th className="col-num">{t('hockeyPage.colP', 'P')}</th>
-                          <th className="col-num">{t('hockeyPage.colPim', 'PIM')}</th>
-                          <th className="col-num">{t('hockeyPage.colPlusMinus', '+/-')}</th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colGp', 'GP')} title={t('hockeyPage.colGpTitle', 'Games played')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colG', 'G')} title={t('hockeyPage.colGTitle', 'Goals')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colA', 'A')} title={t('hockeyPage.colATitle', 'Assists')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colP', 'P')} title={t('hockeyPage.colPTitle', 'Points')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colPim', 'PIM')} title={t('hockeyPage.colPimTitle', 'Penalty minutes')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colFo', 'FO%')} title={t('hockeyPage.colFoTitle', 'Faceoff win percentage')} /></th>
+                          <th className="col-num"><StatAbbr abbr={t('hockeyPage.colPlusMinus', '+/-')} title={t('hockeyPage.colPlusMinusTitle', 'Plus-minus')} /></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -460,6 +632,7 @@ function HockeyPlayerPage() {
                             <td className="col-num">{row.stats.assists}</td>
                             <td className="col-num">{row.stats.points}</td>
                             <td className="col-num">{row.stats.penaltyMinutes}</td>
+                            <td className="col-num">{formatHockeyFaceoffPercentage(row.stats.faceoffWins ?? 0, row.stats.faceoffAttempts ?? 0)}</td>
                             <td className="col-num">{row.stats.plusMinusRating}</td>
                           </tr>
                         ))}
@@ -473,6 +646,7 @@ function HockeyPlayerPage() {
                           <td className="col-num">{totals.assists}</td>
                           <td className="col-num">{totals.points}</td>
                           <td className="col-num">{totals.penaltyMinutes}</td>
+                          <td className="col-num">{formatHockeyFaceoffPercentage(totals.faceoffWins, totals.faceoffAttempts)}</td>
                           <td />
                         </tr>
                       </tfoot>

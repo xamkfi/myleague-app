@@ -147,9 +147,8 @@ export const MatchTimerProvider = ({ children, initialPeriod = 1, matchId }: Mat
       }
       setElapsedTimeSeconds(totalSeconds);
     }
-    if (typeof update.PeriodNumber === 'number' && Number.isFinite(update.PeriodNumber) && update.PeriodNumber >= 1) {
-      setCurrentPeriod(update.PeriodNumber);
-    }
+    // Period is owned by the live-desk period controls. Applying the timer API's
+    // PeriodNumber here jumped the UI to the next period after a whistle/stop.
     setIsRunning(update.IsRunning);
   }, []);
 

@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import StatAbbr from '../../components/StatAbbr/StatAbbr';
 import StatRow from '../MatchPage/components/StatRow';
 import { getTeamInitials } from '../MatchPage/components/matchUtils';
 import type { HockeyMatchStatisticsDto } from '../../types/hockey/hockeyTypes';
+import { formatHockeyFaceoffPercentage } from '../../utils/hockeyLookups';
 import '../MatchPage/components/MatchStats.scss';
 
 interface HockeyMatchStatsProps {
@@ -95,10 +97,11 @@ function HockeyMatchStats({
             <thead>
               <tr className="header-row">
                 <th className="team-col">{t('hockeyPage.player', 'Player')}</th>
-                <th className="stats-col">{t('hockeyPage.colG', 'G')}</th>
-                <th className="stats-col">{t('hockeyPage.colA', 'A')}</th>
-                <th className="points-col">{t('hockeyPage.colP', 'P')}</th>
-                <th className="stats-col">{t('hockeyPage.colPim', 'PIM')}</th>
+                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colG', 'G')} title={t('hockeyPage.colGTitle', 'Goals')} /></th>
+                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colA', 'A')} title={t('hockeyPage.colATitle', 'Assists')} /></th>
+                <th className="points-col"><StatAbbr abbr={t('hockeyPage.colP', 'P')} title={t('hockeyPage.colPTitle', 'Points')} /></th>
+                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colPim', 'PIM')} title={t('hockeyPage.colPimTitle', 'Penalty minutes')} /></th>
+                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colFo', 'FO%')} title={t('hockeyPage.colFoTitle', 'Faceoff win percentage')} /></th>
               </tr>
             </thead>
             <tbody>
@@ -113,6 +116,7 @@ function HockeyMatchStats({
                   <td className="stats-col">{row.assists}</td>
                   <td className="points-col">{row.points}</td>
                   <td className="stats-col">{row.penaltyMinutes}</td>
+                  <td className="stats-col">{formatHockeyFaceoffPercentage(row.faceoffWins ?? 0, row.faceoffAttempts ?? 0)}</td>
                 </tr>
               ))}
             </tbody>
@@ -125,10 +129,10 @@ function HockeyMatchStats({
             <thead>
               <tr className="header-row">
                 <th className="team-col">{t('hockeyPage.goalie', 'Goalie')}</th>
-                <th className="stats-col">{t('hockeyPage.colSa', 'SA')}</th>
-                <th className="stats-col">{t('hockeyPage.colSv', 'SV')}</th>
-                <th className="stats-col">{t('hockeyPage.colSvPct', 'SV%')}</th>
-                <th className="stats-col">{t('hockeyPage.colGa', 'GA')}</th>
+                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colSa', 'SA')} title={t('hockeyPage.colSaTitle', 'Shots against')} /></th>
+                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colSv', 'SV')} title={t('hockeyPage.colSvTitle', 'Saves')} /></th>
+                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colSvPct', 'SV%')} title={t('hockeyPage.colSvPctTitle', 'Save percentage')} /></th>
+                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colGa', 'GA')} title={t('hockeyPage.colGaTitle', 'Goals against')} /></th>
               </tr>
             </thead>
             <tbody>

@@ -174,7 +174,17 @@ const TeamColumn = ({
   const [search, setSearch] = useState('');
   const [positionFilter, setPositionFilter] = useState<PositionFilter>('all');
 
-  const sortedPlayers = useMemo(() => [...players].sort(sortPlayers), [players]);
+  const sortedPlayers = useMemo(
+    () => [...players].sort((left, right) => {
+      const leftGoalie = left.position === 'Goalie';
+      const rightGoalie = right.position === 'Goalie';
+      if (leftGoalie !== rightGoalie) {
+        return leftGoalie ? -1 : 1;
+      }
+      return sortPlayers(left, right);
+    }),
+    [players],
+  );
 
   const defenders = useMemo(
     () => sortedPlayers.filter((player) => state.players.get(player.id) === 'Defenseman'),

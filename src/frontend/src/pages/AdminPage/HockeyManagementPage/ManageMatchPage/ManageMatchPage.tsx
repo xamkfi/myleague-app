@@ -92,6 +92,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   const [selectedTeamId, setSelectedTeamId] = useState(hockeyHomeTeam(match)?.id ?? '');
   const [playerId, setPlayerId] = useState('');
   const [assistId, setAssistId] = useState('');
+  const [secondaryAssistId, setSecondaryAssistId] = useState('');
   const [goalStrength, setGoalStrength] = useState<HockeyGoalStrength>('EvenStrength');
   const [penaltyMinutes, setPenaltyMinutes] = useState(2);
   const [penaltyOffence, setPenaltyOffence] = useState<HockeyPenaltyOffence>('Tripping');
@@ -322,11 +323,23 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
       setPlayerId('');
     }
     setAssistId('');
+    setSecondaryAssistId('');
     setEventForm(kind);
   };
 
+  const resumeClock = useCallback((): void => {
+    if (timer.callbacks.start) {
+      void timer.callbacks.start();
+      return;
+    }
+    if (timer.callbacks.toggle && !timer.isRunning) {
+      void timer.callbacks.toggle();
+    }
+  }, [timer.callbacks, timer.isRunning]);
+
   const openFaceoffForm = (): void => {
     captureEventStamp();
+    resumeClock();
     const defaultWinner = home?.id ?? away?.id ?? '';
     setFaceoffWinnerId((current) => current || defaultWinner);
     setFaceoffWinnerPlayerId('');
@@ -352,6 +365,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         timeInSeconds,
         goalStrength,
         primaryAssistActivePlayerId: assistId || undefined,
+        secondaryAssistActivePlayerId: secondaryAssistId || undefined,
         goalieActivePlayerId: defendingGoalieId || undefined,
         wasEmptyNet: !defendingGoalieId,
       }));
@@ -379,7 +393,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         shotResult,
         countsAsShotOnGoal: hockeyShotIsOnGoal(shotResult),
         shooterActivePlayerId: playerId || undefined,
-        goalieActivePlayerId: (creditsSave || shotResult === 'Goal') ? (defendingGoalieId || undefined) : undefined,
+        goalieActivePlayerId: creditsSave ? (defendingGoalieId || undefined) : undefined,
         description: shotResult,
       }));
     } else if (eventForm === 'faceoff' && faceoffWinnerId) {
@@ -566,10 +580,12 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         players={formPlayers}
         playerId={playerId}
         assistId={assistId}
+        secondaryAssistId={secondaryAssistId}
         goalStrength={goalStrength}
         loading={busy}
         onPlayerChange={setPlayerId}
         onAssistChange={setAssistId}
+        onSecondaryAssistChange={setSecondaryAssistId}
         onStrengthChange={setGoalStrength}
         onRecordGoal={submitEvent}
         onClose={closeEventForm}

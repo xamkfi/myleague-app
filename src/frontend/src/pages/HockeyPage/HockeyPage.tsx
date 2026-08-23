@@ -8,6 +8,7 @@ import { hockeyStatisticsService } from '../../api/hockey/hockeyStatisticsServic
 import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
 import type { HockeySeasonDto, HockeyTeamCompetitionStatisticsDto } from '../../types/hockey/hockeyTypes';
 import { useAudience } from '../../context/AudienceContext';
+import StatAbbr from '../../components/StatAbbr/StatAbbr';
 import './HockeyPage.scss';
 
 interface SeasonWithStandings {
@@ -144,8 +145,12 @@ function HockeyPage() {
                         <tr>
                           <th>#</th>
                           <th>{t('hockeyPage.team', 'TEAM')}</th>
-                          <th className="standings-table__games">{t('hockeyPage.gamesShort', 'GP')}</th>
-                          <th className="standings-table__points">{t('hockeyPage.pointsShort', 'PTS')}</th>
+                          <th className="standings-table__games">
+                            <StatAbbr abbr={t('hockeyPage.gamesShort', 'GP')} title={t('hockeyPage.gamesShortTitle', 'Games played')} />
+                          </th>
+                          <th className="standings-table__points">
+                            <StatAbbr abbr={t('hockeyPage.pointsShort', 'PTS')} title={t('hockeyPage.pointsShortTitle', 'Points')} />
+                          </th>
                         </tr>
                       </thead>
                       <tbody>

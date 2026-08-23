@@ -74,6 +74,10 @@ public static class HockeyMatchMapper
 
     public static HockeyMatchEventDto ToEventDto(HockeyMatchEvent matchEvent)
     {
+        Guid? losingActivePlayerId = matchEvent is HockeyFaceoff faceoff
+            ? faceoff.LosingActivePlayerId
+            : null;
+
         return new HockeyMatchEventDto(
             matchEvent.Id,
             matchEvent.EventType.ToString(),
@@ -81,7 +85,8 @@ public static class HockeyMatchMapper
             (int)matchEvent.GameTime.TotalSeconds,
             matchEvent.MatchTeamId,
             matchEvent.MatchActivePlayerId,
-            matchEvent.Description);
+            matchEvent.Description,
+            losingActivePlayerId);
     }
 
     public static HockeyMatchOfficialDto ToOfficialDto(HockeyMatchOfficial official)

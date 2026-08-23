@@ -18,6 +18,7 @@ import {
   hockeyStatusTranslationKey,
   loadHockeyRosterNameMaps,
   loadTeamNameMap,
+  mergeHockeyMatchFaceoffWins,
 } from '../../utils/hockeyLookups';
 import '../MatchPage/MatchPage.scss';
 import '../../components/LeagueStanding/LeagueStanding.scss';
@@ -48,7 +49,7 @@ function HockeyMatchPage() {
         hockeyStatisticsService.getMatchStats(id).catch(() => null),
       ]);
       setMatch(loaded);
-      setStats(box);
+      setStats(box ? mergeHockeyMatchFaceoffWins(box, loaded) : null);
     } catch {
       /* keep last known live state */
     }
@@ -70,7 +71,7 @@ function HockeyMatchPage() {
       setPlayerNames(names.byTeamPlayerId);
       setCareerPlayerNames(names.byPlayerId);
       const box = await hockeyStatisticsService.getMatchStats(id).catch(() => null);
-      setStats(box);
+      setStats(box ? mergeHockeyMatchFaceoffWins(box, loaded) : null);
       if (loaded.competitionId) {
         const season = await hockeySeasonService.getById(loaded.competitionId).catch(() => null);
         if (season) {

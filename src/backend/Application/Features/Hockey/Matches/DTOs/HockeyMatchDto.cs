@@ -67,7 +67,8 @@ public record HockeyMatchEventDto(
     int GameTimeSeconds,
     Guid? MatchTeamId,
     Guid? MatchActivePlayerId,
-    string? Description);
+    string? Description,
+    Guid? LosingActivePlayerId = null);
 
 /// <summary>
 /// Official assigned to a match.

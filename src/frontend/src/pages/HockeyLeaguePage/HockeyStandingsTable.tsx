@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import StatAbbr from '../../components/StatAbbr/StatAbbr';
 import type { HockeyTeamCompetitionStatisticsDto } from '../../types/hockey/hockeyTypes';
 import { getTeamSlug } from '../../utils/slugUtils';
 
@@ -21,15 +22,15 @@ function HockeyStandingsTable({ standings, teamNames, previewLimit }: HockeyStan
         <tr className="header-row">
           <th className="rank-col">#</th>
           <th className="team-col">{t('hockeyPage.team', 'TEAM')}</th>
-          <th className="stats-col">{t('hockeyPage.colGp', 'GP')}</th>
-          <th className="stats-col">{t('hockeyPage.colW', 'W')}</th>
-          <th className="stats-col">{t('hockeyPage.colOtw', 'OTW')}</th>
-          <th className="stats-col">{t('hockeyPage.colOtl', 'OTL')}</th>
-          <th className="stats-col">{t('hockeyPage.colL', 'L')}</th>
-          <th className="goals-col">{t('hockeyPage.colGf', 'GF')}</th>
-          <th className="stats-col">{t('hockeyPage.colGaAbbr', 'GA')}</th>
-          <th className="stats-col">{t('hockeyPage.colGd', 'GD')}</th>
-          <th className="points-col">{t('hockeyPage.pointsShort', 'PTS')}</th>
+          <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colGp', 'GP')} title={t('hockeyPage.colGpTitle', 'Games played')} /></th>
+          <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colW', 'W')} title={t('hockeyPage.colWTitle', 'Wins')} /></th>
+          <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colOtw', 'OTW')} title={t('hockeyPage.colOtwTitle', 'Overtime wins')} /></th>
+          <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colOtl', 'OTL')} title={t('hockeyPage.colOtlTitle', 'Overtime losses')} /></th>
+          <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colL', 'L')} title={t('hockeyPage.colLTitle', 'Losses')} /></th>
+          <th className="goals-col"><StatAbbr abbr={t('hockeyPage.colGf', 'GF')} title={t('hockeyPage.colGfTitle', 'Goals for')} /></th>
+          <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colGaAbbr', 'GA')} title={t('hockeyPage.colGaTitle', 'Goals against')} /></th>
+          <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colGd', 'GD')} title={t('hockeyPage.colGdTitle', 'Goal difference')} /></th>
+          <th className="points-col"><StatAbbr abbr={t('hockeyPage.pointsShort', 'PTS')} title={t('hockeyPage.pointsShortTitle', 'Points')} /></th>
         </tr>
       </thead>
       <tbody>
