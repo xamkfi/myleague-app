@@ -32,6 +32,7 @@ public record HockeyTournamentDto(
     string? Venue,
     string? ContentHtml,
     string CurrentStage,
+    string TeamCategory,
     Guid? ChampionCompetitionTeamId,
     IReadOnlyCollection<HockeyCompetitionTeamDto> Teams,
     IReadOnlyCollection<HockeyTournamentGroupDto> Groups,

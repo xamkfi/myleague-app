@@ -3,6 +3,7 @@ using Application.Features.Hockey.Seasons.Commands;
 using Application.Features.Hockey.Seasons.DTOs;
 using Application.Features.Hockey.Seasons.Handlers;
 using Domain.Entities.Hockey.Competitions;
+using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
 using Domain.Repositories.Hockey;
 using Microsoft.Extensions.Logging;
@@ -59,7 +60,8 @@ public class HockeySeasonLifecycleHandlerTests
                 "Updated Liiga",
                 new DateTime(2026, 9, 15, 0, 0, 0, DateTimeKind.Utc),
                 new DateTime(2027, 5, 1, 0, 0, 0, DateTimeKind.Utc),
-                "26-27"),
+                "26-27",
+                TeamCategory.Adult),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();

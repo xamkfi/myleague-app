@@ -7,14 +7,19 @@ import SearchBar from '../SearchBar';
 import { MAHL_INFO_PAGES } from '../../constants/mahlInfoPages';
 import AudienceSwitcher from '../AudienceSwitcher/AudienceSwitcher';
 
-// Sports configuration
-const SPORTS_CONFIG = [
+interface NavbarSportLink {
+  id: string;
+  path: string;
+  translationKey: string;
+  disabled?: boolean;
+}
+
+const SPORTS_CONFIG: NavbarSportLink[] = [
   { id: 'floorball', path: '/sports/floorball', translationKey: 'sports.floorball' },
   { id: 'football', path: '/sports/football', translationKey: 'sports.football' },
-  { id: 'icehockey', path: '/sports/icehockey', translationKey: 'sports.iceHockey', disabled: true }
+  { id: 'icehockey', path: '/sports/icehockey', translationKey: 'sports.iceHockey' },
 ];
 
-// Custom hook for mobile detection
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -31,7 +36,6 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-
 function Navbar() {
   const { t } = useTranslation();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -40,17 +44,14 @@ function Navbar() {
   const mahlDropdownRef = useRef<HTMLLIElement>(null);
   const isMobile = useIsMobile();
 
-  // Add hamburger menu toggle
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Close mobile menu when clicking outside
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // Close mobile menu when window is resized to desktop
   useEffect(() => {
     if (!isMobile && isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
@@ -60,8 +61,7 @@ function Navbar() {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-      
-      // Check if click is inside sports or MAHL dropdown
+
       const isInsideSports = sportsDropdownRef.current?.contains(target);
       const isInsideMahl = mahlDropdownRef.current?.contains(target);
 
@@ -88,9 +88,8 @@ function Navbar() {
         </Link>
         <AudienceSwitcher />
       </div>
-      
-      {/* Mobile hamburger button */}
-      <button 
+
+      <button
         className="navbar-mobile-toggle"
         onClick={toggleMobileMenu}
         aria-label="Toggle mobile menu"
@@ -100,13 +99,11 @@ function Navbar() {
         <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
         <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
       </button>
-      
-      {/* Desktop search bar - single instance to avoid duplicate Clubs API calls */}
+
       <div className="navbar-search desktop-only">
         {!isMobile && <SearchBar />}
       </div>
-      
-      {/* Desktop menu */}
+
       <div className="navbar-menu desktop-only">
         <ul className="navbar-items">
           <li className="navbar-item">
@@ -146,7 +143,7 @@ function Navbar() {
             <Link to="/turnaukset">{t('nav.tournaments')}</Link>
             <span className="dropdown-icon">▼</span>
           </li>
-          <li 
+          <li
             ref={sportsDropdownRef}
             className={`navbar-item dropdown ${activeDropdown === 'sports' ? 'active' : ''}`}
           >
@@ -159,7 +156,7 @@ function Navbar() {
                 <li>
                   <Link to="/sports" onClick={() => setActiveDropdown(null)}>{t('sports.allSports')}</Link>
                 </li>
-                {SPORTS_CONFIG.map((sport) => (
+                {SPORTS_CONFIG.map((sport: NavbarSportLink) => (
                   <li key={sport.id}>
                     {sport.disabled ? (
                       <span className="disabled-link">{t(sport.translationKey)}</span>
@@ -176,15 +173,13 @@ function Navbar() {
           </li>
         </ul>
       </div>
-      
-      {/* Desktop language toggle */}
+
       <div className="navbar-end desktop-only">
         <div className="navbar-language">
           <LanguageToggle />
         </div>
       </div>
-      
-      {/* Mobile menu overlay */}
+
       <div className={`navbar-mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="mobile-menu-content">
           <div className="mobile-audience">
@@ -192,12 +187,10 @@ function Navbar() {
             <AudienceSwitcher variant="block" />
           </div>
 
-          {/* Mobile search bar - same component instance as desktop (only one SearchBar mounts) */}
           <div className="mobile-search">
             {isMobile && <SearchBar />}
           </div>
-          
-          {/* Mobile menu items */}
+
           <ul className="mobile-navbar-items">
             <li className="mobile-navbar-item">
               <Link to="/uutiset" onClick={closeMobileMenu}>{t('nav.news')}</Link>
@@ -232,7 +225,7 @@ function Navbar() {
                 <li>
                   <Link to="/sports" onClick={closeMobileMenu}>{t('sports.allSports')}</Link>
                 </li>
-                {SPORTS_CONFIG.map((sport) => (
+                {SPORTS_CONFIG.map((sport: NavbarSportLink) => (
                   <li key={sport.id}>
                     {sport.disabled ? (
                       <span className="disabled-link">{t(sport.translationKey)}</span>
@@ -247,8 +240,7 @@ function Navbar() {
               <Link to="/clubs" onClick={closeMobileMenu}>{t('nav.clubs')}</Link>
             </li>
           </ul>
-          
-          {/* Mobile language toggle */}
+
           <div className="mobile-language">
             <LanguageToggle />
           </div>

@@ -30,4 +30,12 @@ public interface IClubAdminAccessService
     /// <param name="teamId">The football team ID</param>
     /// <returns>True if the person may manage the team</returns>
     Task<bool> CanManageFootballTeamAsync(Guid personId, Guid teamId);
+
+    /// <summary>
+    /// Checks whether the person manages the club that owns the given hockey team
+    /// </summary>
+    /// <param name="personId">The person ID from the caller's token</param>
+    /// <param name="teamId">The hockey team ID</param>
+    /// <returns>True if the person may manage the team</returns>
+    Task<bool> CanManageHockeyTeamAsync(Guid personId, Guid teamId);
 }

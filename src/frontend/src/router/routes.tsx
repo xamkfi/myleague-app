@@ -117,6 +117,37 @@ const FootballMatchPage = lazyWithRetry(() => import('../pages/FootballMatchPage
 const FootballTeamPage = lazyWithRetry(() => import('../pages/FootballTeamPage/FootballTeamPage'));
 const FootballPlayerPage = lazyWithRetry(() => import('../pages/FootballPlayerPage/FootballPlayerPage'));
 
+const HockeyPage = lazyWithRetry(() => import('../pages/HockeyPage/HockeyPage'));
+const HockeyLeaguePage = lazyWithRetry(() => import('../pages/HockeyLeaguePage/HockeyLeaguePage'));
+const HockeyTournamentsPage = lazyWithRetry(() => import('../pages/HockeyTournamentsPage/HockeyTournamentsPage'));
+const HockeyTournamentPage = lazyWithRetry(() => import('../pages/HockeyTournamentPage/HockeyTournamentPage'));
+const HockeyMatchPage = lazyWithRetry(() => import('../pages/HockeyMatchPage/HockeyMatchPage'));
+const HockeyTeamPage = lazyWithRetry(() => import('../pages/HockeyTeamPage/HockeyTeamPage'));
+const HockeyPlayerPage = lazyWithRetry(() => import('../pages/HockeyPlayerPage/HockeyPlayerPage'));
+const HockeyManagementPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyManagementPage'));
+const HockeyTeamsPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/HockeyTeamsPage'));
+const CreateHockeyTeamPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/CreateTeamPage'));
+const EditHockeyTeamPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/EditTeamPage'));
+const EditHockeyRosterPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/EditRosterPage'));
+const EditHockeyLinesPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/EditLinesPage'));
+const AddHockeyPlayerToRosterPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/AddPlayerToRosterPage'));
+const HockeyPlayersPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyPlayersPage/HockeyPlayersPage'));
+const CreateHockeyPlayerPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyPlayersPage/CreatePlayerPage'));
+const CreateHockeyPersonPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyPlayersPage/CreatePersonPage/CreatePersonPage'));
+const HockeyOfficialsPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyOfficialsPage/HockeyOfficialsPage'));
+const CreateHockeyOfficialPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyOfficialsPage/CreateOfficialPage'));
+const EditHockeyOfficialPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyOfficialsPage/EditOfficialPage'));
+const HockeySeasonsPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeySeasonsPage/HockeySeasonsPage'));
+const CreateHockeySeasonPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeySeasonsPage/CreateSeasonPage'));
+const EditHockeySeasonPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeySeasonsPage/EditSeasonPage'));
+const HockeyTournamentsAdminPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTournamentsPage/HockeyTournamentsPage'));
+const CreateHockeyTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTournamentsPage/CreateTournamentPage'));
+const EditHockeyTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTournamentsPage/EditTournamentPage'));
+const HockeyMatchManagementPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/MatchManagementPage/MatchManagementPage'));
+const CreateHockeyMatchPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/CreateMatchPage/CreateMatchPage'));
+const EditHockeyMatchPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/EditMatchPage/EditMatchPage'));
+const ManageHockeyMatchPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/ManageMatchPage/ManageMatchPage'));
+
 export const routes: RouteObject[] = [
   {
     errorElement: <RouteErrorBoundary />,
@@ -311,6 +342,34 @@ export const routes: RouteObject[] = [
   {
     path: '/sports/football',
     element: <SuspenseWrapper><FootballPage /></SuspenseWrapper>
+  },
+  {
+    path: '/sports/icehockey',
+    element: <SuspenseWrapper><HockeyPage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockey/league/:id',
+    element: <SuspenseWrapper><HockeyLeaguePage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockey/tournaments',
+    element: <SuspenseWrapper><HockeyTournamentsPage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockey/tournaments/:id',
+    element: <SuspenseWrapper><HockeyTournamentPage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockey/match/:id',
+    element: <SuspenseWrapper><HockeyMatchPage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockey/team/:slug',
+    element: <SuspenseWrapper><HockeyTeamPage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockeyplayer/:id',
+    element: <SuspenseWrapper><HockeyPlayerPage /></SuspenseWrapper>
   },
   {
     path: '/clubs',
@@ -625,6 +684,75 @@ export const routes: RouteObject[] = [
           { path: 'scheduled', element: <Navigate to="/admin/football/matches?tab=scheduled" replace /> },
           { path: 'in-progress', element: <Navigate to="/admin/football/matches?tab=ongoing" replace /> },
           { path: 'cancelled', element: <Navigate to="/admin/football/matches?tab=cancelled" replace /> },
+        ]
+      }
+    ]
+  },
+  {
+    path: '/admin/hockey',
+    children: [
+      {
+        index: true,
+        element: <ProtectedRoute><SuspenseWrapper><HockeyManagementPage /></SuspenseWrapper></ProtectedRoute>
+      },
+      {
+        path: 'teams',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeyTeamsPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'new', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyTeamPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':id/edit', element: <ProtectedRoute><SuspenseWrapper><EditHockeyTeamPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':id/roster', element: <ProtectedRoute><SuspenseWrapper><EditHockeyRosterPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':id/lines', element: <ProtectedRoute><SuspenseWrapper><EditHockeyLinesPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':id/roster/add', element: <ProtectedRoute><SuspenseWrapper><AddHockeyPlayerToRosterPage /></SuspenseWrapper></ProtectedRoute> }
+        ]
+      },
+      {
+        path: 'players',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeyPlayersPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyPlayerPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create-person', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyPersonPage /></SuspenseWrapper></ProtectedRoute> }
+        ]
+      },
+      {
+        path: 'officials',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeyOfficialsPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyOfficialPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':officialId/edit', element: <ProtectedRoute><SuspenseWrapper><EditHockeyOfficialPage /></SuspenseWrapper></ProtectedRoute> }
+        ]
+      },
+      {
+        path: 'seasons',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeySeasonsPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeySeasonPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'matches', element: <ProtectedRoute><SuspenseWrapper><HockeyMatchManagementPage mode="season" /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'matches/create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':competitionId/edit', element: <ProtectedRoute><SuspenseWrapper><EditHockeySeasonPage /></SuspenseWrapper></ProtectedRoute> }
+        ]
+      },
+      {
+        path: 'tournaments',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeyTournamentsAdminPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyTournamentPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'matches', element: <ProtectedRoute><SuspenseWrapper><HockeyMatchManagementPage mode="tournament" /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'matches/create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyMatchPage mode="tournament" /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':competitionId/edit', element: <ProtectedRoute><SuspenseWrapper><EditHockeyTournamentPage /></SuspenseWrapper></ProtectedRoute> }
+        ]
+      },
+      {
+        path: 'matches',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeyMatchManagementPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':matchId/edit', element: <ProtectedRoute><SuspenseWrapper><EditHockeyMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'manage/:matchId', element: <ProtectedRoute><SuspenseWrapper><ManageHockeyMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'completed', element: <Navigate to="/admin/hockey/matches?tab=completed" replace /> },
+          { path: 'scheduled', element: <Navigate to="/admin/hockey/matches?tab=scheduled" replace /> },
+          { path: 'in-progress', element: <Navigate to="/admin/hockey/matches?tab=ongoing" replace /> },
+          { path: 'cancelled', element: <Navigate to="/admin/hockey/matches?tab=cancelled" replace /> }
         ]
       }
     ]

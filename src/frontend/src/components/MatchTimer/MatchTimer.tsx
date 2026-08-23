@@ -92,7 +92,10 @@ export const MatchTimer = ({
   const handleStart = useCallback(async () => {
     try {
       await createTimer();
-      await startTimer(periodNumber);
+      const resolvedPeriod = typeof periodNumber === 'number' && Number.isFinite(periodNumber) && periodNumber >= 1
+        ? periodNumber
+        : undefined;
+      await startTimer(resolvedPeriod);
     } catch (err) {
       console.error('Error starting timer:', err);
     }

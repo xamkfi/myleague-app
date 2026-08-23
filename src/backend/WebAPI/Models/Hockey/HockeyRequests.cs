@@ -38,6 +38,11 @@ public class CreateHockeySeasonRequest
     /// </summary>
     [StringLength(50)]
     public string? SeasonCode { get; set; }
+
+    /// <summary>
+    /// Audience / age-group category (Adult, Youth, Women).
+    /// </summary>
+    public TeamCategory TeamCategory { get; set; } = TeamCategory.Adult;
 }
 
 /// <summary>
@@ -61,6 +66,9 @@ public class UpdateHockeySeasonRequest
     /// <summary>Optional short season code.</summary>
     [StringLength(50)]
     public string? SeasonCode { get; set; }
+
+    /// <summary>Audience / age-group category.</summary>
+    public TeamCategory TeamCategory { get; set; } = TeamCategory.Adult;
 }
 
 /// <summary>
@@ -139,6 +147,11 @@ public class CreateHockeyTournamentRequest
     /// Optional HTML description.
     /// </summary>
     public string? ContentHtml { get; set; }
+
+    /// <summary>
+    /// Audience / age-group category (Adult, Youth, Women).
+    /// </summary>
+    public TeamCategory TeamCategory { get; set; } = TeamCategory.Adult;
 }
 
 /// <summary>
@@ -539,6 +552,9 @@ public class UpdateHockeyTournamentRequest
 
     /// <summary>Optional HTML content.</summary>
     public string? ContentHtml { get; set; }
+
+    /// <summary>Audience / age-group category.</summary>
+    public TeamCategory TeamCategory { get; set; } = TeamCategory.Adult;
 }
 
 /// <summary>
@@ -709,6 +725,18 @@ public class ConfirmHockeyMatchRosterRequest
     /// Source.
     /// </summary>
     public HockeyPlayerSelectionSource Source { get; set; } = HockeyPlayerSelectionSource.Manual;
+}
+
+/// <summary>
+/// Request body for a club admin announcing a hockey match-day roster.
+/// </summary>
+public class AnnounceHockeyMatchRosterRequest
+{
+    /// <summary>
+    /// Team-player membership ids to dress for the match.
+    /// </summary>
+    [Required]
+    public List<Guid> TeamPlayerIds { get; set; } = new();
 }
 
 /// <summary>

@@ -39,6 +39,7 @@ public class DatabaseSeeder
         if (environment.IsDevelopment())
         {
             await SeedUserAsync(dbContext, logger, DevTestEmail, "Test", "User", PersonRole.Admin);
+            await SeedClubAdminAsync(dbContext, logger);
         }
 
         // In any environment, seed admin user if configured
@@ -87,5 +88,66 @@ public class DatabaseSeeder
         logger.LogInformation(
             "Seeded user '{Email}' with role {Role} (PersonId: {PersonId}, UserId: {UserId}).",
             email, role, person.Id, user.Id);
+    }
+
+    private const string DevClubAdminEmail = "clubadmin@myleague.local";
+    private const string DevClubAdminClubName = "Tampere Titans";
+
+    /// <summary>
+    /// Ensures a development ClubAdmin user exists and is linked to the hockey/floorball
+    /// seed club when that club is already present.
+    /// </summary>
+    private static async Task SeedClubAdminAsync(CommonDbContext dbContext, ILogger logger)
+    {
+        User? existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == DevClubAdminEmail);
+        Guid personId;
+        if (existingUser is null)
+        {
+            Person person = new(
+                "Club",
+                "Admin",
+                role: PersonRole.User,
+                contactInfo: new ContactInfo(DevClubAdminEmail));
+
+            User user = new(DevClubAdminEmail, person.Id, UserRole.ClubAdmin);
+            user.IsActive = true;
+            user.IsEmailVerified = true;
+
+            dbContext.Persons.Add(person);
+            dbContext.Users.Add(user);
+            await dbContext.SaveChangesAsync();
+            personId = person.Id;
+            logger.LogInformation(
+                "Seeded club admin '{Email}' (PersonId: {PersonId}, UserId: {UserId}).",
+                DevClubAdminEmail, person.Id, user.Id);
+        }
+        else
+        {
+            personId = existingUser.PersonId;
+        }
+
+        Club? club = await dbContext.Clubs.FirstOrDefaultAsync(c => c.Name == DevClubAdminClubName);
+        if (club is null)
+        {
+            logger.LogInformation(
+                "Club '{ClubName}' is not seeded yet; club admin '{Email}' has no manager link.",
+                DevClubAdminClubName,
+                DevClubAdminEmail);
+            return;
+        }
+
+        bool alreadyLinked = await dbContext.ClubManagers.AnyAsync(m =>
+            m.PersonId == personId && m.ClubId == club.Id && m.IsActive);
+        if (alreadyLinked)
+        {
+            return;
+        }
+
+        dbContext.ClubManagers.Add(new ClubManager(personId, club.Id));
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation(
+            "Linked club admin '{Email}' to club '{ClubName}'.",
+            DevClubAdminEmail,
+            DevClubAdminClubName);
     }
 }

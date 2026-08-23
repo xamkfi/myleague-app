@@ -1,0 +1,249 @@
+@use 'sass:map';
+@use '../../../../styles/variables' as *;
+
+.admin-page-body {
+  padding-top: 0.5rem;
+
+  // The admin shell defaults to `overflow: hidden`, which clips the rich match-management
+  // content on shorter viewports (laptop / narrow browser windows). The match management view
+  // packs a two-column layout that can overflow both axes depending on team-name length and
+  // available width, so we opt the shell into auto-scroll along both axes when this page is
+  // mounted. Combined with the responsive `flex-wrap` in `.modal-content` below, this means
+  // users get a horizontal scrollbar as a graceful fallback when stacking is still not enough.
+  &:has(.manage-match-page) {
+    overflow: auto;
+  }
+}
+
+.manage-match-page {
+  /* Page-wide token to unify border color across all blocks */
+  --mm-border-color: #D1D0D6;
+  background: $color-neutral-white;
+  // Align with overview page back button behavior
+  .global-back-button-container { top: 0; }
+  .global-back-button { padding: 0; gap: 0; }
+
+  // Header structure mirroring overview page
+  .page-header {
+    margin-bottom: 8px;
+
+    .page-header__top {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 4px;
+      min-height: 56px;
+    }
+
+    .page-header__actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-header__main {
+      text-align: center;
+    }
+
+    .page-header__missing-teams {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      margin-top: 8px;
+      border-radius: 8px;
+      background: rgba(245, 158, 11, 0.12);
+      color: #92400e;
+      font-size: 13px;
+
+      i {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .manage-match-page__placeholder {
+    margin: 48px auto;
+    max-width: 460px;
+    padding: 32px 24px;
+    text-align: center;
+    background: $color-white;
+    border: 1px dashed var(--mm-border-color);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    color: $color-neutral-dark-grey;
+
+    i {
+      font-size: 32px;
+      color: $color-neutral-dark-grey;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  }
+
+  .manage-match-page__placeholder-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 24px;
+    background: $color-blue-deep;
+    color: $color-white;
+    border: 1px solid $color-blue-deep;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+
+    &:hover {
+      background: $color-blue-darkest;
+      border-color: $color-blue-darkest;
+    }
+  }
+
+  .edit-match-button {
+    box-sizing: border-box;
+    height: 40px;
+    padding: 8px 16px;
+    background: #FBFBFD;
+    color: $color-neutral-black;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: #fff;
+      border-color: $color-neutral-black;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-blue-deep;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &__icon {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    &__label {
+      display: inline-block;
+    }
+  }
+
+  .page-title-compact {
+    margin: 0;
+    padding: 0;
+    color: $color-blue-deep;
+    font-size: 22px;
+    font-weight: map.get($font-weights, 'medium');
+  }
+  .manage-match-page-content {
+    display: flex;
+    gap: 1rem;
+    width: 1300px;
+    align-items: flex-start;
+    margin: auto;
+    margin-top: 1rem;
+  }
+}
+
+.back-button-container {
+  flex-shrink: 0; // Prevent the button container from shrinking
+  position:absolute;
+  margin-left: 2rem;
+}
+
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.error-alert {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .error-icon {
+    color: #ef4444;
+  }
+
+  .error-text {
+    flex: 1;
+    color: #7f1d1d;
+    font-size: 0.875rem;
+  }
+
+  .error-close {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    margin-left: auto;
+  }
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  width: 100%;
+  max-width: none;
+  align-self: stretch;
+  height: auto;
+  overflow: visible;
+
+  .left-section,
+  .right-section {
+    // `flex-basis: 480px` keeps the two columns side-by-side on wide viewports but lets
+    // them wrap to a single column once the available width drops below ~1000px (e.g.
+    // narrow laptop windows with the sidebar expanded). `min-width: 0` is required so the
+    // inner cards can shrink instead of pushing the column wider than its allocation.
+    flex: 1 1 480px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}

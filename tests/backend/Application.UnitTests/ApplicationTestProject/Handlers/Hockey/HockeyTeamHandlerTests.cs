@@ -183,4 +183,47 @@ public class HockeyTeamHandlerTests
         result.Data!.StaffMembers.Should().ContainSingle(s => s.PersonId == person.Id && s.IsActive);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task UpdateJerseyNumber_ExistingPlayer_UpdatesOnlyJersey()
+    {
+        HockeyTeam team = CreateTeam();
+        HockeyPlayer player = new(Guid.NewGuid(), HockeyPosition.Center);
+        team.AddPlayer(player, HockeyPosition.Center, jerseyNumber: 13);
+        _teamRepo.Setup(r => r.GetByIdAsync(team.Id)).ReturnsAsync(team);
+
+        UpdateHockeyTeamPlayerJerseyNumberHandler handler = new(
+            _teamRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<UpdateHockeyTeamPlayerJerseyNumberHandler>>());
+
+        Result<HockeyTeamPlayerDto> result = await handler.Handle(
+            new UpdateHockeyTeamPlayerJerseyNumberCommand(team.Id, player.Id, 99),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.JerseyNumber.Should().Be(99);
+        result.Data.Position.Should().Be(HockeyPosition.Center.ToString());
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateJerseyNumber_PlayerNotOnRoster_ReturnsFailure()
+    {
+        HockeyTeam team = CreateTeam();
+        _teamRepo.Setup(r => r.GetByIdAsync(team.Id)).ReturnsAsync(team);
+
+        UpdateHockeyTeamPlayerJerseyNumberHandler handler = new(
+            _teamRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<UpdateHockeyTeamPlayerJerseyNumberHandler>>());
+
+        Result<HockeyTeamPlayerDto> result = await handler.Handle(
+            new UpdateHockeyTeamPlayerJerseyNumberCommand(team.Id, Guid.NewGuid(), 7),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("not in the team roster");
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
 }

@@ -100,12 +100,15 @@ export function useMatchTimer(options: UseMatchTimerOptions): UseMatchTimerRetur
       
       // Notify parent if callback provided
       if (onTimerUpdate) {
+        const resolvedPeriod = typeof status.periodNumber === 'number' && Number.isFinite(status.periodNumber)
+          ? status.periodNumber
+          : undefined;
         onTimerUpdate({
           MatchId: matchId,
           ElapsedTime: status.elapsedTime,
           ElapsedMilliseconds: elapsedMs,
           IsRunning: status.isRunning,
-          PeriodNumber: status.periodNumber,
+          PeriodNumber: resolvedPeriod,
           LastUpdated: new Date().toISOString(),
           EventType: 'TimerStatusLoaded',
         });

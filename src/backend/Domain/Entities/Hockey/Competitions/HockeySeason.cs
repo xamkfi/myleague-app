@@ -1,3 +1,4 @@
+using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
 using Domain.ValueObjects.Hockey.Rules;
 
@@ -18,8 +19,9 @@ public class HockeySeason : HockeyCompetition
         DateTime startDate,
         DateTime endDate,
         string? seasonCode = null,
-        HockeyCompetitionRules? competitionRules = null)
-        : base(HockeyCompetitionType.Season, name, startDate, endDate, competitionRules)
+        HockeyCompetitionRules? competitionRules = null,
+        TeamCategory teamCategory = TeamCategory.Adult)
+        : base(HockeyCompetitionType.Season, name, startDate, endDate, competitionRules, teamCategory)
     {
         SeasonCode = seasonCode;
     }

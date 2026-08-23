@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.Hockey.Competitions.Commands;
 using Application.Features.Hockey.Competitions.DTOs;
 using Application.Features.Hockey.Competitions.Queries;
+using Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +44,7 @@ public class HockeyCompetitionController : BaseApiController
     /// <summary>
     /// Adds a hockey team to a competition.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{competitionId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyCompetitionTeamDto>>> AddTeam(
@@ -60,7 +61,7 @@ public class HockeyCompetitionController : BaseApiController
     /// <summary>
     /// Removes a hockey team from a competition.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{competitionId:guid}/teams/{teamId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyCompetitionDto>>> RemoveTeam(Guid competitionId, Guid teamId,
@@ -73,7 +74,7 @@ public class HockeyCompetitionController : BaseApiController
     /// <summary>
     /// Adds a Common Division link to a competition.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{competitionId:guid}/divisions")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyCompetitionDto>>> CreateDivision(
@@ -93,7 +94,7 @@ public class HockeyCompetitionController : BaseApiController
     /// <summary>
     /// Soft-removes a competition division.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{competitionId:guid}/divisions/{competitionDivisionId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyCompetitionDto>>> RemoveDivision(
@@ -108,7 +109,7 @@ public class HockeyCompetitionController : BaseApiController
     /// <summary>
     /// Places a competition team into a division.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{competitionId:guid}/divisions/{competitionDivisionId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyCompetitionDto>>> AddTeamToDivision(
@@ -129,7 +130,7 @@ public class HockeyCompetitionController : BaseApiController
     /// <summary>
     /// Soft-removes a competition team from a division.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{competitionId:guid}/divisions/{competitionDivisionId:guid}/teams/{competitionTeamId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyCompetitionDto>>> RemoveTeamFromDivision(
@@ -161,7 +162,7 @@ public class HockeyCompetitionController : BaseApiController
     /// <summary>
     /// Updates competition rules including nested match/standing/roster/video/contact sections.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{competitionId:guid}/rules")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyCompetitionDto>>> UpdateRules(

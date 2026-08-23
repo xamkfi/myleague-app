@@ -32,7 +32,12 @@ public class CreateHockeySeasonHandler : IRequestHandler<CreateHockeySeasonComma
     {
         try
         {
-            HockeySeason season = new(request.Name, request.StartDate, request.EndDate, request.SeasonCode);
+            HockeySeason season = new(
+                request.Name,
+                request.StartDate,
+                request.EndDate,
+                request.SeasonCode,
+                teamCategory: request.TeamCategory);
             await _competitionRepository.AddAsync(season);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

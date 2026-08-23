@@ -2,6 +2,8 @@ using Application.Common;
 using Application.Features.Hockey.Teams.Commands;
 using Application.Features.Hockey.Teams.DTOs;
 using Application.Features.Hockey.Teams.Queries;
+using Domain.Constants;
+using Domain.Enums.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,9 +34,11 @@ public class HockeyTeamController : BaseApiController
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<HockeyTeamDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<List<HockeyTeamDto>>>> GetAllTeams(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<ApiResponse<List<HockeyTeamDto>>>> GetAllTeams(
+        [FromQuery] TeamCategory? teamCategory = null,
+        CancellationToken cancellationToken = default)
     {
-        Result<IEnumerable<HockeyTeamDto>> result = await _mediator.Send(new GetAllHockeyTeamsQuery(), cancellationToken);
+        Result<IEnumerable<HockeyTeamDto>> result = await _mediator.Send(new GetAllHockeyTeamsQuery(teamCategory), cancellationToken);
         return HandleListResult(result, "Hockey teams retrieved successfully", "Failed to retrieve hockey teams");
     }
 
@@ -43,10 +47,12 @@ public class HockeyTeamController : BaseApiController
     /// </summary>
     [HttpGet("club/{clubId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<List<HockeyTeamDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<List<HockeyTeamDto>>>> GetTeamsByClub(Guid clubId,
+    public async Task<ActionResult<ApiResponse<List<HockeyTeamDto>>>> GetTeamsByClub(
+        Guid clubId,
+        [FromQuery] TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default)
     {
-        Result<IEnumerable<HockeyTeamDto>> result = await _mediator.Send(new GetHockeyTeamsByClubQuery(clubId), cancellationToken);
+        Result<IEnumerable<HockeyTeamDto>> result = await _mediator.Send(new GetHockeyTeamsByClubQuery(clubId, teamCategory), cancellationToken);
         return HandleListResult(result, "Hockey teams retrieved successfully", "Failed to retrieve hockey teams");
     }
 
@@ -66,7 +72,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Creates a new hockey team.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -99,7 +105,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Updates hockey team details.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{teamId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> UpdateTeam(
@@ -123,7 +129,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Sets whether the hockey team is active.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{teamId:guid}/active")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> SetActiveStatus(
@@ -138,7 +144,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Updates the hockey team logo URL.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{teamId:guid}/logo")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> UpdateLogo(
@@ -153,7 +159,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Adds a player to the team roster.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{teamId:guid}/players")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> AddPlayer(
@@ -175,7 +181,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Removes a player from the team roster.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{teamId:guid}/players/{playerId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> RemovePlayer(
@@ -191,7 +197,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Updates a roster membership.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{teamId:guid}/players/{playerId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> UpdatePlayer(
@@ -214,7 +220,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Adds a line to the team.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{teamId:guid}/lines")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> AddLine(
@@ -234,7 +240,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Deactivates a line on the team.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{teamId:guid}/lines/{lineId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> RemoveLine(Guid teamId, Guid lineId,
@@ -247,7 +253,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Places a team player onto a line.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{teamId:guid}/lines/{lineId:guid}/players")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> AddPlayerToLine(
@@ -268,7 +274,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Removes a team player from a line.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{teamId:guid}/lines/{lineId:guid}/players/{teamPlayerId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> RemovePlayerFromLine(
@@ -284,7 +290,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Adds staff to the team.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{teamId:guid}/staff")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> AddStaff(
@@ -303,7 +309,7 @@ public class HockeyTeamController : BaseApiController
     /// <summary>
     /// Removes staff from the team.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{teamId:guid}/staff/{staffId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> RemoveStaff(Guid teamId, Guid staffId,

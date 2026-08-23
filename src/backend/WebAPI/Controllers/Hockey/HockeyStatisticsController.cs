@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.Hockey.Statistics.Commands;
 using Application.Features.Hockey.Statistics.DTOs;
 using Application.Features.Hockey.Statistics.Queries;
+using Domain.Constants;
 using Domain.Enums.Hockey.Statistics;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -31,7 +32,7 @@ public class HockeyStatisticsController : BaseApiController
     /// <summary>
     /// Recalculates match-level statistics.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("matches/{matchId:guid}/recalculate")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -45,7 +46,7 @@ public class HockeyStatisticsController : BaseApiController
     /// <summary>
     /// Recalculates competition aggregate statistics for a scope.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("competitions/{competitionId:guid}/recalculate")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -67,7 +68,7 @@ public class HockeyStatisticsController : BaseApiController
     /// <summary>
     /// Resets competition aggregate statistics without rebuilding.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("competitions/{competitionId:guid}/reset")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

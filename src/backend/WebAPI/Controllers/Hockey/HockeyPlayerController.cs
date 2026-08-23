@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.Hockey.Players.Commands;
 using Application.Features.Hockey.Players.DTOs;
 using Application.Features.Hockey.Players.Queries;
+using Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +44,7 @@ public class HockeyPlayerController : BaseApiController
     /// <summary>
     /// Creates a new hockey player profile.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeyPlayerDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

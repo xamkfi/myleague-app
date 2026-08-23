@@ -18,6 +18,8 @@ export interface MatchRowProps {
   periodScores?: Record<number, { homeScore: number; awayScore: number }>;
   statusComponent?: React.ReactNode;
   onClick?: () => void;
+  /** Override the default floorball match URL (`/match/:id`). */
+  href?: string;
   className?: string;
   /**
    * Match lifecycle status. Drives whether the score column shows numeric values
@@ -48,6 +50,7 @@ export default function MatchRow({
   periodCount = 3,
   periodScores,
   statusComponent,
+  href,
   className = '',
   status = FloorballMatchStatus.Scheduled,
   isPlaceholder = false,
@@ -71,7 +74,7 @@ export default function MatchRow({
     if (isPlaceholder) {
       return;
     }
-    navigate(`/match/${id}`);
+    navigate(href ?? `/match/${id}`);
   };
 
   return (

@@ -4,6 +4,8 @@ using Application.Features.Hockey.Competitions.DTOs;
 using Application.Features.Hockey.Tournaments.Commands;
 using Application.Features.Hockey.Tournaments.DTOs;
 using Application.Features.Hockey.Tournaments.Queries;
+using Domain.Constants;
+using Domain.Enums.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,9 +38,11 @@ public class HockeyTournamentController : BaseApiController
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<HockeyTournamentDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<List<HockeyTournamentDto>>>> GetAllTournaments(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<ApiResponse<List<HockeyTournamentDto>>>> GetAllTournaments(
+        [FromQuery] TeamCategory? teamCategory = null,
+        CancellationToken cancellationToken = default)
     {
-        Result<IEnumerable<HockeyTournamentDto>> result = await _mediator.Send(new GetAllHockeyTournamentsQuery(), cancellationToken);
+        Result<IEnumerable<HockeyTournamentDto>> result = await _mediator.Send(new GetAllHockeyTournamentsQuery(teamCategory), cancellationToken);
         return HandleListResult(result, "Hockey tournaments retrieved successfully", "Failed to retrieve hockey tournaments");
     }
 
@@ -47,9 +51,11 @@ public class HockeyTournamentController : BaseApiController
     /// </summary>
     [HttpGet("active")]
     [ProducesResponseType(typeof(ApiResponse<List<HockeyTournamentDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<List<HockeyTournamentDto>>>> GetActiveTournaments(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<ApiResponse<List<HockeyTournamentDto>>>> GetActiveTournaments(
+        [FromQuery] TeamCategory? teamCategory = null,
+        CancellationToken cancellationToken = default)
     {
-        Result<IEnumerable<HockeyTournamentDto>> result = await _mediator.Send(new GetActiveHockeyTournamentsQuery(), cancellationToken);
+        Result<IEnumerable<HockeyTournamentDto>> result = await _mediator.Send(new GetActiveHockeyTournamentsQuery(teamCategory), cancellationToken);
         return HandleListResult(result, "Active hockey tournaments retrieved successfully", "Failed to retrieve active hockey tournaments");
     }
 
@@ -73,7 +79,7 @@ public class HockeyTournamentController : BaseApiController
     /// </summary>
     /// <param name="request">Tournament create payload</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -86,7 +92,8 @@ public class HockeyTournamentController : BaseApiController
             request.StartDate,
             request.EndDate,
             request.Venue,
-            request.ContentHtml);
+            request.ContentHtml,
+            request.TeamCategory);
 
         Result<HockeyTournamentDto> result = await _mediator.Send(command, cancellationToken);
 
@@ -104,7 +111,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Updates hockey tournament details.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{tournamentId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> UpdateTournament(
@@ -118,7 +125,8 @@ public class HockeyTournamentController : BaseApiController
             request.StartDate,
             request.EndDate,
             request.Venue,
-            request.ContentHtml), cancellationToken);
+            request.ContentHtml,
+            request.TeamCategory), cancellationToken);
 
         return HandleResult(result, "Hockey tournament updated successfully", "Failed to update hockey tournament");
     }
@@ -126,7 +134,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Updates hockey tournament rules.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{tournamentId:guid}/rules")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> UpdateRules(
@@ -149,7 +157,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Publishes a hockey tournament.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/publish")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> Publish(Guid tournamentId,
@@ -162,7 +170,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Opens registration for a hockey tournament.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/open-registration")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> OpenRegistration(Guid tournamentId,
@@ -175,7 +183,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Activates a hockey tournament.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/activate")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> Activate(Guid tournamentId,
@@ -188,7 +196,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Deactivates a hockey tournament.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/deactivate")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> Deactivate(Guid tournamentId,
@@ -201,7 +209,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Cancels a hockey tournament.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/cancel")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> Cancel(Guid tournamentId,
@@ -214,7 +222,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Completes a hockey tournament.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/complete")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> Complete(Guid tournamentId,
@@ -227,7 +235,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Starts the tournament group stage.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/start-group-stage")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> StartGroupStage(Guid tournamentId,
@@ -240,7 +248,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Starts the tournament playoff stage.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/start-playoff-stage")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> StartPlayoffStage(Guid tournamentId,
@@ -253,7 +261,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Advances the tournament to finals.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/advance-to-finals")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> AdvanceToFinals(Guid tournamentId,
@@ -266,7 +274,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Sets the tournament champion.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/champion")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> SetChampion(
@@ -281,7 +289,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Adds a hockey team to a tournament competition.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{competitionId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionTeamDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyCompetitionTeamDto>>> AddTeam(
@@ -300,7 +308,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Removes a hockey team from a tournament competition.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{tournamentId:guid}/teams/{teamId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> RemoveTeam(Guid tournamentId, Guid teamId,
@@ -326,7 +334,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Creates a group (lohko) within a hockey tournament.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/groups")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> CreateGroup(
@@ -343,7 +351,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Removes a group from a hockey tournament.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{tournamentId:guid}/groups/{groupId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> RemoveGroup(Guid tournamentId, Guid groupId,
@@ -356,7 +364,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Adds a competition team to a hockey tournament group.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/groups/{groupId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> AddTeamToGroup(
@@ -378,7 +386,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Removes a competition team from a hockey tournament group.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{tournamentId:guid}/groups/{groupId:guid}/teams/{competitionTeamId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> RemoveTeamFromGroup(
@@ -394,7 +402,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Creates a playoff series on a hockey tournament.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/playoff-series")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> CreatePlayoffSeries(
@@ -416,7 +424,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Assigns home/away teams to a playoff series.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{tournamentId:guid}/playoff-series/{seriesId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> AssignPlayoffSeriesTeams(
@@ -437,7 +445,7 @@ public class HockeyTournamentController : BaseApiController
     /// <summary>
     /// Replaces the tournament playoff schedule.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{tournamentId:guid}/playoff-schedule")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> SetPlayoffSchedule(

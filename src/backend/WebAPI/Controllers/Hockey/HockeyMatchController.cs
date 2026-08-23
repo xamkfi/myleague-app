@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.Hockey.Matches.Commands;
 using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Matches.Queries;
+using Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -76,7 +77,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Creates a hockey match.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status201Created)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> Create([FromBody] CreateHockeyMatchRequest request,
@@ -105,7 +106,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Assigns home and away teams to a match.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{matchId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddHomeAwayTeams(
@@ -124,7 +125,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Sets and confirms the roster for one match side.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/roster/confirm")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> ConfirmRoster(
@@ -145,7 +146,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Marks a hockey match as started.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/start")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> Start(
@@ -161,7 +162,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Marks a hockey match as finished.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/finish")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> Finish(
@@ -177,7 +178,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Sets match status.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPatch("{matchId:guid}/status")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetStatus(
@@ -192,7 +193,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Sets match result type.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPatch("{matchId:guid}/result")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetResultType(
@@ -208,7 +209,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Sets the current period number.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPatch("{matchId:guid}/period")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetCurrentPeriod(
@@ -224,7 +225,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Sets whether the match went to overtime.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPatch("{matchId:guid}/went-to-overtime")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetWentToOvertime(
@@ -240,7 +241,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Sets whether the match went to shootout.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPatch("{matchId:guid}/went-to-shootout")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetWentToShootout(
@@ -256,7 +257,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Updates match venue.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{matchId:guid}/venue")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UpdateVenue(
@@ -271,7 +272,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Updates scheduled start time.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{matchId:guid}/schedule")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UpdateScheduledStart(
@@ -287,7 +288,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Corrects goals for one match side.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{matchId:guid}/team-goals")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetTeamGoals(
@@ -303,7 +304,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Assigns an official to the match.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/officials")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddOfficial(
@@ -322,7 +323,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Removes an official from the match.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{matchId:guid}/officials/{officialId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemoveOfficial(
@@ -338,7 +339,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Creates a period score row.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/period-scores")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddPeriodScore(
@@ -356,7 +357,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Records a goal.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/goals")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordGoal(
@@ -383,7 +384,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Deletes a goal event (live-ops undo).
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{matchId:guid}/events/goals/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -397,7 +398,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Corrects a goal event (live-ops modify).
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{matchId:guid}/events/goals/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -427,7 +428,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Records a penalty.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/penalties")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordPenalty(
@@ -454,7 +455,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Deletes a penalty event (live-ops undo).
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{matchId:guid}/events/penalties/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -468,7 +469,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Corrects a penalty event (live-ops modify).
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{matchId:guid}/events/penalties/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -498,7 +499,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Records a shot.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/shots")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordShot(
@@ -523,7 +524,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Deletes a shot event (live-ops undo).
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{matchId:guid}/events/shots/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -537,7 +538,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Corrects a shot event (live-ops modify).
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{matchId:guid}/events/shots/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -565,7 +566,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Records a video review.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/video-reviews")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordVideoReview(
@@ -591,7 +592,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Records a period start/end event.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/periods")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordPeriodEvent(
@@ -611,7 +612,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Records a faceoff.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/faceoffs")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordFaceoff(
@@ -636,7 +637,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Records a stoppage.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/stoppages")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordStoppage(
@@ -661,7 +662,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Records a timeout.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/timeouts")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordTimeout(
@@ -681,7 +682,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Records a goalie change.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/goalie-changes")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordGoalieChange(
@@ -704,7 +705,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Records a shootout attempt.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/shootout-attempts")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordShootoutAttempt(
@@ -728,7 +729,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Records a failed coach-challenge penalty linked to a video review.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/failed-coach-challenge-penalties")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordFailedCoachChallengePenalty(
@@ -758,7 +759,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Adds a match line to one side.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/lines")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddLine(
@@ -779,7 +780,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Removes a match line.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{matchId:guid}/lines/{matchLineId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemoveLine(
@@ -796,7 +797,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Adds a player to a match line.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/players")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddLinePlayer(
@@ -818,7 +819,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Removes a player from a match line.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{matchId:guid}/lines/{matchLineId:guid}/players/{matchActivePlayerId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemoveLinePlayer(
@@ -839,7 +840,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Updates a match line name.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{matchId:guid}/lines/{matchLineId:guid}/name")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UpdateLineName(
@@ -859,7 +860,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Updates match line notes.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{matchId:guid}/lines/{matchLineId:guid}/notes")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UpdateLineNotes(
@@ -879,7 +880,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Locks a match line.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/lock")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> LockLine(
@@ -896,7 +897,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Unlocks a match line.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/unlock")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UnlockLine(
@@ -913,7 +914,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Deactivates a match line.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/deactivate")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DeactivateLine(
@@ -930,7 +931,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Enables on-ice tracking for a match side.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/on-ice/enable")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> EnableOnIce(
@@ -946,7 +947,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Disables on-ice tracking for a match side.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/on-ice/disable")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DisableOnIce(
@@ -962,7 +963,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Puts a player on the ice.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/on-ice/players")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddPlayerToIce(
@@ -987,7 +988,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Removes a player from the ice.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{matchId:guid}/on-ice/players/{matchActivePlayerId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemovePlayerFromIce(
@@ -1012,7 +1013,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Clears all players from the ice.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/on-ice/clear")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> ClearIce(
@@ -1032,7 +1033,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Applies a match line onto the ice.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/on-ice/apply-line/{matchLineId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> ApplyLineToIce(
@@ -1054,7 +1055,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Sets the active goalie for a match side.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{matchId:guid}/active-goalie")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetActiveGoalie(
@@ -1072,7 +1073,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Clears the active goalie for a match side.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{matchId:guid}/active-goalie")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> ClearActiveGoalie(
@@ -1088,7 +1089,7 @@ public class HockeyMatchController : BaseApiController
     /// <summary>
     /// Deactivates a dressed roster player.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/roster/deactivate-player")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DeactivateRosterPlayer(

@@ -7,7 +7,7 @@ namespace Application.Features.Common.ClubAdmin.DTOs;
 /// <param name="Name">The club name</param>
 /// <param name="City">The club city</param>
 /// <param name="LogoUrl">Optional club logo URL</param>
-/// <param name="Teams">The floorball and football teams belonging to the club</param>
+    /// <param name="Teams">The floorball, football, and hockey teams belonging to the club</param>
 public record ClubAdminClubDto(
     Guid ClubId,
     string Name,

@@ -35,7 +35,7 @@ const SPORTS: SportItem[] = [
     descriptionKey: 'sportsPage.iceHockeyDescription',
     icon: '🏒',
     path: '/sports/icehockey',
-    enabled: false,
+    enabled: true,
   },
 ];
 

@@ -27,6 +27,11 @@ public class HockeyCompetitionConfiguration : IEntityTypeConfiguration<HockeyCom
         builder.Property(c => c.StartDate).IsRequired();
         builder.Property(c => c.EndDate).IsRequired();
         builder.Property(c => c.Status).IsRequired().HasConversion<string>();
+        builder.Property(c => c.TeamCategory)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasDefaultValue(Domain.Enums.Common.TeamCategory.Adult);
+        builder.HasIndex(c => c.TeamCategory);
 
         builder.Ignore(c => c.IsActive);
         builder.Ignore(c => c.IsCompleted);

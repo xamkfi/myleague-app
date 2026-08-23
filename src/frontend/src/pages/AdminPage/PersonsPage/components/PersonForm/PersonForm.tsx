@@ -16,8 +16,12 @@ import { floorballTeamSearchService } from '../../../../../api/floorball/floorba
 import { footballPlayerService } from '../../../../../api/football/footballPlayerService';
 import { footballTeamService } from '../../../../../api/football/footballTeamService';
 import { footballTeamSearchService } from '../../../../../api/football/footballTeamSearchService';
+import { hockeyPlayerService } from '../../../../../api/hockey/hockeyPlayerService';
+import { hockeyTeamService } from '../../../../../api/hockey/hockeyTeamService';
+import { hockeyTeamSearchService } from '../../../../../api/hockey/hockeySearchService';
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
 import { FootballPosition } from '../../../../../types/football/footballTypes';
+import { HOCKEY_POSITIONS, type HockeyPosition } from '../../../../../types/hockey/hockeyTypes';
 import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import './PersonForm.scss';
@@ -341,7 +345,9 @@ const PersonForm = ({
         try {
           const team = selectedSport === 'Football'
             ? await footballTeamService.getById(formData.teamId)
-            : await floorballTeamService.getById(formData.teamId);
+            : selectedSport === 'Icehockey'
+              ? await hockeyTeamService.getById(formData.teamId)
+              : await floorballTeamService.getById(formData.teamId);
           const numberTaken = team?.roster?.some(player => player.jerseyNumber === formData.jerseyNumber);
           if (numberTaken) {
             const takenMsg = t('admin.persons.validation.jerseyNumberTaken') || 'Jersey number already in use for this team';
@@ -379,7 +385,7 @@ const PersonForm = ({
         createdPerson = await personApi.create(personData);
       }
 
-      // Step 2: If team is selected, create FloorballPlayer and add to team
+      // Step 2: If team is selected, create player and add to team
       if (formData.teamId && formData.position && !isEditMode) {
         try {
           if (selectedSport === 'Football') {
@@ -390,6 +396,17 @@ const PersonForm = ({
               formData.teamId,
               createdPlayer.id,
               formData.position as FootballPosition,
+              formData.jerseyNumber
+            );
+          } else if (selectedSport === 'Icehockey') {
+            const createdPlayer = await hockeyPlayerService.create({
+              personId: createdPerson.id,
+              primaryPosition: formData.position as HockeyPosition
+            });
+            await hockeyTeamService.addPlayer(
+              formData.teamId,
+              createdPlayer.id,
+              formData.position as HockeyPosition,
               formData.jerseyNumber
             );
           } else {
@@ -449,7 +466,13 @@ const PersonForm = ({
     };
   };
 
-  const searchTeamsBySport = async (query: string, page: number) => {
+  const searchTeamsBySport = async (
+    query: string,
+    page: number,
+  ): Promise<{
+    data: Array<{ id: string; name: string; [key: string]: unknown }>;
+    pagination: { hasNextPage: boolean; totalCount: number };
+  }> => {
     if (!selectedSport) {
       return { data: [], pagination: { hasNextPage: false, totalCount: 0 } };
     }
@@ -458,6 +481,13 @@ const PersonForm = ({
     }
     if (selectedSport === 'Football') {
       return footballTeamSearchService.searchTeams(query, page);
+    }
+    if (selectedSport === 'Icehockey') {
+      const result = await hockeyTeamSearchService.searchTeams(query, page);
+      return {
+        data: result.data.map((team) => ({ id: team.id, name: team.name })),
+        pagination: result.pagination,
+      };
     }
     return { data: [], pagination: { hasNextPage: false, totalCount: 0 } };
   };
@@ -757,7 +787,13 @@ const PersonForm = ({
                   className={fieldErrors.position ? 'person-error' : ''}
                 >
                   <option value="">{t('admin.persons.form.selectPosition')}</option>
-                  {Object.values(selectedSport === 'Football' ? FootballPosition : FloorballPosition).map(pos => (
+                  {Object.values(
+                    selectedSport === 'Football'
+                      ? FootballPosition
+                      : selectedSport === 'Icehockey'
+                        ? HOCKEY_POSITIONS
+                        : FloorballPosition
+                  ).map(pos => (
                     <option key={pos} value={pos}>
                       {t(`admin.persons.form.positions.${pos.toLowerCase()}`)}
                     </option>

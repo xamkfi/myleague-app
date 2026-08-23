@@ -50,6 +50,12 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("TeamCategory")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Adult");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -58,6 +64,8 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .HasColumnName("PlayoffSchedule");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TeamCategory");
 
                     b.ToTable("HockeyCompetitions", "hockey");
 

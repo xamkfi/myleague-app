@@ -17,5 +17,7 @@ public class UpdateHockeySeasonCommandValidator : AbstractValidator<UpdateHockey
         RuleFor(x => x.SeasonCode)
             .MaximumLength(50)
             .When(x => !string.IsNullOrWhiteSpace(x.SeasonCode));
+
+        RuleFor(x => x.TeamCategory).IsInEnum();
     }
 }

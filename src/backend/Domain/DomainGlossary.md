@@ -94,6 +94,11 @@ Rich formatted content of a news article stored as HTML markup, allowing for pro
 ## News Summary
 An optional brief description or excerpt of a news article used for preview purposes in lists, feeds, or search results.
 
+## Hockey
+
+### HockeyCompetition
+Abstract TPH root for hockey seasons and tournaments. Owns registered teams, matches, divisions and playoffs. `TeamCategory` (Adult, Youth, Women) is the audience filter used by public lists, same as floorball and football competitions.
+
 ## Football
 
 ### FootballMatch

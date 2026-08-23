@@ -5,11 +5,14 @@ import ClubAdminPageTemplate from '../components/ClubAdminPageTemplate';
 import { clubAdminService } from '../../../api/clubAdmin/clubAdminService';
 import { floorballTeamService } from '../../../api/floorball/floorballTeamService';
 import { footballTeamService } from '../../../api/football/footballTeamService';
+import { hockeyTeamService } from '../../../api/hockey/hockeyTeamService';
 import { floorballMatchService } from '../../../api/floorball/floorballMatchService';
 import { footballMatchService } from '../../../api/football/footballMatchService';
+import { hockeyMatchService } from '../../../api/hockey/hockeyMatchService';
 import { FloorballPosition } from '../../../types/floorball/floorballTypes';
 import { FootballPosition } from '../../../types/football/footballTypes';
 import type { ClubAdminSport } from '../../../types/clubAdmin/clubAdminTypes';
+import { loadHockeyRosterNameMaps, loadTeamNameMap } from '../../../utils/hockeyLookups';
 import './ClubAdminMatchRosterPage.scss';
 
 interface RosterPlayerOption {
@@ -62,6 +65,7 @@ function ClubAdminMatchRosterPage() {
   const { t, i18n } = useTranslation();
   const { sport, teamId, matchId } = useParams<{ sport: ClubAdminSport; teamId: string; matchId: string }>();
   const isFloorball = sport === 'floorball';
+  const isHockey = sport === 'hockey';
 
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
   const [players, setPlayers] = useState<RosterPlayerOption[]>([]);
@@ -76,7 +80,44 @@ function ClubAdminMatchRosterPage() {
   const load = useCallback(async () => {
     if (!sport || !teamId || !matchId) return;
     try {
-      if (isFloorball) {
+      if (isHockey) {
+        const [team, match] = await Promise.all([
+          hockeyTeamService.getById(teamId),
+          hockeyMatchService.getById(matchId),
+        ]);
+        const teamNames = await loadTeamNameMap();
+        const names = await loadHockeyRosterNameMaps([team]);
+        const matchTeam = match.matchTeams.find((side) => side.teamId === teamId);
+        const dressed = matchTeam?.activePlayers ?? [];
+
+        setMatchInfo({
+          homeTeamName: match.homeTeamId ? teamNames.get(match.homeTeamId) ?? null : null,
+          awayTeamName: match.awayTeamId ? teamNames.get(match.awayTeamId) ?? null : null,
+          scheduledDateTime: match.scheduledStartTime,
+          venue: match.venue,
+          status: match.status,
+        });
+
+        const activeRoster = team.roster.filter((p) => p.isActive);
+        setPlayers(activeRoster.map((p) => ({
+          playerId: p.id,
+          playerName: names.byTeamPlayerId.get(p.id) ?? p.playerId.slice(0, 8),
+          jerseyNumber: p.jerseyNumber ?? null,
+          defaultPosition: p.position,
+        })));
+
+        const initialSelections: Record<string, SelectionState> = {};
+        activeRoster.forEach((p) => {
+          const existing = dressed.find((ap) => ap.teamPlayerId === p.id);
+          initialSelections[p.id] = {
+            selected: existing !== undefined,
+            position: p.position,
+            isOnField: true,
+          };
+        });
+        setSelections(initialSelections);
+        setHasExistingRoster(Boolean(matchTeam?.isConfirmedRoster || dressed.length > 0));
+      } else if (isFloorball) {
         const [team, matchResponse] = await Promise.all([
           floorballTeamService.getById(teamId),
           floorballMatchService.getById(matchId),
@@ -156,7 +197,7 @@ function ClubAdminMatchRosterPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [sport, teamId, matchId, isFloorball, t]);
+  }, [sport, teamId, matchId, isFloorball, isHockey, t]);
 
   useEffect(() => {
     void load();
@@ -190,7 +231,12 @@ function ClubAdminMatchRosterPage() {
     setSuccessMessage(null);
 
     try {
-      if (isFloorball) {
+      if (isHockey) {
+        const teamPlayerIds = players
+          .filter((p) => selections[p.playerId]?.selected)
+          .map((p) => p.playerId);
+        await clubAdminService.announceHockeyRoster(matchId, teamId, teamPlayerIds);
+      } else if (isFloorball) {
         const selectedPlayers = players
           .filter((p) => selections[p.playerId]?.selected && p.playerId !== goalieId)
           .map((p) => ({
@@ -230,7 +276,9 @@ function ClubAdminMatchRosterPage() {
     });
   };
 
-  const selectedCount = players.filter((p) => selections[p.playerId]?.selected && p.playerId !== goalieId).length;
+  const selectedCount = isHockey
+    ? players.filter((p) => selections[p.playerId]?.selected).length
+    : players.filter((p) => selections[p.playerId]?.selected && p.playerId !== goalieId).length;
   const isScheduled = matchInfo?.status === 'Scheduled';
 
   return (
@@ -268,7 +316,7 @@ function ClubAdminMatchRosterPage() {
 
           {isScheduled && (
             <div className="club-admin-roster-card">
-              {isFloorball && (
+              {isFloorball && !isHockey && (
                 <div className="club-admin-goalie-row">
                   <label htmlFor="goalie-select" className="club-admin-goalie-label">
                     {t('clubAdmin.goalie', 'Goalie')}
@@ -291,9 +339,11 @@ function ClubAdminMatchRosterPage() {
               )}
 
               <p className="club-admin-roster-hint">
-                {isFloorball
-                  ? t('clubAdmin.floorballRosterHint', 'Select the field players for this match and set their role. The goalie is selected separately above.')
-                  : t('clubAdmin.footballRosterHint', 'Select the players for this match, set their position, and mark the starting lineup.')}
+                {isHockey
+                  ? t('clubAdmin.hockeyRosterHint', 'Select the dressed players for this match. A goalie is required and at least 15 players must be selected.')
+                  : isFloorball
+                    ? t('clubAdmin.floorballRosterHint', 'Select the field players for this match and set their role. The goalie is selected separately above.')
+                    : t('clubAdmin.footballRosterHint', 'Select the players for this match, set their position, and mark the starting lineup.')}
               </p>
 
               <table className="club-admin-roster-table">
@@ -301,8 +351,8 @@ function ClubAdminMatchRosterPage() {
                   <tr>
                     <th className="club-admin-select-col">{t('clubAdmin.inRoster', 'In roster')}</th>
                     <th>{t('clubAdmin.playerName', 'Player')}</th>
-                    <th>{t('clubAdmin.matchPosition', 'Match position')}</th>
-                    {!isFloorball && <th>{t('clubAdmin.starting', 'Starting')}</th>}
+                    {!isHockey && <th>{t('clubAdmin.matchPosition', 'Match position')}</th>}
+                    {!isFloorball && !isHockey && <th>{t('clubAdmin.starting', 'Starting')}</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -328,7 +378,14 @@ function ClubAdminMatchRosterPage() {
                             <span className="club-admin-jersey-badge">#{player.jerseyNumber}</span>
                           )}
                           {player.playerName}
+                          {isHockey && player.defaultPosition && (
+                            <span className="club-admin-upcoming-meta">
+                              {' '}
+                              {t(`hockey.positions.${player.defaultPosition}`, player.defaultPosition)}
+                            </span>
+                          )}
                         </td>
+                        {!isHockey && (
                         <td>
                           {!isGoalie && (
                             <select
@@ -343,7 +400,8 @@ function ClubAdminMatchRosterPage() {
                             </select>
                           )}
                         </td>
-                        {!isFloorball && (
+                        )}
+                        {!isFloorball && !isHockey && (
                           <td>
                             <input
                               type="checkbox"
@@ -358,7 +416,7 @@ function ClubAdminMatchRosterPage() {
                   })}
                   {players.length === 0 && (
                     <tr>
-                      <td colSpan={isFloorball ? 3 : 4} className="club-admin-roster-empty">
+                      <td colSpan={isHockey ? 2 : isFloorball ? 3 : 4} className="club-admin-roster-empty">
                         {t('clubAdmin.emptyRoster', 'This team has no players on its roster yet.')}
                       </td>
                     </tr>

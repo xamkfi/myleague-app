@@ -24,5 +24,7 @@ public class CreateHockeySeasonCommandValidator : AbstractValidator<CreateHockey
         RuleFor(x => x.SeasonCode)
             .MaximumLength(50).WithMessage("Season code cannot exceed 50 characters.")
             .When(x => !string.IsNullOrWhiteSpace(x.SeasonCode));
+
+        RuleFor(x => x.TeamCategory).IsInEnum();
     }
 }

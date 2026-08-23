@@ -10,15 +10,21 @@ import { findClubBySlug, getTeamSlug } from '../../utils/slugUtils';
 import { useDivisions } from '../../hooks/useDivisions';
 import { useFloorballTeamsData } from '../../hooks/useTeamsData';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
+import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
+import type { HockeyTeamDto } from '../../types/hockey/hockeyTypes';
+import { slugify } from '../../utils/slugUtils';
+import { useAudience } from '../../context/AudienceContext';
 import './ClubPage.scss';
 
 function ClubPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { audience } = useAudience();
   const { divisions } = useDivisions();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
+  const [hockeyTeams, setHockeyTeams] = useState<HockeyTeamDto[]>([]);
   const {
     teams,
     setParams: setTeamParams,
@@ -45,6 +51,10 @@ function ClubPage() {
           }
           if (foundClub) {
             setTeamParams({ clubId: foundClub.id });
+            const hockey = await hockeyTeamService
+              .getByClubId(foundClub.id, audience.teamCategory)
+              .catch(() => []);
+            setHockeyTeams(hockey);
           }
         }
 
@@ -56,7 +66,7 @@ function ClubPage() {
     };
 
     fetchData();
-  }, [slug, setTeamParams, t]);
+  }, [slug, setTeamParams, t, audience.teamCategory]);
 
   const club = useMemo(
     () => (!loading && slug ? findClubBySlug(clubs, slug) : undefined),
@@ -326,6 +336,46 @@ function ClubPage() {
             <div className="club-page__no-teams">
               <p>{t('clubPage.noTeams')}</p>
             </div>
+          )}
+
+          {hockeyTeams.length > 0 && (
+            <>
+              <h2 className="club-page__section-title">{t('sports.iceHockey')}</h2>
+              <div className="club-page__teams-grid">
+                {hockeyTeams.map((team) => (
+                  <div
+                    key={team.id}
+                    className="team-card"
+                    onClick={() => navigate(`/hockey/team/${slugify(team.name)}`)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        navigate(`/hockey/team/${slugify(team.name)}`);
+                      }
+                    }}
+                  >
+                    <div className="team-card__header">
+                      <h4 className="team-card__name">{team.name}</h4>
+                    </div>
+                    <div className="team-card__body">
+                      <div className="team-card__tags">
+                        <span className="team-card__sport">{t('sports.iceHockey')}</span>
+                        <span className="team-card__sport">
+                          {t(`hockey.teams.categories.${team.teamCategory}`, team.teamCategory)}
+                        </span>
+                        {team.homeArena && (
+                          <span className="team-card__sport">{team.homeArena}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="team-card__footer">
+                      <span className="team-card__view-link">{t('clubPage.viewTeam')}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>

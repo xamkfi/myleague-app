@@ -1,0 +1,80 @@
+@use 'sass:map';
+@use 'sass:color';
+@use '@variables' as *;
+@use '../../../../../styles/common' as *;
+
+// ── Team name cell specifics ──
+.team-name-cell {
+  .team-info {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+
+    .team-name-container {
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, 'xs');
+      flex: 1;
+
+      .expand-icon {
+        font-size: map.get($font-sizes, 'sm');
+        color: $color-text-muted;
+        transition: transform 0.2s ease;
+        cursor: pointer;
+      }
+    }
+
+    .jersey-colors {
+      display: flex;
+      flex-direction: column;
+      gap: map.get($spacing, 'xxs');
+
+      .color-indicator {
+        width: 16px;
+        height: 16px;
+        border-radius: map.get($border-radius, 'sm');
+        border: 1px solid $color-border;
+        cursor: help;
+
+        &.primary {
+          border-width: 2px;
+        }
+      }
+    }
+  }
+}
+
+// ── Expanded row ──
+.teams-table__expanded-row {
+  &:hover {
+    background-color: transparent !important;
+  }
+}
+
+.teams-table__expanded-cell {
+  padding: 0 !important;
+  border-top: none !important;
+}
+
+// ── Animations ──
+@keyframes slideDownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}

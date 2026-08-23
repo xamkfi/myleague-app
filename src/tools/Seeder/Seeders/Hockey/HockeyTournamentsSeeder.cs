@@ -113,7 +113,8 @@ public static class HockeyTournamentsSeeder
             StartDate = startUtc,
             EndDate = endUtc,
             Venue = seed.Venue,
-            ContentHtml = seed.ContentHtml
+            ContentHtml = seed.ContentHtml,
+            TeamCategory = seed.TeamCategory
         };
 
         HttpResponseMessage response = await http.PostAsJsonAsync("api/HockeyTournament", request);

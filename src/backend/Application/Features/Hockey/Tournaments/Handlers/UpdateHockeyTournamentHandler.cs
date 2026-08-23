@@ -44,6 +44,7 @@ public class UpdateHockeyTournamentHandler : IRequestHandler<UpdateHockeyTournam
             tournament.UpdateDetails(request.Name, request.StartDate, request.EndDate);
             tournament.UpdateVenue(request.Venue);
             tournament.UpdateContent(request.ContentHtml);
+            tournament.UpdateTeamCategory(request.TeamCategory);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("UpdateHockeyTournament completed for tournament {TournamentId}", request.TournamentId);

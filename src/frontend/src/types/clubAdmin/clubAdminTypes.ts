@@ -1,4 +1,4 @@
-export type ClubAdminSport = 'floorball' | 'football';
+export type ClubAdminSport = 'floorball' | 'football' | 'hockey';
 
 /** A team under a club managed by the current club admin. */
 export interface ClubAdminTeam {

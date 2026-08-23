@@ -1,0 +1,247 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+
+.events-history {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 8px;
+  background: $color-neutral-white;
+  box-sizing: border-box;
+  max-height: 60vh;
+
+  h3 {
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 14px;
+    line-height: 24px;
+    letter-spacing: 0;
+    color: $color-neutral-black;
+    height: 24px;
+  }
+
+  // Header row groups the section title with the "Select all" affordance so the
+  // multi-select toggle lives in the natural top-right corner where users expect
+  // table-style controls.
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__select-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 16px;
+    color: $color-neutral-dark-grey;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      color: $color-neutral-black;
+    }
+  }
+
+  &__select-all-label {
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  // Shared checkbox styling so the header "Select all" and per-row checkboxes line
+  // up visually with the rest of the row content.
+  &__checkbox {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #4338ca;
+    flex: 0 0 auto;
+  }
+
+  .no-events {
+    text-align: center; color: #9ca3af; font-style: italic; padding: 24px;
+    background: #f9fafb; border-radius: 6px; border: 2px dashed #e5e7eb;
+  }
+
+  .events-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .event-item {
+    padding: 8px 12px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 10px; transition: background-color 0.2s; background: $color-neutral-white;
+    &:hover { background: #f8fafc; }
+    &:last-child { border-bottom: none; }
+    &.goal { border-left: 4px solid #10b981; }
+    &.penalty { border-left: 4px solid #f59e0b; }
+    &.save { border-left: 4px solid #3b82f6; }
+
+    // Tinted background when the row is part of an active multi-select. Kept light enough
+    // that the colour still reads with the team's left-edge type marker (goal/penalty/save).
+    &.selected {
+      background: #eef2ff;
+
+      &:hover { background: #e0e7ff; }
+    }
+
+    .event-select {
+      // Per-row checkbox sits flush at the start of the row, before the time column.
+      // Using a width of 16px keeps it the same size as the header "Select all" so the
+      // two checkboxes appear vertically aligned through the panel.
+      margin-right: 2px;
+    }
+
+    .event-time {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      font: #{map.get($font-weights, 'bold')} 14px/16px $font-family-body;
+      height: 16px;
+      color: $color-neutral-black;
+      min-width: 70px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .event-type-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 2px; border-radius: 8px; font-size: 0.825rem; font-weight: 600;
+      background: $color-neutral-white; border: 1px solid $color-neutral-medium-grey;
+      &.goal { color: #065f46; }
+      &.penalty { color: #92400e; }
+      &.save { color: #1e40af; }
+
+      .badge-icon { line-height: 1; padding: 2px 0 2px 1px; display: inline-flex; align-items: center; }
+      .badge-text { line-height: 16px; font-size: 14px; padding: 2px 1px 2px 0; display: inline-block; }
+    }
+
+    .team-short { font-weight: 700; color: $color-neutral-black; letter-spacing: 0.02em; }
+
+    .event-details { flex: 1; color: $color-neutral-black; min-width: 0; display: flex; align-items: center; }
+    .event-details,
+    .event-details .event-text,
+    .event-details span {
+      font: #{map.get($font-weights, 'regular')} 16px/16px $font-family-body;
+      color: $color-neutral-black;
+    }
+
+    .event-text { display: flex; align-items: center; gap: 4px; min-width: 0; width: 100%; }
+
+    // Penalty rows render a two-line layout when a description is present: the player +
+    // duration on top, and the (italic, muted) description right below. The wrapper switches
+    // to column so the description gets its own line while still respecting the row's
+    // available width.
+    .event-text.penalty-text {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+
+      .penalty-line {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .penalty-description {
+        font-size: 12px;
+        line-height: 16px;
+        color: $color-neutral-dark-grey;
+        font-style: italic;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    // Goal-type tag (e.g. "(YV)", "(AV)") rendered right after the green Goal
+    // badge so the row scans as "[Goal] (YV) PIR Player Name".
+    .goal-type-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 20px;
+      padding: 0 8px;
+      border-radius: 4px;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      font: #{map.get($font-weights, 'bold')} 12px/16px $font-family-body;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .player-name {
+      font-family: $font-family-body;
+      font-weight: map.get($font-weights, 'regular');
+      font-style: normal;
+      font-size: 14px;
+      line-height: 16px;
+      letter-spacing: 0;
+      color: $color-neutral-black;
+
+      display: block;
+      flex: 1 1 auto;
+      max-width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    // Multiplier badge rendered after the goalie's name for bulk-recorded saves
+    // (e.g. "Severi Noponen (×20)"). Sits inline with the player name so the row
+    // height stays identical to a single save and visually communicates that
+    // multiple saves share this coordinate.
+    .save-count-badge {
+      flex: 0 0 auto;
+      font-weight: map.get($font-weights, 'bold');
+      color: #1e40af;
+      white-space: nowrap;
+    }
+
+    // Slightly stronger left border so the bulk-aggregated row is recognisable
+    // at a glance among single-save rows.
+    &.save.bulk-save {
+      border-left-width: 6px;
+      background: #f5f9ff;
+
+      &:hover { background: #eef4ff; }
+    }
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid $color-neutral-medium-grey;
+  }
+
+  &__body {
+    flex: 1;
+    font-size: 13px;
+  }
+
+  &__delete {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  &__empty {
+    color: $color-text-muted;
+    font-size: 13px;
+  }
+}
+
+

@@ -145,6 +145,7 @@ public class HockeySeasonSeed
 	public string StartDate { get; init; } = "2026-09-01";
 	public string EndDate { get; init; } = "2027-04-30";
 	public string? SeasonCode { get; init; } = "2026-27-H";
+	public TeamCategory TeamCategory { get; init; } = TeamCategory.Adult;
 	public List<string> DivisionNames { get; init; } = new List<string>();
 }
 
@@ -156,6 +157,7 @@ public class HockeyTournamentSeed
 	public string? Venue { get; init; }
 	public string? ContentHtml { get; init; }
 	public bool AllGroupMatchesCompleted { get; init; } = false;
+	public TeamCategory TeamCategory { get; init; } = TeamCategory.Adult;
 	public List<HockeyTournamentGroupSeed> Groups { get; init; } = new List<HockeyTournamentGroupSeed>();
 }
 

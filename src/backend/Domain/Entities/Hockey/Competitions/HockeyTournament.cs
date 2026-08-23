@@ -1,3 +1,4 @@
+using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
 using Domain.ValueObjects.Hockey.Rules;
 
@@ -34,8 +35,9 @@ public class HockeyTournament : HockeyCompetition
         string? venue = null,
         string? contentHtml = null,
         HockeyTournamentRules? tournamentRules = null,
-        HockeyCompetitionRules? competitionRules = null)
-        : base(HockeyCompetitionType.Tournament, name, startDate, endDate, competitionRules)
+        HockeyCompetitionRules? competitionRules = null,
+        TeamCategory teamCategory = TeamCategory.Adult)
+        : base(HockeyCompetitionType.Tournament, name, startDate, endDate, competitionRules, teamCategory)
     {
         Venue = venue;
         ContentHtml = contentHtml;

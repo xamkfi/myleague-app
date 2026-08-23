@@ -35,6 +35,7 @@ public class GetActiveHockeySeasonsHandler
             IReadOnlyList<HockeySeason> seasons = await _competitionRepository.GetAllSeasonsAsync();
             List<HockeySeasonDto> active = seasons
                 .Where(s => s.IsActive)
+                .Where(s => request.TeamCategory is null || s.TeamCategory == request.TeamCategory)
                 .Select(HockeyCompetitionMapper.ToSeasonDto)
                 .ToList();
 

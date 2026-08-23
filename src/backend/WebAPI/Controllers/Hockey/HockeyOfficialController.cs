@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.Hockey.Officials.Commands;
 using Application.Features.Hockey.Officials.DTOs;
 using Application.Features.Hockey.Officials.Queries;
+using Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -59,7 +60,7 @@ public class HockeyOfficialController : BaseApiController
     /// <summary>
     /// Creates a new hockey official profile.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeyOfficialDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -88,7 +89,7 @@ public class HockeyOfficialController : BaseApiController
     /// <summary>
     /// Updates an existing hockey official profile.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyOfficialDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

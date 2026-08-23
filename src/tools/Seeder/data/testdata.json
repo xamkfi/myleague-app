@@ -89,7 +89,27 @@
       { "FirstName": "Oscar", "LastName": "Grönholm", "BirthDate": "1996-10-01", "IsRegistered": true, "ContactInfo": { "Email": "oscar.gronholm@team10.fi" } },
       { "FirstName": "Patrik", "LastName": "Holmberg", "BirthDate": "1998-02-14", "IsRegistered": true, "ContactInfo": { "Email": "patrik.holmberg@team10.fi" } },
       { "FirstName": "Rasmus", "LastName": "Isaksson", "BirthDate": "1999-06-27", "IsRegistered": true, "ContactInfo": { "Email": "rasmus.isaksson@team10.fi" } },
-      { "FirstName": "Simon", "LastName": "Johansson", "BirthDate": "1997-10-10", "IsRegistered": true, "ContactInfo": { "Email": "simon.johansson@team10.fi" } }
+      { "FirstName": "Simon", "LastName": "Johansson", "BirthDate": "1997-10-10", "IsRegistered": true, "ContactInfo": { "Email": "simon.johansson@team10.fi" } },
+      { "FirstName": "Eetu", "LastName": "Nuori", "BirthDate": "2010-03-12", "IsRegistered": true, "ContactInfo": { "Email": "eetu.nuori@u18.fi" } },
+      { "FirstName": "Leevi", "LastName": "Kiekko", "BirthDate": "2010-06-21", "IsRegistered": true, "ContactInfo": { "Email": "leevi.kiekko@u18.fi" } },
+      { "FirstName": "Onni", "LastName": "Junior", "BirthDate": "2009-11-04", "IsRegistered": true, "ContactInfo": { "Email": "onni.junior@u18.fi" } },
+      { "FirstName": "Aaro", "LastName": "Luistin", "BirthDate": "2010-01-19", "IsRegistered": true, "ContactInfo": { "Email": "aaro.luistin@u18.fi" } },
+      { "FirstName": "Noel", "LastName": "Laukkanen", "BirthDate": "2009-08-08", "IsRegistered": true, "ContactInfo": { "Email": "noel.laukkanen@u18.fi" } },
+      { "FirstName": "Veeti", "LastName": "Härmä", "BirthDate": "2010-04-30", "IsRegistered": true, "ContactInfo": { "Email": "veeti.harma@u18b.fi" } },
+      { "FirstName": "Joona", "LastName": "Salmi", "BirthDate": "2009-12-14", "IsRegistered": true, "ContactInfo": { "Email": "joona.salmi@u18b.fi" } },
+      { "FirstName": "Kasper", "LastName": "Vainio", "BirthDate": "2010-07-02", "IsRegistered": true, "ContactInfo": { "Email": "kasper.vainio@u18b.fi" } },
+      { "FirstName": "Miro", "LastName": "Peltonen", "BirthDate": "2009-05-25", "IsRegistered": true, "ContactInfo": { "Email": "miro.peltonen@u18b.fi" } },
+      { "FirstName": "Nico", "LastName": "Hietala", "BirthDate": "2010-09-09", "IsRegistered": true, "ContactInfo": { "Email": "nico.hietala@u18b.fi" } },
+      { "FirstName": "Emma", "LastName": "Kivekäs", "BirthDate": "1998-04-11", "IsRegistered": true, "ContactInfo": { "Email": "emma.kivekas@women.fi" } },
+      { "FirstName": "Aino", "LastName": "Rautio", "BirthDate": "1997-09-22", "IsRegistered": true, "ContactInfo": { "Email": "aino.rautio@women.fi" } },
+      { "FirstName": "Iida", "LastName": "Mäkelä", "BirthDate": "1999-02-03", "IsRegistered": true, "ContactInfo": { "Email": "iida.makela@women.fi" } },
+      { "FirstName": "Sofia", "LastName": "Lehto", "BirthDate": "1998-12-18", "IsRegistered": true, "ContactInfo": { "Email": "sofia.lehto@women.fi" } },
+      { "FirstName": "Venla", "LastName": "Koski", "BirthDate": "1996-07-07", "IsRegistered": true, "ContactInfo": { "Email": "venla.koski@women.fi" } },
+      { "FirstName": "Helmi", "LastName": "Aaltonen", "BirthDate": "1998-01-28", "IsRegistered": true, "ContactInfo": { "Email": "helmi.aaltonen@womenb.fi" } },
+      { "FirstName": "Siiri", "LastName": "Niemelä", "BirthDate": "1997-06-16", "IsRegistered": true, "ContactInfo": { "Email": "siiri.niemela@womenb.fi" } },
+      { "FirstName": "Lotta", "LastName": "Häkkinen", "BirthDate": "1999-10-05", "IsRegistered": true, "ContactInfo": { "Email": "lotta.hakkinen@womenb.fi" } },
+      { "FirstName": "Nea", "LastName": "Virtanen", "BirthDate": "1998-03-09", "IsRegistered": true, "ContactInfo": { "Email": "nea.virtanen@womenb.fi" } },
+      { "FirstName": "Oona", "LastName": "Järvenpää", "BirthDate": "1996-11-21", "IsRegistered": true, "ContactInfo": { "Email": "oona.jarvenpaa@womenb.fi" } }
     ],
 
     "GoaliePersons": [
@@ -112,7 +132,11 @@
       { "FirstName": "Örjan", "LastName": "Mattsson", "BirthDate": "1996-11-05", "IsRegistered": true, "ContactInfo": { "Email": "orjan.mattsson@team9.fi" } },
       { "FirstName": "Alfred", "LastName": "Nyström", "BirthDate": "1995-02-18", "IsRegistered": true, "ContactInfo": { "Email": "alfred.nystrom@team9.fi" } },
       { "FirstName": "Berndt", "LastName": "Söderström", "BirthDate": "1996-06-01", "IsRegistered": true, "ContactInfo": { "Email": "berndt.soderstrom@team10.fi" } },
-      { "FirstName": "Claes", "LastName": "Hedström", "BirthDate": "1995-10-14", "IsRegistered": true, "ContactInfo": { "Email": "claes.hedstrom@team10.fi" } }
+      { "FirstName": "Claes", "LastName": "Hedström", "BirthDate": "1995-10-14", "IsRegistered": true, "ContactInfo": { "Email": "claes.hedstrom@team10.fi" } },
+      { "FirstName": "Elias", "LastName": "Maalivahti", "BirthDate": "2010-02-02", "IsRegistered": true, "ContactInfo": { "Email": "elias.maalivahti@u18.fi" } },
+      { "FirstName": "Oliver", "LastName": "Patja", "BirthDate": "2009-08-17", "IsRegistered": true, "ContactInfo": { "Email": "oliver.patja@u18b.fi" } },
+      { "FirstName": "Anni", "LastName": "Torjunta", "BirthDate": "1997-05-12", "IsRegistered": true, "ContactInfo": { "Email": "anni.torjunta@women.fi" } },
+      { "FirstName": "Kerttu", "LastName": "Väyrynen", "BirthDate": "1998-09-01", "IsRegistered": true, "ContactInfo": { "Email": "kerttu.vayrynen@womenb.fi" } }
     ],
 
     "RefereePersons": [
@@ -148,7 +172,9 @@
 
     "Divisions": [
       { "Name": "Championship Division", "Description": "Top tier championship floorball league", "Level": 1, "SportType": "Floorball" },
-      { "Name": "Liiga Division", "Description": "Top tier ice hockey league", "Level": 1, "SportType": "Icehockey" }
+      { "Name": "Liiga Division", "Description": "Top tier ice hockey league", "Level": 1, "SportType": "Icehockey" },
+      { "Name": "U18 Hockey", "Description": "Youth ice hockey league", "Level": 2, "SportType": "Icehockey" },
+      { "Name": "Women Liiga", "Description": "Women ice hockey league", "Level": 1, "SportType": "Icehockey" }
     ],
 
     "FloorballSeasons": [
@@ -589,7 +615,24 @@
         "StartDate": "2026-09-01",
         "EndDate": "2027-04-30",
         "SeasonCode": "2026-27-H",
+        "TeamCategory": 0,
         "DivisionNames": ["Liiga Division"]
+      },
+      {
+        "Name": "2026-27 U18 Season",
+        "StartDate": "2026-09-01",
+        "EndDate": "2027-03-31",
+        "SeasonCode": "2026-27-U18",
+        "TeamCategory": 1,
+        "DivisionNames": ["U18 Hockey"]
+      },
+      {
+        "Name": "2026-27 Women Liiga",
+        "StartDate": "2026-09-01",
+        "EndDate": "2027-03-31",
+        "SeasonCode": "2026-27-W",
+        "TeamCategory": 2,
+        "DivisionNames": ["Women Liiga"]
       }
     ],
 
@@ -601,6 +644,7 @@
         "Venue": "Nokia Arena",
         "ContentHtml": "<p>Small invitational ice hockey cup.</p>",
         "AllGroupMatchesCompleted": false,
+        "TeamCategory": 0,
         "Groups": [
           {
             "Name": "Group A",
@@ -609,6 +653,36 @@
           {
             "Name": "Group B",
             "TeamNames": ["HIFK Ice", "Kärpät HC"]
+          }
+        ]
+      },
+      {
+        "Name": "U18 Winter Cup 2026",
+        "StartDate": "2026-12-05",
+        "EndDate": "2026-12-12",
+        "Venue": "Hakametsä",
+        "ContentHtml": "<p>Youth invitational cup.</p>",
+        "AllGroupMatchesCompleted": false,
+        "TeamCategory": 1,
+        "Groups": [
+          {
+            "Name": "Group A",
+            "TeamNames": ["Tappara U18", "HIFK U18"]
+          }
+        ]
+      },
+      {
+        "Name": "Women Winter Cup 2026",
+        "StartDate": "2026-12-06",
+        "EndDate": "2026-12-13",
+        "Venue": "Helsinki Ice Hall",
+        "ContentHtml": "<p>Women invitational cup.</p>",
+        "AllGroupMatchesCompleted": false,
+        "TeamCategory": 2,
+        "Groups": [
+          {
+            "Name": "Group A",
+            "TeamNames": ["Tappara Women", "HIFK Women"]
           }
         ]
       }
@@ -734,6 +808,82 @@
           { "PersonEmail": "olavi.eriksson@team4.fi", "Position": 0, "JerseyNumber": 35 },
           { "PersonEmail": "pentti.korpela@team4.fi", "Position": 0, "JerseyNumber": 36 }
         ]
+      },
+      {
+        "Name": "Tappara U18",
+        "ShortName": "T18",
+        "DivisionName": "U18 Hockey",
+        "ClubName": "Tampere Titans",
+        "HomeArena": "Hakametsä",
+        "PrimaryJerseyColor": "Blue",
+        "SecondaryJerseyColor": "Orange",
+        "Category": 1,
+        "StaffPersonEmail": "jukka.jalonen@coach.fi",
+        "Players": [
+          { "PersonEmail": "eetu.nuori@u18.fi", "Position": 2, "JerseyNumber": 9 },
+          { "PersonEmail": "leevi.kiekko@u18.fi", "Position": 3, "JerseyNumber": 11 },
+          { "PersonEmail": "onni.junior@u18.fi", "Position": 4, "JerseyNumber": 15 },
+          { "PersonEmail": "aaro.luistin@u18.fi", "Position": 1, "JerseyNumber": 5 },
+          { "PersonEmail": "noel.laukkanen@u18.fi", "Position": 1, "JerseyNumber": 7 },
+          { "PersonEmail": "elias.maalivahti@u18.fi", "Position": 0, "JerseyNumber": 1 }
+        ]
+      },
+      {
+        "Name": "HIFK U18",
+        "ShortName": "H18",
+        "DivisionName": "U18 Hockey",
+        "ClubName": "Helsinki Hammers",
+        "HomeArena": "Helsinki Ice Hall",
+        "PrimaryJerseyColor": "Red",
+        "SecondaryJerseyColor": "White",
+        "Category": 1,
+        "StaffPersonEmail": "antti.pennanen@coach.fi",
+        "Players": [
+          { "PersonEmail": "veeti.harma@u18b.fi", "Position": 2, "JerseyNumber": 19 },
+          { "PersonEmail": "joona.salmi@u18b.fi", "Position": 3, "JerseyNumber": 21 },
+          { "PersonEmail": "kasper.vainio@u18b.fi", "Position": 4, "JerseyNumber": 23 },
+          { "PersonEmail": "miro.peltonen@u18b.fi", "Position": 1, "JerseyNumber": 4 },
+          { "PersonEmail": "nico.hietala@u18b.fi", "Position": 1, "JerseyNumber": 6 },
+          { "PersonEmail": "oliver.patja@u18b.fi", "Position": 0, "JerseyNumber": 30 }
+        ]
+      },
+      {
+        "Name": "Tappara Women",
+        "ShortName": "TPW",
+        "DivisionName": "Women Liiga",
+        "ClubName": "Tampere Titans",
+        "HomeArena": "Hakametsä",
+        "PrimaryJerseyColor": "Blue",
+        "SecondaryJerseyColor": "White",
+        "Category": 2,
+        "StaffPersonEmail": "raimo.summanen@coach.fi",
+        "Players": [
+          { "PersonEmail": "emma.kivekas@women.fi", "Position": 2, "JerseyNumber": 10 },
+          { "PersonEmail": "aino.rautio@women.fi", "Position": 3, "JerseyNumber": 12 },
+          { "PersonEmail": "iida.makela@women.fi", "Position": 4, "JerseyNumber": 16 },
+          { "PersonEmail": "sofia.lehto@women.fi", "Position": 1, "JerseyNumber": 3 },
+          { "PersonEmail": "venla.koski@women.fi", "Position": 1, "JerseyNumber": 8 },
+          { "PersonEmail": "anni.torjunta@women.fi", "Position": 0, "JerseyNumber": 31 }
+        ]
+      },
+      {
+        "Name": "HIFK Women",
+        "ShortName": "HFW",
+        "DivisionName": "Women Liiga",
+        "ClubName": "Helsinki Hammers",
+        "HomeArena": "Helsinki Ice Hall",
+        "PrimaryJerseyColor": "Red",
+        "SecondaryJerseyColor": "Black",
+        "Category": 2,
+        "StaffPersonEmail": "lauri.marjamaki@coach.fi",
+        "Players": [
+          { "PersonEmail": "helmi.aaltonen@womenb.fi", "Position": 2, "JerseyNumber": 13 },
+          { "PersonEmail": "siiri.niemela@womenb.fi", "Position": 3, "JerseyNumber": 17 },
+          { "PersonEmail": "lotta.hakkinen@womenb.fi", "Position": 4, "JerseyNumber": 22 },
+          { "PersonEmail": "nea.virtanen@womenb.fi", "Position": 1, "JerseyNumber": 2 },
+          { "PersonEmail": "oona.jarvenpaa@womenb.fi", "Position": 1, "JerseyNumber": 44 },
+          { "PersonEmail": "kerttu.vayrynen@womenb.fi", "Position": 0, "JerseyNumber": 35 }
+        ]
       }
     ],
 
@@ -760,6 +910,46 @@
         "SeasonName": "2026-27 Liiga Season",
         "ScheduledDateTime": "2027-01-20T16:00:00Z",
         "Venue": "Hakametsä",
+        "SimulateCompleted": false
+      },
+      {
+        "HomeTeamName": "Tappara HC",
+        "AwayTeamName": "Kärpät HC",
+        "SeasonName": "2026-27 Liiga Season",
+        "ScheduledDateTime": "2027-01-21T16:00:00Z",
+        "Venue": "Nokia Arena",
+        "SimulateCompleted": false
+      },
+      {
+        "HomeTeamName": "Tappara U18",
+        "AwayTeamName": "HIFK U18",
+        "SeasonName": "2026-27 U18 Season",
+        "ScheduledDateTime": "2026-10-18T14:00:00Z",
+        "Venue": "Hakametsä",
+        "SimulateCompleted": true
+      },
+      {
+        "HomeTeamName": "HIFK U18",
+        "AwayTeamName": "Tappara U18",
+        "SeasonName": "2026-27 U18 Season",
+        "ScheduledDateTime": "2027-01-22T14:00:00Z",
+        "Venue": "Helsinki Ice Hall",
+        "SimulateCompleted": false
+      },
+      {
+        "HomeTeamName": "Tappara Women",
+        "AwayTeamName": "HIFK Women",
+        "SeasonName": "2026-27 Women Liiga",
+        "ScheduledDateTime": "2026-10-19T15:00:00Z",
+        "Venue": "Hakametsä",
+        "SimulateCompleted": true
+      },
+      {
+        "HomeTeamName": "HIFK Women",
+        "AwayTeamName": "Tappara Women",
+        "SeasonName": "2026-27 Women Liiga",
+        "ScheduledDateTime": "2027-01-23T15:00:00Z",
+        "Venue": "Helsinki Ice Hall",
         "SimulateCompleted": false
       }
     ]

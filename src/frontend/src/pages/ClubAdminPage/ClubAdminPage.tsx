@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClubAdminPageTemplate from './components/ClubAdminPageTemplate';
 import { clubAdminService } from '../../api/clubAdmin/clubAdminService';
-import type { ClubAdminClub, ClubAdminTeam } from '../../types/clubAdmin/clubAdminTypes';
+import type { ClubAdminClub, ClubAdminSport, ClubAdminTeam } from '../../types/clubAdmin/clubAdminTypes';
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import type { FootballMatchDto } from '../../types/football/footballTypes';
+import type { HockeyMatchDto } from '../../types/hockey/hockeyTypes';
+import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
 import './ClubAdminPage.scss';
 
 interface UpcomingMatchSummary {
@@ -45,6 +47,36 @@ function toFootballSummary(match: FootballMatchDto, teamId: string): UpcomingMat
   };
 }
 
+function toHockeySummary(
+  match: HockeyMatchDto,
+  teamId: string,
+  teamNames: Map<string, string>,
+): UpcomingMatchSummary {
+  const matchTeam = match.matchTeams.find((side) => side.teamId === teamId);
+  return {
+    matchId: match.id,
+    scheduledDateTime: match.scheduledStartTime,
+    homeTeamName: match.homeTeamId ? teamNames.get(match.homeTeamId) ?? null : null,
+    awayTeamName: match.awayTeamId ? teamNames.get(match.awayTeamId) ?? null : null,
+    venue: match.venue,
+    hasAnnouncedRoster: Boolean(matchTeam?.isConfirmedRoster || (matchTeam?.activePlayers.length ?? 0) > 0),
+  };
+}
+
+function upcomingKey(team: ClubAdminTeam): string {
+  return `${team.sport}-${team.teamId}`;
+}
+
+function sportLabel(sport: ClubAdminSport, t: (key: string, fallback: string) => string): string {
+  if (sport === 'floorball') {
+    return t('clubAdmin.sportFloorball', 'Floorball');
+  }
+  if (sport === 'football') {
+    return t('clubAdmin.sportFootball', 'Football');
+  }
+  return t('clubAdmin.sportHockey', 'Ice hockey');
+}
+
 function ClubAdminPage() {
   const { t, i18n } = useTranslation();
   const [clubs, setClubs] = useState<ClubAdminClub[]>([]);
@@ -62,17 +94,25 @@ function ClubAdminPage() {
         setClubs(myClubs);
 
         const allTeams: ClubAdminTeam[] = myClubs.flatMap((club) => club.teams);
+        const hockeyTeamNames = allTeams.some((team) => team.sport === 'hockey')
+          ? new Map((await hockeyTeamService.getAll()).map((team) => [team.id, team.name]))
+          : new Map<string, string>();
         const matchEntries = await Promise.all(
           allTeams.map(async (team): Promise<[string, UpcomingMatchSummary[]]> => {
+            const key = upcomingKey(team);
             try {
               if (team.sport === 'floorball') {
                 const matches = await clubAdminService.getFloorballUpcomingMatches(team.teamId);
-                return [team.teamId, matches.map((m) => toFloorballSummary(m, team.teamId))];
+                return [key, matches.map((m) => toFloorballSummary(m, team.teamId))];
               }
-              const matches = await clubAdminService.getFootballUpcomingMatches(team.teamId);
-              return [team.teamId, matches.map((m) => toFootballSummary(m, team.teamId))];
+              if (team.sport === 'football') {
+                const matches = await clubAdminService.getFootballUpcomingMatches(team.teamId);
+                return [key, matches.map((m) => toFootballSummary(m, team.teamId))];
+              }
+              const matches = await clubAdminService.getHockeyUpcomingMatches(team.teamId);
+              return [key, matches.map((m) => toHockeySummary(m, team.teamId, hockeyTeamNames))];
             } catch {
-              return [team.teamId, []];
+              return [key, []];
             }
           }),
         );
@@ -133,17 +173,15 @@ function ClubAdminPage() {
           ) : (
             <div className="club-admin-team-grid">
               {club.teams.map((team) => {
-                const upcoming = upcomingByTeam[team.teamId] ?? [];
+                const upcoming = upcomingByTeam[upcomingKey(team)] ?? [];
                 return (
-                  <div key={`${team.sport}-${team.teamId}`} className="club-admin-team-card">
+                  <div key={upcomingKey(team)} className="club-admin-team-card">
                     <div className="club-admin-team-card-header">
                       {team.logoUrl && <img src={team.logoUrl} alt="" className="club-admin-team-logo" />}
                       <div>
                         <h3 className="club-admin-team-name">{team.name}</h3>
                         <span className={`club-admin-sport-badge club-admin-sport-badge--${team.sport}`}>
-                          {team.sport === 'floorball'
-                            ? t('clubAdmin.sportFloorball', 'Floorball')
-                            : t('clubAdmin.sportFootball', 'Football')}
+                          {sportLabel(team.sport, t)}
                         </span>
                       </div>
                     </div>
