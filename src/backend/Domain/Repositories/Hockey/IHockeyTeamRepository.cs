@@ -14,4 +14,8 @@ public interface IHockeyTeamRepository
     Task<IReadOnlyList<HockeyTeam>> GetAllAsync();
 
     Task<IReadOnlyList<HockeyTeam>> GetByClubIdAsync(Guid clubId);
+
+    Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default);
+
+    Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default);
 }

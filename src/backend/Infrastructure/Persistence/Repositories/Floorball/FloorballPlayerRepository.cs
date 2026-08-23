@@ -512,5 +512,45 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             return await _entities.AnyAsync(p => p.Id == id);
         }
+
+        public async Task<bool> HasCompetitionHistoryAsync(Guid playerId, CancellationToken cancellationToken = default)
+        {
+            bool hasRosterGames = await _dbContext.FloorballTeamPlayers
+                .AnyAsync(tp => tp.PlayerId == playerId && tp.GamesPlayed > 0, cancellationToken);
+            if (hasRosterGames)
+            {
+                return true;
+            }
+
+            bool hasSeasonStats = await _dbContext.FloorballPlayerSeasonStatistics
+                .AnyAsync(s => s.PlayerId == playerId, cancellationToken)
+                || await _dbContext.FloorballGoalieSeasonStatistics
+                    .AnyAsync(s => s.PlayerId == playerId, cancellationToken);
+            if (hasSeasonStats)
+            {
+                return true;
+            }
+
+            bool hasEvents = await _dbContext.FloorballGoals
+                    .AnyAsync(g =>
+                        g.ScoringPlayerId == playerId
+                        || g.AssistingPlayerId == playerId
+                        || g.SecondaryAssistingPlayerId == playerId, cancellationToken)
+                || await _dbContext.FloorballPenalties
+                    .AnyAsync(p => p.PlayerId == playerId, cancellationToken)
+                || await _dbContext.FloorballSaves
+                    .AnyAsync(s => s.GoalieId == playerId, cancellationToken);
+            if (hasEvents)
+            {
+                return true;
+            }
+
+            return await _dbContext.FloorballMatchActivePlayers
+                .AnyAsync(
+                    ap => ap.PlayerId == playerId
+                        && _dbContext.FloorballMatches.Any(m =>
+                            m.Id == ap.MatchId && m.Status != FloorballMatchStatus.Scheduled),
+                    cancellationToken);
+        }
     }
 } 

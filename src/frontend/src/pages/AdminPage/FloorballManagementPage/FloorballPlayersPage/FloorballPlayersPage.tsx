@@ -17,6 +17,7 @@ import './FloorballPlayersPage.scss';
 import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import { mapDeletionError } from '../../../../utils/mapDeletionError';
 
 const FloorballPlayersPage = () => {
   const { t } = useTranslation();
@@ -176,7 +177,10 @@ const FloorballPlayersPage = () => {
       setIsDeleteModalOpen(false);
       setPlayerToDelete(null);
     } catch (err) {
-      setError(t('floorball.players.errors.deleteFailed', 'Failed to delete player. Please try again.'));
+      setError(
+        mapDeletionError(err, t) ??
+          t('floorball.players.errors.deleteFailed', 'Failed to delete player. Please try again.'),
+      );
       console.error(err);
     } finally {
       setIsDeleting(false);

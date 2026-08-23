@@ -8,6 +8,7 @@ import TeamsTable from './components/TeamsTable';
 import TeamCategoryFilter from '../../../../components/TeamCategoryFilter/TeamCategoryFilter';
 import './FloorballTeamsPage.scss';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import { mapDeletionError } from '../../../../utils/mapDeletionError';
 
 const FloorballTeamsPage = () => {
   const { t } = useTranslation();
@@ -127,7 +128,7 @@ const FloorballTeamsPage = () => {
       });
       setReloadToken((token) => token + 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete team');
+      setError(mapDeletionError(err, t) ?? t('floorball.teams.errors.deleteFailed', 'Failed to delete team'));
       console.error('Error deleting team:', err);
     }
   };
@@ -186,7 +187,7 @@ const FloorballTeamsPage = () => {
       setSelectedIds(new Set());
       setReloadToken((token) => token + 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete teams');
+      setError(mapDeletionError(err, t) ?? t('floorball.teams.errors.bulkDeleteFailed', 'Failed to delete teams'));
       console.error('Error bulk deleting teams:', err);
     }
   };

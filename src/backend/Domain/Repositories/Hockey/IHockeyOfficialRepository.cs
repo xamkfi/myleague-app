@@ -16,4 +16,8 @@ public interface IHockeyOfficialRepository
     Task<IReadOnlyList<HockeyOfficial>> GetAllAsync(bool? isActive = null);
 
     Task<bool> ExistsAsync(Guid id);
+
+    Task<bool> IsAssignedToAnyMatchAsync(Guid officialId, CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

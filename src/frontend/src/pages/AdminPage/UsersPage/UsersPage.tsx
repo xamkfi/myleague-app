@@ -6,6 +6,7 @@ import Button from '../../../components/Button/Button';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import AddIcon from '../../../assets/basicIcons/add.svg';
 import { userService } from '../../../api/admin/userService';
+import { mapDeletionError } from '../../../utils/mapDeletionError';
 import type { SystemUser, UserRole } from '../../../types/admin/userTypes';
 import UsersTable from './components/UsersTable';
 import UserFormModal from './components/UserFormModal';
@@ -160,9 +161,8 @@ const UsersPage = () => {
     } catch (err) {
       console.error('Failed to delete user', err);
       setError(
-        err instanceof Error
-          ? err.message
-          : t('admin.users.errors.delete', 'Failed to delete user. Please try again.'),
+        mapDeletionError(err, t) ??
+          t('admin.users.errors.delete', 'Failed to delete user. Please try again.'),
       );
     } finally {
       setIsDeleting(false);
@@ -264,9 +264,8 @@ const UsersPage = () => {
     } catch (err) {
       console.error('Failed to bulk delete users', err);
       setError(
-        err instanceof Error
-          ? err.message
-          : t('admin.users.errors.delete', 'Failed to delete user. Please try again.'),
+        mapDeletionError(err, t) ??
+          t('admin.users.errors.delete', 'Failed to delete user. Please try again.'),
       );
     }
   }, [selectedIds, t]);

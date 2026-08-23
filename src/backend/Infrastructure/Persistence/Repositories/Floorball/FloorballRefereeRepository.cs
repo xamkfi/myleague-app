@@ -228,5 +228,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             return await _entities.AnyAsync(r => r.Id == id);
         }
+
+        public async Task<FloorballReferee?> GetByPersonIdAsync(Guid personId)
+        {
+            return await _entities.FirstOrDefaultAsync(r => r.PersonId == personId);
+        }
+
+        public async Task<bool> IsAssignedToAnyMatchAsync(Guid refereeId, CancellationToken cancellationToken = default)
+        {
+            return await _dbContext.Set<Dictionary<string, object>>("FloorballMatchOfficial")
+                .AnyAsync(row => EF.Property<Guid>(row, "OfficialsId") == refereeId, cancellationToken);
+        }
     }
 } 

@@ -24,4 +24,8 @@ public interface IFootballRefereeRepository
     Task DeleteAsync(Guid id);
     Task<IEnumerable<FootballReferee>> SearchByNameAsync(string searchTerm);
     Task<bool> ExistsAsync(Guid id);
+
+    Task<FootballReferee?> GetByPersonIdAsync(Guid personId);
+
+    Task<bool> IsAssignedToAnyMatchAsync(Guid refereeId, CancellationToken cancellationToken = default);
 }

@@ -1,50 +1,38 @@
-using Application.Features.Football.Teams.Commands;
 using Application.Common;
+using Application.Features.Common.Deletion;
+using Application.Features.Football.Teams.Commands;
 using Domain.Repositories.Football;
-using Microsoft.Extensions.Logging;
 using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Football.Teams.Handlers;
 
 /// <summary>
-/// Handler for deleting a football team
+/// Handler for deleting a football team that is not used in matches.
 /// </summary>
 public class DeleteFootballTeamHandler : IRequestHandler<DeleteFootballTeamCommand, Result>
 {
     private readonly IFootballTeamRepository _teamRepository;
+    private readonly IFootballMatchRepository _matchRepository;
     private readonly IFootballUnitOfWork _footballUnitOfWork;
     private readonly ILogger<DeleteFootballTeamHandler> _logger;
 
-    /// <summary>
-    /// Initializes a new instance of the DeleteFootballTeamHandler class
-    /// </summary>
-    /// <param name="teamRepository">The football team repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
-    /// <param name="logger">The logger</param>
     public DeleteFootballTeamHandler(
         IFootballTeamRepository teamRepository,
+        IFootballMatchRepository matchRepository,
         IFootballUnitOfWork footballUnitOfWork,
         ILogger<DeleteFootballTeamHandler> logger)
     {
         _teamRepository = teamRepository;
+        _matchRepository = matchRepository;
         _footballUnitOfWork = footballUnitOfWork;
         _logger = logger;
     }
 
-    /// <summary>
-    /// Handles the DeleteFootballTeamCommand request
-    /// </summary>
-    /// <param name="request">The command containing the team ID to delete</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>A Result indicating success or failure</returns>
     public async Task<Result> Handle(DeleteFootballTeamCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            // Check if the team exists
             bool teamExists = await _teamRepository.ExistsAsync(request.Id);
             if (!teamExists)
             {
@@ -52,10 +40,14 @@ public class DeleteFootballTeamHandler : IRequestHandler<DeleteFootballTeamComma
                 return Result.NotFound("FootballTeam", request.Id);
             }
 
+            if (await _matchRepository.HasAnyForTeamAsync(request.Id, cancellationToken))
+            {
+                _logger.LogWarning("Blocked football team delete for {TeamId}: team is used in matches", request.Id);
+                return Result.Failure(DeletionReasons.TeamUsedInMatches);
+            }
+
             _logger.LogInformation("Deleting football team with ID: {TeamId}", request.Id);
             await _teamRepository.DeleteAsync(request.Id);
-            
-            // Save changes explicitly to trigger domain events
             await _footballUnitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Successfully deleted football team with ID: {TeamId}", request.Id);
@@ -67,4 +59,4 @@ public class DeleteFootballTeamHandler : IRequestHandler<DeleteFootballTeamComma
             return Result.Failure("An error occurred while deleting the football team.");
         }
     }
-} 
+}
