@@ -23,7 +23,7 @@ const DELETION_REASON_KEYS: Record<string, string> = {
     'deletion.cannotDeleteOwnAccount',
 };
 
-type Translate = (key: string, defaultValue?: string) => string;
+type Translate = (key: string) => string;
 
 function extractApiErrorMessage(error: unknown): string {
   if (!(error instanceof Error) || !error.message) {
@@ -54,7 +54,7 @@ export function mapDeletionError(error: unknown, t: Translate): string | null {
 
   const key = DELETION_REASON_KEYS[message];
   if (key) {
-    return t(key, message);
+    return t(key);
   }
 
   return message;
