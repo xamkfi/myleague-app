@@ -466,6 +466,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             }
         }
 
+        public async Task<bool> HasAnyForTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+        {
+            return await _entities.AnyAsync(
+                m => m.HomeTeamId == teamId || m.AwayTeamId == teamId,
+                cancellationToken);
+        }
+
         /// <inheritdoc />
         public async Task<int> DeleteAllByCompetitionIdAsync(Guid competitionId, CancellationToken cancellationToken = default)
         {

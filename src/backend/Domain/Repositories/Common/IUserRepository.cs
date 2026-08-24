@@ -1,4 +1,5 @@
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 
 namespace Domain.Repositories.Common;
 
@@ -79,4 +80,9 @@ public interface IUserRepository
     /// <param name="token">The email verification token</param>
     /// <returns>The user if found, null otherwise</returns>
     Task<User?> GetByEmailVerificationTokenAsync(string token);
+
+    /// <summary>
+    /// Counts users with the given role.
+    /// </summary>
+    Task<int> CountByRoleAsync(UserRole role);
 }

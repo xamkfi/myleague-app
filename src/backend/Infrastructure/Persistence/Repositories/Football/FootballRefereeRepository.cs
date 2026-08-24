@@ -179,5 +179,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         {
             return await _entities.AnyAsync(r => r.Id == id);
         }
+
+        public async Task<FootballReferee?> GetByPersonIdAsync(Guid personId)
+        {
+            return await _entities.FirstOrDefaultAsync(r => r.PersonId == personId);
+        }
+
+        public async Task<bool> IsAssignedToAnyMatchAsync(Guid refereeId, CancellationToken cancellationToken = default)
+        {
+            return await _dbContext.Set<Dictionary<string, object>>("FootballMatchOfficial")
+                .AnyAsync(row => EF.Property<Guid>(row, "OfficialsId") == refereeId, cancellationToken);
+        }
     }
 }

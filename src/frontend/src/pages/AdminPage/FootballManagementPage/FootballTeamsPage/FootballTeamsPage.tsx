@@ -8,6 +8,7 @@ import TeamsTable from './components/TeamsTable';
 import TeamCategoryFilter from '../../../../components/TeamCategoryFilter/TeamCategoryFilter';
 import './FootballTeamsPage.scss';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import { mapDeletionError } from '../../../../utils/mapDeletionError';
 
 const FootballTeamsPage = () => {
   const { t } = useTranslation();
@@ -128,7 +129,7 @@ const FootballTeamsPage = () => {
       // Refresh the teams list
       setReloadToken((token) => token + 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete team');
+      setError(mapDeletionError(err, t) ?? t('football.teams.errors.deleteFailed', 'Failed to delete team'));
       console.error('Error deleting team:', err);
     }
   };
@@ -187,7 +188,7 @@ const FootballTeamsPage = () => {
       setSelectedIds(new Set());
       setReloadToken((token) => token + 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete teams');
+      setError(mapDeletionError(err, t) ?? t('football.teams.errors.bulkDeleteFailed', 'Failed to delete teams'));
       console.error('Error bulk deleting teams:', err);
     }
   };

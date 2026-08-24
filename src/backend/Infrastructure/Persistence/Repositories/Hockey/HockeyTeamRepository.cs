@@ -43,6 +43,16 @@ public class HockeyTeamRepository : IHockeyTeamRepository
             .ToListAsync();
     }
 
+    public async Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.HockeyTeams.AnyAsync(t => t.ClubId == clubId, cancellationToken);
+    }
+
+    public async Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.HockeyTeams.AnyAsync(t => t.DivisionId == divisionId, cancellationToken);
+    }
+
     private IQueryable<HockeyTeam> TeamQuery()
     {
         return _dbContext.HockeyTeams

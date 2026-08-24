@@ -1,7 +1,11 @@
 using Application.Common;
 using Application.Features.Common.Clubs.Commands;
 using Application.Features.Common.Clubs.Handlers;
+using Application.Features.Common.Deletion;
 using Domain.Repositories.Common;
+using Domain.Repositories.Floorball;
+using Domain.Repositories.Football;
+using Domain.Repositories.Hockey;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -14,6 +18,9 @@ namespace ApplicationTestProject.Handlers.Clubs;
 public class DeleteClubHandlerTests
 {
     private readonly Mock<IClubRepository> _mockClubRepository;
+    private readonly Mock<IFloorballTeamRepository> _mockFloorballTeamRepository;
+    private readonly Mock<IFootballTeamRepository> _mockFootballTeamRepository;
+    private readonly Mock<IHockeyTeamRepository> _mockHockeyTeamRepository;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<ILogger<DeleteClubHandler>> _mockLogger;
     private readonly DeleteClubHandler _handler;
@@ -21,9 +28,18 @@ public class DeleteClubHandlerTests
     public DeleteClubHandlerTests()
     {
         _mockClubRepository = new Mock<IClubRepository>();
+        _mockFloorballTeamRepository = new Mock<IFloorballTeamRepository>();
+        _mockFootballTeamRepository = new Mock<IFootballTeamRepository>();
+        _mockHockeyTeamRepository = new Mock<IHockeyTeamRepository>();
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockLogger = new Mock<ILogger<DeleteClubHandler>>();
-        _handler = new DeleteClubHandler(_mockClubRepository.Object, _mockUnitOfWork.Object, _mockLogger.Object);
+        _handler = new DeleteClubHandler(
+            _mockClubRepository.Object,
+            _mockFloorballTeamRepository.Object,
+            _mockFootballTeamRepository.Object,
+            _mockHockeyTeamRepository.Object,
+            _mockUnitOfWork.Object,
+            _mockLogger.Object);
     }
 
     [Fact]
@@ -51,6 +67,24 @@ public class DeleteClubHandlerTests
         _mockClubRepository.Verify(x => x.ExistsAsync(clubId), Times.Once);
         _mockClubRepository.Verify(x => x.DeleteAsync(clubId), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_ClubHasTeams_ReturnsFailure()
+    {
+        Guid clubId = Guid.NewGuid();
+        DeleteClubCommand command = new DeleteClubCommand(clubId);
+
+        _mockClubRepository.Setup(x => x.ExistsAsync(clubId))
+            .ReturnsAsync(true);
+        _mockFloorballTeamRepository.Setup(x => x.HasAnyForClubAsync(clubId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        Result result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(DeletionReasons.ClubHasTeams);
+        _mockClubRepository.Verify(x => x.DeleteAsync(It.IsAny<Guid>()), Times.Never);
     }
 
     [Fact]
