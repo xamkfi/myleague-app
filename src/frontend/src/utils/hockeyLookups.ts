@@ -7,6 +7,7 @@ import type {
   HockeyMatchEventDto,
   HockeyMatchStatisticsDto,
   HockeyPlayerCompetitionStatisticsDto,
+  HockeyTeamCompetitionStatisticsDto,
   HockeyTeamDto,
 } from '../types/hockey/hockeyTypes';
 
@@ -30,9 +31,27 @@ export async function loadClubNameMap(): Promise<Map<string, string>> {
   return new Map(clubs.map((club) => [club.id, club.name]));
 }
 
-export async function loadTeamNameMap(teams?: HockeyTeamDto[]): Promise<Map<string, string>> {
-  const list = teams ?? (await hockeyTeamService.getAll());
+export async function loadTeamNameMap(
+  teams?: HockeyTeamDto[],
+  teamCategory?: string,
+): Promise<Map<string, string>> {
+  const list = teams ?? (await hockeyTeamService.getAll(teamCategory));
   return new Map(list.map((team) => [team.id, team.name]));
+}
+
+export function uniqueHockeyStandingsByTeamId(
+  rows: HockeyTeamCompetitionStatisticsDto[],
+): HockeyTeamCompetitionStatisticsDto[] {
+  const seen = new Set<string>();
+  const unique: HockeyTeamCompetitionStatisticsDto[] = [];
+  for (const row of rows) {
+    if (seen.has(row.teamId)) {
+      continue;
+    }
+    seen.add(row.teamId);
+    unique.push(row);
+  }
+  return unique;
 }
 
 export function formatHockeyDateTime(iso: string): string {

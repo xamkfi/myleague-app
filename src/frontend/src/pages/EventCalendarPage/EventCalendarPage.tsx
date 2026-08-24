@@ -78,7 +78,7 @@ function EventCalendarPage() {
       const floorballEvents = list.map(mapFloorballMatchToCalendarEvent);
       const [hockeyMatches, teamNames, hockeySeasons] = await Promise.all([
         loadAllHockeyMatches(audience.teamCategory).catch(() => []),
-        loadTeamNameMap().catch(() => new Map<string, string>()),
+        loadTeamNameMap(undefined, audience.teamCategory).catch(() => new Map<string, string>()),
         hockeySeasonService.getAll(audience.teamCategory).catch(() => []),
       ]);
       const seasonNames = new Map(hockeySeasons.map((season) => [season.id, season.name]));

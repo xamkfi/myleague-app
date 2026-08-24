@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StatAbbr from '../../components/StatAbbr/StatAbbr';
 import type { HockeyTeamCompetitionStatisticsDto } from '../../types/hockey/hockeyTypes';
+import { uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
 import { getTeamSlug } from '../../utils/slugUtils';
 
 interface HockeyStandingsTableProps {
@@ -14,7 +15,8 @@ function HockeyStandingsTable({ standings, teamNames, previewLimit }: HockeyStan
   const { t } = useTranslation();
   const navigate = useNavigate();
   const namedTeams = [...teamNames.entries()].map(([id, name]) => ({ id, name }));
-  const rows = previewLimit ? standings.slice(0, previewLimit) : standings;
+  const uniqueStandings = uniqueHockeyStandingsByTeamId(standings);
+  const rows = previewLimit ? uniqueStandings.slice(0, previewLimit) : uniqueStandings;
 
   return (
     <table className="standing-table">

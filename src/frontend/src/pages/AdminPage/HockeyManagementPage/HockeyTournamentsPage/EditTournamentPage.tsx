@@ -148,8 +148,8 @@ function EditHockeyTournamentPage() {
   }, [teams, searchTerm, teamCategory]);
 
   const availableTeamsNotInTournament = filteredAvailableTeams.filter((team) => !assignedIds.has(team.id));
-  const teamsTotalPages = Math.max(1, Math.ceil(filteredAvailableTeams.length / teamsPageSize));
-  const pagedAvailableTeams = filteredAvailableTeams.slice(
+  const teamsTotalPages = Math.max(1, Math.ceil(availableTeamsNotInTournament.length / teamsPageSize));
+  const pagedAvailableTeams = availableTeamsNotInTournament.slice(
     (teamsPage - 1) * teamsPageSize,
     teamsPage * teamsPageSize,
   );
@@ -491,7 +491,7 @@ function EditHockeyTournamentPage() {
                             </button>
                           </div>
                         )}
-                        {filteredAvailableTeams.length === 0 ? (
+                        {availableTeamsNotInTournament.length === 0 ? (
                           <div className="tm-section__empty">
                             <p>
                               {searchTerm || teamCategory
@@ -598,7 +598,7 @@ function EditHockeyTournamentPage() {
                             <Pagination
                               currentPage={teamsPage}
                               totalPages={teamsTotalPages}
-                              totalCount={filteredAvailableTeams.length}
+                              totalCount={availableTeamsNotInTournament.length}
                               pageSize={teamsPageSize}
                               onPageChange={setTeamsPage}
                               onPageSizeChange={(size) => {

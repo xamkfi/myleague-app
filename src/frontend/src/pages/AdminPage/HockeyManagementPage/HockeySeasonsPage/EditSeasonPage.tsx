@@ -129,8 +129,8 @@ function EditHockeySeasonPage() {
   }, [teams, searchTerm, teamCategory]);
 
   const availableTeamsNotInSeason = filteredAvailableTeams.filter((team) => !assignedIds.has(team.id));
-  const teamsTotalPages = Math.max(1, Math.ceil(filteredAvailableTeams.length / teamsPageSize));
-  const pagedAvailableTeams = filteredAvailableTeams.slice(
+  const teamsTotalPages = Math.max(1, Math.ceil(availableTeamsNotInSeason.length / teamsPageSize));
+  const pagedAvailableTeams = availableTeamsNotInSeason.slice(
     (teamsPage - 1) * teamsPageSize,
     teamsPage * teamsPageSize,
   );
@@ -476,7 +476,7 @@ function EditHockeySeasonPage() {
                             </button>
                           </div>
                         )}
-                        {filteredAvailableTeams.length === 0 ? (
+                        {availableTeamsNotInSeason.length === 0 ? (
                           <div className="tm-section__empty">
                             <p>
                               {searchTerm || teamCategory
@@ -583,7 +583,7 @@ function EditHockeySeasonPage() {
                             <Pagination
                               currentPage={teamsPage}
                               totalPages={teamsTotalPages}
-                              totalCount={filteredAvailableTeams.length}
+                              totalCount={availableTeamsNotInSeason.length}
                               pageSize={teamsPageSize}
                               onPageChange={setTeamsPage}
                               onPageSizeChange={(size) => {

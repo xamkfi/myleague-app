@@ -17,7 +17,8 @@ import type {
   HockeyTeamCompetitionStatisticsDto,
 } from '../../types/hockey/hockeyTypes';
 import { isHockeyMatchFinished, shouldRefreshHockeyMatches } from '../../types/hockey/hockeyTypes';
-import { loadHockeyRosterNameMaps, loadTeamNameMap, mergeHockeyPlayerFaceoffWins } from '../../utils/hockeyLookups';
+import { loadHockeyRosterNameMaps, loadTeamNameMap, mergeHockeyPlayerFaceoffWins, uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
+import { useAudience } from '../../context/AudienceContext';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
 import '../LeaguePage/LeaguePage.scss';
 import '../LeaguePage/components/SummarySection.scss';
@@ -31,6 +32,7 @@ const STANDINGS_PREVIEW = 8;
 
 function HockeyLeaguePage() {
   const { t } = useTranslation();
+  const { audience } = useAudience();
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
@@ -59,11 +61,11 @@ function HockeyLeaguePage() {
         hockeyStatisticsService.getStandings(id).catch(() => []),
         hockeyStatisticsService.getPlayers(id).catch(() => []),
         hockeyStatisticsService.getGoalies(id).catch(() => []),
-        hockeyTeamService.getAll(),
+        hockeyTeamService.getAll(audience.teamCategory),
       ]);
       setSeason(loaded);
       setMatches(matchList);
-      setStandings(standingList);
+      setStandings(uniqueHockeyStandingsByTeamId(standingList));
       setPlayers(mergeHockeyPlayerFaceoffWins(playerList, matchList));
       setGoalies(goalieList);
       setTeamNames(await loadTeamNameMap(teams));
@@ -71,7 +73,7 @@ function HockeyLeaguePage() {
       setPlayerNames(names.byPlayerId);
     };
     void load().catch((err) => setError(err instanceof Error ? err.message : 'Failed to load league'));
-  }, [id]);
+  }, [id, audience.teamCategory]);
 
   const refreshLiveMatches = useCallback(async (): Promise<void> => {
     if (!id) {

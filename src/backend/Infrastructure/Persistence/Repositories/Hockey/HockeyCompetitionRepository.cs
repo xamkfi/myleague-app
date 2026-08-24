@@ -65,23 +65,27 @@ public class HockeyCompetitionRepository : IHockeyCompetitionRepository
 
     public async Task<IReadOnlyList<HockeySeason>> GetAllSeasonsAsync()
     {
-        return await _dbContext.HockeySeasons
+        List<HockeySeason> seasons = await _dbContext.HockeySeasons
+            .AsSplitQuery()
             .Include(c => c.Teams)
             .Include(c => c.Divisions)
                 .ThenInclude(d => d.Teams)
             .Include(c => c.PlayoffSeries)
             .OrderByDescending(c => c.StartDate)
             .ToListAsync();
+        return seasons.DistinctBy(season => season.Id).ToList();
     }
 
     public async Task<IReadOnlyList<HockeyTournament>> GetAllTournamentsAsync()
     {
-        return await _dbContext.HockeyTournaments
+        List<HockeyTournament> tournaments = await _dbContext.HockeyTournaments
+            .AsSplitQuery()
             .Include(c => c.Teams)
             .Include(c => c.Groups)
                 .ThenInclude(g => g.Teams)
             .Include(c => c.PlayoffSeries)
             .OrderByDescending(c => c.StartDate)
             .ToListAsync();
+        return tournaments.DistinctBy(tournament => tournament.Id).ToList();
     }
 }

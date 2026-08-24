@@ -12,6 +12,7 @@ import type { HockeyMatchDto, HockeyPlayerCompetitionStatisticsDto, HockeyTeamDt
 import { shouldRefreshHockeyMatches } from '../../types/hockey/hockeyTypes';
 import { findTeamBySlug, slugify } from '../../utils/slugUtils';
 import { loadHockeyRosterNameMaps, loadTeamNameMap } from '../../utils/hockeyLookups';
+import { useAudience } from '../../context/AudienceContext';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
 import '../FloorballTeamPage/FloorballTeamPage.scss';
 import '../FloorballTeamPage/components/TeamNavbar.scss';
@@ -21,6 +22,7 @@ type HockeyTeamTab = 'roster' | 'results';
 
 function HockeyTeamPage() {
   const { t } = useTranslation();
+  const { audience } = useAudience();
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
   const [team, setTeam] = useState<HockeyTeamDto | null>(null);
@@ -34,7 +36,7 @@ function HockeyTeamPage() {
 
   useEffect(() => {
     const load = async (): Promise<void> => {
-      const teams = await hockeyTeamService.getAll();
+      const teams = await hockeyTeamService.getAll(audience.teamCategory);
       const named = teams.map((item) => ({ id: item.id, name: item.name }));
       const found = slug ? findTeamBySlug(named, slug) : undefined;
       const selected = found ? teams.find((item) => item.id === found.id) : undefined;
@@ -71,7 +73,7 @@ function HockeyTeamPage() {
       setClubName(club?.name ?? '');
     };
     void load().catch((err) => setError(err instanceof Error ? err.message : 'Failed to load team'));
-  }, [slug, t]);
+  }, [slug, t, audience.teamCategory]);
 
   const refreshLiveMatches = useCallback(async (): Promise<void> => {
     if (!team) {

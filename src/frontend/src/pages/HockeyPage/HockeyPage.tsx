@@ -8,6 +8,7 @@ import { hockeyStatisticsService } from '../../api/hockey/hockeyStatisticsServic
 import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
 import type { HockeySeasonDto, HockeyTeamCompetitionStatisticsDto } from '../../types/hockey/hockeyTypes';
 import { useAudience } from '../../context/AudienceContext';
+import { uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
 import StatAbbr from '../../components/StatAbbr/StatAbbr';
 import './HockeyPage.scss';
 
@@ -50,7 +51,9 @@ function HockeyPage() {
       setIsLoading(false);
       for (const season of sorted) {
         try {
-          const standings = await hockeyStatisticsService.getStandings(season.id);
+          const standings = uniqueHockeyStandingsByTeamId(
+            await hockeyStatisticsService.getStandings(season.id),
+          );
           setSeasonsData((prev) => prev.map((item) => (
             item.season.id === season.id
               ? { ...item, standings, standingsLoading: false }
@@ -154,7 +157,7 @@ function HockeyPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {data.standings.slice(0, MAX_STANDINGS_PREVIEW).map((row) => (
+                        {uniqueHockeyStandingsByTeamId(data.standings).slice(0, MAX_STANDINGS_PREVIEW).map((row) => (
                           <tr key={row.teamId}>
                             <td>{row.standingRank || ''}</td>
                             <td>{data.teamNames.get(row.teamId) ?? row.teamId.slice(0, 8)}</td>

@@ -13,6 +13,7 @@ import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
 import { hockeyTournamentService } from '../../api/hockey/hockeyTournamentService';
 import type { HockeyMatchDto, HockeyMatchStatisticsDto, HockeyTeamDto } from '../../types/hockey/hockeyTypes';
 import { isHockeyMatchFinished } from '../../types/hockey/hockeyTypes';
+import { useAudience } from '../../context/AudienceContext';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
 import {
   hockeyStatusTranslationKey,
@@ -27,6 +28,7 @@ type HockeyMatchTab = 'summary' | 'stats' | 'lineups';
 
 function HockeyMatchPage() {
   const { t } = useTranslation();
+  const { audience } = useAudience();
   const { id } = useParams<{ id: string }>();
   const [match, setMatch] = useState<HockeyMatchDto | null>(null);
   const [stats, setStats] = useState<HockeyMatchStatisticsDto | null>(null);
@@ -62,7 +64,7 @@ function HockeyMatchPage() {
     const load = async (): Promise<void> => {
       const [loaded, teamList] = await Promise.all([
         hockeyMatchService.getById(id),
-        hockeyTeamService.getAll(),
+        hockeyTeamService.getAll(audience.teamCategory),
       ]);
       setMatch(loaded);
       setTeams(teamList);
@@ -85,7 +87,7 @@ function HockeyMatchPage() {
       }
     };
     void load().catch((err) => setError(err instanceof Error ? err.message : 'Failed to load match'));
-  }, [id]);
+  }, [id, audience.teamCategory]);
 
   const liveOrUpcoming = Boolean(
     match && !isHockeyMatchFinished(match.status) && match.status !== 'Cancelled',

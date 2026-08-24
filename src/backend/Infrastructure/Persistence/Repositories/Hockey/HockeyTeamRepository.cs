@@ -30,25 +30,33 @@ public class HockeyTeamRepository : IHockeyTeamRepository
 
     public async Task<IReadOnlyList<HockeyTeam>> GetAllAsync()
     {
-        return await TeamQuery()
+        List<HockeyTeam> teams = await TeamQuery()
             .OrderBy(t => t.Name)
             .ToListAsync();
+        return DistinctById(teams);
     }
 
     public async Task<IReadOnlyList<HockeyTeam>> GetByClubIdAsync(Guid clubId)
     {
-        return await TeamQuery()
+        List<HockeyTeam> teams = await TeamQuery()
             .Where(t => t.ClubId == clubId)
             .OrderBy(t => t.Name)
             .ToListAsync();
+        return DistinctById(teams);
     }
 
     private IQueryable<HockeyTeam> TeamQuery()
     {
         return _dbContext.HockeyTeams
+            .AsSplitQuery()
             .Include(t => t.Roster)
             .Include(t => t.Lines)
                 .ThenInclude(l => l.Players)
             .Include(t => t.StaffMembers);
+    }
+
+    private static IReadOnlyList<HockeyTeam> DistinctById(List<HockeyTeam> teams)
+    {
+        return teams.DistinctBy(team => team.Id).ToList();
     }
 }

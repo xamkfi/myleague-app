@@ -9,20 +9,37 @@ import type {
 } from '../../types/hockey/hockeyTypes';
 import { hockeyRequest, jsonBody, withTeamCategory } from './hockeyApi';
 
+function uniqueById<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>();
+  const unique: T[] = [];
+  for (const item of items) {
+    if (seen.has(item.id)) {
+      continue;
+    }
+    seen.add(item.id);
+    unique.push(item);
+  }
+  return unique;
+}
+
 export const hockeyTeamService = {
-  getAll: (teamCategory?: string): Promise<HockeyTeamDto[]> =>
-    hockeyRequest<HockeyTeamDto[]>(
-      withTeamCategory('/HockeyTeam', teamCategory),
-      'Failed to fetch hockey teams',
+  getAll: async (teamCategory?: string): Promise<HockeyTeamDto[]> =>
+    uniqueById(
+      await hockeyRequest<HockeyTeamDto[]>(
+        withTeamCategory('/HockeyTeam', teamCategory),
+        'Failed to fetch hockey teams',
+      ),
     ),
 
   getById: (id: string): Promise<HockeyTeamDto> =>
     hockeyRequest<HockeyTeamDto>(`/HockeyTeam/${id}`, 'Failed to fetch hockey team'),
 
-  getByClubId: (clubId: string, teamCategory?: string): Promise<HockeyTeamDto[]> =>
-    hockeyRequest<HockeyTeamDto[]>(
-      withTeamCategory(`/HockeyTeam/club/${clubId}`, teamCategory),
-      'Failed to fetch hockey teams for club',
+  getByClubId: async (clubId: string, teamCategory?: string): Promise<HockeyTeamDto[]> =>
+    uniqueById(
+      await hockeyRequest<HockeyTeamDto[]>(
+        withTeamCategory(`/HockeyTeam/club/${clubId}`, teamCategory),
+        'Failed to fetch hockey teams for club',
+      ),
     ),
 
   create: (data: CreateHockeyTeamRequest): Promise<HockeyTeamDto> =>

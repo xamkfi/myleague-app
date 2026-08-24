@@ -14,7 +14,8 @@ import type {
   HockeyTournamentDto,
 } from '../../types/hockey/hockeyTypes';
 import { shouldRefreshHockeyMatches } from '../../types/hockey/hockeyTypes';
-import { loadTeamNameMap } from '../../utils/hockeyLookups';
+import { loadTeamNameMap, uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
+import { useAudience } from '../../context/AudienceContext';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
 import '../TournamentPage/TournamentPage.scss';
 import '../../components/MatchesList/MatchesList.scss';
@@ -22,6 +23,7 @@ import '../../components/LeagueStanding/LeagueStanding.scss';
 
 function HockeyTournamentPage() {
   const { t } = useTranslation();
+  const { audience } = useAudience();
   const { id } = useParams<{ id: string }>();
   const [tournament, setTournament] = useState<HockeyTournamentDto | null>(null);
   const [matches, setMatches] = useState<HockeyMatchDto[]>([]);
@@ -37,7 +39,7 @@ function HockeyTournamentPage() {
       const [loaded, matchList, teams] = await Promise.all([
         hockeyTournamentService.getById(id),
         hockeyMatchService.getByCompetition(id),
-        hockeyTeamService.getAll(),
+        hockeyTeamService.getAll(audience.teamCategory),
       ]);
       setTournament(loaded);
       setMatches(matchList);
@@ -45,13 +47,13 @@ function HockeyTournamentPage() {
       const standingsEntries = await Promise.all(
         loaded.groups.map(async (group) => {
           const rows = await hockeyStatisticsService.getGroupStandings(id, group.id).catch(() => []);
-          return [group.id, rows] as const;
+          return [group.id, uniqueHockeyStandingsByTeamId(rows)] as const;
         }),
       );
       setGroupStandings(new Map(standingsEntries));
     };
     void load().catch((err) => setError(err instanceof Error ? err.message : 'Failed to load tournament'));
-  }, [id]);
+  }, [id, audience.teamCategory]);
 
   const refreshLiveMatches = useCallback(async (): Promise<void> => {
     if (!id) {

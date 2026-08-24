@@ -18,6 +18,7 @@ import type {
 } from '../../types/hockey/hockeyTypes';
 import { isHockeyMatchFinished } from '../../types/hockey/hockeyTypes';
 import { getTeamSlug } from '../../utils/slugUtils';
+import { useAudience } from '../../context/AudienceContext';
 import {
   countHockeyFaceoffsForActivePlayers,
   formatHockeyDate,
@@ -149,6 +150,7 @@ async function mapInBatches<T, R>(
 
 function HockeyPlayerPage() {
   const { t } = useTranslation();
+  const { audience } = useAudience();
   const { id } = useParams<{ id: string }>();
   const [player, setPlayer] = useState<HockeyPlayerDto | null>(null);
   const [name, setName] = useState('');
@@ -178,7 +180,7 @@ function HockeyPlayerPage() {
       }
 
       const [allTeams, competitionNames] = await Promise.all([
-        hockeyTeamService.getAll(),
+        hockeyTeamService.getAll(audience.teamCategory),
         loadCompetitionNameMap(),
       ]);
       const playerTeams = allTeams.filter((team) => team.roster.some((row) => row.playerId === loaded.id));
@@ -351,7 +353,7 @@ function HockeyPlayerPage() {
     void load()
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load player'))
       .finally(() => setLoading(false));
-  }, [id, t]);
+  }, [id, t, audience.teamCategory]);
 
   const namedTeams = teams.map((team) => ({ id: team.id, name: team.name }));
   const age = calculateAge(birthDate);
