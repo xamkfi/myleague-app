@@ -47,7 +47,7 @@ public class DeleteFloorballTeamManagerHandler : IRequestHandler<DeleteFloorball
 
             return Result<FloorballTeamManagerDto>.Success(dto);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
             _logger.LogError(ex, "Error occurred while deleting floorball team manager: {Id}", request.Id);
             return Result<FloorballTeamManagerDto>.Failure("An error occurred while deleting the floorball team manager.");
