@@ -75,14 +75,5 @@ public class UpdateHockeyTeamPlayerJerseyNumberHandler
                 request.TeamId);
             return Result<HockeyTeamPlayerDto>.Failure(ex.Message);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Error updating jersey number for hockey player {PlayerId} in team {TeamId}",
-                request.PlayerId,
-                request.TeamId);
-            return Result<HockeyTeamPlayerDto>.Failure("An error occurred while updating the jersey number.");
-        }
     }
 }
