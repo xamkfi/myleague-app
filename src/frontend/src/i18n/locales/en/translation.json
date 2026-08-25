@@ -107,7 +107,6 @@
   "matchPage": {
     "navigation": {
       "summary": "SUMMARY",
-      "stats": "STATS",
       "lineups": "LINEUPS",
       "table": "TABLE",
       "groupStandings": "GROUP STANDINGS",
@@ -183,7 +182,13 @@
       "inProgress": "In Progress",
       "completed": "Completed",
       "cancelled": "Cancelled"
-    }
+    },
+    "pageTitle": "Match",
+    "loading": "Loading match...",
+    "notFound": "Match not found",
+    "tbd": "TBD",
+    "live": "LIVE",
+    "final": "FINAL"
   },
   "infoPages": {
     "loadFailed": "Failed to load page.",

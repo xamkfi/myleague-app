@@ -9,7 +9,6 @@
   color: white;
   padding: 2rem 2rem 1.5rem;
 
-  // ===== Teams Row =====
   .teams-container {
     display: flex;
     align-items: center;
@@ -25,6 +24,8 @@
     flex-direction: column;
     align-items: center;
     min-width: 140px;
+    color: inherit;
+    text-decoration: none;
 
     &.clickable {
       cursor: pointer;
@@ -83,7 +84,6 @@
     transition: text-decoration 0.2s ease;
   }
 
-  // ===== Score / VS =====
   .score-container {
     display: flex;
     align-items: center;
@@ -111,7 +111,6 @@
     font-weight: 300;
   }
 
-  // ===== Date/time below teams =====
   .match-date-time {
     display: flex;
     align-items: center;
@@ -140,7 +139,6 @@
     }
   }
 
-  // ===== Status badge =====
   .match-status {
     display: flex;
     align-items: center;
@@ -175,7 +173,6 @@
   50% { opacity: 0.4; }
 }
 
-// ===== Responsive =====
 @media (max-width: 768px) {
   .match-header {
     padding: 1.5rem 1rem 1.25rem;
