@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Features.Common.Deletion;
 using Application.Features.Hockey.Players.Commands;
 using Domain.Entities.Hockey.Teams;
 using Domain.Repositories.Hockey;
@@ -38,6 +39,12 @@ public class DeleteHockeyPlayerHandler : IRequestHandler<DeleteHockeyPlayerComma
             {
                 _logger.LogWarning("Attempt to delete non-existent hockey player with ID: {PlayerId}", request.Id);
                 return Result.NotFound("HockeyPlayer", request.Id);
+            }
+
+            if (await _playerRepository.HasCompetitionHistoryAsync(request.Id, cancellationToken))
+            {
+                _logger.LogWarning("Blocked hockey player delete for {PlayerId}: has competition history", request.Id);
+                return Result.Failure(DeletionReasons.PlayerHasHistory);
             }
 
             IReadOnlyList<HockeyTeam> teams = await _teamRepository.GetByPlayerIdAsync(request.Id);

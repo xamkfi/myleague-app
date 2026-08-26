@@ -32,6 +32,8 @@ public interface IFootballMatchRepository
         FootballMatchStatus? status = null,
         CancellationToken cancellationToken = default);
     Task<IEnumerable<FootballMatch>> GetByTeamIdAsync(Guid teamId);
+
+    Task<bool> HasAnyForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
     Task<IEnumerable<FootballMatch>> GetUpcomingByTeamIdAsync(Guid teamId, int count = 5);
     Task<IEnumerable<FootballMatch>> GetPastByTeamIdAsync(Guid teamId, int count = 5);
     Task<IEnumerable<FootballMatch>> GetByStatusAsync(FootballMatchStatus status);

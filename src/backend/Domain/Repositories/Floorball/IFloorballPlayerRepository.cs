@@ -154,4 +154,9 @@ public interface IFloorballPlayerRepository
     /// <param name="id">The player ID</param>
     /// <returns>True if the player exists, false otherwise</returns>
     Task<bool> ExistsAsync(Guid id);
+
+    /// <summary>
+    /// Returns true when the player has roster games, statistics, match events, or a non-scheduled match appearance.
+    /// </summary>
+    Task<bool> HasCompetitionHistoryAsync(Guid playerId, CancellationToken cancellationToken = default);
 } 

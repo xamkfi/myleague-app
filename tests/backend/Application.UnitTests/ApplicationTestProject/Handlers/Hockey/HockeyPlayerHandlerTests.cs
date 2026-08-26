@@ -88,6 +88,7 @@ public class HockeyPlayerHandlerTests
         Guid playerId = Guid.NewGuid();
         Mock<IHockeyTeamRepository> teamRepo = new();
         _playerRepo.Setup(r => r.ExistsAsync(playerId)).ReturnsAsync(true);
+        _playerRepo.Setup(r => r.HasCompetitionHistoryAsync(playerId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
         teamRepo.Setup(r => r.GetByPlayerIdAsync(playerId)).ReturnsAsync(Array.Empty<HockeyTeam>());
 
         DeleteHockeyPlayerHandler handler = new(

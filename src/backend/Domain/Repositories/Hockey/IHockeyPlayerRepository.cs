@@ -30,4 +30,14 @@ public interface IHockeyPlayerRepository
         Guid? teamId = null,
         TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns true when the player has roster games, statistics, or a non-scheduled match appearance.
+    /// </summary>
+    Task<bool> HasCompetitionHistoryAsync(Guid playerId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes unused roster rows and deletes the player profile.
+    /// </summary>
+    Task DeleteUnusedProfileAsync(Guid playerId, CancellationToken cancellationToken = default);
 }

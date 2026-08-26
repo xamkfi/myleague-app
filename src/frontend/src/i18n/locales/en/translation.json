@@ -11,6 +11,19 @@
     "clubs": "Clubs",
     "team": "Team"
   },
+  "deletion": {
+    "personHasMatchRecords": "Cannot delete this person because they have match or statistics records.",
+    "personHasUserAccount": "Cannot delete this person because they have a user account.",
+    "personIsClubManager": "Cannot delete this person because they are a club administrator.",
+    "personIsAssignedOfficial": "Cannot delete this person because they are assigned as an official on a match.",
+    "playerHasHistory": "Cannot delete this player because they have played in a match or have statistics.",
+    "teamUsedInMatches": "Cannot delete this team because it is used in matches.",
+    "clubHasTeams": "Cannot delete this club because it still has teams.",
+    "divisionHasTeams": "Cannot delete this division because teams still use it. Deactivate it instead.",
+    "refereeAssignedToMatch": "Cannot delete this referee because they are assigned to a match.",
+    "lastSystemAdmin": "Cannot delete the last system administrator.",
+    "cannotDeleteOwnAccount": "You cannot delete your own user account."
+  },
   "hero": {
     "title": "SUMMER SEASON IS HERE",
     "buttonText": "EXPLORE SUMMER EVENTS"
@@ -78,7 +91,6 @@
   "matchPage": {
     "navigation": {
       "summary": "SUMMARY",
-      "stats": "STATS",
       "lineups": "LINEUPS",
       "table": "TABLE",
       "groupStandings": "GROUP STANDINGS",
@@ -154,7 +166,13 @@
       "inProgress": "In Progress",
       "completed": "Completed",
       "cancelled": "Cancelled"
-    }
+    },
+    "pageTitle": "Match",
+    "loading": "Loading match...",
+    "notFound": "Match not found",
+    "tbd": "TBD",
+    "live": "LIVE",
+    "final": "FINAL"
   },
   "infoPages": {
     "loadFailed": "Failed to load page.",

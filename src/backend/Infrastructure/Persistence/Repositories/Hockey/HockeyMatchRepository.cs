@@ -46,6 +46,12 @@ public class HockeyMatchRepository : IHockeyMatchRepository
             .ToListAsync();
     }
 
+    public async Task<bool> HasAnyForTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.HockeyMatches
+            .AnyAsync(m => m.MatchTeams.Any(t => t.TeamId == teamId), cancellationToken);
+    }
+
     public async Task<HockeyMatch?> GetByIdForStatisticsAsync(Guid id)
     {
         return await BuildStatisticsQuery().FirstOrDefaultAsync(m => m.Id == id);

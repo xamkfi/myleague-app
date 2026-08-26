@@ -42,4 +42,9 @@ public interface IFootballPlayerRepository
     Task<IEnumerable<FootballPlayer>> SearchByNameAsync(string searchTerm);
     Task<Dictionary<Guid, FootballPlayer>> GetByPersonIdsAsync(IEnumerable<Guid> personIds, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(Guid id);
+
+    /// <summary>
+    /// Returns true when the player has roster games, statistics, match events, or a non-scheduled match appearance.
+    /// </summary>
+    Task<bool> HasCompetitionHistoryAsync(Guid playerId, CancellationToken cancellationToken = default);
 }

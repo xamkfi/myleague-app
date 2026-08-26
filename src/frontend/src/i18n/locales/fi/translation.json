@@ -2,7 +2,6 @@
   "matchPage": {
     "navigation": {
       "summary": "YHTEENVETO",
-      "stats": "TILASTOT",
       "lineups": "KOKOONPANOT",
       "table": "SARJATAULUKKO",
       "groupStandings": "LOHKON TAULUKKO",
@@ -78,7 +77,13 @@
       "inProgress": "Käynnissä",
       "completed": "Päättynyt",
       "cancelled": "Peruttu"
-    }
+    },
+    "pageTitle": "Ottelu",
+    "loading": "Ladataan ottelua...",
+    "notFound": "Ottelua ei löytynyt",
+    "tbd": "Avoin",
+    "live": "LIVE",
+    "final": "FINAL"
   },
   "nav": {
     "news": "Uutiset",
@@ -91,6 +96,19 @@
     "sports": "Lajit",
     "clubs": "Seurat",
     "team": "Joukkue"
+  },
+  "deletion": {
+    "personHasMatchRecords": "Henkilöä ei voi poistaa, koska hänellä on ottelu- tai tilastotietoja.",
+    "personHasUserAccount": "Henkilöä ei voi poistaa, koska hänellä on käyttäjätili.",
+    "personIsClubManager": "Henkilöä ei voi poistaa, koska hän on seuran ylläpitäjä.",
+    "personIsAssignedOfficial": "Henkilöä ei voi poistaa, koska hänet on merkitty ottelun tuomariksi.",
+    "playerHasHistory": "Pelaajaa ei voi poistaa, koska hän on pelannut ottelussa tai hänellä on tilastoja.",
+    "teamUsedInMatches": "Joukkuetta ei voi poistaa, koska se on mukana otteluissa.",
+    "clubHasTeams": "Seuraa ei voi poistaa, koska sillä on joukkueita.",
+    "divisionHasTeams": "Sarjatasoa ei voi poistaa, koska joukkueet käyttävät sitä. Poista se käytöstä sen sijaan.",
+    "refereeAssignedToMatch": "Tuomaria ei voi poistaa, koska hänet on merkitty otteluun.",
+    "lastSystemAdmin": "Viimeistä järjestelmänvalvojaa ei voi poistaa.",
+    "cannotDeleteOwnAccount": "Et voi poistaa omaa käyttäjätiliäsi."
   },
   "hero": {
     "title": "KESÄKAUSI ON TÄÄLLÄ",

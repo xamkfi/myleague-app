@@ -26,4 +26,8 @@ public interface IHockeyTeamRepository
         Guid? clubId = null,
         TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
+
+    Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default);
+
+    Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default);
 }

@@ -7,6 +7,7 @@ import ClubForm from './ClubForm';
 import ClubAdminsPicker, { type ClubAdminSelection } from './ClubAdminsPicker';
 import { resolveClubAdminUserIds } from './resolveClubAdminUserIds';
 import { clubService, type Club, type ClubRequest } from '../../../api/common/clubService';
+import { mapDeletionError } from '../../../utils/mapDeletionError';
 
 function toDateInputValue(iso: string | null | undefined): string {
   if (!iso) return '';
@@ -93,7 +94,7 @@ function EditClubPage() {
       await clubService.remove(id);
       navigate('/admin/clubs');
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(mapDeletionError(err, t) ?? (err instanceof Error ? err.message : String(err)));
     }
   };
 

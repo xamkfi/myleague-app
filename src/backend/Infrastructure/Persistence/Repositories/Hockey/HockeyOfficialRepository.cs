@@ -94,4 +94,20 @@ public class HockeyOfficialRepository : IHockeyOfficialRepository
 
         return PagedResult.Create(items, totalCount, page, pageSize);
     }
+
+    public async Task<bool> IsAssignedToAnyMatchAsync(Guid officialId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.HockeyMatchOfficials
+            .AnyAsync(o => o.OfficialId == officialId, cancellationToken);
+    }
+
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        HockeyOfficial? official = await _dbContext.HockeyOfficials
+            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+        if (official != null)
+        {
+            _dbContext.HockeyOfficials.Remove(official);
+        }
+    }
 }

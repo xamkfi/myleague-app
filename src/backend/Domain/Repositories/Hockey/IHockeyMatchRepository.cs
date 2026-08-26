@@ -24,6 +24,8 @@ public interface IHockeyMatchRepository
     /// </summary>
     Task<IReadOnlyList<HockeyMatch>> GetByTeamIdAsync(Guid teamId);
 
+    Task<bool> HasAnyForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Loads a match with events and roster data needed for statistics recalculation.
     /// </summary>

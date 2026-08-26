@@ -1,54 +1,38 @@
-using Application.Features.Floorball.Teams.Commands;
 using Application.Common;
+using Application.Features.Common.Deletion;
+using Application.Features.Floorball.Teams.Commands;
 using Domain.Repositories.Floorball;
-using Microsoft.Extensions.Logging;
 using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Domain.Repositories.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Floorball.Teams.Handlers;
 
 /// <summary>
-/// Handler for deleting a floorball team
+/// Handler for deleting a floorball team that is not used in matches.
 /// </summary>
 public class DeleteFloorballTeamHandler : IRequestHandler<DeleteFloorballTeamCommand, Result>
 {
     private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballUnitOfWork _floorballUnitOfWork;
-    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DeleteFloorballTeamHandler> _logger;
 
-    /// <summary>
-    /// Initializes a new instance of the DeleteFloorballTeamHandler class
-    /// </summary>
-    /// <param name="teamRepository">The floorball team repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
-    /// <param name="logger">The logger</param>
     public DeleteFloorballTeamHandler(
         IFloorballTeamRepository teamRepository,
+        IFloorballMatchRepository matchRepository,
         IFloorballUnitOfWork floorballUnitOfWork,
-        IUnitOfWork unitOfWork,
         ILogger<DeleteFloorballTeamHandler> logger)
     {
         _teamRepository = teamRepository;
+        _matchRepository = matchRepository;
         _floorballUnitOfWork = floorballUnitOfWork;
-        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
-    /// <summary>
-    /// Handles the DeleteFloorballTeamCommand request
-    /// </summary>
-    /// <param name="request">The command containing the team ID to delete</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>A Result indicating success or failure</returns>
     public async Task<Result> Handle(DeleteFloorballTeamCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            // Check if the team exists
             bool teamExists = await _teamRepository.ExistsAsync(request.Id);
             if (!teamExists)
             {
@@ -56,11 +40,15 @@ public class DeleteFloorballTeamHandler : IRequestHandler<DeleteFloorballTeamCom
                 return Result.NotFound("FloorballTeam", request.Id);
             }
 
+            if (await _matchRepository.HasAnyForTeamAsync(request.Id, cancellationToken))
+            {
+                _logger.LogWarning("Blocked floorball team delete for {TeamId}: team is used in matches", request.Id);
+                return Result.Failure(DeletionReasons.TeamUsedInMatches);
+            }
+
             _logger.LogInformation("Deleting floorball team with ID: {TeamId}", request.Id);
             await _teamRepository.DeleteAsync(request.Id);
-            
-            // Save changes explicitly to trigger domain events
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Successfully deleted floorball team with ID: {TeamId}", request.Id);
             return Result.Success();
@@ -71,4 +59,4 @@ public class DeleteFloorballTeamHandler : IRequestHandler<DeleteFloorballTeamCom
             return Result.Failure("An error occurred while deleting the floorball team.");
         }
     }
-} 
+}

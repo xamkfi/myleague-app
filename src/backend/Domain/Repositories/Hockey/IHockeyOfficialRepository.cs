@@ -25,4 +25,8 @@ public interface IHockeyOfficialRepository
         string? searchTerm = null,
         int? licenseExpiringWithinDays = null,
         CancellationToken cancellationToken = default);
+
+    Task<bool> IsAssignedToAnyMatchAsync(Guid officialId, CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

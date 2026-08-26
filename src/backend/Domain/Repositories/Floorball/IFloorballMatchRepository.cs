@@ -94,6 +94,11 @@ public interface IFloorballMatchRepository
     /// <param name="teamId">The team ID</param>
     /// <returns>A collection of matches involving the team</returns>
     Task<IEnumerable<FloorballMatch>> GetByTeamIdAsync(Guid teamId);
+
+    /// <summary>
+    /// Returns true when the team appears as home or away in any match.
+    /// </summary>
+    Task<bool> HasAnyForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets upcoming matches for a specified team

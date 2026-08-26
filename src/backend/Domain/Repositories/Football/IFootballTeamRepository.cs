@@ -41,4 +41,8 @@ public interface IFootballTeamRepository
         string? searchTerm = null,
         Domain.Enums.Common.TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
+
+    Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default);
+
+    Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default);
 }

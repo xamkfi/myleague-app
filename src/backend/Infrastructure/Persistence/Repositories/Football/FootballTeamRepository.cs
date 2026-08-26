@@ -369,5 +369,15 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
 
             return PagedResult.Create(items, totalCount, page, pageSize);
         }
+
+        public async Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default)
+        {
+            return await _entities.AnyAsync(t => t.ClubId == clubId, cancellationToken);
+        }
+
+        public async Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default)
+        {
+            return await _entities.AnyAsync(t => t.DivisionId == divisionId, cancellationToken);
+        }
     }
 }

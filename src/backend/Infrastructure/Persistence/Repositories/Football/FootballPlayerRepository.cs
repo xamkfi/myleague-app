@@ -375,5 +375,40 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         {
             return await _entities.AnyAsync(p => p.Id == id);
         }
+
+        public async Task<bool> HasCompetitionHistoryAsync(Guid playerId, CancellationToken cancellationToken = default)
+        {
+            bool hasRosterGames = await _dbContext.FootballTeamPlayers
+                .AnyAsync(tp => tp.PlayerId == playerId && tp.GamesPlayed > 0, cancellationToken);
+            if (hasRosterGames)
+            {
+                return true;
+            }
+
+            bool hasSeasonStats = await _dbContext.FootballPlayerSeasonStatistics
+                .AnyAsync(s => s.PlayerId == playerId, cancellationToken);
+            if (hasSeasonStats)
+            {
+                return true;
+            }
+
+            bool hasEvents = await _dbContext.FootballGoals
+                    .AnyAsync(g => g.ScoringPlayerId == playerId || g.AssistingPlayerId == playerId, cancellationToken)
+                || await _dbContext.FootballCards
+                    .AnyAsync(c => c.PlayerId == playerId, cancellationToken)
+                || await _dbContext.FootballSubstitutions
+                    .AnyAsync(s => s.PlayerOffId == playerId || s.PlayerOnId == playerId, cancellationToken);
+            if (hasEvents)
+            {
+                return true;
+            }
+
+            return await _dbContext.FootballMatchLineupPlayers
+                .AnyAsync(
+                    lp => lp.PlayerId == playerId
+                        && _dbContext.FootballMatches.Any(m =>
+                            m.Id == lp.MatchId && m.Status != FootballMatchStatus.Scheduled),
+                    cancellationToken);
+        }
     }
 }

@@ -5,23 +5,22 @@ import { FloorballMatchStatus, type FloorballMatchDto } from '../../types/floorb
 import './MatchPage.scss';
 import { signalRService, type MatchEvent } from '../../services/signalRService';
 import { MATCH_NOTIFICATION_EVENTS } from '../../constants/MatchNotifications';
-import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import MatchBreadcrumb from './components/MatchBreadcrumb';
-import MatchHeader from './components/MatchHeader';
-import MatchNavigation, { type TabType } from './components/MatchNavigation';
+import {
+  MatchPageShell,
+  resolveTableTabVariant,
+  type MatchTabType,
+} from '../../components/match';
 import MatchTabContent from './components/MatchTabContent';
-import { isTournamentCompetition } from '../../utils/competitionPath';
-
-
+import { getCompetitionPath, isTournamentCompetition } from '../../utils/competitionPath';
+import { slugify } from '../../utils/slugUtils';
 
 export default function MatchPage() {
   const { id } = useParams<{ id: string }>();
   const [match, setMatch] = useState<FloorballMatchDto | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('summary');
+  const [activeTab, setActiveTab] = useState<MatchTabType>('summary');
 
-  // Helper that loads the latest state of the match from the API.
   const loadMatch = useCallback(async () => {
     if (!id) return;
     try {
@@ -35,7 +34,6 @@ export default function MatchPage() {
     }
   }, [id]);
 
-  // SignalR integration — only for live (InProgress) matches
   const isLive = match?.status === FloorballMatchStatus.InProgress;
 
   useEffect(() => {
@@ -61,12 +59,12 @@ export default function MatchPage() {
               break;
           }
         });
-      } catch (error) {
-        console.error('Failed to setup SignalR for match:', error);
+      } catch (signalRError) {
+        console.error('Failed to setup SignalR for match:', signalRError);
       }
     };
 
-    setupMatchSignalR();
+    void setupMatchSignalR();
 
     return () => {
       if (unsubscribeCallback) {
@@ -92,60 +90,57 @@ export default function MatchPage() {
       }
     };
 
-    fetchMatch();
+    void fetchMatch();
   }, [id, loadMatch]);
 
-  if (loading) {
-    return (
-      <div className="match-page">
-        <div className="loading">Loading match...</div>
-      </div>
-    );
-  }
-
-  if (error || !match) {
-    return (
-      <div className="match-page">
-        <div className="error">{error || 'Match not found'}</div>
-      </div>
-    );
-  }
-
-
-
-  // Pick a variant for the "table" tab label based on the match type so the standings tab
-  // reads naturally in tournament context.
-  const isTournament: boolean = isTournamentCompetition({
-    tournamentGroupId: match.tournamentGroupId,
-    tournamentStage: match.tournamentStage,
-  });
-  const tableVariant: 'season' | 'tournamentGroup' | 'tournamentPlayoff' = isTournament
-    ? match.tournamentGroupId
-      ? 'tournamentGroup'
-      : 'tournamentPlayoff'
-    : 'season';
+  const isTournament = match
+    ? isTournamentCompetition({
+        tournamentGroupId: match.tournamentGroupId,
+        tournamentStage: match.tournamentStage,
+      })
+    : false;
+  const tableVariant = resolveTableTabVariant(isTournament, match?.tournamentGroupId);
 
   return (
-    <div className="match-page-wrapper">
-      <PageTemplate title="Match Details">
-        <div className="match-page">
-          <MatchBreadcrumb
-            competitionName={match.competitionName}
-            competitionId={match.competitionId}
-            hints={{
+    <MatchPageShell
+      isLoading={loading}
+      error={error}
+      competitionName={match?.competitionName}
+      competitionPath={
+        match
+          ? getCompetitionPath(match.competitionId, {
               tournamentGroupId: match.tournamentGroupId,
               tournamentStage: match.tournamentStage,
-            }}
-          />
-          <MatchHeader match={match} />
-          <MatchNavigation
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            tableVariant={tableVariant}
-          />
-          <MatchTabContent activeTab={activeTab} match={match} />
-        </div>
-      </PageTemplate>
-    </div>
+            })
+          : undefined
+      }
+      header={
+        match
+          ? {
+              home: {
+                name: match.homeTeamName,
+                logo: match.homeTeamLogo,
+                href: match.homeTeamName ? `/team/${slugify(match.homeTeamName)}` : null,
+              },
+              away: {
+                name: match.awayTeamName,
+                logo: match.awayTeamLogo,
+                href: match.awayTeamName ? `/team/${slugify(match.awayTeamName)}` : null,
+              },
+              homeScore: match.homeScore,
+              awayScore: match.awayScore,
+              scheduledDateTime: match.scheduledDateTime,
+              isScheduled: match.status === FloorballMatchStatus.Scheduled,
+              isLive: match.status === FloorballMatchStatus.InProgress,
+              isFinal: match.status === FloorballMatchStatus.Completed,
+            }
+          : undefined
+      }
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      tableVariant={tableVariant}
+    >
+      {match && <MatchTabContent activeTab={activeTab} match={match} />}
+    </MatchPageShell>
   );
 }
