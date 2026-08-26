@@ -65,6 +65,16 @@ public class HockeyMatchTeam : BaseEntity
         }
     }
 
+    internal void ReassignTeam(Guid teamId, Guid? competitionTeamId)
+    {
+        if (teamId == Guid.Empty)
+            throw new ArgumentException("Team id cannot be empty.", nameof(teamId));
+        TeamId = teamId;
+        CompetitionTeamId = competitionTeamId;
+        Team = null;
+        CompetitionTeam = null;
+    }
+
     internal void SetGoals(int goals)
     {
         if (goals < 0)

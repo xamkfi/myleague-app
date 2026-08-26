@@ -4,6 +4,8 @@ using Application.Features.Hockey.Competitions.DTOs;
 using Application.Features.Hockey.Seasons.Commands;
 using Application.Features.Hockey.Seasons.DTOs;
 using Application.Features.Hockey.Seasons.Queries;
+using Domain.Constants;
+using Domain.Enums.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,9 +38,11 @@ public class HockeySeasonController : BaseApiController
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<HockeySeasonDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<List<HockeySeasonDto>>>> GetAllSeasons(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<ApiResponse<List<HockeySeasonDto>>>> GetAllSeasons(
+        [FromQuery] TeamCategory? teamCategory = null,
+        CancellationToken cancellationToken = default)
     {
-        Result<IEnumerable<HockeySeasonDto>> result = await _mediator.Send(new GetAllHockeySeasonsQuery(), cancellationToken);
+        Result<IEnumerable<HockeySeasonDto>> result = await _mediator.Send(new GetAllHockeySeasonsQuery(teamCategory), cancellationToken);
         return HandleListResult(result, "Hockey seasons retrieved successfully", "Failed to retrieve hockey seasons");
     }
 
@@ -47,9 +51,11 @@ public class HockeySeasonController : BaseApiController
     /// </summary>
     [HttpGet("active")]
     [ProducesResponseType(typeof(ApiResponse<List<HockeySeasonDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<List<HockeySeasonDto>>>> GetActiveSeasons(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<ApiResponse<List<HockeySeasonDto>>>> GetActiveSeasons(
+        [FromQuery] TeamCategory? teamCategory = null,
+        CancellationToken cancellationToken = default)
     {
-        Result<IEnumerable<HockeySeasonDto>> result = await _mediator.Send(new GetActiveHockeySeasonsQuery(), cancellationToken);
+        Result<IEnumerable<HockeySeasonDto>> result = await _mediator.Send(new GetActiveHockeySeasonsQuery(teamCategory), cancellationToken);
         return HandleListResult(result, "Active hockey seasons retrieved successfully", "Failed to retrieve active hockey seasons");
     }
 
@@ -73,14 +79,19 @@ public class HockeySeasonController : BaseApiController
     /// </summary>
     /// <param name="request">Season create payload</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> CreateSeason([FromBody] CreateHockeySeasonRequest request,
         CancellationToken cancellationToken = default)
     {
-        CreateHockeySeasonCommand command = new(request.Name, request.StartDate, request.EndDate, request.SeasonCode);
+        CreateHockeySeasonCommand command = new(
+            request.Name,
+            request.StartDate,
+            request.EndDate,
+            request.SeasonCode,
+            request.TeamCategory);
         Result<HockeySeasonDto> result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsSuccess && result.Data is not null)
@@ -97,7 +108,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Updates hockey season details.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{seasonId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> UpdateSeason(
@@ -110,7 +121,8 @@ public class HockeySeasonController : BaseApiController
             request.Name,
             request.StartDate,
             request.EndDate,
-            request.SeasonCode), cancellationToken);
+            request.SeasonCode,
+            request.TeamCategory), cancellationToken);
 
         return HandleResult(result, "Hockey season updated successfully", "Failed to update hockey season");
     }
@@ -118,7 +130,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Publishes a hockey season.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{seasonId:guid}/publish")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Publish(Guid seasonId,
@@ -131,7 +143,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Opens registration for a hockey season.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{seasonId:guid}/open-registration")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> OpenRegistration(Guid seasonId,
@@ -144,7 +156,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Activates a hockey season.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{seasonId:guid}/activate")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Activate(Guid seasonId,
@@ -157,7 +169,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Deactivates a hockey season.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{seasonId:guid}/deactivate")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Deactivate(Guid seasonId,
@@ -170,7 +182,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Cancels a hockey season.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{seasonId:guid}/cancel")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Cancel(Guid seasonId,
@@ -183,7 +195,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Completes a hockey season.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{seasonId:guid}/complete")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> Complete(Guid seasonId,
@@ -196,7 +208,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Sets the season champion (season must already be completed).
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{seasonId:guid}/champion")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> SetChampion(
@@ -214,7 +226,7 @@ public class HockeySeasonController : BaseApiController
     /// <param name="competitionId">Season (competition) id</param>
     /// <param name="request">Team id and optional seed</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{competitionId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeyCompetitionTeamDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -234,7 +246,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Removes a hockey team from a season competition.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{seasonId:guid}/teams/{teamId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> RemoveTeam(Guid seasonId, Guid teamId,
@@ -259,7 +271,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Adds a Common Division link to a hockey season.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{seasonId:guid}/divisions")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> AddDivision(
@@ -289,7 +301,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Soft-removes a competition division from a hockey season.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{seasonId:guid}/divisions/{competitionDivisionId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> RemoveDivision(
@@ -316,7 +328,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Places a competition team into a season division.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{seasonId:guid}/divisions/{competitionDivisionId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> AddTeamToDivision(
@@ -347,7 +359,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Soft-removes a competition team from a season division.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{seasonId:guid}/divisions/{competitionDivisionId:guid}/teams/{competitionTeamId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> RemoveTeamFromDivision(
@@ -377,7 +389,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Creates a playoff series on a hockey season.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{seasonId:guid}/playoff-series")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> CreatePlayoffSeries(
@@ -399,7 +411,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Assigns home/away teams to a season playoff series.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{seasonId:guid}/playoff-series/{seriesId:guid}/teams")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> AssignPlayoffSeriesTeams(
@@ -420,7 +432,7 @@ public class HockeySeasonController : BaseApiController
     /// <summary>
     /// Replaces the season playoff schedule.
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("{seasonId:guid}/playoff-schedule")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> SetPlayoffSchedule(

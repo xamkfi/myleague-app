@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.Features.Hockey.Matches.DTOs;
+using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Matches;
 using MediatR;
 
@@ -15,4 +16,8 @@ public record CreateHockeyMatchCommand(
     Guid? CompetitionDivisionId = null,
     Guid? TournamentGroupId = null,
     Guid? PlayoffSeriesId = null,
-    string? Venue = null) : IRequest<Result<HockeyMatchDto>>;
+    string? Venue = null,
+    HockeyPlayoffRound? PlayoffRound = null,
+    int? PlayoffMatchOrder = null,
+    Guid? NextMatchId = null,
+    HockeyTeamSlot? NextMatchSlot = null) : IRequest<Result<HockeyMatchDto>>;

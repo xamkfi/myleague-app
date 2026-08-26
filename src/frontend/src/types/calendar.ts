@@ -24,7 +24,7 @@ export interface CalendarFilters {
   selectedDay: number | null;
 }
 
-export const CALENDAR_SPORTS = ['floorball'] as const;
+export const CALENDAR_SPORTS = ['floorball', 'icehockey'] as const;
 
 export const CALENDAR_STATUSES = ['scheduled', 'live', 'completed'] as const;
 

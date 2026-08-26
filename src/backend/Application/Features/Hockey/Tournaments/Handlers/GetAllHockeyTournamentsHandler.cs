@@ -32,7 +32,9 @@ public class GetAllHockeyTournamentsHandler : IRequestHandler<GetAllHockeyTourna
         {
             IReadOnlyList<Domain.Entities.Hockey.Competitions.HockeyTournament> tournaments =
                 await _competitionRepository.GetAllTournamentsAsync();
-            IEnumerable<HockeyTournamentDto> dtos = tournaments.Select(HockeyCompetitionMapper.ToTournamentDto);
+            IEnumerable<HockeyTournamentDto> dtos = tournaments
+                .Where(tournament => request.TeamCategory is null || tournament.TeamCategory == request.TeamCategory)
+                .Select(HockeyCompetitionMapper.ToTournamentDto);
             return Result<IEnumerable<HockeyTournamentDto>>.Success(dtos);
         }
         catch (Exception ex)

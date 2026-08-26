@@ -9,6 +9,10 @@ public record HockeyMatchDto(
     Guid? CompetitionDivisionId,
     Guid? TournamentGroupId,
     Guid? PlayoffSeriesId,
+    string? PlayoffRound,
+    int? PlayoffMatchOrder,
+    Guid? NextMatchId,
+    string? NextMatchSlot,
     DateTime ScheduledStartTime,
     DateTime? ActualStartTime,
     DateTime? ActualEndTime,
@@ -67,7 +71,8 @@ public record HockeyMatchEventDto(
     int GameTimeSeconds,
     Guid? MatchTeamId,
     Guid? MatchActivePlayerId,
-    string? Description);
+    string? Description,
+    Guid? LosingActivePlayerId = null);
 
 /// <summary>
 /// Official assigned to a match.

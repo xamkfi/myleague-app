@@ -1,4 +1,5 @@
 using Domain.Entities.Hockey.Matches;
+using Domain.Entities.Hockey.Teams;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyLeague.Infrastructure.Persistence.Configurations;
@@ -21,6 +22,11 @@ public class HockeyMatchTeamConfiguration : BaseEntityConfiguration<HockeyMatchT
         builder.Property(t => t.TracksOnIcePlayers).IsRequired();
 
         builder.Ignore(t => t.Team);
+
+        builder.HasOne<HockeyTeam>()
+            .WithMany()
+            .HasForeignKey(t => t.TeamId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(t => t.CompetitionTeam)
             .WithMany()

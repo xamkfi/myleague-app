@@ -4,6 +4,7 @@ using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Matches.Mappings;
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
+using Domain.Enums.Hockey.Competitions;
 using Domain.Repositories.Hockey;
 using Domain.ValueObjects.Hockey.Rules;
 using MediatR;
@@ -70,6 +71,15 @@ public class CreateHockeyMatchHandler : IRequestHandler<CreateHockeyMatchCommand
                 playoffSeriesId: request.PlayoffSeriesId,
                 venue: request.Venue,
                 usesLineManagement: usesLineManagement);
+
+            if (request.PlayoffRound is HockeyPlayoffRound playoffRound)
+            {
+                match.SetPlayoffInfo(
+                    playoffRound,
+                    request.PlayoffMatchOrder ?? 0,
+                    request.NextMatchId,
+                    request.NextMatchSlot);
+            }
 
             if (competition is not null)
             {

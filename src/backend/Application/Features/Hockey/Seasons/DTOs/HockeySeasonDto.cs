@@ -28,6 +28,7 @@ public record HockeySeasonDto(
     bool IsActive,
     bool IsCompleted,
     string? SeasonCode,
+    string TeamCategory,
     Guid? ChampionCompetitionTeamId,
     IReadOnlyCollection<HockeyCompetitionTeamDto> Teams,
     IReadOnlyCollection<HockeyCompetitionDivisionDto> Divisions,

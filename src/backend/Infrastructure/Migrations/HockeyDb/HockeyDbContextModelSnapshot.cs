@@ -29,8 +29,10 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("CompetitionType")
-                        .HasColumnType("integer");
+                    b.Property<string>("CompetitionType")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("character varying(21)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -50,6 +52,12 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("TeamCategory")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Adult");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -59,9 +67,11 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
 
                     b.HasKey("Id");
 
+                    b.HasIndex("TeamCategory");
+
                     b.ToTable("HockeyCompetitions", "hockey");
 
-                    b.HasDiscriminator<int>("CompetitionType");
+                    b.HasDiscriminator<string>("CompetitionType");
 
                     b.UseTphMappingStrategy();
                 });
@@ -499,6 +509,18 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("NextMatchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NextMatchSlot")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("PlayoffMatchOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PlayoffRound")
+                        .HasColumnType("text");
+
                     b.Property<Guid?>("PlayoffSeriesId")
                         .HasColumnType("uuid");
 
@@ -541,6 +563,8 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
 
                     b.HasIndex("CreatedAt")
                         .HasDatabaseName("IX_HockeyMatch_CreatedAt");
+
+                    b.HasIndex("NextMatchId");
 
                     b.HasIndex("PlayoffSeriesId");
 
@@ -607,6 +631,8 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
 
                     b.HasIndex("CreatedAt")
                         .HasDatabaseName("IX_HockeyMatchActivePlayer_CreatedAt");
+
+                    b.HasIndex("TeamPlayerId");
 
                     b.HasIndex("UpdatedAt")
                         .HasDatabaseName("IX_HockeyMatchActivePlayer_UpdatedAt")
@@ -760,6 +786,8 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
 
                     b.HasIndex("CreatedAt")
                         .HasDatabaseName("IX_HockeyMatchOfficial_CreatedAt");
+
+                    b.HasIndex("OfficialId");
 
                     b.HasIndex("UpdatedAt")
                         .HasDatabaseName("IX_HockeyMatchOfficial_UpdatedAt")
@@ -2776,7 +2804,7 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.HasDiscriminator().HasValue(1);
+                    b.HasDiscriminator().HasValue("Season");
                 });
 
             modelBuilder.Entity("Domain.Entities.Hockey.Competitions.HockeyTournament", b =>
@@ -2804,7 +2832,7 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                                 .HasColumnName("HockeyTournament_ChampionCompetitionTeamId");
                         });
 
-                    b.HasDiscriminator().HasValue(2);
+                    b.HasDiscriminator().HasValue("Tournament");
                 });
 
             modelBuilder.Entity("Domain.Entities.Hockey.Matches.Events.HockeyFaceoff", b =>
@@ -3431,41 +3459,41 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
 
                                             b3.Property<bool>("AllowChallengeInOvertime")
                                                 .HasColumnType("boolean")
-                                                .HasColumnName("CompetitionRules_Video_Challenge_AllowChallengeInOvertime");
+                                                .HasColumnName("CompetitionRules_VidChal_AllowInOvertime");
 
                                             b3.Property<bool>("AllowChallengeInShootout")
                                                 .HasColumnType("boolean")
-                                                .HasColumnName("CompetitionRules_Video_Challenge_AllowChallengeInShootout");
+                                                .HasColumnName("CompetitionRules_VidChal_AllowInShootout");
 
                                             b3.Property<bool>("Enabled")
                                                 .HasColumnType("boolean")
-                                                .HasColumnName("CompetitionRules_Video_Challenge_Enabled");
+                                                .HasColumnName("CompetitionRules_VidChal_Enabled");
 
                                             b3.Property<int>("FailedChallengePenaltyMinutes")
                                                 .HasColumnType("integer")
-                                                .HasColumnName("CompetitionRules_Video_Challenge_FailedChallengePenaltyMinutes");
+                                                .HasColumnName("CompetitionRules_VidChal_FailedPenMinutes");
 
                                             b3.Property<string>("FailedChallengePenaltyOffence")
                                                 .IsRequired()
                                                 .HasColumnType("text")
-                                                .HasColumnName("CompetitionRules_Video_Challenge_FailedChallengePenaltyOffence");
+                                                .HasColumnName("CompetitionRules_VidChal_FailedPenOffence");
 
                                             b3.Property<string>("FailedChallengePenaltySeverity")
                                                 .IsRequired()
                                                 .HasColumnType("text")
-                                                .HasColumnName("CompetitionRules_Video_Challenge_FailedChallengePenaltySeverity");
+                                                .HasColumnName("CompetitionRules_VidChal_FailedPenSeverity");
 
                                             b3.Property<bool>("LoseChallengeAfterFailed")
                                                 .HasColumnType("boolean")
-                                                .HasColumnName("CompetitionRules_Video_Challenge_LoseChallengeAfterFailed");
+                                                .HasColumnName("CompetitionRules_VidChal_LoseChallengeAfterFailed");
 
                                             b3.Property<int>("MaxChallengesPerTeam")
                                                 .HasColumnType("integer")
-                                                .HasColumnName("CompetitionRules_Video_Challenge_MaxChallengesPerTeam");
+                                                .HasColumnName("CompetitionRules_VidChal_MaxChallengesPerTeam");
 
                                             b3.Property<bool>("PenaltyForFailedChallenge")
                                                 .HasColumnType("boolean")
-                                                .HasColumnName("CompetitionRules_Video_Challenge_PenaltyForFailedChallenge");
+                                                .HasColumnName("CompetitionRules_VidChal_PenaltyForFailedChallenge");
 
                                             b3.HasKey("HockeyVideoReviewRulesHockeyCompetitionRulesHockeyCompetitionId");
 
@@ -3768,41 +3796,41 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
 
                                             b3.Property<bool>("AllowChallengeInOvertime")
                                                 .HasColumnType("boolean")
-                                                .HasColumnName("RulesOverride_Video_Challenge_AllowChallengeInOvertime");
+                                                .HasColumnName("RulesOverride_VidChal_AllowInOvertime");
 
                                             b3.Property<bool>("AllowChallengeInShootout")
                                                 .HasColumnType("boolean")
-                                                .HasColumnName("RulesOverride_Video_Challenge_AllowChallengeInShootout");
+                                                .HasColumnName("RulesOverride_VidChal_AllowInShootout");
 
                                             b3.Property<bool>("Enabled")
                                                 .HasColumnType("boolean")
-                                                .HasColumnName("RulesOverride_Video_Challenge_Enabled");
+                                                .HasColumnName("RulesOverride_VidChal_Enabled");
 
                                             b3.Property<int>("FailedChallengePenaltyMinutes")
                                                 .HasColumnType("integer")
-                                                .HasColumnName("RulesOverride_Video_Challenge_FailedChallengePenaltyMinutes");
+                                                .HasColumnName("RulesOverride_VidChal_FailedPenMinutes");
 
                                             b3.Property<string>("FailedChallengePenaltyOffence")
                                                 .IsRequired()
                                                 .HasColumnType("text")
-                                                .HasColumnName("RulesOverride_Video_Challenge_FailedChallengePenaltyOffence");
+                                                .HasColumnName("RulesOverride_VidChal_FailedPenOffence");
 
                                             b3.Property<string>("FailedChallengePenaltySeverity")
                                                 .IsRequired()
                                                 .HasColumnType("text")
-                                                .HasColumnName("RulesOverride_Video_Challenge_FailedChallengePenaltySeverity");
+                                                .HasColumnName("RulesOverride_VidChal_FailedPenSeverity");
 
                                             b3.Property<bool>("LoseChallengeAfterFailed")
                                                 .HasColumnType("boolean")
-                                                .HasColumnName("RulesOverride_Video_Challenge_LoseChallengeAfterFailed");
+                                                .HasColumnName("RulesOverride_VidChal_LoseChallengeAfterFailed");
 
                                             b3.Property<int>("MaxChallengesPerTeam")
                                                 .HasColumnType("integer")
-                                                .HasColumnName("RulesOverride_Video_Challenge_MaxChallengesPerTeam");
+                                                .HasColumnName("RulesOverride_VidChal_MaxChallengesPerTeam");
 
                                             b3.Property<bool>("PenaltyForFailedChallenge")
                                                 .HasColumnType("boolean")
-                                                .HasColumnName("RulesOverride_Video_Challenge_PenaltyForFailedChallenge");
+                                                .HasColumnName("RulesOverride_VidChal_PenaltyForFailedChallenge");
 
                                             b3.HasKey("HockeyVideoReviewRulesHockeyCompetitionRulesHockeyCompetitionDivisionId");
 
@@ -3966,6 +3994,11 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .HasForeignKey("CompetitionId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("Domain.Entities.Hockey.Matches.HockeyMatch", null)
+                        .WithMany()
+                        .HasForeignKey("NextMatchId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Domain.Entities.Hockey.Competitions.HockeyPlayoffSeries", "PlayoffSeries")
                         .WithMany()
                         .HasForeignKey("PlayoffSeriesId")
@@ -4054,6 +4087,12 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Hockey.Teams.HockeyTeamPlayer", null)
+                        .WithMany()
+                        .HasForeignKey("TeamPlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("MatchPlayerSelection");
                 });
 
@@ -4095,6 +4134,12 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Hockey.Teams.HockeyOfficial", null)
+                        .WithMany()
+                        .HasForeignKey("OfficialId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Match");
                 });
 
@@ -4125,6 +4170,12 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .WithMany("MatchTeams")
                         .HasForeignKey("MatchId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Hockey.Teams.HockeyTeam", null)
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ActiveGoalie");

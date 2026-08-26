@@ -60,4 +60,47 @@ public class HockeyPlayerHandlerTests
         _playerRepo.Verify(r => r.AddAsync(It.IsAny<HockeyPlayer>()), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task Delete_PlayerNotFound_ReturnsNotFound()
+    {
+        Guid playerId = Guid.NewGuid();
+        Mock<IHockeyTeamRepository> teamRepo = new();
+        _playerRepo.Setup(r => r.ExistsAsync(playerId)).ReturnsAsync(false);
+
+        DeleteHockeyPlayerHandler handler = new(
+            _playerRepo.Object,
+            teamRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<DeleteHockeyPlayerHandler>>());
+
+        Result result = await handler.Handle(new DeleteHockeyPlayerCommand(playerId), CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("not found");
+        _playerRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Delete_ExistingPlayer_RemovesAndSaves()
+    {
+        Guid playerId = Guid.NewGuid();
+        Mock<IHockeyTeamRepository> teamRepo = new();
+        _playerRepo.Setup(r => r.ExistsAsync(playerId)).ReturnsAsync(true);
+        _playerRepo.Setup(r => r.HasCompetitionHistoryAsync(playerId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        teamRepo.Setup(r => r.GetByPlayerIdAsync(playerId)).ReturnsAsync(Array.Empty<HockeyTeam>());
+
+        DeleteHockeyPlayerHandler handler = new(
+            _playerRepo.Object,
+            teamRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<DeleteHockeyPlayerHandler>>());
+
+        Result result = await handler.Handle(new DeleteHockeyPlayerCommand(playerId), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        _playerRepo.Verify(r => r.DeleteAsync(playerId), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

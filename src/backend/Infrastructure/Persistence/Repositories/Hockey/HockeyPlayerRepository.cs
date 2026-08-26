@@ -1,4 +1,7 @@
+using Domain.Common;
 using Domain.Entities.Hockey.Teams;
+using Domain.Enums.Common;
+using Domain.Enums.Hockey.Teams;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -32,6 +35,91 @@ public class HockeyPlayerRepository : IHockeyPlayerRepository
     {
         return await _dbContext.HockeyPlayers
             .FirstOrDefaultAsync(p => p.PersonId == personId);
+    }
+
+    public async Task<bool> ExistsAsync(Guid id)
+    {
+        return await _dbContext.HockeyPlayers.AnyAsync(p => p.Id == id);
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        HockeyPlayer? player = await _dbContext.HockeyPlayers.FirstOrDefaultAsync(p => p.Id == id);
+        if (player is not null)
+        {
+            _dbContext.HockeyPlayers.Remove(player);
+        }
+    }
+
+    public async Task<PagedResult<HockeyPlayer>> GetPagedAsync(
+        int page,
+        int pageSize,
+        string? searchTerm = null,
+        bool? isActive = null,
+        HockeyPosition? position = null,
+        Guid? clubId = null,
+        Guid? teamId = null,
+        TeamCategory? teamCategory = null,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<HockeyPlayer> query = _dbContext.HockeyPlayers.AsQueryable();
+
+        if (isActive is bool active)
+        {
+            query = query.Where(p => p.IsActive == active);
+        }
+
+        if (position is HockeyPosition positionFilter)
+        {
+            query = query.Where(p => p.PrimaryPosition == positionFilter);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            string loweredSearchTerm = searchTerm.ToLower();
+            query = query.Where(p =>
+                p.LicenseNumber != null && p.LicenseNumber.ToLower().Contains(loweredSearchTerm));
+        }
+
+        if (clubId is Guid || teamId is Guid || teamCategory is TeamCategory)
+        {
+            IQueryable<HockeyTeamPlayer> memberships =
+                _dbContext.HockeyTeamPlayers.Where(tp => tp.LeftAt == null);
+
+            if (teamId is Guid teamIdFilter)
+            {
+                memberships = memberships.Where(tp => tp.TeamId == teamIdFilter);
+            }
+
+            if (clubId is Guid || teamCategory is TeamCategory)
+            {
+                IQueryable<HockeyTeam> teams = _dbContext.HockeyTeams.AsQueryable();
+                if (clubId is Guid clubIdValue)
+                {
+                    teams = teams.Where(t => t.ClubId == clubIdValue);
+                }
+
+                if (teamCategory is TeamCategory teamCategoryValue)
+                {
+                    teams = teams.Where(t => t.TeamCategory == teamCategoryValue);
+                }
+
+                IQueryable<Guid> teamIds = teams.Select(t => t.Id);
+                memberships = memberships.Where(tp => teamIds.Contains(tp.TeamId));
+            }
+
+            IQueryable<Guid> playerIds = memberships.Select(tp => tp.PlayerId);
+            query = query.Where(p => playerIds.Contains(p.Id));
+        }
+
+        query = query.OrderBy(p => p.Id);
+        int totalCount = await query.CountAsync(cancellationToken);
+        List<HockeyPlayer> items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return PagedResult.Create(items, totalCount, page, pageSize);
     }
 
     public async Task<bool> HasCompetitionHistoryAsync(Guid playerId, CancellationToken cancellationToken = default)

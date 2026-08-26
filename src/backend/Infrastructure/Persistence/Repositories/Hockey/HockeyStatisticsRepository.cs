@@ -223,6 +223,61 @@ public class HockeyStatisticsRepository : IHockeyStatisticsRepository
         _dbContext.HockeyTeamCompetitionStatistics.RemoveRange(await teams.ToListAsync());
         _dbContext.HockeyPlayerCompetitionStatistics.RemoveRange(await players.ToListAsync());
         _dbContext.HockeyGoalieCompetitionStatistics.RemoveRange(await goalies.ToListAsync());
+
+        await RemoveCompetitionCacheAsync(competitionId);
+    }
+
+    public async Task<HockeyStatisticsCache?> GetCachedStatisticsAsync(
+        string cacheKey,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.HockeyStatisticsCache
+            .FirstOrDefaultAsync(c => c.CacheKey == cacheKey, cancellationToken);
+    }
+
+    public async Task SaveCachedStatisticsAsync(
+        HockeyStatisticsCache cache,
+        CancellationToken cancellationToken = default)
+    {
+        HockeyStatisticsCache? existing = await GetCachedStatisticsAsync(cache.CacheKey, cancellationToken);
+        if (existing is null)
+        {
+            await _dbContext.HockeyStatisticsCache.AddAsync(cache, cancellationToken);
+        }
+        else
+        {
+            existing.UpdateData(
+                cache.JsonData,
+                (int)(cache.ExpiresAt - DateTime.UtcNow).TotalMinutes);
+        }
+    }
+
+    public async Task<int> RemoveExpiredCacheAsync(CancellationToken cancellationToken = default)
+    {
+        List<HockeyStatisticsCache> expiredEntries = await _dbContext.HockeyStatisticsCache
+            .Where(c => c.ExpiresAt < DateTime.UtcNow)
+            .ToListAsync(cancellationToken);
+
+        if (expiredEntries.Count > 0)
+        {
+            _dbContext.HockeyStatisticsCache.RemoveRange(expiredEntries);
+        }
+
+        return expiredEntries.Count;
+    }
+
+    public async Task RemoveCompetitionCacheAsync(
+        Guid competitionId,
+        CancellationToken cancellationToken = default)
+    {
+        List<HockeyStatisticsCache> competitionCacheEntries = await _dbContext.HockeyStatisticsCache
+            .Where(c => c.CompetitionId == competitionId)
+            .ToListAsync(cancellationToken);
+
+        if (competitionCacheEntries.Count > 0)
+        {
+            _dbContext.HockeyStatisticsCache.RemoveRange(competitionCacheEntries);
+        }
     }
 
     public async Task<IReadOnlyList<HockeyPlayerCompetitionStatistics>> GetTopScorersAsync(

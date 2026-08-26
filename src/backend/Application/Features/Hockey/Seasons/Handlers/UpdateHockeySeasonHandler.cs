@@ -45,6 +45,7 @@ public class UpdateHockeySeasonHandler : IRequestHandler<UpdateHockeySeasonComma
                 DateTimeUtc.Normalize(request.StartDate),
                 DateTimeUtc.Normalize(request.EndDate));
             season.UpdateSeasonCode(request.SeasonCode);
+            season.UpdateTeamCategory(request.TeamCategory);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("UpdateHockeySeason completed for season {SeasonId}", request.SeasonId);

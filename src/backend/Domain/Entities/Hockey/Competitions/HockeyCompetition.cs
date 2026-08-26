@@ -1,4 +1,5 @@
 using Domain.Entities.Hockey.Matches;
+using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
 using Domain.ValueObjects.Hockey.Matches;
 using Domain.ValueObjects.Hockey.Rules;
@@ -18,6 +19,7 @@ public abstract class HockeyCompetition : BaseEntity
     public DateTime EndDate { get; protected set; }
     public HockeyCompetitionType CompetitionType { get; protected set; }
     public HockeyCompetitionStatus Status { get; protected set; }
+    public TeamCategory TeamCategory { get; protected set; }
     public bool IsActive => Status == HockeyCompetitionStatus.Active;
     public bool IsCompleted => Status == HockeyCompetitionStatus.Completed;
     public HockeyCompetitionRules CompetitionRules { get; protected set; } = null!;
@@ -49,6 +51,7 @@ public abstract class HockeyCompetition : BaseEntity
     protected HockeyCompetition()
     {
         Status = HockeyCompetitionStatus.Draft;
+        TeamCategory = TeamCategory.Adult;
         CompetitionRules = HockeyCompetitionRules.Default();
     }
 
@@ -57,7 +60,8 @@ public abstract class HockeyCompetition : BaseEntity
         string name,
         DateTime startDate,
         DateTime endDate,
-        HockeyCompetitionRules? competitionRules = null)
+        HockeyCompetitionRules? competitionRules = null,
+        TeamCategory teamCategory = TeamCategory.Adult)
     {
         ValidateName(name);
         ValidateDateRange(startDate, endDate);
@@ -67,6 +71,7 @@ public abstract class HockeyCompetition : BaseEntity
         StartDate = startDate;
         EndDate = endDate;
         Status = HockeyCompetitionStatus.Draft;
+        TeamCategory = teamCategory;
         CompetitionRules = competitionRules ?? HockeyCompetitionRules.Default();
     }
 
@@ -96,6 +101,12 @@ public abstract class HockeyCompetition : BaseEntity
         EnsureMutable();
 
         CompetitionRules = competitionRules;
+    }
+
+    public void UpdateTeamCategory(TeamCategory teamCategory)
+    {
+        EnsureMutable();
+        TeamCategory = teamCategory;
     }
 
     public void Publish()
@@ -259,6 +270,17 @@ public abstract class HockeyCompetition : BaseEntity
             ?? throw new InvalidOperationException("Playoff series is not part of this competition.");
 
         series.AssignTeams(homeCompetitionTeamId, awayCompetitionTeamId);
+    }
+
+    /// <summary>
+    /// Records the series winner using floorball-style match scores (caller derives the winner).
+    /// </summary>
+    public void CompletePlayoffSeries(Guid seriesId, Guid winnerCompetitionTeamId)
+    {
+        HockeyPlayoffSeries series = _playoffSeries.FirstOrDefault(s => s.Id == seriesId)
+            ?? throw new InvalidOperationException("Playoff series is not part of this competition.");
+
+        series.SetWinner(winnerCompetitionTeamId);
     }
 
     public void AddMatch(HockeyMatch match)

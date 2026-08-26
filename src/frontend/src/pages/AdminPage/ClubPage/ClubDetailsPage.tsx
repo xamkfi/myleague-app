@@ -6,6 +6,7 @@ import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import { clubService, type Club } from '../../../api/common/clubService';
 import { floorballTeamService } from '../../../api/floorball/floorballTeamService';
 import { footballTeamService } from '../../../api/football/footballTeamService';
+import { hockeyTeamService } from '../../../api/hockey/hockeyTeamService';
 import { useDivisions } from '../../../hooks/useDivisions';
 import type { ClubAdminUser } from '../../../types/clubAdmin/clubAdminTypes';
 import {
@@ -16,7 +17,7 @@ import {
 import { resolveClubAdminUserIds } from './resolveClubAdminUserIds';
 import './ClubDetailsPage.scss';
 
-type TeamSport = 'floorball' | 'football';
+type TeamSport = 'floorball' | 'football' | 'hockey';
 
 interface TeamCardData {
   id: string;
@@ -101,13 +102,14 @@ function ClubDetailsPage() {
     setLoading(true);
 
     try {
-      const [clubData, adminUsers, floorballTeams, footballTeams] = await Promise.all([
+      const [clubData, adminUsers, floorballTeams, footballTeams, hockeyTeams] = await Promise.all([
         clubService.getById(clubId),
         clubService.getAdmins(clubId),
         fetchAllPages((page, pageSize) =>
           floorballTeamService.getAll({ clubId, page, pageSize })),
         fetchAllPages((page, pageSize) =>
           footballTeamService.getAll({ clubId, page, pageSize })),
+        hockeyTeamService.getByClubId(clubId).catch(() => []),
       ]);
 
       setClub(clubData);
@@ -130,6 +132,15 @@ function ClubDetailsPage() {
           homeArena: team.homeArena,
           rosterCount: Array.isArray(team.roster) ? team.roster.length : 0,
           logoUrl: team.logoUrl,
+        })),
+        ...hockeyTeams.map((team) => ({
+          id: team.id,
+          sport: 'hockey' as const,
+          name: team.name,
+          divisionId: team.divisionId ?? null,
+          homeArena: team.homeArena,
+          rosterCount: Array.isArray(team.roster) ? team.roster.length : 0,
+          logoUrl: team.logoUrl ?? undefined,
         })),
       ]);
     } catch (err: unknown) {
@@ -172,10 +183,15 @@ function ClubDetailsPage() {
   const getDivisionName = (divisionId?: string | null) =>
     divisionId ? divisionNameById.get(divisionId) ?? '' : '';
 
-  const getTeamEditPath = (team: TeamCardData) =>
-    team.sport === 'football'
-      ? `/admin/football/teams/${team.id}/edit`
-      : `/admin/floorball/teams/${team.id}/edit`;
+  const getTeamEditPath = (team: TeamCardData) => {
+    if (team.sport === 'football') {
+      return `/admin/football/teams/${team.id}/edit`;
+    }
+    if (team.sport === 'hockey') {
+      return `/admin/hockey/teams/${team.id}/edit`;
+    }
+    return `/admin/floorball/teams/${team.id}/edit`;
+  };
 
   return (
     <AdminPageTemplate title={club?.name ?? t('clubs.details.title', 'Club Details')}>
@@ -332,7 +348,9 @@ function ClubDetailsPage() {
                           <span className={`chip chip--${team.sport}`}>
                             {team.sport === 'football'
                               ? t('clubAdmin.sportFootball', 'Football')
-                              : t('clubAdmin.sportFloorball', 'Floorball')}
+                              : team.sport === 'hockey'
+                                ? t('clubAdmin.sportHockey', 'Ice hockey')
+                                : t('clubAdmin.sportFloorball', 'Floorball')}
                           </span>
                           {divisionName && <span className="chip">{divisionName}</span>}
                           <span className="chip">

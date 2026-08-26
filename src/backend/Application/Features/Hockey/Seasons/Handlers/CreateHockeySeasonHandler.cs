@@ -36,7 +36,8 @@ public class CreateHockeySeasonHandler : IRequestHandler<CreateHockeySeasonComma
                 request.Name,
                 DateTimeUtc.Normalize(request.StartDate),
                 DateTimeUtc.Normalize(request.EndDate),
-                request.SeasonCode);
+                request.SeasonCode,
+                teamCategory: request.TeamCategory);
             await _competitionRepository.AddAsync(season);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

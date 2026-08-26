@@ -15,5 +15,6 @@ public class UpdateHockeyTournamentCommandValidator : AbstractValidator<UpdateHo
         RuleFor(x => x.StartDate).NotEqual(default(DateTime));
         RuleFor(x => x.EndDate).NotEqual(default(DateTime)).GreaterThan(x => x.StartDate);
         RuleFor(x => x.Venue).MaximumLength(200).When(x => !string.IsNullOrWhiteSpace(x.Venue));
+        RuleFor(x => x.TeamCategory).IsInEnum();
     }
 }

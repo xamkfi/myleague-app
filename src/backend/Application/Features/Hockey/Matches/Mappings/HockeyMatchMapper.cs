@@ -17,6 +17,10 @@ public static class HockeyMatchMapper
             match.CompetitionDivisionId,
             match.TournamentGroupId,
             match.PlayoffSeriesId,
+            match.PlayoffRound?.ToString(),
+            match.PlayoffMatchOrder,
+            match.NextMatchId,
+            match.NextMatchSlot?.ToString(),
             match.ScheduledStartTime,
             match.ActualStartTime,
             match.ActualEndTime,
@@ -74,6 +78,10 @@ public static class HockeyMatchMapper
 
     public static HockeyMatchEventDto ToEventDto(HockeyMatchEvent matchEvent)
     {
+        Guid? losingActivePlayerId = matchEvent is HockeyFaceoff faceoff
+            ? faceoff.LosingActivePlayerId
+            : null;
+
         return new HockeyMatchEventDto(
             matchEvent.Id,
             matchEvent.EventType.ToString(),
@@ -81,7 +89,8 @@ public static class HockeyMatchMapper
             (int)matchEvent.GameTime.TotalSeconds,
             matchEvent.MatchTeamId,
             matchEvent.MatchActivePlayerId,
-            matchEvent.Description);
+            matchEvent.Description,
+            losingActivePlayerId);
     }
 
     public static HockeyMatchOfficialDto ToOfficialDto(HockeyMatchOfficial official)

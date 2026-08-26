@@ -57,7 +57,8 @@ public static class HockeySeasonsSeeder
                     Name = season.Name,
                     StartDate = DateTime.SpecifyKind(startDate, DateTimeKind.Utc),
                     EndDate = DateTime.SpecifyKind(endDate, DateTimeKind.Utc),
-                    SeasonCode = season.SeasonCode
+                    SeasonCode = season.SeasonCode,
+                    TeamCategory = season.TeamCategory
                 };
 
                 HttpResponseMessage response = await http.PostAsJsonAsync("api/HockeySeason", request);
@@ -106,7 +107,19 @@ public static class HockeySeasonsSeeder
             };
 
             HttpResponseMessage response = await http.PostAsJsonAsync("api/HockeySeason/" + season.Id + "/divisions", request);
-            await SeederHttp.EnsureSuccessWithBody(response, "Add Division To Hockey Season");
+            if (!response.IsSuccessStatusCode)
+            {
+                string body = await response.Content.ReadAsStringAsync();
+                if (body.Contains("duplicate", StringComparison.OrdinalIgnoreCase) ||
+                    body.Contains("already", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("Division '" + divisionName + "' already on hockey season " + season.Name + ", skipping");
+                    season = await GetByIdAsync(http, jsonOptions, season.Id) ?? season;
+                    continue;
+                }
+
+                await SeederHttp.EnsureSuccessWithBody(response, "Add Division To Hockey Season");
+            }
 
             ApiResponse<HockeySeasonDto>? api = await response.Content.ReadFromJsonAsync<ApiResponse<HockeySeasonDto>>(jsonOptions);
             if (api?.Data != null)

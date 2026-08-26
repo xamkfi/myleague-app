@@ -33,9 +33,9 @@ src/
   └── utils/
 ```
 
-Public pages cover floorball and football (home, clubs, leagues, teams, players, matches, tournaments, news, calendar, rules). Ice hockey is listed on the sports page but is not enabled.
+Public pages cover floorball, football, and ice hockey (home, clubs, leagues, teams, players, matches, tournaments, news, calendar, rules). Hockey live pages poll REST instead of SignalR.
 
-Admin covers clubs, divisions, persons, users, news, rules, info pages, and floorball/football management (including live match control and tournament JSON import). Club admins have a narrower roster / match-day area.
+Admin covers clubs, divisions, persons, users, news, rules, info pages, and floorball/football/hockey management (including live match control and floorball tournament JSON import). Club admins have a narrower roster / match-day area.
 
 ## Run
 

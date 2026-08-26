@@ -88,7 +88,7 @@ public class GetHockeyCompetitionStandingsHandler
                     HockeyStatisticsScope.Competition);
 
             return Result<List<HockeyTeamCompetitionStatisticsDto>>.Success(
-                rows.Select(HockeyStatisticsMapper.ToDto).ToList());
+                HockeyStatisticsHandlerSupport.DistinctStandings(rows.Select(HockeyStatisticsMapper.ToDto)));
         }
         catch (Exception ex)
         {
@@ -130,7 +130,7 @@ public class GetHockeyDivisionStandingsHandler
                     competitionDivisionId: request.CompetitionDivisionId);
 
             return Result<List<HockeyTeamCompetitionStatisticsDto>>.Success(
-                rows.Select(HockeyStatisticsMapper.ToDto).ToList());
+                HockeyStatisticsHandlerSupport.DistinctStandings(rows.Select(HockeyStatisticsMapper.ToDto)));
         }
         catch (Exception ex)
         {
@@ -172,7 +172,7 @@ public class GetHockeyTournamentGroupStandingsHandler
                     tournamentGroupId: request.TournamentGroupId);
 
             return Result<List<HockeyTeamCompetitionStatisticsDto>>.Success(
-                rows.Select(HockeyStatisticsMapper.ToDto).ToList());
+                HockeyStatisticsHandlerSupport.DistinctStandings(rows.Select(HockeyStatisticsMapper.ToDto)));
         }
         catch (Exception ex)
         {

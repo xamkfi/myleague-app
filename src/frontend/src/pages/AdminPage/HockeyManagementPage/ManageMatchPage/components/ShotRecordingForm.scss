@@ -1,0 +1,267 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+
+/* Local modal styles for goal recording. The modal is reused for goal entry across all
+ * sides of the match (admin / home / away), so styles are intentionally scoped under the
+ * modal class to avoid leaking into the rest of the page. */
+.goal-record-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.goal-record-modal {
+  background: $color-neutral-white;
+  border-radius: 12px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
+  width: min(560px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.goal-record-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid $color-neutral-medium-grey;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 24px;
+    font-weight: 600;
+    color: $color-text-primary;
+  }
+}
+
+.goal-record-modal__close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: $color-neutral-dark-grey;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: $color-neutral-light-grey;
+    color: $color-text-primary;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.goal-record-modal__body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .event-form.goal-form {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+/* The grid lays out the four primary fields in two columns at modal width, collapsing to a
+ * single column when the modal is squeezed onto a narrow viewport. Each `.field` owns its
+ * own label/input spacing so the grid stays simple. */
+.goal-record-modal .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+
+  @media (max-width: 520px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.goal-record-modal .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  label {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: $color-text-primary;
+
+    .field-hint {
+      font-weight: 400;
+      color: $color-neutral-dark-grey;
+    }
+  }
+
+  .select-field,
+  .time-input-group {
+    width: 100%;
+  }
+}
+
+.goal-record-modal .select-field {
+  height: 40px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: $color-neutral-light-grey;
+  border: 1px solid #d1d5db;
+  font-size: 15px;
+  line-height: 24px;
+  color: $color-text-primary;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: $color-neutral-white;
+    border-color: $color-neutral-dark-grey;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $color-blue-deep;
+    background: $color-neutral-white;
+    box-shadow: 0 0 0 3px rgba(47, 96, 186, 0.15);
+  }
+
+  &.is-placeholder {
+    color: $color-neutral-dark-grey;
+    font-weight: 400;
+  }
+
+  option {
+    color: $color-text-primary;
+  }
+
+  option[disabled] {
+    color: $color-neutral-dark-grey;
+  }
+}
+
+.goal-record-modal .time-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .time-input {
+    flex: 1;
+    height: 40px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: $color-neutral-light-grey;
+    border: 1px solid #d1d5db;
+    font-size: 16px;
+    line-height: 24px;
+    color: $color-text-primary;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    min-width: 0;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: $color-neutral-white;
+      border-color: $color-neutral-dark-grey;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-deep;
+      background: $color-neutral-white;
+      box-shadow: 0 0 0 3px rgba(47, 96, 186, 0.15);
+    }
+
+    /* Remove the native spinner arrows so the field looks consistent across browsers. */
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    -moz-appearance: textfield;
+  }
+
+  .time-separator {
+    font-size: 20px;
+    font-weight: 700;
+    color: $color-neutral-dark-grey;
+    user-select: none;
+  }
+}
+
+.goal-record-modal .field-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.goal-record-modal .form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px;
+
+  .cancel-btn,
+  .submit-btn {
+    height: 40px;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 24px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .cancel-btn {
+    color: $color-red-primary;
+    background: transparent;
+    border: 1px solid $color-red-primary;
+
+    &:hover:not(:disabled) {
+      background: rgba(215, 68, 64, 0.08);
+    }
+  }
+
+  .submit-btn {
+    background: $color-blue-deep;
+    color: $color-neutral-white;
+    border: 1px solid $color-blue-deep;
+
+    &:hover:not(:disabled) {
+      /* Using `filter` instead of `darken()` keeps Dart Sass 3 compatibility without
+       * pulling in `sass:color` from this leaf file. Matches the LiveMatchQuickActions
+       * hover treatment so the buttons feel consistent across the page. */
+      filter: brightness(0.92);
+    }
+  }
+}

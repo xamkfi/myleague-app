@@ -1,4 +1,5 @@
 using Domain.Entities.Hockey.Matches;
+using Domain.Entities.Hockey.Teams;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyLeague.Infrastructure.Persistence.Configurations;
@@ -17,6 +18,11 @@ public class HockeyMatchOfficialConfiguration : BaseEntityConfiguration<HockeyMa
         builder.Property(o => o.IsMainOfficial).IsRequired();
 
         builder.Ignore(o => o.Official);
+
+        builder.HasOne<HockeyOfficial>()
+            .WithMany()
+            .HasForeignKey(o => o.OfficialId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(o => new { o.MatchId, o.OfficialId })
             .IsUnique()

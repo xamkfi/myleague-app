@@ -1,3 +1,4 @@
+using Application.Features.Hockey.Statistics.DTOs;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Hockey.Statistics;
@@ -99,5 +100,19 @@ internal static class HockeyStatisticsHandlerSupport
 
         for (int i = 0; i < ordered.Count; i++)
             ordered[i].SetStandingRank(i + 1);
+    }
+
+    public static List<HockeyTeamCompetitionStatisticsDto> DistinctStandings(
+        IEnumerable<HockeyTeamCompetitionStatisticsDto> rows)
+    {
+        return rows
+            .GroupBy(row => row.TeamId)
+            .Select(group => group
+                .OrderBy(row => row.StandingRank)
+                .ThenByDescending(row => row.Points)
+                .First())
+            .OrderBy(row => row.StandingRank)
+            .ThenByDescending(row => row.Points)
+            .ToList();
     }
 }

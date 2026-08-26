@@ -64,7 +64,7 @@ dotnet ef database update --context HockeyDbContext
 | `JwtTokenService` | Access token (userId, email, personId, role) + hashed refresh tokens |
 | `ConsoleLoginCodeEmailService` | Development — prints `[LOGIN CODE]` |
 | `AzureCommunicationEmailService` | Azure — ACS Email |
-| `DatabaseSeeder` | Ensures `test@myleague.local` in Development and optional `Seed:AdminEmail` |
+| `DatabaseSeeder` | Ensures `test@myleague.local` (SystemAdmin) and `clubadmin@myleague.local` (ClubAdmin of Tampere Titans when that club exists) in Development, plus optional `Seed:AdminEmail` |
 
 Refresh tokens are stored as SHA256 hashes only.
 

@@ -3,6 +3,10 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { floorballSeasonService } from '../../api/floorball/floorballSeasonService';
+import { loadAllHockeyMatches } from '../../api/hockey/loadAllHockeyMatches';
+import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
+import { loadTeamNameMap } from '../../utils/hockeyLookups';
+import { mapHockeyMatchToCalendarEvent } from './utils/mapHockeyToCalendarEvent';
 import type { CalendarEvent, CalendarFilters as FiltersType } from '../../types/calendar';
 import { DEFAULT_CALENDAR_FILTERS } from '../../types/calendar';
 import { mapFloorballMatchToCalendarEvent } from './utils/mapFloorballToCalendarEvent';
@@ -41,12 +45,18 @@ function EventCalendarPage() {
 
   const fetchSeasons = useCallback(async () => {
     try {
-      // Active seasons endpoint has no teamCategory filter yet; filter client-side.
-      const response = await floorballSeasonService.getActive();
-      const list = (response.data ?? []).filter(
-        (s) => !s.teamCategory || s.teamCategory === audience.teamCategory,
+      const [floorball, hockey] = await Promise.all([
+        floorballSeasonService.getActive(),
+        hockeySeasonService.getActive(audience.teamCategory).catch(() => []),
+      ]);
+      const floorballList = (floorball.data ?? []).filter(
+        (season) => !season.teamCategory || season.teamCategory === audience.teamCategory,
       );
-      setSeasons(list.map((s) => ({ id: s.id, name: s.name })));
+      const hockeyList = hockey;
+      setSeasons([
+        ...floorballList.map((season) => ({ id: season.id, name: season.name })),
+        ...hockeyList.map((season) => ({ id: season.id, name: season.name })),
+      ]);
     } catch {
       // Non-critical: seasons filter just won't show options
     }
@@ -65,7 +75,27 @@ function EventCalendarPage() {
         teamCategory: audience.teamCategory,
       });
       const list = response.data ?? [];
-      setAllEvents(list.map(mapFloorballMatchToCalendarEvent));
+      const floorballEvents = list.map(mapFloorballMatchToCalendarEvent);
+      const [hockeyMatches, teamNames, hockeySeasons] = await Promise.all([
+        loadAllHockeyMatches(audience.teamCategory).catch(() => []),
+        loadTeamNameMap(undefined, audience.teamCategory).catch(() => new Map<string, string>()),
+        hockeySeasonService.getAll(audience.teamCategory).catch(() => []),
+      ]);
+      const seasonNames = new Map(hockeySeasons.map((season) => [season.id, season.name]));
+      const monthStart = new Date(startDate);
+      const monthEnd = new Date(endDate);
+      monthEnd.setHours(23, 59, 59, 999);
+      const hockeyEvents = hockeyMatches
+        .filter((match) => {
+          const kickoff = new Date(match.scheduledStartTime);
+          return kickoff >= monthStart && kickoff <= monthEnd;
+        })
+        .map((match) => mapHockeyMatchToCalendarEvent(
+          match,
+          teamNames,
+          match.competitionId ? seasonNames.get(match.competitionId) : undefined,
+        ));
+      setAllEvents([...floorballEvents, ...hockeyEvents]);
     } catch (err) {
       console.error('EventCalendarPage: fetch failed', err);
       setError(t('eventCalendarPage.error'));

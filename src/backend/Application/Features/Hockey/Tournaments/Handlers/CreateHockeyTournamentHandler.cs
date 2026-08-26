@@ -37,7 +37,8 @@ public class CreateHockeyTournamentHandler : IRequestHandler<CreateHockeyTournam
                 DateTimeUtc.Normalize(request.StartDate),
                 DateTimeUtc.Normalize(request.EndDate),
                 request.Venue,
-                request.ContentHtml);
+                request.ContentHtml,
+                teamCategory: request.TeamCategory);
 
             await _competitionRepository.AddAsync(tournament);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

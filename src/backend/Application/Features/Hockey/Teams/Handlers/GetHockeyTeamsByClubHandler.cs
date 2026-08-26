@@ -28,7 +28,10 @@ public class GetHockeyTeamsByClubHandler : IRequestHandler<GetHockeyTeamsByClubQ
         try
         {
             IReadOnlyList<HockeyTeam> teams = await _teamRepository.GetByClubIdAsync(request.ClubId);
-            return Result<IEnumerable<HockeyTeamDto>>.Success(teams.Select(HockeyTeamMapper.ToDto).ToList());
+            IEnumerable<HockeyTeam> filtered = request.TeamCategory is null
+                ? teams
+                : teams.Where(team => team.TeamCategory == request.TeamCategory);
+            return Result<IEnumerable<HockeyTeamDto>>.Success(filtered.Select(HockeyTeamMapper.ToDto).ToList());
         }
         catch (Exception ex)
         {

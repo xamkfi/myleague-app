@@ -1,0 +1,300 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.hockey-page {
+  max-width: $max-width-page;
+  margin: 0 auto;
+  padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'lg');
+
+  &__header {
+    background: linear-gradient(135deg, $color-blue-deep 0%, $color-blue-darkest 100%);
+    border-radius: map.get($border-radius, 'lg');
+    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+    margin-bottom: map.get($spacing, 'xl');
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba($color-blue-secondary, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, 'xxl');
+    font-weight: map.get($font-weights, 'extrabold');
+    color: $color-white;
+    margin-bottom: map.get($spacing, 'sm');
+    font-family: $font-family-display;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+  }
+
+  &__description {
+    font-size: map.get($font-sizes, 'md');
+    color: rgba($color-white, 0.75);
+    max-width: 600px;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  &__loading,
+  &__error,
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    color: $color-blue-deep;
+    gap: map.get($spacing, 'md');
+  }
+
+  &__retry-btn {
+    background: $color-blue-secondary;
+    color: $color-white;
+    border: none;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'lg');
+    border-radius: map.get($border-radius, 'lg');
+    cursor: pointer;
+    font-weight: map.get($font-weights, 'semibold');
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: $color-blue-secondary-muted;
+    }
+  }
+
+  &__seasons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: map.get($spacing, 'xl');
+  }
+
+}
+
+.season-card {
+  background: $color-blue-darkest;
+  border-radius: map.get($border-radius, 'lg');
+  overflow: hidden;
+  border: 1px solid rgba($color-white, 0.1);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
+    background: linear-gradient(90deg, $color-blue-deep 0%, $color-blue-darkest 100%);
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-white;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__badge {
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    text-transform: uppercase;
+
+    &--active {
+      background: $color-green-primary;
+      color: $color-white;
+    }
+
+    &--completed {
+      background: rgba($color-white, 0.2);
+      color: $color-white;
+    }
+  }
+
+  &__links {
+    display: flex;
+    flex-direction: column;
+    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
+    gap: map.get($spacing, 'xs');
+    border-bottom: 1px solid rgba($color-white, 0.1);
+  }
+
+  &__link {
+    color: $color-blue-secondary;
+    text-decoration: none;
+    font-size: map.get($font-sizes, 'base');
+    padding: map.get($spacing, 'xs') 0;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $color-blue-secondary-light;
+      text-decoration: underline;
+    }
+  }
+}
+
+.standings-table {
+  padding: map.get($spacing, 'md') map.get($spacing, 'lg');
+
+  &__header {
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  &__header-title {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-blue-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__loading {
+    padding: map.get($spacing, 'lg');
+    text-align: center;
+    color: rgba($color-white, 0.5);
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: map.get($spacing, 'sm');
+
+    thead {
+      tr {
+        background: rgba($color-white, 0.05);
+      }
+
+      th {
+        padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+        text-align: left;
+        font-size: map.get($font-sizes, 'xs');
+        font-weight: map.get($font-weights, 'semibold');
+        color: rgba($color-white, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        &.standings-table__rank {
+          width: 30px;
+          text-align: center;
+        }
+
+        &.standings-table__games,
+        &.standings-table__points {
+          width: 50px;
+          text-align: center;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid rgba($color-white, 0.05);
+        transition: background 0.2s ease;
+
+        &:hover {
+          background: rgba($color-white, 0.05);
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+
+      td {
+        padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+        font-size: map.get($font-sizes, 'sm');
+        color: $color-white;
+
+        &.standings-table__rank {
+          text-align: center;
+          color: rgba($color-white, 0.6);
+          font-weight: map.get($font-weights, 'medium');
+        }
+
+        &.standings-table__team {
+          font-weight: map.get($font-weights, 'medium');
+        }
+
+        &.standings-table__games {
+          text-align: center;
+          color: rgba($color-white, 0.7);
+        }
+
+        &.standings-table__points {
+          text-align: center;
+          font-weight: map.get($font-weights, 'bold');
+          color: $color-blue-secondary;
+        }
+      }
+    }
+  }
+
+  &__full-link {
+    display: block;
+    text-align: right;
+    color: $color-blue-secondary;
+    font-size: map.get($font-sizes, 'sm');
+    text-decoration: none;
+    padding-top: map.get($spacing, 'xs');
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $color-blue-secondary-light;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .hockey-page {
+    padding: 0 map.get($spacing, 'md') map.get($spacing, 'md');
+
+    &__header {
+      padding: map.get($spacing, 'lg') map.get($spacing, 'md');
+      margin-bottom: map.get($spacing, 'lg');
+    }
+
+    &__title {
+      font-size: map.get($font-sizes, 'xl');
+    }
+
+    &__seasons {
+      grid-template-columns: 1fr;
+      gap: map.get($spacing, 'lg');
+    }
+  }
+
+  .season-card {
+    &__header {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    }
+
+    &__title {
+      font-size: map.get($font-sizes, 'base');
+    }
+
+    &__links {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    }
+  }
+
+  .standings-table {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    overflow-x: auto;
+
+    &__table {
+      min-width: 280px;
+    }
+  }
+}

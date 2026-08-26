@@ -1,3 +1,4 @@
+using Domain.Common;
 using Domain.Entities.Hockey.Teams;
 
 namespace Domain.Repositories.Hockey;
@@ -16,6 +17,14 @@ public interface IHockeyOfficialRepository
     Task<IReadOnlyList<HockeyOfficial>> GetAllAsync(bool? isActive = null);
 
     Task<bool> ExistsAsync(Guid id);
+
+    Task<PagedResult<HockeyOfficial>> GetPagedAsync(
+        int page,
+        int pageSize,
+        bool? isActive = null,
+        string? searchTerm = null,
+        int? licenseExpiringWithinDays = null,
+        CancellationToken cancellationToken = default);
 
     Task<bool> IsAssignedToAnyMatchAsync(Guid officialId, CancellationToken cancellationToken = default);
 

@@ -4,6 +4,7 @@ using Application.Features.Hockey.Seasons.Commands;
 using Application.Features.Hockey.Seasons.Validators;
 using Application.Features.Hockey.Tournaments.Commands;
 using Application.Features.Hockey.Tournaments.Validators;
+using Domain.Enums.Common;
 using FluentValidation.TestHelper;
 
 namespace ApplicationTestProject.Validators.Commands.Hockey;
@@ -170,7 +171,8 @@ public class UpdateHockeyTournamentCommandValidatorTests
             new DateTime(2026, 12, 10, 0, 0, 0, DateTimeKind.Utc),
             new DateTime(2026, 12, 1, 0, 0, 0, DateTimeKind.Utc),
             null,
-            null);
+            null,
+            TeamCategory.Adult);
 
         TestValidationResult<UpdateHockeyTournamentCommand> result = _validator.TestValidate(command);
 

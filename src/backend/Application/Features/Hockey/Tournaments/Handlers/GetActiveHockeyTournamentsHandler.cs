@@ -35,6 +35,7 @@ public class GetActiveHockeyTournamentsHandler
             IReadOnlyList<HockeyTournament> tournaments = await _competitionRepository.GetAllTournamentsAsync();
             List<HockeyTournamentDto> active = tournaments
                 .Where(t => t.IsActive)
+                .Where(t => request.TeamCategory is null || t.TeamCategory == request.TeamCategory)
                 .Select(HockeyCompetitionMapper.ToTournamentDto)
                 .ToList();
 

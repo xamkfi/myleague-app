@@ -74,15 +74,15 @@ internal static class HockeyCompetitionRulesOwnedConfiguration
             vr.Property(x => x.ReviewPuckOverLine).HasColumnName($"{prefix}_Video_ReviewPuckOverLine");
             vr.OwnsOne(x => x.CoachChallengeRules, cr =>
             {
-                cr.Property(x => x.Enabled).HasColumnName($"{prefix}_Video_Challenge_Enabled");
-                cr.Property(x => x.MaxChallengesPerTeam).HasColumnName($"{prefix}_Video_Challenge_MaxChallengesPerTeam");
-                cr.Property(x => x.LoseChallengeAfterFailed).HasColumnName($"{prefix}_Video_Challenge_LoseChallengeAfterFailed");
-                cr.Property(x => x.PenaltyForFailedChallenge).HasColumnName($"{prefix}_Video_Challenge_PenaltyForFailedChallenge");
-                cr.Property(x => x.FailedChallengePenaltyMinutes).HasColumnName($"{prefix}_Video_Challenge_FailedChallengePenaltyMinutes");
-                cr.Property(x => x.FailedChallengePenaltyOffence).HasColumnName($"{prefix}_Video_Challenge_FailedChallengePenaltyOffence").HasConversion<string>();
-                cr.Property(x => x.FailedChallengePenaltySeverity).HasColumnName($"{prefix}_Video_Challenge_FailedChallengePenaltySeverity").HasConversion<string>();
-                cr.Property(x => x.AllowChallengeInOvertime).HasColumnName($"{prefix}_Video_Challenge_AllowChallengeInOvertime");
-                cr.Property(x => x.AllowChallengeInShootout).HasColumnName($"{prefix}_Video_Challenge_AllowChallengeInShootout");
+                cr.Property(x => x.Enabled).HasColumnName($"{prefix}_VidChal_Enabled");
+                cr.Property(x => x.MaxChallengesPerTeam).HasColumnName($"{prefix}_VidChal_MaxChallengesPerTeam");
+                cr.Property(x => x.LoseChallengeAfterFailed).HasColumnName($"{prefix}_VidChal_LoseChallengeAfterFailed");
+                cr.Property(x => x.PenaltyForFailedChallenge).HasColumnName($"{prefix}_VidChal_PenaltyForFailedChallenge");
+                cr.Property(x => x.FailedChallengePenaltyMinutes).HasColumnName($"{prefix}_VidChal_FailedPenMinutes");
+                cr.Property(x => x.FailedChallengePenaltyOffence).HasColumnName($"{prefix}_VidChal_FailedPenOffence").HasConversion<string>();
+                cr.Property(x => x.FailedChallengePenaltySeverity).HasColumnName($"{prefix}_VidChal_FailedPenSeverity").HasConversion<string>();
+                cr.Property(x => x.AllowChallengeInOvertime).HasColumnName($"{prefix}_VidChal_AllowInOvertime");
+                cr.Property(x => x.AllowChallengeInShootout).HasColumnName($"{prefix}_VidChal_AllowInShootout");
             });
         });
 

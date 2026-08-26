@@ -30,7 +30,9 @@ public class GetAllHockeySeasonsHandler : IRequestHandler<GetAllHockeySeasonsQue
         {
             IReadOnlyList<Domain.Entities.Hockey.Competitions.HockeySeason> seasons =
                 await _competitionRepository.GetAllSeasonsAsync();
-            IEnumerable<HockeySeasonDto> dtos = seasons.Select(HockeyCompetitionMapper.ToSeasonDto);
+            IEnumerable<HockeySeasonDto> dtos = seasons
+                .Where(season => request.TeamCategory is null || season.TeamCategory == request.TeamCategory)
+                .Select(HockeyCompetitionMapper.ToSeasonDto);
             return Result<IEnumerable<HockeySeasonDto>>.Success(dtos);
         }
         catch (Exception ex)

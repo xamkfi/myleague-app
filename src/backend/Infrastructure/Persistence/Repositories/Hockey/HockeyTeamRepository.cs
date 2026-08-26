@@ -1,4 +1,6 @@
+using Domain.Common;
 using Domain.Entities.Hockey.Teams;
+using Domain.Enums.Common;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -30,17 +32,66 @@ public class HockeyTeamRepository : IHockeyTeamRepository
 
     public async Task<IReadOnlyList<HockeyTeam>> GetAllAsync()
     {
-        return await TeamQuery()
+        List<HockeyTeam> teams = await TeamQuery()
             .OrderBy(t => t.Name)
             .ToListAsync();
+        return DistinctById(teams);
     }
 
     public async Task<IReadOnlyList<HockeyTeam>> GetByClubIdAsync(Guid clubId)
     {
-        return await TeamQuery()
+        List<HockeyTeam> teams = await TeamQuery()
             .Where(t => t.ClubId == clubId)
             .OrderBy(t => t.Name)
             .ToListAsync();
+        return DistinctById(teams);
+    }
+
+    public async Task<IReadOnlyList<HockeyTeam>> GetByPlayerIdAsync(Guid playerId)
+    {
+        List<HockeyTeam> teams = await TeamQuery()
+            .Where(t => t.Roster.Any(p => p.PlayerId == playerId && p.LeftAt == null))
+            .OrderBy(t => t.Name)
+            .ToListAsync();
+        return DistinctById(teams);
+    }
+
+    public async Task<PagedResult<HockeyTeam>> GetPagedAsync(
+        int page,
+        int pageSize,
+        string searchTerm = "",
+        Guid? clubId = null,
+        TeamCategory? teamCategory = null,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<HockeyTeam> query = _dbContext.HockeyTeams.AsQueryable();
+
+        if (clubId is Guid clubFilter)
+        {
+            query = query.Where(t => t.ClubId == clubFilter);
+        }
+
+        if (teamCategory is TeamCategory categoryFilter)
+        {
+            query = query.Where(t => t.TeamCategory == categoryFilter);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            string loweredSearchTerm = searchTerm.ToLower();
+            query = query.Where(t =>
+                t.Name.ToLower().Contains(loweredSearchTerm)
+                || t.ShortName.ToLower().Contains(loweredSearchTerm));
+        }
+
+        query = query.OrderBy(t => t.Name);
+        int totalCount = await query.CountAsync(cancellationToken);
+        List<HockeyTeam> items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return PagedResult.Create(items, totalCount, page, pageSize);
     }
 
     public async Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default)
@@ -56,9 +107,15 @@ public class HockeyTeamRepository : IHockeyTeamRepository
     private IQueryable<HockeyTeam> TeamQuery()
     {
         return _dbContext.HockeyTeams
+            .AsSplitQuery()
             .Include(t => t.Roster)
             .Include(t => t.Lines)
                 .ThenInclude(l => l.Players)
             .Include(t => t.StaffMembers);
+    }
+
+    private static IReadOnlyList<HockeyTeam> DistinctById(List<HockeyTeam> teams)
+    {
+        return teams.DistinctBy(team => team.Id).ToList();
     }
 }

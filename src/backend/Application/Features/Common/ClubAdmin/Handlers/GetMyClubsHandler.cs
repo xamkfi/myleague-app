@@ -4,9 +4,11 @@ using Application.Features.Common.ClubAdmin.Queries;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 using Domain.Entities.Football.Teams;
+using Domain.Entities.Hockey.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Football;
+using Domain.Repositories.Hockey;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +16,7 @@ namespace Application.Features.Common.ClubAdmin.Handlers;
 
 /// <summary>
 /// Handler that resolves all clubs the person actively manages via the club manager link
-/// entities, together with the floorball and football teams under each club.
+/// entities, together with the floorball, football, and hockey teams under each club.
 /// </summary>
 public class GetMyClubsHandler : IRequestHandler<GetMyClubsQuery, Result<IEnumerable<ClubAdminClubDto>>>
 {
@@ -22,6 +24,7 @@ public class GetMyClubsHandler : IRequestHandler<GetMyClubsQuery, Result<IEnumer
     private readonly IClubRepository _clubRepository;
     private readonly IFloorballTeamRepository _floorballTeamRepository;
     private readonly IFootballTeamRepository _footballTeamRepository;
+    private readonly IHockeyTeamRepository _hockeyTeamRepository;
     private readonly ILogger<GetMyClubsHandler> _logger;
 
     /// <summary>
@@ -32,12 +35,14 @@ public class GetMyClubsHandler : IRequestHandler<GetMyClubsQuery, Result<IEnumer
         IClubRepository clubRepository,
         IFloorballTeamRepository floorballTeamRepository,
         IFootballTeamRepository footballTeamRepository,
+        IHockeyTeamRepository hockeyTeamRepository,
         ILogger<GetMyClubsHandler> logger)
     {
         _clubManagerRepository = clubManagerRepository;
         _clubRepository = clubRepository;
         _floorballTeamRepository = floorballTeamRepository;
         _footballTeamRepository = footballTeamRepository;
+        _hockeyTeamRepository = hockeyTeamRepository;
         _logger = logger;
     }
 
@@ -87,6 +92,17 @@ public class GetMyClubsHandler : IRequestHandler<GetMyClubsQuery, Result<IEnumer
                             team.ShortName,
                             team.LogoUrl?.ToString()));
                     }
+                }
+
+                IReadOnlyList<HockeyTeam> hockeyTeams = await _hockeyTeamRepository.GetByClubIdAsync(club.Id);
+                foreach (HockeyTeam team in hockeyTeams)
+                {
+                    teams.Add(new ClubAdminTeamDto(
+                        "hockey",
+                        team.Id,
+                        team.Name,
+                        team.ShortName,
+                        team.LogoUrl?.ToString()));
                 }
 
                 clubs.Add(new ClubAdminClubDto(

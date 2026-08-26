@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useInProgressMatches } from '../../hooks/useInProgressMatches';
 import { useInProgressFootballMatches } from '../../hooks/useInProgressFootballMatches';
+import { useHockeyInProgressMatches } from '../../hooks/useHockeyInProgressMatches';
 import LiveDot from '../LiveDot/LiveDot';
 import './AdminNavBar.scss';
 import RulesIcon from '../../assets/adminIcons/Rules.svg';
@@ -31,9 +32,13 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [floorballDropdownOpen, setFloorballDropdownOpen] = useState(true);
   const [footballDropdownOpen, setFootballDropdownOpen] = useState(true);
+  const [hockeyDropdownOpen, setHockeyDropdownOpen] = useState(true);
   const [siteContentDropdownOpen, setSiteContentDropdownOpen] = useState(true);
   const inProgress = useInProgressMatches();
   const footballInProgress = useInProgressFootballMatches();
+  const hockeyLive = useHockeyInProgressMatches();
+  const hockeySeasonLive: number = hockeyLive.countByCompetitionType.season;
+  const hockeyTournamentLive: number = hockeyLive.countByCompetitionType.tournament;
   const totalLive: number = inProgress.totalCount;
   const seasonLive: number = inProgress.countByCompetitionType.season;
   const tournamentLive: number = inProgress.countByCompetitionType.tournament;
@@ -56,6 +61,10 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
 
   const isFootballActive = () => {
     return location.pathname.startsWith('/admin/football');
+  };
+
+  const isHockeyActive = () => {
+    return location.pathname.startsWith('/admin/hockey');
   };
 
   const isSiteContentActive = () => {
@@ -387,6 +396,106 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                     <Link to="/admin/football/referees">
                       <img src={RefereesIcon} alt="Referees" className="icon" />
                       <span>{t('football.management.actions.referees', 'Referees')}</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+            <li className={`admin-navbar-item ${isHockeyActive() ? 'active' : ''}`}>
+              {collapsed ? (
+                <Link to="/admin/hockey" title={t('admin.actions.hockey', 'Ice hockey')}>
+                  <span className="admin-navbar-icon-wrapper">
+                    <img src={SportsIcon} alt="Hockey" className="icon" />
+                    {hockeyLive.totalCount > 0 && (
+                      <LiveDot
+                        tone="dark"
+                        ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: hockeyLive.totalCount })}
+                        className="admin-navbar__live-dot admin-navbar__live-dot--icon-corner"
+                      />
+                    )}
+                  </span>
+                </Link>
+              ) : (
+                <div className="admin-navbar-dropdown-trigger">
+                  <Link to="/admin/hockey" className="admin-navbar-dropdown-trigger-content">
+                    <img src={SportsIcon} alt="Hockey" className="icon" />
+                    <span>{t('admin.actions.hockey', 'Ice hockey')}</span>
+                    {hockeyLive.totalCount > 0 && (
+                      <LiveDot
+                        tone="dark"
+                        ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: hockeyLive.totalCount })}
+                        className="admin-navbar__live-dot"
+                      />
+                    )}
+                  </Link>
+                  <span
+                    className={`admin-navbar-dropdown-arrow ${hockeyDropdownOpen ? 'open' : ''}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setHockeyDropdownOpen(!hockeyDropdownOpen);
+                    }}
+                  >
+                    ▼
+                  </span>
+                </div>
+              )}
+              {!collapsed && hockeyDropdownOpen && (
+                <ul className="admin-navbar-submenu">
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/hockey/teams') ? 'active' : ''}`}>
+                    <Link to="/admin/hockey/teams">
+                      <img src={TeamsIcon} alt="Teams" className="icon" />
+                      <span>{t('hockey.management.actions.teams', 'Teams')}</span>
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/hockey/players') ? 'active' : ''}`}>
+                    <Link to="/admin/hockey/players">
+                      <img src={PlayersIcon} alt="Players" className="icon" />
+                      <span>{t('hockey.management.actions.players', 'Players')}</span>
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/hockey/seasons') ? 'active' : ''}`}>
+                    <Link to="/admin/hockey/seasons">
+                      <img src={SeasonsIcon} alt="Seasons" className="icon" />
+                      <span>{t('hockey.management.actions.seasons', 'Seasons')}</span>
+                      {hockeySeasonLive > 0 && (
+                        <LiveDot
+                          tone="dark"
+                          ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: hockeySeasonLive })}
+                          className="admin-navbar__live-dot"
+                        />
+                      )}
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/hockey/tournaments') ? 'active' : ''}`}>
+                    <Link to="/admin/hockey/tournaments">
+                      <img src={SeasonsIcon} alt="Tournaments" className="icon" />
+                      <span>{t('hockey.management.actions.tournaments', 'Tournaments')}</span>
+                      {hockeyTournamentLive > 0 && (
+                        <LiveDot
+                          tone="dark"
+                          ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: hockeyTournamentLive })}
+                          className="admin-navbar__live-dot"
+                        />
+                      )}
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/hockey/matches') ? 'active' : ''}`}>
+                    <Link to="/admin/hockey/matches">
+                      <img src={MatchesIcon} alt="Matches" className="icon" />
+                      <span>{t('hockey.management.actions.matches', 'Matches')}</span>
+                      {hockeyLive.totalCount > 0 && (
+                        <LiveDot
+                          tone="dark"
+                          ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: hockeyLive.totalCount })}
+                          className="admin-navbar__live-dot"
+                        />
+                      )}
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/hockey/officials') ? 'active' : ''}`}>
+                    <Link to="/admin/hockey/officials">
+                      <img src={RefereesIcon} alt="Officials" className="icon" />
+                      <span>{t('hockey.management.actions.officials', 'Officials')}</span>
                     </Link>
                   </li>
                 </ul>

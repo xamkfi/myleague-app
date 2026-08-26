@@ -5,7 +5,9 @@ import ClubAdminPageTemplate from '../components/ClubAdminPageTemplate';
 import { clubAdminService } from '../../../api/clubAdmin/clubAdminService';
 import { floorballTeamService } from '../../../api/floorball/floorballTeamService';
 import { footballTeamService } from '../../../api/football/footballTeamService';
+import { hockeyTeamService } from '../../../api/hockey/hockeyTeamService';
 import type { ClubAdminSport } from '../../../types/clubAdmin/clubAdminTypes';
+import { loadHockeyRosterNameMaps } from '../../../utils/hockeyLookups';
 import './ClubAdminRosterPage.scss';
 
 interface RosterRow {
@@ -33,6 +35,20 @@ function ClubAdminRosterPage() {
   const loadTeam = useCallback(async () => {
     if (!sport || !teamId) return;
     try {
+      if (sport === 'hockey') {
+        const team = await hockeyTeamService.getById(teamId);
+        const names = await loadHockeyRosterNameMaps([team]);
+        setTeamName(team.name);
+        setRoster(team.roster.map((player) => ({
+          playerId: player.playerId,
+          playerName: names.byPlayerId.get(player.playerId) ?? player.playerId.slice(0, 8),
+          position: player.position,
+          isActive: player.isActive,
+          jerseyNumber: player.jerseyNumber ?? null,
+        })));
+        return;
+      }
+
       const team = sport === 'floorball'
         ? await floorballTeamService.getById(teamId)
         : await footballTeamService.getById(teamId);
@@ -134,7 +150,11 @@ function ClubAdminRosterPage() {
                     )}
                   </td>
                   <td>{row.playerName}</td>
-                  <td>{t(`positions.${row.position}`, row.position)}</td>
+                  <td>
+                    {sport === 'hockey'
+                      ? t(`hockey.positions.${row.position}`, row.position)
+                      : t(`positions.${row.position}`, row.position)}
+                  </td>
                   <td>
                     {row.isActive
                       ? t('clubAdmin.active', 'Active')

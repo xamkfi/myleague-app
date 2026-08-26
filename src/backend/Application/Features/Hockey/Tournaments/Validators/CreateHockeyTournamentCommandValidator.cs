@@ -24,5 +24,7 @@ public class CreateHockeyTournamentCommandValidator : AbstractValidator<CreateHo
         RuleFor(x => x.Venue)
             .MaximumLength(200).WithMessage("Venue cannot exceed 200 characters.")
             .When(x => !string.IsNullOrWhiteSpace(x.Venue));
+
+        RuleFor(x => x.TeamCategory).IsInEnum();
     }
 }

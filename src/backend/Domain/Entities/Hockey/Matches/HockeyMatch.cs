@@ -1,5 +1,6 @@
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches.Events;
+using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Matches;
 using Domain.Enums.Hockey.Teams;
 using Domain.ValueObjects.Hockey.Rules;
@@ -25,6 +26,11 @@ public class HockeyMatch : BaseEntity
 
     public Guid? PlayoffSeriesId { get; private set; }
     public HockeyPlayoffSeries? PlayoffSeries { get; private set; }
+
+    public HockeyPlayoffRound? PlayoffRound { get; private set; }
+    public int? PlayoffMatchOrder { get; private set; }
+    public Guid? NextMatchId { get; private set; }
+    public HockeyTeamSlot? NextMatchSlot { get; private set; }
 
     public DateTime ScheduledStartTime { get; private set; }
     public DateTime? ActualStartTime { get; private set; }
@@ -237,10 +243,68 @@ public class HockeyMatch : BaseEntity
 
     public void MarkFinished(DateTime? actualEndTime = null, HockeyMatchResultType? resultType = null)
     {
+        if (IsPlayoffBracketMatch && HomeScore == AwayScore)
+        {
+            throw new InvalidOperationException("Playoff matches cannot end in a draw.");
+        }
+
         ActualEndTime = actualEndTime ?? DateTime.UtcNow;
         Status = HockeyMatchStatus.Finished;
         if (resultType is not null)
             ResultType = resultType;
+    }
+
+    /// <summary>
+    /// Stores floorball-style bracket forwarding: round, order, and the next match slot for the winner.
+    /// </summary>
+    public void SetPlayoffInfo(
+        HockeyPlayoffRound round,
+        int matchOrder,
+        Guid? nextMatchId,
+        HockeyTeamSlot? nextMatchSlot)
+    {
+        if (matchOrder < 0)
+            throw new ArgumentOutOfRangeException(nameof(matchOrder), "Playoff match order must be non-negative.");
+        if (nextMatchId.HasValue != nextMatchSlot.HasValue)
+            throw new ArgumentException("NextMatchId and NextMatchSlot must be provided together.");
+        if (nextMatchId == Guid.Empty)
+            throw new ArgumentException("Next match id cannot be empty.", nameof(nextMatchId));
+        if (nextMatchSlot is HockeyTeamSlot slot && slot is not (HockeyTeamSlot.Home or HockeyTeamSlot.Away))
+            throw new ArgumentException("Next match slot must be Home or Away.", nameof(nextMatchSlot));
+
+        PlayoffRound = round;
+        PlayoffMatchOrder = matchOrder;
+        NextMatchId = nextMatchId;
+        NextMatchSlot = nextMatchSlot;
+    }
+
+    /// <summary>
+    /// Places a team into a playoff home/away slot, replacing any previous occupant of that slot.
+    /// </summary>
+    public HockeyMatchTeam AssignPlayoffTeam(
+        HockeyTeamSlot slot,
+        Guid teamId,
+        HockeyCompetitionTeam? competitionTeam = null,
+        bool tracksOnIcePlayers = false)
+    {
+        if (Status is not HockeyMatchStatus.Scheduled and not HockeyMatchStatus.Warmup)
+            throw new InvalidOperationException("Playoff teams can only be assigned before the match starts.");
+
+        HockeyMatchTeam? existing = _matchTeams.FirstOrDefault(t => t.TeamSlot == slot);
+        if (existing is not null)
+        {
+            if (existing.TeamId == teamId)
+                return existing;
+
+            if (_matchTeams.Any(t => t.TeamSlot != slot && t.TeamId == teamId))
+                throw new InvalidOperationException("Team is already assigned to the other side of this match.");
+
+            Guid? competitionTeamId = ResolveCompetitionTeamId(teamId, competitionTeam);
+            existing.ReassignTeam(teamId, competitionTeamId);
+            return existing;
+        }
+
+        return AssignMatchTeam(teamId, slot, competitionTeam, tracksOnIcePlayers);
     }
 
     public void SetCurrentPeriodNumber(int periodNumber)
@@ -503,6 +567,31 @@ public class HockeyMatch : BaseEntity
     /// </summary>
     public bool ReferencesCompetitionTeam(Guid competitionTeamId) =>
         _matchTeams.Any(t => t.CompetitionTeamId == competitionTeamId);
+
+    private bool IsPlayoffBracketMatch =>
+        PlayoffRound is not null || NextMatchId is not null || PlayoffSeriesId is not null;
+
+    private Guid? ResolveCompetitionTeamId(Guid teamId, HockeyCompetitionTeam? competitionTeam)
+    {
+        if (CompetitionId is Guid competitionId)
+        {
+            if (competitionTeam is not HockeyCompetitionTeam assignedTeam)
+                throw new ArgumentNullException(nameof(competitionTeam));
+            if (assignedTeam.CompetitionId != competitionId)
+                throw new InvalidOperationException("Competition team must belong to the same competition as the match.");
+            if (assignedTeam.TeamId != teamId)
+                throw new InvalidOperationException("Competition team must reference the same team id.");
+            if (!assignedTeam.IsActive)
+                throw new InvalidOperationException("Competition team is not active.");
+
+            return assignedTeam.Id;
+        }
+
+        if (competitionTeam is not null)
+            throw new InvalidOperationException("Standalone matches cannot reference a competition team.");
+
+        return null;
+    }
 
     private HockeyMatchTeam GetRequiredMatchTeam(HockeyTeamSlot slot) =>
         _matchTeams.FirstOrDefault(t => t.TeamSlot == slot)

@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.Features.Hockey.Seasons.DTOs;
+using Domain.Enums.Common;
 using MediatR;
 
 namespace Application.Features.Hockey.Seasons.Commands;
@@ -12,4 +13,5 @@ public record UpdateHockeySeasonCommand(
     string Name,
     DateTime StartDate,
     DateTime EndDate,
-    string? SeasonCode) : IRequest<Result<HockeySeasonDto>>;
+    string? SeasonCode,
+    TeamCategory TeamCategory) : IRequest<Result<HockeySeasonDto>>;
