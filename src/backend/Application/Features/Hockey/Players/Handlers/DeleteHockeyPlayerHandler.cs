@@ -4,6 +4,7 @@ using Application.Features.Hockey.Players.Commands;
 using Domain.Entities.Hockey.Teams;
 using Domain.Repositories.Hockey;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Hockey.Players.Handlers;
@@ -68,12 +69,16 @@ public class DeleteHockeyPlayerHandler : IRequestHandler<DeleteHockeyPlayerComma
             _logger.LogInformation("Successfully deleted hockey player with ID: {PlayerId}", request.Id);
             return Result.Success();
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Domain rejected DeleteHockeyPlayer for {PlayerId}", request.Id);
             return Result.Failure(ex.Message, ex.Flatten());
         }
-        catch (Exception ex)
+        catch (DbUpdateException ex)
         {
             _logger.LogError(ex, "Error occurred while deleting hockey player: {PlayerId}", request.Id);
             return Result.Failure(

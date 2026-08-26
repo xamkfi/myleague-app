@@ -56,7 +56,19 @@ public class GetPagedHockeyPlayersHandler
             return Result<PagedResult<HockeyPlayerDto>>.Success(
                 PagedResult.Create(items, pagedPlayers.TotalCount, pagedPlayers.Page, pagedPlayers.PageSize));
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Paged hockey player retrieval was cancelled");
+            throw;
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid paged hockey player query");
+            return Result<PagedResult<HockeyPlayerDto>>.Failure(
+                "An error occurred while retrieving hockey players.",
+                ex.Flatten());
+        }
+        catch (InvalidOperationException ex)
         {
             _logger.LogError(ex, "Failed to get paged hockey players");
             return Result<PagedResult<HockeyPlayerDto>>.Failure(

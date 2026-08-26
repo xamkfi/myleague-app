@@ -54,7 +54,19 @@ public class GetPagedHockeyOfficialsHandler
             return Result<PagedResult<HockeyOfficialDto>>.Success(
                 PagedResult.Create(items, pagedOfficials.TotalCount, pagedOfficials.Page, pagedOfficials.PageSize));
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Paged hockey official retrieval was cancelled");
+            throw;
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid paged hockey official query");
+            return Result<PagedResult<HockeyOfficialDto>>.Failure(
+                "An error occurred while listing hockey officials.",
+                ex.Flatten());
+        }
+        catch (InvalidOperationException ex)
         {
             _logger.LogError(ex, "Failed to get paged hockey officials");
             return Result<PagedResult<HockeyOfficialDto>>.Failure(
