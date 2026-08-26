@@ -26,7 +26,7 @@ Application/
 │   ├── Common/
 │   │   ├── Clubs / ClubAdmin / Divisions / Persons / Users
 │   │   ├── News / Images / Search
-│   │   ├── InfoPageContent / RulesSection
+│   │   ├── InfoPageContent / RulesSection / FooterContacts
 │   │   ├── MatchTimer / TeamLeader
 │   │   └── Shared/           # PagedResult and other shared DTOs
 │   ├── Floorball/            # Matches, Players, Referees, Seasons,

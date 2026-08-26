@@ -54,6 +54,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<RulesSection> RulesSections { get; set; }
 
         /// <summary>
+        /// Gets or sets the FooterContacts DbSet.
+        /// </summary>
+        public DbSet<FooterContact> FooterContacts { get; set; }
+
+        /// <summary>
         /// Gets or sets the Divisions DbSet.
         /// </summary>
         public DbSet<Division> Divisions { get; set; }
@@ -121,6 +126,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new NewsArticleConfiguration());
             modelBuilder.ApplyConfiguration(new InfoPageContentConfiguration());
             modelBuilder.ApplyConfiguration(new RulesSectionConfiguration());
+            modelBuilder.ApplyConfiguration(new FooterContactConfiguration());
             modelBuilder.ApplyConfiguration(new DivisionConfiguration());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
             modelBuilder.ApplyConfiguration(new TimerStateConfiguration());

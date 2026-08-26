@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.DTOs.Common;
+using Application.Features.Common.FooterContacts.Queries;
 using Application.Features.Common.InfoPageContent.Queries;
 using Application.Features.Common.RulesSection.Queries;
 using MediatR;
@@ -78,5 +79,48 @@ public class RulesSectionControllerTests
         ActionResult<ApiResponse<RulesSectionDto>> actionResult = await controller.GetSectionById(id);
 
         actionResult.Result.Should().BeOfType<NotFoundObjectResult>();
+    }
+}
+
+public class FooterContactControllerTests
+{
+    [Fact]
+    public async Task GetById_WhenNotFound_Returns404()
+    {
+        Mock<IMediator> mediator = new();
+        FooterContactController controller = new(
+            mediator.Object,
+            Mock.Of<ILogger<FooterContactController>>());
+
+        Guid id = Guid.NewGuid();
+        mediator
+            .Setup(m => m.Send(It.IsAny<GetFooterContactByIdQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<FooterContactDto>.NotFound("FooterContact", id));
+
+        ActionResult<ApiResponse<FooterContactDto>> actionResult = await controller.GetById(id);
+
+        actionResult.Result.Should().BeOfType<NotFoundObjectResult>();
+    }
+
+    [Fact]
+    public async Task GetAll_WhenFound_ReturnsOk()
+    {
+        Mock<IMediator> mediator = new();
+        FooterContactController controller = new(
+            mediator.Object,
+            Mock.Of<ILogger<FooterContactController>>());
+
+        FooterContactDto dto = new() { Id = Guid.NewGuid(), Title = "Office" };
+        mediator
+            .Setup(m => m.Send(It.IsAny<GetAllFooterContactsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<IReadOnlyList<FooterContactDto>>.Success([dto]));
+
+        ActionResult<ApiResponse<IReadOnlyList<FooterContactDto>>> actionResult = await controller.GetAll();
+
+        OkObjectResult ok = actionResult.Result.Should().BeOfType<OkObjectResult>().Subject;
+        ApiResponse<IReadOnlyList<FooterContactDto>> body =
+            ok.Value.Should().BeOfType<ApiResponse<IReadOnlyList<FooterContactDto>>>().Subject;
+        body.Success.Should().BeTrue();
+        body.Data.Should().HaveCount(1);
     }
 }

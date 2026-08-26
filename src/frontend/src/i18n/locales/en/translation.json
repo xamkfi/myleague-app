@@ -349,6 +349,31 @@
           "updated": "Last updated",
           "actions": "Actions"
         }
+      },
+      "footerContacts": {
+        "nav": "Contacts",
+        "pageTitle": "Contacts",
+        "description": "Manage contact entries shown in the public site footer. Each contact appears in its own box.",
+        "add": "Add contact",
+        "addTitle": "Add contact",
+        "editTitle": "Edit contact",
+        "empty": "No contacts yet.",
+        "loadFailed": "Failed to load contacts.",
+        "saveFailed": "Failed to save contact.",
+        "createSuccess": "Contact added.",
+        "updateSuccess": "Contact updated.",
+        "deleteSuccess": "Contact deleted.",
+        "deleteFailed": "Failed to delete contact.",
+        "confirmDeleteTitle": "Delete contact",
+        "confirmDelete": "Delete contact \"{{title}}\"?",
+        "fields": {
+          "title": "Name / title",
+          "details": "Details (e.g. address)",
+          "email": "Email",
+          "phone": "Phone number",
+          "url": "Website or other link",
+          "sortOrder": "Order"
+        }
       }
     },
     "users": {
@@ -2689,6 +2714,30 @@
     "errors": {
       "loadLeagueData": "Failed to load league data",
       "loadMatches": "Failed to load matches"
+    }
+  },
+  "footer": {
+    "seasonSports": "SEASON SPORTS",
+    "otherActivities": "OTHER ACTIVITIES",
+    "sports": {
+      "football": "Football",
+      "iceHockey": "Ice hockey",
+      "floorball": "Floorball",
+      "floorballManager": "Floorball Manager",
+      "winterFootball": "Winter football",
+      "bandy": "Bandy",
+      "puumalaliga": "Puumalaliga",
+      "iceHockey40": "Ice hockey +40"
+    },
+    "activities": {
+      "pmt": "PMT Tournaments",
+      "kortteli": "Neighbourhood activity",
+      "whl": "WHL sports camps",
+      "turnauspiste": "Turnauspiste"
+    },
+    "contacts": {
+      "title": "CONTACTS",
+      "empty": "No contacts have been added yet."
     }
   },
   "clubsPage": {

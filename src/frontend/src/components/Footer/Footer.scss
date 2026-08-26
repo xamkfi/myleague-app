@@ -53,6 +53,42 @@
   gap: map.get($spacing, 'sm');
 }
 
+.footer-contact-empty {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.footer-contact-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: left;
+
+  p {
+    margin: 0;
+  }
+
+  &__title {
+    margin: 0 0 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  &__details {
+    white-space: pre-line;
+  }
+
+  &__link {
+    color: inherit;
+    text-decoration: underline;
+    word-break: break-all;
+  }
+}
+
 .footer-version {
   width: 100%;
   max-width: 1200px;

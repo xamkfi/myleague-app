@@ -184,6 +184,11 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                       {t('admin.siteContent.rules', 'Säännöt')}
                     </Link>
                   </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/footer-contacts') ? 'active' : ''}`}>
+                    <Link to="/admin/site-content/footer-contacts">
+                      {t('admin.siteContent.footerContacts.nav', 'Yhteystiedot')}
+                    </Link>
+                  </li>
                 </ul>
               )}
             </li>

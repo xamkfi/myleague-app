@@ -349,6 +349,31 @@
           "updated": "Viimeksi muokattu",
           "actions": "Toiminnot"
         }
+      },
+      "footerContacts": {
+        "nav": "Yhteystiedot",
+        "pageTitle": "Yhteystiedot",
+        "description": "Hallitse julkisen sivuston footerissa näytettäviä yhteystietoja. Jokainen yhteystieto näkyy omana laatikkona.",
+        "add": "Lisää yhteystieto",
+        "addTitle": "Lisää yhteystieto",
+        "editTitle": "Muokkaa yhteystietoa",
+        "empty": "Yhteystietoja ei ole vielä.",
+        "loadFailed": "Yhteystietojen lataus epäonnistui.",
+        "saveFailed": "Tallennus epäonnistui.",
+        "createSuccess": "Yhteystieto lisätty.",
+        "updateSuccess": "Yhteystieto päivitetty.",
+        "deleteSuccess": "Yhteystieto poistettu.",
+        "deleteFailed": "Poisto epäonnistui.",
+        "confirmDeleteTitle": "Poista yhteystieto",
+        "confirmDelete": "Poistetaanko yhteystieto \"{{title}}\"?",
+        "fields": {
+          "title": "Nimi / otsikko",
+          "details": "Lisätiedot (esim. osoite)",
+          "email": "Sähköposti",
+          "phone": "Puhelinnumero",
+          "url": "Verkkosivu tai linkki",
+          "sortOrder": "Järjestys"
+        }
       }
     },
     "users": {
@@ -2678,6 +2703,30 @@
     "errors": {
       "loadLeagueData": "Sarjan tietojen lataus epäonnistui",
       "loadMatches": "Otteluiden lataus epäonnistui"
+    }
+  },
+  "footer": {
+    "seasonSports": "KAUSILAJIT",
+    "otherActivities": "MUU TOIMINTA",
+    "sports": {
+      "football": "Jalkapallo",
+      "iceHockey": "Jääkiekko",
+      "floorball": "Salibandy",
+      "floorballManager": "Salibandyn Manager",
+      "winterFootball": "Talvijalkapallo",
+      "bandy": "Jääpallo",
+      "puumalaliga": "Puumalaliga",
+      "iceHockey40": "Jääkiekko +40"
+    },
+    "activities": {
+      "pmt": "PMT Turnaukset",
+      "kortteli": "Korttelitoiminta",
+      "whl": "WHL Liikuntaleirit",
+      "turnauspiste": "Turnauspiste"
+    },
+    "contacts": {
+      "title": "YHTEYSTIEDOT",
+      "empty": "Yhteystietoja ei ole vielä lisätty."
     }
   },
   "clubsPage": {

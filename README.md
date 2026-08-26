@@ -204,6 +204,7 @@ Interactive docs: `/scalar/v1` (Development). OpenAPI JSON: `/swagger/v1/swagger
 | Search | `/api/search` |
 | Rules | `/api/rulessection` |
 | Info pages | `/api/infopagecontent` |
+| Footer contacts | `/api/FooterContact` |
 | Match timer | `/api/matches/{matchId}/timer` |
 
 ### Sports

@@ -10,6 +10,9 @@ A physical person in the system. A Person can have multiple roles (Player, Refer
 ### Club
 An organization that manages and sponsors floorball teams. A Club typically has multiple teams, possibly in different divisions.
 
+### FooterContact
+A contact entry shown in the public site footer (title, optional details, email, phone, and website). Admins create, update, and delete these independently of clubs.
+
 
 ### FloorballTeam
 A floorball team belonging to a Club, competing in a specific Division. Has a roster of players.
