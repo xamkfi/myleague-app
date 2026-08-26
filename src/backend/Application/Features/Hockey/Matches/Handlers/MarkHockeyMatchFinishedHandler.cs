@@ -33,6 +33,6 @@ public class MarkHockeyMatchFinishedHandler : IRequestHandler<MarkHockeyMatchFin
             _logger,
             request.MatchId,
             nameof(MarkHockeyMatchFinishedCommand),
-            match => match.MarkFinished(request.ActualEndTime, request.ResultType),
+            match => match.MarkFinished(DateTimeUtc.Normalize(request.ActualEndTime), request.ResultType),
             cancellationToken);
 }

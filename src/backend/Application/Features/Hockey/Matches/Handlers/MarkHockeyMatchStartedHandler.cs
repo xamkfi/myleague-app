@@ -33,6 +33,6 @@ public class MarkHockeyMatchStartedHandler : IRequestHandler<MarkHockeyMatchStar
             _logger,
             request.MatchId,
             nameof(MarkHockeyMatchStartedCommand),
-            match => match.MarkStarted(request.ActualStartTime),
+            match => match.MarkStarted(DateTimeUtc.Normalize(request.ActualStartTime)),
             cancellationToken);
 }

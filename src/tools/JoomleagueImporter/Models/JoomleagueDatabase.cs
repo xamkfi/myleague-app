@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Domain.Enums.Football;
+using Domain.Enums.Hockey.Teams;
 using JoomleagueImporter.Sql;
 
 namespace JoomleagueImporter.Models;
@@ -41,6 +42,9 @@ public class JoomleagueDatabase
 
     /// <summary>project_position id → football position inferred from the JoomLeague position name.</summary>
     public Dictionary<int, FootballPosition> FootballPositionByProjectPositionId { get; } = [];
+
+    /// <summary>project_position id → hockey position inferred from the JoomLeague position name.</summary>
+    public Dictionary<int, HockeyPosition> HockeyPositionByProjectPositionId { get; } = [];
 
     public HashSet<int> FootballGoalEventTypeIds { get; } = [..GoalEventTypes];
     public HashSet<int> FootballAssistEventTypeIds { get; } = [..AssistEventTypes];
@@ -242,14 +246,17 @@ public class JoomleagueDatabase
         // Position mapping: project_position -> position name (goalkeeper / outfield / football roles).
         ParsedTable positions = tables["jos_joomleague_position"];
         Dictionary<int, FootballPosition> footballPositionByPositionId = [];
+        Dictionary<int, HockeyPosition> hockeyPositionByPositionId = [];
         HashSet<int> goaliePositionIds = [];
         if (positions.Columns.Count > 0)
         {
             int id = positions.ColumnIndex("id"), name = positions.ColumnIndex("name");
             foreach (string?[] r in positions.Rows)
             {
-                FootballPosition mapped = MapFootballPosition(Str(r[name]));
+                string positionName = Str(r[name]);
+                FootballPosition mapped = MapFootballPosition(positionName);
                 footballPositionByPositionId[Int(r[id])] = mapped;
+                hockeyPositionByPositionId[Int(r[id])] = MapHockeyPosition(positionName);
                 if (mapped == FootballPosition.Goalkeeper)
                     goaliePositionIds.Add(Int(r[id]));
             }
@@ -266,6 +273,8 @@ public class JoomleagueDatabase
                     db.GoalkeeperProjectPositionIds.Add(projectPositionId);
                 if (footballPositionByPositionId.TryGetValue(positionId, out FootballPosition mapped))
                     db.FootballPositionByProjectPositionId[projectPositionId] = mapped;
+                if (hockeyPositionByPositionId.TryGetValue(positionId, out HockeyPosition hockeyMapped))
+                    db.HockeyPositionByProjectPositionId[projectPositionId] = hockeyMapped;
             }
         }
 
@@ -283,6 +292,17 @@ public class JoomleagueDatabase
         if (GoalkeeperProjectPositionIds.Contains(projectPositionId.Value))
             return FootballPosition.Goalkeeper;
         return FootballPosition.Forward;
+    }
+
+    public HockeyPosition ResolveHockeyPosition(int? projectPositionId)
+    {
+        if (!projectPositionId.HasValue)
+            return HockeyPosition.Center;
+        if (HockeyPositionByProjectPositionId.TryGetValue(projectPositionId.Value, out HockeyPosition mapped))
+            return mapped;
+        if (GoalkeeperProjectPositionIds.Contains(projectPositionId.Value))
+            return HockeyPosition.Goalie;
+        return HockeyPosition.Center;
     }
 
     /// <summary>
@@ -346,12 +366,15 @@ public class JoomleagueDatabase
                         if (!IsImportablePerson(person))
                             continue;
                         FootballPosition footballPosition = ResolveFootballPosition(tp.ProjectPositionId);
+                        HockeyPosition hockeyPosition = ResolveHockeyPosition(tp.ProjectPositionId);
                         pti.Roster.Add(new RosterEntry
                         {
                             TeamPlayer = tp,
                             Person = person,
-                            IsGoalkeeper = footballPosition == FootballPosition.Goalkeeper,
+                            IsGoalkeeper = footballPosition == FootballPosition.Goalkeeper ||
+                                           hockeyPosition == HockeyPosition.Goalie,
                             FootballPosition = footballPosition,
+                            HockeyPosition = hockeyPosition,
                         });
                     }
                 }
@@ -448,6 +471,19 @@ public class JoomleagueDatabase
         }
     }
 
+    private static HockeyPosition MapHockeyPosition(string name)
+    {
+        if (name.Contains("maalivahti", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("goalie", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("goalkeeper", StringComparison.OrdinalIgnoreCase))
+            return HockeyPosition.Goalie;
+        if (name.Contains("puolustaja", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("defenseman", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("defender", StringComparison.OrdinalIgnoreCase))
+            return HockeyPosition.Defenseman;
+        return HockeyPosition.Center;
+    }
+
     private static FootballPosition MapFootballPosition(string name)
     {
         if (name.Contains("maalivahti", StringComparison.OrdinalIgnoreCase) ||
@@ -535,6 +571,7 @@ public class RosterEntry
     public required OldPerson Person { get; init; }
     public bool IsGoalkeeper { get; init; }
     public FootballPosition FootballPosition { get; init; } = FootballPosition.Forward;
+    public HockeyPosition HockeyPosition { get; init; } = HockeyPosition.Center;
 }
 
 public class MatchImport

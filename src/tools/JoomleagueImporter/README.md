@@ -1,6 +1,8 @@
 # JoomleagueImporter
 
-Imports **floorball** or **football** data from a JoomLeague MySQL dump (`.sql`) into a running WebAPI. It parses clubs, teams, persons, projects (seasons), matches, and match events, then posts them in order. An on-disk id map makes re-runs idempotent.
+Imports **floorball**, **football**, or **hockey** data from a JoomLeague MySQL dump (`.sql`) into a running WebAPI. It parses clubs, teams, persons, projects (seasons), matches, and match events, then posts them in order. An on-disk id map makes re-runs idempotent.
+
+Each sport has its own importer pair: `FloorballEntityImporter` / `FloorballMatchImporter`, `Football*`, `Hockey*`. HTTP calls go through `ImportApiClient` (auth, clubs, persons) plus `FloorballApiClient`, `FootballApiClient`, or `HockeyApiClient`.
 
 For day-to-day empty-database setup, prefer the [Seeder](../Seeder/README.md). This tool is for historical dumps.
 
@@ -28,6 +30,10 @@ For day-to-day empty-database setup, prefer the [Seeder](../Seeder/README.md). T
     "Football": {
       "ProjectNameFilter": "jalkapallo|football|futis",
       "ProjectNameExcludeFilter": "manager"
+    },
+    "Hockey": {
+      "ProjectNameFilter": "jääkiekko|jaakiekko|hockey",
+      "ProjectNameExcludeFilter": "manager|jääpallo|jaapallo|kaukalo|nhl"
     }
   }
 }
@@ -44,13 +50,16 @@ dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj
 # Football
 dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj -- --sport=football
 
+# Hockey
+dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj -- --sport=hockey
+
 # Parse and print the selected set only
 dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj -- --dry-run
 ```
 
 The importer prompts for the API URL and confirmation before writing. `--repair-all` (or `RepairMatches` / `RepairAll` in config) re-sends match events for already imported matches.
 
-Logs go under the tool’s `Logs` folder. The id map path is derived from config (`IdMapPath` / football override) so you can resume a large dump.
+Logs go under the tool’s `Logs` folder. The id map path is derived from config (`IdMapPath` / football / hockey override) so you can resume a large dump.
 
 ## Related
 

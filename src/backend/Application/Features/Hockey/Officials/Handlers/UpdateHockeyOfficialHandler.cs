@@ -42,7 +42,9 @@ public class UpdateHockeyOfficialHandler : IRequestHandler<UpdateHockeyOfficialC
 
             official.UpdateOfficialRole(request.OfficialRole);
             official.UpdateOfficialNumber(request.OfficialNumber);
-            official.UpdateLicenseDates(request.LicenseIssueDate, request.LicenseExpiryDate);
+            official.UpdateLicenseDates(
+                DateTimeUtc.Normalize(request.LicenseIssueDate),
+                DateTimeUtc.Normalize(request.LicenseExpiryDate));
             official.UpdateActiveStatus(request.IsActive);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
