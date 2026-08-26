@@ -69,21 +69,7 @@ public class RulesSectionController : BaseApiController
 
         Result<RulesSectionDto> result = await _mediator.Send(new GetRulesSectionByIdQuery(id));
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<RulesSectionDto>.SuccessResponse(
-                result.Data,
-                "Rules section retrieved successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        if (!string.IsNullOrWhiteSpace(errorMessage) && errorMessage.Contains("not found"))
-        {
-            return NotFound(ApiResponse<RulesSectionDto>.ErrorResponse(errorMessage));
-        }
-
-        return StatusCode(500, ApiResponse<RulesSectionDto>.ErrorResponse(errorMessage));
+        return HandleResult(result, "Rules section retrieved successfully", "Failed to retrieve rules section");
     }
 
     /// <summary>

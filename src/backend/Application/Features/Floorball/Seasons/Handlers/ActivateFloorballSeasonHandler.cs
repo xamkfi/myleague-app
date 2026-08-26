@@ -72,7 +72,7 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
             if (season == null)
             {
                 _logger.LogWarning("Season not found with ID: {SeasonId}", request.Id);
-                return Result<FloorballSeasonDto>.Failure($"Season with ID {request.Id} not found.");
+                return Result<FloorballSeasonDto>.NotFound("FloorballSeason", request.Id);
             }
 
             _logger.LogInformation("Activating floorball season: {SeasonId}", request.Id);
@@ -111,6 +111,11 @@ public class ActivateFloorballSeasonHandler : IRequestHandler<ActivateFloorballS
             _logger.LogInformation("Successfully activated floorball season: {SeasonId}", request.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Business rule violation while activating floorball season: {SeasonId}", request.Id);
+            return Result<FloorballSeasonDto>.Failure(ex.Message);
         }
         catch (Exception ex)
         {

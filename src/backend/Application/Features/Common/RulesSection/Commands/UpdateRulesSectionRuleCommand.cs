@@ -53,25 +53,23 @@ public class UpdateRulesSectionRuleCommandHandler
 
         if (entity == null)
         {
-            return Result<RulesSectionDto>.Failure($"Rules section with ID '{request.SectionId}' not found.");
+            return Result<RulesSectionDto>.NotFound("RulesSection", request.SectionId);
         }
 
-        try
+        if (!RulesHtmlHelper.ContainsRule(entity.ContentHtml, request.RuleId))
         {
-            string updatedHtml = RulesHtmlHelper.UpdateRule(
-                entity.ContentHtml,
-                request.RuleId,
-                request.RuleHtml);
-
-            entity.UpdateContentHtml(updatedHtml, request.LastModifiedBy);
-            await _repository.UpdateAsync(entity, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            return Result<RulesSectionDto>.Success(RulesSectionMapper.ToDto(entity));
+            return Result<RulesSectionDto>.NotFound("RulesSectionRule", request.RuleId);
         }
-        catch (InvalidOperationException ex)
-        {
-            return Result<RulesSectionDto>.Failure(ex.Message);
-        }
+
+        string updatedHtml = RulesHtmlHelper.UpdateRule(
+            entity.ContentHtml,
+            request.RuleId,
+            request.RuleHtml);
+
+        entity.UpdateContentHtml(updatedHtml, request.LastModifiedBy);
+        await _repository.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<RulesSectionDto>.Success(RulesSectionMapper.ToDto(entity));
     }
 }

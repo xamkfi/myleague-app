@@ -43,7 +43,7 @@ public class StartFootballMatchHandler : IRequestHandler<StartFootballMatchComma
             if (match == null)
             {
                 _logger.LogWarning("Match not found with ID: {MatchId}", request.Id);
-                return Result<FootballMatchDto>.Failure($"Match with ID {request.Id} not found.");
+                return Result<FootballMatchDto>.NotFound("FootballMatch", request.Id);
             }
 
             _logger.LogInformation("Starting football match: {MatchId}", request.Id);

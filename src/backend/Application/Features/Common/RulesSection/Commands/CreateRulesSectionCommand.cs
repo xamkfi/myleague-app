@@ -70,7 +70,7 @@ public class CreateRulesSectionCommandHandler
 
             if (parent == null)
             {
-                return Result<RulesSectionDto>.Failure("Parent section not found.");
+                return Result<RulesSectionDto>.NotFound("RulesSection", request.ParentSectionId.Value);
             }
 
             if (parent.SectionType != Domain.Enums.Common.RulesSectionType.SportGroup)

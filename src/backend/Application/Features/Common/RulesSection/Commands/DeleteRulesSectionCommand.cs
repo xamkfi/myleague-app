@@ -47,7 +47,7 @@ public class DeleteRulesSectionCommandHandler
 
         if (entity == null)
         {
-            return Result<bool>.Failure($"Rules section with ID '{request.Id}' not found.");
+            return Result<bool>.NotFound("RulesSection", request.Id);
         }
 
         bool hasChildren = await _repository.HasChildSectionsAsync(request.Id, cancellationToken);
