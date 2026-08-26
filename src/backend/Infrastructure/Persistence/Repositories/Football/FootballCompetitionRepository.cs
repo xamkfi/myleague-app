@@ -32,7 +32,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                     .ThenInclude(m => m.HomeTeam)
                 .Include(s => s.Matches)
                     .ThenInclude(m => m.AwayTeam)
-                .FirstOrDefaultAsync(s => s.Id == id) ?? throw new KeyNotFoundException($"Competition with ID {id} not found.");
+                .FirstOrDefaultAsync(s => s.Id == id);
         }
 
         /// <summary>

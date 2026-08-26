@@ -49,18 +49,26 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
             if (season == null)
             {
                 _logger.LogWarning("Season not found with ID: {SeasonId}", request.CompetitionId);
-                return Result<FootballSeasonDto>.NotFound("Season with ID {SeasonId} not found.", request.CompetitionId);
+                return Result<FootballSeasonDto>.NotFound("FootballSeason", request.CompetitionId);
             }
 
             FootballTeam? team = await _teamRepository.GetByIdAsync(request.TeamId);
             if (team == null)
             {
                 _logger.LogWarning("Team not found with ID: {TeamId}", request.TeamId);
-                return Result<FootballSeasonDto>.NotFound("Team with ID {TeamId} not found.", request.TeamId);
+                return Result<FootballSeasonDto>.NotFound("FootballTeam", request.TeamId);
             }
 
             _logger.LogInformation("Adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
             season.AddTeam(team);
+
+            // Late joiners to an already-active season need team standings rows (Activate only
+            // seeds teams present at activation time).
+            if (season.IsActive)
+            {
+                FootballTeamSeasonStatistics teamStatistics = new(team.Id, request.CompetitionId);
+                await _footballStatisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
+            }
 
             foreach (FootballTeamPlayer player in team.Roster)
             {
