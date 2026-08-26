@@ -260,14 +260,15 @@ public static class HockeyCompetitionMapper
 
         int homeWins = 0;
         int awayWins = 0;
-        foreach (HockeyMatch match in matches.Where(item =>
-            item.PlayoffSeriesId == series.Id
-            && item.Status == HockeyMatchStatus.Finished
-            && item.HomeScore != item.AwayScore))
+        foreach (Guid? winnerCompetitionTeamId in matches
+            .Where(item =>
+                item.PlayoffSeriesId == series.Id
+                && item.Status == HockeyMatchStatus.Finished
+                && item.HomeScore != item.AwayScore)
+            .Select(item => item.HomeScore > item.AwayScore
+                ? item.HomeMatchTeam?.CompetitionTeamId
+                : item.AwayMatchTeam?.CompetitionTeamId))
         {
-            Guid? winnerCompetitionTeamId = match.HomeScore > match.AwayScore
-                ? match.HomeMatchTeam?.CompetitionTeamId
-                : match.AwayMatchTeam?.CompetitionTeamId;
             if (winnerCompetitionTeamId == series.HomeCompetitionTeamId)
                 homeWins++;
             else if (winnerCompetitionTeamId == series.AwayCompetitionTeamId)
