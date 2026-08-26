@@ -1,5 +1,7 @@
+using Domain.Common;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Matches.Events;
+using Domain.Enums.Hockey.Matches;
 
 namespace Domain.Repositories.Hockey;
 
@@ -41,4 +43,16 @@ public interface IHockeyMatchRepository
     /// Marks a removed match event as deleted for EF change tracking.
     /// </summary>
     void MarkEventAsDeleted(HockeyMatchEvent matchEvent);
+
+    Task<PagedResult<HockeyMatch>> GetPagedAsync(
+        int page,
+        int pageSize,
+        Guid? competitionId = null,
+        Guid? teamId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        HockeyMatchStatus? status = null,
+        string sortOrder = "desc",
+        string? searchQuery = null,
+        CancellationToken cancellationToken = default);
 }

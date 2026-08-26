@@ -97,7 +97,19 @@ An optional brief description or excerpt of a news article used for preview purp
 ## Hockey
 
 ### HockeyCompetition
-Abstract TPH root for hockey seasons and tournaments. Owns registered teams, matches, divisions and playoffs. `TeamCategory` (Adult, Youth, Women) is the audience filter used by public lists, same as floorball and football competitions.
+Abstract TPH root for hockey seasons and tournaments. Owns registered teams, matches, divisions and playoffs. `TeamCategory` (Adult, Youth, Women) is the audience filter used by public lists, same as floorball and football competitions. `CompetitionType` is stored as the string discriminator `Season` or `Tournament`.
+
+### HockeyMatch
+A hockey game between two sides (`HockeyMatchTeam` home/away). Playoff bracket progress is stored on the match (`PlayoffRound`, `PlayoffMatchOrder`, `NextMatchId`, `NextMatchSlot`), matching floorball. Series wins are derived from finished match scores, not a stored win counter.
+
+### HockeyPlayoffSeries
+Best-of series within a hockey competition. Completing enough finished match wins marks the series winner via `HockeyCompetition.CompletePlayoffSeries`.
+
+### HockeyStatisticsCache
+JSON read-model cache for hockey statistics keyed by competition/scope. Invalidated when competition statistics are reset. Not the source of truth.
+
+### HockeyOfficial
+Official profile linked to a `Person`. Assigned to matches as `HockeyMatchOfficial`.
 
 ## Football
 

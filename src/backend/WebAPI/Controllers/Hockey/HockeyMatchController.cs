@@ -2,12 +2,14 @@ using Application.Common;
 using Application.Features.Hockey.Matches.Commands;
 using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Matches.Queries;
+using Domain.Common;
 using Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using WebAPI.Models.Hockey;
 
 namespace WebAPI.Controllers.Hockey;
@@ -26,6 +28,32 @@ public class HockeyMatchController : BaseApiController
     public HockeyMatchController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    /// <summary>
+    /// Gets paginated hockey matches without event, line, or on-ice graphs.
+    /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [HttpGet("paged")]
+    [ProducesResponseType(typeof(PaginatedApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedApiResponse<HockeyMatchDto>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PaginatedApiResponse<HockeyMatchDto>>> GetPaged(
+        [FromQuery] GetPagedHockeyMatchesRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<PagedResult<HockeyMatchDto>> result = await _mediator.Send(
+            new GetPagedHockeyMatchesQuery(
+                request.Page,
+                request.PageSize,
+                request.CompetitionId,
+                request.TeamId,
+                request.StartDate,
+                request.EndDate,
+                request.Status,
+                request.SortOrder,
+                request.SearchQuery),
+            cancellationToken);
+        return HandlePaginatedResult(result, "Hockey matches retrieved successfully", "Failed to retrieve hockey matches");
     }
 
     /// <summary>
@@ -90,7 +118,11 @@ public class HockeyMatchController : BaseApiController
             request.CompetitionDivisionId,
             request.TournamentGroupId,
             request.PlayoffSeriesId,
-            request.Venue), cancellationToken);
+            request.Venue,
+            request.PlayoffRound,
+            request.PlayoffMatchOrder,
+            request.NextMatchId,
+            request.NextMatchSlot), cancellationToken);
 
         if (result.IsSuccess && result.Data is not null)
         {

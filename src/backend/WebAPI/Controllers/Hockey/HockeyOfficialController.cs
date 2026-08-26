@@ -2,12 +2,14 @@ using Application.Common;
 using Application.Features.Hockey.Officials.Commands;
 using Application.Features.Hockey.Officials.DTOs;
 using Application.Features.Hockey.Officials.Queries;
+using Domain.Common;
 using Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using WebAPI.Models.Hockey;
 
 namespace WebAPI.Controllers.Hockey;
@@ -40,6 +42,28 @@ public class HockeyOfficialController : BaseApiController
         Result<IReadOnlyList<HockeyOfficialDto>> result =
             await _mediator.Send(new GetHockeyOfficialsQuery(isActive), cancellationToken);
         return HandleResult(result, "Hockey officials retrieved successfully", "Failed to retrieve hockey officials");
+    }
+
+    /// <summary>
+    /// Gets paginated hockey officials.
+    /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [HttpGet("paged")]
+    [ProducesResponseType(typeof(PaginatedApiResponse<HockeyOfficialDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedApiResponse<HockeyOfficialDto>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PaginatedApiResponse<HockeyOfficialDto>>> GetPagedOfficials(
+        [FromQuery] GetPagedHockeyOfficialsRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<PagedResult<HockeyOfficialDto>> result = await _mediator.Send(
+            new GetPagedHockeyOfficialsQuery(
+                request.Page,
+                request.PageSize,
+                request.IsActive,
+                request.SearchTerm,
+                request.LicenseExpiringWithinDays),
+            cancellationToken);
+        return HandlePaginatedResult(result, "Hockey officials retrieved successfully", "Failed to retrieve hockey officials");
     }
 
     /// <summary>

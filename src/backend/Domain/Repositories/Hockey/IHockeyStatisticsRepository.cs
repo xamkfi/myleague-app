@@ -100,4 +100,12 @@ public interface IHockeyStatisticsRepository
         Guid? competitionDivisionId = null,
         Guid? tournamentGroupId = null,
         Guid? playoffSeriesId = null);
+
+    Task<HockeyStatisticsCache?> GetCachedStatisticsAsync(string cacheKey, CancellationToken cancellationToken = default);
+
+    Task SaveCachedStatisticsAsync(HockeyStatisticsCache cache, CancellationToken cancellationToken = default);
+
+    Task<int> RemoveExpiredCacheAsync(CancellationToken cancellationToken = default);
+
+    Task RemoveCompetitionCacheAsync(Guid competitionId, CancellationToken cancellationToken = default);
 }

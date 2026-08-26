@@ -675,6 +675,26 @@ public class CreateHockeyMatchRequest
     public Guid? PlayoffSeriesId { get; set; }
 
     /// <summary>
+    /// Playoff round for bracket advancement.
+    /// </summary>
+    public HockeyPlayoffRound? PlayoffRound { get; set; }
+
+    /// <summary>
+    /// Order of this match within the playoff round.
+    /// </summary>
+    public int? PlayoffMatchOrder { get; set; }
+
+    /// <summary>
+    /// Match the winner advances into.
+    /// </summary>
+    public Guid? NextMatchId { get; set; }
+
+    /// <summary>
+    /// Home or away slot on the next match.
+    /// </summary>
+    public HockeyTeamSlot? NextMatchSlot { get; set; }
+
+    /// <summary>
     /// Venue.
     /// </summary>
     [StringLength(200)]

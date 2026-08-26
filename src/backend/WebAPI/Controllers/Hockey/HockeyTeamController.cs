@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.Hockey.Teams.Commands;
 using Application.Features.Hockey.Teams.DTOs;
 using Application.Features.Hockey.Teams.Queries;
+using Domain.Common;
 using Domain.Constants;
 using Domain.Enums.Common;
 using MediatR;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using WebAPI.Models.Hockey;
 
 namespace WebAPI.Controllers.Hockey;
@@ -40,6 +42,28 @@ public class HockeyTeamController : BaseApiController
     {
         Result<IEnumerable<HockeyTeamDto>> result = await _mediator.Send(new GetAllHockeyTeamsQuery(teamCategory), cancellationToken);
         return HandleListResult(result, "Hockey teams retrieved successfully", "Failed to retrieve hockey teams");
+    }
+
+    /// <summary>
+    /// Gets paginated hockey teams without roster, lines, or staff graphs.
+    /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [HttpGet("paged")]
+    [ProducesResponseType(typeof(PaginatedApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedApiResponse<HockeyTeamDto>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PaginatedApiResponse<HockeyTeamDto>>> GetPagedTeams(
+        [FromQuery] GetPagedHockeyTeamsRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<PagedResult<HockeyTeamDto>> result = await _mediator.Send(
+            new GetPagedHockeyTeamsQuery(
+                request.Page,
+                request.PageSize,
+                request.SearchTerm,
+                request.ClubId,
+                request.TeamCategory),
+            cancellationToken);
+        return HandlePaginatedResult(result, "Hockey teams retrieved successfully", "Failed to retrieve hockey teams");
     }
 
     /// <summary>

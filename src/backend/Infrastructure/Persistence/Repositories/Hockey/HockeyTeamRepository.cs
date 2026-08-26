@@ -1,4 +1,6 @@
+using Domain.Common;
 using Domain.Entities.Hockey.Teams;
+using Domain.Enums.Common;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -43,6 +45,53 @@ public class HockeyTeamRepository : IHockeyTeamRepository
             .OrderBy(t => t.Name)
             .ToListAsync();
         return DistinctById(teams);
+    }
+
+    public async Task<IReadOnlyList<HockeyTeam>> GetByPlayerIdAsync(Guid playerId)
+    {
+        List<HockeyTeam> teams = await TeamQuery()
+            .Where(t => t.Roster.Any(p => p.PlayerId == playerId && p.LeftAt == null))
+            .OrderBy(t => t.Name)
+            .ToListAsync();
+        return DistinctById(teams);
+    }
+
+    public async Task<PagedResult<HockeyTeam>> GetPagedAsync(
+        int page,
+        int pageSize,
+        string searchTerm = "",
+        Guid? clubId = null,
+        TeamCategory? teamCategory = null,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<HockeyTeam> query = _dbContext.HockeyTeams.AsQueryable();
+
+        if (clubId.HasValue)
+        {
+            query = query.Where(t => t.ClubId == clubId.Value);
+        }
+
+        if (teamCategory.HasValue)
+        {
+            query = query.Where(t => t.TeamCategory == teamCategory.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            string loweredSearchTerm = searchTerm.ToLower();
+            query = query.Where(t =>
+                t.Name.ToLower().Contains(loweredSearchTerm)
+                || t.ShortName.ToLower().Contains(loweredSearchTerm));
+        }
+
+        query = query.OrderBy(t => t.Name);
+        int totalCount = await query.CountAsync(cancellationToken);
+        List<HockeyTeam> items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return PagedResult.Create(items, totalCount, page, pageSize);
     }
 
     private IQueryable<HockeyTeam> TeamQuery()

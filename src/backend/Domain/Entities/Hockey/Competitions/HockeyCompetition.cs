@@ -272,6 +272,17 @@ public abstract class HockeyCompetition : BaseEntity
         series.AssignTeams(homeCompetitionTeamId, awayCompetitionTeamId);
     }
 
+    /// <summary>
+    /// Records the series winner using floorball-style match scores (caller derives the winner).
+    /// </summary>
+    public void CompletePlayoffSeries(Guid seriesId, Guid winnerCompetitionTeamId)
+    {
+        HockeyPlayoffSeries series = _playoffSeries.FirstOrDefault(s => s.Id == seriesId)
+            ?? throw new InvalidOperationException("Playoff series is not part of this competition.");
+
+        series.SetWinner(winnerCompetitionTeamId);
+    }
+
     public void AddMatch(HockeyMatch match)
     {
         ArgumentNullException.ThrowIfNull(match);

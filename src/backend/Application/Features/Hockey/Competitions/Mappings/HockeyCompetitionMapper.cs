@@ -2,6 +2,8 @@ using Application.Features.Hockey.Competitions.DTOs;
 using Application.Features.Hockey.Seasons.DTOs;
 using Application.Features.Hockey.Tournaments.DTOs;
 using Domain.Entities.Hockey.Competitions;
+using Domain.Entities.Hockey.Matches;
+using Domain.Enums.Hockey.Matches;
 using Domain.ValueObjects.Hockey.Matches;
 using Domain.ValueObjects.Hockey.Rules;
 
@@ -28,7 +30,7 @@ public static class HockeyCompetitionMapper
             competition.IsCompleted,
             competition.Teams.Select(ToTeamDto).ToList(),
             competition.Divisions.Select(ToDivisionDto).ToList(),
-            competition.PlayoffSeries.Select(ToPlayoffSeriesDto).ToList());
+            competition.PlayoffSeries.Select(series => ToPlayoffSeriesDto(series, competition.Matches)).ToList());
     }
 
     /// <summary>
@@ -143,7 +145,7 @@ public static class HockeyCompetitionMapper
             season.ChampionCompetitionTeamId,
             season.Teams.Select(ToTeamDto).ToList(),
             season.Divisions.Select(ToDivisionDto).ToList(),
-            season.PlayoffSeries.Select(ToPlayoffSeriesDto).ToList(),
+            season.PlayoffSeries.Select(series => ToPlayoffSeriesDto(series, season.Matches)).ToList(),
             season.PlayoffSchedule.Select(ToPlayoffScheduleSlotDto).ToList());
     }
 
@@ -196,7 +198,7 @@ public static class HockeyCompetitionMapper
             tournament.ChampionCompetitionTeamId,
             tournament.Teams.Select(ToTeamDto).ToList(),
             tournament.Groups.Select(ToGroupDto).ToList(),
-            tournament.PlayoffSeries.Select(ToPlayoffSeriesDto).ToList(),
+            tournament.PlayoffSeries.Select(series => ToPlayoffSeriesDto(series, tournament.Matches)).ToList(),
             ToTournamentRulesDto(tournament.TournamentRules),
             tournament.PlayoffSchedule.Select(ToPlayoffScheduleSlotDto).ToList());
     }
@@ -230,8 +232,11 @@ public static class HockeyCompetitionMapper
     /// <summary>
     /// Maps a playoff series to a DTO.
     /// </summary>
-    public static HockeyPlayoffSeriesDto ToPlayoffSeriesDto(HockeyPlayoffSeries series)
+    public static HockeyPlayoffSeriesDto ToPlayoffSeriesDto(
+        HockeyPlayoffSeries series,
+        IEnumerable<HockeyMatch>? matches = null)
     {
+        (int homeWins, int awayWins) = CountSeriesWins(series, matches);
         return new HockeyPlayoffSeriesDto(
             series.Id,
             series.CompetitionId,
@@ -240,10 +245,38 @@ public static class HockeyCompetitionMapper
             series.BestOf,
             series.HomeCompetitionTeamId,
             series.AwayCompetitionTeamId,
-            series.HomeTeamWins,
-            series.AwayTeamWins,
+            homeWins,
+            awayWins,
             series.WinnerCompetitionTeamId,
             series.Status.ToString());
+    }
+
+    private static (int HomeWins, int AwayWins) CountSeriesWins(
+        HockeyPlayoffSeries series,
+        IEnumerable<HockeyMatch>? matches)
+    {
+        if (matches is null)
+            return (series.HomeTeamWins, series.AwayTeamWins);
+
+        int homeWins = 0;
+        int awayWins = 0;
+        foreach (HockeyMatch match in matches)
+        {
+            if (match.PlayoffSeriesId != series.Id || match.Status != HockeyMatchStatus.Finished)
+                continue;
+            if (match.HomeScore == match.AwayScore)
+                continue;
+
+            Guid? winnerCompetitionTeamId = match.HomeScore > match.AwayScore
+                ? match.HomeMatchTeam?.CompetitionTeamId
+                : match.AwayMatchTeam?.CompetitionTeamId;
+            if (winnerCompetitionTeamId == series.HomeCompetitionTeamId)
+                homeWins++;
+            else if (winnerCompetitionTeamId == series.AwayCompetitionTeamId)
+                awayWins++;
+        }
+
+        return (homeWins, awayWins);
     }
 
     /// <summary>

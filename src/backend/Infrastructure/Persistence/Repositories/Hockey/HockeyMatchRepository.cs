@@ -1,5 +1,7 @@
+using Domain.Common;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Matches.Events;
+using Domain.Enums.Hockey.Matches;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -64,6 +66,75 @@ public class HockeyMatchRepository : IHockeyMatchRepository
     public void MarkEventAsDeleted(HockeyMatchEvent matchEvent)
     {
         _dbContext.Entry(matchEvent).State = EntityState.Deleted;
+    }
+
+    public async Task<PagedResult<HockeyMatch>> GetPagedAsync(
+        int page,
+        int pageSize,
+        Guid? competitionId = null,
+        Guid? teamId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        HockeyMatchStatus? status = null,
+        string sortOrder = "desc",
+        string? searchQuery = null,
+        CancellationToken cancellationToken = default)
+    {
+        DateTime? startDateUtc = startDate.HasValue
+            ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc)
+            : null;
+        DateTime? endDateUtc = endDate.HasValue
+            ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc)
+            : null;
+
+        IQueryable<HockeyMatch> query = _dbContext.HockeyMatches
+            .Include(m => m.MatchTeams)
+            .Include(m => m.Officials)
+            .Include(m => m.PeriodScores)
+            .AsQueryable();
+
+        if (competitionId.HasValue)
+        {
+            query = query.Where(m => m.CompetitionId == competitionId.Value);
+        }
+
+        if (teamId.HasValue)
+        {
+            query = query.Where(m => m.MatchTeams.Any(t => t.TeamId == teamId.Value));
+        }
+
+        if (startDateUtc.HasValue)
+        {
+            query = query.Where(m => m.ScheduledStartTime >= startDateUtc.Value);
+        }
+
+        if (endDateUtc.HasValue)
+        {
+            query = query.Where(m => m.ScheduledStartTime <= endDateUtc.Value);
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(m => m.Status == status.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            string loweredSearch = searchQuery.ToLower();
+            query = query.Where(m => m.Venue != null && m.Venue.ToLower().Contains(loweredSearch));
+        }
+
+        query = string.Equals(sortOrder, "asc", StringComparison.OrdinalIgnoreCase)
+            ? query.OrderBy(m => m.ScheduledStartTime)
+            : query.OrderByDescending(m => m.ScheduledStartTime);
+
+        int totalCount = await query.CountAsync(cancellationToken);
+        List<HockeyMatch> items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return PagedResult.Create(items, totalCount, page, pageSize);
     }
 
     private IQueryable<HockeyMatch> BuildDetailQuery() =>

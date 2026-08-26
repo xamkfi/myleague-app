@@ -16,6 +16,10 @@ public class HockeyMatchConfiguration : BaseEntityConfiguration<HockeyMatch>
         builder.Property(m => m.CompetitionDivisionId);
         builder.Property(m => m.TournamentGroupId);
         builder.Property(m => m.PlayoffSeriesId);
+        builder.Property(m => m.PlayoffRound).HasConversion<string>();
+        builder.Property(m => m.PlayoffMatchOrder);
+        builder.Property(m => m.NextMatchId);
+        builder.Property(m => m.NextMatchSlot).HasConversion<string>();
         builder.Property(m => m.ScheduledStartTime).IsRequired();
         builder.Property(m => m.ActualStartTime);
         builder.Property(m => m.ActualEndTime);
@@ -83,6 +87,11 @@ public class HockeyMatchConfiguration : BaseEntityConfiguration<HockeyMatch>
             .WithMany()
             .HasForeignKey(m => m.PlayoffSeriesId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne<HockeyMatch>()
+            .WithMany()
+            .HasForeignKey(m => m.NextMatchId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(m => m.CompetitionId)
             .HasDatabaseName("IX_HockeyMatches_CompetitionId");

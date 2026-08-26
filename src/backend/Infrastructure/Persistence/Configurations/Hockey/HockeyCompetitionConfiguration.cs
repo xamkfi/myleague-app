@@ -19,6 +19,9 @@ public class HockeyCompetitionConfiguration : IEntityTypeConfiguration<HockeyCom
 
         builder.HasKey(c => c.Id);
 
+        builder.Property(c => c.CompetitionType)
+            .HasConversion<string>()
+            .HasMaxLength(21);
         builder.HasDiscriminator(c => c.CompetitionType)
             .HasValue<HockeySeason>(HockeyCompetitionType.Season)
             .HasValue<HockeyTournament>(HockeyCompetitionType.Tournament);

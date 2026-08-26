@@ -7,8 +7,19 @@ export const HOCKEY_POSITIONS = [
 ] as const;
 export type HockeyPosition = (typeof HOCKEY_POSITIONS)[number];
 
-export const HOCKEY_TEAM_CATEGORIES = ['Adult', 'Youth', 'Women'] as const;
-export type HockeyTeamCategory = (typeof HOCKEY_TEAM_CATEGORIES)[number];
+export const HOCKEY_PLAYOFF_ROUNDS = [
+  'Qualification',
+  'RoundOf16',
+  'QuarterFinal',
+  'SemiFinal',
+  'BronzeGame',
+  'Final',
+  'PlacementGame',
+] as const;
+export type HockeyPlayoffRound = (typeof HOCKEY_PLAYOFF_ROUNDS)[number];
+
+export const HOCKEY_TEAM_SLOTS = ['Home', 'Away', 'Neutral'] as const;
+export type HockeyTeamSlot = (typeof HOCKEY_TEAM_SLOTS)[number];
 
 export const HOCKEY_MATCH_STATUSES = [
   'Scheduled',
@@ -491,6 +502,10 @@ export interface HockeyMatchDto {
   competitionDivisionId: string | null;
   tournamentGroupId: string | null;
   playoffSeriesId: string | null;
+  playoffRound: HockeyPlayoffRound | string | null;
+  playoffMatchOrder: number | null;
+  nextMatchId: string | null;
+  nextMatchSlot: HockeyTeamSlot | string | null;
   scheduledStartTime: string;
   actualStartTime: string | null;
   actualEndTime: string | null;
@@ -518,6 +533,10 @@ export interface CreateHockeyMatchRequest {
   competitionDivisionId?: string;
   tournamentGroupId?: string;
   playoffSeriesId?: string;
+  playoffRound?: HockeyPlayoffRound;
+  playoffMatchOrder?: number;
+  nextMatchId?: string;
+  nextMatchSlot?: HockeyTeamSlot;
   venue?: string;
 }
 
