@@ -11,7 +11,7 @@ namespace JoomleagueImporter.Import;
 /// </summary>
 public class FootballMatchImporter
 {
-    private readonly ApiClient _api;
+    private readonly FootballApiClient _api;
     private readonly IdMapStore _idMap;
     private readonly ImportLogger _log;
     private readonly FootballEntityImporter _entities;
@@ -27,7 +27,7 @@ public class FootballMatchImporter
     public int Repaired { get; private set; }
 
     public FootballMatchImporter(
-        ApiClient api,
+        FootballApiClient api,
         IdMapStore idMap,
         ImportLogger log,
         FootballEntityImporter entities,
@@ -187,7 +187,7 @@ public class FootballMatchImporter
         DateTime scheduled = match.MatchDate ?? new DateTime(2000, 1, 1, 18, 0, 0);
         string? venue = match.PlaygroundId.HasValue ? _db.Playgrounds.GetValueOrDefault(match.PlaygroundId.Value) : null;
 
-        FootballMatchDto? created = await _api.CreateFootballMatchAsync(
+        FootballMatchDto? created = await _api.CreateMatchAsync(
             season.Id, home.TeamId, away.TeamId, refereeId, scheduled, venue);
         if (created == null)
         {
@@ -222,10 +222,10 @@ public class FootballMatchImporter
             return true;
         }
 
-        await _api.SetFootballLineupAsync(created.Id, home.TeamId, homeLineup);
-        await _api.SetFootballLineupAsync(created.Id, away.TeamId, awayLineup);
+        await _api.SetLineupAsync(created.Id, home.TeamId, homeLineup);
+        await _api.SetLineupAsync(created.Id, away.TeamId, awayLineup);
 
-        bool started = await _api.StartFootballMatchAsync(created.Id);
+        bool started = await _api.StartMatchAsync(created.Id);
         if (!started)
         {
             _idMap.ProcessedMatches[match.Id] = created.Id;
@@ -237,7 +237,7 @@ public class FootballMatchImporter
         (int goalsRecorded, int cardsRecorded) = await RecordEventsAsync(
             created.Id, match, home, away, goals, cards, periodSeconds, regularPeriods);
 
-        bool completed = await _api.CompleteFootballMatchAsync(created.Id);
+        bool completed = await _api.CompleteMatchAsync(created.Id);
         if (!completed)
             _log.LogError("CompleteFootballMatch", new { match.Id, NewMatchId = created.Id }, "API call failed.");
 
@@ -265,7 +265,7 @@ public class FootballMatchImporter
     {
         OldMatch match = mi.Match;
 
-        FootballMatchDto? dto = await _api.GetFootballMatchByIdAsync(newMatchId);
+        FootballMatchDto? dto = await _api.GetMatchByIdAsync(newMatchId);
         if (dto == null)
         {
             _log.LogError("RepairFootballMatch", new { match.Id, newMatchId }, "Match not found in new system.");
@@ -280,7 +280,7 @@ public class FootballMatchImporter
 
         if (dto.Status == FootballMatchStatus.Completed)
         {
-            if (!await _api.ReopenFootballMatchAsync(newMatchId))
+            if (!await _api.ReopenMatchAsync(newMatchId))
             {
                 _log.LogError("RepairFootballMatch", new { match.Id, newMatchId }, "Reopen failed.");
                 return false;
@@ -297,9 +297,9 @@ public class FootballMatchImporter
                 _log.LogError("RepairFootballMatch", new { match.Id, newMatchId }, "Could not build lineup; cannot start match.");
                 return false;
             }
-            await _api.SetFootballLineupAsync(newMatchId, home.TeamId, homeLineup);
-            await _api.SetFootballLineupAsync(newMatchId, away.TeamId, awayLineup);
-            if (!await _api.StartFootballMatchAsync(newMatchId))
+            await _api.SetLineupAsync(newMatchId, home.TeamId, homeLineup);
+            await _api.SetLineupAsync(newMatchId, away.TeamId, awayLineup);
+            if (!await _api.StartMatchAsync(newMatchId))
             {
                 _log.LogError("RepairFootballMatch", new { match.Id, newMatchId }, "StartMatch failed during repair.");
                 return false;
@@ -307,9 +307,9 @@ public class FootballMatchImporter
         }
 
         foreach (FootballGoalEventDto goalEvent in dto.GoalEvents)
-            await _api.DeleteFootballGoalEventAsync(newMatchId, goalEvent.Id);
+            await _api.DeleteGoalEventAsync(newMatchId, goalEvent.Id);
         foreach (FootballCardEventDto cardEvent in dto.CardEvents)
-            await _api.DeleteFootballCardEventAsync(newMatchId, cardEvent.Id);
+            await _api.DeleteCardEventAsync(newMatchId, cardEvent.Id);
 
         (List<GoalRec> goals, List<CardRec> cards, _) =
             await BuildEventsAsync(mi, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods);
@@ -317,7 +317,7 @@ public class FootballMatchImporter
         (int goalsRecorded, int cardsRecorded) = await RecordEventsAsync(
             newMatchId, match, home, away, goals, cards, periodSeconds, regularPeriods);
 
-        bool completed = await _api.CompleteFootballMatchAsync(newMatchId);
+        bool completed = await _api.CompleteMatchAsync(newMatchId);
         if (!completed)
             _log.LogError("RepairFootballMatch", new { match.Id, newMatchId }, "Complete failed after repair.");
 
@@ -413,7 +413,7 @@ public class FootballMatchImporter
                 continue;
             }
 
-            int timeSeconds = MatchImporter.ParseEventTime(ev.EventTime) ?? 0;
+            int timeSeconds = ImportTimeParser.ParseEventTime(ev.EventTime) ?? 0;
             Guid? playerId = playerByTeamPlayerId.TryGetValue(ev.TeamPlayerId, out Guid pid) ? pid : null;
 
             if (isGoal)
@@ -534,7 +534,7 @@ public class FootballMatchImporter
 
         for (int period = 1; period <= regularPeriods; period++)
         {
-            await _api.StartFootballPeriodAsync(newMatchId, period);
+            await _api.StartPeriodAsync(newMatchId, period);
 
             int currentPeriod = period;
             List<GoalRec> periodGoals = goals
@@ -549,7 +549,7 @@ public class FootballMatchImporter
             foreach (GoalRec goal in periodGoals)
             {
                 Guid teamId = goal.ProjectTeamId == match.ProjectTeam1Id ? home.TeamId : away.TeamId;
-                bool ok = await _api.RecordFootballGoalAsync(
+                bool ok = await _api.RecordGoalAsync(
                     newMatchId, teamId, goal.ScorerPlayerId!.Value,
                     goal.AssisterPlayerId,
                     period, goal.TimeSeconds);
@@ -565,13 +565,13 @@ public class FootballMatchImporter
                     continue;
                 }
                 Guid teamId = card.ProjectTeamId == match.ProjectTeam1Id ? home.TeamId : away.TeamId;
-                bool ok = await _api.RecordFootballCardAsync(
+                bool ok = await _api.RecordCardAsync(
                     newMatchId, teamId, card.PlayerId.Value, card.CardType, period, card.TimeSeconds);
                 if (ok) cardsRecorded++;
                 else _log.LogError("RecordFootballCard", new { match.Id, NewMatchId = newMatchId, teamId, card.PlayerId, period, card.TimeSeconds }, "API call failed.");
             }
 
-            await _api.EndFootballPeriodAsync(newMatchId, period);
+            await _api.EndPeriodAsync(newMatchId, period);
         }
 
         return (goalsRecorded, cardsRecorded);

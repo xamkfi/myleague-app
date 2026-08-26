@@ -61,7 +61,7 @@ public class CreateHockeyMatchHandler : IRequestHandler<CreateHockeyMatchCommand
             }
 
             HockeyMatch match = new(
-                request.ScheduledStartTime,
+                DateTimeUtc.Normalize(request.ScheduledStartTime),
                 request.MatchType,
                 matchRules: matchRules,
                 competitionId: request.CompetitionId,

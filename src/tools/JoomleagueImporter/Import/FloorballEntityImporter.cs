@@ -14,16 +14,16 @@ namespace JoomleagueImporter.Import;
 /// Imports clubs, persons, floorball players, teams and rosters through the API,
 /// deduplicating by name and recording old-id to new-Guid mappings in the id map.
 /// </summary>
-public class EntityImporter
+public class FloorballEntityImporter
 {
     private const int PositionForward = 1;
     private const int PositionGoalkeeper = 4;
 
-    private readonly ApiClient _api;
+    private readonly FloorballApiClient _api;
     private readonly IdMapStore _idMap;
     private readonly ImportLogger _log;
 
-    public EntityImporter(ApiClient api, IdMapStore idMap, ImportLogger log)
+    public FloorballEntityImporter(FloorballApiClient api, IdMapStore idMap, ImportLogger log)
     {
         _api = api;
         _idMap = idMap;

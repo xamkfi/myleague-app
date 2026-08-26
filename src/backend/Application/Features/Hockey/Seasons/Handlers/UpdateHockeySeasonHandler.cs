@@ -40,7 +40,10 @@ public class UpdateHockeySeasonHandler : IRequestHandler<UpdateHockeySeasonComma
                 return Result<HockeySeasonDto>.NotFound("HockeySeason", request.SeasonId);
             }
 
-            season.UpdateDetails(request.Name, request.StartDate, request.EndDate);
+            season.UpdateDetails(
+                request.Name,
+                DateTimeUtc.Normalize(request.StartDate),
+                DateTimeUtc.Normalize(request.EndDate));
             season.UpdateSeasonCode(request.SeasonCode);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

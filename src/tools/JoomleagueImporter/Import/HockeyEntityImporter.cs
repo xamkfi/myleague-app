@@ -1,32 +1,30 @@
 using Application.Features.Common.Clubs.DTOs;
 using Application.Features.Common.Divisions.DTOs;
 using Application.Features.Common.Persons.DTOs;
-using Application.Features.Football.Players.DTOs;
-using Application.Features.Football.Referees.DTOs;
-using Application.Features.Football.Seasons.DTOs;
-using Application.Features.Football.Teams.DTOs;
+using Application.Features.Hockey.Competitions.DTOs;
+using Application.Features.Hockey.Officials.DTOs;
+using Application.Features.Hockey.Players.DTOs;
+using Application.Features.Hockey.Seasons.DTOs;
+using Application.Features.Hockey.Teams.DTOs;
 using Domain.Enums.Common;
-using Domain.Enums.Football;
+using Domain.Enums.Hockey.Teams;
 using JoomleagueImporter.Models;
 
 namespace JoomleagueImporter.Import;
 
 /// <summary>
-/// Imports clubs, persons, football players, teams and rosters through the API,
-/// deduplicating by name and recording old-id to new-Guid mappings in the id map.
-/// Hobby football defaults: 5v5, two halves, officials not required to start.
+/// Imports clubs, persons, hockey players, teams and rosters through the API,
+/// then creates hockey seasons with hobby-friendly roster rules.
 /// </summary>
-public class FootballEntityImporter
+public class HockeyEntityImporter
 {
-    public const int HobbyPlayersOnField = 5;
-    public const int HobbyNumberOfHalves = 2;
-    public const int HobbyHalfDurationMinutes = 25;
+    public const int HobbyMinDressedPlayers = 6;
 
-    private readonly FootballApiClient _api;
+    private readonly HockeyApiClient _api;
     private readonly IdMapStore _idMap;
     private readonly ImportLogger _log;
 
-    public FootballEntityImporter(FootballApiClient api, IdMapStore idMap, ImportLogger log)
+    public HockeyEntityImporter(HockeyApiClient api, IdMapStore idMap, ImportLogger log)
     {
         _api = api;
         _idMap = idMap;
@@ -36,7 +34,7 @@ public class FootballEntityImporter
     public async Task<DivisionDto> GetOrCreateImportDivisionAsync()
     {
         Console.WriteLine("--- Division ---");
-        const string divisionName = "MAHL Jalkapallo";
+        const string divisionName = "MAHL Jääkiekko";
 
         List<DivisionDto> divisions = await _api.GetDivisionsAsync();
         DivisionDto? division = divisions.FirstOrDefault(d =>
@@ -48,7 +46,7 @@ public class FootballEntityImporter
         }
 
         division = await _api.CreateDivisionAsync(
-            divisionName, "JoomLeague-tuonnin jalkapallosarjat", 1, "Football");
+            divisionName, "JoomLeague-tuonnin jääkiekkosarjat", 1, "Icehockey");
         if (division == null)
             throw new InvalidOperationException($"Failed to create division '{divisionName}'.");
         Console.WriteLine($"  Created division '{division.Name}' ({division.Id})");
@@ -105,12 +103,23 @@ public class FootballEntityImporter
 
     public async Task ImportPersonsAndPlayersAsync(FloorballImportSet set)
     {
-        Console.WriteLine("--- Persons & Football Players ---");
+        Console.WriteLine("--- Persons & Hockey Players ---");
 
-        List<FootballPlayerDto> existingPlayers = await _api.GetPlayersAsync();
-        Dictionary<Guid, FootballPlayerDto> playerByPersonId = [];
-        foreach (FootballPlayerDto p in existingPlayers)
-            playerByPersonId[p.PersonId] = p;
+        Dictionary<int, HockeyPosition> positionByPerson = [];
+        foreach (ProjectImport pi in set.Projects)
+        {
+            foreach (ProjectTeamImport pti in pi.Teams.Values)
+            {
+                foreach (RosterEntry re in pti.Roster)
+                {
+                    if (!positionByPerson.TryGetValue(re.Person.Id, out HockeyPosition existing) ||
+                        existing != HockeyPosition.Goalie && re.HockeyPosition == HockeyPosition.Goalie)
+                    {
+                        positionByPerson[re.Person.Id] = re.HockeyPosition;
+                    }
+                }
+            }
+        }
 
         int created = 0, reused = 0, failed = 0, done = 0;
         int total = set.UniquePersons.Count;
@@ -149,17 +158,14 @@ public class FootballEntityImporter
                 reused++;
             }
 
-            FootballPlayerDto? player = playerByPersonId.GetValueOrDefault(person.Id);
+            HockeyPosition position = positionByPerson.GetValueOrDefault(oldPerson.Id, HockeyPosition.Center);
+            HockeyCatches? catches = position == HockeyPosition.Goalie ? HockeyCatches.Unknown : null;
+            HockeyPlayerDto? player = await _api.CreatePlayerAsync(person.Id, position, catches);
             if (player == null)
             {
-                player = await _api.CreatePlayerAsync(person.Id);
-                if (player == null)
-                {
-                    _log.LogError("CreateFootballPlayer", new { oldPerson.Id, oldPerson.FullName, NewPersonId = person.Id }, "API returned null.");
-                    failed++;
-                    continue;
-                }
-                playerByPersonId[person.Id] = player;
+                _log.LogError("CreateHockeyPlayer", new { oldPerson.Id, oldPerson.FullName, NewPersonId = person.Id }, "API returned null.");
+                failed++;
+                continue;
             }
 
             _idMap.Persons[oldPerson.Id] = new IdMapStore.PersonMapping { PersonId = person.Id, PlayerId = player.Id };
@@ -178,7 +184,7 @@ public class FootballEntityImporter
     public async Task ImportTeamsAsync(FloorballImportSet set, JoomleagueDatabase db, DivisionDto division)
     {
         Console.WriteLine("--- Teams & Rosters ---");
-        List<Application.Features.Football.Teams.DTOs.FootballTeamSummaryDto> existing = await _api.GetTeamsAsync();
+        List<HockeyTeamDto> existing = await _api.GetTeamsAsync();
         int created = 0, reused = 0;
 
         Dictionary<int, Dictionary<int, RosterEntry>> rosterByTeam = [];
@@ -214,13 +220,11 @@ public class FootballEntityImporter
                 continue;
             }
 
-            Application.Features.Football.Teams.DTOs.FootballTeamSummaryDto? team = null;
+            HockeyTeamDto? team = null;
             TeamCategory teamCategory = categoryByTeam.GetValueOrDefault(oldTeam.Id, TeamCategory.Adult);
 
             if (_idMap.Teams.TryGetValue(oldTeam.Id, out Guid mappedId))
-            {
                 team = existing.FirstOrDefault(t => t.Id == mappedId);
-            }
 
             if (team == null)
             {
@@ -234,28 +238,17 @@ public class FootballEntityImporter
                         : -oldTeam.Id;
                     if (!_idMap.Clubs.TryGetValue(clubKey, out Guid clubId))
                     {
-                        _log.LogError("CreateFootballTeam", new { oldTeam.Id, oldTeam.Name }, "No club mapping found.");
+                        _log.LogError("CreateHockeyTeam", new { oldTeam.Id, oldTeam.Name }, "No club mapping found.");
                         continue;
                     }
 
-                    FootballTeamDto? createdTeam = await _api.CreateTeamAsync(
+                    team = await _api.CreateTeamAsync(
                         oldTeam.Name, MakeShortName(oldTeam), clubId, division.Id, teamCategory);
-                    if (createdTeam == null)
+                    if (team == null)
                     {
-                        _log.LogError("CreateFootballTeam", new { oldTeam.Id, oldTeam.Name }, "API returned null.");
+                        _log.LogError("CreateHockeyTeam", new { oldTeam.Id, oldTeam.Name }, "API returned null.");
                         continue;
                     }
-                    team = new Application.Features.Football.Teams.DTOs.FootballTeamSummaryDto(
-                        createdTeam.Id,
-                        createdTeam.Name,
-                        createdTeam.DivisionId,
-                        createdTeam.Club,
-                        createdTeam.HomeArena,
-                        createdTeam.PrimaryJerseyColor,
-                        createdTeam.SecondaryJerseyColor,
-                        createdTeam.LogoUrl,
-                        createdTeam.HasActiveMembers,
-                        createdTeam.TeamCategory);
                     existing.Add(team);
                     created++;
                 }
@@ -268,21 +261,31 @@ public class FootballEntityImporter
                 _idMap.Save();
             }
 
+            team = await _api.GetTeamByIdAsync(team.Id) ?? team;
+            HashSet<int> usedJerseys = UsedJerseys(team);
+
             int added = 0, rosterTotal = unionRoster.Count;
             foreach (RosterEntry re in unionRoster.Values)
             {
                 if (!_idMap.Persons.TryGetValue(re.Person.Id, out IdMapStore.PersonMapping? mapping))
                     continue;
 
-                int position = (int)re.FootballPosition;
-                if (position == (int)FootballPosition.None)
-                    position = (int)FootballPosition.Forward;
-                int? jersey = re.TeamPlayer.JerseyNumber is > 0 and < 100 ? re.TeamPlayer.JerseyNumber : null;
-                bool ok = await _api.AddPlayerToTeamAsync(team.Id, mapping.PlayerId, position, jersey);
+                int? preferred = re.TeamPlayer.JerseyNumber is > 0 and < 100 ? re.TeamPlayer.JerseyNumber : null;
+                int jersey = NextJersey(usedJerseys, preferred);
+                bool ok = await _api.AddPlayerToTeamAsync(team.Id, mapping.PlayerId, re.HockeyPosition, jersey);
+                if (!ok)
+                {
+                    usedJerseys.Remove(jersey);
+                    jersey = NextJersey(usedJerseys, null);
+                    ok = await _api.AddPlayerToTeamAsync(team.Id, mapping.PlayerId, re.HockeyPosition, jersey);
+                }
                 if (ok) added++;
+                else usedJerseys.Remove(jersey);
             }
 
-            Console.WriteLine($"  {oldTeam.Name}: roster {added}/{rosterTotal}");
+            int filled = await EnsureJerseyNumbersAsync(team.Id);
+            Console.WriteLine($"  {oldTeam.Name}: roster {added}/{rosterTotal}" +
+                              (filled > 0 ? $", filled {filled} jersey numbers" : ""));
         }
 
         _idMap.Save();
@@ -297,13 +300,67 @@ public class FootballEntityImporter
         return cleaned.Length <= 4 ? cleaned.ToUpperInvariant() : cleaned[..4].ToUpperInvariant();
     }
 
-    public async Task<Guid> GetOrCreateImportRefereeAsync()
+    private static HashSet<int> UsedJerseys(HockeyTeamDto? team) =>
+        team?.Roster
+            .Where(r => r.JerseyNumber is > 0 and < 100)
+            .Select(r => r.JerseyNumber!.Value)
+            .ToHashSet()
+        ?? [];
+
+    private static int NextJersey(HashSet<int> used, int? preferred)
     {
-        Console.WriteLine("--- Import Referee ---");
-        List<FootballRefereeDto> existing = await _api.GetRefereesAsync();
+        if (preferred is > 0 and < 100 && used.Add(preferred.Value))
+            return preferred.Value;
+
+        for (int number = 1; number <= 99; number++)
+        {
+            if (used.Add(number))
+                return number;
+        }
+
+        return 99;
+    }
+
+    private async Task<int> EnsureJerseyNumbersAsync(Guid teamId)
+    {
+        HockeyTeamDto? team = await _api.GetTeamByIdAsync(teamId);
+        if (team == null)
+            return 0;
+
+        HashSet<int> used = UsedJerseys(team);
+        int filled = 0;
+        foreach (HockeyTeamPlayerDto row in team.Roster)
+        {
+            if (row.JerseyNumber is > 0)
+                continue;
+
+            int jersey = NextJersey(used, null);
+            HockeyPosition position = Enum.TryParse(row.Position, true, out HockeyPosition parsedPosition)
+                ? parsedPosition
+                : HockeyPosition.Center;
+            HockeyRosterStatus status = Enum.TryParse(row.RosterStatus, true, out HockeyRosterStatus parsedStatus)
+                ? parsedStatus
+                : HockeyRosterStatus.Active;
+            HockeyCaptainRole captain = Enum.TryParse(row.CaptainRole, true, out HockeyCaptainRole parsedCaptain)
+                ? parsedCaptain
+                : HockeyCaptainRole.None;
+
+            if (await _api.UpdateTeamPlayerAsync(teamId, row.PlayerId, position, jersey, status, captain))
+                filled++;
+            else
+                used.Remove(jersey);
+        }
+
+        return filled;
+    }
+
+    public async Task<Guid> GetOrCreateImportOfficialAsync()
+    {
+        Console.WriteLine("--- Import Official ---");
+        List<HockeyOfficialDto> existing = await _api.GetOfficialsAsync();
         if (existing.Count > 0)
         {
-            Console.WriteLine($"  Using existing referee: {existing[0].Id}");
+            Console.WriteLine($"  Using existing official: {existing[0].Id}");
             return existing[0].Id;
         }
 
@@ -313,37 +370,46 @@ public class FootballEntityImporter
             string.Equals(p.LastName, "Referee", StringComparison.OrdinalIgnoreCase));
         refPerson ??= await _api.CreatePersonAsync("Import", "Referee");
         if (refPerson == null)
-            throw new InvalidOperationException("Failed to create referee person.");
+            throw new InvalidOperationException("Failed to create official person.");
 
-        FootballRefereeDto? referee = await _api.CreateRefereeAsync(refPerson.Id);
-        if (referee == null)
-            throw new InvalidOperationException("Failed to create football referee.");
+        HockeyOfficialDto? official = await _api.CreateOfficialAsync(refPerson.Id);
+        if (official == null)
+            throw new InvalidOperationException("Failed to create hockey official.");
 
-        Console.WriteLine($"  Created import referee: {referee.Id}");
-        return referee.Id;
+        Console.WriteLine($"  Created import official: {official.Id}");
+        return official.Id;
     }
 
-    /// <summary>
-    /// Gets (creating lazily) a per-team "Tuntematon" player used to attribute goals whose
-    /// scorer is not present in the old data, so that final scores stay correct.
-    /// </summary>
     public async Task<Guid?> GetOrCreateUnknownPlayerAsync(OldTeam oldTeam, Guid newTeamId)
     {
-        List<Guid> players = await EnsureUnknownPlayersAsync(oldTeam, newTeamId, 1);
+        List<Guid> players = await EnsureUnknownPlayersAsync(oldTeam, newTeamId, 1, HockeyPosition.Center);
+        return players.Count > 0 ? players[0] : null;
+    }
+
+    public async Task<Guid?> GetOrCreateUnknownGoalieAsync(OldTeam oldTeam, Guid newTeamId)
+    {
+        List<Guid> players = await EnsureUnknownPlayersAsync(oldTeam, newTeamId, 1, HockeyPosition.Goalie);
         return players.Count > 0 ? players[0] : null;
     }
 
     /// <summary>
     /// Ensures at least <paramref name="count"/> unique unknown players exist on the team roster.
-    /// Slot 1 is the shared unknown scorer; further slots are extra lineup pads.
     /// </summary>
-    public async Task<List<Guid>> EnsureUnknownPlayersAsync(OldTeam oldTeam, Guid newTeamId, int count)
+    public async Task<List<Guid>> EnsureUnknownPlayersAsync(
+        OldTeam oldTeam,
+        Guid newTeamId,
+        int count,
+        HockeyPosition position = HockeyPosition.Center)
     {
         List<Guid> result = [];
         if (count <= 0)
             return result;
 
-        Guid? first = await CreateUnknownPlayerInternalAsync(oldTeam, newTeamId, $"({oldTeam.Name})", cachePrimary: true);
+        string lastName = position == HockeyPosition.Goalie
+            ? $"MV ({oldTeam.Name})"
+            : $"({oldTeam.Name})";
+        Guid? first = await CreateUnknownPlayerInternalAsync(
+            oldTeam, newTeamId, lastName, position, cachePrimary: true);
         if (first == null)
             return result;
         result.Add(first.Value);
@@ -366,7 +432,7 @@ public class FootballEntityImporter
             }
 
             Guid? extra = await CreateUnknownPlayerInternalAsync(
-                oldTeam, newTeamId, $"({oldTeam.Name} {nextSlot})", cachePrimary: false);
+                oldTeam, newTeamId, $"({oldTeam.Name} {nextSlot})", position, cachePrimary: false);
             if (extra == null)
                 break;
             extras.Add(extra.Value);
@@ -382,9 +448,11 @@ public class FootballEntityImporter
         OldTeam oldTeam,
         Guid newTeamId,
         string lastName,
+        HockeyPosition position,
         bool cachePrimary)
     {
-        if (cachePrimary && _idMap.UnknownPlayers.TryGetValue(oldTeam.Id, out Guid cached))
+        if (cachePrimary && position != HockeyPosition.Goalie &&
+            _idMap.UnknownPlayers.TryGetValue(oldTeam.Id, out Guid cached))
             return cached;
 
         const string firstName = "Tuntematon";
@@ -403,62 +471,57 @@ public class FootballEntityImporter
         }
         if (person == null)
         {
-            _log.LogError("CreateUnknownFootballPlayer", new { oldTeam.Id, oldTeam.Name, lastName }, "Person creation failed.");
+            _log.LogError("CreateUnknownHockeyPlayer", new { oldTeam.Id, oldTeam.Name, lastName }, "Person creation failed.");
             return null;
         }
 
-        FootballPlayerDto? player = await _api.CreatePlayerAsync(person.Id);
+        HockeyCatches? catches = position == HockeyPosition.Goalie ? HockeyCatches.Unknown : null;
+        HockeyPlayerDto? player = await _api.CreatePlayerAsync(person.Id, position, catches);
         if (player == null)
         {
-            List<FootballPlayerDto> players = await _api.GetPlayersAsync();
-            player = players.FirstOrDefault(p => p.PersonId == person.Id);
-        }
-        if (player == null)
-        {
-            _log.LogError("CreateUnknownFootballPlayer", new { oldTeam.Id, oldTeam.Name, lastName }, "Player creation failed.");
+            _log.LogError("CreateUnknownHockeyPlayer", new { oldTeam.Id, oldTeam.Name, lastName }, "Player creation failed.");
             return null;
         }
 
-        bool added = await _api.AddPlayerToTeamAsync(
-            newTeamId, player.Id, (int)FootballPosition.Forward, null);
+        HockeyTeamDto? team = await _api.GetTeamByIdAsync(newTeamId);
+        int jersey = NextJersey(UsedJerseys(team), null);
+        bool added = await _api.AddPlayerToTeamAsync(newTeamId, player.Id, position, jersey);
         if (!added)
         {
-            _log.LogError("CreateUnknownFootballPlayer", new { oldTeam.Id, oldTeam.Name, lastName }, "Adding player to team roster failed.");
+            _log.LogError("CreateUnknownHockeyPlayer", new { oldTeam.Id, oldTeam.Name, lastName }, "Adding player to team roster failed.");
             return null;
         }
 
-        if (cachePrimary)
+        await EnsureJerseyNumbersAsync(newTeamId);
+
+        if (cachePrimary && position != HockeyPosition.Goalie)
             _idMap.UnknownPlayers[oldTeam.Id] = player.Id;
 
         return player.Id;
     }
 
-    public async Task<FootballSeasonDto?> ImportSeasonAsync(ProjectImport pi, DivisionDto division)
+    public async Task<HockeySeasonDto?> ImportSeasonAsync(ProjectImport pi, DivisionDto division)
     {
         OldProject project = pi.Project;
-        TeamCategory teamCategory = TeamCategoryResolver.InferFromName(project.Name);
-        int halves = HobbyNumberOfHalves;
-        int halfMinutes = HobbyHalfDurationMinutes;
-        if (project.PeriodDurationMinutes is >= 15 and <= 30)
-            halfMinutes = project.PeriodDurationMinutes;
+        int periodCount = Math.Clamp(project.NumberOfPeriods, 1, 5);
+        int periodMinutes = Math.Clamp(project.PeriodDurationMinutes, 1, 60);
 
-        List<FootballSeasonDto> existing = await _api.GetSeasonsAsync();
+        List<HockeySeasonDto> existing = await _api.GetSeasonsAsync();
 
         if (_idMap.Seasons.TryGetValue(project.Id, out Guid mappedSeasonId))
         {
-            FootballSeasonDto? mapped = existing.FirstOrDefault(s => s.Id == mappedSeasonId);
+            HockeySeasonDto? mapped = existing.FirstOrDefault(s => s.Id == mappedSeasonId)
+                ?? await _api.GetSeasonByIdAsync(mappedSeasonId);
             if (mapped != null)
             {
-                mapped = await EnsureSeasonCategoryAsync(mapped, teamCategory);
-                Console.WriteLine(
-                    $"  Season already imported: '{mapped.Name}' ({mapped.Id}) [{mapped.TeamCategory}]");
-                await EnsureTeamsInSeasonAsync(pi, mapped, division);
-                return mapped;
+                Console.WriteLine($"  Season already imported: '{mapped.Name}' ({mapped.Id})");
+                await EnsureSeasonReadyAsync(mapped, pi, division, periodCount, periodMinutes);
+                return await _api.GetSeasonByIdAsync(mapped.Id) ?? mapped;
             }
         }
 
         string seasonName = project.Name;
-        FootballSeasonDto? byName = existing.FirstOrDefault(s =>
+        HockeySeasonDto? byName = existing.FirstOrDefault(s =>
             string.Equals(s.Name, seasonName, StringComparison.OrdinalIgnoreCase));
         if (byName != null && _idMap.Seasons.Values.Contains(byName.Id))
         {
@@ -467,7 +530,7 @@ public class FootballEntityImporter
                 string.Equals(s.Name, seasonName, StringComparison.OrdinalIgnoreCase));
         }
 
-        FootballSeasonDto? season = byName;
+        HockeySeasonDto? season = byName;
         if (season == null)
         {
             List<DateTime> matchDates = pi.Matches
@@ -480,54 +543,40 @@ public class FootballEntityImporter
             DateTime end = matchDates.Count > 0 ? matchDates.Max().AddMonths(1) : start.AddYears(1);
             if (end <= start) end = start.AddMonths(6);
 
-            season = await _api.CreateSeasonAsync(
-                seasonName, division.Id, start, end,
-                halves, halfMinutes, HobbyPlayersOnField,
-                teamCategory);
+            season = await _api.CreateSeasonAsync(seasonName, start, end);
             if (season == null)
             {
-                _log.LogError("CreateFootballSeason", new { project.Id, seasonName, teamCategory }, "API returned null.");
+                _log.LogError("CreateHockeySeason", new { project.Id, seasonName }, "API returned null.");
                 return null;
             }
-            Console.WriteLine($"  Created season '{seasonName}' ({season.Id}) [{teamCategory}] {halves}×{halfMinutes} min, {HobbyPlayersOnField}v{HobbyPlayersOnField}");
+            Console.WriteLine($"  Created season '{seasonName}' ({season.Id}) {periodCount}×{periodMinutes} min");
         }
         else
         {
-            season = await EnsureSeasonCategoryAsync(season, teamCategory);
-            Console.WriteLine($"  Using existing season '{seasonName}' ({season.Id}) [{season.TeamCategory}]");
+            Console.WriteLine($"  Using existing season '{seasonName}' ({season.Id})");
         }
 
         _idMap.Seasons[project.Id] = season.Id;
         _idMap.Save();
 
-        await EnsureTeamsInSeasonAsync(pi, season, division);
-
-        return season;
+        await EnsureSeasonReadyAsync(season, pi, division, periodCount, periodMinutes);
+        return await _api.GetSeasonByIdAsync(season.Id) ?? season;
     }
 
-    private async Task<FootballSeasonDto> EnsureSeasonCategoryAsync(
-        FootballSeasonDto season,
-        TeamCategory expected)
+    private async Task EnsureSeasonReadyAsync(
+        HockeySeasonDto season,
+        ProjectImport pi,
+        DivisionDto division,
+        int periodCount,
+        int periodMinutes)
     {
-        if (season.TeamCategory == expected)
-            return season;
+        await _api.ApplyHobbyRulesAsync(season.Id, periodCount, periodMinutes, HobbyMinDressedPlayers);
+        await _api.AddDivisionToSeasonAsync(season.Id, division.Id, division.Name);
 
-        FootballSeasonDto? updated = await _api.UpdateSeasonAsync(season, expected);
-        if (updated == null)
-        {
-            _log.LogError(
-                "UpdateFootballSeasonCategory",
-                new { season.Id, season.Name, From = season.TeamCategory, To = expected },
-                "API returned null; keeping previous category.");
-            return season;
-        }
+        HockeySeasonDto? refreshed = await _api.GetSeasonByIdAsync(season.Id) ?? season;
+        Guid? competitionDivisionId = refreshed.Divisions
+            .FirstOrDefault(d => d.DivisionId == division.Id)?.Id;
 
-        Console.WriteLine($"  Updated season category '{season.Name}': {season.TeamCategory} → {expected}");
-        return updated;
-    }
-
-    private async Task EnsureTeamsInSeasonAsync(ProjectImport pi, FootballSeasonDto season, DivisionDto division)
-    {
         int teamsAdded = 0;
         HashSet<Guid> handled = [];
         foreach (ProjectTeamImport pti in pi.Teams.Values)
@@ -536,10 +585,26 @@ public class FootballEntityImporter
                 continue;
             if (!handled.Add(teamId))
                 continue;
-            bool ok = await _api.AddTeamToSeasonAsync(season.Id, teamId);
-            await _api.AddTeamToSeasonDivisionAsync(season.Id, division.Id, teamId);
-            if (ok) teamsAdded++;
+
+            HockeyCompetitionTeamDto? competitionTeam = refreshed.Teams.FirstOrDefault(t => t.TeamId == teamId);
+            if (competitionTeam == null)
+            {
+                competitionTeam = await _api.AddTeamToSeasonAsync(season.Id, teamId);
+                if (competitionTeam != null)
+                    teamsAdded++;
+            }
+            else
+            {
+                teamsAdded++;
+            }
+
+            if (competitionTeam != null && competitionDivisionId.HasValue)
+                await _api.AddTeamToSeasonDivisionAsync(season.Id, competitionDivisionId.Value, competitionTeam.Id);
         }
+
+        await _api.PublishSeasonAsync(season.Id);
+        await _api.OpenSeasonRegistrationAsync(season.Id);
+        await _api.ActivateSeasonAsync(season.Id);
         Console.WriteLine($"  Teams in season: {teamsAdded}/{pi.Teams.Count}");
     }
 }
