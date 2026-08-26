@@ -62,7 +62,7 @@ public class CreateFootballTeamHandler : IRequestHandler<CreateFootballTeamComma
             Club? club = await _clubRepository.GetByIdAsync(request.ClubId);
             if (club == null)
             {
-                return Result<FootballTeamDto>.Failure("Club not found");
+                return Result<FootballTeamDto>.NotFound("Club", request.ClubId);
             }
             // Create the team entity
             FootballTeam team = FootballTeamMapper.ToEntity(request, club);
