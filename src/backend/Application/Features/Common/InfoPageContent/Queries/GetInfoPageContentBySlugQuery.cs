@@ -46,8 +46,7 @@ public class GetInfoPageContentBySlugQueryHandler
 
         if (entity == null)
         {
-            return Result<InfoPageContentDto>.Failure(
-                $"Info page content with slug '{request.Slug}' not found.");
+            return Result<InfoPageContentDto>.NotFound("InfoPageContent", request.Slug);
         }
 
         return Result<InfoPageContentDto>.Success(InfoPageContentMapper.ToDto(entity));

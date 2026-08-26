@@ -56,7 +56,7 @@ namespace Application.Features.Common.Users.Handlers
                 if (user == null)
                 {
                     _logger.LogInformation("User with ID {UserId} not found", request.Id);
-                    return Result<UserDto>.Failure($"User with ID '{request.Id}' not found.");
+                    return Result<UserDto>.NotFound("User", request.Id);
                 }
 
                 UserDto userDto = UserMapper.ToDto(user);

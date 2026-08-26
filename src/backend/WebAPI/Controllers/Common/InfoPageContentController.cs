@@ -1,7 +1,4 @@
 using Domain.Constants;
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using Application.Common;
 using Application.DTOs.Common;
 using Application.Features.Common.InfoPageContent.Commands;
@@ -25,8 +22,6 @@ public class InfoPageContentController : BaseApiController
     /// <summary>
     /// Initializes a new instance of the InfoPageContentController class
     /// </summary>
-    /// <param name="mediator">The mediator for handling commands and queries</param>
-    /// <param name="logger">The logger for this controller</param>
     public InfoPageContentController(
         IMediator mediator,
         ILogger<InfoPageContentController> logger)
@@ -38,7 +33,6 @@ public class InfoPageContentController : BaseApiController
     /// <summary>
     /// Get all info page contents
     /// </summary>
-    /// <returns>List of all info page contents</returns>
     [HttpGet]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<InfoPageContentDto>>), StatusCodes.Status200OK)]
@@ -49,27 +43,12 @@ public class InfoPageContentController : BaseApiController
         Result<IReadOnlyList<InfoPageContentDto>> result = await _mediator.Send(
             new GetAllInfoPageContentsQuery());
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<IReadOnlyList<InfoPageContentDto>>.SuccessResponse(
-                result.Data,
-                "Info page contents retrieved successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        return StatusCode(
-            500,
-            ApiResponse<IReadOnlyList<InfoPageContentDto>>.ErrorResponse(
-                string.IsNullOrWhiteSpace(errorMessage)
-                    ? "An unexpected error occurred."
-                    : errorMessage));
+        return HandleResult(result, "Info page contents retrieved successfully", "Failed to retrieve info page contents");
     }
 
     /// <summary>
     /// Get info page content by slug
     /// </summary>
-    /// <param name="slug">The page slug identifier</param>
-    /// <returns>Info page content details</returns>
     [HttpGet("{slug}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<InfoPageContentDto>), StatusCodes.Status200OK)]
@@ -80,34 +59,12 @@ public class InfoPageContentController : BaseApiController
 
         Result<InfoPageContentDto> result = await _mediator.Send(new GetInfoPageContentBySlugQuery(slug));
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<InfoPageContentDto>.SuccessResponse(
-                result.Data,
-                "Info page content retrieved successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-
-        if (!string.IsNullOrWhiteSpace(errorMessage) && errorMessage.Contains("not found"))
-        {
-            return NotFound(ApiResponse<InfoPageContentDto>.ErrorResponse(errorMessage));
-        }
-
-        return StatusCode(
-            500,
-            ApiResponse<InfoPageContentDto>.ErrorResponse(
-                string.IsNullOrWhiteSpace(errorMessage)
-                    ? "An unexpected error occurred."
-                    : errorMessage));
+        return HandleResult(result, "Info page content retrieved successfully", "Failed to retrieve info page content");
     }
 
     /// <summary>
-    /// Update info page content by slug
+    /// Update info page content by slug (upsert)
     /// </summary>
-    /// <param name="slug">The page slug identifier</param>
-    /// <param name="request">Updated page title and content</param>
-    /// <returns>Updated info page content</returns>
     [HttpPut("{slug}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<InfoPageContentDto>), StatusCodes.Status200OK)]
@@ -118,7 +75,7 @@ public class InfoPageContentController : BaseApiController
     {
         _logger.LogInformation("Updating info page content with slug: {Slug}", SanitizeForLog(slug));
 
-        var command = new UpdateInfoPageContentCommand(
+        UpdateInfoPageContentCommand command = new(
             slug,
             request.Title,
             request.ContentHtml,
@@ -126,16 +83,6 @@ public class InfoPageContentController : BaseApiController
 
         Result<InfoPageContentDto> result = await _mediator.Send(command);
 
-        if (result.IsSuccess && result.Data != null)
-        {
-            return Ok(ApiResponse<InfoPageContentDto>.SuccessResponse(
-                result.Data,
-                "Info page content updated successfully"));
-        }
-
-        string errorMessage = result.Error ?? result.GetErrorsString();
-        List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-        return BadRequest(ApiResponse<InfoPageContentDto>.ErrorResponse(errorMessage, errorList));
+        return HandleResult(result, "Info page content updated successfully", "Failed to update info page content");
     }
 }

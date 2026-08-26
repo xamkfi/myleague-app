@@ -43,7 +43,7 @@ public class GetRulesSectionByIdQueryHandler
 
         if (entity == null)
         {
-            return Result<RulesSectionDto>.Failure($"Rules section with ID '{request.Id}' not found.");
+            return Result<RulesSectionDto>.NotFound("RulesSection", request.Id);
         }
 
         return Result<RulesSectionDto>.Success(RulesSectionMapper.ToDto(entity));
