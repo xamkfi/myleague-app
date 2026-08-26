@@ -49,7 +49,7 @@ public class ActivateFootballSeasonHandler : IRequestHandler<ActivateFootballSea
             if (season == null)
             {
                 _logger.LogWarning("Season not found with ID: {SeasonId}", request.Id);
-                return Result<FootballSeasonDto>.Failure($"Season with ID {request.Id} not found.");
+                return Result<FootballSeasonDto>.NotFound("FootballSeason", request.Id);
             }
 
             _logger.LogInformation("Activating football season: {SeasonId}", request.Id);
@@ -74,6 +74,11 @@ public class ActivateFootballSeasonHandler : IRequestHandler<ActivateFootballSea
             _logger.LogInformation("Successfully activated football season: {SeasonId}", request.Id);
 
             return Result<FootballSeasonDto>.Success(seasonDto);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Business rule violation while activating football season: {SeasonId}", request.Id);
+            return Result<FootballSeasonDto>.Failure(ex.Message);
         }
         catch (Exception ex)
         {

@@ -77,7 +77,7 @@ public class StartFloorballMatchHandler : IRequestHandler<StartFloorballMatchCom
             if (match == null)
             {
                 _logger.LogWarning("Match not found with ID: {MatchId}", request.Id);
-                return Result<FloorballMatchDto>.Failure($"Match with ID {request.Id} not found.");
+                return Result<FloorballMatchDto>.NotFound("FloorballMatch", request.Id);
             }
 
             _logger.LogInformation("Starting floorball match: {MatchId}", request.Id);

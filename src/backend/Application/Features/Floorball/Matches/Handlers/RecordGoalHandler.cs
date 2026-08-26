@@ -15,6 +15,7 @@ using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
 using Application.Common;
 using Domain.Entities.Floorball;
+using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
 using MediatR;
@@ -133,26 +134,25 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
                 request.PeriodNumber, request.TimeInSeconds,
                 request.Description, request.GoalType);
 
-            //Adding goals/assists to player statistics
-            scoringPlayer.RecordGoal();
-            if (assistingPlayer != null) assistingPlayer.RecordAssist();
-            if (secondAssistingPlayer != null) secondAssistingPlayer.RecordAssist();
+            bool isOwnGoal = goal.GoalType == FloorballGoalType.OwnGoal
+                || request.GoalType == (int)FloorballGoalType.OwnGoal;
 
-            // Update season statistics immediately
-            _logger.LogInformation("[RecordGoal] UpdatePlayerSeasonStatistics scorer: PlayerId={PlayerId}, TeamId={TeamId}, SeasonId={SeasonId}",
-                scoringPlayer.Id, request.ScoringTeamId, match.CompetitionId);
-            await UpdatePlayerSeasonStatistics(scoringPlayer.Id, request.ScoringTeamId, match.CompetitionId, true, false, cancellationToken);
-            if (assistingPlayer != null)
+            // Own goals must not inflate the defending player's career/season goal totals
+            // (parity with football RecordGoalHandler).
+            if (!isOwnGoal)
             {
-                _logger.LogInformation("[RecordGoal] UpdatePlayerSeasonStatistics assister: PlayerId={PlayerId}, TeamId={TeamId}, SeasonId={SeasonId}",
-                    assistingPlayer.Id, request.ScoringTeamId, match.CompetitionId);
-                await UpdatePlayerSeasonStatistics(assistingPlayer.Id, request.ScoringTeamId, match.CompetitionId, false, true, cancellationToken);
-            }
-            if (secondAssistingPlayer != null)
-            {
-                _logger.LogInformation("[RecordGoal] UpdatePlayerSeasonStatistics secondAssister: PlayerId={PlayerId}, TeamId={TeamId}, SeasonId={SeasonId}",
-                    secondAssistingPlayer.Id, request.ScoringTeamId, match.CompetitionId);
-                await UpdatePlayerSeasonStatistics(secondAssistingPlayer.Id, request.ScoringTeamId, match.CompetitionId, false, true, cancellationToken);
+                scoringPlayer.RecordGoal();
+                await UpdatePlayerSeasonStatistics(scoringPlayer.Id, request.ScoringTeamId, match.CompetitionId, true, false, cancellationToken);
+                if (assistingPlayer != null)
+                {
+                    assistingPlayer.RecordAssist();
+                    await UpdatePlayerSeasonStatistics(assistingPlayer.Id, request.ScoringTeamId, match.CompetitionId, false, true, cancellationToken);
+                }
+                if (secondAssistingPlayer != null)
+                {
+                    secondAssistingPlayer.RecordAssist();
+                    await UpdatePlayerSeasonStatistics(secondAssistingPlayer.Id, request.ScoringTeamId, match.CompetitionId, false, true, cancellationToken);
+                }
             }
 
             // Update team season statistics (increment goals for scoring team, goals against for opposing team).
@@ -164,8 +164,11 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
             // Update match team statistics
             await UpdateMatchTeamStatistics(match.Id, request.ScoringTeamId, cancellationToken);
 
-            // Update goalie statistics (shots against and goals allowed for the opposing team)
-            await UpdateGoalieSeasonStatistics(match, request.ScoringTeamId, cancellationToken);
+            // Own goals are not shots on the opposing goalie
+            if (!isOwnGoal)
+            {
+                await UpdateGoalieSeasonStatistics(match, request.ScoringTeamId, cancellationToken);
+            }
 
             // Mark the goal event as added and ensure the match is tracked as modified
             _matchRepository.MarkEventAsAdded(goal);

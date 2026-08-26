@@ -52,21 +52,19 @@ public class DeleteRulesSectionRuleCommandHandler
 
         if (entity == null)
         {
-            return Result<RulesSectionDto>.Failure($"Rules section with ID '{request.SectionId}' not found.");
+            return Result<RulesSectionDto>.NotFound("RulesSection", request.SectionId);
         }
 
-        try
+        if (!RulesHtmlHelper.ContainsRule(entity.ContentHtml, request.RuleId))
         {
-            string updatedHtml = RulesHtmlHelper.DeleteRule(entity.ContentHtml, request.RuleId);
-            entity.UpdateContentHtml(updatedHtml, request.LastModifiedBy);
-            await _repository.UpdateAsync(entity, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Result<RulesSectionDto>.NotFound("RulesSectionRule", request.RuleId);
+        }
 
-            return Result<RulesSectionDto>.Success(RulesSectionMapper.ToDto(entity));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Result<RulesSectionDto>.Failure(ex.Message);
-        }
+        string updatedHtml = RulesHtmlHelper.DeleteRule(entity.ContentHtml, request.RuleId);
+        entity.UpdateContentHtml(updatedHtml, request.LastModifiedBy);
+        await _repository.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<RulesSectionDto>.Success(RulesSectionMapper.ToDto(entity));
     }
 }

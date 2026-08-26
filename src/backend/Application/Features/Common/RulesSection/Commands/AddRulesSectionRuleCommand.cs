@@ -52,7 +52,7 @@ public class AddRulesSectionRuleCommandHandler
 
         if (entity == null)
         {
-            return Result<RulesSectionDto>.Failure($"Rules section with ID '{request.SectionId}' not found.");
+            return Result<RulesSectionDto>.NotFound("RulesSection", request.SectionId);
         }
 
         if (string.IsNullOrWhiteSpace(request.RuleHtml))

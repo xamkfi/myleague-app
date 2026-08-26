@@ -65,7 +65,7 @@ public class GetNewsArticleByIdHandler : IRequestHandler<GetNewsArticleByIdQuery
             if (newsArticle == null)
             {
                 _logger.LogWarning("News article with ID: {NewsId} not found", request.NewsId);
-                return Result<NewsArticleDto>.Failure($"News article with ID '{request.NewsId}' not found.");
+                return Result<NewsArticleDto>.NotFound("NewsArticle", request.NewsId);
             }
 
             NewsArticleDto newsDto = NewsArticleMapper.ToDto(newsArticle);

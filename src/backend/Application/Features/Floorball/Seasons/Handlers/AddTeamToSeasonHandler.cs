@@ -72,7 +72,7 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
             if (season == null)
             {
                 _logger.LogWarning("Season not found with ID: {SeasonId}", request.CompetitionId);
-                return Result<FloorballSeasonDto>.NotFound("Season with ID {SeasonId} not found.", request.CompetitionId);
+                return Result<FloorballSeasonDto>.NotFound("FloorballSeason", request.CompetitionId);
             }
 
             // Get the team
@@ -80,13 +80,21 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
             if (team == null)
             {
                 _logger.LogWarning("Team not found with ID: {TeamId}", request.TeamId);
-                return Result<FloorballSeasonDto>.NotFound("Team with ID {TeamId} not found.", request.TeamId);
+                return Result<FloorballSeasonDto>.NotFound("FloorballTeam", request.TeamId);
             }
 
             _logger.LogInformation("Adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
             
             // Use the domain method to add the team (includes business logic validation)
             season.AddTeam(team);
+
+            // Late joiners to an already-active season need team standings rows (Activate only
+            // seeds teams present at activation time).
+            if (season.IsActive)
+            {
+                FloorballTeamSeasonStatistics teamStatistics = new FloorballTeamSeasonStatistics(team.Id, request.CompetitionId);
+                await _floorballStatisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
+            }
 
             //Initialize the player season statistics for the added team players
             List<FloorballPlayerSeasonStatistics> players = new List<FloorballPlayerSeasonStatistics>();

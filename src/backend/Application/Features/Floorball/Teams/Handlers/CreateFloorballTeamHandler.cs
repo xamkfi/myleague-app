@@ -68,7 +68,7 @@ public class CreateFloorballTeamHandler : IRequestHandler<CreateFloorballTeamCom
             Club? club = await _clubRepository.GetByIdAsync(request.ClubId);
             if (club == null)
             {
-                return Result<FloorballTeamDto>.Failure("Club not found");
+                return Result<FloorballTeamDto>.NotFound("Club", request.ClubId);
             }
             // Create the team entity
             FloorballTeam team = FloorballTeamMapper.ToEntity(request, club);
