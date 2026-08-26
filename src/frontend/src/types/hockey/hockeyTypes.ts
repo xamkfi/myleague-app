@@ -24,6 +24,62 @@ export type HockeyTeamSlot = (typeof HOCKEY_TEAM_SLOTS)[number];
 export const HOCKEY_TEAM_CATEGORIES = ['Adult', 'Youth', 'Women'] as const;
 export type HockeyTeamCategory = (typeof HOCKEY_TEAM_CATEGORIES)[number];
 
+export interface PaginatedApiResponse<T> {
+  success: boolean;
+  data: T[];
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    startItem: number;
+    endItem: number;
+  };
+  message: string;
+  errors: string[] | null;
+}
+
+export interface GetPagedHockeyMatchesRequest {
+  page?: number;
+  pageSize?: number;
+  competitionId?: string;
+  teamId?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: HockeyMatchStatus | string;
+  sortOrder?: 'asc' | 'desc' | string;
+  searchQuery?: string;
+}
+
+export interface GetPagedHockeyPlayersRequest {
+  page?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  isActive?: boolean;
+  position?: HockeyPosition;
+  clubId?: string;
+  teamId?: string;
+  teamCategory?: HockeyTeamCategory;
+}
+
+export interface GetPagedHockeyTeamsRequest {
+  page?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  clubId?: string;
+  teamCategory?: HockeyTeamCategory;
+}
+
+export interface GetPagedHockeyOfficialsRequest {
+  page?: number;
+  pageSize?: number;
+  isActive?: boolean;
+  searchTerm?: string;
+  licenseExpiringWithinDays?: number;
+}
+
 export const HOCKEY_MATCH_STATUSES = [
   'Scheduled',
   'Warmup',

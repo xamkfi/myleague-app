@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import TeamCategoryFilter from '../../../../../components/TeamCategoryFilter/TeamCategoryFilter';
 import './TournamentsFilters.scss';
 
 export type TournamentStatusFilter = 'all' | string;
@@ -9,6 +10,8 @@ interface TournamentsFiltersProps {
   statusFilter: TournamentStatusFilter;
   onStatusFilterChange: (value: TournamentStatusFilter) => void;
   uniqueStatuses: string[];
+  categoryFilter: string[];
+  onCategoryFilterChange: (categories: string[]) => void;
 }
 
 export function TournamentsFilters({
@@ -17,6 +20,8 @@ export function TournamentsFilters({
   statusFilter,
   onStatusFilterChange,
   uniqueStatuses,
+  categoryFilter,
+  onCategoryFilterChange,
 }: TournamentsFiltersProps) {
   const { t } = useTranslation();
 
@@ -70,6 +75,9 @@ export function TournamentsFilters({
               </option>
             ))}
           </select>
+        </div>
+        <div className="filter-group">
+          <TeamCategoryFilter selected={categoryFilter} onChange={onCategoryFilterChange} />
         </div>
       </div>
     </div>

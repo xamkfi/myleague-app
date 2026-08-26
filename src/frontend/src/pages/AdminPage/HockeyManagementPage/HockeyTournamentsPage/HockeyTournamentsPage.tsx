@@ -20,6 +20,7 @@ function HockeyTournamentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showOngoingOnly, setShowOngoingOnly] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
   useEffect(() => {
     hockeyTournamentService.getAll()
@@ -47,9 +48,12 @@ function HockeyTournamentsPage() {
       if (statusFilter !== 'all' && tournament.status !== statusFilter && tournament.currentStage !== statusFilter) {
         return false;
       }
+      if (categoryFilter.length > 0 && !categoryFilter.includes(tournament.teamCategory ?? '')) {
+        return false;
+      }
       return true;
     });
-  }, [tournaments, showOngoingOnly, statusFilter]);
+  }, [tournaments, showOngoingOnly, statusFilter, categoryFilter]);
 
   if (loading) {
     return (
@@ -74,6 +78,8 @@ function HockeyTournamentsPage() {
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
           uniqueStatuses={uniqueStatuses}
+          categoryFilter={categoryFilter}
+          onCategoryFilterChange={setCategoryFilter}
         />
         <div className="admin-table__wrapper">
           <TournamentsContent

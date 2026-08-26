@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import TeamCategoryFilter from '../../../../../components/TeamCategoryFilter/TeamCategoryFilter';
 import './SeasonsFilters.scss';
 
 interface SeasonsFiltersProps {
@@ -7,6 +8,8 @@ interface SeasonsFiltersProps {
   divisionFilter: string;
   onDivisionFilterChange: (value: string) => void;
   uniqueDivisions: string[];
+  categoryFilter: string[];
+  onCategoryFilterChange: (categories: string[]) => void;
 }
 
 export function SeasonsFilters({
@@ -15,6 +18,8 @@ export function SeasonsFilters({
   divisionFilter,
   onDivisionFilterChange,
   uniqueDivisions,
+  categoryFilter,
+  onCategoryFilterChange,
 }: SeasonsFiltersProps) {
   const { t } = useTranslation();
 
@@ -45,6 +50,9 @@ export function SeasonsFilters({
               </option>
             ))}
           </select>
+        </div>
+        <div className="filter-group">
+          <TeamCategoryFilter selected={categoryFilter} onChange={onCategoryFilterChange} />
         </div>
       </div>
     </div>

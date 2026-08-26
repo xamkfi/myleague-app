@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import type { HockeySeasonDto } from '../../../../../types/hockey/hockeyTypes';
 import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
 import LiveDot from '../../../../../components/LiveDot/LiveDot';
+import TeamCategoryBadge from '../../../../../components/TeamCategoryBadge/TeamCategoryBadge';
 import { useHockeyInProgressMatches } from '../../../../../hooks/useHockeyInProgressMatches';
 import { formatHockeyDate } from '../../../../../utils/hockeyLookups';
 import '../../../../../styles/AdminTable.scss';
@@ -75,6 +76,7 @@ export function SeasonsTable({
                     />
                   )}
                   <span>{season.name}</span>
+                  <TeamCategoryBadge category={season.teamCategory} />
                 </span>
               </td>
               <td>

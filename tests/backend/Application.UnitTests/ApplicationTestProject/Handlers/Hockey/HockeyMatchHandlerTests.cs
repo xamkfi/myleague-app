@@ -3,6 +3,9 @@ using Application.Features.Hockey.Matches.Commands;
 using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Matches.Handlers;
 using Application.Features.Hockey.Matches.Queries;
+using Application.Features.Hockey.Statistics.Commands;
+using Domain.Enums.Hockey.Statistics;
+using MediatR;
 using Domain.Entities.Common;
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
@@ -1139,5 +1142,47 @@ public class HockeyMatchHandlerTests
 
         result.IsSuccess.Should().BeTrue();
         result.Data.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Finish_CompetitionMatch_RecalculatesMatchAndCompetitionStatistics()
+    {
+        HockeySeason season = CreateTestSeason();
+        HockeyMatch match = CreateCompetitionMatch(season);
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        Mock<IMediator> mediator = new();
+        mediator
+            .Setup(m => m.Send(It.IsAny<RecalculateHockeyMatchStatisticsCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+        mediator
+            .Setup(m => m.Send(It.IsAny<RecalculateHockeyCompetitionStatisticsCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+
+        MarkHockeyMatchFinishedHandler handler = new(
+            _matchRepo.Object,
+            _competitionRepo.Object,
+            _unitOfWork.Object,
+            mediator.Object,
+            Mock.Of<ILogger<MarkHockeyMatchFinishedHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new MarkHockeyMatchFinishedCommand(match.Id, null, HockeyMatchResultType.HomeWin),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Status.Should().Be(HockeyMatchStatus.Finished.ToString());
+        mediator.Verify(
+            m => m.Send(
+                It.Is<RecalculateHockeyMatchStatisticsCommand>(command => command.MatchId == match.Id),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        mediator.Verify(
+            m => m.Send(
+                It.Is<RecalculateHockeyCompetitionStatisticsCommand>(command =>
+                    command.CompetitionId == season.Id
+                    && command.Scope == HockeyStatisticsScope.Competition),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }

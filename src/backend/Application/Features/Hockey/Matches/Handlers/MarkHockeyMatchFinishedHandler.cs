@@ -1,9 +1,11 @@
 using Application.Common;
 using Application.Features.Hockey.Matches.Commands;
 using Application.Features.Hockey.Matches.DTOs;
+using Application.Features.Hockey.Statistics.Commands;
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
 using Domain.Enums.Hockey.Matches;
+using Domain.Enums.Hockey.Statistics;
 using Domain.Repositories.Hockey;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -12,30 +14,35 @@ namespace Application.Features.Hockey.Matches.Handlers;
 
 /// <summary>
 /// Handles marking a hockey match as finished and advancing playoff winners like floorball.
+/// Recalculates match and competition statistics after the finish is saved.
 /// </summary>
 public class MarkHockeyMatchFinishedHandler : IRequestHandler<MarkHockeyMatchFinishedCommand, Result<HockeyMatchDto>>
 {
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyCompetitionRepository _competitionRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
     private readonly ILogger<MarkHockeyMatchFinishedHandler> _logger;
 
     public MarkHockeyMatchFinishedHandler(
         IHockeyMatchRepository matchRepository,
         IHockeyCompetitionRepository competitionRepository,
         IHockeyUnitOfWork unitOfWork,
+        IMediator mediator,
         ILogger<MarkHockeyMatchFinishedHandler> logger)
     {
         _matchRepository = matchRepository;
         _competitionRepository = competitionRepository;
         _unitOfWork = unitOfWork;
+        _mediator = mediator;
         _logger = logger;
     }
 
-    public Task<Result<HockeyMatchDto>> Handle(
+    public async Task<Result<HockeyMatchDto>> Handle(
         MarkHockeyMatchFinishedCommand request,
-        CancellationToken cancellationToken) =>
-        HockeyMatchHandlerSupport.MutateAsync(
+        CancellationToken cancellationToken)
+    {
+        Result<HockeyMatchDto> result = await HockeyMatchHandlerSupport.MutateAsync(
             _matchRepository,
             _unitOfWork,
             _logger,
@@ -47,6 +54,96 @@ public class MarkHockeyMatchFinishedHandler : IRequestHandler<MarkHockeyMatchFin
                 await AdvancePlayoffWinnerAsync(match, ct);
             },
             cancellationToken);
+
+        if (result.IsSuccess && result.Data is not null)
+            await RecalculateStatisticsAsync(result.Data, cancellationToken);
+
+        return result;
+    }
+
+    private async Task RecalculateStatisticsAsync(HockeyMatchDto match, CancellationToken cancellationToken)
+    {
+        Result matchStats = await _mediator.Send(
+            new RecalculateHockeyMatchStatisticsCommand(match.Id),
+            cancellationToken);
+        if (!matchStats.IsSuccess)
+        {
+            _logger.LogWarning(
+                "Match statistics recalc failed after finish {MatchId}: {Error}",
+                match.Id,
+                matchStats.Error);
+        }
+
+        if (match.CompetitionId is not Guid competitionId)
+            return;
+
+        await RecalculateScopeAsync(
+            competitionId,
+            HockeyStatisticsScope.Competition,
+            competitionDivisionId: null,
+            tournamentGroupId: null,
+            playoffSeriesId: null,
+            cancellationToken);
+
+        if (match.CompetitionDivisionId is Guid divisionId)
+        {
+            await RecalculateScopeAsync(
+                competitionId,
+                HockeyStatisticsScope.Division,
+                divisionId,
+                tournamentGroupId: null,
+                playoffSeriesId: null,
+                cancellationToken);
+        }
+
+        if (match.TournamentGroupId is Guid groupId)
+        {
+            await RecalculateScopeAsync(
+                competitionId,
+                HockeyStatisticsScope.TournamentGroup,
+                competitionDivisionId: null,
+                groupId,
+                playoffSeriesId: null,
+                cancellationToken);
+        }
+
+        if (match.PlayoffSeriesId is Guid seriesId)
+        {
+            await RecalculateScopeAsync(
+                competitionId,
+                HockeyStatisticsScope.PlayoffSeries,
+                competitionDivisionId: null,
+                tournamentGroupId: null,
+                seriesId,
+                cancellationToken);
+        }
+    }
+
+    private async Task RecalculateScopeAsync(
+        Guid competitionId,
+        HockeyStatisticsScope scope,
+        Guid? competitionDivisionId,
+        Guid? tournamentGroupId,
+        Guid? playoffSeriesId,
+        CancellationToken cancellationToken)
+    {
+        Result result = await _mediator.Send(
+            new RecalculateHockeyCompetitionStatisticsCommand(
+                competitionId,
+                scope,
+                competitionDivisionId,
+                tournamentGroupId,
+                playoffSeriesId),
+            cancellationToken);
+        if (!result.IsSuccess)
+        {
+            _logger.LogWarning(
+                "Competition statistics recalc failed after finish for {CompetitionId} scope {Scope}: {Error}",
+                competitionId,
+                scope,
+                result.Error);
+        }
+    }
 
     private async Task AdvancePlayoffWinnerAsync(HockeyMatch completed, CancellationToken cancellationToken)
     {

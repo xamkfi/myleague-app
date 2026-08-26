@@ -1,13 +1,15 @@
 import type {
   CreateHockeyTeamRequest,
+  GetPagedHockeyTeamsRequest,
   HockeyLineType,
   HockeyPosition,
   HockeyTeamDto,
   HockeyTeamPlayerDto,
   HockeyRosterStatus,
+  PaginatedApiResponse,
   UpdateHockeyTeamRequest,
 } from '../../types/hockey/hockeyTypes';
-import { hockeyRequest, jsonBody, withTeamCategory } from './hockeyApi';
+import { hockeyPagedRequest, hockeyRequest, jsonBody, toQueryString, withTeamCategory } from './hockeyApi';
 
 function uniqueById<T extends { id: string }>(items: T[]): T[] {
   const seen = new Set<string>();
@@ -23,6 +25,18 @@ function uniqueById<T extends { id: string }>(items: T[]): T[] {
 }
 
 export const hockeyTeamService = {
+  getPaged: (params: GetPagedHockeyTeamsRequest = {}): Promise<PaginatedApiResponse<HockeyTeamDto>> =>
+    hockeyPagedRequest<HockeyTeamDto>(
+      `/HockeyTeam/paged${toQueryString({
+        page: params.page,
+        pageSize: params.pageSize,
+        searchTerm: params.searchTerm,
+        clubId: params.clubId,
+        teamCategory: params.teamCategory,
+      })}`,
+      'Failed to fetch hockey teams',
+    ),
+
   getAll: async (teamCategory?: string): Promise<HockeyTeamDto[]> =>
     uniqueById(
       await hockeyRequest<HockeyTeamDto[]>(

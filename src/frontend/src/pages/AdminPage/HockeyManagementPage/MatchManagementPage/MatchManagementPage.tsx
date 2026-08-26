@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { loadAllHockeyMatches } from '../../../../api/hockey/loadAllHockeyMatches';
 import { hockeySeasonService } from '../../../../api/hockey/hockeySeasonService';
 import { hockeyTournamentService } from '../../../../api/hockey/hockeyTournamentService';
 import { hockeyMatchService } from '../../../../api/hockey/hockeyMatchService';
@@ -86,7 +85,7 @@ function HockeyMatchManagementPage({ mode = 'all' }: HockeyMatchManagementPagePr
       try {
         setInitialLoading(true);
         const [allMatches, seasonList, tournamentList, names] = await Promise.all([
-          loadAllHockeyMatches(),
+          hockeyMatchService.getAllPages(),
           hockeySeasonService.getAll(),
           hockeyTournamentService.getAll(),
           loadTeamNameMap(),

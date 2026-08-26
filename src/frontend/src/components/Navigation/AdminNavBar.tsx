@@ -37,6 +37,8 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
   const inProgress = useInProgressMatches();
   const footballInProgress = useInProgressFootballMatches();
   const hockeyLive = useHockeyInProgressMatches();
+  const hockeySeasonLive: number = hockeyLive.countByCompetitionType.season;
+  const hockeyTournamentLive: number = hockeyLive.countByCompetitionType.tournament;
   const totalLive: number = inProgress.totalCount;
   const seasonLive: number = inProgress.countByCompetitionType.season;
   const tournamentLive: number = inProgress.countByCompetitionType.tournament;
@@ -455,12 +457,26 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                     <Link to="/admin/hockey/seasons">
                       <img src={SeasonsIcon} alt="Seasons" className="icon" />
                       <span>{t('hockey.management.actions.seasons', 'Seasons')}</span>
+                      {hockeySeasonLive > 0 && (
+                        <LiveDot
+                          tone="dark"
+                          ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: hockeySeasonLive })}
+                          className="admin-navbar__live-dot"
+                        />
+                      )}
                     </Link>
                   </li>
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/hockey/tournaments') ? 'active' : ''}`}>
                     <Link to="/admin/hockey/tournaments">
                       <img src={SeasonsIcon} alt="Tournaments" className="icon" />
                       <span>{t('hockey.management.actions.tournaments', 'Tournaments')}</span>
+                      {hockeyTournamentLive > 0 && (
+                        <LiveDot
+                          tone="dark"
+                          ariaLabel={t('admin.navbar.matchesInProgress', '{{count}} match(es) in progress', { count: hockeyTournamentLive })}
+                          className="admin-navbar__live-dot"
+                        />
+                      )}
                     </Link>
                   </li>
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/hockey/matches') ? 'active' : ''}`}>

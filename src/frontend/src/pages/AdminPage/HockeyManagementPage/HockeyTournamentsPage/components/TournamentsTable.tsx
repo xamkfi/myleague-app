@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { HockeyTournamentDto } from '../../../../../types/hockey/hockeyTypes';
 import LiveDot from '../../../../../components/LiveDot/LiveDot';
+import TeamCategoryBadge from '../../../../../components/TeamCategoryBadge/TeamCategoryBadge';
 import { useHockeyInProgressMatches } from '../../../../../hooks/useHockeyInProgressMatches';
 import { formatHockeyDate } from '../../../../../utils/hockeyLookups';
 import '../../../../../styles/AdminTable.scss';
@@ -97,6 +98,7 @@ export function TournamentsTable({ tournaments, onEdit }: TournamentsTableProps)
                     />
                   )}
                   <span>{tournament.name}</span>
+                  <TeamCategoryBadge category={tournament.teamCategory} />
                 </span>
               </td>
               <td>

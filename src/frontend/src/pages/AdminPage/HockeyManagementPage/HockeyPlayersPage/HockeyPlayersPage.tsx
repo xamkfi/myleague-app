@@ -38,24 +38,15 @@ function HockeyPlayersPage() {
   const load = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
-      const teams = await hockeyTeamService.getAll();
-      const uniquePlayerIds = [...new Set(teams.flatMap((team) => team.roster.map((row) => row.playerId)))];
-      const profiles = await Promise.all(
-        uniquePlayerIds.map(async (playerId) => {
-          try {
-            return await hockeyPlayerService.getById(playerId);
-          } catch {
-            return null;
-          }
-        }),
-      );
-      const people = await loadPersonNameMap(
-        profiles.filter((player) => player !== null).map((player) => player.personId),
-      );
+      const [teams, profiles] = await Promise.all([
+        hockeyTeamService.getAll(),
+        hockeyPlayerService.getAllPages(),
+      ]);
+      const people = await loadPersonNameMap(profiles.map((player) => player.personId));
       const list: HockeyPlayerListRow[] = [];
       for (const team of teams) {
         for (const row of team.roster) {
-          const profile = profiles.find((player) => player?.id === row.playerId);
+          const profile = profiles.find((player) => player.id === row.playerId);
           list.push({
             playerId: row.playerId,
             teamId: team.id,

@@ -21,6 +21,7 @@ function HockeySeasonsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showActiveOnly, setShowActiveOnly] = useState(false);
   const [divisionFilter, setDivisionFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [operationLoading, setOperationLoading] = useState<string | null>(null);
   const [seasonToComplete, setSeasonToComplete] = useState<HockeySeasonDto | null>(null);
 
@@ -57,9 +58,12 @@ function HockeySeasonsPage() {
       if (divisionFilter !== 'all' && !(season.divisions ?? []).some((division) => division.name === divisionFilter)) {
         return false;
       }
+      if (categoryFilter.length > 0 && !categoryFilter.includes(season.teamCategory ?? '')) {
+        return false;
+      }
       return true;
     });
-  }, [seasons, showActiveOnly, divisionFilter]);
+  }, [seasons, showActiveOnly, divisionFilter, categoryFilter]);
 
   const handleActivateToggle = async (season: HockeySeasonDto): Promise<void> => {
     setOperationLoading(season.id);
@@ -114,6 +118,8 @@ function HockeySeasonsPage() {
           divisionFilter={divisionFilter}
           onDivisionFilterChange={setDivisionFilter}
           uniqueDivisions={uniqueDivisions}
+          categoryFilter={categoryFilter}
+          onCategoryFilterChange={setCategoryFilter}
         />
         <div className="admin-table__wrapper">
           <SeasonsContent

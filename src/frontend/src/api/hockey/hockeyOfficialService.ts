@@ -1,11 +1,25 @@
 import type {
   CreateHockeyOfficialRequest,
+  GetPagedHockeyOfficialsRequest,
   HockeyOfficialDto,
+  PaginatedApiResponse,
   UpdateHockeyOfficialRequest,
 } from '../../types/hockey/hockeyTypes';
-import { hockeyRequest, jsonBody } from './hockeyApi';
+import { hockeyPagedRequest, hockeyRequest, jsonBody, toQueryString } from './hockeyApi';
 
 export const hockeyOfficialService = {
+  getPaged: (params: GetPagedHockeyOfficialsRequest = {}): Promise<PaginatedApiResponse<HockeyOfficialDto>> =>
+    hockeyPagedRequest<HockeyOfficialDto>(
+      `/HockeyOfficial/paged${toQueryString({
+        page: params.page,
+        pageSize: params.pageSize,
+        isActive: params.isActive,
+        searchTerm: params.searchTerm,
+        licenseExpiringWithinDays: params.licenseExpiringWithinDays,
+      })}`,
+      'Failed to fetch hockey officials',
+    ),
+
   getAll: (isActive?: boolean): Promise<HockeyOfficialDto[]> => {
     const query = isActive === undefined ? '' : `?isActive=${String(isActive)}`;
     return hockeyRequest<HockeyOfficialDto[]>(
