@@ -38,9 +38,9 @@ public class HockeyOfficialRepository : IHockeyOfficialRepository
     public async Task<IReadOnlyList<HockeyOfficial>> GetAllAsync(bool? isActive = null)
     {
         IQueryable<HockeyOfficial> query = _dbContext.HockeyOfficials.AsQueryable();
-        if (isActive.HasValue)
+        if (isActive is bool active)
         {
-            query = query.Where(o => o.IsActive == isActive.Value);
+            query = query.Where(o => o.IsActive == active);
         }
 
         return await query
@@ -64,9 +64,9 @@ public class HockeyOfficialRepository : IHockeyOfficialRepository
     {
         IQueryable<HockeyOfficial> query = _dbContext.HockeyOfficials.AsQueryable();
 
-        if (isActive.HasValue)
+        if (isActive is bool active)
         {
-            query = query.Where(o => o.IsActive == isActive.Value);
+            query = query.Where(o => o.IsActive == active);
         }
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -76,9 +76,9 @@ public class HockeyOfficialRepository : IHockeyOfficialRepository
                 o.OfficialNumber != null && o.OfficialNumber.ToLower().Contains(loweredSearchTerm));
         }
 
-        if (licenseExpiringWithinDays.HasValue)
+        if (licenseExpiringWithinDays is int days)
         {
-            DateTime cutoffDate = DateTime.UtcNow.AddDays(licenseExpiringWithinDays.Value);
+            DateTime cutoffDate = DateTime.UtcNow.AddDays(days);
             query = query.Where(o => o.LicenseExpiryDate <= cutoffDate && o.IsActive);
         }
 

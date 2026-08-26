@@ -64,14 +64,14 @@ public class HockeyPlayerRepository : IHockeyPlayerRepository
     {
         IQueryable<HockeyPlayer> query = _dbContext.HockeyPlayers.AsQueryable();
 
-        if (isActive.HasValue)
+        if (isActive is bool active)
         {
-            query = query.Where(p => p.IsActive == isActive.Value);
+            query = query.Where(p => p.IsActive == active);
         }
 
-        if (position.HasValue)
+        if (position is HockeyPosition positionFilter)
         {
-            query = query.Where(p => p.PrimaryPosition == position.Value);
+            query = query.Where(p => p.PrimaryPosition == positionFilter);
         }
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -81,27 +81,27 @@ public class HockeyPlayerRepository : IHockeyPlayerRepository
                 p.LicenseNumber != null && p.LicenseNumber.ToLower().Contains(loweredSearchTerm));
         }
 
-        if (clubId.HasValue || teamId.HasValue || teamCategory.HasValue)
+        if (clubId is Guid || teamId is Guid || teamCategory is TeamCategory)
         {
             IQueryable<HockeyTeamPlayer> memberships =
                 _dbContext.HockeyTeamPlayers.Where(tp => tp.LeftAt == null);
 
-            if (teamId.HasValue)
+            if (teamId is Guid teamIdFilter)
             {
-                memberships = memberships.Where(tp => tp.TeamId == teamId.Value);
+                memberships = memberships.Where(tp => tp.TeamId == teamIdFilter);
             }
 
-            if (clubId.HasValue || teamCategory.HasValue)
+            if (clubId is Guid || teamCategory is TeamCategory)
             {
                 IQueryable<HockeyTeam> teams = _dbContext.HockeyTeams.AsQueryable();
-                if (clubId.HasValue)
+                if (clubId is Guid clubIdValue)
                 {
-                    teams = teams.Where(t => t.ClubId == clubId.Value);
+                    teams = teams.Where(t => t.ClubId == clubIdValue);
                 }
 
-                if (teamCategory.HasValue)
+                if (teamCategory is TeamCategory teamCategoryValue)
                 {
-                    teams = teams.Where(t => t.TeamCategory == teamCategory.Value);
+                    teams = teams.Where(t => t.TeamCategory == teamCategoryValue);
                 }
 
                 IQueryable<Guid> teamIds = teams.Select(t => t.Id);

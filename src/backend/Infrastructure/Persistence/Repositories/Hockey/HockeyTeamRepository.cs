@@ -66,14 +66,14 @@ public class HockeyTeamRepository : IHockeyTeamRepository
     {
         IQueryable<HockeyTeam> query = _dbContext.HockeyTeams.AsQueryable();
 
-        if (clubId.HasValue)
+        if (clubId is Guid clubFilter)
         {
-            query = query.Where(t => t.ClubId == clubId.Value);
+            query = query.Where(t => t.ClubId == clubFilter);
         }
 
-        if (teamCategory.HasValue)
+        if (teamCategory is TeamCategory categoryFilter)
         {
-            query = query.Where(t => t.TeamCategory == teamCategory.Value);
+            query = query.Where(t => t.TeamCategory == categoryFilter);
         }
 
         if (!string.IsNullOrWhiteSpace(searchTerm))

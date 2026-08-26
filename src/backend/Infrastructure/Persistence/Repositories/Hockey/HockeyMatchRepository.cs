@@ -86,42 +86,37 @@ public class HockeyMatchRepository : IHockeyMatchRepository
         string? searchQuery = null,
         CancellationToken cancellationToken = default)
     {
-        DateTime? startDateUtc = startDate.HasValue
-            ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc)
-            : null;
-        DateTime? endDateUtc = endDate.HasValue
-            ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc)
-            : null;
-
         IQueryable<HockeyMatch> query = _dbContext.HockeyMatches
             .Include(m => m.MatchTeams)
             .Include(m => m.Officials)
             .Include(m => m.PeriodScores)
             .AsQueryable();
 
-        if (competitionId.HasValue)
+        if (competitionId is Guid competitionFilter)
         {
-            query = query.Where(m => m.CompetitionId == competitionId.Value);
+            query = query.Where(m => m.CompetitionId == competitionFilter);
         }
 
-        if (teamId.HasValue)
+        if (teamId is Guid teamFilter)
         {
-            query = query.Where(m => m.MatchTeams.Any(t => t.TeamId == teamId.Value));
+            query = query.Where(m => m.MatchTeams.Any(t => t.TeamId == teamFilter));
         }
 
-        if (startDateUtc.HasValue)
+        if (startDate is DateTime start)
         {
-            query = query.Where(m => m.ScheduledStartTime >= startDateUtc.Value);
+            DateTime startDateUtc = DateTime.SpecifyKind(start, DateTimeKind.Utc);
+            query = query.Where(m => m.ScheduledStartTime >= startDateUtc);
         }
 
-        if (endDateUtc.HasValue)
+        if (endDate is DateTime end)
         {
-            query = query.Where(m => m.ScheduledStartTime <= endDateUtc.Value);
+            DateTime endDateUtc = DateTime.SpecifyKind(end, DateTimeKind.Utc);
+            query = query.Where(m => m.ScheduledStartTime <= endDateUtc);
         }
 
-        if (status.HasValue)
+        if (status is HockeyMatchStatus statusFilter)
         {
-            query = query.Where(m => m.Status == status.Value);
+            query = query.Where(m => m.Status == statusFilter);
         }
 
         if (!string.IsNullOrWhiteSpace(searchQuery))

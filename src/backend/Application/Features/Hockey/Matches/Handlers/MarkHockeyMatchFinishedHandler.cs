@@ -81,7 +81,7 @@ public class MarkHockeyMatchFinishedHandler : IRequestHandler<MarkHockeyMatchFin
             : completed.AwayScore > completed.HomeScore
                 ? completed.AwayTeamId
                 : null;
-        if (winnerTeamId is null)
+        if (winnerTeamId is not Guid winnerId)
         {
             _logger.LogWarning("Playoff match {MatchId} ended without a winner.", completed.Id);
             return;
@@ -101,22 +101,22 @@ public class MarkHockeyMatchFinishedHandler : IRequestHandler<MarkHockeyMatchFin
                 if (nextMatch.CompetitionId is Guid competitionId)
                 {
                     HockeyCompetition? competition = await _competitionRepository.GetByIdAsync(competitionId);
-                    competitionTeam = competition?.Teams.FirstOrDefault(team => team.TeamId == winnerTeamId.Value);
+                    competitionTeam = competition?.Teams.FirstOrDefault(team => team.TeamId == winnerId);
                     if (competitionTeam is null)
                     {
                         _logger.LogWarning(
                             "Could not assign playoff winner {TeamId} to next match {NextMatchId}: competition team missing.",
-                            winnerTeamId.Value,
+                            winnerId,
                             nextMatchId);
                     }
                     else
                     {
-                        nextMatch.AssignPlayoffTeam(nextSlot, winnerTeamId.Value, competitionTeam);
+                        nextMatch.AssignPlayoffTeam(nextSlot, winnerId, competitionTeam);
                     }
                 }
                 else
                 {
-                    nextMatch.AssignPlayoffTeam(nextSlot, winnerTeamId.Value);
+                    nextMatch.AssignPlayoffTeam(nextSlot, winnerId);
                 }
             }
         }

@@ -21,6 +21,9 @@ export type HockeyPlayoffRound = (typeof HOCKEY_PLAYOFF_ROUNDS)[number];
 export const HOCKEY_TEAM_SLOTS = ['Home', 'Away', 'Neutral'] as const;
 export type HockeyTeamSlot = (typeof HOCKEY_TEAM_SLOTS)[number];
 
+export const HOCKEY_TEAM_CATEGORIES = ['Adult', 'Youth', 'Women'] as const;
+export type HockeyTeamCategory = (typeof HOCKEY_TEAM_CATEGORIES)[number];
+
 export const HOCKEY_MATCH_STATUSES = [
   'Scheduled',
   'Warmup',
