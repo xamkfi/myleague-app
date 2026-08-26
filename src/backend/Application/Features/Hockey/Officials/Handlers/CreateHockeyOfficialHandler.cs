@@ -55,8 +55,8 @@ public class CreateHockeyOfficialHandler : IRequestHandler<CreateHockeyOfficialC
                 request.PersonId,
                 request.OfficialRole,
                 request.OfficialNumber,
-                request.LicenseIssueDate,
-                request.LicenseExpiryDate);
+                DateTimeUtc.Normalize(request.LicenseIssueDate),
+                DateTimeUtc.Normalize(request.LicenseExpiryDate));
 
             await _officialRepository.AddAsync(official);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

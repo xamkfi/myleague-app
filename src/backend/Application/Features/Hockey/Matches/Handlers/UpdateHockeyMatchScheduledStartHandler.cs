@@ -36,6 +36,6 @@ public class UpdateHockeyMatchScheduledStartHandler
             _logger,
             request.MatchId,
             nameof(UpdateHockeyMatchScheduledStartCommand),
-            match => match.UpdateScheduledStartTime(request.ScheduledStartTime),
+            match => match.UpdateScheduledStartTime(DateTimeUtc.Normalize(request.ScheduledStartTime)),
             cancellationToken);
 }

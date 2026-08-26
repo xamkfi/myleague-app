@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
 using Domain.Enums.Floorball;
@@ -10,12 +9,12 @@ namespace JoomleagueImporter.Import;
 /// Imports the matches of one old project into the corresponding new season, replaying the
 /// full lifecycle (create, goalies, start, periods, goals/assists/penalties, complete).
 /// </summary>
-public class MatchImporter
+public class FloorballMatchImporter
 {
-    private readonly ApiClient _api;
+    private readonly FloorballApiClient _api;
     private readonly IdMapStore _idMap;
     private readonly ImportLogger _log;
-    private readonly EntityImporter _entities;
+    private readonly FloorballEntityImporter _entities;
     private readonly JoomleagueDatabase _db;
     private readonly bool _fillUnknownGoals;
     private readonly HashSet<int> _repairMatchIds;
@@ -27,11 +26,11 @@ public class MatchImporter
     public int Failed { get; private set; }
     public int Repaired { get; private set; }
 
-    public MatchImporter(
-        ApiClient api,
+    public FloorballMatchImporter(
+        FloorballApiClient api,
         IdMapStore idMap,
         ImportLogger log,
-        EntityImporter entities,
+        FloorballEntityImporter entities,
         JoomleagueDatabase db,
         bool fillUnknownGoals,
         HashSet<int>? repairMatchIds = null,
@@ -348,7 +347,7 @@ public class MatchImporter
                 continue;
             }
 
-            int timeSeconds = ParseEventTime(ev.EventTime) ?? 0;
+            int timeSeconds = ImportTimeParser.ParseEventTime(ev.EventTime) ?? 0;
             Guid? playerId = playerByTeamPlayerId.TryGetValue(ev.TeamPlayerId, out Guid pid) ? pid : null;
 
             if (JoomleagueDatabase.GoalEventTypes.Contains(ev.EventTypeId))
@@ -523,31 +522,4 @@ public class MatchImporter
         return Math.Clamp(period, 1, regularPeriods);
     }
 
-    private static readonly Regex TimePattern = new(@"^(\d{1,3})\s*[:.,]\s*(\d{1,2})$", RegexOptions.Compiled);
-    private static readonly Regex MinutesOnlyPattern = new(@"^(\d{1,3})$", RegexOptions.Compiled);
-
-    /// <summary>
-    /// Parses JoomLeague event times like "13:52", "15.08" or "27" (minutes) into seconds on
-    /// the continuous match clock. Returns null when the value is empty or unparseable.
-    /// </summary>
-    public static int? ParseEventTime(string? raw)
-    {
-        if (string.IsNullOrWhiteSpace(raw)) return null;
-        string value = raw.Trim();
-
-        Match m = TimePattern.Match(value);
-        if (m.Success)
-        {
-            int minutes = int.Parse(m.Groups[1].Value);
-            int seconds = int.Parse(m.Groups[2].Value);
-            if (seconds > 59) seconds = 59;
-            return minutes * 60 + seconds;
-        }
-
-        m = MinutesOnlyPattern.Match(value);
-        if (m.Success)
-            return int.Parse(m.Groups[1].Value) * 60;
-
-        return null;
-    }
 }

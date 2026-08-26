@@ -1,7 +1,6 @@
 using Application.Common;
 using Application.Features.Hockey.Matches.Commands;
 using Application.Features.Hockey.Matches.DTOs;
-using Application.Features.Hockey.Matches.Mappings;
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
 using Domain.Enums.Hockey.Matches;
@@ -33,41 +32,21 @@ public class MarkHockeyMatchFinishedHandler : IRequestHandler<MarkHockeyMatchFin
         _logger = logger;
     }
 
-    public async Task<Result<HockeyMatchDto>> Handle(
+    public Task<Result<HockeyMatchDto>> Handle(
         MarkHockeyMatchFinishedCommand request,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            HockeyMatch? match = await _matchRepository.GetByIdAsync(request.MatchId);
-            if (match is null)
-                return Result<HockeyMatchDto>.NotFound("HockeyMatch", request.MatchId);
-
-            match.MarkFinished(request.ActualEndTime, request.ResultType);
-            await AdvancePlayoffWinnerAsync(match, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("MarkHockeyMatchFinished succeeded for match {MatchId}", request.MatchId);
-            return Result<HockeyMatchDto>.Success(HockeyMatchMapper.ToDto(match));
-        }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning(ex, "Domain rejected MarkHockeyMatchFinished for {MatchId}", request.MatchId);
-            return Result<HockeyMatchDto>.Failure(ex.Message, ex.Flatten());
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning(ex, "Invalid MarkHockeyMatchFinished for {MatchId}", request.MatchId);
-            return Result<HockeyMatchDto>.Failure(ex.Message, ex.Flatten());
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed MarkHockeyMatchFinished for {MatchId}", request.MatchId);
-            return Result<HockeyMatchDto>.Failure(
-                "An error occurred while performing MarkHockeyMatchFinishedCommand.",
-                ex.Flatten());
-        }
-    }
+        CancellationToken cancellationToken) =>
+        HockeyMatchHandlerSupport.MutateAsync(
+            _matchRepository,
+            _unitOfWork,
+            _logger,
+            request.MatchId,
+            nameof(MarkHockeyMatchFinishedCommand),
+            async (match, ct) =>
+            {
+                match.MarkFinished(DateTimeUtc.Normalize(request.ActualEndTime), request.ResultType);
+                await AdvancePlayoffWinnerAsync(match, ct);
+            },
+            cancellationToken);
 
     private async Task AdvancePlayoffWinnerAsync(HockeyMatch completed, CancellationToken cancellationToken)
     {

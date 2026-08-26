@@ -41,7 +41,10 @@ public class UpdateHockeyTournamentHandler : IRequestHandler<UpdateHockeyTournam
                 return Result<HockeyTournamentDto>.NotFound("HockeyTournament", request.TournamentId);
             }
 
-            tournament.UpdateDetails(request.Name, request.StartDate, request.EndDate);
+            tournament.UpdateDetails(
+                request.Name,
+                DateTimeUtc.Normalize(request.StartDate),
+                DateTimeUtc.Normalize(request.EndDate));
             tournament.UpdateVenue(request.Venue);
             tournament.UpdateContent(request.ContentHtml);
             tournament.UpdateTeamCategory(request.TeamCategory);

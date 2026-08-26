@@ -34,8 +34,8 @@ public class CreateHockeyTournamentHandler : IRequestHandler<CreateHockeyTournam
         {
             HockeyTournament tournament = new(
                 request.Name,
-                request.StartDate,
-                request.EndDate,
+                DateTimeUtc.Normalize(request.StartDate),
+                DateTimeUtc.Normalize(request.EndDate),
                 request.Venue,
                 request.ContentHtml,
                 teamCategory: request.TeamCategory);

@@ -12,13 +12,34 @@ namespace Application.Features.Hockey.Matches.Handlers;
 /// </summary>
 internal static class HockeyMatchHandlerSupport
 {
-    public static async Task<Result<HockeyMatchDto>> MutateAsync(
+    public static Task<Result<HockeyMatchDto>> MutateAsync(
         IHockeyMatchRepository matchRepository,
         IHockeyUnitOfWork unitOfWork,
         ILogger logger,
         Guid matchId,
         string operationName,
         Action<HockeyMatch> mutate,
+        CancellationToken cancellationToken) =>
+        MutateAsync(
+            matchRepository,
+            unitOfWork,
+            logger,
+            matchId,
+            operationName,
+            (match, _) =>
+            {
+                mutate(match);
+                return Task.CompletedTask;
+            },
+            cancellationToken);
+
+    public static async Task<Result<HockeyMatchDto>> MutateAsync(
+        IHockeyMatchRepository matchRepository,
+        IHockeyUnitOfWork unitOfWork,
+        ILogger logger,
+        Guid matchId,
+        string operationName,
+        Func<HockeyMatch, CancellationToken, Task> mutate,
         CancellationToken cancellationToken)
     {
         try
@@ -29,7 +50,7 @@ internal static class HockeyMatchHandlerSupport
                 return Result<HockeyMatchDto>.NotFound("HockeyMatch", matchId);
             }
 
-            mutate(match);
+            await mutate(match, cancellationToken);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
             logger.LogInformation("{Operation} succeeded for match {MatchId}", operationName, matchId);
