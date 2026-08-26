@@ -1,10 +1,10 @@
 import { useMatchTimer } from '../../hooks/useMatchTimer';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { formatDate, getTeamInitials } from '../MatchPage/components/matchUtils';
+import { formatMatchHeaderDate, getTeamInitials } from '../../components/match/matchHeaderUtils';
 import { slugify } from '../../utils/slugUtils';
 import { isHockeyMatchFinished, isHockeyMatchLive, type HockeyMatchDto } from '../../types/hockey/hockeyTypes';
-import '../MatchPage/components/MatchHeader.scss';
+import '../../components/match/MatchScoreHeader.scss';
 import './HockeyMatchHeader.scss';
 
 interface HockeyMatchHeaderProps {
@@ -26,7 +26,7 @@ function HockeyLiveClock({ matchId }: { matchId: string }) {
 function HockeyMatchHeader({ match, homeName, awayName }: HockeyMatchHeaderProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const scheduled = formatDate(match.scheduledStartTime);
+  const scheduled = formatMatchHeaderDate(match.scheduledStartTime);
   const homeClickable = Boolean(match.homeTeamId);
   const awayClickable = Boolean(match.awayTeamId);
   const live = isHockeyMatchLive(match.status);
