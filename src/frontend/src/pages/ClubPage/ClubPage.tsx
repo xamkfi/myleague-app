@@ -1,25 +1,24 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import { TeamLink } from '../../components/SportLinks';
 import type { Club } from '../../api/common/clubService';
 import { getClubs } from '../../api/common/clubService';
-import type { FloorballTeam } from '../../types/floorball/floorballTypes';
-import { findClubBySlug, getTeamSlug } from '../../utils/slugUtils';
+import { findClubBySlug } from '../../utils/slugUtils';
 import { useDivisions } from '../../hooks/useDivisions';
 import { useFloorballTeamsData, useFootballTeamsData } from '../../hooks/useTeamsData';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
 import { footballSeasonService, type FootballSeasonDto } from '../../api/football/footballSeasonService';
 import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
 import type { HockeyTeamDto } from '../../types/hockey/hockeyTypes';
-import { getLeaguePath, getTeamPath } from '../../utils/sportRoutes';
+import { getLeaguePath } from '../../utils/sportRoutes';
 import { useAudience } from '../../context/AudienceContext';
 import './ClubPage.scss';
 
 function ClubPage() {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const { audience } = useAudience();
   const { divisions } = useDivisions();
@@ -81,14 +80,6 @@ function ClubPage() {
   const club = useMemo(
     () => (!loading && slug ? findClubBySlug(clubs, slug) : undefined),
     [loading, slug, clubs]
-  );
-
-  const handleTeamClick = useCallback(
-    (team: FloorballTeam) => {
-      const teamSlug = getTeamSlug(team, teams);
-      navigate(getTeamPath('floorball', teamSlug));
-    },
-    [navigate, teams]
   );
 
   const getDivisionDisplayName = useCallback(
@@ -284,17 +275,13 @@ function ClubPage() {
               {teams.map((team) => {
                 const teamSeasons = getTeamSeasons(team.id);
                 return (
-                  <div
+                  <TeamLink
                     key={team.id}
+                    sport="floorball"
+                    teamId={team.id}
+                    teamName={team.name}
+                    teams={teams}
                     className="team-card"
-                    onClick={() => handleTeamClick(team)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        handleTeamClick(team);
-                      }
-                    }}
                   >
                     <div className="team-card__header">
                       <h4 className="team-card__name">{team.name}</h4>
@@ -355,7 +342,7 @@ function ClubPage() {
                         </svg>
                       </span>
                     </div>
-                  </div>
+                  </TeamLink>
                 );
               })}
             </div>
@@ -377,17 +364,13 @@ function ClubPage() {
                   {footballTeams.map((team) => {
                     const teamSeasons = getFootballTeamSeasons(team.id);
                     return (
-                      <div
+                      <TeamLink
                         key={team.id}
+                        sport="football"
+                        teamId={team.id}
+                        teamName={team.name}
+                        teams={footballTeams}
                         className="team-card"
-                        onClick={() => navigate(getTeamPath('football', getTeamSlug(team, footballTeams)))}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            navigate(getTeamPath('football', getTeamSlug(team, footballTeams)));
-                          }
-                        }}
                       >
                         <div className="team-card__header">
                           <h4 className="team-card__name">{team.name}</h4>
@@ -422,7 +405,7 @@ function ClubPage() {
                         <div className="team-card__footer">
                           <span className="team-card__view-link">{t('clubPage.viewTeam')}</span>
                         </div>
-                      </div>
+                      </TeamLink>
                     );
                   })}
                 </div>
@@ -435,17 +418,13 @@ function ClubPage() {
               <h2 className="club-page__section-title">{t('sports.iceHockey')}</h2>
               <div className="club-page__teams-grid">
                 {hockeyTeams.map((team) => (
-                  <div
+                  <TeamLink
                     key={team.id}
+                    sport="hockey"
+                    teamId={team.id}
+                    teamName={team.name}
+                    teams={hockeyTeams}
                     className="team-card"
-                    onClick={() => navigate(getTeamPath('hockey', getTeamSlug({ id: team.id, name: team.name }, hockeyTeams)))}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        navigate(getTeamPath('hockey', getTeamSlug({ id: team.id, name: team.name }, hockeyTeams)));
-                      }
-                    }}
                   >
                     <div className="team-card__header">
                       <h4 className="team-card__name">{team.name}</h4>
@@ -464,7 +443,7 @@ function ClubPage() {
                     <div className="team-card__footer">
                       <span className="team-card__view-link">{t('clubPage.viewTeam')}</span>
                     </div>
-                  </div>
+                  </TeamLink>
                 ))}
               </div>
             </>

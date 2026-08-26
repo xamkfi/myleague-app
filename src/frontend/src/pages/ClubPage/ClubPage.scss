@@ -261,7 +261,14 @@
   border: 1px solid $color-neutral-light-grey;
   display: flex;
   flex-direction: column;
+  color: inherit;
+  text-decoration: none;
   @include transition(all);
+
+  &.sport-link:hover,
+  &.sport-link:focus-visible {
+    text-decoration: none;
+  }
 
   &:hover {
     transform: translateY(-4px);

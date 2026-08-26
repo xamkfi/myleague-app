@@ -65,6 +65,7 @@ services:
     volumes:
       - ./src/frontend:/app
       - /app/node_modules
+    command: sh -c "pnpm install --frozen-lockfile && pnpm dev --mode development"
     ports:
       - '5173:5173'
     depends_on:

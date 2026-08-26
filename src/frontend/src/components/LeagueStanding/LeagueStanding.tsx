@@ -3,19 +3,30 @@ import type {
   FloorballPlayerSeasonStatisticsDto,
   FloorballGoalieSeasonStatisticsDto,
   FloorballSeasonStatisticsSummaryDto,
-  FloorballTeamSeasonStatisticsDto
+  FloorballTeamSeasonStatisticsDto,
 } from '../../api/floorball/floorballStatistics';
+import type {
+  FootballPlayerSeasonStatisticsDto,
+  FootballSeasonStatisticsSummaryDto,
+  FootballTeamSeasonStatisticsDto,
+} from '../../api/football/footballStatistics';
 import type { ReactNode } from 'react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { FloorballGameResult } from '../../api/floorball/floorballStatistics';
-import { useFloorballTeamsData } from '../../hooks/useTeamsData';
+import { useFloorballTeamsData, useFootballTeamsData } from '../../hooks/useTeamsData';
 import { createTeamSlug } from '../../utils/slugUtils';
+import { getPlayerPath, getTeamPath, type SportKind } from '../../utils/sportRoutes';
 import { TeamLink, PlayerLink } from '../SportLinks';
 
+type StandingView = 'standings' | 'scorers' | 'assists' | 'goalies';
+type LeagueSeasonSummary = FloorballSeasonStatisticsSummaryDto | FootballSeasonStatisticsSummaryDto;
+type LeagueTeamStanding = FloorballTeamSeasonStatisticsDto | FootballTeamSeasonStatisticsDto;
+type LeaguePlayerStat = FloorballPlayerSeasonStatisticsDto | FootballPlayerSeasonStatisticsDto;
+
 interface LeagueStandingProps {
-  seasonSummary?: FloorballSeasonStatisticsSummaryDto | null;
+  sport?: SportKind;
+  seasonSummary?: LeagueSeasonSummary | null;
   loading?: boolean;
   error?: string | null;
   /**
@@ -34,33 +45,58 @@ interface LeagueStandingProps {
   titleOverride?: string;
 }
 
-export default function LeagueStanding({ seasonSummary, loading, error, standingsOverride, titleOverride }: LeagueStandingProps) {
+function getDraws(team: LeagueTeamStanding): number {
+  if ('draws' in team) {
+    return team.draws;
+  }
+  return team.ties;
+}
+
+function getGoalies(summary: LeagueSeasonSummary | null | undefined): FloorballGoalieSeasonStatisticsDto[] {
+  if (summary && 'topGoalies' in summary) {
+    return summary.topGoalies ?? [];
+  }
+  return [];
+}
+
+export default function LeagueStanding({
+  sport = 'floorball',
+  seasonSummary,
+  loading,
+  error,
+  standingsOverride,
+  titleOverride,
+}: LeagueStandingProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { teams, refetch } = useFloorballTeamsData();
-  const [activeView, setActiveView] = useState<'standings' | 'scorers' | 'assists' | 'goalies'>('standings');
+  const floorballTeams = useFloorballTeamsData();
+  const footballTeams = useFootballTeamsData();
+  const { teams, refetch } = sport === 'football' ? footballTeams : floorballTeams;
+  const showGoalies = sport !== 'football';
+  const [activeView, setActiveView] = useState<StandingView>('standings');
 
   useEffect(() => {
     refetch();
   }, [refetch]);
 
+  useEffect(() => {
+    if (!showGoalies && activeView === 'goalies') {
+      setActiveView('standings');
+    }
+  }, [showGoalies, activeView]);
+
   const navigateToTeam = (teamId: string) => {
-    const team = teams?.find(t => t.id === teamId);
+    const team = teams?.find((item) => item.id === teamId);
     if (team) {
       const slug = createTeamSlug(team, teams);
-      navigate(`/team/${slug}`);
+      navigate(getTeamPath(sport, slug));
     }
   };
 
   const navigateToPlayer = (playerId: string) => {
-    navigate(`/floorballplayer/${playerId}`);
+    navigate(getPlayerPath(sport, playerId));
   };
 
-  // When a `standingsOverride` is provided, the parent owns loading/error UX for the
-  // standings view (it's typically a self-contained component like
-  // `TournamentGroupStandingsTable` or `TournamentBracket`). We still need to render the
-  // surrounding view buttons so users can switch between standings/scorers/assists/goalies.
-  // The other views handle their own empty state via `seasonSummary` checks.
   if (loading && !standingsOverride) {
     return (
       <div className="standing-container">
@@ -81,23 +117,22 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
     );
   }
 
-  // Render table header row based on active view
-  const renderHeaderRow = (view: 'standings' | 'scorers' | 'assists' | 'goalies') => {
+  const renderHeaderRow = (view: StandingView) => {
     if (view === 'standings') {
       return (
         <thead>
           <tr className="header-row">
             <th className="rank-col">#</th>
-            <th className="team-col">{t('leaguePage.standings.team', 'TEAM')}</th>
+            <th className="team-col">{t('leaguePage.standings.team')}</th>
             <th className="spacer-col"></th>
-            <th className="stats-col" title="Pelatut ottelut (Matches Played)">MP</th>
-            <th className="stats-col" title="Voitot (Wins)">W</th>
-            <th className="stats-col" title="Tasapelit (Draws)">D</th>
-            <th className="stats-col" title="Tappiot (Losses)">L</th>
-            <th className="goals-col" title="Tehdyt : Päästetyt maalit (Goals)">G</th>
-            <th className="stats-col" title="Maaliero (Goal Difference)">GD</th>
-            <th className="points-col" title="Pisteet (Points)">PTS</th>
-            <th className="form-col" title="Viimeisimmät ottelut (Form)">FORM</th>
+            <th className="stats-col" title={t('leaguePage.standings.colMpTitle')}>MP</th>
+            <th className="stats-col" title={t('leaguePage.standings.colWTitle')}>W</th>
+            <th className="stats-col" title={t('leaguePage.standings.colDTitle')}>D</th>
+            <th className="stats-col" title={t('leaguePage.standings.colLTitle')}>L</th>
+            <th className="goals-col" title={t('leaguePage.standings.colGTitle')}>G</th>
+            <th className="stats-col" title={t('leaguePage.standings.colGdTitle')}>GD</th>
+            <th className="points-col" title={t('leaguePage.standings.colPtsTitle')}>PTS</th>
+            <th className="form-col" title={t('leaguePage.standings.colFormTitle')}>FORM</th>
           </tr>
         </thead>
       );
@@ -108,11 +143,11 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
         <thead>
           <tr className="header-row">
             <th className="rank-col">#</th>
-            <th className="team-col">{t('leaguePage.standings.player', 'PLAYER')}</th>
-            <th className="spacer-col">{t('leaguePage.standings.team', 'TEAM')}</th>
+            <th className="team-col">{t('leaguePage.standings.player')}</th>
+            <th className="spacer-col">{t('leaguePage.standings.team')}</th>
             <th className="stats-col"></th>
-            <th className="stats-col" title="Maalit (Goals)">G</th>
-            <th className="stats-col" title="Syötöt (Assists)">A</th>
+            <th className="stats-col" title={t('leaguePage.standings.colGoalsTitle')}>G</th>
+            <th className="stats-col" title={t('leaguePage.standings.colAssistsTitle')}>A</th>
           </tr>
         </thead>
       );
@@ -125,36 +160,34 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
             <th className="rank-col">#</th>
             <th className="team-col">{t('leaguePage.standings.goalieHeaders.player')}</th>
             <th className="spacer-col">{t('leaguePage.standings.goalieHeaders.team')}</th>
-            <th className="stats-col" title="Pelatut ottelut (Games Played)">GP</th>
-            <th className="stats-col" title="Voitot (Wins)">W</th>
-            <th className="stats-col" title="Tappiot (Losses)">L</th>
-            <th className="stats-col" title="Päästetyt maalit (Goals Against)">GA</th>
-            <th className="stats-col" title="Torjuntaprosentti (Save Percentage)">SV%</th>
-            <th className="stats-col" title="Nollapelit (Shutouts)">SO</th>
+            <th className="stats-col" title={t('leaguePage.standings.colGpTitle')}>GP</th>
+            <th className="stats-col" title={t('leaguePage.standings.colWTitle')}>W</th>
+            <th className="stats-col" title={t('leaguePage.standings.colLTitle')}>L</th>
+            <th className="stats-col" title={t('leaguePage.standings.colGaTitle')}>GA</th>
+            <th className="stats-col" title={t('leaguePage.standings.colSvTitle')}>SV%</th>
+            <th className="stats-col" title={t('leaguePage.standings.colSoTitle')}>SO</th>
           </tr>
         </thead>
       );
     }
 
-    // assists
     return (
       <thead>
         <tr className="header-row">
           <th className="rank-col">#</th>
-          <th className="team-col">{t('leaguePage.standings.player', 'PLAYER')}</th>
-          <th className="spacer-col">{t('leaguePage.standings.team', 'TEAM')}</th>
+          <th className="team-col">{t('leaguePage.standings.player')}</th>
+          <th className="spacer-col">{t('leaguePage.standings.team')}</th>
           <th className="stats-col"></th>
-          <th className="stats-col" title="Syötöt (Assists)">A</th>
-          <th className="stats-col" title="Maalit (Goals)">G</th>
+          <th className="stats-col" title={t('leaguePage.standings.colAssistsTitle')}>A</th>
+          <th className="stats-col" title={t('leaguePage.standings.colGoalsTitle')}>G</th>
         </tr>
       </thead>
     );
   };
 
-  // Render standings table
   const renderStandingsTable = () => {
-    const data: FloorballTeamSeasonStatisticsDto[] = seasonSummary?.teamStandings || [];
-    
+    const data: LeagueTeamStanding[] = seasonSummary?.teamStandings || [];
+
     if (!seasonSummary || data.length === 0) {
       return (
         <div className="empty-state">
@@ -182,11 +215,9 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
         {renderHeaderRow('standings')}
         <tbody>
           {data.map((team, index) => {
-            const form = Array.isArray(team.lastFiveForm)
-              ? team.lastFiveForm
-              : [];
+            const form = Array.isArray(team.lastFiveForm) ? team.lastFiveForm : [];
             const rank = index + 1;
-            
+
             return (
               <tr
                 key={team.id}
@@ -197,9 +228,9 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                 <td className="team-col">
                   <div className="team-info">
                     {team.teamLogo && team.teamLogo.trim() !== '' ? (
-                      <img 
-                        className="logo-image" 
-                        src={team.teamLogo} 
+                      <img
+                        className="logo-image"
+                        src={team.teamLogo}
                         alt={team.teamName}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -210,7 +241,7 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                       <div className="logo-empty"></div>
                     )}
                     <TeamLink
-                      sport="floorball"
+                      sport={sport}
                       teamId={team.teamId}
                       teamName={team.teamName}
                       teams={teams}
@@ -221,24 +252,22 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                 <td className="spacer-col"></td>
                 <td className="stats-col">{team.gamesPlayed}</td>
                 <td className="stats-col">{team.wins}</td>
-                <td className="stats-col">{team.ties}</td>
+                <td className="stats-col">{getDraws(team)}</td>
                 <td className="stats-col">{team.losses}</td>
                 <td className="goals-col">{team.goalsFor}:{team.goalsAgainst}</td>
                 <td className="stats-col">{team.goalDifference}</td>
                 <td className="points-col">{team.points}</td>
                 <td className="form-col">
                   <div className="form-indicators">
-                    {form.map((result: FloorballGameResult, formIndex: number) => {    
-                      return (
-                        <div 
-                          key={formIndex} 
-                          className={`form-box form-${result.toString()}`}
-                          title={result}
-                        >
-                          {result.charAt(0)}
-                        </div>
-                      );
-                    })}
+                    {form.map((result, formIndex) => (
+                      <div
+                        key={formIndex}
+                        className={`form-box form-${result.toString()}`}
+                        title={result}
+                      >
+                        {result.charAt(0)}
+                      </div>
+                    ))}
                   </div>
                 </td>
               </tr>
@@ -249,10 +278,9 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
     );
   };
 
-  // Render top scorers table
   const renderTopScorersTable = () => {
-    const scorers = seasonSummary?.topScorers || [];
-    
+    const scorers: LeaguePlayerStat[] = seasonSummary?.topScorers || [];
+
     if (!seasonSummary || scorers.length === 0) {
       return (
         <div className="empty-state">
@@ -274,9 +302,9 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
         </colgroup>
         {renderHeaderRow('scorers')}
         <tbody>
-          {scorers.map((player: FloorballPlayerSeasonStatisticsDto, index: number) => {
+          {scorers.map((player, index) => {
             const rank = index + 1;
-            
+
             return (
               <tr
                 key={player.id}
@@ -286,7 +314,7 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
-                    <PlayerLink sport="floorball" playerId={player.playerId} className="team-name">
+                    <PlayerLink sport={sport} playerId={player.playerId} className="team-name">
                       {player.playerName}
                     </PlayerLink>
                   </div>
@@ -294,7 +322,7 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                 <td className="spacer-col">
                   <div className="team-info">
                     <TeamLink
-                      sport="floorball"
+                      sport={sport}
                       teamId={player.teamId}
                       teamName={player.teamName}
                       teams={teams}
@@ -313,10 +341,9 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
     );
   };
 
-  // Render top assists table
   const renderTopAssistsTable = () => {
-    const assists = seasonSummary?.topAssists || [];
-    
+    const assists: LeaguePlayerStat[] = seasonSummary?.topAssists || [];
+
     if (!seasonSummary || assists.length === 0) {
       return (
         <div className="empty-state">
@@ -338,9 +365,9 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
         </colgroup>
         {renderHeaderRow('assists')}
         <tbody>
-          {assists.map((player: FloorballPlayerSeasonStatisticsDto, index: number) => {
+          {assists.map((player, index) => {
             const rank = index + 1;
-            
+
             return (
               <tr
                 key={player.id}
@@ -350,7 +377,7 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
-                    <PlayerLink sport="floorball" playerId={player.playerId} className="team-name">
+                    <PlayerLink sport={sport} playerId={player.playerId} className="team-name">
                       {player.playerName}
                     </PlayerLink>
                   </div>
@@ -358,7 +385,7 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                 <td className="spacer-col">
                   <div className="team-info">
                     <TeamLink
-                      sport="floorball"
+                      sport={sport}
                       teamId={player.teamId}
                       teamName={player.teamName}
                       teams={teams}
@@ -377,9 +404,8 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
     );
   };
 
-  // Render goalies table
   const renderGoaliesTable = () => {
-    const goalies = seasonSummary?.topGoalies || [];
+    const goalies = getGoalies(seasonSummary);
 
     if (!seasonSummary || goalies.length === 0) {
       return (
@@ -405,7 +431,7 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
         </colgroup>
         {renderHeaderRow('goalies')}
         <tbody>
-          {goalies.map((goalie: FloorballGoalieSeasonStatisticsDto, index: number) => {
+          {goalies.map((goalie, index) => {
             const rank = index + 1;
 
             return (
@@ -417,7 +443,7 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
-                    <PlayerLink sport="floorball" playerId={goalie.playerId} className="team-name">
+                    <PlayerLink sport={sport} playerId={goalie.playerId} className="team-name">
                       {goalie.playerName}
                     </PlayerLink>
                   </div>
@@ -425,7 +451,7 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                 <td className="spacer-col">
                   <div className="team-info">
                     <TeamLink
-                      sport="floorball"
+                      sport={sport}
                       teamId={goalie.teamId}
                       teamName={goalie.teamName}
                       teams={teams}
@@ -447,9 +473,6 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
     );
   };
 
-  // Render content based on active view. If a caller supplied a `standingsOverride` we use
-  // it for the standings view only; the override is responsible for its own loading/error
-  // states (we don't gate it on the season summary loading state).
   const renderContent = () => {
     switch (activeView) {
       case 'standings':
@@ -459,7 +482,7 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
       case 'assists':
         return renderTopAssistsTable();
       case 'goalies':
-        return renderGoaliesTable();
+        return showGoalies ? renderGoaliesTable() : standingsOverride ?? renderStandingsTable();
       default:
         return standingsOverride ?? renderStandingsTable();
     }
@@ -467,46 +490,45 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
 
   return (
     <div className="standing-container">
-      {/* Header with dropdown and view buttons */}
       <div className="standing-header">
         <div className="header-top-row">
           <div className="league-selector">
             <span className="league-title">
-              {titleOverride ?? seasonSummary?.seasonName ?? ""}
+              {titleOverride ?? seasonSummary?.seasonName ?? ''}
             </span>
           </div>
-          
-          {/* View buttons */}
+
           <div className="view-buttons">
-            <button 
+            <button
               className={`view-button ${activeView === 'standings' ? 'active' : ''}`}
               onClick={() => setActiveView('standings')}
             >
               {t('leaguePage.standings.standings')}
             </button>
-            <button 
+            <button
               className={`view-button ${activeView === 'scorers' ? 'active' : ''}`}
               onClick={() => setActiveView('scorers')}
             >
               {t('leaguePage.standings.topScorers')}
             </button>
-            <button 
+            <button
               className={`view-button ${activeView === 'assists' ? 'active' : ''}`}
               onClick={() => setActiveView('assists')}
             >
               {t('leaguePage.standings.topAssists')}
             </button>
-            <button 
-              className={`view-button ${activeView === 'goalies' ? 'active' : ''}`}
-              onClick={() => setActiveView('goalies')}
-            >
-              {t('leaguePage.standings.topGoalies')}
-            </button>
+            {showGoalies && (
+              <button
+                className={`view-button ${activeView === 'goalies' ? 'active' : ''}`}
+                onClick={() => setActiveView('goalies')}
+              >
+                {t('leaguePage.standings.topGoalies')}
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Dynamic content based on active view */}
       <div className="table-wrapper">
         {renderContent()}
       </div>

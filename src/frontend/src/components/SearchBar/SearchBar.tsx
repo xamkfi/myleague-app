@@ -4,7 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { useRef } from 'react';
 import { createClubSlug } from '../../utils/slugUtils';
-import { getPlayerPath, getTeamPath } from '../../utils/sportRoutes';
+import { getPlayerPath, getTeamPath, type SportKind } from '../../utils/sportRoutes';
+
+function toSportKind(sport?: string | null): SportKind {
+  if (sport === 'football' || sport === 'hockey') {
+    return sport;
+  }
+  return 'floorball';
+}
 import { slugify } from '../../utils/slugUtils';
 import { globalSearchService } from '../../api/common/globalSearchService';
 import { getClubs } from '../../api/common/clubService';
@@ -17,12 +24,14 @@ interface SearchPerson {
   firstName: string;
   lastName: string;
   teamName?: string | null;
+  sport?: string | null;
 }
 
 interface SearchTeam {
   teamId?: string;
   id?: string;
   teamName: string;
+  sport?: string | null;
 }
 
 function SearchBar() {
@@ -46,14 +55,14 @@ function SearchBar() {
 
    // Move handlers here
    const handlePersonClick = useCallback((person: SearchPerson) => {
-     const action = () => navigate(getPlayerPath('floorball', person.personId));
+     const action = () => navigate(getPlayerPath(toSportKind(person.sport), person.personId));
      setPendingAction(() => action);
      setIsSearchFocused(false);
    }, [navigate]);
 
    const handleTeamClick = useCallback((team: SearchTeam) => {
      const teamSlug = slugify(team.teamName);
-     const action = () => navigate(getTeamPath('floorball', teamSlug));
+     const action = () => navigate(getTeamPath(toSportKind(team.sport), teamSlug));
      setPendingAction(() => action);
      setIsSearchFocused(false);
    }, [navigate]);
@@ -131,11 +140,6 @@ function SearchBar() {
               setSearchResults(teamResults);
               setPeopleResults(response.data.person.slice(0,5));
               setClubResults(response.data.clubNames.slice(0,5));
-              console.log('Search results:', {
-                people: response.data.person.length,
-                teams: response.data.team.length,
-                clubs: response.data.clubNames.length
-              });
            }
         } catch (err) {
            console.error(err);
@@ -252,7 +256,7 @@ function SearchBar() {
                {searchResults.length === 0 && peopleResults.length === 0 && clubResults.length === 0 && (
                  <div className="search-no-results">
                    <div className="search-result-item-content">
-                     <div className="search-result-item-name">No results...</div>
+                     <div className="search-result-item-name">{t('searchBar.noResults')}</div>
                    </div>
                  </div>
                )}
@@ -260,7 +264,7 @@ function SearchBar() {
                {/* People results first */}
                {peopleResults.length > 0 && (
                  <div className="search-section-header">
-                   <h4>People</h4>
+                   <h4>{t('searchBar.people')}</h4>
                  </div>
                )}
                {peopleResults.map((p, index)=>(
@@ -275,7 +279,7 @@ function SearchBar() {
                         <div className="search-result-item-name">{p.firstName} {p.lastName}</div>
                         <div className="search-result-item-details">
                           <span className="search-result-item-details-icon">⌊</span>
-                          {p.teamName ?? "No data"}
+                          {p.teamName ?? t('searchBar.noData')}
                         </div>
                      </div>
                    </div>
@@ -283,7 +287,7 @@ function SearchBar() {
                 {/* Team results second */}
                 {searchResults.length > 0 && (
                   <div className="search-section-header">
-                    <h4>Teams</h4>
+                    <h4>{t('searchBar.teams')}</h4>
                   </div>
                 )}
                 {searchResults.map((result, index) => {
@@ -305,7 +309,7 @@ function SearchBar() {
                 {/* Club results third */}
                 {clubResults.length > 0 && (
                   <div className="search-section-header">
-                    <h4>Clubs</h4>
+                    <h4>{t('searchBar.clubs')}</h4>
                   </div>
                 )}
                 {clubResults.map((clubName, index) => {
