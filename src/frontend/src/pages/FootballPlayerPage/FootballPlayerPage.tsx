@@ -12,7 +12,8 @@ import {
   type FootballPlayerSeasonStatisticsDto,
 } from '../../api/football/footballStatistics';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import { slugify } from '../../utils/slugUtils';
+import { TeamLink, MatchLink } from '../../components/SportLinks';
+import { getLeaguePath } from '../../utils/sportRoutes';
 import { useTranslation } from 'react-i18next';
 import './FootballPlayerPage.scss';
 
@@ -183,7 +184,14 @@ function FootballPlayerPage() {
               <div className="player-details">
                 <div className="player-name">{playerName}</div>
                 <div className="player-details-row">
-                  {teamName && <span className="player-team">{teamName}</span>}
+                  {teamName && (
+                    <TeamLink
+                      sport="football"
+                      teamId={matchData?.teamId ?? player.team?.id}
+                      teamName={teamName}
+                      className="player-team"
+                    />
+                  )}
                   <span className="player-position">{getPositionText(position, t)}</span>
                   {jerseyNumber != null && <span className="player-jersey">#{jerseyNumber}</span>}
                 </div>
@@ -268,14 +276,18 @@ function FootballPlayerPage() {
                         <tr key={match.id}>
                           <td className="col-date">{formatDate(match.scheduledDateTime)}</td>
                           <td className="col-league">
-                            <Link to={`/football/league/${match.competitionId}`} className="team-link">{match.competitionName}</Link>
+                            <Link to={getLeaguePath('football', match.competitionId)} className="team-link">{match.competitionName}</Link>
                           </td>
                           <td className="col-team">
-                            <Link to={`/football/team/${slugify(match.homeTeamName)}`} className="team-link">{match.homeTeamName}</Link>
+                            <TeamLink sport="football" teamName={match.homeTeamName} className="team-link" />
                           </td>
-                          <td className="col-score">{match.homeScore} - {match.awayScore}</td>
+                          <td className="col-score">
+                            <MatchLink sport="football" matchId={match.id} className="team-link">
+                              {match.homeScore} - {match.awayScore}
+                            </MatchLink>
+                          </td>
                           <td className="col-team">
-                            <Link to={`/football/team/${slugify(match.awayTeamName)}`} className="team-link">{match.awayTeamName}</Link>
+                            <TeamLink sport="football" teamName={match.awayTeamName} className="team-link" />
                           </td>
                           <td className="col-num">{match.playerStats?.goals ?? 0}</td>
                           <td className="col-num">{match.playerStats?.assists ?? 0}</td>
@@ -333,14 +345,14 @@ function FootballPlayerPage() {
                     {seasonStats.map((stat) => (
                       <tr key={stat.id}>
                         <td className="col-season">
-                          <Link to={`/football/league/${stat.competitionId}`} className="team-link">{stat.seasonName}</Link>
+                          <Link to={getLeaguePath('football', stat.competitionId)} className="team-link">{stat.seasonName}</Link>
                         </td>
                         <td className="col-team">
                           <div className="team-cell">
                             {stat.teamLogo && (
                               <img src={stat.teamLogo} alt={stat.teamName} className="team-logo-small" />
                             )}
-                            <Link to={`/football/team/${slugify(stat.teamName)}`} className="team-link">{stat.teamName}</Link>
+                            <TeamLink sport="football" teamId={stat.teamId} teamName={stat.teamName} className="team-link" />
                           </div>
                         </td>
                         <td className="col-num">{stat.gamesPlayed}</td>

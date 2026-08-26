@@ -1,11 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import type { HockeySeasonDto } from '../../../../../types/hockey/hockeyTypes';
-import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
-import LiveDot from '../../../../../components/LiveDot/LiveDot';
-import TeamCategoryBadge from '../../../../../components/TeamCategoryBadge/TeamCategoryBadge';
+import AdminSeasonsTable from '../../../../../components/admin/AdminSeasonsTable';
 import { useHockeyInProgressMatches } from '../../../../../hooks/useHockeyInProgressMatches';
 import { formatHockeyDate } from '../../../../../utils/hockeyLookups';
-import '../../../../../styles/AdminTable.scss';
 
 interface SeasonsTableProps {
   seasons: HockeySeasonDto[];
@@ -24,120 +21,63 @@ export function SeasonsTable({
 }: SeasonsTableProps) {
   const { t } = useTranslation();
   const { countByCompetitionId } = useHockeyInProgressMatches();
-
-  const getStatusBadge = (season: HockeySeasonDto) => {
-    if (season.isCompleted) {
-      return <span className="admin-badge admin-badge--completed">{t('hockey.seasons.statusCompleted', 'Completed')}</span>;
-    }
-    if (season.isActive) {
-      return <span className="admin-badge admin-badge--active">{t('hockey.seasons.statusActive', 'Active')}</span>;
-    }
-    return <span className="admin-badge admin-badge--inactive">{t('hockey.seasons.statusInactive', 'Inactive')}</span>;
-  };
+  const byId = new Map(seasons.map((season) => [season.id, season]));
 
   return (
-    <table className="admin-table">
-      <thead>
-        <tr>
-          <th>{t('hockey.seasons.fields.name', 'Name')}</th>
-          <th>{t('hockey.seasons.fields.division', 'Division')}</th>
-          <th>{t('hockey.seasons.fields.startDate', 'Starts')}</th>
-          <th>{t('hockey.seasons.fields.endDate', 'Ends')}</th>
-          <th>{t('hockey.seasons.fields.teams', 'Teams')}</th>
-          <th>{t('hockey.seasons.fields.status', 'Status')}</th>
-          <th className="admin-table__actions-col">{t('common.actions', 'Actions')}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {seasons.map((season) => {
-          const liveCount = countByCompetitionId.get(season.id) ?? 0;
-          return (
-            <tr
-              key={season.id}
-              className="admin-table__row--clickable"
-              onClick={() => onEdit(season)}
-              role="button"
-              tabIndex={0}
-              title={t('hockey.seasons.actions.openEdit', 'Open and edit season')}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  onEdit(season);
-                }
-              }}
-            >
-              <td className="admin-table__name">
-                <span className="admin-table__name-inner">
-                  {liveCount > 0 && (
-                    <LiveDot
-                      tone="light"
-                      count={liveCount}
-                      ariaLabel={t('hockey.seasons.matchesInProgress', '{{count}} match(es) in progress', { count: liveCount })}
-                    />
-                  )}
-                  <span>{season.name}</span>
-                  <TeamCategoryBadge category={season.teamCategory} />
-                </span>
-              </td>
-              <td>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                  {(season.divisions ?? []).length > 0 ? (
-                    season.divisions.map((division) => (
-                      <span key={division.id} className="admin-tag admin-tag--blue">
-                        {division.name}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="admin-table__muted">{t('hockey.seasons.noDivisions', 'No divisions')}</span>
-                  )}
-                </div>
-              </td>
-              <td>{formatHockeyDate(season.startDate)}</td>
-              <td>{formatHockeyDate(season.endDate)}</td>
-              <td>
-                <span className="admin-table__muted">
-                  {season.teams?.length || 0} {t('hockey.seasons.teamsCountLabel', 'teams')}
-                </span>
-              </td>
-              <td>{getStatusBadge(season)}</td>
-              <td
-                className="admin-table__actions-col"
-                onClick={(event) => event.stopPropagation()}
-                onKeyDown={(event) => event.stopPropagation()}
-              >
-                <ActionsDropdown
-                  actions={[
-                    {
-                      label: t('common.edit', 'Edit'),
-                      onClick: () => onEdit(season),
-                      disabled: operationLoading === season.id,
-                    },
-                    ...(!season.isCompleted
-                      ? [{
-                          label: season.isActive
-                            ? t('hockey.seasons.deactivate', 'Deactivate')
-                            : t('hockey.seasons.activate', 'Activate'),
-                          onClick: () => onActivateToggle(season),
-                          variant: 'status' as const,
-                          disabled: operationLoading === season.id,
-                        }]
-                      : []),
-                    ...(season.isActive && !season.isCompleted
-                      ? [{
-                          label: t('hockey.seasons.complete', 'Complete Season'),
-                          onClick: () => onComplete(season),
-                          variant: 'status' as const,
-                          disabled: operationLoading === season.id,
-                        }]
-                      : []),
-                  ]}
-                  ariaLabel={t('hockey.seasons.actions.menu', 'Season actions menu')}
-                />
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+    <AdminSeasonsTable
+      sport="hockey"
+      seasons={seasons.map((season) => ({
+        id: season.id,
+        name: season.name,
+        teamCategory: season.teamCategory,
+        startDate: season.startDate,
+        endDate: season.endDate,
+        teamCount: season.teams?.length || 0,
+        isActive: season.isActive,
+        isCompleted: season.isCompleted,
+        divisions: (season.divisions ?? []).map((division) => ({
+          id: division.id,
+          name: division.name,
+        })),
+      }))}
+      labels={{
+        name: t('hockey.seasons.fields.name', 'Name'),
+        division: t('hockey.seasons.fields.division', 'Division'),
+        startDate: t('hockey.seasons.fields.startDate', 'Starts'),
+        endDate: t('hockey.seasons.fields.endDate', 'Ends'),
+        teams: t('hockey.seasons.fields.teams', 'Teams'),
+        status: t('hockey.seasons.fields.status', 'Status'),
+        completed: t('hockey.seasons.statusCompleted', 'Completed'),
+        active: t('hockey.seasons.statusActive', 'Active'),
+        inactive: t('hockey.seasons.statusInactive', 'Inactive'),
+        deactivate: t('hockey.seasons.deactivate', 'Deactivate'),
+        activate: t('hockey.seasons.activate', 'Activate'),
+        complete: t('hockey.seasons.complete', 'Complete Season'),
+        noDivisions: t('hockey.seasons.noDivisions', 'No divisions'),
+        teamsCount: t('hockey.seasons.teamsCountLabel', 'teams'),
+        matchesInProgress: (count) => t(
+          'hockey.seasons.matchesInProgress',
+          '{{count}} match(es) in progress',
+          { count },
+        ),
+        openEdit: t('hockey.seasons.actions.openEdit', 'Open and edit season'),
+        actionsMenu: t('hockey.seasons.actions.menu', 'Season actions menu'),
+      }}
+      liveCounts={countByCompetitionId}
+      formatDate={formatHockeyDate}
+      onEdit={(seasonId) => {
+        const season = byId.get(seasonId);
+        if (season) onEdit(season);
+      }}
+      onActivateToggle={(seasonId) => {
+        const season = byId.get(seasonId);
+        if (season) onActivateToggle(season);
+      }}
+      onComplete={(seasonId) => {
+        const season = byId.get(seasonId);
+        if (season) onComplete(season);
+      }}
+      operationLoading={operationLoading}
+    />
   );
 }

@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { FootballGameResult } from '../../../api/football/footballStatistics';
 import { useFootballTeamsData } from '../../../hooks/useTeamsData';
 import { createTeamSlug } from '../../../utils/slugUtils';
+import { TeamLink, PlayerLink } from '../../../components/SportLinks';
 
 interface LeagueStandingProps {
   seasonSummary?: FootballSeasonStatisticsSummaryDto | null;
@@ -86,7 +87,7 @@ export default function FootballLeagueStanding({ seasonSummary, loading, error, 
         <thead>
           <tr className="header-row">
             <th className="rank-col">#</th>
-            <th className="team-col">TEAM</th>
+            <th className="team-col">{t('leaguePage.standings.team', 'TEAM')}</th>
             <th className="spacer-col"></th>
             <th className="stats-col" title="Pelatut ottelut (Matches Played)">MP</th>
             <th className="stats-col" title="Voitot (Wins)">W</th>
@@ -106,8 +107,8 @@ export default function FootballLeagueStanding({ seasonSummary, loading, error, 
         <thead>
           <tr className="header-row">
             <th className="rank-col">#</th>
-            <th className="team-col">PLAYER</th>
-            <th className="spacer-col">TEAM</th>
+            <th className="team-col">{t('leaguePage.standings.player', 'PLAYER')}</th>
+            <th className="spacer-col">{t('leaguePage.standings.team', 'TEAM')}</th>
             <th className="stats-col"></th>
             <th className="stats-col" title="Maalit (Goals)">G</th>
             <th className="stats-col" title="Syötöt (Assists)">A</th>
@@ -121,8 +122,8 @@ export default function FootballLeagueStanding({ seasonSummary, loading, error, 
       <thead>
         <tr className="header-row">
           <th className="rank-col">#</th>
-          <th className="team-col">PLAYER</th>
-          <th className="spacer-col">TEAM</th>
+          <th className="team-col">{t('leaguePage.standings.player', 'PLAYER')}</th>
+          <th className="spacer-col">{t('leaguePage.standings.team', 'TEAM')}</th>
           <th className="stats-col"></th>
           <th className="stats-col" title="Syötöt (Assists)">A</th>
           <th className="stats-col" title="Maalit (Goals)">G</th>
@@ -189,7 +190,13 @@ export default function FootballLeagueStanding({ seasonSummary, loading, error, 
                     ) : (
                       <div className="logo-empty"></div>
                     )}
-                    <span className="team-name">{team.teamName}</span>
+                    <TeamLink
+                      sport="football"
+                      teamId={team.teamId}
+                      teamName={team.teamName}
+                      teams={teams}
+                      className="team-name"
+                    />
                   </div>
                 </td>
                 <td className="spacer-col"></td>
@@ -260,12 +267,20 @@ export default function FootballLeagueStanding({ seasonSummary, loading, error, 
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
-                    <span className="team-name">{player.playerName}</span>
+                    <PlayerLink sport="football" playerId={player.playerId} className="team-name">
+                      {player.playerName}
+                    </PlayerLink>
                   </div>
                 </td>
                 <td className="spacer-col">
                   <div className="team-info">
-                    <span className="team-name">{player.teamName}</span>
+                    <TeamLink
+                      sport="football"
+                      teamId={player.teamId}
+                      teamName={player.teamName}
+                      teams={teams}
+                      className="team-name"
+                    />
                   </div>
                 </td>
                 <td className="stats-col"></td>
@@ -316,12 +331,20 @@ export default function FootballLeagueStanding({ seasonSummary, loading, error, 
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
-                    <span className="team-name">{player.playerName}</span>
+                    <PlayerLink sport="football" playerId={player.playerId} className="team-name">
+                      {player.playerName}
+                    </PlayerLink>
                   </div>
                 </td>
                 <td className="spacer-col">
                   <div className="team-info">
-                    <span className="team-name">{player.teamName}</span>
+                    <TeamLink
+                      sport="football"
+                      teamId={player.teamId}
+                      teamName={player.teamName}
+                      teams={teams}
+                      className="team-name"
+                    />
                   </div>
                 </td>
                 <td className="stats-col"></td>

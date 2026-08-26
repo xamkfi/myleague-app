@@ -36,6 +36,8 @@ export interface MatchRowProps {
   isPlaceholder?: boolean;
   /** Tooltip text shown on hover when `isPlaceholder` is true. */
   placeholderTooltip?: string;
+  /** Period/half label. Floorball defaults to E1, E2, E3. */
+  periodLabel?: (period: number) => string;
 }
 
 export default function MatchRow({
@@ -54,7 +56,8 @@ export default function MatchRow({
   className = '',
   status = FloorballMatchStatus.Scheduled,
   isPlaceholder = false,
-  placeholderTooltip
+  placeholderTooltip,
+  periodLabel = (period) => `E${period}`,
 }: MatchRowProps) {
   const [formattedDate, formattedTime] = formatMatchDateTime(scheduledDateTime);
   const computedPeriodCount = periodScores ? Math.max(...Object.keys(periodScores).map(k => Number(k))) : periodCount;
@@ -121,7 +124,7 @@ export default function MatchRow({
       <div className="match-row-period-score-container">
         {periods.map((period) => (
           <div key={period} className="match-row-period">
-            <div className="match-row-period-header">E{period}</div>
+            <div className="match-row-period-header">{periodLabel(period)}</div>
             <div className="match-row-home-period-score">
               {periodScores && periodScores[period] ? periodScores[period].homeScore : ''}
             </div>

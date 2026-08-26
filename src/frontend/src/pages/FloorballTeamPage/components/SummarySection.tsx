@@ -34,11 +34,6 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
       }
    }, []);
 
-   const handleMatchClick = (matchId: string) => {
-      // TODO: Navigate to match page
-      console.log('Navigate to match:', matchId);
-   }
-
    useEffect(() => {
       fetchSeasons();
       if (todaysMatches === null) {
@@ -89,7 +84,6 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                                     periodCount={3}
                                     periodScores={match.periodScores}
                                     status={match.status}
-                                    onClick={() => handleMatchClick(match.id)}
                                  />
                               ))}
                            </div>
@@ -141,7 +135,6 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               periodCount={3}
                               periodScores={match.periodScores}
                               status={match.status}
-                              onClick={() => handleMatchClick(match.id)}
                            />
                         ))}
                      </div>
@@ -177,7 +170,6 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               periodCount={3}
                               periodScores={match.periodScores}
                               status={match.status}
-                              onClick={() => handleMatchClick(match.id)}
                            />
                         ))}
                   </div>

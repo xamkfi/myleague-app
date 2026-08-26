@@ -13,7 +13,9 @@ import {
   type FloorballGoalieSeasonStatisticsDto,
 } from "../../api/floorball/floorballStatistics";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
-import { slugify } from "../../utils/slugUtils";
+import { TeamLink, MatchLink } from "../../components/SportLinks";
+import { getLeaguePath } from "../../utils/sportRoutes";
+import { useTranslation } from "react-i18next";
 import './FloorballTeamPlayerUserPage.scss';
 
 const getPositionText = (position: FloorballPosition | string): string => {
@@ -151,6 +153,7 @@ const calculateOverallSavePercentage = (totals: GoalieTotals): number => {
 const MATCHES_PER_PAGE = 20;
 
 const FloorballTeamPlayerUserPage = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [profile, setProfile] = useState<FloorballPlayerProfileDto | null>(null);
   const [matchData, setMatchData] = useState<FloorballPlayerWithMatchesDto | null>(null);
@@ -197,8 +200,8 @@ const FloorballTeamPlayerUserPage = () => {
   );
 
   if (loading) return <PageTemplate title="Pelaaja"><div className="player-loading">Ladataan...</div></PageTemplate>;
-  if (error) return <PageTemplate title="Pelaaja"><div className="player-error">Virhe: {error}</div></PageTemplate>;
-  if (!profile) return <PageTemplate title="Pelaaja"><div className="player-error">Pelaajaa ei löytynyt</div></PageTemplate>;
+  if (error) return <PageTemplate title={t('football.player.title', 'Pelaaja')}><div className="player-error">{error}</div></PageTemplate>;
+  if (!profile) return <PageTemplate title={t('football.player.title', 'Pelaaja')}><div className="player-error">{t('football.player.notFound', 'Pelaajaa ei löytynyt')}</div></PageTemplate>;
 
   const { player } = profile;
   const playerName = player.person.fullName;
@@ -238,7 +241,14 @@ const FloorballTeamPlayerUserPage = () => {
                   )}
                 </div>
                 <div className="player-details-row">
-                  {teamName && <span className="player-team">{teamName}</span>}
+                  {teamName && (
+                    <TeamLink
+                      sport="floorball"
+                      teamId={matchData?.teamId ?? player.team?.id}
+                      teamName={teamName}
+                      className="player-team"
+                    />
+                  )}
                   <span className="player-position">{getPositionText(position)}</span>
                   {jerseyNumber != null && <span className="player-jersey">#{jerseyNumber}</span>}
                 </div>
@@ -352,14 +362,18 @@ const FloorballTeamPlayerUserPage = () => {
                         <tr key={match.id}>
                           <td className="col-date">{formatDate(match.scheduledDateTime)}</td>
                           <td className="col-league">
-                            <Link to={`/league/${match.competitionId}`} className="team-link">{match.competitionName}</Link>
+                            <Link to={getLeaguePath('floorball', match.competitionId)} className="team-link">{match.competitionName}</Link>
                           </td>
                           <td className="col-team">
-                            <Link to={`/team/${slugify(match.homeTeamName)}`} className="team-link">{match.homeTeamName}</Link>
+                            <TeamLink sport="floorball" teamName={match.homeTeamName} className="team-link" />
                           </td>
-                          <td className="col-score">{match.homeScore} - {match.awayScore}</td>
+                          <td className="col-score">
+                            <MatchLink sport="floorball" matchId={match.id} className="team-link">
+                              {match.homeScore} - {match.awayScore}
+                            </MatchLink>
+                          </td>
                           <td className="col-team">
-                            <Link to={`/team/${slugify(match.awayTeamName)}`} className="team-link">{match.awayTeamName}</Link>
+                            <TeamLink sport="floorball" teamName={match.awayTeamName} className="team-link" />
                           </td>
                           <td className="col-num">{match.playerStats?.goals ?? 0}</td>
                           <td className="col-num">{match.playerStats?.assists ?? 0}</td>
@@ -457,7 +471,7 @@ const FloorballTeamPlayerUserPage = () => {
                             {stat.teamLogo && (
                               <img src={stat.teamLogo} alt={stat.teamName} className="team-logo-small" />
                             )}
-                            <Link to={`/team/${slugify(stat.teamName)}`} className="team-link">{stat.teamName}</Link>
+                            <TeamLink sport="floorball" teamId={stat.teamId} teamName={stat.teamName} className="team-link" />
                           </div>
                         </td>
                         <td className="col-num">{stat.gamesPlayed}</td>
@@ -526,7 +540,7 @@ const FloorballTeamPlayerUserPage = () => {
                         <td className="col-season">{stat.seasonName}</td>
                         <td className="col-team">
                           <div className="team-cell">
-                            <Link to={`/team/${slugify(stat.teamName)}`} className="team-link">{stat.teamName}</Link>
+                            <TeamLink sport="floorball" teamId={stat.teamId} teamName={stat.teamName} className="team-link" />
                           </div>
                         </td>
                         <td className="col-num">{stat.gamesPlayed}</td>
@@ -582,14 +596,14 @@ const FloorballTeamPlayerUserPage = () => {
                     {seasonStats.map((stat) => (
                       <tr key={stat.id}>
                         <td className="col-season">
-                          <Link to={`/league/${stat.competitionId}`} className="team-link">{stat.seasonName}</Link>
+                          <Link to={getLeaguePath('floorball', stat.competitionId)} className="team-link">{stat.seasonName}</Link>
                         </td>
                         <td className="col-team">
                           <div className="team-cell">
                             {stat.teamLogo && (
                               <img src={stat.teamLogo} alt={stat.teamName} className="team-logo-small" />
                             )}
-                            <Link to={`/team/${slugify(stat.teamName)}`} className="team-link">{stat.teamName}</Link>
+                            <TeamLink sport="floorball" teamId={stat.teamId} teamName={stat.teamName} className="team-link" />
                           </div>
                         </td>
                         <td className="col-position">{getPositionText(position)}</td>

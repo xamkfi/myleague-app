@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { useRef } from 'react';
 import { createClubSlug } from '../../utils/slugUtils';
+import { getPlayerPath, getTeamPath } from '../../utils/sportRoutes';
 import { slugify } from '../../utils/slugUtils';
 import { globalSearchService } from '../../api/common/globalSearchService';
 import { getClubs } from '../../api/common/clubService';
@@ -45,15 +46,14 @@ function SearchBar() {
 
    // Move handlers here
    const handlePersonClick = useCallback((person: SearchPerson) => {
-     const action = () => navigate(`/floorballplayer/${person.personId}`);
+     const action = () => navigate(getPlayerPath('floorball', person.personId));
      setPendingAction(() => action);
      setIsSearchFocused(false);
    }, [navigate]);
 
    const handleTeamClick = useCallback((team: SearchTeam) => {
-     // Create a simple slug from teamName for search results
      const teamSlug = slugify(team.teamName);
-     const action = () => navigate(`/team/${teamSlug}`);
+     const action = () => navigate(getTeamPath('floorball', teamSlug));
      setPendingAction(() => action);
      setIsSearchFocused(false);
    }, [navigate]);

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HockeyTeamDto } from '../../../../../types/hockey/hockeyTypes';
 import { loadHockeyRosterNameMaps } from '../../../../../utils/hockeyLookups';
+import PlayerLink from '../../../../../components/SportLinks/PlayerLink';
 import './TeamPlayersRow.scss';
 
 interface TeamPlayersRowProps {
@@ -86,7 +87,11 @@ function TeamPlayersRow({ isExpanded, isClosing, team }: TeamPlayersRowProps) {
                         className={`admin-roster-player ${!player.isActive ? 'inactive' : ''}`}
                       >
                         <span className="col-jersey">{player.jerseyNumber ?? '?'}</span>
-                        <span className="col-name">{playerNames.get(player.playerId) ?? player.playerId.slice(0, 8)}</span>
+                        <span className="col-name">
+                          <PlayerLink sport="hockey" playerId={player.playerId}>
+                            {playerNames.get(player.playerId) ?? player.playerId.slice(0, 8)}
+                          </PlayerLink>
+                        </span>
                         <span className="col-stat">{player.rosterStatus}</span>
                       </div>
                     ))}

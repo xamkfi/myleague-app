@@ -5,12 +5,16 @@ interface MatchNavigationProps {
   activeTab: MatchTabType;
   onTabChange: (tab: MatchTabType) => void;
   tableVariant?: TableTabVariant;
+  showTableTab?: boolean;
+  showStatsTab?: boolean;
 }
 
 export default function MatchNavigation({
   activeTab,
   onTabChange,
   tableVariant = 'season',
+  showTableTab = true,
+  showStatsTab = false,
 }: MatchNavigationProps) {
   const { t } = useTranslation();
 
@@ -24,8 +28,13 @@ export default function MatchNavigation({
   const tabs: { key: MatchTabType; label: string }[] = [
     { key: 'summary', label: t('matchPage.navigation.summary') },
     { key: 'lineups', label: t('matchPage.navigation.lineups') },
-    { key: 'table', label: tableLabel },
   ];
+  if (showStatsTab) {
+    tabs.push({ key: 'stats', label: t('matchPage.navigation.stats') });
+  }
+  if (showTableTab) {
+    tabs.push({ key: 'table', label: tableLabel });
+  }
 
   return (
     <div className="navigation-tabs" role="tablist" aria-label={t('matchPage.pageTitle')}>

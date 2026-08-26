@@ -3,6 +3,7 @@
     "navigation": {
       "summary": "YHTEENVETO",
       "lineups": "KOKOONPANOT",
+      "stats": "TILASTOT",
       "table": "SARJATAULUKKO",
       "groupStandings": "LOHKON TAULUKKO",
       "playoffBracket": "PUDOTUSPELIKAAVIO"
@@ -1503,6 +1504,7 @@
     "backTo": "Takaisin",
     "loading": "Ladataan...",
     "edit": "Muokkaa",
+    "viewPublic": "Näytä julkinen sivu",
     "delete": "Poista",
     "save": "Tallenna",
     "deleting": "Poistetaan...",
@@ -1515,6 +1517,7 @@
     "birthDate": "Syntymäpäivä",
     "registration": "Rekisteröinti",
     "name": "Nimi",
+    "notAssigned": "Ei joukkuetta",
     "actions": "Toiminnot",
     "registered": "Rekisteröity",
     "notRegistered": "Ei Rekisteröity",
@@ -2659,6 +2662,8 @@
     "standings": {
       "title": "Sarjataulukko",
       "standings": "Sarjataulukko",
+      "team": "JOUKKUE",
+      "player": "PELAAJA",
       "topScorers": "Parhaat maalintekijät",
       "topAssists": "Parhaat syöttäjät",
       "emptyStandings": "Sarjataulukko ei ole vielä saatavilla",

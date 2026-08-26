@@ -10,6 +10,7 @@ import type { HockeySeasonDto, HockeyTeamCompetitionStatisticsDto } from '../../
 import { useAudience } from '../../context/AudienceContext';
 import { uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
 import StatAbbr from '../../components/StatAbbr/StatAbbr';
+import { TeamLink } from '../../components/SportLinks';
 import './HockeyPage.scss';
 
 interface SeasonWithStandings {
@@ -157,14 +158,25 @@ function HockeyPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {uniqueHockeyStandingsByTeamId(data.standings).slice(0, MAX_STANDINGS_PREVIEW).map((row) => (
+                        {uniqueHockeyStandingsByTeamId(data.standings).slice(0, MAX_STANDINGS_PREVIEW).map((row) => {
+                          const teamName = data.teamNames.get(row.teamId) ?? row.teamId.slice(0, 8);
+                          const namedTeams = [...data.teamNames.entries()].map(([id, name]) => ({ id, name }));
+                          return (
                           <tr key={row.teamId}>
                             <td>{row.standingRank || ''}</td>
-                            <td>{data.teamNames.get(row.teamId) ?? row.teamId.slice(0, 8)}</td>
+                            <td>
+                              <TeamLink
+                                sport="hockey"
+                                teamId={row.teamId}
+                                teamName={teamName}
+                                teams={namedTeams}
+                              />
+                            </td>
                             <td>{row.gamesPlayed}</td>
                             <td>{row.points}</td>
                           </tr>
-                        ))}
+                          );
+                        })}
                       </tbody>
                     </table>
                     <Link to={`/hockey/league/${data.season.id}?tab=statistics`} className="standings-table__full-link">

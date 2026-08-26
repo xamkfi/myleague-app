@@ -1,4 +1,4 @@
-export type MatchTabType = 'summary' | 'lineups' | 'table';
+export type MatchTabType = 'summary' | 'lineups' | 'table' | 'stats';
 
 export type TableTabVariant = 'season' | 'tournamentGroup' | 'tournamentPlayoff';
 

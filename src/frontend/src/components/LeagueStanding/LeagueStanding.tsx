@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { FloorballGameResult } from '../../api/floorball/floorballStatistics';
 import { useFloorballTeamsData } from '../../hooks/useTeamsData';
 import { createTeamSlug } from '../../utils/slugUtils';
+import { TeamLink, PlayerLink } from '../SportLinks';
 
 interface LeagueStandingProps {
   seasonSummary?: FloorballSeasonStatisticsSummaryDto | null;
@@ -87,7 +88,7 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
         <thead>
           <tr className="header-row">
             <th className="rank-col">#</th>
-            <th className="team-col">TEAM</th>
+            <th className="team-col">{t('leaguePage.standings.team', 'TEAM')}</th>
             <th className="spacer-col"></th>
             <th className="stats-col" title="Pelatut ottelut (Matches Played)">MP</th>
             <th className="stats-col" title="Voitot (Wins)">W</th>
@@ -107,8 +108,8 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
         <thead>
           <tr className="header-row">
             <th className="rank-col">#</th>
-            <th className="team-col">PLAYER</th>
-            <th className="spacer-col">TEAM</th>
+            <th className="team-col">{t('leaguePage.standings.player', 'PLAYER')}</th>
+            <th className="spacer-col">{t('leaguePage.standings.team', 'TEAM')}</th>
             <th className="stats-col"></th>
             <th className="stats-col" title="Maalit (Goals)">G</th>
             <th className="stats-col" title="Syötöt (Assists)">A</th>
@@ -140,8 +141,8 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
       <thead>
         <tr className="header-row">
           <th className="rank-col">#</th>
-          <th className="team-col">PLAYER</th>
-          <th className="spacer-col">TEAM</th>
+          <th className="team-col">{t('leaguePage.standings.player', 'PLAYER')}</th>
+          <th className="spacer-col">{t('leaguePage.standings.team', 'TEAM')}</th>
           <th className="stats-col"></th>
           <th className="stats-col" title="Syötöt (Assists)">A</th>
           <th className="stats-col" title="Maalit (Goals)">G</th>
@@ -208,7 +209,13 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                     ) : (
                       <div className="logo-empty"></div>
                     )}
-                    <span className="team-name">{team.teamName}</span>
+                    <TeamLink
+                      sport="floorball"
+                      teamId={team.teamId}
+                      teamName={team.teamName}
+                      teams={teams}
+                      className="team-name"
+                    />
                   </div>
                 </td>
                 <td className="spacer-col"></td>
@@ -279,12 +286,20 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
-                    <span className="team-name">{player.playerName}</span>
+                    <PlayerLink sport="floorball" playerId={player.playerId} className="team-name">
+                      {player.playerName}
+                    </PlayerLink>
                   </div>
                 </td>
                 <td className="spacer-col">
                   <div className="team-info">
-                    <span className="team-name">{player.teamName}</span>
+                    <TeamLink
+                      sport="floorball"
+                      teamId={player.teamId}
+                      teamName={player.teamName}
+                      teams={teams}
+                      className="team-name"
+                    />
                   </div>
                 </td>
                 <td className="stats-col"></td>
@@ -335,12 +350,20 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
-                    <span className="team-name">{player.playerName}</span>
+                    <PlayerLink sport="floorball" playerId={player.playerId} className="team-name">
+                      {player.playerName}
+                    </PlayerLink>
                   </div>
                 </td>
                 <td className="spacer-col">
                   <div className="team-info">
-                    <span className="team-name">{player.teamName}</span>
+                    <TeamLink
+                      sport="floorball"
+                      teamId={player.teamId}
+                      teamName={player.teamName}
+                      teams={teams}
+                      className="team-name"
+                    />
                   </div>
                 </td>
                 <td className="stats-col"></td>
@@ -394,12 +417,20 @@ export default function LeagueStanding({ seasonSummary, loading, error, standing
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
-                    <span className="team-name">{goalie.playerName}</span>
+                    <PlayerLink sport="floorball" playerId={goalie.playerId} className="team-name">
+                      {goalie.playerName}
+                    </PlayerLink>
                   </div>
                 </td>
                 <td className="spacer-col">
                   <div className="team-info">
-                    <span className="team-name">{goalie.teamName}</span>
+                    <TeamLink
+                      sport="floorball"
+                      teamId={goalie.teamId}
+                      teamName={goalie.teamName}
+                      teams={teams}
+                      className="team-name"
+                    />
                   </div>
                 </td>
                 <td className="stats-col">{goalie.gamesPlayed}</td>

@@ -15,6 +15,7 @@ import {
   getFootballCompetitionPath,
   isFootballTournamentCompetition,
 } from '../../utils/footballCompetitionPath';
+import { getTeamPath } from '../../utils/sportRoutes';
 import { slugify } from '../../utils/slugUtils';
 
 export default function FootballMatchPage() {
@@ -125,12 +126,12 @@ export default function FootballMatchPage() {
               home: {
                 name: match.homeTeamName,
                 logo: match.homeTeamLogo,
-                href: match.homeTeamName ? `/football/team/${slugify(match.homeTeamName)}` : null,
+                href: match.homeTeamName ? getTeamPath('football', slugify(match.homeTeamName)) : null,
               },
               away: {
                 name: match.awayTeamName,
                 logo: match.awayTeamLogo,
-                href: match.awayTeamName ? `/football/team/${slugify(match.awayTeamName)}` : null,
+                href: match.awayTeamName ? getTeamPath('football', slugify(match.awayTeamName)) : null,
               },
               homeScore: match.homeScore,
               awayScore: match.awayScore,

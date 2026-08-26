@@ -92,6 +92,7 @@
     "navigation": {
       "summary": "SUMMARY",
       "lineups": "LINEUPS",
+      "stats": "STATS",
       "table": "TABLE",
       "groupStandings": "GROUP STANDINGS",
       "playoffBracket": "PLAYOFF BRACKET"
@@ -1521,6 +1522,7 @@
     "backTo": "Back to",
     "loading": "Loading…",
     "edit": "Edit",
+    "viewPublic": "View public page",
     "delete": "Delete",
     "save": "Save",
     "deleting": "Deleting...",
@@ -1533,6 +1535,7 @@
     "birthDate": "Birth Date",
     "registration": "Registration",
     "name": "Name",
+    "notAssigned": "Not assigned",
     "actions": "Actions",
     "registered": "Registered",
     "notRegistered": "Not Registered",
@@ -2670,6 +2673,8 @@
     "standings": {
       "title": "Standings",
       "standings": "Standings",
+      "team": "TEAM",
+      "player": "PLAYER",
       "topScorers": "Top Scorers",
       "topAssists": "Top Assists",
       "emptyStandings": "Standings not available",

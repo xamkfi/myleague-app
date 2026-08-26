@@ -17,6 +17,7 @@ import { floorballMatchService } from '../../api/floorball/floorballMatchService
 import { FloorballMatchStatus, type FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import { formatMatchDateTime } from '../../utils/helpers';
 import { useAudience } from '../../context/AudienceContext';
+import { TeamLink } from '../../components/SportLinks';
 import bannerImage from '../../assets/floorball-banner.png';
 import './FloorballPage.scss';
 
@@ -222,6 +223,7 @@ function FloorballPage() {
   const renderStandingsCard = (data: SeasonWithStandings, isDark: boolean) => {
     const { season, standings, standingsLoading } = data;
     const displayStandings = standings.slice(0, MAX_STANDINGS_PREVIEW);
+    const namedTeams = standings.map((row) => ({ id: row.teamId, name: row.teamName }));
 
     return (
       <section
@@ -266,7 +268,13 @@ function FloorballPage() {
                 <span className="fb-standings-table__rank">{index + 1}.</span>
                 <span className="fb-standings-table__team">
                   {renderTeamLogo(team.teamLogo)}
-                  <span className="fb-standings-table__team-name">{team.teamName}</span>
+                  <TeamLink
+                    sport="floorball"
+                    teamId={team.teamId}
+                    teamName={team.teamName}
+                    teams={namedTeams}
+                    className="fb-standings-table__team-name"
+                  />
                 </span>
                 <span className="fb-standings-table__num">{team.goalDifference}</span>
                 <span className="fb-standings-table__num fb-standings-table__num--pts">
@@ -306,11 +314,27 @@ function FloorballPage() {
                 <span className="fb-upcoming-card__teams">
                   <span className="fb-upcoming-card__team">
                     {renderTeamLogo(match.homeTeamLogo)}
-                    <span>{match.homeTeamName ?? t('floorballPage.tbd')}</span>
+                    {match.homeTeamId && match.homeTeamName ? (
+                      <TeamLink
+                        sport="floorball"
+                        teamId={match.homeTeamId}
+                        teamName={match.homeTeamName}
+                      />
+                    ) : (
+                      <span>{match.homeTeamName ?? t('floorballPage.tbd')}</span>
+                    )}
                   </span>
                   <span className="fb-upcoming-card__team">
                     {renderTeamLogo(match.awayTeamLogo)}
-                    <span>{match.awayTeamName ?? t('floorballPage.tbd')}</span>
+                    {match.awayTeamId && match.awayTeamName ? (
+                      <TeamLink
+                        sport="floorball"
+                        teamId={match.awayTeamId}
+                        teamName={match.awayTeamName}
+                      />
+                    ) : (
+                      <span>{match.awayTeamName ?? t('floorballPage.tbd')}</span>
+                    )}
                   </span>
                 </span>
               </Link>

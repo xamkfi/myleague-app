@@ -2,10 +2,8 @@ import { useTranslation } from 'react-i18next';
 import type { HockeyMatchDto } from '../../../../../../types/hockey/hockeyTypes';
 import { isHockeyMatchFinished, isHockeyMatchLive } from '../../../../../../types/hockey/hockeyTypes';
 import { formatHockeyDateTime } from '../../../../../../utils/hockeyLookups';
-import ActionsDropdown from '../../../../../../components/ActionsDropdown/ActionsDropdown';
-import LoadingSpinner from '../../../../../../components/LoadingSpinner/LoadingSpinner';
-import '../../../../../../styles/AdminTable.scss';
-import './MatchTable.scss';
+import AdminMatchTable from '../../../../../../components/admin/AdminMatchTable';
+import type { AdminAction } from '../../../../../../components/admin/adminTableTypes';
 
 interface MatchTableProps {
   matches: HockeyMatchDto[];
@@ -35,6 +33,7 @@ function MatchTable({
   hideActions = false,
 }: MatchTableProps) {
   const { t } = useTranslation();
+  const byId = new Map(matches.map((match) => [match.id, match]));
 
   const getMatchStatusBadge = (status: string): { className: string; label: string } => {
     if (isHockeyMatchLive(status)) {
@@ -50,13 +49,9 @@ function MatchTable({
         className: 'admin-badge admin-badge--info',
         label: t('hockey.matches.status.scheduled', 'Scheduled'),
       },
-      Finished: {
+      Completed: {
         className: 'admin-badge admin-badge--completed',
         label: t('hockey.matches.status.completed', 'Completed'),
-      },
-      Forfeit: {
-        className: 'admin-badge admin-badge--completed',
-        label: t('hockey.matches.status.forfeit', 'Forfeit'),
       },
       Cancelled: {
         className: 'admin-badge admin-badge--danger',
@@ -70,36 +65,27 @@ function MatchTable({
     return map[status] ?? { className: 'admin-badge', label: status };
   };
 
-  const getActions = (match: HockeyMatchDto) => {
-    const actions: {
-      label: string;
-      onClick: () => void;
-      variant?: 'default' | 'danger' | 'status';
-      disabled: boolean;
-    }[] = [];
-
-    actions.push({
-      label: t('hockey.matches.actions.open', 'Open Match'),
-      onClick: () => onOpenMatch(match),
-      disabled: false,
-    });
+  const getActions = (match: HockeyMatchDto): AdminAction[] => {
+    const actions: AdminAction[] = [
+      {
+        label: t('hockey.matches.actions.open', 'Open Match'),
+        onClick: () => onOpenMatch(match),
+      },
+    ];
 
     if (isHockeyMatchLive(match.status)) {
       actions.push({
         label: t('hockey.matches.actions.live', 'Live View'),
         onClick: () => onLiveMatch(match),
-        disabled: false,
       });
       actions.push({
-        label: t('common.edit', 'Edit'),
+        label: t('common.edit'),
         onClick: () => onEditMatch(match),
-        disabled: false,
       });
     } else {
       actions.push({
         label: t('hockey.matches.actions.manage', 'Manage'),
         onClick: () => onEditMatch(match),
-        disabled: false,
       });
     }
 
@@ -108,7 +94,6 @@ function MatchTable({
         label: t('hockey.matches.actions.start', 'Start Match'),
         onClick: () => onStartMatch(match),
         variant: 'status',
-        disabled: false,
       });
     }
 
@@ -116,7 +101,6 @@ function MatchTable({
       actions.push({
         label: t('hockey.matches.actions.reactivate', 'Reactivate Match'),
         onClick: () => onReactivateMatch(match),
-        disabled: false,
       });
     }
 
@@ -125,103 +109,53 @@ function MatchTable({
         label: t('hockey.matches.actions.cancel', 'Cancel Match'),
         onClick: () => onCancelMatch(match),
         variant: 'danger',
-        disabled: false,
       });
     }
 
     return actions;
   };
 
-  if (loading) {
-    return (
-      <div className="match-table__loading">
-        <LoadingSpinner text={t('hockey.matches.loading', 'Loading matches...')} />
-      </div>
-    );
-  }
-
-  if (matches.length === 0) {
-    return (
-      <div className="match-table__empty">
-        <i className="fas fa-calendar-times match-table__empty-icon"></i>
-        <p>{t('hockey.matches.noMatchesFound', 'No matches found')}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="admin-table__wrapper">
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>{t('hockey.matches.columns.match', 'Match')}</th>
-            <th>{t('hockey.matches.columns.season', 'Season')}</th>
-            <th>{t('hockey.matches.columns.dateTime', 'Date & Time')}</th>
-            <th>{t('hockey.matches.columns.venue', 'Venue')}</th>
-            <th>{t('hockey.matches.columns.score', 'Score')}</th>
-            <th>{t('hockey.matches.columns.status', 'Status')}</th>
-            {!hideActions && (
-              <th className="admin-table__actions-col">{t('common.actions', 'Actions')}</th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {matches.map((match) => {
-            const badge = getMatchStatusBadge(String(match.status));
-            return (
-              <tr
-                key={match.id}
-                className="admin-table__row--clickable"
-                onClick={() => onLiveMatch(match)}
-              >
-                <td>
-                  <div className="match-table__teams">
-                    <span className="admin-table__name">
-                      {match.homeTeamId ? teamNames.get(match.homeTeamId) ?? 'TBD' : 'TBD'}
-                    </span>
-                    <span className="match-table__vs">vs</span>
-                    <span className="admin-table__name">
-                      {match.awayTeamId ? teamNames.get(match.awayTeamId) ?? 'TBD' : 'TBD'}
-                    </span>
-                  </div>
-                </td>
-                <td>
-                  <span className="admin-table__muted">
-                    {match.competitionId ? competitionNames.get(match.competitionId) ?? '-' : '-'}
-                  </span>
-                </td>
-                <td className="admin-table__muted">{formatHockeyDateTime(match.scheduledStartTime)}</td>
-                <td>
-                  {match.venue ? (
-                    <span className="admin-table__muted">{match.venue}</span>
-                  ) : (
-                    <span className="admin-table__muted match-table__tbd">{t('hockey.matches.tbd', 'TBD')}</span>
-                  )}
-                </td>
-                <td>
-                  {match.status === 'Scheduled' || match.status === 'Postponed' ? (
-                    <span className="admin-table__muted">-</span>
-                  ) : (
-                    <span className="admin-table__bold">{match.homeScore} - {match.awayScore}</span>
-                  )}
-                </td>
-                <td>
-                  <span className={badge.className}>{badge.label}</span>
-                </td>
-                {!hideActions && (
-                  <td className="admin-table__actions-col" onClick={(event) => event.stopPropagation()}>
-                    <ActionsDropdown
-                      actions={getActions(match)}
-                      ariaLabel={t('hockey.matches.actions.menu', 'Match actions menu')}
-                    />
-                  </td>
-                )}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <AdminMatchTable
+      sport="hockey"
+      matches={matches.map((match) => ({
+        id: match.id,
+        homeTeamName: match.homeTeamId ? teamNames.get(match.homeTeamId) ?? '' : '',
+        awayTeamName: match.awayTeamId ? teamNames.get(match.awayTeamId) ?? '' : '',
+        homeTeamId: match.homeTeamId,
+        awayTeamId: match.awayTeamId,
+        competitionName: match.competitionId ? competitionNames.get(match.competitionId) ?? '-' : '-',
+        scheduledDateTime: match.scheduledStartTime,
+        venue: match.venue,
+        homeScore: match.homeScore,
+        awayScore: match.awayScore,
+        status: String(match.status),
+      }))}
+      labels={{
+        loading: t('hockey.matches.loading', 'Loading matches...'),
+        noMatchesFound: t('hockey.matches.noMatchesFound', 'No matches found'),
+        match: t('hockey.matches.columns.match', 'Match'),
+        season: t('hockey.matches.columns.season', 'Season'),
+        dateTime: t('hockey.matches.columns.dateTime', 'Date & Time'),
+        venue: t('hockey.matches.columns.venue', 'Venue'),
+        score: t('hockey.matches.columns.score', 'Score'),
+        status: t('hockey.matches.columns.status', 'Status'),
+        tbd: t('hockey.matches.tbd', 'TBD'),
+        actionsMenu: t('hockey.matches.actions.menu', 'Match actions menu'),
+      }}
+      loading={loading}
+      hideActions={hideActions}
+      formatDateTime={formatHockeyDateTime}
+      getStatusBadge={getMatchStatusBadge}
+      getActions={(row) => {
+        const match = byId.get(row.id);
+        return match ? getActions(match) : [];
+      }}
+      onRowClick={(row) => {
+        const match = byId.get(row.id);
+        if (match) onLiveMatch(match);
+      }}
+    />
   );
 }
 
