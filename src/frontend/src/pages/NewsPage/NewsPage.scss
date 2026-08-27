@@ -2,9 +2,26 @@
 @use '@variables' as *;
 @use '../../styles/common' as *;
 
-// Override PageTemplate padding for NewsPage only
+.news-page,
+.news-page .page-container {
+  width: 100%;
+  background-color: $color-blue-background;
+}
+
+.news-page .page-content {
+  padding: 0 !important;
+  max-width: none !important;
+  width: 100%;
+  margin: 0;
+
+  > * {
+    max-width: none;
+  }
+}
+
 .news-page .page-body {
   padding: 0 !important;
+  width: 100%;
 }
 
 .news {
@@ -40,13 +57,10 @@
 }
 
 .news-main-bg {
-  width: 100vw;
+  width: 100%;
   position: relative;
-  left: 0%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  padding: 0rem 0;
+  margin: 0;
+  padding: 0;
   z-index: 0;
   min-height: 340px;
   display: flex;
@@ -93,8 +107,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: map.get($spacing, 'lg') 0px;
+  margin: map.get($spacing, 'lg') auto;
   width: 100%;
+  max-width: $max-width-page;
 }
 
 .main-news-card {
@@ -105,18 +120,21 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-  max-width: 1200px;
+  max-width: none;
   width: 100%;
   height: 400px; /* Fixed height for static layout */
   z-index: 1;
 }
 
 .news-filter-panel {
-
+  position: relative;
+  z-index: 5;
+  overflow: visible;
   display: flex;
   align-items: center;
   gap: 16px;
   align-self: stretch;
+  flex-wrap: wrap;
   .search-input {
     padding: 0rem;
     display: flex;
@@ -125,26 +143,217 @@
     gap: map.get($spacing, 'md');
     border-radius: map.get($border-radius, 'xl');
     overflow: hidden;
-    margin-left: 3rem;
-  }
-  .category-dropdown {
-    display: flex;
-    width: 180px;
-    padding: map.get($spacing, 'xs') map.get($spacing, 'xs');
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 8px;
-    border-radius: map.get($border-radius, 'sm');
+    margin-left: 0;
+    flex: 1 1 220px;
+    min-width: 180px;
     border: 1px solid $color-neutral-medium-grey;
     background: $color-neutral-white;
-    overflow: hidden;
-    color: $color-neutral-dark-grey;
+
+    input {
+      width: 100%;
+    }
+  }
+  .category-dropdown {
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    height: 2.125rem;
+    min-height: 2.125rem;
+    width: 10.5rem;
+    min-width: 10.5rem;
+    max-width: 10.5rem;
+    margin: 0;
+    padding: 0 1.75rem 0 map.get($spacing, 'base');
+    border-radius: map.get($border-radius, 'sm');
+    border: 1px solid $color-neutral-medium-grey;
+    background-color: $color-neutral-white;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'><path fill='%234A679F' d='M1.2 1.1 5 4.7 8.8 1.1'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 0.7rem 0.45rem;
+    color: $color-blue-light;
     text-align: left;
     text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    font-family: inherit;
+    line-height: 1.2;
+    cursor: pointer;
 
-    font-size: map.get($font-sizes, 'md');
-    font-weight: map.get($font-weights, 'medium');
-    line-height: 24px;
+    &.is-active {
+      border-color: $color-blue-deep;
+      color: $color-blue-deep;
+      background-color: #eaf1f9;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'><path fill='%2316346B' d='M1.2 1.1 5 4.7 8.8 1.1'/></svg>");
+    }
+  }
+}
+
+.news-tag-combobox {
+  position: relative;
+  width: 10.5rem;
+  min-width: 10.5rem;
+  flex: 0 0 10.5rem;
+
+  &.is-active .category-dropdown {
+    border-color: $color-blue-deep;
+    color: $color-blue-deep;
+    background-color: #eaf1f9;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'><path fill='%2316346B' d='M1.2 1.1 5 4.7 8.8 1.1'/></svg>");
+  }
+
+  .category-dropdown {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  &__label {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 30;
+    width: min(42rem, calc(100vw - 2rem));
+    min-width: 280px;
+    padding: 10px;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'sm');
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px rgba(57, 62, 99, 0.16);
+  }
+
+  &__search {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 6px 12px;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'sm');
+    background: rgba(255, 255, 255, 0.92);
+    font-size: map.get($font-sizes, 'sm');
+    font-family: inherit;
+    appearance: none;
+
+    &::-webkit-search-decoration,
+    &::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+    }
+  }
+
+  &__all {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 4px 10px;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'sm');
+    background: rgba(255, 255, 255, 0.92);
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'semibold');
+    font-family: inherit;
+    cursor: pointer;
+
+    &:hover,
+    &.is-selected {
+      border-color: $color-blue-deep;
+      background: #eaf1f9;
+    }
+  }
+
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__option {
+    width: 100%;
+    min-width: 0;
+    padding: 3px 6px;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'sm');
+    background: rgba(255, 255, 255, 0.92);
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'semibold');
+    font-family: inherit;
+    line-height: 1.2;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+
+    &:hover,
+    &.is-selected {
+      border-color: $color-blue-deep;
+      background: #eaf1f9;
+    }
+  }
+
+  &__empty {
+    grid-column: 1 / -1;
+    padding: 8px 10px;
+    color: $color-neutral-dark-grey;
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  &__pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid $color-neutral-light-grey;
+    font-size: map.get($font-sizes, 'sm-xs');
+    color: $color-neutral-dark-grey;
+
+    button {
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: map.get($border-radius, 'sm');
+      background: rgba(255, 255, 255, 0.92);
+      padding: 3px 10px;
+      font-family: inherit;
+      cursor: pointer;
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+    }
+  }
+}
+
+.news-filter-clear {
+  border: 1px solid $color-blue-deep;
+  background: transparent;
+  color: $color-blue-deep;
+  border-radius: map.get($border-radius, 'sm');
+  padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+  font-weight: map.get($font-weights, 'semibold');
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: #eaf1f9;
   }
 }
 
@@ -260,18 +469,16 @@
 }
 
 .news-list-section {
-  margin-top: map.get($spacing, 'md');
+  margin: map.get($spacing, 'md') auto map.get($spacing, 'lg');
   width: 100%;
-  margin-bottom: map.get($spacing, 'lg');
-  background-color: $color-neutral-light-grey;
+  max-width: $max-width-page;
   display: flex;
   padding: map.get($spacing, 'md');
   flex-direction: column;
   align-items: flex-start;
-  gap: 24px;
+  gap: 1.5rem;
   border-radius: map.get($border-radius, 'lg');
   background: $color-neutral-white;
-  /* Drop Shadow 1 */
   box-shadow: 0 5px 25px 0 rgba(57, 62, 99, 0.15);
 }
 
@@ -279,26 +486,27 @@
   font-size: 2rem;
   font-weight: 700;
   color: #222;
-  height: 36px;
-  margin-bottom: map.get($spacing, 'lg');
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .news-filter-wrapper {
   width: 100%;
-  margin-bottom: map.get($spacing, 'lg');
+  margin: 0;
 }
 
 .no-news-message {
   grid-column: 1 / -1;
   text-align: center;
-  padding: map.get($spacing, 'xl');
+  padding: map.get($spacing, 'md');
   color: $color-text-muted;
   font-size: map.get($font-sizes, 'md');
 }
 
 .news-pagination-wrapper {
   width: 100%;
-  margin-top: map.get($spacing, 'lg');
+  margin: 0;
   display: flex;
   justify-content: center;
 }
@@ -461,17 +669,36 @@
   line-height: 1.3;
   word-wrap: break-word;
   hyphens: auto;
-  /* Allow natural text wrapping */
+  text-transform: uppercase;
 }
 
 .news-card-tags {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 500;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.15rem;
-  margin-top: 0;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  position: relative;
+  z-index: 11;
+}
+
+.news-card-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 24px;
+  border: 1px solid rgba(251, 251, 253, 0.9);
+  background: transparent;
+  color: #fbfbfd;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1rem;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.16);
+  }
 }
 
 .sport-category-badge {
@@ -612,16 +839,45 @@
     
     .category-dropdown {
       width: 100%;
-      padding: map.get($spacing, 'sm');
+      min-width: 0;
+      max-width: none;
+      height: 2.5rem;
+      min-height: 2.5rem;
+      padding: 0 1.75rem 0 map.get($spacing, 'sm');
       font-size: map.get($font-sizes, 'base');
+    }
+
+    .news-filter-clear {
+      width: 100%;
+    }
+
+    .news-tag-combobox {
+      width: 100%;
+      min-width: 0;
+      flex: none;
+
+      .category-dropdown {
+        max-width: none;
+      }
+
+      &__panel {
+        min-width: 100%;
+        max-width: none;
+        width: 100%;
+      }
+
+      &__list {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
     }
   }
   
-  // News list section mobile styles
+  // News list section mobile styles — same outer width as the featured card
   .news-list-section {
-    margin: map.get($spacing, 'sm');
+    margin: map.get($spacing, 'sm') auto;
     padding: map.get($spacing, 'md');
     width: calc(100% - #{map.get($spacing, 'sm') * 2});
+    max-width: $max-width-page;
     border-radius: map.get($border-radius, 'lg');
     gap: map.get($spacing, 'sm');
   }
@@ -629,11 +885,11 @@
   .news-list-title {
     font-size: 1.5rem;
     text-align: center;
-    margin-bottom: map.get($spacing, 'sm');
+    margin: 0;
   }
   
   .news-filter-wrapper {
-    margin-bottom: map.get($spacing, 'sm');
+    margin: 0;
   }
   
   .no-news-message {
@@ -733,13 +989,17 @@
     gap: map.get($spacing, 'xs');
     
     .category-dropdown {
-      padding: map.get($spacing, 'xs');
+      padding: 0 1.75rem 0 map.get($spacing, 'xs');
       font-size: map.get($font-sizes, 'sm');
+    }
+
+    .news-tag-combobox__list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
   
   .news-list-section {
-    margin: map.get($spacing, 'xs');
+    margin: map.get($spacing, 'xs') auto;
     padding: map.get($spacing, 'sm');
     width: calc(100% - #{map.get($spacing, 'xs') * 2});
     gap: map.get($spacing, 'xs');
@@ -750,7 +1010,7 @@
   }
   
   .news-filter-wrapper {
-    margin-bottom: map.get($spacing, 'xs');
+    margin: 0;
   }
   
   .no-news-message {

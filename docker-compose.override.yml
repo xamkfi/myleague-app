@@ -25,5 +25,7 @@ services:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       # Mount logs directory
       - ./src/backend/WebAPI/logs:/app/logs
+      # Local image uploads (writable by non-root APP_UID)
+      - ./src/backend/WebAPI/wwwroot/uploads:/app/wwwroot/uploads
     networks:
       - myleague-network

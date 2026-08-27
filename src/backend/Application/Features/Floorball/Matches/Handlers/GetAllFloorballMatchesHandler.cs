@@ -108,23 +108,10 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
 
             // Normalize matches to a non-null sequence and load clubs for logo resolution (skip when no matches)
             IEnumerable<FloorballMatch> matches = pagedMatches.Items ?? Enumerable.Empty<FloorballMatch>();
-
-            Dictionary<Guid, Club> clubLookup;
-            if (!matches.Any())
-            {
-                clubLookup = new Dictionary<Guid, Club>();
-            }
-            else
-            {
-                List<Guid> clubIds = matches
-                    .SelectMany(m => new Guid?[] { m.HomeTeam?.ClubId, m.AwayTeam?.ClubId })
-                    .Where(id => id.HasValue)
-                    .Select(id => id!.Value)
-                    .Distinct()
-                    .ToList();
-
-                clubLookup = await _clubRepository.GetByIdsAsync(clubIds, cancellationToken);
-            }
+            List<Guid> clubIds = FloorballMatchMapper.CollectClubIds(matches);
+            Dictionary<Guid, Club> clubLookup = clubIds.Count == 0
+                ? new Dictionary<Guid, Club>()
+                : await _clubRepository.GetByIdsAsync(clubIds, cancellationToken);
 
             // Map to DTOs with club data
             IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(matches, clubLookup);

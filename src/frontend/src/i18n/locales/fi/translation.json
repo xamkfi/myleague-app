@@ -575,7 +575,8 @@
       "confirmDeleteMatches": "Haluatko varmasti poistaa {{count}} ottelutulosta?",
       "confirmDeleteBoth": "Haluatko varmasti poistaa {{images}} kuva(a) ja {{matches}} ottelutulosta?",
       "uploadFailed": "Kuvan lataus epäonnistui.",
-      "placeholder": "Kirjoita sisältö tähän..."
+      "placeholder": "Kirjoita sisältö tähän...",
+      "dragMatchHint": "Raahaa ottelulaatikkoa siirtääksesi sen. Laatikoiden väliin voi kirjoittaa tekstiä."
     },
     "news": {
       "pageTitle": "Uutisten Hallinta",
@@ -666,7 +667,8 @@
         "author_too_long": "Tekijän nimi ei voi ylittää 50 merkkiä",
         "summary_too_long": "Yhteenveto ei voi ylittää 200 merkkiä",
         "invalid_image": "Valitse kelvollinen kuvatiedosto",
-        "image_too_large": "Kuvatiedoston tulee olla alle 5MB"
+        "image_too_large": "Kuvatiedoston tulee olla alle 5MB",
+        "upload_failed": "Kuvan lataus epäonnistui. Yritä uudelleen."
       },
       "matches": {
         "add_matches": "Lisää Otteluita",
@@ -1570,13 +1572,46 @@
     }
   },
   "newsPage": {
+    "allNews": "KAIKKI UUTISET",
+    "backToNews": "Takaisin uutisiin",
+    "loading": "Ladataan...",
+    "updated": "Päivitetty: {{date}}",
+    "similarNews": "Samankaltaiset uutiset",
+    "relatedTeams": "Uutiseen liittyvät joukkueet",
+    "noNewsFound": "Ei uutisia vastaaville hakuehdoille.",
     "category": {
       "all": "Kaikki"
+    },
+    "categoryValues": {
+      "General": "Yleinen",
+      "MatchReports": "Otteluraportit",
+      "LeagueNews": "Liigauutiset",
+      "PlayerUpdates": "Pelaajauutiset",
+      "TeamNews": "Joukkueuutiset",
+      "Announcements": "Tiedotteet",
+      "Events": "Tapahtumat",
+      "Transfers": "Siirrot",
+      "Injuries": "Loukkaantumiset",
+      "Awards": "Palkinnot"
     },
     "sportCategory": {
       "floorball": "Salibandy",
       "hockey": "Jääkiekko",
       "football": "Jalkapallo"
+    },
+    "filters": {
+      "sport": "Laji",
+      "category": "Kategoria",
+      "tag": "Tagi",
+      "allSports": "Kaikki lajit",
+      "allCategories": "Kaikki kategoriat",
+      "allTags": "Kaikki tagit",
+      "tagSearch": "Hae tageja...",
+      "noTags": "Ei tageja",
+      "tagPage": "{{page}} / {{total}}",
+      "previous": "Edellinen",
+      "next": "Seuraava",
+      "clear": "Tyhjennä suodattimet"
     },
     "search": "Hae",
     "searchPlaceholder": "Hae uutisia...",

@@ -1,33 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Common;
-using Application.Features.Floorball.Seasons.DTOs;
-using Application.Features.Floorball.Matches.DTOs;
-using Application.Features.Floorball.Teams.DTOs;
-using Application.Features.Floorball.Players.DTOs;
-using Application.Features.Floorball.Referees.DTOs;
-using Application.Features.Floorball.TeamManagers.DTOs;
-using Application.Features.Floorball.Statistics.DTOs;
-using Application.Features.Floorball.Seasons.Mappings;
-using Application.Features.Floorball.Matches.Mappings;
-using Application.Features.Floorball.Teams.Mappings;
-using Application.Features.Floorball.Players.Mappings;
-using Application.Features.Floorball.Referees.Mappings;
-using Application.Features.Floorball.TeamManagers.Mappings;
-using Application.Features.Floorball.Statistics.Mappings;
 using Application.Features.Floorball.Matches.Queries;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Matches.Mappings;
+using Application.Common;
 using Application.Services.Common;
 using Domain.Common;
+using Domain.Entities.Common;
 using Domain.Entities.Floorball;
+using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Application.Features.Floorball.Matches.Handlers
 {
@@ -35,18 +25,16 @@ namespace Application.Features.Floorball.Matches.Handlers
         IRequestHandler<GetFloorballMatchesByTeamQuery, Result<PagedResult<FloorballMatchDto>>>
     {
         private readonly IFloorballMatchRepository _floorballMatchRepository;
+        private readonly IClubRepository _clubRepository;
 
-        /// <summary>
-        /// Initializes a new instance of the GetAllFloorballMatchesHandler class
-        /// </summary>
-        /// <param name="floorballMatchRepository"></param>
-        /// <param name="paginationService"></param>
         public GetFloorballMatchesByTeamHandler(
             IFloorballMatchRepository floorballMatchRepository,
+            IClubRepository clubRepository,
             IPaginationService paginationService,
             ILogger<GetFloorballMatchesByTeamHandler> logger) : base (paginationService, logger)
         {
             _floorballMatchRepository = floorballMatchRepository;
+            _clubRepository = clubRepository;
         }
 
         public async Task<Result<PagedResult<FloorballMatchDto>>> Handle(GetFloorballMatchesByTeamQuery request, CancellationToken cancellationToken)
@@ -78,7 +66,12 @@ namespace Application.Features.Floorball.Matches.Handlers
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(pagedMatches.Items);
+                IEnumerable<FloorballMatch> matchItems = pagedMatches.Items ?? Enumerable.Empty<FloorballMatch>();
+                List<Guid> clubIds = FloorballMatchMapper.CollectClubIds(matchItems);
+                Dictionary<Guid, Club> clubLookup = clubIds.Count == 0
+                    ? new Dictionary<Guid, Club>()
+                    : await _clubRepository.GetByIdsAsync(clubIds, cancellationToken);
+                IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(matchItems, clubLookup);
 
                 PagedResult<FloorballMatchDto> pagedResult = CreatePagedResult(
                     matchDtos,

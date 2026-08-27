@@ -16,6 +16,12 @@
   align-items: center;
 }
 
+.rich-text-editor__match-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
 .rich-text-editor__quill {
   width: 100%;
   display: flex;
@@ -69,9 +75,41 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
     }
 
-    /* Make embedded match-result tables blend with the page */
+    /* Match boxes: draggable in the editor, with a gap for typing between them */
     .match-result-table-container {
-      margin: 1rem 0;
+      margin: 0.75rem 0;
+      cursor: grab;
+      position: relative;
+      padding-left: 1.75rem;
+      user-select: none;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0.45rem;
+        top: 50%;
+        width: 0.7rem;
+        height: 1rem;
+        transform: translateY(-50%);
+        background-image: radial-gradient(currentColor 1.1px, transparent 1.2px);
+        background-size: 0.35rem 0.35rem;
+        color: #9ca3af;
+        pointer-events: none;
+      }
+
+      &.is-dragging {
+        opacity: 0.45;
+        cursor: grabbing;
+      }
+
+      a.match-result-row {
+        pointer-events: none;
+      }
+    }
+
+    &.has-match-drop {
+      outline: 2px dashed #4a679f;
+      outline-offset: -2px;
     }
   }
 }

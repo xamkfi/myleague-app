@@ -8,7 +8,7 @@
   margin-top: map.get($spacing, 'base');
   padding: map.get($spacing, 'md');
   background-color: $color-neutral-light-grey;
-  border-radius: map.get($border-radius, 'md');
+  border-radius: map.get($border-radius, 'lg');
   border: 1px solid #e9ecef;
   flex-wrap: wrap;
   gap: map.get($spacing, 'md');
@@ -43,10 +43,17 @@
   }
 
   .page-size-select {
-    padding: 0.5rem 0.75rem;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 0.5rem 1.75rem 0.5rem 0.75rem;
     border: 1px solid $color-neutral-medium-grey;
-    border-radius: map.get($border-radius, 'sm');
+    border-radius: map.get($border-radius, 'lg');
     background-color: white;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'><path fill='%234A679F' d='M1.2 1.1 5 4.7 8.8 1.1'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 0.7rem 0.45rem;
     font-size: map.get($font-sizes, 'sm-md');
     cursor: pointer;
     min-width: 80px;

@@ -57,7 +57,8 @@ namespace WebAPI.Controllers.Common
                 request.Search,
                 request.Author,
                 request.IncludeArchived,
-                request.TeamCategories
+                request.TeamCategories,
+                request.Tag
             );
 
             Result<PagedResult<NewsArticleListDto>> result = await _mediator.Send(query);

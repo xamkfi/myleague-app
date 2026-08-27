@@ -132,8 +132,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     return new List<NewsArticle>();
                 }
 
-                return await _entities
-                    .Where(n => EF.Functions.JsonContains(EF.Property<string>(n, "Tags"), $"\"{tag}\""))
+                IQueryable<NewsArticle> taggedQuery = await ApplyTagFilterAsync(_entities, tag, cancellationToken);
+                return await taggedQuery
                     .OrderByDescending(n => n.CreatedAt)
                     .ToListAsync(cancellationToken);
             }
@@ -215,7 +215,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Collection of news articles</returns>
-        public async Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, IReadOnlyCollection<string>? teamCategories = null, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<NewsArticle>> GetAllAsync(int page, int pageSize, string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, IReadOnlyCollection<string>? teamCategories = null, string? tag = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -269,6 +269,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 }
 
                 query = ApplyTeamCategoryFilter(query, teamCategories);
+                query = await ApplyTagFilterAsync(query, tag, cancellationToken);
 
                 // Apply pagination
                 int skip = (page - 1) * pageSize;
@@ -295,7 +296,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <param name="includeArchived">Whether to include archived articles</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Total count of matching news articles</returns>
-        public async Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, IReadOnlyCollection<string>? teamCategories = null, CancellationToken cancellationToken = default)
+        public async Task<int> GetCountAsync(string? category = null, string? sportCategory = null, string? search = null, string? author = null, bool includeArchived = false, IReadOnlyCollection<string>? teamCategories = null, string? tag = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -337,6 +338,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 }
 
                 query = ApplyTeamCategoryFilter(query, teamCategories);
+                query = await ApplyTagFilterAsync(query, tag, cancellationToken);
 
                 return await query.CountAsync(cancellationToken);
             }
@@ -373,10 +375,53 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         }
 
         /// <summary>
-        /// Filters articles for the selected audiences. Articles with no team category are shown to everyone.
-        /// Uses equality predicates instead of Contains() so Npgsql can translate the nullable
-        /// string-converted TeamCategory column.
+        /// Matches a tag against deserialized JSON so Unicode (ä/ö) and optional '#' both work.
+        /// Tags are not unique across articles — the same tag can belong to many rows.
         /// </summary>
+        private async Task<IQueryable<NewsArticle>> ApplyTagFilterAsync(
+            IQueryable<NewsArticle> query,
+            string? tag,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+            {
+                return query;
+            }
+
+            string needle = NormalizeNewsTag(tag);
+            if (string.IsNullOrWhiteSpace(needle))
+            {
+                return query;
+            }
+
+            List<Guid> matchingIds = (await _entities
+                    .AsNoTracking()
+                    .Select(article => new { article.Id, article.Tags })
+                    .ToListAsync(cancellationToken))
+                .Where(row => row.Tags.Any(stored =>
+                    string.Equals(NormalizeNewsTag(stored), needle, StringComparison.OrdinalIgnoreCase)))
+                .Select(row => row.Id)
+                .ToList();
+
+            if (matchingIds.Count == 0)
+            {
+                return query.Where(_ => false);
+            }
+
+            return query.Where(article => matchingIds.Contains(article.Id));
+        }
+
+        private static string NormalizeNewsTag(string tag)
+        {
+            string normalized = tag.Trim();
+            if (normalized.StartsWith('#'))
+            {
+                normalized = normalized[1..].Trim();
+            }
+
+            return normalized;
+        }
+
         private static IQueryable<NewsArticle> ApplyTeamCategoryFilter(
             IQueryable<NewsArticle> query,
             IReadOnlyCollection<string>? teamCategories)
@@ -399,47 +444,50 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         }
 
         /// <summary>
-        /// Gets all unique tags used in news articles
+        /// Gets all unique tags used in news articles, most used first
         /// </summary>
         /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Collection of unique tags</returns>
+        /// <returns>Collection of unique tags ordered by usage count</returns>
         public async Task<IEnumerable<string>> GetAllTagsAsync(CancellationToken cancellationToken = default)
         {
-            // Get all news articles that have tags
-            List<string> newsWithTags = await _entities
-                .Where(n => n.Tags.Count > 0)
-                .Select(n => EF.Property<string>(n, "Tags"))
-                .ToListAsync(cancellationToken);
-
-            // Extract unique tags from JSON arrays
-            HashSet<string> allTags = new HashSet<string>();
-
-            foreach (string tagsJson in newsWithTags)
+            try
             {
-                if (!string.IsNullOrWhiteSpace(tagsJson))
-                {
-                    try
-                    {
-                        List<string>? tags = System.Text.Json.JsonSerializer.Deserialize<List<string>>(tagsJson);
-                        if (tags != null)
-                        {
-                            foreach (string tag in tags)
-                            {
-                                if (!string.IsNullOrWhiteSpace(tag))
-                                {
-                                    allTags.Add(tag.Trim());
-                                }
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // Skip invalid JSON
-                    }
-                }
+                List<string> serializedTags = await _dbContext.Database
+                    .SqlQueryRaw<string>("SELECT COALESCE(\"Tags\", '[]') AS \"Value\" FROM common.\"NewsArticles\"")
+                    .ToListAsync(cancellationToken);
+
+                return serializedTags
+                    .SelectMany(DeserializeTags)
+                    .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                    .Select(tag => tag.Trim())
+                    .GroupBy(tag => tag, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(group => group.Count())
+                    .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
+                    .Select(group => group.First())
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving news article tags");
+                throw;
+            }
+        }
+
+        private static IEnumerable<string> DeserializeTags(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return Array.Empty<string>();
             }
 
-            return allTags.OrderBy(t => t).ToList();
+            try
+            {
+                return JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
+            }
+            catch (JsonException)
+            {
+                return Array.Empty<string>();
+            }
         }
 
         /// <summary>
