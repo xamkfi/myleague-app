@@ -272,6 +272,10 @@ export const routes: RouteObject[] = [
         )
       },
       {
+        path: '/admin/site-content/footer',
+        element: <Navigate to="/admin/site-content/footer-contacts" replace />
+      },
+      {
         path: '/admin/rules',
         element: <Navigate to="/admin/site-content/rules" replace />
       },

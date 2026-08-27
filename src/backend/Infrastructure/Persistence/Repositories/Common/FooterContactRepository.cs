@@ -1,4 +1,5 @@
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 using Domain.Repositories.Common;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -17,10 +18,18 @@ public class FooterContactRepository
         return await _entities.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<FooterContact>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FooterContact>> GetAllAsync(
+        FooterSection? section = null,
+        CancellationToken cancellationToken = default)
     {
-        return await _entities
-            .AsNoTracking()
+        IQueryable<FooterContact> query = _entities.AsNoTracking();
+
+        if (section.HasValue)
+        {
+            query = query.Where(x => x.Section == section.Value);
+        }
+
+        return await query
             .OrderBy(x => x.SortOrder)
             .ThenBy(x => x.Title)
             .ToListAsync(cancellationToken);

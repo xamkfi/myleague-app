@@ -1,3 +1,7 @@
+export type FooterSection = 'Contact' | 'SeasonalSports' | 'OtherActivities';
+
+export const FOOTER_SECTIONS: FooterSection[] = ['Contact', 'SeasonalSports', 'OtherActivities'];
+
 export interface FooterContact {
   id: string;
   title: string;
@@ -6,6 +10,7 @@ export interface FooterContact {
   phone: string | null;
   url: string | null;
   sortOrder: number;
+  section: FooterSection;
   lastModifiedBy: string | null;
   updatedAt: string;
 }
@@ -17,4 +22,5 @@ export interface FooterContactRequest {
   phone: string | null;
   url: string | null;
   sortOrder: number;
+  section: FooterSection;
 }

@@ -1,3 +1,5 @@
+using Domain.Enums.Common;
+
 namespace Application.DTOs.Common;
 
 /// <summary>
@@ -12,6 +14,7 @@ public class FooterContactDto
     public string? Phone { get; set; }
     public string? Url { get; set; }
     public int SortOrder { get; set; }
+    public FooterSection Section { get; set; }
     public string? LastModifiedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

@@ -51,7 +51,7 @@ public class SiteContentRepositoryIntegrationTests : BaseIntegrationTest
             "044 000 0000",
             "https://mahl.fi",
             1,
-            "admin");
+            lastModifiedBy: "admin");
 
         await repo.AddAsync(contact);
         await _dbContext.SaveChangesAsync();
@@ -62,6 +62,7 @@ public class SiteContentRepositoryIntegrationTests : BaseIntegrationTest
         loaded!.Title.Should().Be("Office");
         loaded.Email.Should().Be("office@mahl.fi");
         loaded.Url.Should().Be("https://mahl.fi");
+        loaded.Section.Should().Be(FooterSection.Contact);
     }
 
     [Fact]

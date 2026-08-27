@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Domain.Enums.Common;
 
 namespace WebAPI.Models.Common;
 
@@ -31,6 +32,10 @@ public class CreateFooterContactRequest
     /// <summary>Gets or sets the display sort order.</summary>
     [Range(0, int.MaxValue)]
     public int SortOrder { get; set; }
+
+    /// <summary>Gets or sets which footer column this entry belongs to.</summary>
+    [Required]
+    public FooterSection Section { get; set; }
 }
 
 /// <summary>
@@ -62,4 +67,8 @@ public class UpdateFooterContactRequest
     /// <summary>Gets or sets the display sort order.</summary>
     [Range(0, int.MaxValue)]
     public int SortOrder { get; set; }
+
+    /// <summary>Gets or sets which footer column this entry belongs to.</summary>
+    [Required]
+    public FooterSection Section { get; set; }
 }

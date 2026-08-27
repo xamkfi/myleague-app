@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { fetchBackendVersion } from '../../api/version/versionService';
 import { footerContactService } from '../../api/common/footerContactService';
 import type { FooterContact } from '../../types/admin/footerContactTypes';
+import FooterLinkList from './FooterLinkList';
 import './Footer.scss';
 
 function obfuscateEmail(email: string): string {
@@ -12,40 +13,36 @@ function obfuscateEmail(email: string): string {
 export default function Footer() {
   const { t } = useTranslation();
   const [backendVersion, setBackendVersion] = useState<string>('...');
-  const [contacts, setContacts] = useState<FooterContact[]>([]);
+  const [entries, setEntries] = useState<FooterContact[]>([]);
 
   useEffect(() => {
     fetchBackendVersion().then(setBackendVersion);
     footerContactService
       .getAll()
-      .then(setContacts)
-      .catch(() => setContacts([]));
+      .then(setEntries)
+      .catch(() => setEntries([]));
   }, []);
+
+  const sports = entries.filter((item) => item.section === 'SeasonalSports');
+  const activities = entries.filter((item) => item.section === 'OtherActivities');
+  const contacts = entries.filter((item) => item.section === 'Contact' || !item.section);
 
   return (
     <footer className="footer">
       <div className="footer-sections">
         <div className="footer-section">
           <h4 className="footer-title">{t('footer.seasonSports', 'KAUSILAJIT')}</h4>
-          <div className="footer-links">
-            <span>{t('footer.sports.football', 'Jalkapallo')}</span>
-            <span>{t('footer.sports.iceHockey', 'Jääkiekko')}</span>
-            <span>{t('footer.sports.floorball', 'Salibandy')}</span>
-            <span>{t('footer.sports.floorballManager', 'Salibandyn Manager')}</span>
-            <span>{t('footer.sports.winterFootball', 'Talvijalkapallo')}</span>
-            <span>{t('footer.sports.bandy', 'Jääpallo')}</span>
-            <span>{t('footer.sports.puumalaliga', 'Puumalaliga')}</span>
-            <span>{t('footer.sports.iceHockey40', 'Jääkiekko +40')}</span>
-          </div>
+          <FooterLinkList
+            items={sports}
+            emptyLabel={t('footer.sports.empty', 'Kausilajeja ei ole vielä lisätty.')}
+          />
         </div>
         <div className="footer-section">
           <h4 className="footer-title">{t('footer.otherActivities', 'MUU TOIMINTA')}</h4>
-          <div className="footer-links">
-            <span>{t('footer.activities.pmt', 'PMT Turnaukset')}</span>
-            <span>{t('footer.activities.kortteli', 'Korttelitoiminta')}</span>
-            <span>{t('footer.activities.whl', 'WHL Liikuntaleirit')}</span>
-            <span>{t('footer.activities.turnauspiste', 'Turnauspiste')}</span>
-          </div>
+          <FooterLinkList
+            items={activities}
+            emptyLabel={t('footer.activities.empty', 'Muuta toimintaa ei ole vielä lisätty.')}
+          />
         </div>
         <div className="footer-section">
           <h4 className="footer-title">{t('footer.contacts.title', 'YHTEYSTIEDOT')}</h4>
@@ -56,24 +53,14 @@ export default function Footer() {
               </p>
             ) : (
               contacts.map((contact) => (
-                <article key={contact.id} className="footer-contact-card">
-                  <h5 className="footer-contact-card__title">{contact.title}</h5>
+                <div key={contact.id} className="footer-contact-entry">
+                  <span>{contact.title}</span>
                   {contact.details && (
-                    <p className="footer-contact-card__details">{contact.details}</p>
+                    <span className="footer-contact-entry__details">{contact.details}</span>
                   )}
-                  {contact.email && <p>{obfuscateEmail(contact.email)}</p>}
-                  {contact.phone && <p>{contact.phone}</p>}
-                  {contact.url && (
-                    <a
-                      className="footer-contact-card__link"
-                      href={contact.url}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                    >
-                      {contact.url.replace(/^https?:\/\//, '')}
-                    </a>
-                  )}
-                </article>
+                  {contact.email && <span>{obfuscateEmail(contact.email)}</span>}
+                  {contact.phone && <span>{contact.phone}</span>}
+                </div>
               ))
             )}
           </div>

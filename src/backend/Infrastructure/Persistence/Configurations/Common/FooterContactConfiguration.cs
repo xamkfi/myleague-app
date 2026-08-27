@@ -31,9 +31,14 @@ public class FooterContactConfiguration : IEntityTypeConfiguration<FooterContact
         builder.Property(x => x.SortOrder)
             .IsRequired();
 
+        builder.Property(x => x.Section)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(50);
+
         builder.Property(x => x.LastModifiedBy)
             .HasMaxLength(256);
 
-        builder.HasIndex(x => x.SortOrder);
+        builder.HasIndex(x => new { x.Section, x.SortOrder });
     }
 }

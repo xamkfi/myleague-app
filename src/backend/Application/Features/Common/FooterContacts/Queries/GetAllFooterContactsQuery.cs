@@ -2,12 +2,14 @@ using Application.Common;
 using Application.DTOs.Common;
 using Application.Features.Common.FooterContacts.Mappings;
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 using Domain.Repositories.Common;
 using MediatR;
 
 namespace Application.Features.Common.FooterContacts.Queries;
 
-public record GetAllFooterContactsQuery : IRequest<Result<IReadOnlyList<FooterContactDto>>>;
+public record GetAllFooterContactsQuery(FooterSection? Section = null)
+    : IRequest<Result<IReadOnlyList<FooterContactDto>>>;
 
 public class GetAllFooterContactsQueryHandler
     : IRequestHandler<GetAllFooterContactsQuery, Result<IReadOnlyList<FooterContactDto>>>
@@ -23,7 +25,9 @@ public class GetAllFooterContactsQueryHandler
         GetAllFooterContactsQuery request,
         CancellationToken cancellationToken)
     {
-        IReadOnlyList<FooterContact> contacts = await _repository.GetAllAsync(cancellationToken);
+        IReadOnlyList<FooterContact> contacts = await _repository.GetAllAsync(
+            request.Section,
+            cancellationToken);
         IReadOnlyList<FooterContactDto> dtos = contacts.Select(FooterContactMapper.ToDto).ToList();
         return Result<IReadOnlyList<FooterContactDto>>.Success(dtos);
     }

@@ -351,21 +351,27 @@
         }
       },
       "footerContacts": {
-        "nav": "Contacts",
-        "pageTitle": "Contacts",
-        "description": "Manage contact entries shown in the public site footer. Each contact appears in its own box.",
-        "add": "Add contact",
-        "addTitle": "Add contact",
-        "editTitle": "Edit contact",
-        "empty": "No contacts yet.",
-        "loadFailed": "Failed to load contacts.",
-        "saveFailed": "Failed to save contact.",
-        "createSuccess": "Contact added.",
-        "updateSuccess": "Contact updated.",
-        "deleteSuccess": "Contact deleted.",
-        "deleteFailed": "Failed to delete contact.",
-        "confirmDeleteTitle": "Delete contact",
-        "confirmDelete": "Delete contact \"{{title}}\"?",
+        "nav": "Footer content",
+        "pageTitle": "Footer content",
+        "description": "Manage the public footer columns. Choose a section, then add, edit, or delete rows.",
+        "sectionLabel": "Section",
+        "sections": {
+          "Contact": "Contacts",
+          "SeasonalSports": "Season sports",
+          "OtherActivities": "Other activities"
+        },
+        "add": "Add",
+        "addTitle": "Add",
+        "editTitle": "Edit",
+        "empty": "No rows yet.",
+        "loadFailed": "Failed to load footer content.",
+        "saveFailed": "Failed to save.",
+        "createSuccess": "Entry added.",
+        "updateSuccess": "Entry updated.",
+        "deleteSuccess": "Entry deleted.",
+        "deleteFailed": "Failed to delete.",
+        "confirmDeleteTitle": "Delete",
+        "confirmDelete": "Delete \"{{title}}\"?",
         "fields": {
           "title": "Name / title",
           "details": "Details (e.g. address)",
@@ -2720,6 +2726,7 @@
     "seasonSports": "SEASON SPORTS",
     "otherActivities": "OTHER ACTIVITIES",
     "sports": {
+      "empty": "No season sports added yet.",
       "football": "Football",
       "iceHockey": "Ice hockey",
       "floorball": "Floorball",
@@ -2730,6 +2737,7 @@
       "iceHockey40": "Ice hockey +40"
     },
     "activities": {
+      "empty": "No other activities added yet.",
       "pmt": "PMT Tournaments",
       "kortteli": "Neighbourhood activity",
       "whl": "WHL sports camps",

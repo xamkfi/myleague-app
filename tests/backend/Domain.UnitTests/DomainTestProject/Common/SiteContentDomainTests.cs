@@ -92,7 +92,7 @@ public class FooterContactTests
             " 044 123 ",
             " https://mahl.fi ",
             2,
-            "admin");
+            lastModifiedBy: "admin");
 
         contact.Title.Should().Be("Office");
         contact.Details.Should().Be("Street 1");
@@ -100,6 +100,7 @@ public class FooterContactTests
         contact.Phone.Should().Be("044 123");
         contact.Url.Should().Be("https://mahl.fi");
         contact.SortOrder.Should().Be(2);
+        contact.Section.Should().Be(FooterSection.Contact);
     }
 
     [Fact]
@@ -131,12 +132,13 @@ public class FooterContactTests
     {
         FooterContact contact = new(Guid.NewGuid(), "Old", null, null, null, null, 0);
 
-        contact.Update("New", "Details", "a@b.fi", "123", "https://example.com", 5, "editor");
+        contact.Update("New", "Details", "a@b.fi", "123", "https://example.com", 5, FooterSection.OtherActivities, "editor");
 
         contact.Title.Should().Be("New");
         contact.Details.Should().Be("Details");
         contact.Email.Should().Be("a@b.fi");
         contact.SortOrder.Should().Be(5);
+        contact.Section.Should().Be(FooterSection.OtherActivities);
         contact.LastModifiedBy.Should().Be("editor");
     }
 }

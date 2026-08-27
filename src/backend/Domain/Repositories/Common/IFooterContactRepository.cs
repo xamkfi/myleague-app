@@ -1,4 +1,5 @@
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 
 namespace Domain.Repositories.Common;
 
@@ -9,7 +10,9 @@ public interface IFooterContactRepository
 {
     Task<FooterContact?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<FooterContact>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FooterContact>> GetAllAsync(
+        FooterSection? section = null,
+        CancellationToken cancellationToken = default);
 
     Task AddAsync(FooterContact contact, CancellationToken cancellationToken = default);
 

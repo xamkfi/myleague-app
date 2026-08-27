@@ -4,12 +4,18 @@ import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
 import Button from '../../../components/Button/Button';
 import ConfirmationDialog from '../../../components/ConfirmationDialog/ConfirmationDialog';
 import { footerContactService } from '../../../api/common/footerContactService';
-import type { FooterContact, FooterContactRequest } from '../../../types/admin/footerContactTypes';
+import type {
+  FooterContact,
+  FooterContactRequest,
+  FooterSection,
+} from '../../../types/admin/footerContactTypes';
+import { FOOTER_SECTIONS } from '../../../types/admin/footerContactTypes';
 import FooterContactForm from './components/FooterContactForm';
 import './FooterContactsManagementPage.scss';
 
 function FooterContactsManagementPage() {
   const { t } = useTranslation();
+  const [section, setSection] = useState<FooterSection>('Contact');
   const [contacts, setContacts] = useState<FooterContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -19,8 +25,8 @@ function FooterContactsManagementPage() {
   const [editing, setEditing] = useState<FooterContact | null>(null);
   const [contactToDelete, setContactToDelete] = useState<FooterContact | null>(null);
 
-  const loadContacts = async (): Promise<void> => {
-    const items = await footerContactService.getAll();
+  const loadContacts = async (selectedSection: FooterSection): Promise<void> => {
+    const items = await footerContactService.getAll(selectedSection);
     setContacts(items);
   };
 
@@ -31,7 +37,7 @@ function FooterContactsManagementPage() {
       try {
         setIsLoading(true);
         setErrorMessage(null);
-        await loadContacts();
+        await loadContacts(section);
       } catch (error) {
         if (!isMounted) {
           return;
@@ -40,7 +46,7 @@ function FooterContactsManagementPage() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : t('admin.siteContent.footerContacts.loadFailed', 'Yhteystietojen lataus epäonnistui.'),
+            : t('admin.siteContent.footerContacts.loadFailed', 'Lataus epäonnistui.'),
         );
       } finally {
         if (isMounted) {
@@ -54,7 +60,7 @@ function FooterContactsManagementPage() {
     return () => {
       isMounted = false;
     };
-  }, [t]);
+  }, [section, t]);
 
   useEffect(() => {
     if (!successMessage) {
@@ -65,6 +71,12 @@ function FooterContactsManagementPage() {
     return () => clearTimeout(timeout);
   }, [successMessage]);
 
+  const handleSectionChange = (nextSection: FooterSection): void => {
+    setSection(nextSection);
+    setIsFormOpen(false);
+    setEditing(null);
+  };
+
   const handleSave = async (payload: FooterContactRequest): Promise<void> => {
     try {
       setIsSaving(true);
@@ -73,16 +85,16 @@ function FooterContactsManagementPage() {
       if (editing) {
         await footerContactService.update(editing.id, payload);
         setSuccessMessage(
-          t('admin.siteContent.footerContacts.updateSuccess', 'Yhteystieto päivitetty.'),
+          t('admin.siteContent.footerContacts.updateSuccess', 'Tieto päivitetty.'),
         );
       } else {
         await footerContactService.create(payload);
         setSuccessMessage(
-          t('admin.siteContent.footerContacts.createSuccess', 'Yhteystieto lisätty.'),
+          t('admin.siteContent.footerContacts.createSuccess', 'Tieto lisätty.'),
         );
       }
 
-      await loadContacts();
+      await loadContacts(section);
       setIsFormOpen(false);
       setEditing(null);
     } catch (error) {
@@ -105,10 +117,10 @@ function FooterContactsManagementPage() {
       setIsSaving(true);
       await footerContactService.remove(contactToDelete.id);
       setSuccessMessage(
-        t('admin.siteContent.footerContacts.deleteSuccess', 'Yhteystieto poistettu.'),
+        t('admin.siteContent.footerContacts.deleteSuccess', 'Tieto poistettu.'),
       );
       setContactToDelete(null);
-      await loadContacts();
+      await loadContacts(section);
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -120,8 +132,10 @@ function FooterContactsManagementPage() {
     }
   };
 
+  const isContactSection = section === 'Contact';
+
   return (
-    <PageTemplate title={t('admin.siteContent.footerContacts.pageTitle', 'Yhteystiedot')}>
+    <PageTemplate title={t('admin.siteContent.footerContacts.pageTitle', 'Alatunnisteen sisältö')}>
       <div className="footer-contacts-page">
         {successMessage && (
           <p className="footer-contacts-page__alert footer-contacts-page__alert--success">
@@ -137,13 +151,41 @@ function FooterContactsManagementPage() {
         <p className="footer-contacts-page__description">
           {t(
             'admin.siteContent.footerContacts.description',
-            'Hallitse julkisen sivuston footerissa näytettäviä yhteystietoja. Jokainen yhteystieto näkyy omana laatikkona.',
+            'Hallitse julkisen sivuston footerin sarakkeita. Valitse osio ja lisää, muokkaa tai poista rivejä.',
           )}
         </p>
+
+        <div className="footer-contacts-page__toolbar">
+          <label className="footer-contacts-page__section">
+            <span>{t('admin.siteContent.footerContacts.sectionLabel', 'Osio')}</span>
+            <select
+              value={section}
+              onChange={(event) => handleSectionChange(event.target.value as FooterSection)}
+            >
+              {FOOTER_SECTIONS.map((value) => (
+                <option key={value} value={value}>
+                  {t(`admin.siteContent.footerContacts.sections.${value}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {!isFormOpen && (
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setIsFormOpen(true);
+              }}
+            >
+              {t('admin.siteContent.footerContacts.add', 'Lisää')}
+            </Button>
+          )}
+        </div>
 
         {isFormOpen ? (
           <FooterContactForm
             contact={editing}
+            section={section}
             isSaving={isSaving}
             onCancel={() => {
               setIsFormOpen(false);
@@ -153,70 +195,57 @@ function FooterContactsManagementPage() {
               void handleSave(payload);
             }}
           />
+        ) : isLoading ? (
+          <p>{t('common.loading', 'Ladataan...')}</p>
+        ) : contacts.length === 0 ? (
+          <p>{t('admin.siteContent.footerContacts.empty', 'Rivejä ei ole vielä.')}</p>
         ) : (
-          <>
-            <div className="footer-contacts-page__toolbar">
-              <Button
-                onClick={() => {
-                  setEditing(null);
-                  setIsFormOpen(true);
-                }}
-              >
-                {t('admin.siteContent.footerContacts.add', 'Lisää yhteystieto')}
-              </Button>
-            </div>
-
-            {isLoading ? (
-              <p>{t('common.loading', 'Ladataan...')}</p>
-            ) : contacts.length === 0 ? (
-              <p>{t('admin.siteContent.footerContacts.empty', 'Yhteystietoja ei ole vielä.')}</p>
-            ) : (
-              <ul className="footer-contacts-page__list">
-                {contacts.map((contact) => (
-                  <li key={contact.id} className="footer-contacts-page__card">
-                    <div>
-                      <h3>{contact.title}</h3>
-                      {contact.details && (
-                        <p className="footer-contacts-page__details">{contact.details}</p>
-                      )}
-                      {contact.email && <p>{contact.email}</p>}
-                      {contact.phone && <p>{contact.phone}</p>}
-                      {contact.url && <p>{contact.url}</p>}
-                    </div>
-                    <div className="footer-contacts-page__card-actions">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          setEditing(contact);
-                          setIsFormOpen(true);
-                        }}
-                      >
-                        {t('common.edit', 'Muokkaa')}
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => setContactToDelete(contact)}
-                      >
-                        {t('common.delete', 'Poista')}
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
+          <ul className="footer-contacts-page__list">
+            {contacts.map((contact) => (
+              <li key={contact.id} className="footer-contacts-page__card">
+                <div>
+                  <h3>{contact.title}</h3>
+                  {isContactSection && contact.details && (
+                    <p className="footer-contacts-page__details">{contact.details}</p>
+                  )}
+                  {isContactSection && contact.email && <p>{contact.email}</p>}
+                  {isContactSection && contact.phone && <p>{contact.phone}</p>}
+                  {!isContactSection && contact.url && (
+                    <p className="footer-contacts-page__url">{contact.url}</p>
+                  )}
+                </div>
+                <div className="footer-contacts-page__card-actions">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setEditing(contact);
+                      setIsFormOpen(true);
+                    }}
+                  >
+                    {t('common.edit', 'Muokkaa')}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setContactToDelete(contact)}
+                  >
+                    {t('common.delete', 'Poista')}
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 
       <ConfirmationDialog
         isOpen={contactToDelete !== null}
         icon="⚠️"
-        title={t('admin.siteContent.footerContacts.confirmDeleteTitle', 'Poista yhteystieto')}
+        title={t('admin.siteContent.footerContacts.confirmDeleteTitle', 'Poista')}
         message={t(
           'admin.siteContent.footerContacts.confirmDelete',
-          'Poistetaanko yhteystieto "{{title}}"?',
+          'Poistetaanko "{{title}}"?',
           { title: contactToDelete?.title ?? '' },
         )}
         confirmText={t('common.delete', 'Poista')}

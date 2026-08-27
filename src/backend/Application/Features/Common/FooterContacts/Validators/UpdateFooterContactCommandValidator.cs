@@ -34,6 +34,9 @@ public class UpdateFooterContactCommandValidator : AbstractValidator<UpdateFoote
 
         RuleFor(x => x.SortOrder)
             .GreaterThanOrEqualTo(0).WithMessage("Sort order cannot be negative");
+
+        RuleFor(x => x.Section)
+            .IsInEnum().WithMessage("Footer section is not valid");
     }
 
     private static bool ContainAt(string? email)

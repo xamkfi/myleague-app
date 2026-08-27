@@ -2,6 +2,7 @@ using Application.Common;
 using Application.DTOs.Common;
 using Application.Features.Common.FooterContacts.Mappings;
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 using Domain.Repositories.Common;
 using MediatR;
 
@@ -14,6 +15,7 @@ public record CreateFooterContactCommand(
     string? Phone,
     string? Url,
     int SortOrder,
+    FooterSection Section,
     string? LastModifiedBy
 ) : IRequest<Result<FooterContactDto>>;
 
@@ -45,6 +47,7 @@ public class CreateFooterContactCommandHandler
                 request.Phone,
                 request.Url,
                 request.SortOrder,
+                request.Section,
                 request.LastModifiedBy);
 
             await _repository.AddAsync(entity, cancellationToken);

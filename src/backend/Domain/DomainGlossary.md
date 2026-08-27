@@ -11,7 +11,7 @@ A physical person in the system. A Person can have multiple roles (Player, Refer
 An organization that manages and sponsors floorball teams. A Club typically has multiple teams, possibly in different divisions.
 
 ### FooterContact
-A contact entry shown in the public site footer (title, optional details, email, phone, and website). Admins create, update, and delete these independently of clubs.
+An entry in the public site footer. `Section` is Contact, SeasonalSports, or OtherActivities. Contact rows may include details, email, and phone; the other sections are a title plus an optional link.
 
 
 ### FloorballTeam

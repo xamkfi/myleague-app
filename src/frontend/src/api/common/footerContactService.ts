@@ -2,7 +2,7 @@ import { API_URL } from '../../constants/config';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import type { ApiResponse } from '../../types/common/apiResponseType';
-import type { FooterContact, FooterContactRequest } from '../../types/admin/footerContactTypes';
+import type { FooterContact, FooterContactRequest, FooterSection } from '../../types/admin/footerContactTypes';
 
 function getBaseUrl(): string {
   return `${API_URL}/FooterContact`;
@@ -23,8 +23,11 @@ async function readResponse<T>(response: Response, fallback: string): Promise<T>
 }
 
 export const footerContactService = {
-  async getAll(): Promise<FooterContact[]> {
-    const response = await fetch(getBaseUrl(), {
+  async getAll(section?: FooterSection): Promise<FooterContact[]> {
+    const url = section
+      ? `${getBaseUrl()}?section=${encodeURIComponent(section)}`
+      : getBaseUrl();
+    const response = await fetch(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });

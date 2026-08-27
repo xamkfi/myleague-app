@@ -16,6 +16,7 @@ internal static class FooterContactMapper
             Phone = entity.Phone,
             Url = entity.Url,
             SortOrder = entity.SortOrder,
+            Section = entity.Section,
             LastModifiedBy = entity.LastModifiedBy,
             UpdatedAt = entity.UpdatedAt ?? entity.CreatedAt,
         };

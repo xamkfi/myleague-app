@@ -1,11 +1,16 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../../components/Button/Button';
-import type { FooterContact, FooterContactRequest } from '../../../../types/admin/footerContactTypes';
+import type {
+  FooterContact,
+  FooterContactRequest,
+  FooterSection,
+} from '../../../../types/admin/footerContactTypes';
 import './FooterContactForm.scss';
 
 interface FooterContactFormProps {
   contact: FooterContact | null;
+  section: FooterSection;
   isSaving: boolean;
   onCancel: () => void;
   onSave: (payload: FooterContactRequest) => void;
@@ -13,11 +18,13 @@ interface FooterContactFormProps {
 
 function FooterContactForm({
   contact,
+  section,
   isSaving,
   onCancel,
   onSave,
 }: FooterContactFormProps) {
   const { t } = useTranslation();
+  const isContactSection = section === 'Contact';
   const [title, setTitle] = useState(contact?.title ?? '');
   const [details, setDetails] = useState(contact?.details ?? '');
   const [email, setEmail] = useState(contact?.email ?? '');
@@ -32,11 +39,12 @@ function FooterContactForm({
 
     onSave({
       title: title.trim(),
-      details: details.trim() || null,
-      email: email.trim() || null,
-      phone: phone.trim() || null,
-      url: url.trim() || null,
+      details: isContactSection ? details.trim() || null : null,
+      email: isContactSection ? email.trim() || null : null,
+      phone: isContactSection ? phone.trim() || null : null,
+      url: isContactSection ? null : url.trim() || null,
       sortOrder: Number.isNaN(parsedOrder) ? 0 : parsedOrder,
+      section,
     });
   };
 
@@ -44,8 +52,8 @@ function FooterContactForm({
     <form className="footer-contact-form" onSubmit={handleSubmit}>
       <h3>
         {contact
-          ? t('admin.siteContent.footerContacts.editTitle', 'Muokkaa yhteystietoa')
-          : t('admin.siteContent.footerContacts.addTitle', 'Lisää yhteystieto')}
+          ? t('admin.siteContent.footerContacts.editTitle', 'Muokkaa')
+          : t('admin.siteContent.footerContacts.addTitle', 'Lisää')}
       </h3>
 
       <label className="footer-contact-form__field">
@@ -59,46 +67,52 @@ function FooterContactForm({
         />
       </label>
 
-      <label className="footer-contact-form__field">
-        <span>{t('admin.siteContent.footerContacts.fields.details', 'Lisätiedot (esim. osoite)')}</span>
-        <textarea
-          value={details}
-          onChange={(event) => setDetails(event.target.value)}
-          rows={3}
-          maxLength={500}
-        />
-      </label>
+      {isContactSection && (
+        <>
+          <label className="footer-contact-form__field">
+            <span>{t('admin.siteContent.footerContacts.fields.details', 'Lisätiedot (esim. osoite)')}</span>
+            <textarea
+              value={details}
+              onChange={(event) => setDetails(event.target.value)}
+              rows={3}
+              maxLength={500}
+            />
+          </label>
 
-      <label className="footer-contact-form__field">
-        <span>{t('admin.siteContent.footerContacts.fields.email', 'Sähköposti')}</span>
-        <input
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          maxLength={200}
-        />
-      </label>
+          <label className="footer-contact-form__field">
+            <span>{t('admin.siteContent.footerContacts.fields.email', 'Sähköposti')}</span>
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              maxLength={200}
+            />
+          </label>
 
-      <label className="footer-contact-form__field">
-        <span>{t('admin.siteContent.footerContacts.fields.phone', 'Puhelinnumero')}</span>
-        <input
-          type="tel"
-          value={phone}
-          onChange={(event) => setPhone(event.target.value)}
-          maxLength={50}
-        />
-      </label>
+          <label className="footer-contact-form__field">
+            <span>{t('admin.siteContent.footerContacts.fields.phone', 'Puhelinnumero')}</span>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              maxLength={50}
+            />
+          </label>
+        </>
+      )}
 
-      <label className="footer-contact-form__field">
-        <span>{t('admin.siteContent.footerContacts.fields.url', 'Verkkosivu tai linkki')}</span>
-        <input
-          type="url"
-          value={url}
-          onChange={(event) => setUrl(event.target.value)}
-          maxLength={500}
-          placeholder="https://"
-        />
-      </label>
+      {!isContactSection && (
+        <label className="footer-contact-form__field">
+          <span>{t('admin.siteContent.footerContacts.fields.url', 'Verkkosivu tai linkki')}</span>
+          <input
+            type="url"
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+            maxLength={500}
+            placeholder="https://"
+          />
+        </label>
+      )}
 
       <label className="footer-contact-form__field">
         <span>{t('admin.siteContent.footerContacts.fields.sortOrder', 'Järjestys')}</span>

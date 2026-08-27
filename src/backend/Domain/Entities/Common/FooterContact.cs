@@ -1,7 +1,9 @@
+using Domain.Enums.Common;
+
 namespace Domain.Entities.Common;
 
 /// <summary>
-/// A contact entry shown in the public site footer.
+/// An entry shown in the public site footer (contacts, seasonal sports, or other activities).
 /// </summary>
 public class FooterContact : BaseEntity
 {
@@ -11,6 +13,7 @@ public class FooterContact : BaseEntity
     public string? Phone { get; private set; }
     public string? Url { get; private set; }
     public int SortOrder { get; private set; }
+    public FooterSection Section { get; private set; }
     public string? LastModifiedBy { get; private set; }
 
     private FooterContact()
@@ -25,6 +28,7 @@ public class FooterContact : BaseEntity
         string? phone,
         string? url,
         int sortOrder,
+        FooterSection section = FooterSection.Contact,
         string? lastModifiedBy = null)
     {
         Id = id;
@@ -34,6 +38,7 @@ public class FooterContact : BaseEntity
         Phone = NormalizeOptional(phone, 50, nameof(phone));
         Url = ValidateUrl(url);
         SortOrder = sortOrder;
+        Section = ValidateSection(section);
         LastModifiedBy = NormalizeOptional(lastModifiedBy, 256, nameof(lastModifiedBy));
         CreatedAt = DateTime.UtcNow;
     }
@@ -45,6 +50,7 @@ public class FooterContact : BaseEntity
         string? phone,
         string? url,
         int sortOrder,
+        FooterSection section,
         string? lastModifiedBy = null)
     {
         Title = ValidateTitle(title);
@@ -53,8 +59,19 @@ public class FooterContact : BaseEntity
         Phone = NormalizeOptional(phone, 50, nameof(phone));
         Url = ValidateUrl(url);
         SortOrder = sortOrder;
+        Section = ValidateSection(section);
         LastModifiedBy = NormalizeOptional(lastModifiedBy, 256, nameof(lastModifiedBy));
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    private static FooterSection ValidateSection(FooterSection section)
+    {
+        if (!Enum.IsDefined(section))
+        {
+            throw new ArgumentException("Footer section is not valid", nameof(section));
+        }
+
+        return section;
     }
 
     private static string ValidateTitle(string title)

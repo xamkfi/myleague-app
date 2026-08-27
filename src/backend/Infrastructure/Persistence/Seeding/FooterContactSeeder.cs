@@ -1,4 +1,5 @@
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace MyLeague.Infrastructure.Persistence.Seeding;
 
 /// <summary>
-/// Seeds the current public footer contacts when none exist yet.
+/// Seeds default public footer entries when a section is still empty.
 /// </summary>
 public static class FooterContactSeeder
 {
@@ -22,14 +23,56 @@ public static class FooterContactSeeder
             .GetRequiredService<ILoggerFactory>()
             .CreateLogger("FooterContactSeeder");
 
-        IReadOnlyList<FooterContact> existing = await repository.GetAllAsync(cancellationToken);
+        int added = 0;
+        added += await SeedSectionIfEmptyAsync(
+            repository,
+            FooterSection.Contact,
+            CreateContacts(),
+            cancellationToken);
+        added += await SeedSectionIfEmptyAsync(
+            repository,
+            FooterSection.SeasonalSports,
+            CreateSeasonalSports(),
+            cancellationToken);
+        added += await SeedSectionIfEmptyAsync(
+            repository,
+            FooterSection.OtherActivities,
+            CreateOtherActivities(),
+            cancellationToken);
 
-        if (existing.Count > 0)
+        if (added == 0)
         {
             return;
         }
 
-        FooterContact[] defaults =
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Seeded {Count} footer entries", added);
+    }
+
+    private static async Task<int> SeedSectionIfEmptyAsync(
+        IFooterContactRepository repository,
+        FooterSection section,
+        FooterContact[] defaults,
+        CancellationToken cancellationToken)
+    {
+        IReadOnlyList<FooterContact> existing = await repository.GetAllAsync(section, cancellationToken);
+
+        if (existing.Count > 0)
+        {
+            return 0;
+        }
+
+        foreach (FooterContact contact in defaults)
+        {
+            await repository.AddAsync(contact, cancellationToken);
+        }
+
+        return defaults.Length;
+    }
+
+    private static FooterContact[] CreateContacts()
+    {
+        return
         [
             new FooterContact(
                 Guid.NewGuid(),
@@ -39,6 +82,7 @@ public static class FooterContactSeeder
                 null,
                 null,
                 0,
+                FooterSection.Contact,
                 "system"),
             new FooterContact(
                 Guid.NewGuid(),
@@ -48,6 +92,7 @@ public static class FooterContactSeeder
                 "044 209 9919",
                 null,
                 1,
+                FooterSection.Contact,
                 "system"),
             new FooterContact(
                 Guid.NewGuid(),
@@ -57,15 +102,60 @@ public static class FooterContactSeeder
                 "044 209 9919",
                 null,
                 2,
+                FooterSection.Contact,
                 "system"),
         ];
+    }
 
-        foreach (FooterContact contact in defaults)
-        {
-            await repository.AddAsync(contact, cancellationToken);
-        }
+    private static FooterContact[] CreateSeasonalSports()
+    {
+        string[] titles =
+        [
+            "Jalkapallo",
+            "Jääkiekko",
+            "Salibandy",
+            "Salibandyn Manager",
+            "Talvijalkapallo",
+            "Jääpallo",
+            "Puumalaliga",
+            "Jääkiekko +40",
+        ];
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-        logger.LogInformation("Seeded {Count} footer contacts", defaults.Length);
+        return titles
+            .Select((title, index) => new FooterContact(
+                Guid.NewGuid(),
+                title,
+                null,
+                null,
+                null,
+                null,
+                index,
+                FooterSection.SeasonalSports,
+                "system"))
+            .ToArray();
+    }
+
+    private static FooterContact[] CreateOtherActivities()
+    {
+        string[] titles =
+        [
+            "PMT Turnaukset",
+            "Korttelitoiminta",
+            "WHL Liikuntaleirit",
+            "Turnauspiste",
+        ];
+
+        return titles
+            .Select((title, index) => new FooterContact(
+                Guid.NewGuid(),
+                title,
+                null,
+                null,
+                null,
+                null,
+                index,
+                FooterSection.OtherActivities,
+                "system"))
+            .ToArray();
     }
 }

@@ -115,7 +115,7 @@ public class FooterContactControllerTests
             .Setup(m => m.Send(It.IsAny<GetAllFooterContactsQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<IReadOnlyList<FooterContactDto>>.Success([dto]));
 
-        ActionResult<ApiResponse<IReadOnlyList<FooterContactDto>>> actionResult = await controller.GetAll();
+        ActionResult<ApiResponse<IReadOnlyList<FooterContactDto>>> actionResult = await controller.GetAll(null);
 
         OkObjectResult ok = actionResult.Result.Should().BeOfType<OkObjectResult>().Subject;
         ApiResponse<IReadOnlyList<FooterContactDto>> body =

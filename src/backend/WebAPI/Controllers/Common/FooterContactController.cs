@@ -3,6 +3,7 @@ using Application.Common;
 using Application.DTOs.Common;
 using Application.Features.Common.FooterContacts.Commands;
 using Application.Features.Common.FooterContacts.Queries;
+using Domain.Enums.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,15 +34,17 @@ public class FooterContactController : BaseApiController
     }
 
     /// <summary>
-    /// Get all footer contacts, ordered for display.
+    /// Get all footer entries, optionally filtered by section.
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<FooterContactDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<IReadOnlyList<FooterContactDto>>>> GetAll()
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<FooterContactDto>>>> GetAll(
+        [FromQuery] FooterSection? section)
     {
-        _logger.LogInformation("Getting footer contacts");
-        Result<IReadOnlyList<FooterContactDto>> result = await _mediator.Send(new GetAllFooterContactsQuery());
+        _logger.LogInformation("Getting footer contacts for section {Section}", section);
+        Result<IReadOnlyList<FooterContactDto>> result =
+            await _mediator.Send(new GetAllFooterContactsQuery(section));
         return HandleResult(result, "Footer contacts retrieved successfully", "Failed to retrieve footer contacts");
     }
 
@@ -78,6 +81,7 @@ public class FooterContactController : BaseApiController
             request.Phone,
             request.Url,
             request.SortOrder,
+            request.Section,
             User?.Identity?.Name);
 
         Result<FooterContactDto> result = await _mediator.Send(command);
@@ -115,6 +119,7 @@ public class FooterContactController : BaseApiController
             request.Phone,
             request.Url,
             request.SortOrder,
+            request.Section,
             User?.Identity?.Name);
 
         Result<FooterContactDto> result = await _mediator.Send(command);
