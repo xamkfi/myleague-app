@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import ReactQuill from 'react-quill';
 import { useTranslation } from 'react-i18next';
-import DOMPurify from 'dompurify';
 import 'react-quill/dist/quill.snow.css';
 
 import { handleImageUploadService } from '../../api/admin/News/handleImageUploadService';
@@ -18,6 +17,7 @@ import {
   insertMatchBoxes,
   splitCombinedMatchBlots,
 } from './matchResultEditor';
+import { parseSanitizedHtmlRoot } from './parseSanitizedHtml';
 
 import './RichTextEditor.scss';
 import '../../pages/AdminPage/NewsPage/styles/MatchResult.scss';
@@ -53,15 +53,9 @@ export interface RichTextEditorProps {
   className?: string;
 }
 
-/** Returns a sanitized, inert HTML tree. Never written into the live document. */
-const parseEditorHtmlRoot = (html: string): Element => {
-  const sanitized: Node = DOMPurify.sanitize(html, { RETURN_DOM: true });
-  return sanitized instanceof Element ? sanitized : document.createElement('div');
-};
-
 export const extractRichTextImageUrls = (html: string): string[] => {
   if (!html) return [];
-  const root = parseEditorHtmlRoot(html);
+  const root = parseSanitizedHtmlRoot(html);
   return Array.from(root.getElementsByTagName('img'))
     .map((img) => img.getAttribute('src') ?? '')
     .filter(Boolean);
@@ -71,8 +65,8 @@ const extractImageUrls = extractRichTextImageUrls;
 
 const extractMatchResults = (html: string): MatchResultValue[] => {
   if (!html) return [];
-  const documentNode = new DOMParser().parseFromString(html, 'text/html');
-  const containers = Array.from(documentNode.querySelectorAll('.match-result-table-container'));
+  const root = parseSanitizedHtmlRoot(html);
+  const containers = Array.from(root.querySelectorAll('.match-result-table-container'));
   const results: MatchResultValue[] = [];
   containers.forEach((element) => {
     const dataElement = element.querySelector('.match-result-data');

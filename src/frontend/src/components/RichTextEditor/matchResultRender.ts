@@ -35,9 +35,16 @@ export function usableTeamLogo(url: string | null | undefined): string | undefin
   if (!trimmed) {
     return undefined;
   }
-  if (trimmed.includes('example.com')) {
+
+  try {
+    const hostname = new URL(trimmed, 'https://myleague.invalid').hostname.toLowerCase();
+    if (hostname === 'example.com' || hostname.endsWith('.example.com')) {
+      return undefined;
+    }
+  } catch {
     return undefined;
   }
+
   return trimmed;
 }
 

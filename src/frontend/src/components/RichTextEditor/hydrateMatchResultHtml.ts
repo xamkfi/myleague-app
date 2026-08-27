@@ -1,4 +1,5 @@
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
+import { parseSanitizedHtmlRoot } from './parseSanitizedHtml';
 import {
   renderMatchResultListHtml,
   usableTeamLogo,
@@ -89,9 +90,8 @@ export async function hydrateMatchResultHtml(contentHtml: string): Promise<strin
     return contentHtml;
   }
 
-  const parser = new DOMParser();
-  const documentNode = parser.parseFromString(contentHtml, 'text/html');
-  const containers = documentNode.querySelectorAll('.match-result-table-container');
+  const root = parseSanitizedHtmlRoot(contentHtml);
+  const containers = root.querySelectorAll('.match-result-table-container');
   if (containers.length === 0) {
     return contentHtml;
   }
@@ -111,5 +111,5 @@ export async function hydrateMatchResultHtml(contentHtml: string): Promise<strin
     replaceMatchList(container, hydratedMatches);
   }
 
-  return documentNode.body.innerHTML;
+  return root.innerHTML;
 }

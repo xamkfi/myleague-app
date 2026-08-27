@@ -1,16 +1,9 @@
-import { Quill } from 'react-quill';
+import ReactQuill, { Quill } from 'react-quill';
 import { MatchResultTableBlot } from './MatchResultTableBlot';
+import { parseSanitizedHtmlRoot } from './parseSanitizedHtml';
 import type { MatchResultValue } from './matchResultRender';
 
-type QuillEditor = {
-  root: HTMLElement;
-  getLength: () => number;
-  getIndex: (blot: unknown) => number;
-  getContents: (index?: number, length?: number) => { ops?: Array<{ insert?: unknown }> };
-  deleteText: (index: number, length: number, source?: string) => void;
-  insertEmbed: (index: number, type: string, value: unknown, source?: string) => void;
-  insertText: (index: number, text: string, source?: string) => void;
-};
+type QuillEditor = ReturnType<InstanceType<typeof ReactQuill>['getEditor']>;
 
 const MATCH_BOX_SELECTOR = '.match-result-table-container';
 const DRAG_TYPE = 'application/x-myleague-match-result';
@@ -47,18 +40,12 @@ function ensureNewlineAfter(quill: QuillEditor, embedIndex: number): void {
   }
 }
 
-export function insertMatchBoxes(
-  quill: QuillEditor & {
-    getSelection?: (focus?: boolean) => { index: number } | null;
-    setSelection?: (index: number, length: number) => void;
-  },
-  matches: MatchResultValue[]
-): void {
+export function insertMatchBoxes(quill: QuillEditor, matches: MatchResultValue[]): void {
   if (matches.length === 0) {
     return;
   }
 
-  const selection = quill.getSelection?.(true);
+  const selection = quill.getSelection(true);
   let insertAt = selection?.index ?? Math.max(0, quill.getLength() - 1);
 
   matches.forEach((match) => {
@@ -68,7 +55,7 @@ export function insertMatchBoxes(
     insertAt += 1;
   });
 
-  quill.setSelection?.(insertAt, 0);
+  quill.setSelection(insertAt, 0);
 }
 
 export function hasCombinedMatchBox(html: string): boolean {
@@ -76,8 +63,8 @@ export function hasCombinedMatchBox(html: string): boolean {
     return false;
   }
 
-  const documentNode = new DOMParser().parseFromString(html, 'text/html');
-  return Array.from(documentNode.querySelectorAll('.match-result-data')).some((element) => {
+  const root = parseSanitizedHtmlRoot(html);
+  return Array.from(root.querySelectorAll('.match-result-data')).some((element) => {
     try {
       const parsed = JSON.parse(element.textContent ?? '') as { matches?: MatchResultValue[] };
       return Array.isArray(parsed.matches) && parsed.matches.length > 1;

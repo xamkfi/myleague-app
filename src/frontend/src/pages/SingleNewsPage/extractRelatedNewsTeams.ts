@@ -1,3 +1,5 @@
+import { parseSanitizedHtmlRoot } from '../../components/RichTextEditor/parseSanitizedHtml';
+
 export type RelatedNewsTeam = {
   name: string;
   logoUrl?: string;
@@ -35,9 +37,8 @@ export function extractRelatedNewsTeams(contentHtml: string | undefined): Relate
     return [];
   }
 
-  const parser = new DOMParser();
-  const documentNode = parser.parseFromString(contentHtml, 'text/html');
-  const scripts = documentNode.querySelectorAll('script.match-result-data');
+  const root = parseSanitizedHtmlRoot(contentHtml);
+  const scripts = root.querySelectorAll('.match-result-data');
   const teams = new Map<string, RelatedNewsTeam>();
 
   scripts.forEach((script) => {
