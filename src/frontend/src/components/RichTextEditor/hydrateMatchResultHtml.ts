@@ -1,5 +1,5 @@
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
-import { parseSanitizedHtmlRoot } from './parseSanitizedHtml';
+import { parseSanitizedHtmlRoot, replaceChildrenWithSanitizedHtml } from './parseSanitizedHtml';
 import {
   renderMatchResultListHtml,
   usableTeamLogo,
@@ -69,14 +69,14 @@ function replaceMatchList(container: Element, matches: MatchResultValue[]): void
   const rowsHtml = renderMatchResultListHtml(matches);
   const existingList = container.querySelector('.match-result-list');
   if (existingList) {
-    existingList.innerHTML = rowsHtml;
+    replaceChildrenWithSanitizedHtml(existingList, rowsHtml);
     return;
   }
 
   container.querySelectorAll('.match-result-row').forEach((row) => row.remove());
   const list = container.ownerDocument.createElement('div');
   list.className = 'match-result-list';
-  list.innerHTML = rowsHtml;
+  replaceChildrenWithSanitizedHtml(list, rowsHtml);
   const script = container.querySelector('.match-result-data');
   if (script) {
     container.insertBefore(list, script);

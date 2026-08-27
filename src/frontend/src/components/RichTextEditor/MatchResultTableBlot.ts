@@ -1,5 +1,7 @@
 import { Quill } from 'react-quill';
+import { replaceChildrenWithSanitizedHtml } from './parseSanitizedHtml';
 import {
+  bindTeamLogoFallbacks,
   renderMatchResultListHtml,
   type MatchResultBlotValue,
   type MatchResultValue,
@@ -16,13 +18,21 @@ export class MatchResultTableBlot extends BlockEmbed {
   static className = 'match-result-table-container';
 
   static create(value: MatchResultBlotValue): HTMLElement {
-    const node = super.create();
+    const node = super.create() as HTMLElement;
     const matches = value?.matches ?? [];
-    const rows = renderMatchResultListHtml(matches);
-    node.innerHTML =
-      `<div class="match-result-list">${rows}</div>` +
-      `<script type="application/json" class="match-result-data" style="display: none;">${JSON.stringify({ matches })}</script>`;
+    const list = node.ownerDocument.createElement('div');
+    list.className = 'match-result-list';
+    replaceChildrenWithSanitizedHtml(list, renderMatchResultListHtml(matches));
+
+    const payload = node.ownerDocument.createElement('script');
+    payload.type = 'application/json';
+    payload.className = 'match-result-data';
+    payload.setAttribute('style', 'display: none;');
+    payload.textContent = JSON.stringify({ matches });
+
+    node.append(list, payload);
     node.setAttribute('contenteditable', 'false');
+    bindTeamLogoFallbacks(node);
     return node;
   }
 

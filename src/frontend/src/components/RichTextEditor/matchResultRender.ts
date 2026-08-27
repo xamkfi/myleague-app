@@ -56,16 +56,37 @@ const formatTime = (iso: string): string =>
 
 const logoPlaceholderHtml = '<span class="mr-team-logo-placeholder" aria-hidden="true"></span>';
 
-const renderTeamLogo = (src: string | undefined, alt: string): string => {
+function createLogoPlaceholder(documentNode: Document): HTMLElement {
+  const placeholder = documentNode.createElement('span');
+  placeholder.className = 'mr-team-logo-placeholder';
+  placeholder.setAttribute('aria-hidden', 'true');
+  return placeholder;
+}
+
+/** Replaces logos that fail to load with the same grey circle used when no URL exists. */
+export function bindTeamLogoFallbacks(root: ParentNode): void {
+  root.querySelectorAll<HTMLImageElement>('img.mr-team-logo').forEach((img) => {
+    const replaceWithPlaceholder = (): void => {
+      if (!img.isConnected) {
+        return;
+      }
+      img.replaceWith(createLogoPlaceholder(img.ownerDocument));
+    };
+
+    img.addEventListener('error', replaceWithPlaceholder, { once: true });
+    if (img.complete && img.naturalWidth === 0) {
+      replaceWithPlaceholder();
+    }
+  });
+}
+
+const renderTeamLogo = (src: string | undefined): string => {
   const logo = usableTeamLogo(src);
   if (!logo) {
     return logoPlaceholderHtml;
   }
 
-  return (
-    `<img src="${escapeHtml(logo)}" alt="${escapeHtml(alt)}" class="mr-team-logo" ` +
-    `onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'mr-team-logo-placeholder'}))" />`
-  );
+  return `<img src="${escapeHtml(logo)}" alt="" class="mr-team-logo" />`;
 };
 
 export const renderMatchRow = (match: MatchResultValue): string => {
@@ -76,6 +97,8 @@ export const renderMatchRow = (match: MatchResultValue): string => {
   const homeWon = isCompleted && Number(match.homeScore) > Number(match.awayScore);
   const awayWon = isCompleted && Number(match.awayScore) > Number(match.homeScore);
 
+  const homeScoreHtml = escapeHtml(String(homeScore));
+  const awayScoreHtml = escapeHtml(String(awayScore));
   const statusKey = match.status?.toLowerCase() ?? '';
   const statusLabel = STATUS_LABELS[statusKey] ?? '';
   const statusHtml = statusLabel
@@ -84,12 +107,12 @@ export const renderMatchRow = (match: MatchResultValue): string => {
 
   return (
     `<a href="/match/${escapeHtml(match.link)}" class="match-result-row" target="_blank" rel="noopener noreferrer">` +
-    `<span class="mr-date"><span class="mr-date-day">${formatDate(match.date)}</span><span class="mr-date-time">${formatTime(match.date)}</span></span>` +
+    `<span class="mr-date"><span class="mr-date-day">${escapeHtml(formatDate(match.date))}</span><span class="mr-date-time">${escapeHtml(formatTime(match.date))}</span></span>` +
     `<span class="mr-teams">` +
-    `<span class="mr-team-line${homeWon ? ' mr-winner' : ''}">${renderTeamLogo(match.homeTeamImage, match.homeTeam)}<span class="mr-team-name">${escapeHtml(match.homeTeam)}</span></span>` +
-    `<span class="mr-team-line${awayWon ? ' mr-winner' : ''}">${renderTeamLogo(match.awayTeamImage, match.awayTeam)}<span class="mr-team-name">${escapeHtml(match.awayTeam)}</span></span>` +
+    `<span class="mr-team-line${homeWon ? ' mr-winner' : ''}">${renderTeamLogo(match.homeTeamImage)}<span class="mr-team-name">${escapeHtml(match.homeTeam)}</span></span>` +
+    `<span class="mr-team-line${awayWon ? ' mr-winner' : ''}">${renderTeamLogo(match.awayTeamImage)}<span class="mr-team-name">${escapeHtml(match.awayTeam)}</span></span>` +
     `</span>` +
-    `<span class="mr-scores"><span class="mr-score${homeWon ? ' mr-score--winner' : ''}">${homeScore}</span><span class="mr-score${awayWon ? ' mr-score--winner' : ''}">${awayScore}</span></span>` +
+    `<span class="mr-scores"><span class="mr-score${homeWon ? ' mr-score--winner' : ''}">${homeScoreHtml}</span><span class="mr-score${awayWon ? ' mr-score--winner' : ''}">${awayScoreHtml}</span></span>` +
     statusHtml +
     `</a>`
   );

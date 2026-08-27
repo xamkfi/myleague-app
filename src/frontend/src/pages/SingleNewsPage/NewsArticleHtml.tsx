@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { hydrateMatchResultHtml } from '../../components/RichTextEditor/hydrateMatchResultHtml';
+import { bindTeamLogoFallbacks } from '../../components/RichTextEditor/matchResultRender';
 import { extractRelatedNewsTeams, type RelatedNewsTeam } from './extractRelatedNewsTeams';
 
 type NewsArticleHtmlProps = {
@@ -36,8 +37,17 @@ export function useHydratedNewsHtml(html: string): { displayHtml: string; relate
 }
 
 export default function NewsArticleHtml({ html }: NewsArticleHtmlProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      bindTeamLogoFallbacks(containerRef.current);
+    }
+  }, [html]);
+
   return (
     <div
+      ref={containerRef}
       dangerouslySetInnerHTML={{ __html: html }}
       className="single-news-page__content-html"
     />
