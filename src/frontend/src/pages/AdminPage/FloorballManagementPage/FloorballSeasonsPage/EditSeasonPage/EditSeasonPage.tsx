@@ -12,6 +12,9 @@ import { floorballSeasonService } from '../../../../../api/floorball/floorballSe
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
 import { type FloorballTeam, TeamCategory } from '../../../../../types/floorball/floorballTypes';
 import { useDivisions } from '../../../../../hooks/useDivisions';
+import { SportsCategory } from '../../../../../types/common/sports';
+import { seasonYearFromDates } from '../../../../../utils/seasonYear';
+import SeasonContentBlocksTab from '../../../components/SeasonContentBlocksTab/SeasonContentBlocksTab';
 import './EditSeasonPage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
@@ -36,7 +39,7 @@ const EditSeasonPage = () => {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'details' | 'divisions' | 'teams'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'divisions' | 'teams' | 'content'>('details');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [successTimeoutId, setSuccessTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
   
@@ -403,6 +406,9 @@ const EditSeasonPage = () => {
           </button>
           <button className={`tab-button ${activeTab === 'teams' ? 'active' : ''}`} onClick={() => setActiveTab('teams')}>
             {t('floorball.seasons.manageTeams', 'Manage Teams')} ({totalTeamCount})
+          </button>
+          <button className={`tab-button ${activeTab === 'content' ? 'active' : ''}`} onClick={() => setActiveTab('content')}>
+            {t('admin.seasonContentBlocks.tab', 'Sisältöblokit')}
           </button>
         </div>
 
@@ -778,6 +784,22 @@ const EditSeasonPage = () => {
                 </>
               )}
             </div>
+          )}
+
+          {activeTab === 'content' && season && (
+            <SeasonContentBlocksTab
+              sport={SportsCategory.Floorball}
+              competitionId={season.id}
+              seasonYear={seasonYearFromDates(season.startDate, season.endDate)}
+              onSuccess={(message) => {
+                setSuccessMessage(message);
+                if (successTimeoutId) {
+                  clearTimeout(successTimeoutId);
+                }
+                const timeoutId = setTimeout(() => setSuccessMessage(null), 3000);
+                setSuccessTimeoutId(timeoutId);
+              }}
+            />
           )}
         </div>
       </div>

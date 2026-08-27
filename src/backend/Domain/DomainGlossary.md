@@ -10,6 +10,8 @@ A physical person in the system. A Person can have multiple roles (Player, Refer
 ### Club
 An organization that manages and sponsors floorball teams. A Club typically has multiple teams, possibly in different divisions.
 
+### SeasonContentBlock
+A rich-text content card (title + HTML body + sort order) attached to a sport and a specific season. Public sport landing pages show the blocks for the selected season year.
 
 ### FloorballTeam
 A floorball team belonging to a Club, competing in a specific Division. Has a roster of players.

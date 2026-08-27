@@ -1,0 +1,99 @@
+.season-content-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.season-content-blocks__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.season-content-blocks__empty {
+  margin: 0;
+  color: #4b5563;
+}
+
+.season-content-blocks__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.season-content-blocks__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+
+  > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    span {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.season-content-blocks__item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  button {
+    min-height: 36px;
+    padding: 0 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.season-content-blocks__delete {
+  color: #b42318;
+}
+
+.season-content-blocks__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+.season-content-blocks__label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.season-content-blocks__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}

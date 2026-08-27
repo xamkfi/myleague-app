@@ -17,6 +17,9 @@ import { floorballMatchService } from '../../api/floorball/floorballMatchService
 import { FloorballMatchStatus, type FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import { formatMatchDateTime } from '../../utils/helpers';
 import { useAudience } from '../../context/AudienceContext';
+import { seasonContentBlockService } from '../../api/common/seasonContentBlockService';
+import { SportsCategory } from '../../types/common/sports';
+import type { SeasonContentBlockDto } from '../../types/admin/seasonContentBlockTypes';
 import bannerImage from '../../assets/floorball-banner.png';
 import './FloorballPage.scss';
 
@@ -47,6 +50,8 @@ function FloorballPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [seasonsData, setSeasonsData] = useState<SeasonWithStandings[]>([]);
   const [upcomingMatches, setUpcomingMatches] = useState<FloorballMatchDto[]>([]);
+  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
+  const [isLoadingBlocks, setIsLoadingBlocks] = useState(false);
   const [isLoadingYears, setIsLoadingYears] = useState(true);
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -194,6 +199,31 @@ function FloorballPage() {
     void loadSeasons();
   }, [isLoadingYears, selectedYear, currentPage, reloadToken, setSearchParams, t, audience.teamCategory]);
 
+  useEffect(() => {
+    if (!selectedYear) {
+      setContentBlocks([]);
+      return;
+    }
+
+    const loadBlocks = async (): Promise<void> => {
+      try {
+        setIsLoadingBlocks(true);
+        const blocks = await seasonContentBlockService.getBySportAndYear(
+          SportsCategory.Floorball,
+          selectedYear,
+        );
+        setContentBlocks(blocks);
+      } catch (err) {
+        console.error('Failed to fetch season content blocks:', err);
+        setContentBlocks([]);
+      } finally {
+        setIsLoadingBlocks(false);
+      }
+    };
+
+    void loadBlocks();
+  }, [selectedYear, reloadToken]);
+
   const handleYearSelect = (year: string) => {
     if (year === selectedYear) return;
     setSelectedYear(year);
@@ -322,14 +352,14 @@ function FloorballPage() {
   };
 
   const renderInfoCards = () => {
-    if (!isCurrentSeasonView) {
-      return (
-        <article className="fb-info-card">
-          <h2 className="fb-info-card__title">
-            {t('floorballPage.archiveTitle', { year: formatSeasonYearLabel(selectedYear) })}
-          </h2>
-          <p>{t('floorballPage.archiveText')}</p>
-          {currentYear && (
+    return (
+      <>
+        {!isCurrentSeasonView && currentYear && (
+          <article className="fb-info-card">
+            <h2 className="fb-info-card__title">
+              {t('floorballPage.archiveTitle', { year: formatSeasonYearLabel(selectedYear) })}
+            </h2>
+            <p>{t('floorballPage.archiveText')}</p>
             <p>
               <button
                 type="button"
@@ -339,41 +369,27 @@ function FloorballPage() {
                 {t('floorballPage.backToCurrent', { year: formatSeasonYearLabel(currentYear) })}
               </button>
             </p>
-          )}
-        </article>
-      );
-    }
-
-    const infoSections = [
-      { title: t('floorballPage.info.introTitle'), paragraphs: ['intro1', 'intro2', 'intro3'] },
-      {
-        title: t('floorballPage.info.seriesTitle'),
-        paragraphs: ['series1', 'series2', 'series3', 'series4'],
-      },
-      { title: t('floorballPage.info.loanTitle'), paragraphs: ['loan1'] },
-      { title: t('floorballPage.info.feeTitle'), paragraphs: ['fee1', 'fee2', 'fee3'] },
-    ];
-
-    return (
-      <>
-        {infoSections.map((section) => (
-          <article key={section.title} className="fb-info-card">
-            <h2 className="fb-info-card__title">{section.title}</h2>
-            {section.paragraphs.map((key) => (
-              <p key={key}>{t(`floorballPage.info.${key}`)}</p>
-            ))}
           </article>
-        ))}
-        <article className="fb-info-card">
-          <h2 className="fb-info-card__title">{t('floorballPage.info.contactTitle')}</h2>
-          <p className="fb-info-card__contact">
-            Mikko Luukkonen
-            <br />
-            mikko(at)mahl.fi
-            <br />
-            044 209 9199
-          </p>
-        </article>
+        )}
+        {isLoadingBlocks ? (
+          <div className="floorball-page__state floorball-page__state--inline">
+            <LoadingSpinner variant="dark" text={t('floorballPage.loading')} />
+          </div>
+        ) : contentBlocks.length === 0 ? (
+          <article className="fb-info-card">
+            <p>{t('floorballPage.noContentBlocks')}</p>
+          </article>
+        ) : (
+          contentBlocks.map((block) => (
+            <article key={block.id} className="fb-info-card">
+              <h2 className="fb-info-card__title">{block.title}</h2>
+              <div
+                className="fb-info-card__body"
+                dangerouslySetInnerHTML={{ __html: block.contentHtml }}
+              />
+            </article>
+          ))
+        )}
       </>
     );
   };

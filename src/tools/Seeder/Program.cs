@@ -430,6 +430,7 @@ public static class Program
 		{
 			result.Seasons = await FloorballSeasonsSeeder.SeedAsync(http, jsonOptions, config.FloorballSeasons, result.Divisions);
 			await FloorballTeamsSeeder.AssignTeamsToSeasonsAsync(http, jsonOptions, result.Seasons, config.FloorballTeams, result.Teams, result.Divisions);
+			await SeasonContentBlockSeeder.SeedFloorballAsync(http, jsonOptions, result.Seasons);
 		}
 
 		if (scope.HasFlag(SeedScope.Teams))
@@ -538,6 +539,7 @@ public static class Program
 				config.FootballTeams,
 				result.Teams,
 				result.Divisions);
+			await SeasonContentBlockSeeder.SeedFootballAsync(http, jsonOptions, result.Seasons);
 		}
 
 		if (scope.HasFlag(SeedScope.Teams))
@@ -681,6 +683,7 @@ public static class Program
 			result.Seasons = await HockeySeasonsSeeder.SeedAsync(http, jsonOptions, config.HockeySeasons, divisions);
 			await HockeyTeamsSeeder.AssignTeamsToSeasonsAsync(
 				http, jsonOptions, result.Seasons, config.HockeyTeams, result.Teams, divisions);
+			await SeasonContentBlockSeeder.SeedHockeyAsync(http, jsonOptions, result.Seasons);
 		}
 
 		if (scope.HasFlag(SeedScope.HockeyTeams))

@@ -15,9 +15,11 @@ import {
   type HockeyTeamDto,
 } from '../../../../types/hockey/hockeyTypes';
 import { loadClubNameMap } from '../../../../utils/hockeyLookups';
+import { seasonYearFromDates } from '../../../../utils/seasonYear';
+import SeasonContentBlocksTab from '../../components/SeasonContentBlocksTab/SeasonContentBlocksTab';
 import './EditSeasonPage.scss';
 
-type SeasonTab = 'details' | 'divisions' | 'teams';
+type SeasonTab = 'details' | 'divisions' | 'teams' | 'content';
 
 function EditHockeySeasonPage() {
   const { t } = useTranslation();
@@ -174,6 +176,9 @@ function EditHockeySeasonPage() {
           </button>
           <button type="button" className={`tab-button ${activeTab === 'teams' ? 'active' : ''}`} onClick={() => setActiveTab('teams')}>
             {t('hockey.seasons.manageTeams', 'Manage Teams')} ({season.teams.length})
+          </button>
+          <button type="button" className={`tab-button ${activeTab === 'content' ? 'active' : ''}`} onClick={() => setActiveTab('content')}>
+            {t('admin.seasonContentBlocks.tab', 'Sisältöblokit')}
           </button>
         </div>
         <div className="edit-season-content">
@@ -601,6 +606,18 @@ function EditHockeySeasonPage() {
                 </>
               )}
             </div>
+          )}
+
+          {activeTab === 'content' && (
+            <SeasonContentBlocksTab
+              sport={SportsCategory.Icehockey}
+              competitionId={season.id}
+              seasonYear={seasonYearFromDates(season.startDate, season.endDate)}
+              onSuccess={(message) => {
+                setSuccessMessage(message);
+                window.setTimeout(() => setSuccessMessage(null), 2000);
+              }}
+            />
           )}
         </div>
       </div>
