@@ -19,6 +19,8 @@ import type {
 import { isHockeyMatchFinished, shouldRefreshHockeyMatches } from '../../types/hockey/hockeyTypes';
 import { loadHockeyRosterNameMaps, loadTeamNameMap, mergeHockeyPlayerFaceoffWins, uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
 import { useAudience } from '../../context/AudienceContext';
+import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
+import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
 import '../LeaguePage/LeaguePage.scss';
 import '../LeaguePage/components/SummarySection.scss';
@@ -49,21 +51,24 @@ function HockeyLeaguePage() {
   const [teamNames, setTeamNames] = useState<Map<string, string>>(new Map());
   const [playerNames, setPlayerNames] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
+  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
 
   useEffect(() => {
     if (!id) {
       return;
     }
     const load = async (): Promise<void> => {
-      const [loaded, matchList, standingList, playerList, goalieList, teams] = await Promise.all([
+      const [loaded, matchList, standingList, playerList, goalieList, teams, content] = await Promise.all([
         hockeySeasonService.getById(id),
         hockeyMatchService.getByCompetition(id),
         hockeyStatisticsService.getStandings(id).catch(() => []),
         hockeyStatisticsService.getPlayers(id).catch(() => []),
         hockeyStatisticsService.getGoalies(id).catch(() => []),
         hockeyTeamService.getAll(audience.teamCategory),
+        hockeySeasonService.getContentBlocks(id).catch(() => ({ seasonId: id, blocks: [] })),
       ]);
       setSeason(loaded);
+      setContentBlocks(content.blocks);
       setMatches(matchList);
       setStandings(uniqueHockeyStandingsByTeamId(standingList));
       setPlayers(mergeHockeyPlayerFaceoffWins(playerList, matchList));
@@ -164,6 +169,7 @@ function HockeyLeaguePage() {
         <div className="league-content">
           {tab === 'summary' && (
             <div className="summary-section">
+              <SeasonInfoCards blocks={contentBlocks} className="season-info-cards" />
               <div className="summary-section__stats">
                 <div className="summary-section__stat-card">
                   <span className="summary-section__stat-value">{season?.teams.length ?? 0}</span>

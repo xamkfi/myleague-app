@@ -9,8 +9,11 @@ namespace Domain.Entities.Hockey.Competitions;
 /// </summary>
 public class HockeySeason : HockeyCompetition
 {
+    private readonly List<HockeySeasonContentBlock> _contentBlocks = new();
+
     public string? SeasonCode { get; private set; }
     public Guid? ChampionCompetitionTeamId { get; private set; }
+    public IReadOnlyCollection<HockeySeasonContentBlock> ContentBlocks => _contentBlocks.AsReadOnly();
 
     private HockeySeason() : base() { }
 
@@ -36,5 +39,39 @@ public class HockeySeason : HockeyCompetition
             throw new InvalidOperationException("Champion can only be set for a completed season.");
 
         ChampionCompetitionTeamId = championCompetitionTeamId;
+    }
+
+    /// <summary>
+    /// Replaces intro blocks. List order becomes <see cref="HockeySeasonContentBlock.SortOrder"/>.
+    /// </summary>
+    public void ReplaceContentBlocks(IReadOnlyList<(Guid? Id, string Title, string ContentHtml)> items)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+
+        HashSet<Guid> keepIds = items
+            .Where(item => item.Id.HasValue && item.Id.Value != Guid.Empty)
+            .Select(item => item.Id!.Value)
+            .ToHashSet();
+
+        _contentBlocks.RemoveAll(block => !keepIds.Contains(block.Id));
+
+        int sortOrder = 0;
+        foreach ((Guid? Id, string Title, string ContentHtml) item in items)
+        {
+            HockeySeasonContentBlock? existing = item.Id.HasValue && item.Id.Value != Guid.Empty
+                ? _contentBlocks.FirstOrDefault(block => block.Id == item.Id.Value)
+                : null;
+
+            if (existing is not null)
+            {
+                existing.Update(item.Title, item.ContentHtml, sortOrder);
+            }
+            else
+            {
+                _contentBlocks.Add(new HockeySeasonContentBlock(Id, item.Title, item.ContentHtml, sortOrder));
+            }
+
+            sortOrder++;
+        }
     }
 }

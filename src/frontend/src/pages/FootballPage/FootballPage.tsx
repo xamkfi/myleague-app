@@ -19,6 +19,8 @@ import { formatMatchDateTime } from '../../utils/helpers';
 import { useAudience } from '../../context/AudienceContext';
 import { TeamLink } from '../../components/SportLinks';
 import SeasonStandingsCard from '../../components/SeasonStandingsCard/SeasonStandingsCard';
+import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
+import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import bannerImage from '../../assets/floorball-banner.png';
 import './FootballPage.scss';
 
@@ -53,6 +55,7 @@ function FootballPage() {
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
 
   const selectedYearMeta = useMemo(
     () => years.find((y) => y.year === selectedYear),
@@ -66,6 +69,31 @@ function FootballPage() {
   );
   const isCurrentSeasonView =
     (selectedYearMeta?.hasActiveSeason ?? false) || selectedYear === currentYear;
+
+  useEffect(() => {
+    if (!selectedYear) {
+      setContentBlocks([]);
+      return;
+    }
+
+    let cancelled = false;
+    footballSeasonService
+      .getFeaturedContentBlocks(selectedYear)
+      .then((result) => {
+        if (!cancelled) {
+          setContentBlocks(result.blocks);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setContentBlocks([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedYear]);
 
   useEffect(() => {
     if (initializedRef.current) return;
@@ -305,6 +333,10 @@ function FootballPage() {
   };
 
   const renderInfoCards = () => {
+    if (contentBlocks.length > 0) {
+      return <SeasonInfoCards blocks={contentBlocks} className="season-info-cards" />;
+    }
+
     if (!isCurrentSeasonView) {
       return (
         <article className="fb-info-card">

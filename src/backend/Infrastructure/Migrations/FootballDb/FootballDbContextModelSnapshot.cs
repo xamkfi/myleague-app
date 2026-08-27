@@ -137,6 +137,42 @@ namespace MyLeague.Infrastructure.Migrations.FootballDb
                     b.ToTable("FootballSeasonDivisionTeams", "football");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Football.Competitions.FootballSeasonContentBlock", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentHtml")
+                        .IsRequired()
+                        .HasMaxLength(50000)
+                        .HasColumnType("character varying(50000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SeasonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SeasonId", "SortOrder")
+                        .HasDatabaseName("IX_FootballSeasonContentBlocks_Season_SortOrder");
+
+                    b.ToTable("FootballSeasonContentBlocks", "football");
+                });
+
             modelBuilder.Entity("Domain.Entities.Football.Competitions.FootballTournamentGroup", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1219,6 +1255,15 @@ namespace MyLeague.Infrastructure.Migrations.FootballDb
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Football.Competitions.FootballSeasonContentBlock", b =>
+                {
+                    b.HasOne("Domain.Entities.Football.Competitions.FootballSeason", null)
+                        .WithMany("ContentBlocks")
+                        .HasForeignKey("SeasonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Domain.Entities.Football.Competitions.FootballTournamentGroup", b =>
                 {
                     b.HasOne("Domain.Entities.Football.Competitions.FootballTournament", null)
@@ -1752,6 +1797,11 @@ namespace MyLeague.Infrastructure.Migrations.FootballDb
             modelBuilder.Entity("Domain.Entities.Football.Teams.FootballTeam", b =>
                 {
                     b.Navigation("Roster");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Football.Competitions.FootballSeason", b =>
+                {
+                    b.Navigation("ContentBlocks");
                 });
 
             modelBuilder.Entity("Domain.Entities.Football.Competitions.FootballTournament", b =>

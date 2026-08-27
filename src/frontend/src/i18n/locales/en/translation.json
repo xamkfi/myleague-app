@@ -1517,6 +1517,18 @@
       "redCards": "Red cards"
     }
   },
+  "seasonContent": {
+    "title": "Introduction blocks",
+    "description": "These cards appear on the public season page in this order.",
+    "add": "Add block",
+    "remove": "Remove",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "blockTitle": "Title",
+    "blockContent": "Content",
+    "empty": "No introduction blocks yet.",
+    "titleRequired": "Each block needs a title."
+  },
   "common": {
     "back": "Back",
     "backTo": "Back to",

@@ -1,4 +1,5 @@
 using Domain.Entities.Hockey.Competitions;
+using Domain.Enums.Hockey.Competitions;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -96,5 +97,24 @@ public class HockeyCompetitionRepository : IHockeyCompetitionRepository
             .OrderByDescending(c => c.StartDate)
             .ToListAsync();
         return tournaments.DistinctBy(tournament => tournament.Id).ToList();
+    }
+
+    public async Task<HockeySeason?> GetSeasonWithContentBlocksAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.HockeySeasons
+            .Include(season => season.ContentBlocks)
+            .FirstOrDefaultAsync(season => season.Id == id, cancellationToken);
+    }
+
+    public async Task<HockeySeason?> GetFeaturedSeasonWithContentBlocksAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.HockeySeasons
+            .Include(season => season.ContentBlocks)
+            .OrderByDescending(season => season.Status == HockeyCompetitionStatus.Active)
+            .ThenByDescending(season => season.StartDate)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 }

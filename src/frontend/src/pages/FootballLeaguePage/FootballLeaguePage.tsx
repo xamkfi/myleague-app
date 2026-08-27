@@ -6,6 +6,9 @@ import FootballLeagueStanding from './components/FootballLeagueStanding';
 import ResultsSection from './components/ResultsSection';
 import FixturesSection from './components/FixturesSection';
 import SummarySection from './components/SummarySection';
+import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
+import { footballSeasonService } from '../../api/football/footballSeasonService';
+import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { footballStatisticsService, type FootballSeasonStatisticsSummaryDto } from '../../api/football/footballStatistics';
 import { footballMatchService } from '../../api/football/footballMatchService';
 import { type FootballMatchDto, FootballMatchStatus } from '../../types/football/footballTypes';
@@ -59,6 +62,7 @@ export default function FootballLeaguePage() {
   const [seasonSummary, setSeasonSummary] = useState<FootballSeasonStatisticsSummaryDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
 
   // State for matches data
   const [matches, setMatches] = useState<FootballMatchDto[] | null>(null);
@@ -87,6 +91,31 @@ export default function FootballLeaguePage() {
 
     fetchSeasonData();
   }, [id, t]);
+
+  useEffect(() => {
+    if (!id) {
+      setContentBlocks([]);
+      return;
+    }
+
+    let cancelled = false;
+    footballSeasonService
+      .getContentBlocks(id)
+      .then((result) => {
+        if (!cancelled) {
+          setContentBlocks(result.blocks);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setContentBlocks([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   // Fetch matches data - filtered by tab status
   useEffect(() => {
@@ -136,11 +165,14 @@ export default function FootballLeaguePage() {
     switch (activeTab) {
       case 'summary':
         return (
-          <SummarySection 
-            seasonSummary={seasonSummary}
-            loading={loading}
-            error={error}
-          />
+          <>
+            <SeasonInfoCards blocks={contentBlocks} className="season-info-cards" />
+            <SummarySection 
+              seasonSummary={seasonSummary}
+              loading={loading}
+              error={error}
+            />
+          </>
         );
       case 'results':
         return (

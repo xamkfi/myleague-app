@@ -1,0 +1,42 @@
+.season-info-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__title {
+    margin: 0;
+    font-size: 22px;
+    line-height: 32px;
+    text-transform: uppercase;
+    color: #12325a;
+    overflow-wrap: break-word;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-wrap: break-word;
+
+    p,
+    ul,
+    ol {
+      margin: 0;
+      font-size: 16px;
+      line-height: 24px;
+    }
+
+    a {
+      color: inherit;
+    }
+  }
+}
+
+.season-info-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}

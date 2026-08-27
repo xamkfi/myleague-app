@@ -72,6 +72,34 @@ public class UpdateHockeySeasonRequest
 }
 
 /// <summary>
+/// One season intro block in a replace-all payload.
+/// </summary>
+public class HockeySeasonContentBlockItemRequest
+{
+    /// <summary>Existing block id. Omit to create a new block.</summary>
+    public Guid? Id { get; set; }
+
+    /// <summary>Card title shown on public pages.</summary>
+    [Required]
+    [StringLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>HTML body produced by the rich-text editor.</summary>
+    [StringLength(50000)]
+    public string ContentHtml { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Replace-all request for a season's intro blocks. Array order is the display order.
+/// </summary>
+public class ReplaceHockeySeasonContentBlocksRequest
+{
+    /// <summary>Intro blocks in display order.</summary>
+    [Required]
+    public List<HockeySeasonContentBlockItemRequest> Items { get; set; } = new();
+}
+
+/// <summary>
 /// Request body for setting the season champion.
 /// </summary>
 public class SetHockeySeasonChampionRequest

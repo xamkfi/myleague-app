@@ -1499,6 +1499,18 @@
       }
     }
   },
+  "seasonContent": {
+    "title": "Esittelyblokit",
+    "description": "Nämä kortit näkyvät julkisella kausisivulla tässä järjestyksessä.",
+    "add": "Lisää blokki",
+    "remove": "Poista",
+    "moveUp": "Siirrä ylös",
+    "moveDown": "Siirrä alas",
+    "blockTitle": "Otsikko",
+    "blockContent": "Sisältö",
+    "empty": "Ei esittelyblokkeja vielä.",
+    "titleRequired": "Jokaisella blokilla pitää olla otsikko."
+  },
   "common": {
     "back": "Takaisin",
     "backTo": "Takaisin",

@@ -18,4 +18,11 @@ public interface IHockeyCompetitionRepository
     Task<IReadOnlyList<HockeySeason>> GetAllSeasonsAsync();
 
     Task<IReadOnlyList<HockeyTournament>> GetAllTournamentsAsync();
+
+    Task<HockeySeason?> GetSeasonWithContentBlocksAsync(
+        Guid id,
+        CancellationToken cancellationToken = default);
+
+    Task<HockeySeason?> GetFeaturedSeasonWithContentBlocksAsync(
+        CancellationToken cancellationToken = default);
 }

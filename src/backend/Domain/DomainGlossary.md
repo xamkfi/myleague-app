@@ -17,6 +17,9 @@ A floorball team belonging to a Club, competing in a specific Division. Has a ro
 ### FloorballSeason
 A specific season of floorball competition, defined by start and end dates. Contains multiple matches.
 
+### Season content block
+An ordered intro card on a season's public pages. Each block has a title and HTML body (`ContentHtml`). Admins can add, reorder, and delete any number of blocks per season. The same shape exists for floorball, football, and hockey seasons.
+
 ### FloorballMatch
 A single floorball game between two teams (home and away). Tracks scores, events, periods, status, referees, etc.
 

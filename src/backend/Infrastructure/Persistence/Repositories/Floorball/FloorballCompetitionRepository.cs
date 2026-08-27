@@ -238,5 +238,38 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
 
             return PagedResult.Create(items, totalCount, page, pageSize);
         }
+
+        /// <inheritdoc />
+        public async Task<FloorballSeason?> GetSeasonWithContentBlocksAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return await _entities
+                .OfType<FloorballSeason>()
+                .Include(season => season.ContentBlocks)
+                .FirstOrDefaultAsync(season => season.Id == id, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<FloorballSeason?> GetFeaturedSeasonWithContentBlocksAsync(
+            int? startYear,
+            int? endYear,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballSeason> query = _entities.OfType<FloorballSeason>();
+
+            if (startYear.HasValue && endYear.HasValue)
+            {
+                int start = startYear.Value;
+                int end = endYear.Value;
+                query = query.Where(season => season.StartDate.Year == start && season.EndDate.Year == end);
+            }
+
+            return await query
+                .Include(season => season.ContentBlocks)
+                .OrderByDescending(season => season.IsActive)
+                .ThenByDescending(season => season.StartDate)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }

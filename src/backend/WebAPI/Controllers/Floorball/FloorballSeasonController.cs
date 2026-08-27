@@ -3,6 +3,7 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using Application.Common;
 using Application.Features.Floorball.Seasons.Commands;
 using Application.Features.Floorball.Seasons.DTOs;
@@ -134,6 +135,68 @@ namespace WebAPI.Controllers.Floorball
             Result<FloorballSeasonDto> result = await _mediator.Send(query);
 
             return HandleResult(result, "Floorball season retrieved successfully", "Failed to retrieve floorball season");
+        }
+
+        /// <summary>
+        /// Gets intro blocks for the featured season of an optional year.
+        /// </summary>
+        [HttpGet("content-blocks")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballSeasonContentBlocksDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballSeasonContentBlocksDto>>> GetFeaturedContentBlocks(
+            [FromQuery] string? seasonYear)
+        {
+            _logger.LogInformation(
+                "Getting featured floorball season content blocks - SeasonYear: {SeasonYear}",
+                FormatSeasonYearForLog(seasonYear));
+
+            Result<FloorballSeasonContentBlocksDto> result =
+                await _mediator.Send(new GetFloorballSeasonContentBlocksByYearQuery(seasonYear));
+
+            return HandleResult(result, "Season content blocks retrieved successfully", "Failed to retrieve season content blocks");
+        }
+
+        /// <summary>
+        /// Gets intro blocks for a floorball season.
+        /// </summary>
+        [HttpGet("{id:guid}/content-blocks")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballSeasonContentBlocksDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballSeasonContentBlocksDto>>> GetContentBlocks(Guid id)
+        {
+            _logger.LogInformation("Getting floorball season content blocks for {id}", id);
+
+            Result<FloorballSeasonContentBlocksDto> result =
+                await _mediator.Send(new GetFloorballSeasonContentBlocksQuery(id));
+
+            return HandleResult(result, "Season content blocks retrieved successfully", "Season not found");
+        }
+
+        /// <summary>
+        /// Replaces intro blocks for a floorball season. Array order is the display order.
+        /// </summary>
+        [HttpPut("{id:guid}/content-blocks")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
+        [ProducesResponseType(typeof(ApiResponse<FloorballSeasonContentBlocksDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballSeasonContentBlocksDto>>> ReplaceContentBlocks(
+            Guid id,
+            [FromBody] ReplaceFloorballSeasonContentBlocksRequest request)
+        {
+            _logger.LogInformation("Replacing floorball season content blocks for {id}", id);
+
+            ReplaceFloorballSeasonContentBlocksCommand command = new(
+                id,
+                request.Items
+                    .Select(item => new ReplaceFloorballSeasonContentBlockItem(item.Id, item.Title, item.ContentHtml))
+                    .ToList());
+
+            Result<FloorballSeasonContentBlocksDto> result = await _mediator.Send(command);
+            return HandleResult(result, "Season content blocks updated successfully", "Failed to update season content blocks");
         }
 
         /// <summary>

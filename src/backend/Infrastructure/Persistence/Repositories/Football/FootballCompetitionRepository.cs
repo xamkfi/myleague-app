@@ -205,5 +205,36 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
 
             return PagedResult.Create(items, totalCount, page, pageSize);
         }
+
+        public async Task<FootballSeason?> GetSeasonWithContentBlocksAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return await _entities
+                .OfType<FootballSeason>()
+                .Include(season => season.ContentBlocks)
+                .FirstOrDefaultAsync(season => season.Id == id, cancellationToken);
+        }
+
+        public async Task<FootballSeason?> GetFeaturedSeasonWithContentBlocksAsync(
+            int? startYear,
+            int? endYear,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FootballSeason> query = _entities.OfType<FootballSeason>();
+
+            if (startYear.HasValue && endYear.HasValue)
+            {
+                int start = startYear.Value;
+                int end = endYear.Value;
+                query = query.Where(season => season.StartDate.Year == start && season.EndDate.Year == end);
+            }
+
+            return await query
+                .Include(season => season.ContentBlocks)
+                .OrderByDescending(season => season.IsActive)
+                .ThenByDescending(season => season.StartDate)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }

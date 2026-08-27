@@ -8,6 +8,10 @@ namespace Domain.Entities.Football.Competitions;
 /// </summary>
 public class FootballSeason : FootballCompetition
 {
+    private readonly List<FootballSeasonContentBlock> _contentBlocks = new();
+
+    public IReadOnlyCollection<FootballSeasonContentBlock> ContentBlocks => _contentBlocks.AsReadOnly();
+
     private FootballSeason() : base() { }
 
     public FootballSeason(
@@ -18,4 +22,38 @@ public class FootballSeason : FootballCompetition
         FootballStandingRules? standingRules = null,
         TeamCategory teamCategory = TeamCategory.Adult)
         : base(name, startDate, endDate, matchRules, standingRules, teamCategory) { }
+
+    /// <summary>
+    /// Replaces intro blocks. List order becomes <see cref="FootballSeasonContentBlock.SortOrder"/>.
+    /// </summary>
+    public void ReplaceContentBlocks(IReadOnlyList<(Guid? Id, string Title, string ContentHtml)> items)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+
+        HashSet<Guid> keepIds = items
+            .Where(item => item.Id.HasValue && item.Id.Value != Guid.Empty)
+            .Select(item => item.Id!.Value)
+            .ToHashSet();
+
+        _contentBlocks.RemoveAll(block => !keepIds.Contains(block.Id));
+
+        int sortOrder = 0;
+        foreach ((Guid? Id, string Title, string ContentHtml) item in items)
+        {
+            FootballSeasonContentBlock? existing = item.Id.HasValue && item.Id.Value != Guid.Empty
+                ? _contentBlocks.FirstOrDefault(block => block.Id == item.Id.Value)
+                : null;
+
+            if (existing is not null)
+            {
+                existing.Update(item.Title, item.ContentHtml, sortOrder);
+            }
+            else
+            {
+                _contentBlocks.Add(new FootballSeasonContentBlock(Id, item.Title, item.ContentHtml, sortOrder));
+            }
+
+            sortOrder++;
+        }
+    }
 }

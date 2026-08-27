@@ -165,6 +165,10 @@
     padding: map.get($spacing, 'lg');
     box-shadow: $box-shadow-drop-1;
     margin: 0 map.get($spacing, 'base');
+
+    .season-info-cards {
+      margin-bottom: map.get($spacing, 'lg');
+    }
   }
 }
 

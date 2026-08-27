@@ -54,6 +54,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballSeason> FloorballSeasons { get; set; }
 
         /// <summary>
+        /// Gets or sets the FloorballSeasonContentBlocks DbSet.
+        /// </summary>
+        public DbSet<FloorballSeasonContentBlock> FloorballSeasonContentBlocks { get; set; }
+
+        /// <summary>
         /// Gets or sets the FloorballTournaments DbSet (TPH convenience accessor).
         /// </summary>
         public DbSet<FloorballTournament> FloorballTournaments { get; set; }
@@ -200,6 +205,8 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballTeamPlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballCompetitionConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballSeasonConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballSeasonContentBlockConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTournamentConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballRefereeConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballPeriodScoreConfiguration());

@@ -4,6 +4,7 @@
   FootballTeam,
   FootballMatchRules
 } from '../../types/football/footballTypes';
+import type { SeasonContentBlockItem, SeasonContentBlocksDto } from '../../types/common/seasonContent';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
@@ -593,5 +594,55 @@ export const footballSeasonService = {
       console.error('Error in footballSeasonService.removeTeamFromSeasonDivision:', error);
       throw error;
     }
-  }
+  },
+
+  getContentBlocks: async (seasonId: string): Promise<SeasonContentBlocksDto> => {
+    const response = await authFetch(`${API_URL}/FootballSeason/${seasonId}/content-blocks`);
+    if (!response.ok) {
+      throw new Error(await parseErrorResponse(response, 'Failed to fetch season content blocks'));
+    }
+    const apiResponse: ApiResponse<SeasonContentBlocksDto> = await response.json();
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch season content blocks'));
+    }
+    return apiResponse.data;
+  },
+
+  getFeaturedContentBlocks: async (seasonYear?: string): Promise<SeasonContentBlocksDto> => {
+    const searchParams = new URLSearchParams();
+    if (seasonYear) {
+      searchParams.set('seasonYear', seasonYear);
+    }
+    const query = searchParams.toString();
+    const response = await authFetch(
+      `${API_URL}/FootballSeason/content-blocks${query ? `?${query}` : ''}`,
+    );
+    if (!response.ok) {
+      throw new Error(await parseErrorResponse(response, 'Failed to fetch season content blocks'));
+    }
+    const apiResponse: ApiResponse<SeasonContentBlocksDto> = await response.json();
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch season content blocks'));
+    }
+    return apiResponse.data;
+  },
+
+  replaceContentBlocks: async (
+    seasonId: string,
+    items: SeasonContentBlockItem[],
+  ): Promise<SeasonContentBlocksDto> => {
+    const response = await authFetch(`${API_URL}/FootballSeason/${seasonId}/content-blocks`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items }),
+    });
+    if (!response.ok) {
+      throw new Error(await parseErrorResponse(response, 'Failed to update season content blocks'));
+    }
+    const apiResponse: ApiResponse<SeasonContentBlocksDto> = await response.json();
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to update season content blocks'));
+    }
+    return apiResponse.data;
+  },
 }; 

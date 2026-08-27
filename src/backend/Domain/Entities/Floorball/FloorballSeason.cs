@@ -8,6 +8,13 @@ namespace Domain.Entities.Floorball;
 /// </summary>
 public class FloorballSeason : FloorballCompetition
 {
+    private readonly List<FloorballSeasonContentBlock> _contentBlocks = new();
+
+    /// <summary>
+    /// Gets the ordered HTML intro blocks for public season pages.
+    /// </summary>
+    public IReadOnlyCollection<FloorballSeasonContentBlock> ContentBlocks => _contentBlocks.AsReadOnly();
+
     /// <summary>
     /// Private constructor for EF Core
     /// </summary>
@@ -28,4 +35,39 @@ public class FloorballSeason : FloorballCompetition
         FloorballMatchRules? matchRules = null,
         TeamCategory teamCategory = TeamCategory.Adult)
         : base(name, startDate, endDate, matchRules, teamCategory) { }
+
+    /// <summary>
+    /// Replaces intro blocks. List order becomes <see cref="FloorballSeasonContentBlock.SortOrder"/>.
+    /// Existing ids are updated; omitted ids are removed; missing ids are created.
+    /// </summary>
+    public void ReplaceContentBlocks(IReadOnlyList<(Guid? Id, string Title, string ContentHtml)> items)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+
+        HashSet<Guid> keepIds = items
+            .Where(item => item.Id.HasValue && item.Id.Value != Guid.Empty)
+            .Select(item => item.Id!.Value)
+            .ToHashSet();
+
+        _contentBlocks.RemoveAll(block => !keepIds.Contains(block.Id));
+
+        int sortOrder = 0;
+        foreach ((Guid? Id, string Title, string ContentHtml) item in items)
+        {
+            FloorballSeasonContentBlock? existing = item.Id.HasValue && item.Id.Value != Guid.Empty
+                ? _contentBlocks.FirstOrDefault(block => block.Id == item.Id.Value)
+                : null;
+
+            if (existing is not null)
+            {
+                existing.Update(item.Title, item.ContentHtml, sortOrder);
+            }
+            else
+            {
+                _contentBlocks.Add(new FloorballSeasonContentBlock(Id, item.Title, item.ContentHtml, sortOrder));
+            }
+
+            sortOrder++;
+        }
+    }
 }

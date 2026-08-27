@@ -28,4 +28,13 @@ public interface IFootballCompetitionRepository
         int? endYear,
         Domain.Enums.Common.TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
+
+    Task<FootballSeason?> GetSeasonWithContentBlocksAsync(
+        Guid id,
+        CancellationToken cancellationToken = default);
+
+    Task<FootballSeason?> GetFeaturedSeasonWithContentBlocksAsync(
+        int? startYear,
+        int? endYear,
+        CancellationToken cancellationToken = default);
 }

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import SeasonStandingsCard from '../../components/SeasonStandingsCard/SeasonStandingsCard';
+import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
+import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
 import { hockeyStatisticsService } from '../../api/hockey/hockeyStatisticsService';
 import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
@@ -27,15 +29,18 @@ function HockeyPage() {
   const [seasonsData, setSeasonsData] = useState<SeasonWithStandings[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
 
   const fetchSeasons = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
-      const [seasons, teams] = await Promise.all([
+      const [seasons, teams, content] = await Promise.all([
         hockeySeasonService.getAll(audience.teamCategory),
         hockeyTeamService.getAll(audience.teamCategory),
+        hockeySeasonService.getFeaturedContentBlocks().catch(() => ({ seasonId: null, blocks: [] })),
       ]);
+      setContentBlocks(content.blocks);
       const teamNames = new Map(teams.map((team) => [team.id, team.name]));
       const sorted = [...seasons].sort((a, b) => {
         if (a.isActive && !b.isActive) return -1;
@@ -101,6 +106,7 @@ function HockeyPage() {
             </Link>
           </nav>
         </div>
+        <SeasonInfoCards blocks={contentBlocks} className="season-info-cards hockey-page__content-blocks" />
         {error && (
           <div className="hockey-page__error">
             <p>{error}</p>

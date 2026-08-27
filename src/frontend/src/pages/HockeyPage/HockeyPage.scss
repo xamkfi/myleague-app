@@ -45,6 +45,10 @@
     position: relative;
   }
 
+  &__content-blocks {
+    margin-bottom: map.get($spacing, 'xl');
+  }
+
   &__loading,
   &__error,
   &__empty {
