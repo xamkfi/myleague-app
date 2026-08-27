@@ -211,12 +211,11 @@ namespace Domain.Entities.Common
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            foreach (string current in _tags.ToList())
+            foreach (string current in _tags
+                .Where(current => !incoming.Contains(current, StringComparer.OrdinalIgnoreCase))
+                .ToList())
             {
-                if (!incoming.Contains(current, StringComparer.OrdinalIgnoreCase))
-                {
-                    RemoveTag(current);
-                }
+                RemoveTag(current);
             }
 
             foreach (string tag in incoming)
