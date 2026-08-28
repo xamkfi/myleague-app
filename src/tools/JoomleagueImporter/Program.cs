@@ -89,6 +89,18 @@ public static class Program
         if (int.TryParse(seasonConcurrencyArg, out int seasonConcurrency) && seasonConcurrency > 0)
             MatchImportParallel.SeasonDegree = seasonConcurrency;
 
+        string? personConcurrencyArg = GetArg(args, "person-concurrency");
+        if (int.TryParse(personConcurrencyArg, out int personConcurrency) && personConcurrency > 0)
+            MatchImportParallel.PersonDegree = personConcurrency;
+
+        string? clubConcurrencyArg = GetArg(args, "club-concurrency");
+        if (int.TryParse(clubConcurrencyArg, out int clubConcurrency) && clubConcurrency > 0)
+            MatchImportParallel.ClubDegree = clubConcurrency;
+
+        string? teamConcurrencyArg = GetArg(args, "team-concurrency");
+        if (int.TryParse(teamConcurrencyArg, out int teamConcurrency) && teamConcurrency > 0)
+            MatchImportParallel.TeamDegree = teamConcurrency;
+
         string? cliDump = GetArg(args, "dump");
         if (!string.IsNullOrWhiteSpace(cliDump))
             dumpPath = cliDump;
@@ -179,6 +191,9 @@ public static class Program
                 : $"Login email: {loginEmail}");
             Console.WriteLine($"Match concurrency: {MatchImportParallel.Degree}");
             Console.WriteLine($"Season concurrency: {MatchImportParallel.SeasonDegree}");
+            Console.WriteLine($"Person concurrency: {MatchImportParallel.PersonDegree}");
+            Console.WriteLine($"Club concurrency: {MatchImportParallel.ClubDegree}");
+            Console.WriteLine($"Team concurrency: {MatchImportParallel.TeamDegree}");
             Console.WriteLine("Starting import (--yes).");
         }
         Console.WriteLine();

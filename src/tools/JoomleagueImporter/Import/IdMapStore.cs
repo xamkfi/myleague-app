@@ -78,10 +78,55 @@ public class IdMapStore
             return Teams.ContainsKey(oldTeamId);
     }
 
+    public bool TryGetTeam(int oldTeamId, out Guid teamId)
+    {
+        lock (_sync)
+            return Teams.TryGetValue(oldTeamId, out teamId);
+    }
+
+    public void MapTeam(int oldTeamId, Guid teamId)
+    {
+        lock (_sync)
+            Teams[oldTeamId] = teamId;
+        Save(force: false);
+    }
+
+    public bool HasClub(int oldClubKey)
+    {
+        lock (_sync)
+            return Clubs.ContainsKey(oldClubKey);
+    }
+
+    public bool TryGetClub(int oldClubKey, out Guid clubId)
+    {
+        lock (_sync)
+            return Clubs.TryGetValue(oldClubKey, out clubId);
+    }
+
+    public void MapClub(int oldClubKey, Guid clubId)
+    {
+        lock (_sync)
+            Clubs[oldClubKey] = clubId;
+        Save(force: false);
+    }
+
+    public bool TryGetPerson(int oldPersonId, out PersonMapping? mapping)
+    {
+        lock (_sync)
+            return Persons.TryGetValue(oldPersonId, out mapping);
+    }
+
     public bool HasPerson(int oldPersonId)
     {
         lock (_sync)
             return Persons.ContainsKey(oldPersonId);
+    }
+
+    public void MapPerson(int oldPersonId, PersonMapping mapping)
+    {
+        lock (_sync)
+            Persons[oldPersonId] = mapping;
+        Save(force: false);
     }
 
     public bool TryGetSeason(int oldProjectId, out Guid seasonId)

@@ -66,11 +66,11 @@ dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj -- \
   --yes
 ```
 
-CLI (all optional): `--api-url`, `--access-token` / `--token`, `--refresh-token`, `--dump`, `--id-map`, `--sport`, `--project-id`, `--concurrency` (default 4, matches within a season), `--season-concurrency` (default 2, whole seasons in parallel), `--yes` / `-y`, `--dry-run`, `--repair-all`, `--repair-matches=1119,1124`.
+CLI (all optional): `--api-url`, `--access-token` / `--token`, `--refresh-token`, `--dump`, `--id-map`, `--sport`, `--project-id`, `--concurrency` (default 4, matches within a season), `--season-concurrency` (default 2, whole seasons in parallel), `--person-concurrency` (default 8), `--club-concurrency` (default 8), `--team-concurrency` (default 8, team creates; roster adds on one team stay sequential), `--yes` / `-y`, `--dry-run`, `--repair-all`, `--repair-matches=1119,1124`.
 
 Finished matches post **one** `POST .../events/import` with all goals/penalties (or cards) after create / goalies / start. Hockey uses `POST /api/HockeyMatch/{id}/events/import`. The live per-event endpoints stay for the scorekeeper UI.
 
-Resume skips persons/teams already in the id map. Seasons import in parallel (`--season-concurrency`); matches inside a season use `--concurrency`. The id map is flushed every 10 match writes. Event-import unique-constraint races are retried twice.
+Resume skips persons/teams already in the id map. Clubs, persons, and teams import in parallel (`--club-concurrency`, `--person-concurrency`, `--team-concurrency`); seasons use `--season-concurrency`; matches inside a season use `--concurrency`. Roster adds on one team stay sequential. The id map is flushed every 10 match writes. Event-import unique-constraint races are retried twice.
 
 Without a token the importer prompts for URL and email and uses the Development auto-fill login. With a token it skips that and refreshes the JWT for the length of the import.
 
