@@ -40,8 +40,9 @@ public class FootballSeason : FootballCompetition
         int sortOrder = 0;
         foreach ((Guid? Id, string Title, string ContentHtml) item in items)
         {
-            FootballSeasonContentBlock? existing = item.Id.HasValue && item.Id.Value != Guid.Empty
-                ? _contentBlocks.FirstOrDefault(block => block.Id == item.Id.Value)
+            Guid? itemId = item.Id;
+            FootballSeasonContentBlock? existing = itemId is Guid id && id != Guid.Empty
+                ? _contentBlocks.FirstOrDefault(block => block.Id == id)
                 : null;
 
             if (existing is not null)
