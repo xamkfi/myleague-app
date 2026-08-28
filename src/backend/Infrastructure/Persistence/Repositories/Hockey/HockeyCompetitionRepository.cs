@@ -120,11 +120,8 @@ public class HockeyCompetitionRepository : IHockeyCompetitionRepository
 
     public void MarkNewContentBlocksAdded(HockeySeason season, IReadOnlyCollection<Guid> existingBlockIds)
     {
-        foreach (HockeySeasonContentBlock block in season.ContentBlocks)
+        foreach (HockeySeasonContentBlock block in season.ContentBlocks.Where(block => !existingBlockIds.Contains(block.Id)))
         {
-            if (existingBlockIds.Contains(block.Id))
-                continue;
-
             _dbContext.Entry(block).State = EntityState.Added;
         }
     }
