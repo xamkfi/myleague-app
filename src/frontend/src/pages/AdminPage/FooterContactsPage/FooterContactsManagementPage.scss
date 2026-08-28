@@ -1,0 +1,94 @@
+.footer-contacts-page {
+  &__description {
+    margin: 0 0 1.25rem;
+    color: #475467;
+  }
+
+  &__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+    margin-bottom: 1.25rem;
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: #344054;
+
+    select {
+      font-weight: 400;
+      min-width: 220px;
+      padding: 0.7rem 0.85rem;
+      border: 1px solid #d0d5dd;
+      border-radius: 12px;
+      font: inherit;
+      background: #fff;
+    }
+  }
+
+  &__alert {
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+
+    &--success {
+      background: #ecfdf3;
+      color: #027a48;
+    }
+
+    &--error {
+      background: #fef3f2;
+      color: #b42318;
+    }
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    min-width: 0;
+    padding: 1.25rem;
+    border: 1px solid #eaecf0;
+    border-radius: 16px;
+    background: #fff;
+
+    h3 {
+      margin: 0 0 0.5rem;
+      overflow-wrap: anywhere;
+    }
+
+    p {
+      margin: 0.15rem 0;
+      color: #475467;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  &__url {
+    word-break: break-all;
+  }
+
+  &__details {
+    white-space: pre-line;
+  }
+
+  &__card-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+}

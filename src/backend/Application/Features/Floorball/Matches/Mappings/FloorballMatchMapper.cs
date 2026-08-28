@@ -174,6 +174,16 @@ public static class FloorballMatchMapper
         return matches.Select(match => ToDto(match));
     }
 
+    public static List<Guid> CollectClubIds(IEnumerable<FloorballMatch> matches)
+    {
+        return matches
+            .SelectMany(match => new Guid?[] { match.HomeTeam?.ClubId, match.AwayTeam?.ClubId })
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+    }
+
     /// <summary>
     /// Maps a collection of FloorballMatch entities to FloorballMatchDto objects with club data
     /// </summary>

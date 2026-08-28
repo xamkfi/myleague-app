@@ -4,19 +4,23 @@ import NewsHeroCarousel from '../../components/NewsHeroCarousel/NewsHeroCarousel
 import MatchesPanel from '../../components/MatchesPanel/MatchesPanel';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import { newsService, type NewsArticleDto, type PaginatedNewsResponse } from '../../api/news/newsService';
+import { useAudience } from '../../context/AudienceContext';
 import './HomePage.scss';
 
 function HomePage() {
+  const { audience } = useAudience();
   const [heroNews, setHeroNews] = useState<NewsArticleDto[]>([]);
   const [isLoadingHeroNews, setIsLoadingHeroNews] = useState(true);
 
   useEffect(() => {
     const fetchHeroNews = async () => {
       try {
+        setIsLoadingHeroNews(true);
         const response = await newsService({
           page: 1,
           pageSize: 5,
           includeArchived: false,
+          teamCategory: audience.teamCategory,
         });
 
         if (response && typeof response === 'object' && 'pagination' in response) {
@@ -34,7 +38,7 @@ function HomePage() {
     };
 
     fetchHeroNews();
-  }, []);
+  }, [audience.teamCategory]);
 
   return (
     <div className="home-page-wrapper">
@@ -77,4 +81,4 @@ function HomePage() {
   );
 }
 
-export default HomePage; 
+export default HomePage;

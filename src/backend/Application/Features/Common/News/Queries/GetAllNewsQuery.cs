@@ -24,7 +24,9 @@ public record GetAllNewsArticlesQuery(
     string? SportCategory = null,
     string? Search = null,
     string? Author = null,
-    bool IncludeArchived = false) : IRequest<Result<PagedResult<NewsArticleListDto>>>
+    bool IncludeArchived = false,
+    IReadOnlyCollection<string>? TeamCategories = null,
+    string? Tag = null) : IRequest<Result<PagedResult<NewsArticleListDto>>>
 {
     /// <summary>
     /// Resource key for pagination configuration

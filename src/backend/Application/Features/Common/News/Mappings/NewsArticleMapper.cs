@@ -44,7 +44,8 @@ public static class NewsArticleMapper
             newsArticle.Category?.ToString(),
             newsArticle.SportCategory?.ToString(),
             newsArticle.Tags,
-            newsArticle.IsArchived
+            newsArticle.IsArchived,
+            newsArticle.TeamCategory?.ToString()
         );
     }
 
@@ -69,7 +70,8 @@ public static class NewsArticleMapper
             newsArticle.Category?.ToString(),
             newsArticle.SportCategory?.ToString(),
             newsArticle.Tags,
-            newsArticle.IsArchived
+            newsArticle.IsArchived,
+            newsArticle.TeamCategory?.ToString()
         );
     }
 
@@ -146,6 +148,11 @@ public static class NewsArticleMapper
             newsArticle.SetSportCategory(sportCategory);
         }
 
+        if (!string.IsNullOrEmpty(command.TeamCategory) && Enum.TryParse<TeamCategory>(command.TeamCategory, true, out TeamCategory teamCategory))
+        {
+            newsArticle.SetTeamCategory(teamCategory);
+        }
+
         if (command.Tags != null && command.Tags.Any())
         {
             foreach (string tag in command.Tags)
@@ -200,8 +207,24 @@ public static class NewsArticleMapper
             newsArticle.SetSportCategory(sportCategory);
         }
 
-        // Note: Images and tags are handled separately via dedicated commands
-        // to maintain granular control and proper domain event generation
+        // Update team category if provided (empty string clears to all-audiences)
+        if (command.TeamCategory != null)
+        {
+            if (string.IsNullOrWhiteSpace(command.TeamCategory))
+            {
+                newsArticle.SetTeamCategory(null);
+            }
+            else if (Enum.TryParse<TeamCategory>(command.TeamCategory, true, out TeamCategory teamCategory))
+            {
+                newsArticle.SetTeamCategory(teamCategory);
+            }
+        }
+
+        // ImageUrls are handled separately via dedicated commands.
+        if (command.Tags != null)
+        {
+            newsArticle.ReplaceTags(command.Tags);
+        }
     }
 
             /// <summary>

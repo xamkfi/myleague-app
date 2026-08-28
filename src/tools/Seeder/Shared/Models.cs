@@ -2,6 +2,8 @@ using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
+using Domain.Enums.Hockey.Teams;
+using Domain.Enums.Football;
 
 namespace Seeder;
 public class PersonSeed
@@ -62,6 +64,8 @@ public class FloorballSeasonSeed
 	public bool AllowOvertime { get; init; } = true;
 	public int OvertimeDurationMinutes { get; init; } = 5;
 	public bool AllowShootout { get; init; } = true;
+
+	public List<SeasonContentBlockSeed> ContentBlocks { get; init; } = new List<SeasonContentBlockSeed>();
 }
 
 public class FloorballTournamentSeed
@@ -137,9 +141,182 @@ public class FloorballMatchSeed
 	public string? RefereeEmail { get; init; }
 }
 
+public class HockeySeasonSeed
+{
+	public string Name { get; init; } = "2026-27 Hockey Season";
+	public string StartDate { get; init; } = "2026-09-01";
+	public string EndDate { get; init; } = "2027-04-30";
+	public string? SeasonCode { get; init; } = "2026-27-H";
+	public TeamCategory TeamCategory { get; init; } = TeamCategory.Adult;
+	public List<string> DivisionNames { get; init; } = new List<string>();
+	public List<SeasonContentBlockSeed> ContentBlocks { get; init; } = new List<SeasonContentBlockSeed>();
+}
+
+public class HockeyTournamentSeed
+{
+	public string Name { get; init; } = "Hockey Cup";
+	public string StartDate { get; init; } = "2026-12-01";
+	public string EndDate { get; init; } = "2026-12-15";
+	public string? Venue { get; init; }
+	public string? ContentHtml { get; init; }
+	public bool AllGroupMatchesCompleted { get; init; } = false;
+	public TeamCategory TeamCategory { get; init; } = TeamCategory.Adult;
+	public List<HockeyTournamentGroupSeed> Groups { get; init; } = new List<HockeyTournamentGroupSeed>();
+}
+
+public class HockeyTournamentGroupSeed
+{
+	public string Name { get; init; } = "Group A";
+	public List<string> TeamNames { get; init; } = new List<string>();
+}
+
+public class FootballSeasonSeed
+{
+	public string Name { get; init; } = "2026 Football Championship";
+	public string StartDate { get; init; } = "2026-04-01";
+	public string EndDate { get; init; } = "2026-10-31";
+	public List<string> DivisionNames { get; init; } = new List<string>();
+
+	public int NumberOfHalves { get; init; } = 2;
+	public int HalfDurationMinutes { get; init; } = 25;
+	public int PlayersOnField { get; init; } = 5;
+	public bool RequireGoalkeeper { get; init; } = true;
+	public int MaxSubstitutions { get; init; }
+	public bool RequireOfficialsToStart { get; init; }
+	public bool AllowExtraTime { get; init; }
+	public int ExtraTimeHalfCount { get; init; } = 2;
+	public int ExtraTimeHalfDurationMinutes { get; init; } = 15;
+	public bool AllowPenaltyShootout { get; init; }
+	public int WinPoints { get; init; } = 3;
+	public int DrawPoints { get; init; } = 1;
+	public int LossPoints { get; init; }
+	public TeamCategory TeamCategory { get; init; } = TeamCategory.Adult;
+	public List<SeasonContentBlockSeed> ContentBlocks { get; init; } = new List<SeasonContentBlockSeed>();
+}
+
+public class FootballTournamentSeed
+{
+	public string Name { get; init; } = "2026 Football Cup";
+	public string StartDate { get; init; } = "2026-08-01";
+	public string EndDate { get; init; } = "2026-08-31";
+	public string? Venue { get; init; }
+	public string? ContentHtml { get; init; }
+
+	public int GroupStageNumberOfHalves { get; init; } = 2;
+	public int GroupStageHalfDurationMinutes { get; init; } = 25;
+	public int GroupStagePlayersOnField { get; init; } = 5;
+	public bool GroupStageRequireGoalkeeper { get; init; } = true;
+	public int GroupStageMaxSubstitutions { get; init; }
+	public bool GroupStageRequireOfficialsToStart { get; init; }
+	public bool GroupStageAllowExtraTime { get; init; }
+	public int GroupStageExtraTimeHalfCount { get; init; } = 2;
+	public int GroupStageExtraTimeHalfDurationMinutes { get; init; } = 5;
+	public bool GroupStageAllowPenaltyShootout { get; init; }
+
+	public int PlayoffNumberOfHalves { get; init; } = 2;
+	public int PlayoffHalfDurationMinutes { get; init; } = 25;
+	public int PlayoffPlayersOnField { get; init; } = 5;
+	public bool PlayoffRequireGoalkeeper { get; init; } = true;
+	public int PlayoffMaxSubstitutions { get; init; }
+	public bool PlayoffRequireOfficialsToStart { get; init; }
+	public bool PlayoffAllowExtraTime { get; init; } = true;
+	public int PlayoffExtraTimeHalfCount { get; init; } = 2;
+	public int PlayoffExtraTimeHalfDurationMinutes { get; init; } = 5;
+	public bool PlayoffAllowPenaltyShootout { get; init; } = true;
+
+	public int TeamsAdvancingPerGroup { get; init; } = 2;
+	public bool HasPlayoffStage { get; init; } = true;
+	public bool HasThirdPlaceMatch { get; init; }
+	public TeamCategory TeamCategory { get; init; } = TeamCategory.Adult;
+
+	/// <summary>
+	/// When true, the seeder transitions the tournament to GroupStage (if Draft), schedules every
+	/// group-stage match in the past, and simulates each one through to completion.
+	/// </summary>
+	public bool AllGroupMatchesCompleted { get; init; }
+
+	public List<FootballTournamentGroupSeed> Groups { get; init; } = new List<FootballTournamentGroupSeed>();
+}
+
+public class FootballTournamentGroupSeed
+{
+	public string Name { get; init; } = "Group A";
+	public List<string> TeamNames { get; init; } = new List<string>();
+}
+
+public class HockeyTeamSeed
+{
+	public string Name { get; init; } = "Tappara HC";
+	public string? ShortName { get; init; } = "TAP";
+	public string DivisionName { get; init; } = string.Empty;
+	public string ClubName { get; init; } = string.Empty;
+	public string HomeArena { get; init; } = "Nokia Arena";
+	public string PrimaryJerseyColor { get; init; } = "Blue";
+	public string? SecondaryJerseyColor { get; init; } = "Orange";
+	public TeamCategory Category { get; init; } = TeamCategory.Adult;
+	/// <summary>Optional head coach Person email from StaffPersons.</summary>
+	public string? StaffPersonEmail { get; init; }
+	public List<HockeyTeamPlayerByEmailSeed> Players { get; init; } = new List<HockeyTeamPlayerByEmailSeed>();
+}
+
+public class HockeyTeamPlayerByEmailSeed
+{
+	public string PersonEmail { get; init; } = string.Empty;
+	public HockeyPosition Position { get; init; } = HockeyPosition.Center;
+	public int JerseyNumber { get; init; } = 10;
+}
+
+public class HockeyMatchSeed
+{
+	public string HomeTeamName { get; init; } = string.Empty;
+	public string AwayTeamName { get; init; } = string.Empty;
+	public string SeasonName { get; init; } = string.Empty;
+	public string ScheduledDateTime { get; init; } = string.Empty;
+	public string? Venue { get; init; }
+	/// <summary>When true, simulate the match to Finished and recalculate stats.</summary>
+	public bool SimulateCompleted { get; init; } = false;
+}
+
+public class FootballTeamSeed
+{
+	public string Name { get; init; } = "Helsinki FC";
+	public string DivisionName { get; init; } = string.Empty;
+	public string ClubName { get; init; } = string.Empty;
+	public string HomeArena { get; init; } = "Main Arena";
+	public string PrimaryJerseyColor { get; init; } = "Red";
+	public string? SecondaryJerseyColor { get; init; } = "White";
+	public TeamCategory Category { get; init; } = TeamCategory.Adult;
+	public List<FootballTeamPlayerByEmailSeed> Players { get; init; } = new List<FootballTeamPlayerByEmailSeed>();
+}
+
+public class FootballTeamPlayerByEmailSeed
+{
+	public string PersonEmail { get; init; } = string.Empty;
+	public FootballPosition Position { get; init; } = FootballPosition.Forward;
+	public int JerseyNumber { get; init; } = 10;
+}
+
+public class FootballMatchSeed
+{
+	public string HomeTeamName { get; init; } = string.Empty;
+	public string AwayTeamName { get; init; } = string.Empty;
+	public string SeasonName { get; init; } = string.Empty;
+	public string ScheduledDateTime { get; init; } = string.Empty;
+	public string? Venue { get; init; }
+	/// <summary>When true, simulate the match to Finished and recalculate stats.</summary>
+	public bool SimulateCompleted { get; init; } = false;
+	public string? RefereeEmail { get; init; }
+}
+
 public class LoginDevResponse
 {
 	public string? DevCode { get; set; }
+}
+
+public class SeasonContentBlockSeed
+{
+	public string Title { get; init; } = "";
+	public string ContentHtml { get; init; } = "";
 }
 
 public class AuthTokenResponse

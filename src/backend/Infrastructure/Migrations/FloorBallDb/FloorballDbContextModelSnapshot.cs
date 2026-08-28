@@ -54,10 +54,18 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("TeamCategory")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Adult");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TeamCategory");
 
                     b.ToTable("FloorballCompetitions", "floorball");
 
@@ -912,6 +920,42 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.HasKey("Id");
 
                     b.ToTable("FloorballReferees", "floorball");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeasonContentBlock", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentHtml")
+                        .IsRequired()
+                        .HasMaxLength(50000)
+                        .HasColumnType("character varying(50000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SeasonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SeasonId", "SortOrder")
+                        .HasDatabaseName("IX_FloorballSeasonContentBlocks_Season_SortOrder");
+
+                    b.ToTable("FloorballSeasonContentBlocks", "floorball");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballStatisticsCache", b =>
@@ -1827,6 +1871,15 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeasonContentBlock", b =>
+                {
+                    b.HasOne("Domain.Entities.Floorball.FloorballSeason", null)
+                        .WithMany("ContentBlocks")
+                        .HasForeignKey("SeasonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballTeamManager", b =>
                 {
                     b.HasOne("Domain.Entities.Floorball.FloorballTeam", null)
@@ -2058,6 +2111,11 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballTournamentGroup", b =>
                 {
                     b.Navigation("Teams");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeason", b =>
+                {
+                    b.Navigation("ContentBlocks");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballTournament", b =>

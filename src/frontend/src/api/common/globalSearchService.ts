@@ -9,12 +9,14 @@ export interface GlobalSearchPerson {
   teamName?: string | null;
   clubId?: string | null;
   clubName?: string | null;
+  sport?: string | null;
 }
 export interface GlobalSearchTeam {
   teamId: string;
   teamName: string;
   clubId?: string | null;
   clubName?: string | null;
+  sport?: string | null;
 }
 export interface GlobalSearchResult {
   person: GlobalSearchPerson[];

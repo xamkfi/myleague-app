@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Application.Features.Common.Clubs.Commands;
 using Application.Features.Common.Persons.Commands;
@@ -139,7 +140,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status500InternalServerError)]
@@ -188,7 +189,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The update request</param>
         /// <returns></returns>
         [HttpPut("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
@@ -218,7 +219,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The basic info update request</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/basic-info")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
@@ -240,7 +241,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The address update request</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/address")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<AddressDto>), StatusCodes.Status404NotFound)]
@@ -269,7 +270,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The contact info update request</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/contact-info")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<ContactInfoDto>), StatusCodes.Status404NotFound)]
@@ -296,7 +297,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="isRegistered">The registration status</param>
         /// <returns></returns>
         [HttpPatch("{id:guid}/registration")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
@@ -337,7 +338,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="role">The new role</param>
         /// <returns>The updated person</returns>
         [HttpPatch("{id:guid}/role")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<PersonDto>), StatusCodes.Status404NotFound)]
@@ -358,7 +359,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]

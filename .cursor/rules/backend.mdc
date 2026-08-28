@@ -1,0 +1,35 @@
+---
+description: Backend CQRS, Result pattern, and C# conventions
+globs: src/backend/**/*.cs
+alwaysApply: false
+---
+
+# Backend
+
+Use explicit types (no `var`). Nullable reference types on. Handlers, validators, and MediatR behaviors are assembly-scanned — do not register each handler by hand.
+
+## Application slice
+
+```
+Features/<Area>/<Feature>/
+  Commands/  Queries/  Handlers/  DTOs/  Mappings/  Validators/
+```
+
+- Command/query: `record ... : IRequest<Result<TDto>>` (or `Result<PagedResult<TDto>>`)
+- Mapper: static `ToDto` / `ToDtos` / `ToEntity` / `UpdateFromCommand` — pass related aggregates as arguments (navigations may be unloaded)
+- Validator: FluentValidation on every command/query with input
+- Handler: load via repository → domain method → `IUnitOfWork` / `IFloorballUnitOfWork` / `IFootballUnitOfWork` / `IHockeyUnitOfWork` → map → `Result<T>.Success`
+- Expected failures: `Result<T>.Failure(...)` or `Result<T>.NotFound(name, key)`. Catch unexpected exceptions, log, return Failure
+
+## Domain
+
+Entities inherit `BaseEntity` (`Id`, `CreatedAt`, `UpdatedAt`). Private setters, private ORM ctor, public constructor + named methods for state changes. Value objects are immutable records with validation. Repository interfaces live in `Domain/Repositories/{Common|Floorball|Football|Hockey}`. Update `DomainGlossary.md` when adding terms.
+
+## WebAPI
+
+Inherit `BaseApiController`. Map request → MediatR → `HandleResult` / `HandlePaginatedResult` / `HandleListResult` / `HandleVoidResult`. Wrap payloads in `ApiResponse<T>` / `PaginatedApiResponse<T>`. Mutations: `[Authorize(Roles = AuthRoles.AdminOnly)]` or `ClubAdminOrAdmin`. XML comments on actions (OpenAPI). Log with structured properties; sanitize user strings via `SanitizeForLog`.
+
+```csharp
+Result<ClubDto> result = await _mediator.Send(new GetClubByIdQuery(id));
+return HandleResult(result, "Club retrieved successfully", "Club not found");
+```

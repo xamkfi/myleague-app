@@ -36,21 +36,8 @@ public class CreateFloorballTournamentHandler : IRequestHandler<CreateFloorballT
     {
         try
         {
-            DateTime startDateUtc = request.StartDate.Kind switch
-            {
-                DateTimeKind.Utc => request.StartDate,
-                DateTimeKind.Local => request.StartDate.ToUniversalTime(),
-                DateTimeKind.Unspecified => DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc),
-                _ => DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc)
-            };
-
-            DateTime endDateUtc = request.EndDate.Kind switch
-            {
-                DateTimeKind.Utc => request.EndDate,
-                DateTimeKind.Local => request.EndDate.ToUniversalTime(),
-                DateTimeKind.Unspecified => DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc),
-                _ => DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc)
-            };
+            DateTime startDateUtc = DateTimeUtc.Normalize(request.StartDate);
+            DateTime endDateUtc = DateTimeUtc.Normalize(request.EndDate);
 
             FloorballMatchRules groupStageMatchRules = new FloorballMatchRules(
                 request.GroupStageNumberOfPeriods,
@@ -77,7 +64,11 @@ public class CreateFloorballTournamentHandler : IRequestHandler<CreateFloorballT
             if (request.PlayoffSchedule != null && request.PlayoffSchedule.Count > 0)
             {
                 playoffSchedule = request.PlayoffSchedule
-                    .Select(s => new PlayoffScheduleSlot(s.Round, s.Order, s.ScheduledDateTime, s.Venue))
+                    .Select(s => new PlayoffScheduleSlot(
+                        s.Round,
+                        s.Order,
+                        DateTimeUtc.Normalize(s.ScheduledDateTime),
+                        s.Venue))
                     .ToList();
             }
 
@@ -88,7 +79,8 @@ public class CreateFloorballTournamentHandler : IRequestHandler<CreateFloorballT
                 request.Venue,
                 request.ContentHtml,
                 tournamentRules,
-                playoffSchedule);
+                playoffSchedule,
+                request.TeamCategory);
 
             _logger.LogInformation("Creating new floorball tournament: {Name}", request.Name);
             await _tournamentRepository.AddAsync(tournament);

@@ -4,13 +4,20 @@ import { useTranslation } from 'react-i18next';
 import 'react-quill/dist/quill.snow.css';
 
 import { handleImageUploadService } from '../../api/admin/News/handleImageUploadService';
-import { handleImageDeleteService } from '../../api/admin/News/handleImageDeleteService';
 import MatchSelectionHeader from '../../pages/AdminPage/NewsPage/components/MatchSelectionHeader';
 import type { FloorballMatch } from '../../api/admin/News/GetMatchesService';
 import {
   ensureMatchResultBlotRegistered,
   type MatchResultValue,
 } from './MatchResultTableBlot';
+import { usableTeamLogo } from './matchResultRender';
+import {
+  enableMatchResultDrag,
+  hasCombinedMatchBox,
+  insertMatchBoxes,
+  splitCombinedMatchBlots,
+} from './matchResultEditor';
+import { parseSanitizedHtmlRoot } from './parseSanitizedHtml';
 
 import './RichTextEditor.scss';
 import '../../pages/AdminPage/NewsPage/styles/MatchResult.scss';
@@ -46,30 +53,23 @@ export interface RichTextEditorProps {
   className?: string;
 }
 
-/** Parses editor content in an inert HTML document without interpolating into a wrapper template. */
-const parseEditorHtmlDocument = (html: string): Document => {
-  return new DOMParser().parseFromString(html, 'text/html');
-};
-
-const extractImageUrls = (html: string): string[] => {
+export const extractRichTextImageUrls = (html: string): string[] => {
   if (!html) return [];
-  const doc = parseEditorHtmlDocument(html);
-  return Array.from(doc.getElementsByTagName('img'))
+  const root = parseSanitizedHtmlRoot(html);
+  return Array.from(root.getElementsByTagName('img'))
     .map((img) => img.getAttribute('src') ?? '')
     .filter(Boolean);
 };
 
+const extractImageUrls = extractRichTextImageUrls;
+
 const extractMatchResults = (html: string): MatchResultValue[] => {
   if (!html) return [];
-  const doc = parseEditorHtmlDocument(html);
-  const containers = Array.from(doc.getElementsByTagName('span')).filter((element) =>
-    (element.getAttribute('class') ?? '').split(/\s+/).includes('match-result-table-container')
-  );
+  const root = parseSanitizedHtmlRoot(html);
+  const containers = Array.from(root.querySelectorAll('.match-result-table-container'));
   const results: MatchResultValue[] = [];
   containers.forEach((element) => {
-    const dataElement = Array.from(element.getElementsByTagName('span')).find((child) =>
-      (child.getAttribute('class') ?? '').split(/\s+/).includes('match-result-data')
-    );
+    const dataElement = element.querySelector('.match-result-data');
     if (!dataElement?.textContent) return;
     try {
       const parsed = JSON.parse(dataElement.textContent) as { matches?: MatchResultValue[] };
@@ -88,8 +88,7 @@ const extractMatchResults = (html: string): MatchResultValue[] => {
  *
  * Built on Quill. Adds:
  *  - Inline image upload via the admin News upload endpoint
- *  - Automatic deletion of orphan images on the server when the user removes
- *    them from the editor (with a confirm prompt)
+ *  - Confirm prompt when the user removes images or match embeds
  *  - Optional "insert match results" button that embeds a custom Quill blot
  */
 const RichTextEditor = ({
@@ -115,6 +114,40 @@ const RichTextEditor = ({
   useEffect(() => {
     lastUserHtmlRef.current = value;
   }, [value]);
+
+  useEffect(() => {
+    if (readOnly) {
+      return undefined;
+    }
+
+    let dragCleanup: (() => void) | undefined;
+    const timer = window.setTimeout(() => {
+      const editor = quillRef.current?.getEditor();
+      if (editor) {
+        dragCleanup = enableMatchResultDrag(editor, t('admin.editor.dragMatchHint'));
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+      dragCleanup?.();
+    };
+  }, [readOnly, t]);
+
+  useEffect(() => {
+    if (readOnly || !hasCombinedMatchBox(value)) {
+      return;
+    }
+
+    const editor = quillRef.current?.getEditor();
+    if (!editor || !splitCombinedMatchBlots(editor)) {
+      return;
+    }
+
+    const html = editor.root.innerHTML;
+    lastUserHtmlRef.current = html;
+    onChange(html);
+  }, [value, readOnly, onChange]);
 
   const confirmDeletions = useCallback(
     (deletedImages: string[], deletedMatches: MatchResultValue[]): boolean => {
@@ -153,7 +186,7 @@ const RichTextEditor = ({
       const range = editor.getSelection();
       const index = range?.index ?? editor.getLength();
       images.forEach((url) => editor.insertEmbed(index, 'image', url));
-      matches.forEach((match) => editor.insertEmbed(index, 'matchResultTable', { matches: [match] }));
+      insertMatchBoxes(editor, matches);
     },
     []
   );
@@ -195,13 +228,6 @@ const RichTextEditor = ({
         reinsertElements(deletedImages, deletedMatches);
         return;
       }
-
-      // User confirmed — delete the now-orphaned uploaded files server-side.
-      deletedImages.forEach((url) => {
-        handleImageDeleteService(url).catch((err) => {
-          console.error('Failed to delete image:', err);
-        });
-      });
 
       lastUserHtmlRef.current = content;
       onChange(content);
@@ -259,9 +285,6 @@ const RichTextEditor = ({
     const editor = quillRef.current?.getEditor();
     if (!editor || matches.length === 0) return;
 
-    const range = editor.getSelection(true);
-    const index = range?.index ?? editor.getLength();
-
     const matchesData: MatchResultValue[] = matches.map((match) => ({
       homeTeam: match.homeTeamName,
       awayTeam: match.awayTeamName,
@@ -270,12 +293,11 @@ const RichTextEditor = ({
       date: match.scheduledDateTime,
       status: match.status,
       link: match.id,
-      homeTeamImage: match.homeTeamLogo ?? undefined,
-      awayTeamImage: match.awayTeamLogo ?? undefined,
+      homeTeamImage: usableTeamLogo(match.homeTeamLogo),
+      awayTeamImage: usableTeamLogo(match.awayTeamLogo),
     }));
 
-    editor.insertEmbed(index, 'matchResultTable', { matches: matchesData });
-    editor.setSelection({ index: index + 1, length: 0 });
+    insertMatchBoxes(editor, matchesData);
   }, []);
 
   return (
@@ -292,6 +314,7 @@ const RichTextEditor = ({
       {showMatchInsert && !readOnly && (
         <div className="rich-text-editor__toolbar-row">
           <MatchSelectionHeader onInsertMatches={handleInsertMatches} />
+          <p className="rich-text-editor__match-hint">{t('admin.editor.dragMatchHint')}</p>
         </div>
       )}
       <ReactQuill

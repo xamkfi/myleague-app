@@ -1,26 +1,14 @@
 using Application.Features.Floorball.Referees.Commands;
-using Application.Features.Floorball.Seasons.DTOs;
-using Application.Features.Floorball.Matches.DTOs;
-using Application.Features.Floorball.Teams.DTOs;
-using Application.Features.Floorball.Players.DTOs;
 using Application.Features.Floorball.Referees.DTOs;
-using Application.Features.Floorball.TeamManagers.DTOs;
-using Application.Features.Floorball.Statistics.DTOs;
 using Application.Common;
+using Application.Features.Common.Deletion;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
 using Domain.Entities.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Application.Features.Common.Users.Mappings;
 using Application.Features.Common.Persons.Mappings;
-using Application.Features.Common.Clubs.Mappings;
-using Application.Features.Common.Divisions.Mappings;
-using Application.Features.Common.News.Mappings;
 
 namespace Application.Features.Floorball.Referees.Handlers;
 
@@ -79,6 +67,12 @@ public class DeleteFloorballRefereeHandler : IRequestHandler<DeleteFloorballRefe
             {
                 _logger.LogWarning("Person with ID {PersonId} not found for referee {RefereeId}", existingReferee.PersonId, existingReferee.Id);
                 return Result<FloorballRefereeDto>.Failure("Associated person not found");
+            }
+
+            if (await _refereeRepository.IsAssignedToAnyMatchAsync(existingReferee.Id, cancellationToken))
+            {
+                _logger.LogWarning("Blocked floorball referee delete for {RefereeId}: assigned to a match", request.Id);
+                return Result<FloorballRefereeDto>.Failure(DeletionReasons.RefereeAssignedToMatch);
             }
 
             // Create the DTO before deletion

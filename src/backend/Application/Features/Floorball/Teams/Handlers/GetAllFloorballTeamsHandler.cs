@@ -107,8 +107,10 @@ public class GetAllFloorballTeamsHandler : BasePagedQueryHandler<GetAllFloorball
             PagedResult<FloorballTeam> pagedTeams = await _teamRepository.GetPagedAsync(
                 page: request.Page,
                 pageSize: actualPageSize,
+                searchTerm: request.SearchTerm ?? string.Empty,
                 clubId: request.ClubId,
                 divisionId: divisionId,
+                teamCategories: request.TeamCategories,
                 cancellationToken: cancellationToken);
             
             // Load all clubs for DTO mapping (since Club navigation is ignored in FloorballTeam)

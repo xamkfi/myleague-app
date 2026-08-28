@@ -1,0 +1,153 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../../styles/common' as *;
+
+.summary-container{
+   @include container;
+   font-size: map.get($font-sizes, "sm");
+   margin-bottom: map.get($spacing, "md");
+   padding: map.get($spacing, 'sm');
+   background: $color-neutral-white;
+   border-radius: map.get($border-radius, 'lg');
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.summary-table{
+   display: grid;
+   color: $color-neutral-black;
+   grid-template-columns: minmax(100px, 120px) minmax(60px, 400px) repeat(3, minmax(100px, 110px));
+   grid-template-areas: "date homeTeam awayTeam score seperator status";
+}
+
+.stats-header{
+   border-radius: map.get($border-radius, "sm");
+   background: $color-banner-bg;
+   font-size: map.get($font-sizes, "sm");
+   font-weight: map.get($font-weights, "bold");
+   padding: map.get($spacing, "xs") map.get($spacing, "sm");
+   color: $color-banner-text;
+}
+
+.summary-season-container{
+   // border: 1px solid $color-border;
+   // box-shadow: 0 2px 4px $color-box-shadow;
+   margin-bottom: map.get($spacing, "base");
+   
+} 
+
+.summary-season-header{
+   text-align: left;
+   border-radius: map.get($border-radius, "sm");
+   background: $color-banner-bg;
+   font-size: map.get($font-sizes, "md");
+   font-weight: map.get($font-weights, "bold");
+   padding:
+      map.get($spacing, "xs") 
+      map.get($spacing, "base");
+   color: $color-banner-text;
+   cursor: pointer;
+   transition: filter 0.2s ease, transform 0.05s ease;
+   margin-bottom: map.get($spacing, 'sm');
+
+   &:hover{
+      filter: brightness(1.05);
+      text-decoration: underline;
+   }
+
+   &:active{
+      transform: scale(0.995);
+   }
+}
+
+.summary-header{
+   text-align: left;
+   border-radius: map.get($border-radius, "sm");
+   margin-bottom: map.get($spacing, "sm");
+   color: $color-blue-deep;
+   font-size: map.get($font-sizes, "lg");
+   font-weight: map.get($font-weights, "bold");
+}
+
+.summary-teams-container{
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: flex-start;
+}
+
+// MatchCard component now handles all match styling
+
+.seperator-line{
+   border-left: 1px solid $color-neutral-medium-grey;
+}
+
+// All match-related styles are now handled by the MatchCard component
+
+// ===== MOBILE RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
+@media (max-width: 768px) {
+  .summary-container {
+    padding: map.get($spacing, 'sm');
+    margin-bottom: map.get($spacing, 'sm');
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .summary-header {
+    font-size: map.get($font-sizes, 'md');
+    margin-bottom: map.get($spacing, 'sm');
+    text-align: center;
+  }
+
+  .summary-season-header {
+    font-size: map.get($font-sizes, 'sm');
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    text-align: center;
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .summary-season-container {
+    margin-bottom: map.get($spacing, 'sm');
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .summary-container {
+    padding: map.get($spacing, 'xs');
+    margin-bottom: map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .summary-header {
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .summary-season-header {
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .summary-season-container {
+    margin-bottom: map.get($spacing, 'xs');
+  }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+  .summary-container {
+    padding: map.get($spacing, 'xxs');
+    margin-bottom: map.get($spacing, 'xxs');
+  }
+
+  .summary-header {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .summary-season-header {
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+  }
+}

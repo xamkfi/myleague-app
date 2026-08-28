@@ -45,6 +45,7 @@ public interface IFloorballTeamRepository
         string searchTerm = "",
         Guid? clubId = null,
         Guid? divisionId = null,
+        IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? teamCategories = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>
@@ -166,4 +167,14 @@ public interface IFloorballTeamRepository
         string? searchTerm = null,
         Domain.Enums.Common.TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns true when any team belongs to the club.
+    /// </summary>
+    Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns true when any team uses the division.
+    /// </summary>
+    Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default);
 } 

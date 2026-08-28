@@ -1,0 +1,35 @@
+.rules-list-item__title {
+  max-width: 620px;
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.rules-list-item__meta-col {
+  vertical-align: top;
+  width: 180px;
+}
+
+.rules-list-item__meta-col .admin-tag {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  line-height: 1.35;
+}
+
+.rules-list-item__expand-button {
+  margin-top: 0.35rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+  }
+}

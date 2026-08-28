@@ -18,5 +18,9 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
         RuleFor(x => x.PersonId)
             .NotEmpty().WithMessage("Person ID is required")
             .NotEqual(Guid.Empty).WithMessage("Person ID cannot be empty");
+
+        RuleForEach(x => x.ClubAssignments)
+            .NotEqual(Guid.Empty).WithMessage("Club ID cannot be empty")
+            .When(x => x.ClubAssignments != null);
     }
 }

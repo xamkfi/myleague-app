@@ -1,0 +1,26 @@
+---
+description: EF Core, four DbContexts, TPH competitions, PostgreSQL migrations
+globs: src/backend/Infrastructure/**/*.cs
+alwaysApply: false
+---
+
+# Database
+
+PostgreSQL 16 via Npgsql. One database, four contexts. Fluent API only (`IEntityTypeConfiguration<T>` under `Persistence/Configurations/{Common,Floorball,Football,Hockey}`). Do not use data annotations for mapping.
+
+| Context | Folder | Typical tables |
+|---------|--------|----------------|
+| `CommonDbContext` | `Migrations/CommonDb` | Person, Club, User, RefreshToken, Division, News, Rules, Info pages |
+| `FloorballDbContext` | `Migrations/FloorBallDb` | TPH competitions, teams, matches, stats |
+| `FootballDbContext` | `Migrations/FootballDb` | same shape as floorball |
+| `HockeyDbContext` | `Migrations/HockeyDb` | same shape as floorball |
+
+## Mapping rules
+
+- `HasKey`, max lengths, conversions (`Uri` → string, enums → string when existing configs do)
+- TPH: `HasDiscriminator<string>("CompetitionType").HasValue<FloorballSeason>("Season").HasValue<FloorballTournament>("Tournament")`
+- Owned value objects: `OwnsOne` with explicit column names (`MatchRules_NumberOfPeriods`)
+- Cross-context: `builder.Ignore` navigations; persist `ClubId` / `PersonId` / `DivisionId` as Guids
+- Apply only that sport's configurations inside each `OnModelCreating`
+
+The API runs `Database.Migrate()` for all four contexts at startup. After a migration, `docker compose up` (or Kestrel) applies it. Full command list: `.cursor/skills/ef-migration/SKILL.md`.

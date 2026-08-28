@@ -10,12 +10,18 @@ A physical person in the system. A Person can have multiple roles (Player, Refer
 ### Club
 An organization that manages and sponsors floorball teams. A Club typically has multiple teams, possibly in different divisions.
 
+### FooterContact
+An entry in the public site footer. `Section` is Contact, SeasonalSports, or OtherActivities. Contact rows may include details, email, and phone; the other sections are a title plus an optional link.
+
 
 ### FloorballTeam
 A floorball team belonging to a Club, competing in a specific Division. Has a roster of players.
 
 ### FloorballSeason
 A specific season of floorball competition, defined by start and end dates. Contains multiple matches.
+
+### Season content block
+An ordered intro card on a season's public pages. Each block has a title and HTML body (`ContentHtml`). Admins can add, reorder, and delete any number of blocks per season. The same shape exists for floorball, football, and hockey seasons.
 
 ### FloorballMatch
 A single floorball game between two teams (home and away). Tracks scores, events, periods, status, referees, etc.
@@ -93,6 +99,34 @@ Flexible labels applied to news articles for enhanced organization and searchabi
 Rich formatted content of a news article stored as HTML markup, allowing for proper formatting, links, and embedded media within the article body.
 ## News Summary
 An optional brief description or excerpt of a news article used for preview purposes in lists, feeds, or search results.
+
+## Hockey
+
+### HockeyCompetition
+Abstract TPH root for hockey seasons and tournaments. Owns registered teams, matches, divisions and playoffs. `TeamCategory` (Adult, Youth, Women) is the audience filter used by public lists, same as floorball and football competitions. `CompetitionType` is stored as the string discriminator `Season` or `Tournament`.
+
+### HockeyMatch
+A hockey game between two sides (`HockeyMatchTeam` home/away). Playoff bracket progress is stored on the match (`PlayoffRound`, `PlayoffMatchOrder`, `NextMatchId`, `NextMatchSlot`), matching floorball. Series wins are derived from finished match scores, not a stored win counter.
+
+### HockeyPlayoffSeries
+Best-of series within a hockey competition. Completing enough finished match wins marks the series winner via `HockeyCompetition.CompletePlayoffSeries`.
+
+### HockeyStatisticsCache
+JSON read-model cache for hockey statistics keyed by competition/scope. Invalidated when competition statistics are reset. Not the source of truth.
+
+### HockeyOfficial
+Official profile linked to a `Person`. Assigned to matches as `HockeyMatchOfficial`.
+
+## Football
+
+### FootballMatch
+A hobby football game between two teams. Tracks scores, halves, cards, substitutions, extra time and penalty shootouts. Match rules (half length, players on field, substitution limit) are snapshotted from the competition.
+
+### FootballMatchRules
+Configurable match timing and roster rules: number of halves, half duration, players on field (5–11), unlimited or limited substitutions, extra time and penalty shootout flags.
+
+### FootballStandingRules
+Point allocation for league tables. Default is 3 points for a win, 1 for a draw, 0 for a loss.
 
 ## Aggregate Roots
 

@@ -1,0 +1,386 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../../styles/common' as *;
+
+// Root wrapper
+.statistics-container {
+  width: 100%;
+}
+
+// Season context label
+.statistics-season-label {
+  text-align: left;
+  color: $color-neutral-dark-grey;
+  font-size: map.get($font-sizes, "sm");
+  font-weight: map.get($font-weights, "medium");
+  margin-bottom: map.get($spacing, "sm");
+  padding-left: map.get($spacing, "xs");
+}
+
+// Section block (uses @include container like other tabs)
+.statistics-block {
+  @include container;
+  margin-bottom: map.get($spacing, "md");
+  color: $color-neutral-black;
+}
+
+// Section title (matches summary-header / roster-position-header pattern)
+.statistics-block-title {
+  text-align: left;
+  border-radius: map.get($border-radius, "sm");
+  margin-bottom: map.get($spacing, "sm");
+  color: $color-blue-deep;
+  font-size: map.get($font-sizes, "lg");
+  font-weight: map.get($font-weights, "bold");
+}
+
+// Empty states (loading, error, no data)
+.statistics-empty-state {
+  text-align: center;
+  padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+
+  h3 {
+    margin-bottom: map.get($spacing, 'sm');
+    color: $color-neutral-dark-grey;
+  }
+
+  p {
+    color: $color-neutral-dark-grey;
+    margin: 0;
+  }
+
+  &.statistics-error {
+    h3 { color: $color-red-primary; }
+    p { color: $color-red-muted; }
+  }
+}
+
+// Horizontal scroll wrapper
+.statistics-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+// Grid row (shared base for header, data, and sub rows)
+.statistics-grid {
+  display: grid;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 450px;
+  padding: map.get($spacing, "sm") map.get($spacing, "sm");
+
+  > * {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+
+  // Header row (shared banner style)
+  &.statistics-grid-header {
+    border-radius: map.get($border-radius, "sm");
+    background: $color-banner-bg;
+    font-size: map.get($font-sizes, "sm");
+    font-weight: map.get($font-weights, "bold");
+    padding: map.get($spacing, "xs") map.get($spacing, "sm");
+    color: $color-banner-text;
+  }
+
+  // Data row
+  &:not(.statistics-grid-header):not(.statistics-grid-sub) {
+    border-bottom: 1px solid $color-neutral-medium-grey;
+  }
+
+  // Sub row (per game averages)
+  &.statistics-grid-sub {
+    padding: map.get($spacing, "xs") map.get($spacing, "sm");
+    font-size: map.get($font-sizes, "xs");
+    color: $color-neutral-dark-grey;
+    border-bottom: 1px solid $color-neutral-medium-grey;
+  }
+}
+
+// Column definitions for each table type
+.statistics-record-cols {
+  grid-template-columns: repeat(6, 1fr);
+  gap: map.get($spacing, "sm");
+}
+
+.statistics-goals-cols {
+  grid-template-columns: repeat(6, 1fr);
+  gap: map.get($spacing, "sm");
+}
+
+.statistics-special-cols {
+  grid-template-columns: repeat(7, 1fr);
+  gap: map.get($spacing, "sm");
+}
+
+// Cell values
+.statistics-cell {
+  font-weight: map.get($font-weights, "bold");
+  font-size: map.get($font-sizes, "base");
+
+  &.cell-win { color: $color-green-muted; }
+  &.cell-loss { color: $color-red-muted; }
+  &.cell-highlight {
+    color: $color-blue-deep;
+    font-weight: map.get($font-weights, "extrabold");
+  }
+  &.cell-positive { color: $color-green-muted; }
+  &.cell-negative { color: $color-red-muted; }
+}
+
+// Home vs Away grid
+.statistics-ha-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: map.get($spacing, "md");
+}
+
+.statistics-ha-card {
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: map.get($border-radius, "lg");
+  overflow: hidden;
+}
+
+.statistics-ha-title {
+  background: $color-banner-bg;
+  color: $color-banner-text;
+  font-weight: map.get($font-weights, "bold");
+  font-size: map.get($font-sizes, "sm");
+  padding: map.get($spacing, "xs") map.get($spacing, "base");
+}
+
+.statistics-ha-rows {
+  padding: map.get($spacing, "xs") 0;
+}
+
+.statistics-ha-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: map.get($spacing, "xs") map.get($spacing, "base");
+  border-bottom: 1px solid $color-neutral-light-grey;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.statistics-ha-label {
+  font-size: map.get($font-sizes, "sm");
+  color: $color-neutral-dark-grey;
+  font-weight: map.get($font-weights, "medium");
+}
+
+.statistics-ha-value {
+  font-size: map.get($font-sizes, "base");
+  font-weight: map.get($font-weights, "bold");
+  color: $color-neutral-black;
+}
+
+// ===== PLAYER STATS TABLE =====
+
+.player-stats-table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: map.get($font-sizes, "sm");
+
+  thead tr {
+    background: $color-banner-bg;
+    color: $color-banner-text;
+
+    th {
+      padding: map.get($spacing, "xs") map.get($spacing, "xs");
+      font-weight: map.get($font-weights, "bold");
+      white-space: nowrap;
+      user-select: none;
+
+      &.sortable {
+        cursor: pointer;
+
+        &:hover {
+          opacity: 0.85;
+        }
+
+        &.sorted {
+          text-decoration: underline;
+          text-underline-offset: 2px;
+        }
+      }
+    }
+  }
+
+  tbody {
+    .ps-row {
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+
+      &:nth-child(even) {
+        background-color: rgba($color-neutral-light-grey, 0.35);
+      }
+
+      &:hover {
+        background-color: rgba($color-blue-deep, 0.07);
+      }
+
+      td {
+        padding: map.get($spacing, "xxs") map.get($spacing, "xs");
+        border-bottom: 1px solid $color-neutral-light-grey;
+      }
+    }
+  }
+}
+
+.sort-arrow {
+  display: inline-block;
+  margin-left: 2px;
+  font-size: 0.65em;
+  vertical-align: middle;
+}
+
+.ps-col-rank {
+  text-align: center;
+  width: 32px;
+  color: $color-neutral-dark-grey;
+  font-size: map.get($font-sizes, "xs");
+}
+
+.ps-col-name {
+  text-align: left;
+  font-weight: map.get($font-weights, "medium");
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ps-col-pos {
+  text-align: center;
+  width: 40px;
+  color: $color-neutral-dark-grey;
+  font-size: map.get($font-sizes, "xs");
+}
+
+.ps-col-num {
+  text-align: center;
+  width: 44px;
+}
+
+.ps-col-pts,
+.ps-col-pts-value {
+  font-weight: map.get($font-weights, "extrabold");
+  color: $color-blue-deep;
+}
+
+.ps-no-data {
+  color: $color-neutral-dark-grey;
+  text-align: center;
+  padding: map.get($spacing, "md");
+  margin: 0;
+  font-size: map.get($font-sizes, "sm");
+}
+
+// ===== RESPONSIVE STYLES =====
+
+// Tablet and smaller (768px and below)
+@media (max-width: 768px) {
+  .statistics-season-label {
+    text-align: center;
+    padding-left: 0;
+  }
+
+  .statistics-block {
+    padding: map.get($spacing, 'sm');
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .statistics-block-title {
+    font-size: map.get($font-sizes, 'md');
+    text-align: center;
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  .statistics-grid {
+    min-width: 350px;
+
+    &.statistics-grid-header {
+      font-size: map.get($font-sizes, 'xs');
+      padding: map.get($spacing, 'xs');
+    }
+  }
+
+  .statistics-record-cols,
+  .statistics-goals-cols {
+    gap: map.get($spacing, 'xxs');
+  }
+
+  .statistics-special-cols {
+    gap: map.get($spacing, 'xxs');
+  }
+
+  .statistics-cell {
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  .statistics-ha-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .player-stats-table {
+    min-width: 380px;
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .ps-col-name {
+    max-width: 130px;
+  }
+}
+
+// Mobile phones (480px and below)
+@media (max-width: 480px) {
+  .statistics-block {
+    padding: map.get($spacing, 'xs');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .statistics-block-title {
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  .statistics-grid {
+    min-width: 300px;
+  }
+
+  .statistics-cell {
+    font-size: map.get($font-sizes, 'xs');
+  }
+
+  .player-stats-table {
+    min-width: 340px;
+  }
+
+  .ps-col-num {
+    width: 36px;
+  }
+
+  .ps-col-name {
+    max-width: 110px;
+  }
+}
+
+// Very small screens (360px and below)
+@media (max-width: 360px) {
+  .statistics-block {
+    padding: map.get($spacing, 'xxs');
+  }
+
+  .statistics-block-title {
+    font-size: map.get($font-sizes, 'xs');
+  }
+}

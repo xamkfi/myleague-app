@@ -1,7 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { type NewsInputsData } from './NewsInputs';
 import '../styles/PreviewNews.scss';
+import '../../../SingleNewsPage/SingleNewsPage.scss';
 import defaultNewsImage from '../../../../assets/defaultImage.jpg';
+import NewsTaxonomyBar from '../../../SingleNewsPage/NewsTaxonomyBar';
+import NewsArticleHtml, { useHydratedNewsHtml } from '../../../SingleNewsPage/NewsArticleHtml';
 
 interface PreviewNewsProps {
   value: string;
@@ -10,109 +13,71 @@ interface PreviewNewsProps {
 
 export default function PreviewNews({ value, newsData }: PreviewNewsProps) {
   const { t } = useTranslation();
+  const { displayHtml, relatedTeams } = useHydratedNewsHtml(value);
 
   return (
-    <div className="single-news-page__container">
-      <article className={`single-news-page`}>
-
-        {/* Article header */}
+    <div className="single-news-page-container">
+      <article className="single-news-page single-news-page--preview">
         <header className="single-news-page__header">
-        {/* Categories */}
+          <h1 className="single-news-page__title">
+            {newsData?.title || t('admin.news.untitled', 'Untitled Article')}
+          </h1>
 
-        
-        {/* Title */}
-        <h1 className="single-news-page__title">
-          {newsData?.title || t('admin.news.untitled', 'Untitled Article')}
-        </h1>
+          {newsData?.summary && (
+            <p className="single-news-page__summary">
+              {newsData.summary}
+            </p>
+          )}
 
-        {/* Summary */}
-        {newsData?.summary && (
-          <p className="single-news-page__summary">
-            {newsData.summary}
-          </p>
-        )}
+          <NewsTaxonomyBar
+            sportCategory={newsData?.sportCategory}
+            category={newsData?.category}
+            tags={newsData?.tags}
+            teams={relatedTeams}
+          />
 
-        {/* Meta information */}
-        <div className="single-news-page__meta">
-          <div className="single-news-page__meta-left">
-            {newsData?.author && (
+          <div className="single-news-page__meta">
+            <div className="single-news-page__meta-left">
+              {newsData?.author && (
+                <div className="single-news-page__meta-item">
+                  <svg className="single-news-page__meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span>{newsData.author}</span>
+                </div>
+              )}
               <div className="single-news-page__meta-item">
                 <svg className="single-news-page__meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span>{newsData.author}</span>
+                <span>{new Date().toLocaleDateString()}</span>
               </div>
-            )}
-            <div className="single-news-page__meta-item">
-              <svg className="single-news-page__meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span>{new Date().toLocaleDateString()}</span>
             </div>
           </div>
-          {(newsData?.sportCategory || newsData?.category) && (
-            <div className="single-news-page__categories">
-              {newsData.sportCategory && (
-                <span className="single-news-page__category single-news-page__category--sport">
-                  {newsData.sportCategory}
-                </span>
-              )}
-              {newsData.category && (
-                <span className="single-news-page__category single-news-page__category--general">
-                  {newsData.category}
-                </span>
-              )}
+        </header>
+
+        <div className="single-news-page__image-section">
+          <img
+            src={newsData?.mainPicture || defaultNewsImage}
+            alt={newsData?.title || t('admin.news.news_image', 'News image')}
+            className="single-news-page__main-image"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = defaultNewsImage;
+            }}
+          />
+        </div>
+
+        <div className="single-news-page__content">
+          {value ? (
+            <NewsArticleHtml html={displayHtml} />
+          ) : (
+            <div className="single-news-page__no-content">
+              <p>{t('admin.news.no_content', 'No content written yet...')}</p>
             </div>
           )}
         </div>
-        
-        
-        
-      </header>
-
-      {/* Main image */}
-      <div className="single-news-page__image-section">
-        <img
-          src={newsData?.mainPicture || defaultNewsImage}
-          alt={newsData?.title || t('admin.news.news_image', 'News image')}
-          className="single-news-page__main-image"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = 'https://via.placeholder.com/800x400?text=Image+Not+Found';
-          }}
-        />
-      </div>
-
-      {/* Article content */}
-      <div className="single-news-page__content">
-        {value ? (
-          <div 
-            dangerouslySetInnerHTML={{ __html: value }}
-            className="single-news-page__content-html"
-          />
-        ) : (
-          <div className="single-news-page__no-content">
-            <p>{t('admin.news.no_content', 'No content written yet...')}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Tags */}
-      {newsData?.tags && newsData.tags.length > 0 && (
-        <footer className="single-news-page__footer">
-          <h3 className="single-news-page__tags-title">
-            {t('admin.news.tags', 'Tags')}
-          </h3>
-          <div className="single-news-page__tags">
-            {newsData.tags.map((tag, index) => (
-              <span key={index} className="single-news-page__tag">
-                #{tag}
-              </span>
-            ))}
-          </div>
-        </footer>
-      )}
-    </article>
-  </div>
+      </article>
+    </div>
   );
 }

@@ -1,0 +1,74 @@
+// Use the same modal overlay and content styles as ConfirmDeleteModal
+.confirm-modal-content {
+  .status-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+  }
+
+  .status-breakdown {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-left: 4px solid #007bff;
+    
+    .info-text {
+      font-size: 0.95rem;
+      color: #6c757d;
+      margin: 0 0 0.5rem 0;
+      line-height: 1.5;
+    }
+    
+    .action-text {
+      font-size: 0.95rem;
+      color: #495057;
+      font-weight: 500;
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+
+  .status-update-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    color: white;
+    
+    &.activate {
+      background-color: #28a745;
+      
+      &:hover:not(:disabled) {
+        background-color: #218838;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+      }
+    }
+    
+    &.deactivate {
+      background-color: #ffc107;
+      color: #212529;
+      
+      &:hover:not(:disabled) {
+        background-color: #e0a800;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(255, 193, 7, 0.2);
+      }
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}

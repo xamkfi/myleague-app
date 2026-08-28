@@ -38,9 +38,9 @@ export const floorballMatchService = {
       if (params?.searchQuery) searchParams.append('searchQuery', params.searchQuery);
       if (params?.tournamentGroupId) searchParams.append('tournamentGroupId', params.tournamentGroupId);
       if (params?.competitionType) searchParams.append('competitionType', params.competitionType);
+      if (params?.teamCategory) searchParams.append('teamCategory', params.teamCategory);
 
       const url = `${API_URL}/${MATCHES_PATH}?${searchParams.toString()}`;
-      console.log('Fetching matches from URL:', url);
       
       const response = await authFetch(url);
       const apiResponse: PaginatedApiResponse<FloorballMatchDto> = await response.json();
@@ -49,8 +49,6 @@ export const floorballMatchService = {
         const errorMessage = await parseErrorResponse(apiResponse, 'Failed to fetch floorball matches');
         throw new Error(errorMessage);
       }
-      
-      console.log('API Response:', apiResponse);
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch floorball matches');

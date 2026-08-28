@@ -52,7 +52,8 @@ public static class FloorballTournamentMapper
             groupDtos,
             teamCount,
             matchCount,
-            playoffSlots);
+            playoffSlots,
+            tournament.TeamCategory);
     }
 
     /// <summary>

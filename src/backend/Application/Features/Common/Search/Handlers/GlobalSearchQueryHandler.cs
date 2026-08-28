@@ -4,50 +4,53 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Application.Common;
-using Application.Features.Common.Users.DTOs;
-using Application.Features.Common.Persons.DTOs;
-using Application.Features.Common.Clubs.DTOs;
-using Application.Features.Common.Divisions.DTOs;
-using Application.Features.Common.News.DTOs;
 using Application.Features.Common.Search.DTOs;
-using Application.Features.Common.MatchTimer.DTOs;
-using Application.Features.Common.Shared.DTOs;
-using Application.Features.Common.Divisions.Queries;
 using Application.Features.Common.Search.Queries;
-using Application.Features.Common.MatchTimer.Queries;
-using Application.Services.Common;
 using Domain.Common;
+using Domain.Entities.Common;
 using Domain.Entities.Floorball;
+using Domain.Entities.Football.Teams;
+using Domain.Entities.Hockey.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
+using Domain.Repositories.Football;
+using Domain.Repositories.Hockey;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Domain.Entities.Common;
 
 namespace Application.Features.Common.Search.Handlers
 {
     public class GlobalSearchQueryHandler : IRequestHandler<GlobalSearchQuery, Result<GlobalSearchResultDto>>
     {
         private readonly IFloorballTeamRepository _floorballTeamRepository;
+        private readonly IFootballTeamRepository _footballTeamRepository;
+        private readonly IHockeyTeamRepository _hockeyTeamRepository;
         private readonly IClubRepository _clubRepository;
         private readonly IPersonRepository _personRepository;
         private readonly IFloorballPlayerRepository _floorballPlayerRepository;
+        private readonly IFootballPlayerRepository _footballPlayerRepository;
         private readonly ILogger<GlobalSearchQueryHandler> _logger;
 
         public GlobalSearchQueryHandler(
             IFloorballTeamRepository floorballTeamRepository,
+            IFootballTeamRepository footballTeamRepository,
+            IHockeyTeamRepository hockeyTeamRepository,
             IClubRepository clubRepository,
             IPersonRepository personRepository,
             IFloorballPlayerRepository floorballPlayerRepository,
+            IFootballPlayerRepository footballPlayerRepository,
             ILogger<GlobalSearchQueryHandler> logger)
         {
             _floorballTeamRepository = floorballTeamRepository;
+            _footballTeamRepository = footballTeamRepository;
+            _hockeyTeamRepository = hockeyTeamRepository;
             _clubRepository = clubRepository;
             _personRepository = personRepository;
             _floorballPlayerRepository = floorballPlayerRepository;
+            _footballPlayerRepository = footballPlayerRepository;
             _logger = logger;
         }
 
@@ -71,45 +74,89 @@ namespace Application.Features.Common.Search.Handlers
             IEnumerable<Club> clubs = await _clubRepository.SearchByNameAsync(searchTerm, maxResultsPerEntityType, cancellationToken);
             PagedResult<Person> personsResult = await _personRepository.SearchByNameAsync(searchTerm, page: 1, pageSize: maxResultsPerEntityType, cancellationToken);
             IEnumerable<Person> persons = personsResult.Items;
-            IEnumerable<FloorballTeam> teams = await _floorballTeamRepository.SearchByNameAsync(searchTerm, maxResultsPerEntityType, cancellationToken);
 
-            // Enrich person data
+            IEnumerable<FloorballTeam> floorballTeams = await _floorballTeamRepository.SearchByNameAsync(searchTerm, maxResultsPerEntityType, cancellationToken);
+            IEnumerable<FootballTeam> footballTeams = await _footballTeamRepository.SearchByNameAsync(searchTerm, maxResultsPerEntityType, cancellationToken);
+            PagedResult<HockeyTeam> hockeyTeamsPage = await _hockeyTeamRepository.GetPagedAsync(
+                page: 1,
+                pageSize: maxResultsPerEntityType,
+                searchTerm: searchTerm,
+                cancellationToken: cancellationToken);
+
             IEnumerable<Guid> personIds = persons.Select(p => p.Id);
-            Dictionary<Guid, FloorballPlayer> playerMap = await _floorballPlayerRepository.GetByPersonIdsAsync(personIds, cancellationToken);
-            IEnumerable<Guid> floorballPlayerIds = playerMap.Values.Select(pl => pl.Id);
-            Dictionary<Guid, FloorballTeam> playerTeamMap = await _floorballTeamRepository.GetTeamsByPlayerIdsAsync(floorballPlayerIds, cancellationToken);
+            Dictionary<Guid, FloorballPlayer> floorballPlayerMap = await _floorballPlayerRepository.GetByPersonIdsAsync(personIds, cancellationToken);
+            Dictionary<Guid, FootballPlayer> footballPlayerMap = await _footballPlayerRepository.GetByPersonIdsAsync(personIds, cancellationToken);
 
-            // Get club IDs from both player teams and direct team search results
-            IEnumerable<Guid> playerTeamClubIds = playerTeamMap.Values.Select(t => t.ClubId).Distinct();
-            IEnumerable<Guid> teamClubIds = teams.Select(t => t.ClubId).Distinct();
-            IEnumerable<Guid> allClubIds = playerTeamClubIds.Union(teamClubIds);
+            IEnumerable<Guid> floorballPlayerIds = floorballPlayerMap.Values.Select(player => player.Id);
+            IEnumerable<Guid> footballPlayerIds = footballPlayerMap.Values.Select(player => player.Id);
+            Dictionary<Guid, FloorballTeam> floorballPlayerTeamMap = await _floorballTeamRepository.GetTeamsByPlayerIdsAsync(floorballPlayerIds, cancellationToken);
+            Dictionary<Guid, FootballTeam> footballPlayerTeamMap = await _footballTeamRepository.GetTeamsByPlayerIdsAsync(footballPlayerIds, cancellationToken);
+
+            IEnumerable<Guid> allClubIds = floorballPlayerTeamMap.Values.Select(team => team.ClubId)
+                .Union(footballPlayerTeamMap.Values.Select(team => team.ClubId))
+                .Union(floorballTeams.Select(team => team.ClubId))
+                .Union(footballTeams.Select(team => team.ClubId))
+                .Union(hockeyTeamsPage.Items.Select(team => team.ClubId))
+                .Distinct();
             Dictionary<Guid, Club> clubMap = await _clubRepository.GetByIdsAsync(allClubIds, cancellationToken);
 
-            GlobalSearchResultPersonDto[] personResults = persons.Select(p =>
+            GlobalSearchResultPersonDto[] personResults = persons.Select(person =>
             {
-                if (!playerMap.TryGetValue(p.Id, out FloorballPlayer? fp))
+                if (floorballPlayerMap.TryGetValue(person.Id, out FloorballPlayer? floorballPlayer))
                 {
-                    // This person is not a floorball player, return basic person data
-                    return new GlobalSearchResultPersonDto(p.Id, p.FirstName, p.LastName);
+                    floorballPlayerTeamMap.TryGetValue(floorballPlayer.Id, out FloorballTeam? team);
+                    Club? club = team != null && clubMap.TryGetValue(team.ClubId, out Club? mappedClub) ? mappedClub : null;
+                    return new GlobalSearchResultPersonDto(
+                        floorballPlayer.Id,
+                        person.FirstName,
+                        person.LastName,
+                        team?.Id,
+                        team?.Name,
+                        club?.Id,
+                        club?.Name,
+                        "floorball");
                 }
-                
-                // This person is a floorball player, enrich with team data (may be null if not on a team)
-                playerTeamMap.TryGetValue(fp.Id, out FloorballTeam? team);
-                Club? club = team != null && clubMap.TryGetValue(team.ClubId, out Club? c) ? c : null;
-                return new GlobalSearchResultPersonDto(fp.Id, p.FirstName, p.LastName, team?.Id, team?.Name, club?.Id, club?.Name);
+
+                if (footballPlayerMap.TryGetValue(person.Id, out FootballPlayer? footballPlayer))
+                {
+                    footballPlayerTeamMap.TryGetValue(footballPlayer.Id, out FootballTeam? team);
+                    Club? club = team != null && clubMap.TryGetValue(team.ClubId, out Club? mappedClub) ? mappedClub : null;
+                    return new GlobalSearchResultPersonDto(
+                        footballPlayer.Id,
+                        person.FirstName,
+                        person.LastName,
+                        team?.Id,
+                        team?.Name,
+                        club?.Id,
+                        club?.Name,
+                        "football");
+                }
+
+                return new GlobalSearchResultPersonDto(person.Id, person.FirstName, person.LastName);
             }).ToArray();
 
-            GlobalSearchResultTeamDto[] teamResults = teams
-                .Select(t => 
-                {
-                    Club? club = clubMap.TryGetValue(t.ClubId, out Club? c) ? c : null;
-                    return new GlobalSearchResultTeamDto(t.Id, t.Name, t.ClubId, club?.Name);
-                })
-                .ToArray();
+            List<GlobalSearchResultTeamDto> teamResults = new();
+            teamResults.AddRange(floorballTeams.Select(team =>
+            {
+                Club? club = clubMap.TryGetValue(team.ClubId, out Club? mappedClub) ? mappedClub : null;
+                return new GlobalSearchResultTeamDto(team.Id, team.Name, team.ClubId, club?.Name, "floorball");
+            }));
+            teamResults.AddRange(footballTeams.Select(team =>
+            {
+                Club? club = clubMap.TryGetValue(team.ClubId, out Club? mappedClub) ? mappedClub : null;
+                return new GlobalSearchResultTeamDto(team.Id, team.Name, team.ClubId, club?.Name, "football");
+            }));
+            teamResults.AddRange(hockeyTeamsPage.Items.Select(team =>
+            {
+                Club? club = clubMap.TryGetValue(team.ClubId, out Club? mappedClub) ? mappedClub : null;
+                return new GlobalSearchResultTeamDto(team.Id, team.Name, team.ClubId, club?.Name, "hockey");
+            }));
 
-            string[] clubNames = clubs.Select(c => c.Name).ToArray();
-
-            GlobalSearchResultDto combinedResult = new GlobalSearchResultDto(personResults, teamResults, clubNames);
+            string[] clubNames = clubs.Select(club => club.Name).ToArray();
+            GlobalSearchResultDto combinedResult = new GlobalSearchResultDto(
+                personResults,
+                teamResults.Take(maxResultsPerEntityType * 3).ToArray(),
+                clubNames);
 
             return Result<GlobalSearchResultDto>.Success(combinedResult);
         }

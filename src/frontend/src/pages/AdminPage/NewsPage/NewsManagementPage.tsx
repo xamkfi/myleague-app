@@ -17,6 +17,7 @@ const NewsManagementPage = () => {
     sportCategory: '',
     searchTerm: '',
     includeArchived: true,
+    teamCategories: [],
   });
 
   // Only debounce searchTerm
@@ -42,7 +43,8 @@ const NewsManagementPage = () => {
     sportCategory: filters.sportCategory,
     includeArchived: filters.includeArchived,
     searchTerm: debouncedSearchTerm,
-  }), [filters.category, filters.sportCategory, filters.includeArchived, debouncedSearchTerm]);
+    teamCategories: filters.teamCategories,
+  }), [filters.category, filters.sportCategory, filters.includeArchived, debouncedSearchTerm, filters.teamCategories]);
 
   const handleClearFilters = () => {
     const resetFilters: NewsFilters = {
@@ -50,6 +52,7 @@ const NewsManagementPage = () => {
       sportCategory: '',
       searchTerm: '',
       includeArchived: true,
+      teamCategories: [],
     };
     setFilters(resetFilters);
     setDebouncedSearchTerm('');

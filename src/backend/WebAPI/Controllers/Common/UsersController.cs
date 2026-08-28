@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Domain.Constants;
 using Application.Common;
 using Application.Features.Common.Users.Commands;
 using Application.Features.Common.Users.DTOs;
@@ -13,7 +15,7 @@ namespace WebAPI.Controllers.Common;
 /// <summary>
 /// Controller for managing users
 /// </summary>
-[Authorize]
+[Authorize(Roles = AuthRoles.AdminOnly)]
 [Route("api/[controller]")]
 public class UsersController : BaseApiController
 {
@@ -124,7 +126,11 @@ public class UsersController : BaseApiController
     {
         _logger.LogInformation("Creating new user: {Email}", SanitizeForLog(request.Email));
 
-        CreateUserCommand command = new(request.Email, request.PersonId, request.Role);
+        CreateUserCommand command = new(
+            request.Email,
+            request.PersonId,
+            request.Role,
+            request.ClubAssignments);
         Result<UserDto> result = await _mediator.Send(command);
 
         if (result.IsSuccess && result.Data is not null)
@@ -188,13 +194,22 @@ public class UsersController : BaseApiController
     /// <returns>Success status</returns>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse>> DeleteUser(Guid id)
     {
+        string? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid requestedByUserId))
+        {
+            return Unauthorized(ApiResponse.ErrorResponse("Invalid token."));
+        }
+
         _logger.LogInformation("Deleting user: {Id}", id);
 
-        DeleteUserCommand command = new(id);
+        DeleteUserCommand command = new(id, requestedByUserId);
         Result<bool> result = await _mediator.Send(command);
 
         return HandleVoidResult(result, "User deleted successfully", "Failed to delete user");

@@ -158,17 +158,17 @@ jobs:
 
     - name: Test Frontend in Docker Compose
       run: |
-        docker compose build frontend
-        docker compose up -d --no-deps frontend
+        docker compose -f docker-compose.yml build frontend
+        docker compose -f docker-compose.yml up -d --no-deps frontend
 
-        for i in {1..20}; do
+        for i in {1..30}; do
           if curl -f -s http://localhost:5173 >/dev/null 2>&1; then
             echo "Frontend accessible via docker-compose on attempt $i"
             break
-          elif [ $i -eq 20 ]; then
-            echo "Frontend not accessible after 20 attempts"
-            docker compose logs frontend
-            docker compose ps
+          elif [ $i -eq 30 ]; then
+            echo "Frontend not accessible after 30 attempts"
+            docker compose -f docker-compose.yml logs frontend
+            docker compose -f docker-compose.yml ps
             exit 1
           else
             echo "Attempt $i: Frontend not ready yet, waiting 3 seconds..."
@@ -179,4 +179,4 @@ jobs:
     - name: Cleanup
       if: always()
       run: |
-        docker compose down -v
+        docker compose -f docker-compose.yml down -v

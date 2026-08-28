@@ -1,16 +1,22 @@
+using Domain.Constants;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using Application.Common;
 using Application.Features.Floorball.Seasons.Commands;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Seasons.Queries;
+using Domain.Common;
+using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using WebAPI.Models.Floorball;
 
 namespace WebAPI.Controllers.Floorball
@@ -53,6 +59,49 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Gets distinct season years for public year navigation.
+        /// </summary>
+        [HttpGet("years")]
+        [ProducesResponseType(typeof(ApiResponse<List<FloorballSeasonYearDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<FloorballSeasonYearDto>>>> GetSeasonYears()
+        {
+            _logger.LogInformation("Getting floorball season years");
+
+            Result<IEnumerable<FloorballSeasonYearDto>> result =
+                await _mediator.Send(new GetFloorballSeasonYearsQuery());
+
+            return HandleListResult(result, "Floorball season years retrieved successfully", "Failed to retrieve floorball season years");
+        }
+
+        /// <summary>
+        /// Gets a paginated slim list of floorball seasons (optional season-year filter).
+        /// </summary>
+        [HttpGet("paged")]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballSeasonSummaryDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballSeasonSummaryDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(PaginatedApiResponse<FloorballSeasonSummaryDto>), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PaginatedApiResponse<FloorballSeasonSummaryDto>>> GetSeasonsPaged(
+            [FromQuery] GetFloorballSeasonsPagedRequest request)
+        {
+            _logger.LogInformation(
+                "Getting paged floorball seasons - Page: {Page}, PageSize: {PageSize}, SeasonYear: {SeasonYear}",
+                request.Page,
+                request.PageSize,
+                FormatSeasonYearForLog(request.SeasonYear));
+
+            GetFloorballSeasonsPagedQuery query = new GetFloorballSeasonsPagedQuery(
+                request.Page,
+                request.PageSize,
+                request.SeasonYear,
+                request.TeamCategory);
+
+            Result<PagedResult<FloorballSeasonSummaryDto>> result = await _mediator.Send(query);
+
+            return HandlePaginatedResult(result, "Floorball seasons retrieved successfully", "Failed to retrieve floorball seasons");
+        }
+
+        /// <summary>
         /// Gets all active floorball seasons
         /// </summary>
         /// <returns>List of active floorball seasons</returns>
@@ -89,6 +138,68 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Gets intro blocks for the featured season of an optional year.
+        /// </summary>
+        [HttpGet("content-blocks")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballSeasonContentBlocksDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballSeasonContentBlocksDto>>> GetFeaturedContentBlocks(
+            [FromQuery] string? seasonYear)
+        {
+            _logger.LogInformation(
+                "Getting featured floorball season content blocks - SeasonYear: {SeasonYear}",
+                FormatSeasonYearForLog(seasonYear));
+
+            Result<FloorballSeasonContentBlocksDto> result =
+                await _mediator.Send(new GetFloorballSeasonContentBlocksByYearQuery(seasonYear));
+
+            return HandleResult(result, "Season content blocks retrieved successfully", "Failed to retrieve season content blocks");
+        }
+
+        /// <summary>
+        /// Gets intro blocks for a floorball season.
+        /// </summary>
+        [HttpGet("{id:guid}/content-blocks")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballSeasonContentBlocksDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballSeasonContentBlocksDto>>> GetContentBlocks(Guid id)
+        {
+            _logger.LogInformation("Getting floorball season content blocks for {id}", id);
+
+            Result<FloorballSeasonContentBlocksDto> result =
+                await _mediator.Send(new GetFloorballSeasonContentBlocksQuery(id));
+
+            return HandleResult(result, "Season content blocks retrieved successfully", "Season not found");
+        }
+
+        /// <summary>
+        /// Replaces intro blocks for a floorball season. Array order is the display order.
+        /// </summary>
+        [HttpPut("{id:guid}/content-blocks")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
+        [ProducesResponseType(typeof(ApiResponse<FloorballSeasonContentBlocksDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballSeasonContentBlocksDto>>> ReplaceContentBlocks(
+            Guid id,
+            [FromBody] ReplaceFloorballSeasonContentBlocksRequest request)
+        {
+            _logger.LogInformation("Replacing floorball season content blocks for {id}", id);
+
+            ReplaceFloorballSeasonContentBlocksCommand command = new(
+                id,
+                request.Items
+                    .Select(item => new ReplaceFloorballSeasonContentBlockItem(item.Id, item.Title, item.ContentHtml))
+                    .ToList());
+
+            Result<FloorballSeasonContentBlocksDto> result = await _mediator.Send(command);
+            return HandleResult(result, "Season content blocks updated successfully", "Failed to update season content blocks");
+        }
+
+        /// <summary>
         /// Gets floorball seasons by division
         /// </summary>
         /// <param name="divisionId">Division</param>
@@ -112,7 +223,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Create season request</param>
         /// <returns>Created season details</returns>
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -134,7 +245,8 @@ namespace WebAPI.Controllers.Floorball
                 request.PeriodDurationMinutes,
                 request.AllowOvertime,
                 request.OvertimeDurationMinutes,
-                request.AllowShootout
+                request.AllowShootout,
+                request.TeamCategory
             );
 
             Result<FloorballSeasonDto> result = await _mediator.Send(command);
@@ -158,7 +270,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Update season request</param>
         /// <returns>Updated season details</returns>
         [HttpPut("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -181,7 +293,8 @@ namespace WebAPI.Controllers.Floorball
                 request.PeriodDurationMinutes,
                 request.AllowOvertime,
                 request.OvertimeDurationMinutes,
-                request.AllowShootout
+                request.AllowShootout,
+                request.TeamCategory
             );
 
             Result<FloorballSeasonDto> result = await _mediator.Send(command);
@@ -195,7 +308,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Activated season details</returns>
         [HttpPut("{id:guid}/activate")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -216,7 +329,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Deactivated season details</returns>
         [HttpPut("{id:guid}/deactivate")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -237,7 +350,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Completed season details</returns>
         [HttpPut("{id:guid}/complete")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -261,7 +374,7 @@ namespace WebAPI.Controllers.Floorball
         /// <returns>Updated season details</returns>
         [Obsolete("Use AddTeamToSeasonDivision instead to assign teams to a specific division within the season.")]
         [HttpPost("{competitionId:guid}/teams/{teamId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -283,7 +396,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="teamId">Team ID</param>
         /// <returns>Updated season details</returns>
         [HttpDelete("{competitionId:guid}/teams/{teamId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -304,7 +417,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="competitionId">Season ID</param>
         /// <param name="divisionId">Division ID</param>
         [HttpPost("{competitionId:guid}/divisions/{divisionId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> AddDivisionToSeason(Guid competitionId, Guid divisionId)
@@ -322,7 +435,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="competitionId">Season ID</param>
         /// <param name="divisionId">Division ID</param>
         [HttpDelete("{competitionId:guid}/divisions/{divisionId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> RemoveDivisionFromSeason(Guid competitionId, Guid divisionId)
@@ -341,7 +454,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="divisionId">Division ID</param>
         /// <param name="teamId">Team ID</param>
         [HttpPost("{competitionId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> AddTeamToSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
@@ -360,7 +473,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="divisionId">Division ID</param>
         /// <param name="teamId">Team ID</param>
         [HttpDelete("{competitionId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse>> RemoveTeamFromSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
@@ -378,7 +491,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Season ID</param>
         /// <returns>Success message</returns>
         [HttpDelete("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -391,6 +504,26 @@ namespace WebAPI.Controllers.Floorball
             Result result = await _mediator.Send(command);
 
             return HandleVoidResult(result, "Floorball season deleted successfully", "Failed to delete floorball season");
+        }
+
+        /// <summary>
+        /// Rebuilds a season-year label from parsed integers so user-controlled query text is never written to logs.
+        /// </summary>
+        private static string FormatSeasonYearForLog(string? seasonYear)
+        {
+            if (string.IsNullOrWhiteSpace(seasonYear))
+            {
+                return "all";
+            }
+
+            if (!FloorballSeasonYear.TryParse(seasonYear, out int startYear, out int endYear))
+            {
+                return "invalid";
+            }
+
+            return startYear == endYear
+                ? startYear.ToString(CultureInfo.InvariantCulture)
+                : string.Create(CultureInfo.InvariantCulture, $"{startYear}-{endYear}");
         }
     }
 }

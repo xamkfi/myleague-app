@@ -7,4 +7,6 @@ namespace Application.Features.Floorball.Tournaments.Queries;
 /// <summary>
 /// Query for retrieving all active floorball tournaments
 /// </summary>
-public record GetActiveFloorballTournamentsQuery() : IRequest<Result<List<FloorballTournamentDto>>>;
+public record GetActiveFloorballTournamentsQuery(
+    Domain.Enums.Common.TeamCategory? TeamCategory = null
+) : IRequest<Result<List<FloorballTournamentDto>>>;

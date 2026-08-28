@@ -1,45 +1,44 @@
-using Application.Features.Common.Divisions.Commands;
-using Application.Features.Common.MatchTimer.Commands;
-using Application.Features.Common.Images.Commands;
 using Application.Common;
+using Application.Features.Common.Deletion;
+using Application.Features.Common.Divisions.Commands;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
-using Microsoft.Extensions.Logging;
+using Domain.Repositories.Floorball;
+using Domain.Repositories.Football;
+using Domain.Repositories.Hockey;
 using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Common.Divisions.Handlers;
 
 /// <summary>
-/// Handler for deleting a division
+/// Handler for deleting a division that is not referenced by any team.
 /// </summary>
 public class DeleteDivisionHandler : IRequestHandler<DeleteDivisionCommand, Result<bool>>
 {
     private readonly IDivisionRepository _divisionRepository;
+    private readonly IFloorballTeamRepository _floorballTeamRepository;
+    private readonly IFootballTeamRepository _footballTeamRepository;
+    private readonly IHockeyTeamRepository _hockeyTeamRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DeleteDivisionHandler> _logger;
 
-    /// <summary>
-    /// Initializes a new instance of the DeleteDivisionHandler class
-    /// </summary>
-    /// <param name="divisionRepository">The division repository</param>
-    /// <param name="unitOfWork">The unit of work</param>
-    /// <param name="logger">The logger</param>
-    public DeleteDivisionHandler(IDivisionRepository divisionRepository, IUnitOfWork unitOfWork, ILogger<DeleteDivisionHandler> logger)
+    public DeleteDivisionHandler(
+        IDivisionRepository divisionRepository,
+        IFloorballTeamRepository floorballTeamRepository,
+        IFootballTeamRepository footballTeamRepository,
+        IHockeyTeamRepository hockeyTeamRepository,
+        IUnitOfWork unitOfWork,
+        ILogger<DeleteDivisionHandler> logger)
     {
         _divisionRepository = divisionRepository;
+        _floorballTeamRepository = floorballTeamRepository;
+        _footballTeamRepository = footballTeamRepository;
+        _hockeyTeamRepository = hockeyTeamRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
-    /// <summary>
-    /// Handles the DeleteDivisionCommand request
-    /// </summary>
-    /// <param name="request">The command containing division ID</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>True if deletion succeeded, wrapped in a Result</returns>
     public async Task<Result<bool>> Handle(DeleteDivisionCommand request, CancellationToken cancellationToken)
     {
         try
@@ -48,16 +47,21 @@ public class DeleteDivisionHandler : IRequestHandler<DeleteDivisionCommand, Resu
             if (division == null)
             {
                 _logger.LogWarning("Division with ID {DivisionId} not found for deletion", request.Id);
-                return Result<bool>.Failure($"Division with ID {request.Id} not found.");
+                return Result<bool>.NotFound("Division", request.Id);
             }
 
-            // Note: In a real application, you might want to check if the division is being used
-            // by any teams or seasons before allowing deletion. For now, we'll allow it.
+            bool hasTeams =
+                await _floorballTeamRepository.HasAnyForDivisionAsync(request.Id, cancellationToken)
+                || await _footballTeamRepository.HasAnyForDivisionAsync(request.Id, cancellationToken)
+                || await _hockeyTeamRepository.HasAnyForDivisionAsync(request.Id, cancellationToken);
+            if (hasTeams)
+            {
+                _logger.LogWarning("Blocked division delete for {DivisionId}: teams still use it", request.Id);
+                return Result<bool>.Failure(DeletionReasons.DivisionHasTeams);
+            }
 
             _logger.LogInformation("Deleting division: {DivisionId}", division.Id);
             await _divisionRepository.DeleteAsync(division);
-            
-            // Save changes explicitly
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Successfully deleted division with ID: {DivisionId}", division.Id);
@@ -69,4 +73,4 @@ public class DeleteDivisionHandler : IRequestHandler<DeleteDivisionCommand, Resu
             return Result<bool>.Failure("An error occurred while deleting the division.");
         }
     }
-} 
+}

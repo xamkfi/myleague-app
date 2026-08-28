@@ -60,7 +60,6 @@ namespace MyLeague.Infrastructure.Services.Common
             {
                 try
                 {
-                    await SendPeriodicTimerUpdatesAsync();
 
                     tick++;
                     // Compute the exact next due time based on the anchor
@@ -88,78 +87,6 @@ namespace MyLeague.Infrastructure.Services.Common
             _logger.LogInformation("Timer background service stopped");
         }
 
-        /// <summary>
-        /// Sends periodic updates for all running timers
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation</returns>
-        private async Task SendPeriodicTimerUpdatesAsync()
-        {
-            // TODO: Re-enable periodic timer updates when needed
-#if false
-            try
-            {
-                _logger.LogDebug("TimerBackgroundService: Starting periodic update cycle");
-                // Get snapshot of active timers to avoid collection modification issues during iteration
-                IEnumerable<Domain.Entities.Common.TimerState> runningTimers = _timerStore.GetActive().ToList();
-                
-                if (!runningTimers.Any())
-                {
-                    return; // No running timers to update
-                }
-                _logger.LogInformation("TimerBackgroundService: Sending periodic updates for {Count} running timers", runningTimers.Count());
-
-                using (IServiceScope scope = _scopeFactory.CreateScope())
-                {
-                    ITimerNotificationService notificationService = scope.ServiceProvider.GetRequiredService<ITimerNotificationService>();
-                    IMatchTimerService timerService = scope.ServiceProvider.GetRequiredService<IMatchTimerService>();
-
-                    foreach (Domain.Entities.Common.TimerState timerState in runningTimers)
-                    {
-                        try
-                        {
-                            timerState.Tick();
-                            TimeSpan elapsedTime = timerState.ElapsedTime;
-                            
-                            _logger.LogInformation("TimerBackgroundService: Timer state for match {MatchId}: IsRunning={IsRunning}, ElapsedTime={ElapsedTime}, Period={Period}",
-                                timerState.MatchId, timerState.IsRunning, elapsedTime, timerState.PeriodNumber);
-                            
-                            // Check if period duration limit reached
-                            int durationLimit = GetPeriodDurationLimit(timerState.PeriodNumber);
-                            
-                            if (durationLimit > 0 && elapsedTime.TotalSeconds >= durationLimit)
-                            {
-                                _logger.LogInformation(
-                                    "Auto-stopping timer for match {MatchId} period {Period} at limit {Limit}s (elapsed: {Elapsed}s)",
-                                    timerState.MatchId, timerState.PeriodNumber, durationLimit, elapsedTime.TotalSeconds);
-                                
-                                await timerService.StopTimerAsync(timerState.MatchId);
-                                continue; // Skip sending update - StopTimerAsync will send stopped event
-                            }
-                            
-                            TimerUpdate update = TimerUpdate.CreateUpdate(
-                                timerState.MatchId,
-                                timerState.PeriodNumber,
-                                elapsedTime,
-                                timerState.IsRunning);
-                            await notificationService.NotifyTimerUpdateAsync(timerState.MatchId, update);
-                            
-                            _logger.LogInformation("TimerBackgroundService: Sent periodic update for match {MatchId}: {ElapsedTime}",
-                                timerState.MatchId, elapsedTime);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "TimerBackgroundService: Error sending periodic update for match {MatchId}", timerState.MatchId);
-                        }
-                    }
-                }
-                _logger.LogDebug("TimerBackgroundService: Completed periodic update cycle");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "TimerBackgroundService: Error getting running timers for periodic updates");
-            }
-#endif
-        }
 
         /// <summary>
         /// Gets the duration limit in seconds for a given period.

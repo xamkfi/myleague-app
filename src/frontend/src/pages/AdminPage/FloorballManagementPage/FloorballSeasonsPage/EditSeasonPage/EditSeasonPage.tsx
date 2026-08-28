@@ -14,6 +14,12 @@ import { type FloorballTeam, TeamCategory } from '../../../../../types/floorball
 import { useDivisions } from '../../../../../hooks/useDivisions';
 import './EditSeasonPage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import SeasonContentBlocksEditor from '../../../../../components/SeasonContentBlocksEditor/SeasonContentBlocksEditor';
+import {
+  toContentBlockDrafts,
+  toContentBlockItems,
+  type SeasonContentBlockDraft,
+} from '../../../../../types/common/seasonContent';
 
 const EditSeasonPage = () => {
   const { t } = useTranslation();
@@ -65,14 +71,19 @@ const EditSeasonPage = () => {
   // Multi-select
   const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(new Set());
   const [teamOperationLoading, setTeamOperationLoading] = useState(false);
+  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDraft[]>([]);
 
   // ── Load season ──
   const loadSeason = useCallback(async () => {
     if (!competitionId) return;
     try {
       setLoadingSeason(true);
-      const seasonData = await floorballSeasonService.getById(competitionId);
+      const [seasonData, content] = await Promise.all([
+        floorballSeasonService.getById(competitionId),
+        floorballSeasonService.getContentBlocks(competitionId),
+      ]);
       setSeason(seasonData.data);
+      setContentBlocks(toContentBlockDrafts(content.blocks));
       setFormData({
         name: seasonData.data.name,
         startDate: seasonData.data.startDate.split('T')[0],
@@ -217,7 +228,12 @@ const EditSeasonPage = () => {
       const maxDuration = 2 * 365 * 24 * 60 * 60 * 1000;
       if (endDate.getTime() - startDate.getTime() > maxDuration) throw new Error(t('floorball.seasons.validation.seasonTooLong', 'Season duration cannot exceed 2 years'));
 
+      if (contentBlocks.some((block) => !block.title.trim())) {
+        throw new Error(t('seasonContent.titleRequired'));
+      }
+
       await floorballSeasonService.update(competitionId, formData);
+      await floorballSeasonService.replaceContentBlocks(competitionId, toContentBlockItems(contentBlocks));
       showSuccess(t('floorball.seasons.seasonUpdated', 'Season "{{seasonName}}" has been updated successfully!', { seasonName: formData.name }), true);
       await loadSeason();
     } catch (err) {
@@ -475,6 +491,14 @@ const EditSeasonPage = () => {
                     <span className="toggle-switch__slider" />
                   </button>
                 </div>
+              </div>
+
+              <div className="form-section">
+                <SeasonContentBlocksEditor
+                  blocks={contentBlocks}
+                  onChange={setContentBlocks}
+                  disabled={loading}
+                />
               </div>
 
               <div className="form-actions">

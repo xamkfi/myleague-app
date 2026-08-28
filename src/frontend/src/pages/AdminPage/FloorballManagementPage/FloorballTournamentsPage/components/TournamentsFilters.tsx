@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { TournamentStatusFilter } from '../hooks/useTournamentsManagement';
+import TeamCategoryFilter from '../../../../../components/TeamCategoryFilter/TeamCategoryFilter';
 import './TournamentsFilters.scss';
 
 interface TournamentsFiltersProps {
@@ -8,6 +9,8 @@ interface TournamentsFiltersProps {
   statusFilter: TournamentStatusFilter;
   onStatusFilterChange: (value: TournamentStatusFilter) => void;
   uniqueStatuses: string[];
+  categoryFilter: string[];
+  onCategoryFilterChange: (categories: string[]) => void;
 }
 
 export const TournamentsFilters = ({
@@ -16,6 +19,8 @@ export const TournamentsFilters = ({
   statusFilter,
   onStatusFilterChange,
   uniqueStatuses,
+  categoryFilter,
+  onCategoryFilterChange,
 }: TournamentsFiltersProps) => {
   const { t } = useTranslation();
 
@@ -60,6 +65,10 @@ export const TournamentsFilters = ({
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="filter-group">
+          <TeamCategoryFilter selected={categoryFilter} onChange={onCategoryFilterChange} />
         </div>
       </div>
     </div>

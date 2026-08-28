@@ -6,13 +6,15 @@ on:
       environment:
         description: 'Environment to deploy to'
         required: true
-        default: 'dev'
+        default: 'staging'
         type: choice
         options:
-          - dev
           - staging
           - prod
 
+  # Auto-deploy to staging after Backend CI succeeds on the development branch.
+  # Prod deploys are manual (workflow_dispatch) and gated by the 'prod'
+  # GitHub environment protection rules (required reviewers).
   workflow_run:
     workflows: ["Backend CI"]
     types:
@@ -21,11 +23,12 @@ on:
       - development
 
 concurrency:
-  group: deploy-backend-${{ inputs.environment || 'dev' }}
+  group: deploy-backend-${{ inputs.environment || 'staging' }}
   cancel-in-progress: false
 
 permissions:
   contents: read
+  id-token: write
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -33,10 +36,10 @@ env:
 
 jobs:
   deploy:
-    name: Deploy to Azure (${{ inputs.environment || 'dev' }})
+    name: Deploy to Azure (${{ inputs.environment || 'staging' }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment: ${{ inputs.environment || 'dev' }}
+    environment: ${{ inputs.environment || 'staging' }}
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
@@ -45,7 +48,7 @@ jobs:
     steps:
       - name: Set deployment targets
         run: |
-          ENV="${{ inputs.environment || 'dev' }}"
+          ENV="${{ inputs.environment || 'staging' }}"
           echo "AZURE_WEBAPP_NAME=myleague-${ENV}-api" >> $GITHUB_ENV
           echo "AZURE_RESOURCE_GROUP=myleague-${ENV}-rg" >> $GITHUB_ENV
           echo "Deploying to: myleague-${ENV}-api (rg: myleague-${ENV}-rg)"
@@ -74,9 +77,107 @@ jobs:
         run: dotnet publish --configuration Release --output ./publish
         working-directory: ${{ env.WORKING_DIRECTORY }}
 
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
+      - name: Create deployment package
+        run: cd publish && zip -r ../app.zip .
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ${{ env.WORKING_DIRECTORY }}/publish
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure Web App
+        run: |
+          az webapp deploy \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_WEBAPP_NAME" \
+            --src-path "${{ env.WORKING_DIRECTORY }}/app.zip" \
+            --type zip
+
+      - name: Health check
+        run: |
+          URL="https://${AZURE_WEBAPP_NAME}.azurewebsites.net/health/ready"
+          echo "Checking $URL"
+          for i in $(seq 1 10); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check passed (HTTP $STATUS)"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $STATUS - retrying in 15s..."
+            sleep 15
+          done
+          echo "Health check failed after 10 attempts"
+          exit 1
+
+  # Post-deploy smoke tests against the live environment. Public read-only
+  # endpoints only - no auth tokens or test data needed. Verifies routing,
+  # database connectivity across contexts, JSON responses, and that
+  # authorization is still enforced on admin endpoints.
+  smoke-test:
+    name: Smoke tests (${{ inputs.environment || 'staging' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: deploy
+
+    steps:
+      - name: Run API smoke tests
+        run: |
+          ENV="${{ inputs.environment || 'staging' }}"
+          BASE="https://myleague-${ENV}-api.azurewebsites.net"
+          FAIL=0
+
+          # check <description> <url> <expected_http_status> [json]
+          check() {
+            local desc="$1" url="$2" expected="$3" mode="${4:-}"
+            local body_file status
+            body_file=$(mktemp)
+            status=$(curl -s -o "$body_file" -w "%{http_code}" --max-time 30 "$url" || echo "000")
+
+            if [ "$status" != "$expected" ]; then
+              echo "FAIL: $desc - expected HTTP $expected, got $status ($url)"
+              FAIL=1
+              return
+            fi
+
+            if [ "$mode" = "json" ] && ! jq -e . "$body_file" > /dev/null 2>&1; then
+              echo "FAIL: $desc - HTTP $status but response is not valid JSON ($url)"
+              FAIL=1
+              return
+            fi
+
+            echo "PASS: $desc (HTTP $status)"
+          }
+
+          echo "Running smoke tests against $BASE"
+          echo ""
+
+          # Liveness & readiness (readiness includes DB health checks)
+          check "Liveness endpoint"            "$BASE/health/live"  200
+          check "Readiness endpoint (incl DB)" "$BASE/health/ready" 200
+
+          # Public read endpoints - each hits the database through a different area
+          check "News list returns JSON"       "$BASE/api/News?page=1&pageSize=1" 200 json
+          check "Clubs list returns JSON"      "$BASE/api/Clubs"                        200 json
+          check "Divisions list returns JSON"  "$BASE/api/Divisions"                    200 json
+
+          # Security: admin-only endpoint must reject unauthenticated requests
+          check "Admin endpoint requires auth" "$BASE/api/Users" 401
+
+          # 404 handling: unknown API route must not return 200 or crash
+          UNKNOWN_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$BASE/api/DoesNotExist" || echo "000")
+          if [ "$UNKNOWN_STATUS" = "404" ]; then
+            echo "PASS: Unknown route returns 404"
+          else
+            echo "FAIL: Unknown route - expected HTTP 404, got $UNKNOWN_STATUS"
+            FAIL=1
+          fi
+
+          echo ""
+          if [ "$FAIL" -ne 0 ]; then
+            echo "Smoke tests FAILED for $ENV"
+            exit 1
+          fi
+          echo "All smoke tests passed for $ENV"

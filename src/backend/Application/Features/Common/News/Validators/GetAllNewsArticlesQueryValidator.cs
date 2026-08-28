@@ -33,6 +33,10 @@ public class GetAllNewsArticlesQueryValidator : AbstractValidator<GetAllNewsArti
         RuleFor(x => x.Author)
             .MaximumLength(100).WithMessage("Author filter cannot exceed 100 characters")
             .When(x => !string.IsNullOrEmpty(x.Author));
+
+        RuleFor(x => x.Tag)
+            .MaximumLength(50).WithMessage("Tag filter cannot exceed 50 characters")
+            .When(x => !string.IsNullOrEmpty(x.Tag));
     }
 
     private bool BeValidPageSize(int pageSize)

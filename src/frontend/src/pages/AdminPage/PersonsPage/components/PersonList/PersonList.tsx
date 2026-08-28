@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useCallback, useRef, memo, useImp
 import { useTranslation } from 'react-i18next';
 import type { Person, PaginatedApiResponse } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
+import { mapDeletionError } from '../../../../../utils/mapDeletionError';
 import PaginationControls from '../PaginationControls/PaginationControls';
 import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
 import BulkActionsBar from '../../../../../components/BulkActionsBar/BulkActionsBar';
@@ -230,7 +231,10 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         });
       } catch (error) {
         console.error('Failed to delete person:', error);
-        setError(t('admin.persons.errors.deleteFailed', 'Failed to delete person'));
+        setError(
+          mapDeletionError(error, t) ??
+            t('admin.persons.errors.deleteFailed', 'Failed to delete person'),
+        );
       }
     }
   };
@@ -312,7 +316,10 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         console.log(successMessage);
       } catch (error) {
         console.error('Failed to delete selected persons:', error);
-        setError(t('admin.persons.errors.bulkDeleteFailed', 'Failed to delete selected persons'));
+        setError(
+          mapDeletionError(error, t) ??
+            t('admin.persons.errors.bulkDeleteFailed', 'Failed to delete selected persons'),
+        );
       } finally {
         setBulkDeleting(false);
       }

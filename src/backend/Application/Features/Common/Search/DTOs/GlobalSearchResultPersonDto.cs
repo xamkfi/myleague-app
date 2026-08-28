@@ -16,6 +16,7 @@ namespace Application.Features.Common.Search.DTOs
         Guid? TeamId = null,
         string? TeamName = null,
         Guid? ClubId = null,
-        string? ClubName = null);
+        string? ClubName = null,
+        string? Sport = null);
     
 }

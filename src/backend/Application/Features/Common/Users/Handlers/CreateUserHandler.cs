@@ -16,6 +16,7 @@ using Application.Features.Common.Divisions.Mappings;
 using Application.Features.Common.News.Mappings;
 using Application.Interfaces.Auth;
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -34,6 +35,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
     private readonly FrontendConfiguration _frontendConfig;
+    private readonly IClubManagerRepository _clubManagerRepository;
     private readonly ILogger<CreateUserHandler> _logger;
 
     public CreateUserHandler(
@@ -42,6 +44,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
         IUnitOfWork unitOfWork,
         IEmailService emailService,
         IOptions<FrontendConfiguration> frontendConfig,
+        IClubManagerRepository clubManagerRepository,
         ILogger<CreateUserHandler> logger)
     {
         _userRepository = userRepository;
@@ -49,6 +52,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
         _unitOfWork = unitOfWork;
         _emailService = emailService;
         _frontendConfig = frontendConfig.Value;
+        _clubManagerRepository = clubManagerRepository;
         _logger = logger;
     }
 
@@ -97,8 +101,18 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
                 return Result<UserDto>.Failure("Failed to retrieve the created user.");
             }
 
-            // Send invitation email with verification link
-            string verificationUrl = $"{_frontendConfig.BaseUrl}/admin/verify-email?token={Uri.EscapeDataString(token)}";
+            // Club admins get manager links to the clubs they were invited for
+            if (request.Role == UserRole.ClubAdmin && request.ClubAssignments is { Count: > 0 })
+            {
+                await CreateClubManagerLinksAsync(request.PersonId, request.ClubAssignments, cancellationToken);
+            }
+
+            // Send invitation email with verification link. Club admins verify through their
+            // own area so they land on the club admin login afterwards.
+            string verifyPath = request.Role == UserRole.ClubAdmin
+                ? "/club-admin/verify-email"
+                : "/admin/verify-email";
+            string verificationUrl = $"{_frontendConfig.BaseUrl}{verifyPath}?token={Uri.EscapeDataString(token)}";
             await _emailService.SendAdminInvitationAsync(
                 createdUser.Email,
                 person.FirstName,
@@ -116,6 +130,39 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
         {
             _logger.LogError(ex, "Error occurred while creating user: {Email}", request.Email);
             return Result<UserDto>.Failure("An error occurred while creating the user.");
+        }
+    }
+
+    /// <summary>
+    /// Creates (or reactivates) the club manager link rows that grant the invited club admin
+    /// access to the requested clubs.
+    /// </summary>
+    private async Task CreateClubManagerLinksAsync(
+        Guid personId,
+        IReadOnlyList<Guid> clubIds,
+        CancellationToken cancellationToken)
+    {
+        bool touched = false;
+
+        foreach (Guid clubId in clubIds.Distinct())
+        {
+            ClubManager? existing = await _clubManagerRepository.GetByPersonAndClubAsync(personId, clubId);
+            if (existing == null)
+            {
+                await _clubManagerRepository.AddAsync(new ClubManager(personId, clubId));
+                touched = true;
+            }
+            else if (!existing.IsActive)
+            {
+                existing.UpdateActiveStatus(true);
+                await _clubManagerRepository.UpdateAsync(existing);
+                touched = true;
+            }
+        }
+
+        if (touched)
+        {
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
     }
 

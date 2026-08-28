@@ -66,6 +66,22 @@ export function getDryRunCounts(payload: TournamentImportPayload): ImportDryRunC
  * we recommend turning playoffs off so the backend doesn't reject the import on the 1..8
  * `teamsAdvancingPerGroup` rule that only applies when playoffs are enabled.
  */
+/**
+ * Resolves the audience category for an import file. Tournament-level `teamCategory`
+ * wins, then the first team that set `category`, then Adult.
+ */
+export function inferTeamCategory(payload: TournamentImportPayload): TeamCategory {
+  const fromTournament = payload.tournament.teamCategory;
+  if (fromTournament && Object.values(TeamCategory).includes(fromTournament)) {
+    return fromTournament;
+  }
+  const fromTeam = payload.teams.find((team) => team.category)?.category;
+  if (fromTeam && Object.values(TeamCategory).includes(fromTeam)) {
+    return fromTeam;
+  }
+  return TeamCategory.Adult;
+}
+
 export function inferHasPlayoffStage(payload: TournamentImportPayload): boolean {
   if ((payload.playoffSchedule?.length ?? 0) > 0) return true;
   if (!payload.tournament.hasPlayoffStage) return false;
@@ -349,7 +365,9 @@ export async function importTournament(
   // 3) Teams ---------------------------------------------------------------
   const teamIdByName = new Map<string, string>();
   const tournamentVenue = (payload.tournament.venue ?? '').trim() || null;
-  const defaultCategory = options.defaultTeamCategory ?? TeamCategory.Adult;
+  const defaultCategory = options.defaultTeamCategory
+    ?? payload.tournament.teamCategory
+    ?? TeamCategory.Adult;
   for (let i = 0; i < payload.teams.length; i++) {
     if (checkAbort()) return summary;
     const t = payload.teams[i];
@@ -476,6 +494,7 @@ export async function importTournament(
       // hasThirdPlaceMatch only makes sense alongside a playoff stage.
       hasThirdPlaceMatch: effectiveHasPlayoffStage && payload.tournament.hasThirdPlaceMatch,
       playoffSchedule: playoffSchedule.length > 0 ? playoffSchedule : undefined,
+      teamCategory: defaultCategory,
     };
     const resp = await floorballTournamentService.create(req);
     tournament = resp.data;

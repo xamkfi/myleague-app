@@ -13,6 +13,7 @@ export interface NewsArticleDto {
   updatedAt?: string;
   category?: string;
   sportCategory?: string;
+  teamCategory?: string;
   tags: string[];
   isArchived: boolean;
 }
@@ -20,6 +21,10 @@ export interface NewsArticleDto {
 export interface NewsParameters{
   category: string;
   sportCategory: string;
+  tag?: string;
+  teamCategory?: string;
+  /** Multi-select category filter (admin views); each value is sent as its own teamCategory param. */
+  teamCategories?: string[];
   searchTerm: string;
   includeArchived?: boolean;
   page?: number;
@@ -48,6 +53,9 @@ export async function newsService(params?: Partial<NewsParameters>): Promise<Pag
 
     if (params?.category) queryParams.append("category", params.category);
     if (params?.sportCategory) queryParams.append("sportCategory", params.sportCategory);
+    if (params?.tag) queryParams.append("tag", params.tag);
+    if (params?.teamCategory) queryParams.append("teamCategory", params.teamCategory);
+    params?.teamCategories?.forEach(category => queryParams.append("teamCategory", category));
     if (params?.searchTerm) queryParams.append("search", params.searchTerm);
     if (params?.includeArchived !== undefined) queryParams.append("includeArchived", params.includeArchived.toString());
     if (params?.page) queryParams.append("page", params.page.toString());
@@ -138,6 +146,40 @@ export async function deleteNewsService(id: string) {
   } catch (error) {
     console.error("Delete error:", error);
     throw error;
+  }
+}
+
+export async function getNewsTags(): Promise<string[]> {
+  try {
+    const response = await authFetch(`${API_URL}/News/tags`, { method: 'GET' });
+    if (!response.ok) {
+      return [];
+    }
+    const payload: { data?: string[] } | string[] = await response.json();
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+    return payload.data ?? [];
+  } catch (error) {
+    console.error('Failed to fetch news tags:', error);
+    return [];
+  }
+}
+
+export async function getRecentNewsArticles(count = 4): Promise<NewsArticleDto[]> {
+  try {
+    const response = await authFetch(`${API_URL}/News/recent?count=${count}`, { method: 'GET' });
+    if (!response.ok) {
+      return [];
+    }
+    const payload: { data?: NewsArticleDto[] } | NewsArticleDto[] = await response.json();
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+    return payload.data ?? [];
+  } catch (error) {
+    console.error('Failed to fetch recent news:', error);
+    return [];
   }
 }
 

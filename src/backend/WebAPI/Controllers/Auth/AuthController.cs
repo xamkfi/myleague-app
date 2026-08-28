@@ -67,7 +67,7 @@ public class AuthController : BaseApiController
                     SanitizeForLog(request.Email));
 
                 return Ok(ApiResponse<object>.SuccessResponse(
-                    new { autoFillCode = result.Data },
+                    new { autoFillCode = result.Data, DevCode = result.Data },
                     "If an account exists with this email, a login code has been sent."));
             }
 

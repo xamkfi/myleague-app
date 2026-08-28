@@ -1,3 +1,4 @@
+using Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -97,7 +98,7 @@ public class DivisionsController : BaseApiController
     /// <param name="request">Division creation request</param>
     /// <returns>Created division details</returns>
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status500InternalServerError)]
@@ -138,7 +139,7 @@ public class DivisionsController : BaseApiController
     /// <param name="request">Division update request</param>
     /// <returns>Updated division details</returns>
     [HttpPut("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<DivisionDto>), StatusCodes.Status404NotFound)]
@@ -162,7 +163,7 @@ public class DivisionsController : BaseApiController
     /// <param name="id">Division ID</param>
     /// <returns>Success confirmation</returns>
     [HttpPatch("{id:guid}/activate")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -181,7 +182,7 @@ public class DivisionsController : BaseApiController
     /// <param name="id">Division ID</param>
     /// <returns>Success confirmation</returns>
     [HttpPatch("{id:guid}/deactivate")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -200,7 +201,7 @@ public class DivisionsController : BaseApiController
     /// <param name="id">Division ID</param>
     /// <returns>Success confirmation</returns>
     [HttpDelete("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]

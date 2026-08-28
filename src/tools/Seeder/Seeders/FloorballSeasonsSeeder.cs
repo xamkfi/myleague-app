@@ -38,6 +38,8 @@ public static class FloorballSeasonsSeeder
 					{
 						created.Add(existing);
 						Console.WriteLine("Season exists, skipping: " + existing.Name + " (" + existing.Id + ")");
+						await SeasonContentBlocksSeeder.EnsureAsync(
+							http, jsonOptions, "api/floorballseason", existing.Id, season.ContentBlocks, season.Name);
 						continue;
 					}
 				}
@@ -67,6 +69,8 @@ public static class FloorballSeasonsSeeder
 
 			created.Add(api.Data);
 			Console.WriteLine("Created floorball season " + api.Data.Name + " (" + api.Data.Id + ") with " + divisionIds.Count + " division(s)");
+			await SeasonContentBlocksSeeder.EnsureAsync(
+				http, jsonOptions, "api/floorballseason", api.Data.Id, season.ContentBlocks, season.Name);
 		}
 
 		return created;

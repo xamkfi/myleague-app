@@ -23,6 +23,8 @@ export interface CreateUserPayload {
   email: string;
   personId: string;
   role: UserRole;
+  /** Clubs the invited club admin should manage. Only used when role is ClubAdmin. */
+  clubAssignments?: string[];
 }
 
 export interface UpdateUserPayload {

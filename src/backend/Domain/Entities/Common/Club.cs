@@ -1,12 +1,11 @@
 using Domain.Entities.Floorball;
-using Domain.Entities.Hockey;
+using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Common;
-using Domain.Enums.Hockey;
 
 namespace Domain.Entities.Common
 {
     /// <summary>
-    /// Represents a sports club that can have both floorball and hockey teams.
+    /// Represents a sports club that can have floorball and hockey teams.
     /// </summary>
     public class Club : BaseEntity
     {
@@ -46,12 +45,13 @@ namespace Domain.Entities.Common
         public string ContactEmail { get; private set; }
 
         private readonly List<FloorballTeam> _floorballTeams = new();
-        private readonly List<HockeyTeam> _hockeyTeams = new();
 
         /// <summary>
         /// Gets the list of floorball teams associated with the club.
         /// </summary>
         public IReadOnlyList<FloorballTeam> FloorballTeams => _floorballTeams;
+
+        private readonly List<HockeyTeam> _hockeyTeams = new();
 
         /// <summary>
         /// Gets the list of hockey teams associated with the club.
@@ -200,21 +200,21 @@ namespace Domain.Entities.Common
         /// <summary>
         /// Adds a new hockey team to the club.
         /// </summary>
-        /// <param name="name">The name of the team.</param>
-        /// <param name="division">The division of the team.</param>
-        /// <param name="homeArena">The home arena of the team.</param>
-        /// <param name="primaryJerseyColor">The primary jersey color of the team.</param>
-        /// <param name="secondaryColor">The secondary jersey color of the team (optional).</param>
-        /// <returns>The created <see cref="HockeyTeam"/> instance.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
-        /// <exception cref="ArgumentException">Thrown if required parameters are empty or whitespace.</exception>
-        public HockeyTeam AddHockeyTeam(string name, HockeyDivision division, string homeArena, string primaryJerseyColor, string? secondaryColor = null)
+        public HockeyTeam AddHockeyTeam(
+            string name,
+            TeamCategory teamCategory,
+            Guid? divisionId = null,
+            string? homeArena = null,
+            string? primaryJerseyColor = null,
+            string? secondaryJerseyColor = null,
+            string? shortName = null,
+            Uri? logoUrl = null)
         {
             ValidateRequired(name, nameof(name));
-            ValidateRequired(homeArena, nameof(homeArena));
-            ValidateRequired(primaryJerseyColor, nameof(primaryJerseyColor));
 
-            HockeyTeam team = new HockeyTeam(name, division, this, homeArena, primaryJerseyColor, secondaryColor);
+            HockeyTeam team = new(
+                name, this, teamCategory, divisionId, homeArena,
+                primaryJerseyColor, secondaryJerseyColor, shortName, logoUrl);
             _hockeyTeams.Add(team);
             return team;
         }
@@ -222,13 +222,11 @@ namespace Domain.Entities.Common
         /// <summary>
         /// Removes a hockey team from the club by its identifier.
         /// </summary>
-        /// <param name="teamId">The unique identifier of the team to remove.</param>
-        /// <returns><c>true</c> if the team was removed; otherwise, <c>false</c>.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the team has active members.</exception>
         public bool RemoveHockeyTeam(Guid teamId)
         {
             HockeyTeam? team = _hockeyTeams.FirstOrDefault(t => t.Id == teamId);
-            if (team == null) return false;
+            if (team is null)
+                return false;
 
             if (team.HasActiveMembers)
                 throw new InvalidOperationException($"Cannot remove team {team.Name} as it has active members.");
@@ -240,10 +238,8 @@ namespace Domain.Entities.Common
         /// <summary>
         /// Gets all hockey teams in the specified division.
         /// </summary>
-        /// <param name="division">The division to filter by.</param>
-        /// <returns>An enumerable of <see cref="HockeyTeam"/> in the specified division.</returns>
-        public IEnumerable<HockeyTeam> GetHockeyTeamsByDivision(HockeyDivision division) =>
-            _hockeyTeams.Where(t => t.Division == division);
+        public IEnumerable<HockeyTeam> GetHockeyTeamsByDivision(Guid divisionId) =>
+            _hockeyTeams.Where(t => t.DivisionId == divisionId);
 
         /// <summary>
         /// Validates that a required string parameter is not null, empty, or whitespace.

@@ -21,15 +21,34 @@ public sealed class SeederConfiguration
     public List<PersonSeed> PlayerPersons { get; set; } = new List<PersonSeed>();
     public List<PersonSeed> GoaliePersons { get; set; } = new List<PersonSeed>();
     public List<PersonSeed> RefereePersons { get; set; } = new List<PersonSeed>();
+    public List<PersonSeed> StaffPersons { get; set; } = new List<PersonSeed>();
     public List<FloorballSeasonSeed> FloorballSeasons { get; set; } = new List<FloorballSeasonSeed>();
     public List<FloorballTournamentSeed> FloorballTournaments { get; set; } = new List<FloorballTournamentSeed>();
     public List<FloorballTeamSeed> FloorballTeams { get; set; } = new List<FloorballTeamSeed>();
     public List<FloorballMatchSeed> FloorballMatches { get; set; } = new List<FloorballMatchSeed>();
+    public List<FootballSeasonSeed> FootballSeasons { get; set; } = new List<FootballSeasonSeed>();
+    public List<FootballTournamentSeed> FootballTournaments { get; set; } = new List<FootballTournamentSeed>();
+    public List<FootballTeamSeed> FootballTeams { get; set; } = new List<FootballTeamSeed>();
+    public List<FootballMatchSeed> FootballMatches { get; set; } = new List<FootballMatchSeed>();
 
-    public static SeederConfiguration Load()
+    public List<HockeySeasonSeed> HockeySeasons { get; set; } = new List<HockeySeasonSeed>();
+    public List<HockeyTournamentSeed> HockeyTournaments { get; set; } = new List<HockeyTournamentSeed>();
+    public List<HockeyTeamSeed> HockeyTeams { get; set; } = new List<HockeyTeamSeed>();
+    public List<HockeyMatchSeed> HockeyMatches { get; set; } = new List<HockeyMatchSeed>();
+
+    public static SeederConfiguration LoadFootball()
     {
-        // Build path to data/testdata.json relative to the base directory
-        string testDataPath = Path.Combine(AppContext.BaseDirectory, "data", "testdata.json");
+        return Load("testdata-football.json");
+    }
+
+    public static SeederConfiguration Load(string dataFileName = "testdata.json")
+    {
+        if (string.IsNullOrWhiteSpace(dataFileName))
+        {
+            dataFileName = "testdata.json";
+        }
+
+        string testDataPath = Path.Combine(AppContext.BaseDirectory, "data", dataFileName);
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.SetBasePath(AppContext.BaseDirectory);

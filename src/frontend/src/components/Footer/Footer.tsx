@@ -1,45 +1,68 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchBackendVersion } from '../../api/version/versionService';
+import { footerContactService } from '../../api/common/footerContactService';
+import type { FooterContact } from '../../types/admin/footerContactTypes';
+import FooterLinkList from './FooterLinkList';
 import './Footer.scss';
 
+function obfuscateEmail(email: string): string {
+  return email.replace('@', ' (at) ');
+}
+
 export default function Footer() {
+  const { t } = useTranslation();
   const [backendVersion, setBackendVersion] = useState<string>('...');
+  const [entries, setEntries] = useState<FooterContact[]>([]);
 
   useEffect(() => {
     fetchBackendVersion().then(setBackendVersion);
+    footerContactService
+      .getAll()
+      .then(setEntries)
+      .catch(() => setEntries([]));
   }, []);
+
+  const sports = entries.filter((item) => item.section === 'SeasonalSports');
+  const activities = entries.filter((item) => item.section === 'OtherActivities');
+  const contacts = entries.filter((item) => item.section === 'Contact' || !item.section);
 
   return (
     <footer className="footer">
       <div className="footer-sections">
         <div className="footer-section">
-          <h4 className="footer-title">KAUSILAJIT</h4>
-          <div className="footer-links">
-            <span>Jalkapallo</span>
-            <span>Jääkiekko</span>
-            <span>Salibandy</span>
-            <span>Salibandyn Manager</span>
-            <span>Talvijalkapallo</span>
-            <span>Jääpallo</span>
-            <span>Puumalaliga</span>
-            <span>Jääkiekko +40</span>
-          </div>
+          <h4 className="footer-title">{t('footer.seasonSports', 'KAUSILAJIT')}</h4>
+          <FooterLinkList
+            items={sports}
+            emptyLabel={t('footer.sports.empty', 'Kausilajeja ei ole vielä lisätty.')}
+          />
         </div>
         <div className="footer-section">
-          <h4 className="footer-title">MUU TOIMINTA</h4>
-          <div className="footer-links">
-            <span>PMT Turnaukset</span>
-            <span>Korttelitoiminta</span>
-            <span>WHL Liikuntaleirit</span>
-            <span>Turnauspiste</span>
-          </div>
+          <h4 className="footer-title">{t('footer.otherActivities', 'MUU TOIMINTA')}</h4>
+          <FooterLinkList
+            items={activities}
+            emptyLabel={t('footer.activities.empty', 'Muuta toimintaa ei ole vielä lisätty.')}
+          />
         </div>
         <div className="footer-section">
-          <h4 className="footer-title">YHTEYSTIEDOT</h4>
+          <h4 className="footer-title">{t('footer.contacts.title', 'YHTEYSTIEDOT')}</h4>
           <div className="footer-contact">
-            <div>Mikkelin alueen harrasteliigat ry<br/>Savilahdenkatu 12 B 23<br/>50100 MIKKELI</div>
-            <div>Seuratyöntekijä Pasi (asukasmiehet)<br/>pasi (at) mahl.fi<br/>044 209 9919</div>
-            <div>Seuratyöntekijä Mikko Loukonen<br/>mikko (at) mahl.fi<br/>044 209 9919</div>
+            {contacts.length === 0 ? (
+              <p className="footer-contact-empty">
+                {t('footer.contacts.empty', 'Yhteystietoja ei ole vielä lisätty.')}
+              </p>
+            ) : (
+              contacts.map((contact) => (
+                <div key={contact.id} className="footer-contact-entry">
+                  <span>{contact.title}</span>
+                  {contact.details && (
+                    <span className="footer-contact-entry__details">{contact.details}</span>
+                  )}
+                  {contact.email && <span>{obfuscateEmail(contact.email)}</span>}
+                  {contact.phone && <span>{contact.phone}</span>}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

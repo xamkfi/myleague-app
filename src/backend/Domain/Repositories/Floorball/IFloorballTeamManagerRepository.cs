@@ -21,6 +21,29 @@ public interface IFloorballTeamManagerRepository
     /// <param name="personId">The person ID</param>
     /// <returns>The team manager if found, null otherwise</returns>
     Task<FloorballTeamManager?> GetByPersonIdAsync(Guid personId);
+
+    /// <summary>
+    /// Gets all floorball team manager rows for a person
+    /// </summary>
+    /// <param name="personId">The person ID</param>
+    /// <returns>All team manager rows for the person</returns>
+    Task<IEnumerable<FloorballTeamManager>> GetAllByPersonIdAsync(Guid personId);
+
+    /// <summary>
+    /// Checks whether a person is an active manager of a specific team
+    /// </summary>
+    /// <param name="personId">The person ID</param>
+    /// <param name="teamId">The team ID</param>
+    /// <returns>True if an active manager row exists for the person and team</returns>
+    Task<bool> IsActiveManagerOfTeamAsync(Guid personId, Guid teamId);
+
+    /// <summary>
+    /// Gets a floorball team manager row for a specific person and team
+    /// </summary>
+    /// <param name="personId">The person ID</param>
+    /// <param name="teamId">The team ID</param>
+    /// <returns>The team manager row if found, null otherwise</returns>
+    Task<FloorballTeamManager?> GetByPersonAndTeamAsync(Guid personId, Guid teamId);
     
     /// <summary>
     /// Gets all floorball team managers

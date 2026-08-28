@@ -2,15 +2,32 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { floorballStatisticsService } from '../../api/floorball/floorballStatistics';
-import type { FloorballTournamentGroupStandingDto } from '../../types/floorball/tournamentTypes';
 import { useFloorballTeamsData } from '../../hooks/useTeamsData';
 import { createTeamSlug } from '../../utils/slugUtils';
+import { getTeamPath, type SportKind } from '../../utils/sportRoutes';
+import { TeamLink } from '../SportLinks';
 import '../LeagueStanding/LeagueStanding.scss';
 import './TournamentGroupStandingsTable.scss';
+
+export interface TournamentGroupStandingRow {
+  teamId: string;
+  teamName: string;
+  teamLogo: string | null;
+  gamesPlayed: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+}
 
 interface TournamentGroupStandingsTableProps {
   groupId: string;
   groupName: string;
+  sport?: SportKind;
+  loadStandings?: (groupId: string) => Promise<TournamentGroupStandingRow[]>;
   /**
    * Number of teams that advance from this group to the playoff bracket.
    * The top N rows are highlighted in green so users can see the qualifying teams at a glance.
@@ -25,11 +42,11 @@ interface TournamentGroupStandingsTableProps {
   hideHeader?: boolean;
 }
 
-export default function TournamentGroupStandingsTable({ groupId, groupName, teamsAdvancingPerGroup = 0, hideHeader = false }: TournamentGroupStandingsTableProps) {
+export default function TournamentGroupStandingsTable({ groupId, groupName, sport = 'floorball', loadStandings, teamsAdvancingPerGroup = 0, hideHeader = false }: TournamentGroupStandingsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { teams, refetch } = useFloorballTeamsData();
-  const [rows, setRows] = useState<FloorballTournamentGroupStandingDto[] | null>(null);
+  const [rows, setRows] = useState<TournamentGroupStandingRow[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +60,9 @@ export default function TournamentGroupStandingsTable({ groupId, groupName, team
       try {
         setLoading(true);
         setError(null);
-        const data = await floorballStatisticsService.getTournamentGroupStandings(groupId);
+        const data = loadStandings
+          ? await loadStandings(groupId)
+          : await floorballStatisticsService.getTournamentGroupStandings(groupId);
         if (!cancelled) {
           setRows(data);
         }
@@ -61,13 +80,13 @@ export default function TournamentGroupStandingsTable({ groupId, groupName, team
     return () => {
       cancelled = true;
     };
-  }, [groupId]);
+  }, [groupId, loadStandings]);
 
   const navigateToTeam = (teamId: string): void => {
     const team = teams?.find((x) => x.id === teamId);
     if (!team) return;
     const slug = createTeamSlug(team, teams);
-    navigate(`/team/${slug}`);
+    navigate(getTeamPath(sport, slug));
   };
 
   return (
@@ -110,7 +129,7 @@ export default function TournamentGroupStandingsTable({ groupId, groupName, team
             <thead>
               <tr className="header-row">
                 <th className="rank-col">#</th>
-                <th className="team-col">TEAM</th>
+                <th className="team-col">{t('leaguePage.standings.team', 'TEAM')}</th>
                 <th className="spacer-col"></th>
                 <th className="stats-col" title="Pelatut ottelut (Matches Played)">MP</th>
                 <th className="stats-col" title="Voitot (Wins)">W</th>
@@ -150,7 +169,13 @@ export default function TournamentGroupStandingsTable({ groupId, groupName, team
                       ) : (
                         <div className="logo-empty"></div>
                       )}
-                      <span className="team-name">{row.teamName}</span>
+                      <TeamLink
+                        sport={sport}
+                        teamId={row.teamId}
+                        teamName={row.teamName}
+                        teams={teams}
+                        className="team-name"
+                      />
                     </div>
                   </td>
                   <td className="spacer-col"></td>

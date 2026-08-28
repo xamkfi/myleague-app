@@ -9,6 +9,7 @@ interface UsersTableProps {
   onEdit: (user: SystemUser) => void;
   onDelete: (user: SystemUser) => void;
   onResendInvitation: (user: SystemUser) => void;
+  onRevokeClubAdmin: (user: SystemUser) => void;
   resendingUserId: string | null;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -22,6 +23,7 @@ const UsersTable = ({
   onEdit,
   onDelete,
   onResendInvitation,
+  onRevokeClubAdmin,
   resendingUserId,
   selectedIds,
   onToggleSelect,
@@ -54,13 +56,13 @@ const UsersTable = ({
   };
 
   const getRoleBadgeClass = (role: string) => {
-    return role === 'SystemAdmin' ? 'admin-badge--system' : 'admin-badge--club';
+    if (role === 'SystemAdmin') return 'admin-badge--system';
+    return 'admin-badge--club';
   };
 
   const getRoleLabel = (role: string) => {
-    return role === 'SystemAdmin'
-      ? t('admin.users.roles.systemAdmin', 'System Admin')
-      : t('admin.users.roles.clubAdmin', 'Club Admin');
+    if (role === 'SystemAdmin') return t('admin.users.roles.systemAdmin', 'System Admin');
+    return t('admin.users.roles.clubAdmin', 'Club Admin');
   };
 
   const allSelected = users.length > 0 && selectedIds.size === users.length;
@@ -156,6 +158,13 @@ const UsersTable = ({
                                 : t('admin.users.actions.resendInvitation', 'Resend Invitation'),
                               onClick: () => onResendInvitation(user),
                               disabled: resendingUserId === user.id,
+                            }]
+                          : []),
+                        ...(user.role === 'ClubAdmin' && user.isActive
+                          ? [{
+                              label: t('admin.users.actions.revokeClubAdmin', 'Revoke club admin access'),
+                              onClick: () => onRevokeClubAdmin(user),
+                              variant: 'danger' as const,
                             }]
                           : []),
                         { label: t('common.delete', 'Delete'), onClick: () => onDelete(user), variant: 'danger' as const },

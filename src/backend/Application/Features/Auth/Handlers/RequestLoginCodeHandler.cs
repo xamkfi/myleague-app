@@ -48,7 +48,7 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
                 return Result<string?>.Success(null);
             }
 
-            if (!user.IsActive)
+            if (!user.IsActive && !_loginCodeConfig.AutoFillLoginCode)
             {
                 _logger.LogInformation("Login code requested for deactivated account: {Email}", request.Email);
                 return Result<string?>.Success(null);
@@ -62,7 +62,16 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
             await _userRepository.UpdateAsync(user);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // Send the code via email
+            // In development AutoFillLoginCode is on: return the code to the client and skip email.
+            // Production keeps AutoFillLoginCode false and sends the code by email.
+            if (_loginCodeConfig.AutoFillLoginCode)
+            {
+                _logger.LogInformation(
+                    "Login code generated for {Email} (auto-fill, email skipped), expires at {ExpiresAt}",
+                    request.Email, expiresAt);
+                return Result<string?>.Success(code);
+            }
+
             await _emailService.SendLoginCodeAsync(request.Email, code, cancellationToken);
 
             _logger.LogInformation("Login code sent to {Email}, expires at {ExpiresAt}", request.Email, expiresAt);

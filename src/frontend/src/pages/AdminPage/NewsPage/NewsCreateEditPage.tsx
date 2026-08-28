@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PageTemplate from "../../../components/PageTemplate/AdminPageTemplate";
-import RichTextEditor from "../../../components/RichTextEditor";
+import RichTextEditor, { extractRichTextImageUrls } from "../../../components/RichTextEditor";
 import { useTranslation } from "react-i18next";
 import NewsInputs, { type NewsInputsData } from "./components/NewsInputs";
 import PreviewNews from "./components/PreviewNews";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { CreateNewsService } from "../../../api/admin/News/CreateNewsService";
 import { UpdateNewsService } from "../../../api/admin/News/UpdateNewsService";
+import { handleImageDeleteService } from "../../../api/admin/News/handleImageDeleteService";
 import { useNavigate, useParams } from "react-router-dom";
 import { singleNewsService } from "../../../api/news/singleNewsService";
 import "./NewsCreateEditPage.scss";
@@ -33,8 +34,28 @@ export default function NewsCreateEditPage() {
 
   const [errors, setErrors] = useState<Partial<NewsInputsData>>({});
   const [contentError, setContentError] = useState<string>('');
+  const originalImageUrlsRef = useRef<string[]>([]);
 
   const navigate = useNavigate();
+
+  const collectStoredImageUrls = (html: string, mainPicture: string): string[] => {
+    const urls = extractRichTextImageUrls(html);
+    if (mainPicture.trim()) {
+      urls.push(mainPicture.trim());
+    }
+    return Array.from(new Set(urls));
+  };
+
+  const deleteOrphanedImages = (keptHtml: string, keptMainPicture: string): void => {
+    const kept = new Set(collectStoredImageUrls(keptHtml, keptMainPicture));
+    originalImageUrlsRef.current
+      .filter((url) => !kept.has(url))
+      .forEach((url) => {
+        handleImageDeleteService(url).catch((error) => {
+          console.error('Failed to delete orphaned image:', error);
+        });
+      });
+  };
 
   // Load existing article data if in edit mode
   useEffect(() => {
@@ -54,6 +75,10 @@ export default function NewsCreateEditPage() {
             contentHtml: article.contentHtml || ''
           });
           setValue(article.contentHtml || '');
+          originalImageUrlsRef.current = collectStoredImageUrls(
+            article.contentHtml || '',
+            article.mainImage || ''
+          );
         } catch (error) {
           console.error('Failed to fetch news article:', error);
           alert('Failed to load news article for editing');
@@ -120,12 +145,6 @@ export default function NewsCreateEditPage() {
             return value.trim();
           };
 
-          // Helper function to convert empty array to null
-          const toNullIfEmptyArray = <T,>(arr: T[]): T[] | null => {
-            if (!arr || arr.length === 0) return null;
-            return arr;
-          };
-
           const trimmedMainPicture = toNullIfEmpty(newsData.mainPicture);
           const filteredTags = newsData.tags.filter(tag => tag.trim() !== '');
 
@@ -138,7 +157,7 @@ export default function NewsCreateEditPage() {
             author: string | null;
             category: string | null;
             sportCategory: string | null;
-            tags: string[] | null;
+            tags: string[];
           } = {
             title: newsData.title.trim(),
             contentHtml: value.trim(),
@@ -148,9 +167,10 @@ export default function NewsCreateEditPage() {
             author: toNullIfEmpty(newsData.author),
             category: toNullIfEmpty(newsData.category),
             sportCategory: toNullIfEmpty(newsData.sportCategory),
-            tags: toNullIfEmptyArray(filteredTags)
+            tags: filteredTags
           };
           await UpdateNewsService(id, updateData);
+          deleteOrphanedImages(value.trim(), trimmedMainPicture ?? '');
           console.log("News updated successfully:", newsToSubmit);
           alert(t('admin.news.update_success', 'News article updated successfully!'));
         } else {

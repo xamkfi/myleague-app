@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 
 using Application.Features.Floorball.Seasons.DTOs;
@@ -28,6 +29,7 @@ namespace Application.Features.Floorball.Seasons.DTOs
     /// <param name="Teams">List of teams participating in this season</param>
     /// <param name="Matches">List of matches scheduled for this season</param>
     /// <param name="MatchRules">Match rules configuration for this season</param>
+    /// <param name="TeamCategory">Audience / age-group category</param>
     public record FloorballSeasonDto(
         Guid Id,
         string Name,
@@ -38,5 +40,6 @@ namespace Application.Features.Floorball.Seasons.DTOs
         IReadOnlyCollection<FloorballSeasonDivisionDto> SeasonDivisions,
         IReadOnlyCollection<FloorballTeamDto> Teams,
         IReadOnlyCollection<FloorballMatchDto> Matches,
-        FloorballMatchRulesDto MatchRules);
+        FloorballMatchRulesDto MatchRules,
+        TeamCategory TeamCategory);
 }

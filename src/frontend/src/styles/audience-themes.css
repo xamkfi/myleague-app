@@ -1,0 +1,41 @@
+/**
+ * Audience / age-group theme tokens.
+ * Applied via document.documentElement[data-audience="adult|youth|women"].
+ *
+ * Primary colour (= --banner-bg / --brand-darkest) is the solid navbar/banner colour
+ * from the design mockups — no gradients.
+ */
+
+:root,
+[data-audience='adult'] {
+  /* Primary: navy (Miehet) */
+  --brand-darkest: #1c356d;
+  --brand-deep: #1c356d;
+  --brand-medium: #394f80;
+  --brand-light: #5a6ea0;
+  --brand-bg: #cfd6e8;
+  --banner-bg: #1c356d;
+  --banner-text: #ffffff;
+}
+
+[data-audience='youth'] {
+  /* Primary: green (Lapset) */
+  --brand-darkest: #4e8100;
+  --brand-deep: #4e8100;
+  --brand-medium: #65941a;
+  --brand-light: #86b340;
+  --brand-bg: #e4efd0;
+  --banner-bg: #4e8100;
+  --banner-text: #ffffff;
+}
+
+[data-audience='women'] {
+  /* Primary: magenta (Naiset) */
+  --brand-darkest: #dd1e84;
+  --brand-deep: #dd1e84;
+  --brand-medium: #e564aa;
+  --brand-light: #e871a4;
+  --brand-bg: #f9d6e8;
+  --banner-bg: #dd1e84;
+  --banner-text: #ffffff;
+}

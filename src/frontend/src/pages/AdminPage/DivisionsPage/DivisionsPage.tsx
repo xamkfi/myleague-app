@@ -7,6 +7,7 @@ import Button from '../../../components/Button/Button';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import AddIcon from '../../../assets/basicIcons/add.svg';
 import { divisionService } from '../../../api/common/divisionService';
+import { mapDeletionError } from '../../../utils/mapDeletionError';
 import type { DivisionType } from '../../../types/common/divisionType';
 import type { DivisionStatusFilter } from '../../../types/common/divisionUiTypes';
 import { ACTIVE_SPORTS, SportsCategory, SPORT_LABELS } from '../../../types/common/sports';
@@ -122,9 +123,8 @@ const DivisionsPage = () => {
     } catch (err) {
       console.error('Failed to delete division', err);
       setError(
-        err instanceof Error
-          ? err.message
-          : t('admin.divisions.errors.delete', 'Failed to delete division. Please try again.'),
+        mapDeletionError(err, t) ??
+          t('admin.divisions.errors.delete', 'Failed to delete division. Please try again.'),
       );
     } finally {
       setIsDeleting(false);
@@ -175,6 +175,11 @@ const DivisionsPage = () => {
         setDivisions((prev) => prev.filter((d) => d.id !== id));
       } catch (err) {
         console.error('Failed to delete division', err);
+        setError(
+          mapDeletionError(err, t) ??
+            t('admin.divisions.errors.delete', 'Failed to delete division. Please try again.'),
+        );
+        return;
       }
     }
     setSelectedIds(new Set());

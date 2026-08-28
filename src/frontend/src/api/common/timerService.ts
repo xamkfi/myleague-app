@@ -55,8 +55,9 @@ export const timerService = {
     console.log('Period Number:', periodNumber);
     
     const url = new URL(`${API_URL}/matches/${matchId}/timer/start`);
-    if (periodNumber !== undefined) {
-      url.searchParams.append('periodNumber', periodNumber.toString());
+    const resolvedPeriod = Number.isFinite(periodNumber) ? Number(periodNumber) : undefined;
+    if (resolvedPeriod !== undefined) {
+      url.searchParams.append('periodNumber', resolvedPeriod.toString());
     }
     
     console.log('Start timer API URL:', url.toString());

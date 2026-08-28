@@ -60,7 +60,7 @@ public class GetDivisionByIdHandler : IRequestHandler<GetDivisionByIdQuery, Resu
             if (division == null)
             {
                 _logger.LogWarning("Division with ID {DivisionId} not found", request.Id);
-                return Result<DivisionDto>.Failure($"Division with ID {request.Id} not found.");
+                return Result<DivisionDto>.NotFound("Division", request.Id);
             }
 
             DivisionDto divisionDto = DivisionMapper.ToDto(division);

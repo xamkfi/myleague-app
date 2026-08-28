@@ -1,5 +1,5 @@
 import type { FloorballMatchDto } from '../../../types/floorball/floorballTypes';
-import type { TabType } from './MatchNavigation';
+import type { MatchTabType } from '../../../components/match';
 import MatchEvents from './MatchEvents';
 import MatchLineups from './MatchLineups';
 import MatchStats from './MatchStats';
@@ -7,7 +7,7 @@ import MatchStandings from './MatchStandings';
 import { useTranslation } from 'react-i18next';
 
 interface MatchTabContentProps {
-  activeTab: TabType;
+  activeTab: MatchTabType;
   match: FloorballMatchDto;
 }
 
@@ -35,13 +35,6 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
                 <MatchStats match={match} />
               </div>
             </div>
-          </div>
-        );
-      
-      case 'stats':
-        return (
-          <div className="tab-content">
-            <MatchStats match={match} />
           </div>
         );
       

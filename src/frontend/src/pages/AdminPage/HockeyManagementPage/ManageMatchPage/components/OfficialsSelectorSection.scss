@@ -1,0 +1,144 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+
+// Styled to mirror `.active-roster-card` so the two cards form a consistent vertical
+// stack in the manage-match layout (same border, padding, title typography and
+// primary-action button treatment).
+.officials-selector-section {
+  margin-top: 6px;
+  padding: 24px;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 8px;
+  background: $color-neutral-white;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 14px;
+    line-height: 24px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $color-neutral-black;
+  }
+
+  &__add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid $color-blue-deep;
+    border-radius: 4px;
+    background: $color-white;
+    color: $color-blue-deep;
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: $color-blue-deep;
+      color: $color-white;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    i {
+      font-size: 12px;
+    }
+  }
+
+  &__empty {
+    padding: 12px 14px;
+    border: 1px dashed $color-neutral-medium-grey;
+    border-radius: 6px;
+    color: $color-neutral-dark-grey;
+    font-family: $font-family-body;
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  &__rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    select {
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 40px;
+      padding: 8px 16px;
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: 4px;
+      background: $color-neutral-white;
+      font-family: $font-family-body;
+      font-weight: map.get($font-weights, 'regular');
+      font-size: 14px;
+      line-height: 24px;
+      letter-spacing: 0;
+      color: $color-neutral-black;
+      appearance: auto;
+      transition: border-color 0.15s ease;
+
+      &:focus {
+        outline: 2px solid $color-blue-deep;
+        outline-offset: 2px;
+      }
+
+      &:disabled {
+        background: $color-neutral-light-grey;
+        cursor: not-allowed;
+        opacity: 0.8;
+      }
+    }
+
+    .officials-selector-section__remove {
+      flex: 0 0 auto;
+      width: 32px;
+      height: 32px;
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: 4px;
+      background: $color-white;
+      color: $color-neutral-black;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+
+      &:hover:not(:disabled) {
+        background: $color-neutral-light-grey;
+        border-color: $color-neutral-dark-grey;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}

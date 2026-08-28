@@ -1,0 +1,147 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+
+.clock-card {
+  box-sizing: border-box;
+  // Was a fixed 622px which broke alignment with the right-hand scoreboard / events column
+  // when the page was rendered inside a flex parent that already split the width 50/50.
+  // Filling the parent here ensures both columns produce visually identical card widths.
+  width: 100%;
+  min-height: 200px;
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid $color-neutral-medium-grey;
+  background: $color-white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.clock-inner {
+  width: 100%;
+  min-height: 170px; /* keep enough room for the timer controls */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.period-row {
+  width: 100%;
+  min-height: 16px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+
+  &.extra-actions {
+    height: auto;
+    gap: 8px;
+    margin-top: 8px;
+
+    .start-match-btn {
+      width: auto;
+      min-width: 180px;
+      height: 36px;
+      padding: 0 16px;
+      font-size: 13px;
+    }
+  }
+}
+
+.period-chip {
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-family-body;
+  font-weight: map.get($font-weights, 'medium');
+  font-size: 12px;
+  letter-spacing: 0;
+  color: $color-neutral-dark-grey;
+
+  &.started {
+    color: $color-green-muted;
+    width: 105px;
+  }
+  &.upcoming {
+    width: 119px;
+  }
+  &.completed {
+    width: 119px;
+  }
+  
+  &.period-chip--extra {
+    font-weight: map.get($font-weights, 'bold');
+    width: auto;
+    min-width: 135px;
+    padding: 0 6px;
+
+    &.started {
+      color: $color-yellow-primary;
+    }
+    &.upcoming {
+      color: $color-yellow-muted;
+    }
+  }
+}
+
+.clock-time {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.start-match-btn {
+  background: #10b981;
+  color: white;
+  min-width: 120px;
+  padding: 12px 24px;
+  border: 2px solid #10b981;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-block;
+  text-decoration: none;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+
+  &:hover:not(:disabled) {
+    background: #059669;
+    border-color: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #9ca3af;
+    border-color: #9ca3af;
+  }
+}
+
+.match-completed-message {
+  font-family: $font-family-body;
+  font-weight: map.get($font-weights, 'semibold');
+  font-size: 1.25rem;
+  color: $color-neutral-dark-grey;
+  padding: 12px 24px;
+}
+
+
+/* Turn timer digits red at or beyond 15:00 (900s) */
+.clock-digits.timer-digits--critical {
+  .timer-component .timer-display .timer-time {
+    color: $color-red-primary;
+  }
+}
+

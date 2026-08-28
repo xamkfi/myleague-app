@@ -1,4 +1,5 @@
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 using Domain.Repositories.Common;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -82,5 +83,10 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
         return await _entities
             .Include(u => u.Person)
             .FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
+    }
+
+    public async Task<int> CountByRoleAsync(UserRole role)
+    {
+        return await _entities.CountAsync(u => u.Role == role);
     }
 }

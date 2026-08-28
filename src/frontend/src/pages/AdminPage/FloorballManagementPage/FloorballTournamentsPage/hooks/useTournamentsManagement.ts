@@ -13,6 +13,7 @@ export const useTournamentsManagement = () => {
 
   const [showOngoingOnly, setShowOngoingOnly] = useState(false);
   const [statusFilter, setStatusFilter] = useState<TournamentStatusFilter>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
   const parseApiError = useCallback((err: unknown): string => {
     const msg = err instanceof Error ? err.message : String(err);
@@ -64,6 +65,10 @@ export const useTournamentsManagement = () => {
     if (statusFilter !== 'all' && tournament.tournamentStatus !== statusFilter) {
       return false;
     }
+    // Team category filter (multi-select; empty selection = show all)
+    if (categoryFilter.length > 0 && !categoryFilter.includes(tournament.teamCategory ?? '')) {
+      return false;
+    }
     return true;
   });
 
@@ -80,9 +85,11 @@ export const useTournamentsManagement = () => {
     error,
     showOngoingOnly,
     statusFilter,
+    categoryFilter,
     uniqueStatuses,
     setShowOngoingOnly,
     setStatusFilter,
+    setCategoryFilter,
     loadTournaments,
   };
 };

@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Domain.Common;
 using Application.Features.Floorball.Teams.Commands;
@@ -51,7 +52,9 @@ namespace WebAPI.Controllers.Floorball
                 request.Page,
                 request.PageSize,
                 request.ClubId,
-                request.Division));
+                request.Division,
+                request.TeamCategories,
+                request.SearchTerm));
 
             return HandlePaginatedResult(result, "Floorball teams retrieved successfully", "Failed to retrieve floorball teams");
         }
@@ -160,7 +163,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Create team request</param>
         /// <returns>Created team details</returns>
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTeamDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -207,7 +210,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Update team request</param>
         /// <returns>Updated team details</returns>
         [HttpPut("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTeamDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -247,7 +250,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="id">Team ID</param>
         /// <returns>Success status</returns>
         [HttpDelete("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -275,7 +278,7 @@ namespace WebAPI.Controllers.Floorball
         /// </param>
         /// <returns>Updated team details</returns>
         [HttpPost("{teamId:guid}/players/{playerId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTeamDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -309,7 +312,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="playerId">Player ID</param>
         /// <returns>Updated team details</returns>
         [HttpDelete("{teamId:guid}/players/{playerId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTeamDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -330,7 +333,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Update team player request (position, jersey number, active status)</param>
         /// <returns>Updated team player details</returns>
         [HttpPut("{teamId:guid}/players/{playerId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTeamPlayerDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -364,7 +367,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="divisionId">The ID of the new division</param>
         /// <returns>Updated team details</returns>
         [HttpPatch("{teamId:guid}/division{divisionId:guid}")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTeamDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -385,7 +388,7 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="logoUrl">The new logo URL</param>
         /// <returns>Updated team details</returns>
         [HttpPatch("{id:guid}/logo")]
-        [Authorize]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<FloorballTeamDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

@@ -90,6 +90,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             string? searchQuery = null,
             Guid? tournamentGroupId = null,
             FloorballCompetitionType? competitionType = null,
+            Domain.Enums.Common.TeamCategory? teamCategory = null,
             CancellationToken cancellationToken = default)
         {
             DateTime? startDateUtc = startDate.HasValue
@@ -150,13 +151,18 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 }
             }
 
+            if (teamCategory.HasValue)
+            {
+                query = query.Where(m => m.Competition.TeamCategory == teamCategory.Value);
+            }
+
             // Apply search query filter (team names)
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
                 string searchTerm = searchQuery.Trim().ToLower();
-                query = query.Where(m => 
-                    m.HomeTeam.Name.ToLower().Contains(searchTerm) || 
-                    m.AwayTeam.Name.ToLower().Contains(searchTerm)
+                query = query.Where(m =>
+                    (m.HomeTeam != null && m.HomeTeam.Name.ToLower().Contains(searchTerm)) ||
+                    (m.AwayTeam != null && m.AwayTeam.Name.ToLower().Contains(searchTerm))
                 );
             }
 
@@ -458,6 +464,13 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             {
                 await DeleteAsync(match);
             }
+        }
+
+        public async Task<bool> HasAnyForTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+        {
+            return await _entities.AnyAsync(
+                m => m.HomeTeamId == teamId || m.AwayTeamId == teamId,
+                cancellationToken);
         }
 
         /// <inheritdoc />

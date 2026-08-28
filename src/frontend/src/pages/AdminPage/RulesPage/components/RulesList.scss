@@ -1,0 +1,21 @@
+.rules-list {
+  width: 100%;
+  background: white;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.rules-list__header {
+  padding: 1rem 1.25rem;
+  border: 1px solid #e5e7eb;
+  border-bottom: none;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background: white;
+
+  h3 {
+    margin: 0;
+    color: #111827;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+}

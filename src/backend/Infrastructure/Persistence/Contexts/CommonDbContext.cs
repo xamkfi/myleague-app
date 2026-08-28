@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Common;
 using MyLeague.Infrastructure.Persistence.Extensions;
 using MyLeague.Infrastructure.Persistence.Configurations.Common;
-using System.Reflection;
 
 namespace MyLeague.Infrastructure.Persistence.Contexts
 {
@@ -12,12 +11,12 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
     public class CommonDbContext : DbContext
     {
         private bool _isDispatchingEvents = false;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CommonDbContext"/> class.
         /// </summary>
         /// <param name="options">The options to be used by the DbContext.</param>
-        public CommonDbContext(DbContextOptions<CommonDbContext> options) : base(options){}
+        public CommonDbContext(DbContextOptions<CommonDbContext> options) : base(options) {}
 
         /// <summary>
         /// Gets or sets the Persons DbSet.
@@ -35,9 +34,29 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<Club> Clubs { get; set; }
 
         /// <summary>
+        /// Gets or sets the ClubManagers DbSet.
+        /// </summary>
+        public DbSet<ClubManager> ClubManagers { get; set; }
+
+        /// <summary>
         /// Gets or sets the NewsArticles DbSet.
         /// </summary>
         public DbSet<NewsArticle> NewsArticles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the InfoPageContents DbSet.
+        /// </summary>
+        public DbSet<InfoPageContent> InfoPageContents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RulesSections DbSet.
+        /// </summary>
+        public DbSet<RulesSection> RulesSections { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FooterContacts DbSet.
+        /// </summary>
+        public DbSet<FooterContact> FooterContacts { get; set; }
 
         /// <summary>
         /// Gets or sets the Divisions DbSet.
@@ -50,10 +69,10 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         /// <summary>
-        /// Gets or sets the TimerStates DbSet.
+        /// Gets  or sets the TimerStates DbSet.
         /// </summary>
         public DbSet<TimerState> TimerStates { get; set; }
-        
+
         /// <summary>
         /// Saves changes to the database with domain event dispatching.
         /// </summary>
@@ -70,13 +89,14 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         }
 
         /// <summary>
-        /// Saves changes without dispatching domain events (used internally to prevent recursion).
+        /// Saves changes without dispatching domain events.
         /// </summary>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>The number of state entries written to the database</returns>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The number of state entries written to the database.</returns>
         internal async Task<int> SaveChangesWithoutEventsAsync(CancellationToken cancellationToken = default)
         {
             _isDispatchingEvents = true;
+
             try
             {
                 return await base.SaveChangesAsync(cancellationToken);
@@ -102,10 +122,14 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new PersonConfiguration());
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new ClubConfiguration());
+            modelBuilder.ApplyConfiguration(new ClubManagerConfiguration());
             modelBuilder.ApplyConfiguration(new NewsArticleConfiguration());
+            modelBuilder.ApplyConfiguration(new InfoPageContentConfiguration());
+            modelBuilder.ApplyConfiguration(new RulesSectionConfiguration());
+            modelBuilder.ApplyConfiguration(new FooterContactConfiguration());
             modelBuilder.ApplyConfiguration(new DivisionConfiguration());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
             modelBuilder.ApplyConfiguration(new TimerStateConfiguration());
         }
     }
-} 
+}

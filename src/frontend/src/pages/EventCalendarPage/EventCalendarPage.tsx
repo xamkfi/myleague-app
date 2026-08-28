@@ -3,6 +3,10 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { floorballSeasonService } from '../../api/floorball/floorballSeasonService';
+import { loadAllHockeyMatches } from '../../api/hockey/loadAllHockeyMatches';
+import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
+import { loadTeamNameMap } from '../../utils/hockeyLookups';
+import { mapHockeyMatchToCalendarEvent } from './utils/mapHockeyToCalendarEvent';
 import type { CalendarEvent, CalendarFilters as FiltersType } from '../../types/calendar';
 import { DEFAULT_CALENDAR_FILTERS } from '../../types/calendar';
 import { mapFloorballMatchToCalendarEvent } from './utils/mapFloorballToCalendarEvent';
@@ -10,6 +14,7 @@ import MiniCalendar from './components/MiniCalendar';
 import EventAgendaList from './components/EventAgendaList';
 import CalendarFilters from './components/CalendarFilters';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import { useAudience } from '../../context/AudienceContext';
 import './EventCalendarPage.scss';
 
 interface SeasonOption {
@@ -28,6 +33,7 @@ function getMonthBounds(year: number, month: number): { startDate: string; endDa
 
 function EventCalendarPage() {
   const { t } = useTranslation();
+  const { audience } = useAudience();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -39,13 +45,22 @@ function EventCalendarPage() {
 
   const fetchSeasons = useCallback(async () => {
     try {
-      const response = await floorballSeasonService.getActive();
-      const list = response.data ?? [];
-      setSeasons(list.map((s) => ({ id: s.id, name: s.name })));
+      const [floorball, hockey] = await Promise.all([
+        floorballSeasonService.getActive(),
+        hockeySeasonService.getActive(audience.teamCategory).catch(() => []),
+      ]);
+      const floorballList = (floorball.data ?? []).filter(
+        (season) => !season.teamCategory || season.teamCategory === audience.teamCategory,
+      );
+      const hockeyList = hockey;
+      setSeasons([
+        ...floorballList.map((season) => ({ id: season.id, name: season.name })),
+        ...hockeyList.map((season) => ({ id: season.id, name: season.name })),
+      ]);
     } catch {
       // Non-critical: seasons filter just won't show options
     }
-  }, []);
+  }, [audience.teamCategory]);
 
   const fetchEvents = useCallback(async (y: number, m: number) => {
     setIsLoading(true);
@@ -57,16 +72,37 @@ function EventCalendarPage() {
         endDate,
         pageSize: 100,
         sortOrder: 'asc',
+        teamCategory: audience.teamCategory,
       });
       const list = response.data ?? [];
-      setAllEvents(list.map(mapFloorballMatchToCalendarEvent));
+      const floorballEvents = list.map(mapFloorballMatchToCalendarEvent);
+      const [hockeyMatches, teamNames, hockeySeasons] = await Promise.all([
+        loadAllHockeyMatches(audience.teamCategory).catch(() => []),
+        loadTeamNameMap(undefined, audience.teamCategory).catch(() => new Map<string, string>()),
+        hockeySeasonService.getAll(audience.teamCategory).catch(() => []),
+      ]);
+      const seasonNames = new Map(hockeySeasons.map((season) => [season.id, season.name]));
+      const monthStart = new Date(startDate);
+      const monthEnd = new Date(endDate);
+      monthEnd.setHours(23, 59, 59, 999);
+      const hockeyEvents = hockeyMatches
+        .filter((match) => {
+          const kickoff = new Date(match.scheduledStartTime);
+          return kickoff >= monthStart && kickoff <= monthEnd;
+        })
+        .map((match) => mapHockeyMatchToCalendarEvent(
+          match,
+          teamNames,
+          match.competitionId ? seasonNames.get(match.competitionId) : undefined,
+        ));
+      setAllEvents([...floorballEvents, ...hockeyEvents]);
     } catch (err) {
       console.error('EventCalendarPage: fetch failed', err);
       setError(t('eventCalendarPage.error'));
     } finally {
       setIsLoading(false);
     }
-  }, [t]);
+  }, [t, audience.teamCategory]);
 
   useEffect(() => {
     fetchSeasons();

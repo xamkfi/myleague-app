@@ -12,6 +12,7 @@ import '../../../../styles/AdminTable.scss';
 import './FloorballRefereesPage.scss';
 
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import { mapDeletionError } from '../../../../utils/mapDeletionError';
 
 const FloorballRefereesPage = () => {
   const { t } = useTranslation();
@@ -133,7 +134,10 @@ const FloorballRefereesPage = () => {
       setIsDeleteModalOpen(false);
       setRefereeToDelete(null);
     } catch (err) {
-      setError(t('floorball.referees.errors.deleteFailed', 'Failed to delete referee. Please try again.'));
+      setError(
+        mapDeletionError(err, t) ??
+          t('floorball.referees.errors.deleteFailed', 'Failed to delete referee. Please try again.'),
+      );
       console.error(err);
     } finally {
       setIsDeleting(false);

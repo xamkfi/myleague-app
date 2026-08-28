@@ -1,3 +1,5 @@
+using System.Linq;
+using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
@@ -33,7 +35,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                     .ThenInclude(m => m.HomeTeam)
                 .Include(s => s.Matches)
                     .ThenInclude(m => m.AwayTeam)
-                .FirstOrDefaultAsync(s => s.Id == id) ?? throw new KeyNotFoundException($"Competition with ID {id} not found.");
+                .FirstOrDefaultAsync(s => s.Id == id);
         }
 
         /// <summary>
@@ -188,6 +190,96 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         public async Task<bool> ExistsAsync(Guid id)
         {
             return await _entities.AnyAsync(s => s.Id == id);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<FloorballSeasonDateSummary>> GetSeasonDateSummariesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _entities
+                .OfType<FloorballSeason>()
+                .AsNoTracking()
+                .Select(s => new FloorballSeasonDateSummary(s.StartDate, s.EndDate, s.IsActive))
+                .ToListAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<PagedResult<FloorballSeason>> GetSeasonsPagedAsync(
+            int page,
+            int pageSize,
+            int? startYear,
+            int? endYear,
+            Domain.Enums.Common.TeamCategory? teamCategory = null,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballSeason> query = _entities
+                .OfType<FloorballSeason>()
+                .AsNoTracking();
+
+            if (startYear.HasValue && endYear.HasValue)
+            {
+                int start = startYear.Value;
+                int end = endYear.Value;
+                query = query.Where(s => s.StartDate.Year == start && s.EndDate.Year == end);
+            }
+
+            if (teamCategory.HasValue)
+            {
+                query = query.Where(s => s.TeamCategory == teamCategory.Value);
+            }
+
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            List<FloorballSeason> items = await query
+                .OrderByDescending(s => s.IsActive)
+                .ThenByDescending(s => s.StartDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return PagedResult.Create(items, totalCount, page, pageSize);
+        }
+
+        /// <inheritdoc />
+        public async Task<FloorballSeason?> GetSeasonWithContentBlocksAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return await _entities
+                .OfType<FloorballSeason>()
+                .Include(season => season.ContentBlocks)
+                .FirstOrDefaultAsync(season => season.Id == id, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<FloorballSeason?> GetFeaturedSeasonWithContentBlocksAsync(
+            int? startYear,
+            int? endYear,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballSeason> query = _entities.OfType<FloorballSeason>();
+
+            if (startYear.HasValue && endYear.HasValue)
+            {
+                int start = startYear.Value;
+                int end = endYear.Value;
+                query = query.Where(season => season.StartDate.Year == start && season.EndDate.Year == end);
+            }
+
+            return await query
+                .Include(season => season.ContentBlocks)
+                .OrderByDescending(season => season.IsActive)
+                .ThenByDescending(season => season.StartDate)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public void MarkNewContentBlocksAdded(FloorballSeason season, IReadOnlyCollection<Guid> existingBlockIds)
+        {
+            foreach (FloorballSeasonContentBlock block in season.ContentBlocks.Where(block => !existingBlockIds.Contains(block.Id)))
+            {
+                _dbContext.Entry(block).State = EntityState.Added;
+            }
         }
     }
 }

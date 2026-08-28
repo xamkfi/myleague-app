@@ -13,6 +13,6 @@ namespace Application.Features.Common.Search.DTOs
         Guid TeamId,
         string TeamName,
         Guid? ClubId,
-        string? ClubName
-        );
+        string? ClubName,
+        string Sport = "floorball");
 }

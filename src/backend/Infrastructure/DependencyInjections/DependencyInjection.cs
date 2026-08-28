@@ -1,27 +1,33 @@
-using Domain.Repositories.Floorball;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Application.Configuration;
+using Application.Features.Common.MatchTimer.Services;
+using Application.Interfaces.Auth;
+using Application.Interfaces.Common;
 using Domain.Repositories.Common;
-using Domain.Services.Floorball;
+using Domain.Repositories.Floorball;
+using Domain.Repositories.Hockey;
+using Domain.Repositories.Football;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using MyLeague.Infrastructure.Persistence;
-using MyLeague.Infrastructure.Persistence.Contexts;
-using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
-using MyLeague.Infrastructure.Persistence.Repositories.Common;
-using MyLeague.Infrastructure.Persistence.UnitOfWork;
-using MyLeague.Infrastructure.HealthChecks;
-using Application.Interfaces.Common;
-using Application.Interfaces.Auth;
-using Application.Configuration;
-using Application.Features.Common.MatchTimer.Services;
-using MyLeague.Infrastructure.Services.ImageStorage;
-using MyLeague.Infrastructure.Services.Common;
-using MyLeague.Infrastructure.Services.Auth;
-using MyLeague.Infrastructure.Services.Seeding;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using MyLeague.Infrastructure.HealthChecks;
+using MyLeague.Infrastructure.Persistence.Contexts;
+using MyLeague.Infrastructure.Persistence.Repositories.Common;
+using MyLeague.Infrastructure.Persistence.Repositories.Floorball;
+using MyLeague.Infrastructure.Persistence.Repositories.Hockey;
+using MyLeague.Infrastructure.Persistence.Repositories.Football;
+using MyLeague.Infrastructure.Persistence.UnitOfWork;
+using MyLeague.Infrastructure.Services.Auth;
+using MyLeague.Infrastructure.Services.Common;
+using MyLeague.Infrastructure.Services.ImageStorage;
+using MyLeague.Infrastructure.Persistence.Seeding;
+using MyLeague.Infrastructure.Services.Seeding;
 
 namespace MyLeague.Infrastructure.DependencyInjections
 {
@@ -52,30 +58,31 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     connectionString,
                     b => b.MigrationsAssembly(typeof(FloorballDbContext).Assembly.FullName)));
 
-            // Auto-apply migrations and seed data
-            using (ServiceProvider serviceProvider = services.BuildServiceProvider())
+            services.AddDbContext<HockeyDbContext>(options =>
             {
-                using (IServiceScope scope = serviceProvider.CreateScope())
-                {
-                    CommonDbContext commonDbContext = scope.ServiceProvider.GetRequiredService<CommonDbContext>();
-                    commonDbContext.Database.Migrate();
-
-                    FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
-                    floorballDbContext.Database.Migrate();
-
-                    // Seed default users after migrations
-                    DatabaseSeeder seeder = new();
-                    IWebHostEnvironment env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-                    seeder.SeedAsync(scope.ServiceProvider, env, configuration).GetAwaiter().GetResult();
-                }
-            }
+                options.UseNpgsql(
+                    connectionString,
+                    b => b.MigrationsAssembly(typeof(HockeyDbContext).Assembly.FullName));
+                // Nested owned HockeyCoachChallengeRules generates truncated Postgres identifiers that
+                // leave a permanent model/snapshot drift in EF tooling; do not block startup migrate.
+                options.ConfigureWarnings(w =>
+                    w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+            });
+            services.AddDbContext<FootballDbContext>(options =>
+                options.UseNpgsql(
+                    connectionString,
+                    b => b.MigrationsAssembly(typeof(FootballDbContext).Assembly.FullName)));
 
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();
+            services.AddScoped<IClubManagerRepository, ClubManagerRepository>();
             services.AddScoped<IPersonRepository, PersonRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
+            services.AddScoped<IInfoPageContentRepository, InfoPageContentRepository>();
+            services.AddScoped<IRulesSectionRepository, RulesSectionRepository>();
+            services.AddScoped<IFooterContactRepository, FooterContactRepository>();
             services.AddScoped<IDivisionRepository, DivisionRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
             services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();
@@ -86,6 +93,21 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IFloorballTournamentRepository, FloorballTournamentRepository>();
             services.AddScoped<IFloorballCompetitionDivisionRepository, FloorballCompetitionDivisionRepository>();
             services.AddScoped<IFloorballStatisticsRepository, FloorballStatisticsRepository>();
+            services.AddScoped<IHockeyCompetitionRepository, HockeyCompetitionRepository>();
+            services.AddScoped<IHockeyTeamRepository, HockeyTeamRepository>();
+            services.AddScoped<IHockeyPlayerRepository, HockeyPlayerRepository>();
+            services.AddScoped<IHockeyOfficialRepository, HockeyOfficialRepository>();
+            services.AddScoped<IHockeyMatchRepository, HockeyMatchRepository>();
+            services.AddScoped<IHockeyStatisticsRepository, HockeyStatisticsRepository>();
+            services.AddScoped<IFootballPlayerRepository, FootballPlayerRepository>();
+            services.AddScoped<IFootballTeamRepository, FootballTeamRepository>();
+            services.AddScoped<IFootballTeamManagerRepository, FootballTeamManagerRepository>();
+            services.AddScoped<IFootballRefereeRepository, FootballRefereeRepository>();
+            services.AddScoped<IFootballMatchRepository, FootballMatchRepository>();
+            services.AddScoped<IFootballCompetitionRepository, FootballCompetitionRepository>();
+            services.AddScoped<IFootballTournamentRepository, FootballTournamentRepository>();
+            services.AddScoped<IFootballCompetitionDivisionRepository, FootballCompetitionDivisionRepository>();
+            services.AddScoped<IFootballStatisticsRepository, FootballStatisticsRepository>();
             services.AddScoped<IImageStorageService>(sp =>
             {
                 IConfiguration config = sp.GetRequiredService<IConfiguration>();
@@ -115,12 +137,9 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IEmailService>(sp =>
             {
                 IWebHostEnvironment env = sp.GetRequiredService<IWebHostEnvironment>();
-                IConfiguration config = sp.GetRequiredService<IConfiguration>();
 
-                // Use console logging in development when Azure Communication Services is not configured
-                bool hasAzureConfig = !string.IsNullOrWhiteSpace(
-                    config.GetSection("AzureCommunicationServices:ConnectionString").Value);
-                bool useConsole = env.IsDevelopment() && !hasAzureConfig;
+                // Development never sends real emails; login codes are auto-filled instead.
+                bool useConsole = env.IsDevelopment();
 
                 if (useConsole)
                 {
@@ -131,19 +150,21 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AzureCommunicationServicesConfiguration>>(),
                     sp.GetRequiredService<ILogger<AzureCommunicationEmailService>>());
             });
-            
+
             // Add timer services
             services.AddScoped<ITimerRepository, TimerRepository>();
             services.AddScoped<ITimerNotificationService, TimerNotificationService>();
             services.AddSingleton<ITimerStore, InMemoryTimerStore>();
-            
+
             // Register timer background service
             // No need for it now so disabled by default
-           // services.AddHostedService<TimerBackgroundService>();
+            // services.AddHostedService<TimerBackgroundService>();
 
             // Add unit of work
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
             services.AddScoped<IFloorballUnitOfWork, FloorballUnitOfWork>();
+            services.AddScoped<IHockeyUnitOfWork, HockeyUnitOfWork>();
+            services.AddScoped<IFootballUnitOfWork, FootballUnitOfWork>();
 
 
             // Add domain events / SignalR
@@ -151,6 +172,32 @@ namespace MyLeague.Infrastructure.DependencyInjections
 
             // Add health checks
             services.AddMyLeagueHealthChecks(configuration);
+
+            // Auto-apply migrations and seed data
+            using (ServiceProvider serviceProvider = services.BuildServiceProvider())
+            {
+                using (IServiceScope scope = serviceProvider.CreateScope())
+                {
+                    CommonDbContext commonDbContext = scope.ServiceProvider.GetRequiredService<CommonDbContext>();
+                    commonDbContext.Database.Migrate();
+
+                    FloorballDbContext floorballDbContext = scope.ServiceProvider.GetRequiredService<FloorballDbContext>();
+                    floorballDbContext.Database.Migrate();
+
+                    HockeyDbContext hockeyDbContext = scope.ServiceProvider.GetRequiredService<HockeyDbContext>();
+                    hockeyDbContext.Database.Migrate();
+                    FootballDbContext footballDbContext = scope.ServiceProvider.GetRequiredService<FootballDbContext>();
+                    footballDbContext.Database.Migrate();
+
+                    // Seed default users after migrations
+                    DatabaseSeeder seeder = new();
+                    IWebHostEnvironment env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+                    seeder.SeedAsync(scope.ServiceProvider, env, configuration).GetAwaiter().GetResult();
+
+                    InfoPageContentSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                    FooterContactSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                }
+            }
 
             return services;
         }

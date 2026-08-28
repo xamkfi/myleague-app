@@ -1,0 +1,247 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+// Tournaments listing page — visually aligned with FootballPage:
+// - same gradient hero header (blue-deep -> blue-darkest)
+// - same dark card surface with gradient header strip
+// - same auto-fill responsive grid for cards
+// - lifecycle status pill (upcoming/ongoing/past) replaces ad-hoc green/red badges
+
+.tournaments-page {
+  max-width: $max-width-page;
+  margin: 0 auto;
+  padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'lg');
+
+  &__header {
+    background: $color-banner-bg;
+    border-radius: map.get($border-radius, 'lg');
+    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+    margin-bottom: map.get($spacing, 'xl');
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba($color-blue-secondary, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, 'xxl');
+    font-weight: map.get($font-weights, 'extrabold');
+    color: $color-white;
+    margin-bottom: map.get($spacing, 'sm');
+    font-family: $font-family-display;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+  }
+
+  &__description {
+    font-size: map.get($font-sizes, 'md');
+    color: rgba($color-white, 0.75);
+    max-width: 720px;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  &__loading,
+  &__error,
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    color: $color-blue-deep;
+    gap: map.get($spacing, 'md');
+    text-align: center;
+  }
+
+  &__retry-btn {
+    background: $color-blue-secondary;
+    color: $color-white;
+    border: none;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'lg');
+    border-radius: map.get($border-radius, 'lg');
+    cursor: pointer;
+    font-weight: map.get($font-weights, 'semibold');
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: $color-blue-secondary-muted;
+    }
+  }
+
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: map.get($spacing, 'xl');
+  }
+}
+
+// --- Tournament card -------------------------------------------------------
+// Mirrors .season-card from FootballPage so users see one consistent surface
+// across "Sarjat" and "Turnaukset".
+.tournament-card {
+  background: $color-brand-darkest;
+  border-radius: map.get($border-radius, 'lg');
+  overflow: hidden;
+  border: 1px solid rgba($color-white, 0.1);
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
+    background: $color-banner-bg;
+    gap: map.get($spacing, 'sm');
+  }
+
+  &__title {
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-white;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__badge {
+    flex-shrink: 0;
+    font-size: map.get($font-sizes, 'xs');
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $color-white;
+
+    &--upcoming {
+      background: $color-blue-secondary;
+    }
+
+    &--ongoing {
+      background: $color-green-primary;
+    }
+
+    &--past {
+      background: rgba($color-white, 0.18);
+    }
+  }
+
+  &__meta {
+    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xs');
+    border-bottom: 1px solid rgba($color-white, 0.08);
+  }
+
+  &__meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'sm');
+    line-height: 1.5;
+  }
+
+  &__meta-label {
+    color: rgba($color-white, 0.55);
+    font-weight: map.get($font-weights, 'semibold');
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: map.get($font-sizes, 'xs');
+    align-self: center;
+  }
+
+  &__meta-value {
+    color: $color-white;
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &__meta-value-secondary {
+    color: $color-white;
+    font-weight: map.get($font-weights, 'medium');
+    margin-left: map.get($spacing, 'xxs');
+  }
+
+  &__meta-separator {
+    color: rgba($color-white, 0.35);
+    margin: 0 map.get($spacing, 'xs');
+  }
+
+  &__description {
+    margin: 0;
+    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
+    color: rgba($color-white, 0.78);
+    font-size: map.get($font-sizes, 'sm');
+    line-height: 1.55;
+    border-bottom: 1px solid rgba($color-white, 0.08);
+  }
+
+  &__links {
+    display: flex;
+    flex-direction: column;
+    padding: map.get($spacing, 'md') map.get($spacing, 'lg');
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__link {
+    color: $color-blue-secondary;
+    text-decoration: none;
+    font-size: map.get($font-sizes, 'base');
+    padding: map.get($spacing, 'xs') 0;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $color-blue-secondary-light;
+      text-decoration: underline;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .tournaments-page {
+    padding: 0 map.get($spacing, 'md') map.get($spacing, 'md');
+
+    &__header {
+      padding: map.get($spacing, 'lg') map.get($spacing, 'md');
+      margin-bottom: map.get($spacing, 'lg');
+    }
+
+    &__title {
+      font-size: map.get($font-sizes, 'xl');
+    }
+
+    &__list {
+      grid-template-columns: 1fr;
+      gap: map.get($spacing, 'lg');
+    }
+  }
+
+  .tournament-card {
+    &__header {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    }
+
+    &__title {
+      font-size: map.get($font-sizes, 'base');
+    }
+
+    &__meta,
+    &__description,
+    &__links {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    }
+  }
+}

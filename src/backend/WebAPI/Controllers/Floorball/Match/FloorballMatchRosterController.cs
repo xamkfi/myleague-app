@@ -1,3 +1,4 @@
+using Domain.Constants;
 using Application.Common;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
@@ -15,7 +16,7 @@ namespace WebAPI.Controllers.Floorball
     /// player lineup. Both operate within a specific match-team pair.
     /// </summary>
     [Route("api/floorball-matches/{matchId:guid}/teams/{teamId:guid}")]
-    [Authorize]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     public class FloorballMatchRosterController : BaseApiController
     {
         private readonly IMediator _mediator;
