@@ -85,10 +85,21 @@ public class RecordCardHandler : IRequestHandler<RecordCardCommand, Result<Footb
 
             return Result<FootballMatchDto>.Success(FootballMatchMapper.ToDto(match));
         }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Domain rejected RecordCard for {MatchId}", request.MatchId);
+            return Result<FootballMatchDto>.Failure(ex.Message, ex.Flatten());
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid RecordCard for {MatchId}", request.MatchId);
+            return Result<FootballMatchDto>.Failure(ex.Message, ex.Flatten());
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while recording card in match {MatchId}", request.MatchId);
-            return Result<FootballMatchDto>.Failure("An error occurred while recording the card.");
+            string detail = ex.InnerException?.Message ?? ex.Message;
+            return Result<FootballMatchDto>.Failure(detail, ex.Flatten());
         }
     }
 

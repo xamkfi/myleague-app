@@ -216,4 +216,10 @@ public record RecordGoalRequest
     /// Optional goal type
     /// </summary>
     public FootballGoalType? GoalType { get; init; }
+
+    /// <summary>
+    /// When <c>true</c>, skips the per-(match, scorer) double-click window. Intended for
+    /// historical import / admin backfill, not the live scorekeeper UI.
+    /// </summary>
+    public bool SkipRateLimit { get; init; }
 }

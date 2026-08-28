@@ -96,6 +96,12 @@ namespace WebAPI.Models.Floorball
         /// match events list. May be empty when the operator did not provide a reason.
         /// </summary>
         public string? Description { get; set; }
+
+        /// <summary>
+        /// When <c>true</c>, skips the per-(match, player) double-click window. Intended for
+        /// historical import / admin backfill, not the live scorekeeper UI.
+        /// </summary>
+        public bool SkipRateLimit { get; set; }
     }
 
     /// <summary>
@@ -150,6 +156,56 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "Match ID is required")]
         public Guid MatchId { get; set; }
+    }
+
+    /// <summary>
+    /// Batch import of historical floorball match events. Not rate-limited; intended for
+    /// the JoomLeague importer and admin backfill, not live scorekeeping.
+    /// </summary>
+    public class ImportFloorballMatchEventsRequest
+    {
+        /// <summary>
+        /// Goals and penalties to record, in clock order.
+        /// </summary>
+        [Required]
+        [MinLength(1)]
+        [MaxLength(200)]
+        public List<ImportFloorballMatchEventRequest> Events { get; set; } = [];
+    }
+
+    /// <summary>
+    /// One event in an <see cref="ImportFloorballMatchEventsRequest"/> batch.
+    /// <c>EventType</c> is <c>Goal</c> or <c>Penalty</c>.
+    /// </summary>
+    public class ImportFloorballMatchEventRequest
+    {
+        [Required]
+        public string EventType { get; set; } = string.Empty;
+
+        [Required]
+        public Guid TeamId { get; set; }
+
+        public Guid? PlayerId { get; set; }
+
+        public Guid? AssistingPlayerId { get; set; }
+
+        public Guid? SecondaryAssistingPlayerId { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int PeriodNumber { get; set; }
+
+        [Range(0, int.MaxValue)]
+        public int TimeInSeconds { get; set; }
+
+        public int? GoalType { get; set; }
+
+        [StringLength(500)]
+        public string? Description { get; set; }
+
+        [Range(2, 20)]
+        public int? PenaltyMinutes { get; set; }
+
+        public string? PenaltyType { get; set; }
     }
 
 } 

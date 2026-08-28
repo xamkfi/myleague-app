@@ -107,6 +107,12 @@ public class FootballEntityImporter
     {
         Console.WriteLine("--- Persons & Football Players ---");
 
+        if (set.UniquePersons.Keys.All(_idMap.HasPerson))
+        {
+            Console.WriteLine($"  Persons: 0 created, {set.UniquePersons.Count} already mapped.");
+            return;
+        }
+
         List<FootballPlayerDto> existingPlayers = await _api.GetPlayersAsync();
         Dictionary<Guid, FootballPlayerDto> playerByPersonId = [];
         foreach (FootballPlayerDto p in existingPlayers)
@@ -178,6 +184,13 @@ public class FootballEntityImporter
     public async Task ImportTeamsAsync(FloorballImportSet set, JoomleagueDatabase db, DivisionDto division)
     {
         Console.WriteLine("--- Teams & Rosters ---");
+        int mappedTeams = set.UniqueTeams.Keys.Count(_idMap.HasTeam);
+        if (mappedTeams == set.UniqueTeams.Count)
+        {
+            Console.WriteLine($"  Teams: 0 created, {mappedTeams} already mapped (roster check skipped).");
+            return;
+        }
+
         List<Application.Features.Football.Teams.DTOs.FootballTeamSummaryDto> existing = await _api.GetTeamsAsync();
         int created = 0, reused = 0;
 
@@ -216,6 +229,12 @@ public class FootballEntityImporter
 
             Application.Features.Football.Teams.DTOs.FootballTeamSummaryDto? team = null;
             TeamCategory teamCategory = categoryByTeam.GetValueOrDefault(oldTeam.Id, TeamCategory.Adult);
+
+            if (_idMap.HasTeam(oldTeam.Id))
+            {
+                reused++;
+                continue;
+            }
 
             if (_idMap.Teams.TryGetValue(oldTeam.Id, out Guid mappedId))
             {

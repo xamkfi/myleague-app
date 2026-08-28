@@ -213,7 +213,16 @@ public class FootballApiClient : ImportApiClient
             assistingPlayerId,
             periodNumber,
             timeInSeconds,
+            skipRateLimit = true,
         }, "RecordFootballGoal");
+
+    public Task<FootballMatchEventsImportDto?> ImportEventsAsync(
+        Guid matchId,
+        IReadOnlyList<object> events) =>
+        PostDataOrNullAsync<FootballMatchEventsImportDto>(
+            $"api/football-matches/{matchId}/events/import",
+            new { events },
+            "ImportFootballMatchEvents");
 
     public Task<bool> RecordCardAsync(
         Guid matchId,

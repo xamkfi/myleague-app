@@ -192,7 +192,16 @@ public class FloorballApiClient : ImportApiClient
             secondaryAssistingPlayerIs = secondaryAssistingPlayerId,
             periodNumber,
             timeInSeconds,
+            skipRateLimit = true,
         }, "RecordGoal");
+
+    public Task<FloorballMatchEventsImportDto?> ImportEventsAsync(
+        Guid matchId,
+        IReadOnlyList<object> events) =>
+        PostDataOrNullAsync<FloorballMatchEventsImportDto>(
+            $"api/floorball-matches/{matchId}/events/import",
+            new { events },
+            "ImportMatchEvents");
 
     public Task<bool> RecordPenaltyAsync(
         Guid matchId,

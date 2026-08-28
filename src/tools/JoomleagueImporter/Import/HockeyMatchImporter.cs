@@ -23,11 +23,17 @@ public class HockeyMatchImporter
     private readonly HashSet<int> _repairMatchIds;
     private readonly bool _repairAll;
 
-    public int Succeeded { get; private set; }
-    public int ScheduledOnly { get; private set; }
-    public int Skipped { get; private set; }
-    public int Failed { get; private set; }
-    public int Repaired { get; private set; }
+    private int _succeeded;
+    private int _scheduledOnly;
+    private int _skipped;
+    private int _failed;
+    private int _repaired;
+
+    public int Succeeded => _succeeded;
+    public int ScheduledOnly => _scheduledOnly;
+    public int Skipped => _skipped;
+    public int Failed => _failed;
+    public int Repaired => _repaired;
 
     public HockeyMatchImporter(
         HockeyApiClient api,
@@ -110,6 +116,7 @@ public class HockeyMatchImporter
             sides[pti.ProjectTeam.Id] = side;
         }
 
+        List<MatchWork> work = [];
         int index = 0;
         foreach (MatchImport mi in pi.Matches)
         {
@@ -117,18 +124,18 @@ public class HockeyMatchImporter
             OldMatch match = mi.Match;
             string prefix = $"  [{index}/{pi.Matches.Count}] JL#{match.Id}";
 
-            bool alreadyProcessed = _idMap.ProcessedMatches.TryGetValue(match.Id, out Guid existingMatchId);
+            bool alreadyProcessed = _idMap.TryGetProcessedMatch(match.Id, out Guid existingMatchId);
             bool repairRequested = alreadyProcessed && (_repairAll || _repairMatchIds.Contains(match.Id));
 
             if (alreadyProcessed && !repairRequested)
             {
-                Skipped++;
+                Interlocked.Increment(ref _skipped);
                 continue;
             }
 
             if (match.Cancelled)
             {
-                Skipped++;
+                Interlocked.Increment(ref _skipped);
                 _log.LogInfo($"Match JL#{match.Id} skipped (cancelled in old system).");
                 continue;
             }
@@ -137,37 +144,52 @@ public class HockeyMatchImporter
             SideInfo? away = sides.GetValueOrDefault(match.ProjectTeam2Id);
             if (home == null || away == null || home.TeamId == away.TeamId)
             {
-                Skipped++;
+                Interlocked.Increment(ref _skipped);
                 _log.LogError("MatchTeams", new { match.Id, match.ProjectTeam1Id, match.ProjectTeam2Id },
                     "Home or away projectteam could not be resolved to an imported team.");
                 continue;
             }
 
+            work.Add(new MatchWork(mi, home, away, existingMatchId, repairRequested, prefix));
+        }
+
+        Console.WriteLine($"  Importing {work.Count} matches (concurrency {MatchImportParallel.Degree})...");
+        await MatchImportParallel.ForEachAsync(work, async item =>
+        {
             try
             {
-                if (repairRequested)
+                if (item.RepairRequested)
                 {
                     bool ok = await RepairMatchAsync(
-                        mi, existingMatchId, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods, prefix);
-                    if (ok) Repaired++;
-                    else Failed++;
+                        item.Match, item.ExistingMatchId, item.Home, item.Away,
+                        playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
+                    if (ok) Interlocked.Increment(ref _repaired);
+                    else Interlocked.Increment(ref _failed);
+                    return;
                 }
-                else
-                {
-                    bool ok = await ImportSingleMatchAsync(
-                        mi, season, competitionDivisionId, officialId, home, away,
-                        playerByTeamPlayerId, periodSeconds, regularPeriods, prefix);
-                    if (!ok) Failed++;
-                }
+
+                bool imported = await ImportSingleMatchAsync(
+                    item.Match, season, competitionDivisionId, officialId, item.Home, item.Away,
+                    playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
+                if (!imported) Interlocked.Increment(ref _failed);
             }
             catch (Exception ex)
             {
-                Failed++;
-                Console.WriteLine($"{prefix} ERROR: {ex.Message}");
-                _log.LogError("ImportHockeyMatch", new { match.Id }, ex.ToString());
+                Interlocked.Increment(ref _failed);
+                Console.WriteLine($"{item.Prefix} ERROR: {ex.Message}");
+                _log.LogError("ImportHockeyMatch", new { item.Match.Match.Id }, ex.ToString());
             }
-        }
+        });
+        _idMap.Save(force: true);
     }
+
+    private readonly record struct MatchWork(
+        MatchImport Match,
+        SideInfo Home,
+        SideInfo Away,
+        Guid ExistingMatchId,
+        bool RepairRequested,
+        string Prefix);
 
     private async Task<bool> ImportSingleMatchAsync(
         MatchImport mi,
@@ -196,9 +218,8 @@ public class HockeyMatchImporter
 
         if (!match.HasResult)
         {
-            _idMap.ProcessedMatches[match.Id] = created.Id;
-            _idMap.Save();
-            ScheduledOnly++;
+            _idMap.MapMatch(match.Id, created.Id);
+            Interlocked.Increment(ref _scheduledOnly);
             Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: scheduled only");
             return true;
         }
@@ -209,9 +230,8 @@ public class HockeyMatchImporter
         HockeyMatchDto? dressed = await ConfirmSidesAsync(created, home, away, goals, penalties);
         if (dressed == null)
         {
-            _idMap.ProcessedMatches[match.Id] = created.Id;
-            _idMap.Save();
-            ScheduledOnly++;
+            _idMap.MapMatch(match.Id, created.Id);
+            Interlocked.Increment(ref _scheduledOnly);
             _log.LogWarning("NoRoster",
                 $"Match JL#{match.Id} left as Scheduled: could not confirm hockey rosters.");
             Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: scheduled only (roster)");
@@ -222,8 +242,7 @@ public class HockeyMatchImporter
 
         if (!await _api.StartMatchAsync(dressed.Id, scheduled))
         {
-            _idMap.ProcessedMatches[match.Id] = dressed.Id;
-            _idMap.Save();
+            _idMap.MapMatch(match.Id, dressed.Id);
             _log.LogError("StartHockeyMatch", new { match.Id, NewMatchId = dressed.Id }, "Could not start match; left as Scheduled.");
             return false;
         }
@@ -241,9 +260,8 @@ public class HockeyMatchImporter
 
         await _api.RecalculateMatchAsync(dressed.Id);
 
-        _idMap.ProcessedMatches[match.Id] = dressed.Id;
-        _idMap.Save();
-        Succeeded++;
+        _idMap.MapMatch(match.Id, dressed.Id);
+        Interlocked.Increment(ref _succeeded);
 
         string eventNote = ignoredEvents > 0 ? $", {ignoredEvents} events ignored" : "";
         Console.WriteLine(

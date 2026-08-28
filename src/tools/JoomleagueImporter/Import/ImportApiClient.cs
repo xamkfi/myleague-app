@@ -24,9 +24,18 @@ public class ImportApiClient : IDisposable
     protected HttpClient Http { get; }
     protected JsonSerializerOptions Json { get; }
 
+    private readonly SemaphoreSlim _refreshLock = new(1, 1);
+    private string? _accessToken;
+    private string? _refreshToken;
+    private DateTime _accessExpiresAtUtc = DateTime.MinValue;
+
     public ImportApiClient(string baseUrl)
     {
-        Http = new HttpClient
+        TokenRefreshHandler handler = new(this)
+        {
+            InnerHandler = new HttpClientHandler(),
+        };
+        Http = new HttpClient(handler)
         {
             BaseAddress = new Uri(baseUrl),
             Timeout = TimeSpan.FromMinutes(2),
@@ -42,10 +51,13 @@ public class ImportApiClient : IDisposable
         Json.Converters.Add(new JsonStringEnumConverter());
     }
 
+    /// <summary>
+    /// Local Development login (auto-fill code). Does not work against Azure.
+    /// </summary>
     public async Task AuthenticateAsync(string? email = null)
     {
         string loginEmail = string.IsNullOrWhiteSpace(email) ? DefaultAuthEmail : email.Trim();
-        Console.WriteLine($"Authenticating as {loginEmail}...");
+        Console.WriteLine($"Authenticating as {loginEmail} (Development auto-fill)...");
 
         HttpResponseMessage loginResp = await Http.PostAsJsonAsync("api/auth/login", new { email = loginEmail });
         await EnsureSuccess(loginResp, "Login");
@@ -54,7 +66,7 @@ public class ImportApiClient : IDisposable
             await loginResp.Content.ReadFromJsonAsync<ApiResponse<LoginAutoFillResponse>>(Json);
         if (string.IsNullOrEmpty(loginApi?.Data?.AutoFillCode))
             throw new InvalidOperationException(
-                "Login response contained no auto-fill code. Is the API running in Development mode with LoginCode:AutoFillLoginCode = true?");
+                "Login response contained no auto-fill code. For a remote API pass --access-token / --refresh-token. Locally, the API must run in Development with LoginCode:AutoFillLoginCode = true.");
 
         HttpResponseMessage verifyResp = await Http.PostAsJsonAsync("api/auth/verify",
             new { email = loginEmail, code = loginApi.Data.AutoFillCode });
@@ -65,8 +77,39 @@ public class ImportApiClient : IDisposable
         if (verifyApi?.Data?.AccessToken == null)
             throw new InvalidOperationException("Failed to get access token.");
 
-        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", verifyApi.Data.AccessToken);
+        ApplyTokens(verifyApi.Data.AccessToken, verifyApi.Data.RefreshToken, verifyApi.Data.ExpiresAt);
         Console.WriteLine("Authenticated successfully.\n");
+    }
+
+    /// <summary>
+    /// Use a browser/session token for a remote API. A refresh token is refreshed immediately
+    /// and then kept alive for long imports.
+    /// </summary>
+    public async Task AuthenticateWithTokensAsync(string? accessToken, string? refreshToken)
+    {
+        if (!string.IsNullOrWhiteSpace(refreshToken))
+        {
+            _refreshToken = refreshToken.Trim();
+            _accessExpiresAtUtc = DateTime.MinValue;
+            try
+            {
+                await RefreshTokensAsync(force: true);
+                Console.WriteLine("Authenticated with provided token (refresh applied).\n");
+                return;
+            }
+            catch (Exception ex) when (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                Console.WriteLine($"Refresh failed ({ex.Message}); using provided access token.");
+                ApplyTokens(accessToken.Trim(), _refreshToken, DateTime.UtcNow.AddMinutes(10));
+                return;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(accessToken))
+            throw new InvalidOperationException("Provide --access-token and/or --refresh-token, or use local Development login.");
+
+        ApplyTokens(accessToken.Trim(), refreshToken: null, DateTime.UtcNow.AddMinutes(12));
+        Console.WriteLine("Authenticated with provided access token (no refresh token — session ends when the JWT expires).\n");
     }
 
     public async Task<List<ClubDto>> GetClubsAsync() =>
@@ -220,6 +263,12 @@ public class ImportApiClient : IDisposable
         return api?.Data;
     }
 
+    protected async Task<T?> PostDataOrNullAsync<T>(string url, object payload, string operation) where T : class
+    {
+        HttpResponseMessage resp = await Http.PostAsJsonAsync(url, payload);
+        return await ReadDataOrNull<T>(resp, operation);
+    }
+
     protected static async Task<bool> OkOrWarn(HttpResponseMessage resp, string operation)
     {
         if (resp.IsSuccessStatusCode) return true;
@@ -262,7 +311,114 @@ public class ImportApiClient : IDisposable
         throw new HttpRequestException($"{operation} failed ({(int)resp.StatusCode}): {body}");
     }
 
-    public void Dispose() => Http.Dispose();
+    private void ApplyTokens(string accessToken, string? refreshToken, DateTime expiresAtUtc)
+    {
+        _accessToken = accessToken;
+        if (!string.IsNullOrWhiteSpace(refreshToken))
+            _refreshToken = refreshToken;
+        _accessExpiresAtUtc = expiresAtUtc.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(expiresAtUtc, DateTimeKind.Utc)
+            : expiresAtUtc.ToUniversalTime();
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+    }
+
+    internal async Task EnsureFreshTokenAsync(CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(_refreshToken))
+            return;
+        if (_accessExpiresAtUtc > DateTime.UtcNow.AddMinutes(3))
+            return;
+        await RefreshTokensAsync(cancellationToken);
+    }
+
+    internal async Task<bool> TryRefreshAsync(CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(_refreshToken))
+            return false;
+        try
+        {
+            await RefreshTokensAsync(cancellationToken, force: true);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"  WARN: token refresh failed: {ex.Message}");
+            return false;
+        }
+    }
+
+    private async Task RefreshTokensAsync(CancellationToken cancellationToken = default, bool force = false)
+    {
+        if (string.IsNullOrWhiteSpace(_refreshToken))
+            throw new InvalidOperationException("No refresh token is available.");
+
+        await _refreshLock.WaitAsync(cancellationToken);
+        try
+        {
+            if (!force && _accessExpiresAtUtc > DateTime.UtcNow.AddMinutes(3) && !string.IsNullOrEmpty(_accessToken))
+                return;
+
+            HttpResponseMessage resp = await Http.PostAsJsonAsync(
+                "api/auth/refresh",
+                new { refreshToken = _refreshToken },
+                cancellationToken);
+            await EnsureSuccess(resp, "Refresh token");
+
+            ApiResponse<AuthTokenResponse>? api =
+                await resp.Content.ReadFromJsonAsync<ApiResponse<AuthTokenResponse>>(Json, cancellationToken);
+            if (api?.Data?.AccessToken == null)
+                throw new InvalidOperationException("Refresh returned no access token.");
+
+            ApplyTokens(api.Data.AccessToken, api.Data.RefreshToken, api.Data.ExpiresAt);
+            Console.WriteLine($"Token refreshed, expires {api.Data.ExpiresAt:u}.");
+        }
+        finally
+        {
+            _refreshLock.Release();
+        }
+    }
+
+    public void Dispose()
+    {
+        Http.Dispose();
+        _refreshLock.Dispose();
+    }
+
+    private sealed class TokenRefreshHandler : DelegatingHandler
+    {
+        private readonly ImportApiClient _owner;
+
+        public TokenRefreshHandler(ImportApiClient owner)
+        {
+            _owner = owner;
+        }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            bool isRefresh = IsAuthRefresh(request);
+            if (!isRefresh)
+                await _owner.EnsureFreshTokenAsync(cancellationToken);
+
+            HttpResponseMessage response = await base.SendAsync(request, cancellationToken);
+            if (response.StatusCode != System.Net.HttpStatusCode.Unauthorized || isRefresh)
+                return response;
+
+            if (!await _owner.TryRefreshAsync(cancellationToken))
+                return response;
+
+            response.Dispose();
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _owner._accessToken);
+            return await base.SendAsync(request, cancellationToken);
+        }
+
+        private static bool IsAuthRefresh(HttpRequestMessage request)
+        {
+            string? path = request.RequestUri?.AbsolutePath;
+            return path != null && path.Contains("/auth/refresh", StringComparison.OrdinalIgnoreCase);
+        }
+    }
 
     private class LoginAutoFillResponse
     {

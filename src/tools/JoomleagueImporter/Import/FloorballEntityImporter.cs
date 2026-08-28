@@ -22,6 +22,7 @@ public class FloorballEntityImporter
     private readonly FloorballApiClient _api;
     private readonly IdMapStore _idMap;
     private readonly ImportLogger _log;
+    private readonly SemaphoreSlim _unknownPlayerLock = new(1, 1);
 
     public FloorballEntityImporter(FloorballApiClient api, IdMapStore idMap, ImportLogger log)
     {
@@ -110,6 +111,12 @@ public class FloorballEntityImporter
     {
         Console.WriteLine("--- Persons & Floorball Players ---");
 
+        if (set.UniquePersons.Keys.All(_idMap.HasPerson))
+        {
+            Console.WriteLine($"  Persons: 0 created, {set.UniquePersons.Count} already mapped.");
+            return;
+        }
+
         List<FloorballPlayerDto> existingPlayers = await _api.GetPlayersAsync();
         Dictionary<Guid, FloorballPlayerDto> playerByPersonId = [];
         foreach (FloorballPlayerDto p in existingPlayers)
@@ -185,6 +192,13 @@ public class FloorballEntityImporter
     public async Task ImportTeamsAsync(FloorballImportSet set, JoomleagueDatabase db, DivisionDto division)
     {
         Console.WriteLine("--- Teams & Rosters ---");
+        int mappedTeams = set.UniqueTeams.Keys.Count(_idMap.HasTeam);
+        if (mappedTeams == set.UniqueTeams.Count)
+        {
+            Console.WriteLine($"  Teams: 0 created, {mappedTeams} already mapped (roster check skipped).");
+            return;
+        }
+
         List<FloorballTeamDto> existing = await _api.GetTeamsAsync();
         int created = 0, reused = 0;
 
@@ -226,9 +240,10 @@ public class FloorballEntityImporter
             FloorballTeamDto? team = null;
             TeamCategory teamCategory = categoryByTeam.GetValueOrDefault(oldTeam.Id, TeamCategory.Adult);
 
-            if (_idMap.Teams.TryGetValue(oldTeam.Id, out Guid mappedId))
+            if (_idMap.HasTeam(oldTeam.Id))
             {
-                team = existing.FirstOrDefault(t => t.Id == mappedId);
+                reused++;
+                continue;
             }
 
             if (team == null)
@@ -334,6 +349,9 @@ public class FloorballEntityImporter
     /// </summary>
     public async Task<Guid?> GetOrCreateUnknownPlayerAsync(OldTeam oldTeam, Guid newTeamId)
     {
+        await _unknownPlayerLock.WaitAsync();
+        try
+        {
         if (_idMap.UnknownPlayers.TryGetValue(oldTeam.Id, out Guid cached))
             return cached;
 
@@ -381,6 +399,11 @@ public class FloorballEntityImporter
         _idMap.UnknownPlayers[oldTeam.Id] = player.Id;
         _idMap.Save();
         return player.Id;
+        }
+        finally
+        {
+            _unknownPlayerLock.Release();
+        }
     }
 
     // ── Season ───────────────────────────────────────────────

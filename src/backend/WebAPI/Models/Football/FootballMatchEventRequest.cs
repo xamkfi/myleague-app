@@ -56,6 +56,12 @@ public class RecordCardEventRequest : FootballMatchEventBaseRequest
     /// </summary>
     [Required(ErrorMessage = "Card type is required")]
     public FootballCardType CardType { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, skips the per-(match, player) double-click window. Intended for
+    /// historical import / admin backfill, not the live scorekeeper UI.
+    /// </summary>
+    public bool SkipRateLimit { get; set; }
 }
 
 /// <summary>
@@ -86,4 +92,46 @@ public class MatchIdRequest
     /// </summary>
     [Required(ErrorMessage = "Match ID is required")]
     public Guid MatchId { get; set; }
+}
+
+/// <summary>
+/// Batch import of historical football match events. Not rate-limited; intended for
+/// the JoomLeague importer and admin backfill, not live scorekeeping.
+/// </summary>
+public class ImportFootballMatchEventsRequest
+{
+    [Required]
+    [MinLength(1)]
+    [MaxLength(200)]
+    public List<ImportFootballMatchEventRequest> Events { get; set; } = [];
+}
+
+/// <summary>
+/// One event in an <see cref="ImportFootballMatchEventsRequest"/> batch.
+/// <c>EventType</c> is <c>Goal</c> or <c>Card</c>.
+/// </summary>
+public class ImportFootballMatchEventRequest
+{
+    [Required]
+    public string EventType { get; set; } = string.Empty;
+
+    [Required]
+    public Guid TeamId { get; set; }
+
+    public Guid? PlayerId { get; set; }
+
+    public Guid? AssistingPlayerId { get; set; }
+
+    [Range(1, int.MaxValue)]
+    public int PeriodNumber { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int TimeInSeconds { get; set; }
+
+    public FootballGoalType? GoalType { get; set; }
+
+    [StringLength(500)]
+    public string? Description { get; set; }
+
+    public FootballCardType? CardType { get; set; }
 }

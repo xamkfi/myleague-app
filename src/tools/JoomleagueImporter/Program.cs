@@ -50,7 +50,8 @@ public static class Program
             includeFilter = config["JoomleagueImporter:ProjectNameFilter"] ?? "salibandy|sähly";
             excludeFilter = config["JoomleagueImporter:ProjectNameExcludeFilter"];
         }
-        string? projectIdFilter = config["JoomleagueImporter:ProjectIdFilter"];
+        string? projectIdFilter = GetArg(args, "project-id")
+            ?? config["JoomleagueImporter:ProjectIdFilter"];
         bool dryRun = bool.TryParse(config["JoomleagueImporter:DryRun"], out bool dr) && dr;
         bool fillUnknownGoals = !bool.TryParse(config["JoomleagueImporter:FillUnknownGoals"], out bool fug) || fug;
 
@@ -68,9 +69,17 @@ public static class Program
         bool autoConfirm = args.Contains("--yes", StringComparer.OrdinalIgnoreCase)
             || args.Contains("-y", StringComparer.OrdinalIgnoreCase);
 
+        string? concurrencyArg = GetArg(args, "concurrency");
+        if (int.TryParse(concurrencyArg, out int concurrency) && concurrency > 0)
+            MatchImportParallel.Degree = concurrency;
+
+        string? cliDump = GetArg(args, "dump");
+        if (!string.IsNullOrWhiteSpace(cliDump))
+            dumpPath = cliDump;
+
         if (string.IsNullOrWhiteSpace(dumpPath) || !File.Exists(dumpPath))
         {
-            Console.Error.WriteLine($"Dump file not found: '{dumpPath}'. Set JoomleagueImporter:DumpFilePath in appsettings.json.");
+            Console.Error.WriteLine($"Dump file not found: '{dumpPath}'. Set JoomleagueImporter:DumpFilePath or pass --dump=...");
             return 1;
         }
 
@@ -113,12 +122,28 @@ public static class Program
             return 0;
         }
 
-        string apiBaseUrl = autoConfirm
-            ? NormalizeApiUrl(config["JoomleagueImporter:ApiBaseUrl"] ?? "http://localhost:8080/")
-            : PromptForApiUrl(config["JoomleagueImporter:ApiBaseUrl"] ?? "http://localhost:8080/");
-        string loginEmail = autoConfirm
-            ? ResolveLoginEmailNonInteractive(config)
-            : ResolveLoginEmail(config);
+        string? cliApiUrl = GetArg(args, "api-url");
+        string configuredUrl = cliApiUrl
+            ?? config["JoomleagueImporter:ApiBaseUrl"]
+            ?? "http://localhost:8080/";
+        string apiBaseUrl = autoConfirm || !string.IsNullOrWhiteSpace(cliApiUrl)
+            ? NormalizeApiUrl(configuredUrl)
+            : PromptForApiUrl(configuredUrl);
+
+        string? accessToken = GetArg(args, "access-token")
+            ?? GetArg(args, "token")
+            ?? config["JoomleagueImporter:AccessToken"];
+        string? refreshToken = GetArg(args, "refresh-token")
+            ?? config["JoomleagueImporter:RefreshToken"];
+        bool useProvidedToken = !string.IsNullOrWhiteSpace(accessToken) || !string.IsNullOrWhiteSpace(refreshToken);
+
+        string? loginEmail = null;
+        if (!useProvidedToken)
+        {
+            loginEmail = autoConfirm
+                ? ResolveLoginEmailNonInteractive(config)
+                : ResolveLoginEmail(config);
+        }
 
         if (!autoConfirm)
         {
@@ -133,12 +158,15 @@ public static class Program
         else
         {
             Console.WriteLine($"Using API: {apiBaseUrl}");
-            Console.WriteLine($"Login email: {loginEmail}");
+            Console.WriteLine(useProvidedToken
+                ? "Auth: provided access/refresh token"
+                : $"Login email: {loginEmail}");
+            Console.WriteLine($"Match concurrency: {MatchImportParallel.Degree}");
             Console.WriteLine("Starting import (--yes).");
         }
         Console.WriteLine();
 
-        string idMapPath = ResolveIdMapPath(config, isFootball, isHockey);
+        string idMapPath = ResolveIdMapPath(config, GetArg(args, "id-map"), apiBaseUrl, sport, isFootball, isHockey);
         IdMapStore idMap = IdMapStore.LoadOrCreate(idMapPath);
         Console.WriteLine($"Id map: {idMapPath} " +
                           $"({idMap.Persons.Count} persons, {idMap.Teams.Count} teams, {idMap.ProcessedMatches.Count} matches already imported)\n");
@@ -151,19 +179,19 @@ public static class Program
             if (isHockey)
             {
                 using HockeyApiClient api = new(apiBaseUrl);
-                await api.AuthenticateAsync(loginEmail);
+                await AuthenticateClientAsync(api, accessToken, refreshToken, loginEmail);
                 return await RunHockeyImportAsync(api, idMap, log, db, set, fillUnknownGoals, repairMatchIds, repairAll);
             }
 
             if (isFootball)
             {
                 using FootballApiClient api = new(apiBaseUrl);
-                await api.AuthenticateAsync(loginEmail);
+                await AuthenticateClientAsync(api, accessToken, refreshToken, loginEmail);
                 return await RunFootballImportAsync(api, idMap, log, db, set, fillUnknownGoals, repairMatchIds, repairAll);
             }
 
             using FloorballApiClient floorballApi = new(apiBaseUrl);
-            await floorballApi.AuthenticateAsync(loginEmail);
+            await AuthenticateClientAsync(floorballApi, accessToken, refreshToken, loginEmail);
             return await RunFloorballImportAsync(floorballApi, idMap, log, db, set, fillUnknownGoals, repairMatchIds, repairAll);
         }
         catch (Exception ex)
@@ -336,27 +364,77 @@ public static class Program
         return SportFloorball;
     }
 
-    private static string ResolveIdMapPath(IConfiguration config, bool isFootball, bool isHockey)
+    private static async Task AuthenticateClientAsync(
+        ImportApiClient api,
+        string? accessToken,
+        string? refreshToken,
+        string? loginEmail)
     {
+        if (!string.IsNullOrWhiteSpace(accessToken) || !string.IsNullOrWhiteSpace(refreshToken))
+        {
+            await api.AuthenticateWithTokensAsync(accessToken, refreshToken);
+            return;
+        }
+
+        await api.AuthenticateAsync(loginEmail);
+    }
+
+    private static string? GetArg(string[] args, string name)
+    {
+        string prefix = $"--{name}=";
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i].StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return args[i][prefix.Length..];
+            if (string.Equals(args[i], $"--{name}", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
+                return args[i + 1];
+        }
+
+        return null;
+    }
+
+    private static string ResolveIdMapPath(
+        IConfiguration config,
+        string? cliPath,
+        string apiBaseUrl,
+        string sport,
+        bool isFootball,
+        bool isHockey)
+    {
+        if (!string.IsNullOrWhiteSpace(cliPath))
+            return cliPath;
+
         if (isHockey)
         {
             string? hockeyPath = config["JoomleagueImporter:Hockey:IdMapPath"];
             if (!string.IsNullOrWhiteSpace(hockeyPath))
                 return hockeyPath;
-            return Path.Combine(AppContext.BaseDirectory, "id-map-hockey.json");
         }
-
-        if (isFootball)
+        else if (isFootball)
         {
             string? footballPath = config["JoomleagueImporter:Football:IdMapPath"];
             if (!string.IsNullOrWhiteSpace(footballPath))
                 return footballPath;
-            return Path.Combine(AppContext.BaseDirectory, "id-map-football.json");
+        }
+        else if (config["JoomleagueImporter:IdMapPath"] is { Length: > 0 } configured)
+        {
+            return configured;
         }
 
-        return config["JoomleagueImporter:IdMapPath"] is { Length: > 0 } p
-            ? p
-            : Path.Combine(AppContext.BaseDirectory, "id-map.json");
+        Uri host = new(NormalizeApiUrl(apiBaseUrl));
+        bool isLocal = string.Equals(host.Host, "localhost", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(host.Host, "127.0.0.1", StringComparison.OrdinalIgnoreCase);
+        if (isLocal)
+        {
+            if (isHockey)
+                return Path.Combine(AppContext.BaseDirectory, "id-map-hockey.json");
+            if (isFootball)
+                return Path.Combine(AppContext.BaseDirectory, "id-map-football.json");
+            return Path.Combine(AppContext.BaseDirectory, "id-map.json");
+        }
+
+        string safeHost = host.Host.Replace('.', '-');
+        return Path.Combine(AppContext.BaseDirectory, $"id-map-{safeHost}-{sport}.json");
     }
 
     private static string PromptForApiUrl(string defaultUrl)
