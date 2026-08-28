@@ -219,6 +219,12 @@ namespace WebAPI.Models.Common
         public List<string>? TeamCategories { get; init; }
 
         /// <summary>
+        /// Gets the optional tag filter. When set, returns articles that include this tag.
+        /// </summary>
+        [StringLength(50, ErrorMessage = "Tag filter cannot exceed 50 characters")]
+        public string? Tag { get; init; }
+
+        /// <summary>
         /// Gets whether to include archived articles
         /// </summary>
         public bool IncludeArchived { get; init; } = false;

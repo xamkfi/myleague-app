@@ -607,7 +607,8 @@
       "confirmDeleteMatches": "Are you sure you want to delete {{count}} match result(s)?",
       "confirmDeleteBoth": "Are you sure you want to delete {{images}} image(s) and {{matches}} match result(s)?",
       "uploadFailed": "Image upload failed.",
-      "placeholder": "Start writing here..."
+      "placeholder": "Start writing here...",
+      "dragMatchHint": "Drag a match box to move it. You can type text between boxes."
     },
     "news": {
       "pageTitle": "News Management",
@@ -698,7 +699,8 @@
         "author_too_long": "Author name cannot exceed 50 characters",
         "summary_too_long": "Summary cannot exceed 200 characters",
         "invalid_image": "Please select a valid image file",
-        "image_too_large": "Image file must be less than 5MB"
+        "image_too_large": "Image file must be less than 5MB",
+        "upload_failed": "Image upload failed. Please try again."
       },
       "matches": {
         "add_matches": "Add Matches",
@@ -1634,13 +1636,46 @@
     }
   },
   "newsPage": {
+    "allNews": "ALL NEWS",
+    "backToNews": "Back to news",
+    "loading": "Loading...",
+    "updated": "Updated: {{date}}",
+    "similarNews": "Similar news",
+    "relatedTeams": "Teams related to this article",
+    "noNewsFound": "No news found for the selected filters.",
     "category": {
       "all": "All"
     },
+    "categoryValues": {
+      "General": "General",
+      "MatchReports": "Match reports",
+      "LeagueNews": "League news",
+      "PlayerUpdates": "Player updates",
+      "TeamNews": "Team news",
+      "Announcements": "Announcements",
+      "Events": "Events",
+      "Transfers": "Transfers",
+      "Injuries": "Injuries",
+      "Awards": "Awards"
+    },
     "sportCategory": {
       "floorball": "Floorball",
-      "hockey": "Icehockey",
+      "hockey": "Ice hockey",
       "football": "Football"
+    },
+    "filters": {
+      "sport": "Sport",
+      "category": "Category",
+      "tag": "Tag",
+      "allSports": "All sports",
+      "allCategories": "All categories",
+      "allTags": "All tags",
+      "tagSearch": "Search tags...",
+      "noTags": "No tags",
+      "tagPage": "{{page}} / {{total}}",
+      "previous": "Previous",
+      "next": "Next",
+      "clear": "Clear filters"
     },
     "search": "Search",
     "searchPlaceholder": "Search news...",

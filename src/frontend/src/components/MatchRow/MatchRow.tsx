@@ -97,14 +97,26 @@ export default function MatchRow({
       <div className="match-row-teams-container">
         <div className={`match-row-home-team ${homeWon ? 'match-row-winner' : ''}`}>
           {homeTeamLogo && (
-            <img src={homeTeamLogo} alt={`${homeTeamName} logo`} />
+            <img
+              src={homeTeamLogo}
+              alt={`${homeTeamName} logo`}
+              onError={(event) => {
+                event.currentTarget.remove();
+              }}
+            />
           )}
           {homeTeamName}
         </div>
 
         <div className={`match-row-away-team ${awayWon ? 'match-row-winner' : ''}`}>
           {awayTeamLogo && (
-            <img src={awayTeamLogo} alt={`${awayTeamName} logo`} />
+            <img
+              src={awayTeamLogo}
+              alt={`${awayTeamName} logo`}
+              onError={(event) => {
+                event.currentTarget.remove();
+              }}
+            />
           )}
           {awayTeamName}
         </div>

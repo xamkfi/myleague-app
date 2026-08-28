@@ -5,6 +5,12 @@
   width: 100%;
   overflow-x: auto;
   white-space: normal;
+  margin: map.get($spacing, 'base') 0;
+  padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: map.get($border-radius, 'lg');
+  background: $color-neutral-white;
+  box-sizing: border-box;
 
   * {
     white-space: normal;
@@ -21,13 +27,17 @@
 
 a.match-result-row {
   display: grid;
-  grid-template-columns: 80px 1fr 40px auto;
+  grid-template-columns: min-content 1fr auto auto;
+  grid-template-areas: "date teams scores status";
   align-items: center;
-  gap: map.get($spacing, 'xs');
-  padding: 4px map.get($spacing, 'sm');
+  column-gap: map.get($spacing, 'md');
+  padding: map.get($spacing, 'xs') 0;
   border-bottom: 1px solid $color-neutral-light-grey;
   text-decoration: none;
   color: $color-neutral-black;
+  font-family: inherit;
+  font-size: map.get($font-sizes, 'base');
+  font-weight: map.get($font-weights, 'bold');
   cursor: pointer;
   transition: background-color 0.15s ease;
 
@@ -36,85 +46,127 @@ a.match-result-row {
   }
 
   &:hover {
-    background-color: $color-neutral-light-grey;
+    background-color: transparent;
+    color: $color-neutral-black;
+    text-decoration: none;
   }
 }
 
 .mr-date {
+  grid-area: date;
   display: flex;
-  flex-direction: row;
-  gap: map.get($spacing, 'xxs');
-  align-items: center;
-  color: $color-neutral-dark-grey;
-  font-size: map.get($font-sizes, 'sm');
-}
-
-.mr-date-day {
-  font-weight: map.get($font-weights, 'medium');
-}
-
-.mr-date-time {
-  font-size: map.get($font-sizes, 'sm-xs');
+  flex-direction: column;
+  gap: 0;
+  align-items: flex-start;
+  justify-content: center;
+  color: $color-neutral-black;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  line-height: 1.5rem;
+  white-space: nowrap;
 }
 
 .mr-teams {
+  grid-area: teams;
   display: flex;
   flex-direction: column;
   gap: 0;
   min-width: 0;
 }
 
-.mr-team-line {
-  display: flex;
-  align-items: center;
-  gap: map.get($spacing, 'xxs');
-  font-size: map.get($font-sizes, 'sm');
-  line-height: 1.6;
-}
-
-.mr-winner {
-  font-weight: map.get($font-weights, 'bold');
-}
-
-.mr-team-logo {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.mr-team-logo-placeholder {
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
-.mr-team-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .mr-scores {
+  grid-area: scores;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0;
 }
 
+.mr-status {
+  grid-area: status;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.match-result-table-container .mr-date,
+.match-result-table-container .mr-date-day,
+.match-result-table-container .mr-date-time {
+  white-space: nowrap;
+}
+
+.mr-date-day,
+.mr-date-time {
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  min-height: 1.5rem;
+  line-height: 1.5rem;
+}
+
+.mr-team-line {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'xs');
+  color: $color-neutral-black;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  min-height: 1.5rem;
+  line-height: 1.5rem;
+}
+
+.mr-winner {
+  font-weight: inherit;
+}
+
+.mr-team-logo,
+.mr-team-logo-placeholder {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #f1f2f7;
+}
+
+.mr-team-logo {
+  object-fit: contain;
+  font-size: 0;
+  color: transparent;
+}
+
+.mr-team-logo-placeholder {
+  display: inline-block;
+  border: 1px solid #d1d0d6;
+  box-sizing: border-box;
+}
+
+.mr-team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: $color-neutral-black;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+}
+
 .mr-score {
-  font-size: map.get($font-sizes, 'sm');
-  font-weight: map.get($font-weights, 'bold');
-  color: $color-neutral-dark-grey;
-  line-height: 1.6;
-  min-width: 18px;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  color: $color-neutral-black;
+  min-height: 1.5rem;
+  line-height: 1.5rem;
+  min-width: 1.5rem;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .mr-score--winner {
-  color: $color-blue-deep;
+  color: $color-neutral-black;
+  font-weight: inherit;
 }
 
 .mr-score-separator {
@@ -126,12 +178,6 @@ a.match-result-row {
   color: $color-neutral-medium-grey;
   font-weight: map.get($font-weights, 'medium');
   text-transform: uppercase;
-}
-
-.mr-status {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
 }
 
 .mr-status-badge {
@@ -291,25 +337,15 @@ div.match-result-row {
 
 @media (max-width: 600px) {
   a.match-result-row {
-    grid-template-columns: 55px 1fr 28px 24px;
-    gap: map.get($spacing, 'xxs');
-    padding: 3px map.get($spacing, 'xs');
+    column-gap: map.get($spacing, 'sm');
+    row-gap: map.get($spacing, 'xxs');
+    padding: map.get($spacing, 'xs') 0;
   }
 
-  .mr-date {
-    flex-direction: column;
-    gap: 0;
-    font-size: map.get($font-sizes, 'xs');
-  }
-
-  .mr-team-logo {
-    width: 14px;
-    height: 14px;
-  }
-
+  .mr-team-logo,
   .mr-team-logo-placeholder {
-    width: 14px;
-    height: 14px;
+    width: 18px;
+    height: 18px;
   }
 
   div.match-result-row {

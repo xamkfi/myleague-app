@@ -1,4 +1,5 @@
 import { authFetch } from '../../utils/authFetch';
+import { parseErrorResponse } from '../../utils/ParseErrorResponse';
 import { API_URL } from '../../../constants/config';
 
 interface ApiResponse<T> {
@@ -8,26 +9,23 @@ interface ApiResponse<T> {
   errors: string[];
 }
 
-export async function handleImageUploadService(file: File){
+export async function handleImageUploadService(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
 
-    const formData = new FormData();
-    formData.append("file", file);
-  
-    try {
-        const response = await authFetch(`${API_URL}/News/upload-image`, { 
-          method: "POST",
-          body: formData,
-        });
-    
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.log("Upload error response:", errorText);
-            throw new Error("Image upload failed");
-        }
-        const data: ApiResponse<string> = await response.json();
-        return data.data;
-      } catch (error) {
-        console.error("Upload error:", error);
-        throw error;
-      }
-  };
+  const response = await authFetch(`${API_URL}/News/upload-image`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseErrorResponse(response, 'Image upload failed'));
+  }
+
+  const data: ApiResponse<string> = await response.json();
+  if (!data.data) {
+    throw new Error('Image upload failed');
+  }
+
+  return data.data;
+}

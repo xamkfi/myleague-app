@@ -220,8 +220,11 @@ public static class NewsArticleMapper
             }
         }
 
-        // Note: Images and tags are handled separately via dedicated commands
-        // to maintain granular control and proper domain event generation
+        // ImageUrls are handled separately via dedicated commands.
+        if (command.Tags != null)
+        {
+            newsArticle.ReplaceTags(command.Tags);
+        }
     }
 
             /// <summary>

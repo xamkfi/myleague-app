@@ -158,16 +158,16 @@
     ],
 
     "Clubs": [
-      { "Name": "Helsinki Hammers", "City": "Helsinki", "Country": "Finland", "FoundingDate": "1990-01-01T00:00:00Z", "WebsiteUrl": "https://helsinkihammers.fi", "LogoUrl": "https://example.com/logo-hammers.png", "ContactEmail": "info@helsinkihammers.fi" },
-      { "Name": "Tampere Titans", "City": "Tampere", "Country": "Finland", "FoundingDate": "1992-03-15T00:00:00Z", "WebsiteUrl": "https://tamperetitans.fi", "LogoUrl": "https://example.com/logo-titans.png", "ContactEmail": "info@tamperetitans.fi" },
-      { "Name": "Turku Thunder", "City": "Turku", "Country": "Finland", "FoundingDate": "1988-06-20T00:00:00Z", "WebsiteUrl": "https://turkuthunder.fi", "LogoUrl": "https://example.com/logo-thunder.png", "ContactEmail": "info@turkuthunder.fi" },
-      { "Name": "Oulu Outlaws", "City": "Oulu", "Country": "Finland", "FoundingDate": "1995-09-10T00:00:00Z", "WebsiteUrl": "https://ouluoutlaws.fi", "LogoUrl": "https://example.com/logo-outlaws.png", "ContactEmail": "info@ouluoutlaws.fi" },
-      { "Name": "Espoo Eagles", "City": "Espoo", "Country": "Finland", "FoundingDate": "1998-12-01T00:00:00Z", "WebsiteUrl": "https://espooeagles.fi", "LogoUrl": "https://example.com/logo-eagles.png", "ContactEmail": "info@espooeagles.fi" },
-      { "Name": "Vantaa Vikings", "City": "Vantaa", "Country": "Finland", "FoundingDate": "2000-02-14T00:00:00Z", "WebsiteUrl": "https://vantaavikings.fi", "LogoUrl": "https://example.com/logo-vikings.png", "ContactEmail": "info@vantaavikings.fi" },
-      { "Name": "Lahti Lions", "City": "Lahti", "Country": "Finland", "FoundingDate": "1993-05-27T00:00:00Z", "WebsiteUrl": "https://lahtilions.fi", "LogoUrl": "https://example.com/logo-lions.png", "ContactEmail": "info@lahtilions.fi" },
-      { "Name": "Kuopio Knights", "City": "Kuopio", "Country": "Finland", "FoundingDate": "1996-08-08T00:00:00Z", "WebsiteUrl": "https://kuopioknights.fi", "LogoUrl": "https://example.com/logo-knights.png", "ContactEmail": "info@kuopioknights.fi" },
-      { "Name": "Jyväskylä Jets", "City": "Jyväskylä", "Country": "Finland", "FoundingDate": "1991-11-21T00:00:00Z", "WebsiteUrl": "https://jyvaskylajets.fi", "LogoUrl": "https://example.com/logo-jets.png", "ContactEmail": "info@jyvaskylajets.fi" },
-      { "Name": "Pori Panthers", "City": "Pori", "Country": "Finland", "FoundingDate": "1994-04-04T00:00:00Z", "WebsiteUrl": "https://poripanthers.fi", "LogoUrl": "https://example.com/logo-panthers.png", "ContactEmail": "info@poripanthers.fi" }
+      { "Name": "Helsinki Hammers", "City": "Helsinki", "Country": "Finland", "FoundingDate": "1990-01-01T00:00:00Z", "WebsiteUrl": "https://helsinkihammers.fi", "LogoUrl": "https://ui-avatars.com/api/?name=HH&background=16346B&color=FFFFFF&size=128&bold=true", "ContactEmail": "info@helsinkihammers.fi" },
+      { "Name": "Tampere Titans", "City": "Tampere", "Country": "Finland", "FoundingDate": "1992-03-15T00:00:00Z", "WebsiteUrl": "https://tamperetitans.fi", "LogoUrl": "https://ui-avatars.com/api/?name=TT&background=8B1E1E&color=FFFFFF&size=128&bold=true", "ContactEmail": "info@tamperetitans.fi" },
+      { "Name": "Turku Thunder", "City": "Turku", "Country": "Finland", "FoundingDate": "1988-06-20T00:00:00Z", "WebsiteUrl": "https://turkuthunder.fi", "LogoUrl": "https://ui-avatars.com/api/?name=TT&background=C9A227&color=1C1C1E&size=128&bold=true", "ContactEmail": "info@turkuthunder.fi" },
+      { "Name": "Oulu Outlaws", "City": "Oulu", "Country": "Finland", "FoundingDate": "1995-09-10T00:00:00Z", "WebsiteUrl": "https://ouluoutlaws.fi", "LogoUrl": "https://ui-avatars.com/api/?name=OO&background=1E9850&color=FFFFFF&size=128&bold=true", "ContactEmail": "info@ouluoutlaws.fi" },
+      { "Name": "Espoo Eagles", "City": "Espoo", "Country": "Finland", "FoundingDate": "1998-12-01T00:00:00Z", "WebsiteUrl": "https://espooeagles.fi", "LogoUrl": "https://ui-avatars.com/api/?name=EE&background=2A4A83&color=FFFFFF&size=128&bold=true", "ContactEmail": "info@espooeagles.fi" },
+      { "Name": "Vantaa Vikings", "City": "Vantaa", "Country": "Finland", "FoundingDate": "2000-02-14T00:00:00Z", "WebsiteUrl": "https://vantaavikings.fi", "LogoUrl": "https://ui-avatars.com/api/?name=VV&background=4A679F&color=FFFFFF&size=128&bold=true", "ContactEmail": "info@vantaavikings.fi" },
+      { "Name": "Lahti Lions", "City": "Lahti", "Country": "Finland", "FoundingDate": "1993-05-27T00:00:00Z", "WebsiteUrl": "https://lahtilions.fi", "LogoUrl": "", "ContactEmail": "info@lahtilions.fi" },
+      { "Name": "Kuopio Knights", "City": "Kuopio", "Country": "Finland", "FoundingDate": "1996-08-08T00:00:00Z", "WebsiteUrl": "https://kuopioknights.fi", "LogoUrl": "", "ContactEmail": "info@kuopioknights.fi" },
+      { "Name": "Jyväskylä Jets", "City": "Jyväskylä", "Country": "Finland", "FoundingDate": "1991-11-21T00:00:00Z", "WebsiteUrl": "https://jyvaskylajets.fi", "LogoUrl": "", "ContactEmail": "info@jyvaskylajets.fi" },
+      { "Name": "Pori Panthers", "City": "Pori", "Country": "Finland", "FoundingDate": "1994-04-04T00:00:00Z", "WebsiteUrl": "https://poripanthers.fi", "LogoUrl": "", "ContactEmail": "info@poripanthers.fi" }
     ],
 
     "Divisions": [

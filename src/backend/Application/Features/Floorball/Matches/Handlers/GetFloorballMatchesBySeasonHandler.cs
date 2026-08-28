@@ -1,25 +1,17 @@
 using Application.Features.Floorball.Matches.Queries;
-using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Matches.DTOs;
-using Application.Features.Floorball.Teams.DTOs;
-using Application.Features.Floorball.Players.DTOs;
-using Application.Features.Floorball.Referees.DTOs;
-using Application.Features.Floorball.TeamManagers.DTOs;
-using Application.Features.Floorball.Statistics.DTOs;
-using Application.Features.Floorball.Seasons.Mappings;
 using Application.Features.Floorball.Matches.Mappings;
-using Application.Features.Floorball.Teams.Mappings;
-using Application.Features.Floorball.Players.Mappings;
-using Application.Features.Floorball.Referees.Mappings;
-using Application.Features.Floorball.TeamManagers.Mappings;
-using Application.Features.Floorball.Statistics.Mappings;
 using Application.Common;
+using Domain.Common;
+using Domain.Entities.Common;
 using Domain.Entities.Floorball;
+using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,27 +23,19 @@ namespace Application.Features.Floorball.Matches.Handlers;
 public class GetFloorballMatchesBySeasonHandler : IRequestHandler<GetFloorballMatchesBySeasonQuery, Result<IEnumerable<FloorballMatchDto>>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
+    private readonly IClubRepository _clubRepository;
     private readonly ILogger<GetFloorballMatchesBySeasonHandler> _logger;
 
-    /// <summary>
-    /// Initializes a new instance of the GetFloorballMatchesBySeasonHandler class
-    /// </summary>
-    /// <param name="matchRepository">The floorball match repository</param>
-    /// <param name="logger">The logger</param>
     public GetFloorballMatchesBySeasonHandler(
         IFloorballMatchRepository matchRepository,
+        IClubRepository clubRepository,
         ILogger<GetFloorballMatchesBySeasonHandler> logger)
     {
         _matchRepository = matchRepository;
+        _clubRepository = clubRepository;
         _logger = logger;
     }
 
-    /// <summary>
-    /// Handles the GetFloorballMatchesBySeasonQuery request
-    /// </summary>
-    /// <param name="request">The query containing season ID</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Floorball matches by season as DTOs wrapped in a Result</returns>
     public async Task<Result<IEnumerable<FloorballMatchDto>>> Handle(GetFloorballMatchesBySeasonQuery request, CancellationToken cancellationToken)
     {
         try
@@ -59,7 +43,11 @@ public class GetFloorballMatchesBySeasonHandler : IRequestHandler<GetFloorballMa
             _logger.LogInformation("Retrieving floorball matches for season: {SeasonId}", request.CompetitionId);
             
             IEnumerable<FloorballMatch> matches = await _matchRepository.GetByCompetitionIdAsync(request.CompetitionId);
-            IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(matches);
+            List<Guid> clubIds = FloorballMatchMapper.CollectClubIds(matches);
+            Dictionary<Guid, Club> clubLookup = clubIds.Count == 0
+                ? new Dictionary<Guid, Club>()
+                : await _clubRepository.GetByIdsAsync(clubIds, cancellationToken);
+            IEnumerable<FloorballMatchDto> matchDtos = FloorballMatchMapper.ToDtos(matches, clubLookup);
             
             _logger.LogInformation("Successfully retrieved {MatchCount} floorball matches for season: {SeasonId}", matchDtos.Count(), request.CompetitionId);
             
@@ -71,4 +59,4 @@ public class GetFloorballMatchesBySeasonHandler : IRequestHandler<GetFloorballMa
             return Result<IEnumerable<FloorballMatchDto>>.Failure("An error occurred while retrieving floorball matches.");
         }
     }
-} 
+}

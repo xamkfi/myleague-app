@@ -264,6 +264,37 @@ public class GetAllNewsArticlesQueryValidatorTests
         result.ShouldNotHaveValidationErrorFor(x => x.Author);
     }
 
+    [Fact]
+    public void Validate_TagTooLong_ShouldHaveValidationError()
+    {
+        string longTag = new string('A', 51);
+        GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(Tag: longTag);
+
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 0))
+            .Returns(true);
+
+        TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
+
+        result.ShouldHaveValidationErrorFor(x => x.Tag)
+            .WithErrorMessage("Tag filter cannot exceed 50 characters");
+    }
+
+    [Theory]
+    [InlineData("Playoffs")]
+    [InlineData("Säbä")]
+    [InlineData(null)]
+    public void Validate_ValidTag_ShouldNotHaveValidationError(string? tag)
+    {
+        GetAllNewsArticlesQuery query = new GetAllNewsArticlesQuery(Tag: tag);
+
+        _mockPaginationService.Setup(x => x.IsValidPageSize("News", 0))
+            .Returns(true);
+
+        TestValidationResult<GetAllNewsArticlesQuery> result = _validator.TestValidate(query);
+
+        result.ShouldNotHaveValidationErrorFor(x => x.Tag);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

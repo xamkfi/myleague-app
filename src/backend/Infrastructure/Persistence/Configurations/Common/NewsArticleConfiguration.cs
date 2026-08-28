@@ -1,7 +1,9 @@
 using Domain.Entities.Common;
 using Domain.Enums.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace MyLeague.Infrastructure.Persistence.Configurations.Common
@@ -83,10 +85,23 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
                 .HasDefaultValue(false);
 
             // Tags property - JSON serialized string collection
+            JsonSerializerOptions tagJsonOptions = new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+
+            ValueComparer<IReadOnlyList<string>> tagsComparer = new(
+                (left, right) => ReferenceEquals(left, right)
+                    || (left != null && right != null && left.SequenceEqual(right)),
+                list => list == null ? 0 : list.Aggregate(0, (hash, tag) => HashCode.Combine(hash, tag.GetHashCode(StringComparison.Ordinal))),
+                list => list == null ? new List<string>() : list.ToList());
+
             builder.Property(n => n.Tags)
+                .HasField("_tags")
                 .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
+                    v => JsonSerializer.Serialize(v, tagJsonOptions),
+                    v => (IReadOnlyList<string>)(JsonSerializer.Deserialize<List<string>>(v, tagJsonOptions) ?? new List<string>()),
+                    tagsComparer);
 
             // ImageUrls property - JSON serialized URI collection
             builder.Property(n => n.ImageUrls)

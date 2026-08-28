@@ -190,12 +190,38 @@ namespace Domain.Entities.Common
         /// <exception cref="ArgumentException">Thrown when the tag is empty.</exception>
         public void AddTag(string tag)
         {
-            if (string.IsNullOrWhiteSpace(tag))
-                throw new ArgumentException("Tag cannot be empty");
-            if (_tags.Contains(tag, StringComparer.OrdinalIgnoreCase))
+            string normalized = NormalizeTag(tag);
+            if (_tags.Contains(normalized, StringComparer.OrdinalIgnoreCase))
                 return;
-            _tags.Add(tag);
+            _tags.Add(normalized);
             UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Replaces the article's tags with the given set. Duplicate tags (same article, ignore case) are ignored.
+        /// The same tag may appear on any number of articles.
+        /// </summary>
+        public void ReplaceTags(IEnumerable<string> tags)
+        {
+            ArgumentNullException.ThrowIfNull(tags);
+
+            List<string> incoming = tags
+                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Select(NormalizeTag)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (string current in _tags
+                .Where(current => !incoming.Contains(current, StringComparer.OrdinalIgnoreCase))
+                .ToList())
+            {
+                RemoveTag(current);
+            }
+
+            foreach (string tag in incoming)
+            {
+                AddTag(tag);
+            }
         }
 
         /// <summary>
@@ -204,10 +230,28 @@ namespace Domain.Entities.Common
         /// <param name="tag">The tag to remove.</param>
         public void RemoveTag(string tag)
         {
-            if (_tags.RemoveAll(t => string.Equals(t, tag, StringComparison.OrdinalIgnoreCase)) > 0)
+            string normalized = NormalizeTag(tag);
+            if (_tags.RemoveAll(t => string.Equals(t, normalized, StringComparison.OrdinalIgnoreCase)) > 0)
             {
                 UpdatedAt = DateTime.UtcNow;
             }
+        }
+
+        private static string NormalizeTag(string tag)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+                throw new ArgumentException("Tag cannot be empty", nameof(tag));
+
+            string normalized = tag.Trim();
+            if (normalized.StartsWith('#'))
+            {
+                normalized = normalized[1..].Trim();
+            }
+
+            if (string.IsNullOrWhiteSpace(normalized))
+                throw new ArgumentException("Tag cannot be empty", nameof(tag));
+
+            return normalized;
         }
 
         /// <summary>
