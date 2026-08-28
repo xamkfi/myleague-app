@@ -17,6 +17,10 @@ import { footballMatchService } from '../../api/football/footballMatchService';
 import { FootballMatchStatus, type FootballMatchDto } from '../../types/football/footballTypes';
 import { formatMatchDateTime } from '../../utils/helpers';
 import { useAudience } from '../../context/AudienceContext';
+import { TeamLink } from '../../components/SportLinks';
+import SeasonStandingsCard from '../../components/SeasonStandingsCard/SeasonStandingsCard';
+import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
+import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import bannerImage from '../../assets/floorball-banner.png';
 import './FootballPage.scss';
 
@@ -51,6 +55,7 @@ function FootballPage() {
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
 
   const selectedYearMeta = useMemo(
     () => years.find((y) => y.year === selectedYear),
@@ -64,6 +69,31 @@ function FootballPage() {
   );
   const isCurrentSeasonView =
     (selectedYearMeta?.hasActiveSeason ?? false) || selectedYear === currentYear;
+
+  useEffect(() => {
+    if (!selectedYear) {
+      setContentBlocks([]);
+      return;
+    }
+
+    let cancelled = false;
+    footballSeasonService
+      .getFeaturedContentBlocks(selectedYear)
+      .then((result) => {
+        if (!cancelled) {
+          setContentBlocks(result.blocks);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setContentBlocks([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedYear]);
 
   useEffect(() => {
     if (initializedRef.current) return;
@@ -221,66 +251,31 @@ function FootballPage() {
 
   const renderStandingsCard = (data: SeasonWithStandings, isDark: boolean) => {
     const { season, standings, standingsLoading } = data;
-    const displayStandings = standings.slice(0, MAX_STANDINGS_PREVIEW);
-
     return (
-      <section
+      <SeasonStandingsCard
         key={season.id}
-        className={`fb-standings-card${isDark ? ' fb-standings-card--dark' : ''}`}
-      >
-        <h2 className="fb-standings-card__title">{season.name}</h2>
-
-        {isDark && (
-          <nav className="fb-standings-card__links" aria-label={season.name}>
-            <Link to={`/football/league/${season.id}?tab=fixtures`}>{t('leaguePage.tabs.fixtures')}</Link>
-            <Link to={`/football/league/${season.id}?tab=results`}>{t('leaguePage.tabs.results')}</Link>
-            <Link to={`/football/league/${season.id}?tab=statistics`}>
-              {t('leaguePage.tabs.statistics')}
-            </Link>
-            <Link to={`/football/league/${season.id}?tab=summary`}>{t('leaguePage.tabs.summary')}</Link>
-          </nav>
-        )}
-
-        <span className="fb-standings-card__label">{t('footballPage.standingsTitle')}</span>
-
-        {standingsLoading ? (
-          <div className="fb-standings-card__skeleton" aria-hidden="true">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="fb-standings-card__skeleton-row" />
-            ))}
-          </div>
-        ) : displayStandings.length === 0 ? (
-          <p className="fb-standings-card__empty">{t('footballPage.noStandings')}</p>
-        ) : (
-          <div className="fb-standings-table">
-            <div className="fb-standings-table__head">
-              <span className="fb-standings-table__rank">#</span>
-              <span className="fb-standings-table__team">{t('footballPage.teamShort')}</span>
-              <span className="fb-standings-table__num">{t('footballPage.gdShort')}</span>
-              <span className="fb-standings-table__num fb-standings-table__num--pts">
-                {t('footballPage.ptsShort')}
-              </span>
-            </div>
-            {displayStandings.map((team, index) => (
-              <div key={team.teamId} className="fb-standings-table__row">
-                <span className="fb-standings-table__rank">{index + 1}.</span>
-                <span className="fb-standings-table__team">
-                  {renderTeamLogo(team.teamLogo)}
-                  <span className="fb-standings-table__team-name">{team.teamName}</span>
-                </span>
-                <span className="fb-standings-table__num">{team.goalDifference}</span>
-                <span className="fb-standings-table__num fb-standings-table__num--pts">
-                  {team.points}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <Link to={`/football/league/${season.id}?tab=statistics`} className="fb-standings-card__full-link">
-          {t('footballPage.viewFullTable')}
-        </Link>
-      </section>
+        sport="football"
+        seasonId={season.id}
+        seasonName={season.name}
+        standings={standings}
+        standingsLoading={standingsLoading}
+        isDark={isDark}
+        maxRows={MAX_STANDINGS_PREVIEW}
+        labels={{
+          standingsTitle: t('footballPage.standingsTitle'),
+          teamShort: t('footballPage.teamShort'),
+          gdShort: t('footballPage.gdShort'),
+          ptsShort: t('footballPage.ptsShort'),
+          noStandings: t('footballPage.noStandings'),
+          viewFullTable: t('footballPage.viewFullTable'),
+        }}
+        navLinks={[
+          { tab: 'fixtures', label: t('leaguePage.tabs.fixtures') },
+          { tab: 'results', label: t('leaguePage.tabs.results') },
+          { tab: 'statistics', label: t('leaguePage.tabs.statistics') },
+          { tab: 'summary', label: t('leaguePage.tabs.summary') },
+        ]}
+      />
     );
   };
 
@@ -306,11 +301,27 @@ function FootballPage() {
                 <span className="fb-upcoming-card__teams">
                   <span className="fb-upcoming-card__team">
                     {renderTeamLogo(match.homeTeamLogo)}
-                    <span>{match.homeTeamName ?? t('footballPage.tbd')}</span>
+                    {match.homeTeamId && match.homeTeamName ? (
+                      <TeamLink
+                        sport="football"
+                        teamId={match.homeTeamId}
+                        teamName={match.homeTeamName}
+                      />
+                    ) : (
+                      <span>{match.homeTeamName ?? t('footballPage.tbd')}</span>
+                    )}
                   </span>
                   <span className="fb-upcoming-card__team">
                     {renderTeamLogo(match.awayTeamLogo)}
-                    <span>{match.awayTeamName ?? t('footballPage.tbd')}</span>
+                    {match.awayTeamId && match.awayTeamName ? (
+                      <TeamLink
+                        sport="football"
+                        teamId={match.awayTeamId}
+                        teamName={match.awayTeamName}
+                      />
+                    ) : (
+                      <span>{match.awayTeamName ?? t('footballPage.tbd')}</span>
+                    )}
                   </span>
                 </span>
               </Link>
@@ -322,6 +333,10 @@ function FootballPage() {
   };
 
   const renderInfoCards = () => {
+    if (contentBlocks.length > 0) {
+      return <SeasonInfoCards blocks={contentBlocks} className="season-info-cards" />;
+    }
+
     if (!isCurrentSeasonView) {
       return (
         <article className="fb-info-card">

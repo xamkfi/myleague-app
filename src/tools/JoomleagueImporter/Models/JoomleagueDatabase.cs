@@ -57,6 +57,7 @@ public class JoomleagueDatabase
         "jos_joomleague_team",
         "jos_joomleague_person",
         "jos_joomleague_project",
+        "jos_joomleague_season",
         "jos_joomleague_project_team",
         "jos_joomleague_team_player",
         "jos_joomleague_round",
@@ -124,6 +125,8 @@ public class JoomleagueDatabase
             }
         }
 
+        Dictionary<int, string> seasonExtendedById = LoadSeasonExtended(tables["jos_joomleague_season"]);
+
         ParsedTable projects = tables["jos_joomleague_project"];
         {
             int id = projects.ColumnIndex("id"), name = projects.ColumnIndex("name"),
@@ -131,6 +134,7 @@ public class JoomleagueDatabase
                 regTime = projects.ColumnIndex("game_regular_time"), parts = projects.ColumnIndex("game_parts");
             foreach (string?[] r in projects.Rows)
             {
+                int? seasonId = OptInt(r, projects, "season_id");
                 OldProject project = new()
                 {
                     Id = Int(r[id]),
@@ -138,6 +142,14 @@ public class JoomleagueDatabase
                     StartDate = Date(r[start]),
                     GameRegularTime = Int(r[regTime], 30),
                     GameParts = Int(r[parts], 2),
+                    SeasonId = seasonId,
+                    Description = Opt(r, projects, "description"),
+                    ProjectInfo = FirstOpt(r, projects, "projectinfo", "project_info", "info", "notes"),
+                    Extension = Opt(r, projects, "extension"),
+                    Extended = Opt(r, projects, "extended"),
+                    SeasonExtended = seasonId is int sid
+                        ? seasonExtendedById.GetValueOrDefault(sid)
+                        : null,
                 };
                 db.Projects[project.Id] = project;
             }
@@ -515,6 +527,50 @@ public class JoomleagueDatabase
     }
 
     // ── Value helpers ────────────────────────────────────────────
+
+    private static Dictionary<int, string> LoadSeasonExtended(ParsedTable seasons)
+    {
+        Dictionary<int, string> result = [];
+        if (seasons.Columns.Count == 0 || !seasons.TryColumnIndex("id", out int idCol))
+            return result;
+
+        foreach (string?[] r in seasons.Rows)
+        {
+            int seasonId = Int(r[idCol]);
+            string? text = FirstOpt(r, seasons, "description", "extended", "extension", "notes", "info");
+            if (!string.IsNullOrWhiteSpace(text))
+                result[seasonId] = text;
+        }
+
+        return result;
+    }
+
+    private static string? Opt(string?[] row, ParsedTable table, string column)
+    {
+        if (!table.TryColumnIndex(column, out int index) || index >= row.Length)
+            return null;
+        string value = Str(row[index]).Trim();
+        return string.IsNullOrEmpty(value) ? null : value;
+    }
+
+    private static string? FirstOpt(string?[] row, ParsedTable table, params string[] columns)
+    {
+        foreach (string column in columns)
+        {
+            string? value = Opt(row, table, column);
+            if (!string.IsNullOrWhiteSpace(value))
+                return value;
+        }
+
+        return null;
+    }
+
+    private static int? OptInt(string?[] row, ParsedTable table, string column)
+    {
+        if (!table.TryColumnIndex(column, out int index) || index >= row.Length)
+            return null;
+        return IntOrNull(row[index]);
+    }
 
     private static string Str(string? v) => v ?? "";
 

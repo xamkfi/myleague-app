@@ -26,6 +26,7 @@ public class FootballDbContext : DbContext
     public DbSet<FootballMatch> FootballMatches { get; set; }
     public DbSet<FootballCompetition> FootballCompetitions { get; set; }
     public DbSet<FootballSeason> FootballSeasons { get; set; }
+    public DbSet<FootballSeasonContentBlock> FootballSeasonContentBlocks { get; set; }
     public DbSet<FootballTournament> FootballTournaments { get; set; }
     public DbSet<FootballTournamentGroup> FootballTournamentGroups { get; set; }
     public DbSet<FootballTournamentGroupTeam> FootballTournamentGroupTeams { get; set; }
@@ -78,6 +79,8 @@ public class FootballDbContext : DbContext
         modelBuilder.ApplyConfiguration(new FootballTeamPlayerConfiguration());
         modelBuilder.ApplyConfiguration(new FootballMatchConfiguration());
         modelBuilder.ApplyConfiguration(new FootballCompetitionConfiguration());
+        modelBuilder.ApplyConfiguration(new FootballSeasonConfiguration());
+        modelBuilder.ApplyConfiguration(new FootballSeasonContentBlockConfiguration());
         modelBuilder.ApplyConfiguration(new FootballTournamentConfiguration());
         modelBuilder.ApplyConfiguration(new FootballRefereeConfiguration());
         modelBuilder.ApplyConfiguration(new FootballPeriodScoreConfiguration());

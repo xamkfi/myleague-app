@@ -76,6 +76,8 @@ public static class HockeySeasonsSeeder
 
             seasonDto = await EnsureDivisionsAsync(http, jsonOptions, seasonDto, season, divisions);
             seasonDto = await EnsurePublishedAndActiveAsync(http, jsonOptions, seasonDto);
+            await SeasonContentBlocksSeeder.EnsureAsync(
+                http, jsonOptions, "api/HockeySeason", seasonDto.Id, season.ContentBlocks, season.Name);
             created.Add(seasonDto);
         }
 

@@ -13,10 +13,15 @@ public class ParsedTable
 
     public int ColumnIndex(string name)
     {
-        int idx = Columns.FindIndex(c => string.Equals(c, name, StringComparison.OrdinalIgnoreCase));
-        if (idx < 0)
-            throw new InvalidOperationException($"Column '{name}' not found. Available: {string.Join(", ", Columns)}");
-        return idx;
+        if (TryColumnIndex(name, out int idx))
+            return idx;
+        throw new InvalidOperationException($"Column '{name}' not found. Available: {string.Join(", ", Columns)}");
+    }
+
+    public bool TryColumnIndex(string name, out int index)
+    {
+        index = Columns.FindIndex(c => string.Equals(c, name, StringComparison.OrdinalIgnoreCase));
+        return index >= 0;
     }
 }
 

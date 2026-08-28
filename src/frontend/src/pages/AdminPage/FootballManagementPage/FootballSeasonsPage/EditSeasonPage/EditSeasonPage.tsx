@@ -17,6 +17,12 @@ import { useDivisions } from '../../../../../hooks/useDivisions';
 import { SportsCategory } from '../../../../../types/common/sports';
 import './EditSeasonPage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import SeasonContentBlocksEditor from '../../../../../components/SeasonContentBlocksEditor/SeasonContentBlocksEditor';
+import {
+  toContentBlockDrafts,
+  toContentBlockItems,
+  type SeasonContentBlockDraft,
+} from '../../../../../types/common/seasonContent';
 
 const EditSeasonPage = () => {
   const { t } = useTranslation();
@@ -65,14 +71,19 @@ const EditSeasonPage = () => {
   // Multi-select
   const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(new Set());
   const [teamOperationLoading, setTeamOperationLoading] = useState(false);
+  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDraft[]>([]);
 
   // ── Load season ──
   const loadSeason = useCallback(async () => {
     if (!competitionId) return;
     try {
       setLoadingSeason(true);
-      const seasonData = await footballSeasonService.getById(competitionId);
+      const [seasonData, content] = await Promise.all([
+        footballSeasonService.getById(competitionId),
+        footballSeasonService.getContentBlocks(competitionId),
+      ]);
       setSeason(seasonData.data);
+      setContentBlocks(toContentBlockDrafts(content.blocks));
       const rules = seasonData.data.matchRules;
       const standing = seasonData.data.standingRules;
       setFormData({
@@ -228,7 +239,12 @@ const EditSeasonPage = () => {
       const maxDuration = 2 * 365 * 24 * 60 * 60 * 1000;
       if (endDate.getTime() - startDate.getTime() > maxDuration) throw new Error(t('football.seasons.validation.seasonTooLong', 'Season duration cannot exceed 2 years'));
 
+      if (contentBlocks.some((block) => !block.title.trim())) {
+        throw new Error(t('seasonContent.titleRequired'));
+      }
+
       await footballSeasonService.update(competitionId, formData);
+      await footballSeasonService.replaceContentBlocks(competitionId, toContentBlockItems(contentBlocks));
       showSuccess(t('football.seasons.seasonUpdated', 'Season "{{seasonName}}" has been updated successfully!', { seasonName: formData.name }), true);
       await loadSeason();
     } catch (err) {
@@ -530,6 +546,14 @@ const EditSeasonPage = () => {
                     <input type="number" id="edit-lossPoints" name="lossPoints" value={formData.lossPoints} onChange={handleInputChange} min={0} disabled={loading} />
                   </div>
                 </div>
+              </div>
+
+              <div className="form-section">
+                <SeasonContentBlocksEditor
+                  blocks={contentBlocks}
+                  onChange={setContentBlocks}
+                  disabled={loading}
+                />
               </div>
 
               <div className="form-actions">

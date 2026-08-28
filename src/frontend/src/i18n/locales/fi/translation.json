@@ -3,6 +3,7 @@
     "navigation": {
       "summary": "YHTEENVETO",
       "lineups": "KOKOONPANOT",
+      "stats": "TILASTOT",
       "table": "SARJATAULUKKO",
       "groupStandings": "LOHKON TAULUKKO",
       "playoffBracket": "PUDOTUSPELIKAAVIO"
@@ -1498,11 +1499,24 @@
       }
     }
   },
+  "seasonContent": {
+    "title": "Esittelyblokit",
+    "description": "Nämä kortit näkyvät julkisella kausisivulla tässä järjestyksessä.",
+    "add": "Lisää blokki",
+    "remove": "Poista",
+    "moveUp": "Siirrä ylös",
+    "moveDown": "Siirrä alas",
+    "blockTitle": "Otsikko",
+    "blockContent": "Sisältö",
+    "empty": "Ei esittelyblokkeja vielä.",
+    "titleRequired": "Jokaisella blokilla pitää olla otsikko."
+  },
   "common": {
     "back": "Takaisin",
     "backTo": "Takaisin",
     "loading": "Ladataan...",
     "edit": "Muokkaa",
+    "viewPublic": "Näytä julkinen sivu",
     "delete": "Poista",
     "save": "Tallenna",
     "deleting": "Poistetaan...",
@@ -1515,6 +1529,7 @@
     "birthDate": "Syntymäpäivä",
     "registration": "Rekisteröinti",
     "name": "Nimi",
+    "notAssigned": "Ei joukkuetta",
     "actions": "Toiminnot",
     "registered": "Rekisteröity",
     "notRegistered": "Ei Rekisteröity",
@@ -1690,7 +1705,114 @@
   },
   "searchBar": {
     "placeholder": "Hae...",
-    "button": "Hae"
+    "button": "Hae",
+    "noMatches": "Ei osumia.",
+    "people": "Henkilöt",
+    "teams": "Joukkueet",
+    "clubs": "Seurat",
+    "noResults": "Ei tuloksia...",
+    "noData": "Ei tietoja"
+  },
+  "playerPage": {
+    "title": "Pelaaja",
+    "loadError": "Virhe ladattaessa pelaajan tietoja",
+    "notFound": "Pelaajaa ei löytynyt",
+    "age": "Ikä",
+    "status": "Status",
+    "active": "Aktiivinen",
+    "inactive": "Ei aktiivinen",
+    "position": "Pelipaikka",
+    "careerStats": "Urastatistiikka",
+    "games": "Ottelut",
+    "goals": "Maalit",
+    "assists": "Syötöt",
+    "points": "Pisteet",
+    "penaltyMinutes": "Jäähymin",
+    "goalieCareer": "Maalivahtitilastot (ura)",
+    "wins": "Voitot",
+    "losses": "Tappiot",
+    "savePercentage": "Torjunta-%",
+    "shutouts": "Nollapelit",
+    "matchHistory": "Otteluhistoria",
+    "date": "Päivä",
+    "competition": "Liiga",
+    "home": "Koti",
+    "score": "Tulos",
+    "away": "Vieras",
+    "matchesTotal": "Ottelut yhteensä",
+    "noMatches": "Ei otteluhistoriaa saatavilla.",
+    "seasonStats": "Henkilökohtaiset tilastot",
+    "season": "Kausi",
+    "team": "Joukkue",
+    "careerTotal": "Ura yhteensä",
+    "noSeasonStats": "Ei kausitilastoja saatavilla.",
+    "goalieSeasonStats": "Maalivahtitilastot kausittain",
+    "ties": "Tasapelit",
+    "saves": "Torjunnat",
+    "shotsAgainst": "Laukauksia vastaan",
+    "goalsAgainst": "Päästetyt maalit",
+    "minutes": "Peliminuutit",
+    "plusMinus": "Plus/miinus-tilasto",
+    "powerPlayGoals": "Ylivoimamaalit",
+    "powerPlayAssists": "Ylivoimasyötöt",
+    "shortHandedGoals": "Alivoimamaalit",
+    "shortHandedAssists": "Alivoimasyötöt",
+    "career": "Pelaajaura",
+    "noCareer": "Ei uratietoja saatavilla.",
+    "positions": {
+      "goalkeeper": "Maalivahti",
+      "defender": "Puolustaja",
+      "forward": "Hyökkääjä",
+      "player": "Pelaaja"
+    },
+    "pagination": {
+      "first": "Ensimmäinen sivu",
+      "previous": "Edellinen sivu",
+      "next": "Seuraava sivu",
+      "last": "Viimeinen sivu",
+      "pageOf": "Sivu {{current}} / {{total}}"
+    }
+  },
+  "football": {
+    "positions": {
+      "Goalkeeper": "Maalivahti",
+      "Defender": "Puolustaja",
+      "Midfielder": "Keskikenttä",
+      "Forward": "Hyökkääjä",
+      "Player": "Pelaaja"
+    },
+    "player": {
+      "title": "Pelaaja",
+      "loadError": "Virhe ladattaessa pelaajan tietoja",
+      "notFound": "Pelaajaa ei löytynyt",
+      "age": "Ikä",
+      "status": "Status",
+      "active": "Aktiivinen",
+      "inactive": "Ei aktiivinen",
+      "position": "Pelipaikka",
+      "careerStats": "Urastatistiikka",
+      "games": "Ottelut",
+      "goals": "Maalit",
+      "assists": "Syötöt",
+      "points": "Pisteet",
+      "matchHistory": "Otteluhistoria",
+      "date": "Päivä",
+      "competition": "Kilpailu",
+      "home": "Koti",
+      "score": "Tulos",
+      "away": "Vieras",
+      "matchesTotal": "Ottelut yhteensä",
+      "noMatches": "Ei otteluhistoriaa saatavilla.",
+      "seasonStats": "Kausitilastot",
+      "season": "Kausi",
+      "team": "Joukkue",
+      "careerTotal": "Ura yhteensä",
+      "noSeasonStats": "Ei kausitilastoja saatavilla."
+    },
+    "stats": {
+      "yellowCards": "Keltaiset kortit",
+      "redCards": "Punaiset kortit"
+    }
   },
   "sports": {
     "allSports": "Kaikki lajit",
@@ -2659,6 +2781,8 @@
     "standings": {
       "title": "Sarjataulukko",
       "standings": "Sarjataulukko",
+      "team": "JOUKKUE",
+      "player": "PELAAJA",
       "topScorers": "Parhaat maalintekijät",
       "topAssists": "Parhaat syöttäjät",
       "emptyStandings": "Sarjataulukko ei ole vielä saatavilla",
@@ -2673,7 +2797,21 @@
       "goalieHeaders": {
         "player": "PELAAJA",
         "team": "JOUKKUE"
-      }
+      },
+      "colMpTitle": "Pelatut ottelut",
+      "colWTitle": "Voitot",
+      "colDTitle": "Tasapelit",
+      "colLTitle": "Tappiot",
+      "colGTitle": "Tehdyt : päästetyt maalit",
+      "colGdTitle": "Maaliero",
+      "colPtsTitle": "Pisteet",
+      "colFormTitle": "Viimeisimmät ottelut",
+      "colGoalsTitle": "Maalit",
+      "colAssistsTitle": "Syötöt",
+      "colGpTitle": "Pelatut ottelut",
+      "colGaTitle": "Päästetyt maalit",
+      "colSvTitle": "Torjuntaprosentti",
+      "colSoTitle": "Nollapelit"
     },
     "errors": {
       "loadLeagueData": "Sarjan tietojen lataus epäonnistui",

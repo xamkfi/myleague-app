@@ -187,7 +187,25 @@
         "PeriodDurationMinutes": 20,
         "AllowOvertime": true,
         "OvertimeDurationMinutes": 10,
-        "AllowShootout": true
+        "AllowShootout": true,
+        "ContentBlocks": [
+          {
+            "Title": "MAHL Salibandy 2025–2026 | Saimaanportti",
+            "ContentHtml": "<p>Ole nopea ja varaa paikkasi jo hyvissä ajoin kaupungin kovimmassa salibandysarjassa. Kausi 2025-2026 pelataan samalla kaavalla kun pari edellistäkin kautta eli kaikki lisenssipelaajat ovat vapautettuja sarjatasosta riippumatta! Joukkueissa voi olla rajaton määrä lisenssipelaajia, mutta pelikohtaisesti maksimissaan kolme (3). Kausi aloitetaan tasonmittauspeleillä, jonka jälkeen pelataan sekä liigan että divarin mestaruudesta!</p><p>Jokaisen joukkueen tulee nimetä 2 tuomaria, jotka sitoutuvat viheltämään osan kauden otteluista. Tuomareille maksetaan peleistä normaalikorvaus (10e/ottelu). Tarvittaessa MAHL kouluttaa tuomarit syksyllä.</p><p>Sarjamaksuun sisältyy myös osallistumisoikeus PMT Festival salibandyturnaukseen, joka järjestetään keväällä 2026 Saimaa Stadiumilla.</p>"
+          },
+          {
+            "Title": "Sarjainfo",
+            "ContentHtml": "<p>Tavoitellaan mukaan 12-16 joukkuetta. Kauden alkuun tasonmittauspelit, jonka jälkeen jakaannutaan liigaan ja divariin. Sarjakausi huipentuu loppupeleihin. Pelit perjantai-iltaisin klo 18-22, ottelut pelataan uudella Saimaan Portin koululla, jossa on mattoalusta.</p><p>Lopullinen sarjamuoto sekä mitallipelien pelaamismuoto määräytyy joukkuemäärän mukaan. Otteluita joukkueelle kertyy kauden aikana n. 16-24 kappaletta.</p><p>Lisenssipelaajat sallittuja sarjatasosta riippumatta. Joukkueessa voi olla rajaton määrä lisenssipelaajia, mutta pelikohtaisesti maksimissaan kolme (3). Maalivahteja EI LASKETA lisenssipelaajiksi. Alle 18 vuotiaita ei lasketa lisenssipelaajiksi, vaikka pelaisivatkin korkeammalla tasolla. Myöskään naisia tai 1986 syntyneitä miehiä ei lasketa lisenssipelaajiksi. Lainavahdin käyttö MAHL salibandyssä on sallittua.</p><p>Salibandyn PMT turnaus sisältyy joukkuemaksuun! Joukkuemaksu sisältää osallistumisoikeuden toukokuussa järjestettävään PMT festival turnaukseen. Turnaus järjestetään Saimaa Stadiumilla toukokuussa 2026. Lisäinfoa turnauksesta keväällä.</p>"
+          },
+          {
+            "Title": "Lainapelaajat",
+            "ContentHtml": "<p>Kaudelle 2025-2026 stuntataan lainapelaajien pankkia. Mikäli pelipäivänä joukkueella on pulaa pelaajista voi joukkue täydentää rosteriaan lainapelaajista siten, että pelaamassa olevan rosterin koko on 1+10 pelaajaa. Homma toimii siten, että JoJo ilmoittaa Mahl:lle tarvittavan lainapelaajien määrän ja MAHL hoitaa lainapelaajat otteluihin. MAHL laskuttaa lainapelaajat. Tästä vielä lisäinfoa ennen kauden alkua.</p>"
+          },
+          {
+            "Title": "Joukkuemaksu",
+            "ContentHtml": "<p>Osallistumismaksu 1200-2000 €, alv. 0% (Lopullinen hinta selviää joukkuemäärän ja sarjamuodon varmistuttua).</p><p>Puolet joukkuemaksusta tulee olla hoidettuna lokakuun 2025 loppuun mennessä. Loput joukkuemaksusta tulee olla hoidettuna tammikuun 2026 loppuun mennessä.</p><p>Joukkuemaksu sisältää osallistumisoikeuden PMT festival salibandyturnaukseen. Joukkueiden laskutus tapahtuu suomisportin kautta. Jojoihin ollaan yhteydessä laskutuksesta kauden alussa.</p>"
+          }
+        ]
       }
     ],
 
@@ -616,7 +634,17 @@
         "EndDate": "2027-04-30",
         "SeasonCode": "2026-27-H",
         "TeamCategory": 0,
-        "DivisionNames": ["Liiga Division"]
+        "DivisionNames": ["Liiga Division"],
+        "ContentBlocks": [
+          {
+            "Title": "MAHL Jääkiekko 2026–27 | Liiga",
+            "ContentHtml": "<p>Liigakausi 2026–27 kokoaa aikuisjoukkueet runkosarjaan ja pudotuspeleihin. Seuraa otteluohjelmaa, sarjataulukkoa ja pistepörssiä tältä sivulta.</p><p>Ottelut pelataan kolmessa erässä. Jatkoaika ja voittomaalikilpailu ovat käytössä runkosarjan säännöissä.</p>"
+          },
+          {
+            "Title": "Sarjainfo",
+            "ContentHtml": "<p>Joukkueet pelaavat koti- ja vierasotteluita. Sarjataulukko päivittyy otteluiden valmistuttua. Pelaaja- ja maalivahtitilastot löytyvät sarjasivulta.</p>"
+          }
+        ]
       },
       {
         "Name": "2026-27 U18 Season",
@@ -624,7 +652,13 @@
         "EndDate": "2027-03-31",
         "SeasonCode": "2026-27-U18",
         "TeamCategory": 1,
-        "DivisionNames": ["U18 Hockey"]
+        "DivisionNames": ["U18 Hockey"],
+        "ContentBlocks": [
+          {
+            "Title": "U18-kausi 2026–27",
+            "ContentHtml": "<p>Nuorten U18-sarja pelataan samalla kaudella aikuisten liigan rinnalla. Otteluohjelma, tulokset ja tilastot ovat saatavilla sarjasivulla.</p>"
+          }
+        ]
       },
       {
         "Name": "2026-27 Women Liiga",
@@ -632,7 +666,13 @@
         "EndDate": "2027-03-31",
         "SeasonCode": "2026-27-W",
         "TeamCategory": 2,
-        "DivisionNames": ["Women Liiga"]
+        "DivisionNames": ["Women Liiga"],
+        "ContentBlocks": [
+          {
+            "Title": "Naisten Liiga 2026–27",
+            "ContentHtml": "<p>Naisten liigakausi 2026–27. Selaa otteluita, sarjataulukkoa ja pelaajatilastoja tältä sivulta.</p>"
+          }
+        ]
       }
     ],
 

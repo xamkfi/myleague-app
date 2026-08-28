@@ -570,6 +570,7 @@ public class HockeyEntityImporter
         int periodCount,
         int periodMinutes)
     {
+        await _api.EnsureSeasonContentBlocksAsync("api/HockeySeason", season.Id, pi.Project);
         await _api.ApplyHobbyRulesAsync(season.Id, periodCount, periodMinutes, HobbyMinDressedPlayers);
         await _api.AddDivisionToSeasonAsync(season.Id, division.Id, division.Name);
 

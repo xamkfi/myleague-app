@@ -1,10 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import type { FloorballMatchDto, FloorballMatchStatus } from '../../../../../../types/floorball/floorballTypes';
+import type { FloorballMatchDto } from '../../../../../../types/floorball/floorballTypes';
 import { formatDateTime } from '../../../ManageMatchPage/utils/matchFormatters';
-import ActionsDropdown from '../../../../../../components/ActionsDropdown/ActionsDropdown';
-import LoadingSpinner from '../../../../../../components/LoadingSpinner/LoadingSpinner';
-import '../../../../../../styles/AdminTable.scss';
-import './MatchTable.scss';
+import AdminMatchTable from '../../../../../../components/admin/AdminMatchTable';
+import type { AdminAction } from '../../../../../../components/admin/adminTableTypes';
 
 interface MatchTableProps {
   matches: FloorballMatchDto[];
@@ -15,12 +13,6 @@ interface MatchTableProps {
   onStartMatch: (match: FloorballMatchDto) => void;
   onCancelMatch: (match: FloorballMatchDto) => void;
   onReactivateMatch: (match: FloorballMatchDto) => void;
-  /**
-   * When true, hides the Actions column entirely. Used by callers (e.g. the tournament
-   * edit page) where the only meaningful action is "open the match", which the whole
-   * row already triggers via {@link onLiveMatch}. Defaults to false so the global match
-   * management page keeps its existing dropdown menu.
-   */
   hideActions?: boolean;
 }
 
@@ -36,8 +28,9 @@ const MatchTable = ({
   hideActions = false,
 }: MatchTableProps) => {
   const { t } = useTranslation();
+  const byId = new Map(matches.map((match) => [match.id, match]));
 
-  const getMatchStatusBadge = (status: FloorballMatchStatus) => {
+  const getMatchStatusBadge = (status: string) => {
     const map: Record<string, { className: string; label: string }> = {
       Scheduled: {
         className: 'admin-badge admin-badge--info',
@@ -60,41 +53,30 @@ const MatchTable = ({
         label: t('floorball.matches.status.postponed', 'Postponed'),
       },
     };
-
     return map[status] ?? { className: 'admin-badge', label: status };
   };
 
-  const getActions = (match: FloorballMatchDto) => {
-    const actions: {
-      label: string;
-      onClick: () => void;
-      variant?: 'default' | 'danger' | 'status';
-      disabled: boolean;
-    }[] = [];
-
-    actions.push({
-      label: t('floorball.matches.actions.open', 'Open Match'),
-      onClick: () => onOpenMatch(match),
-      disabled: false,
-    });
+  const getActions = (match: FloorballMatchDto): AdminAction[] => {
+    const actions: AdminAction[] = [
+      {
+        label: t('floorball.matches.actions.open', 'Open Match'),
+        onClick: () => onOpenMatch(match),
+      },
+    ];
 
     if (match.status === 'InProgress') {
       actions.push({
         label: t('floorball.matches.actions.live', 'Live View'),
         onClick: () => onLiveMatch(match),
-        disabled: false,
       });
-
       actions.push({
-        label: t('common.edit', 'Edit'),
+        label: t('common.edit'),
         onClick: () => onEditMatch(match),
-        disabled: false,
       });
     } else {
       actions.push({
         label: t('floorball.matches.actions.manage', 'Manage'),
         onClick: () => onEditMatch(match),
-        disabled: false,
       });
     }
 
@@ -103,7 +85,6 @@ const MatchTable = ({
         label: t('floorball.matches.actions.start', 'Start Match'),
         onClick: () => onStartMatch(match),
         variant: 'status',
-        disabled: false,
       });
     }
 
@@ -111,7 +92,6 @@ const MatchTable = ({
       actions.push({
         label: t('floorball.matches.actions.reactivate', 'Reactivate Match'),
         onClick: () => onReactivateMatch(match),
-        disabled: false,
       });
     }
 
@@ -124,115 +104,53 @@ const MatchTable = ({
         label: t('floorball.matches.actions.cancel', 'Cancel Match'),
         onClick: () => onCancelMatch(match),
         variant: 'danger',
-        disabled: false,
       });
     }
 
     return actions;
   };
 
-  if (loading) {
-    return (
-      <div className="match-table__loading">
-        <LoadingSpinner text={t('floorball.matches.loading', 'Loading matches...')} />
-      </div>
-    );
-  }
-
-  if (matches.length === 0) {
-    return (
-      <div className="match-table__empty">
-        <i className="fas fa-calendar-times match-table__empty-icon"></i>
-        <p>{t('floorball.matches.noMatchesFound', 'No matches found')}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="admin-table__wrapper">
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>{t('floorball.matches.columns.match', 'Match')}</th>
-            <th>{t('floorball.matches.columns.season', 'Season')}</th>
-            <th>{t('floorball.matches.columns.dateTime', 'Date & Time')}</th>
-            <th>{t('floorball.matches.columns.venue', 'Venue')}</th>
-            <th>{t('floorball.matches.columns.score', 'Score')}</th>
-            <th>{t('floorball.matches.columns.status', 'Status')}</th>
-            {!hideActions && (
-              <th className="admin-table__actions-col">{t('common.actions', 'Actions')}</th>
-            )}
-          </tr>
-        </thead>
-
-        <tbody>
-          {matches.map((match: FloorballMatchDto) => (
-            <tr
-              key={match.id}
-              className="admin-table__row--clickable"
-              onClick={() => onLiveMatch(match)}
-            >
-              <td>
-                <div className="match-table__teams">
-                  {/* Placeholder fixtures (not yet assigned) render as "TBD" so the row is still
-                      navigable to the edit/assign-teams flow. */}
-                  <span className="admin-table__name">{match.homeTeamName ?? 'TBD'}</span>
-                  <span className="match-table__vs">vs</span>
-                  <span className="admin-table__name">{match.awayTeamName ?? 'TBD'}</span>
-                </div>
-              </td>
-
-              <td>
-                <span className="admin-table__muted">{match.competitionName || '-'}</span>
-              </td>
-
-              <td className="admin-table__muted">
-                {formatDateTime(match.scheduledDateTime)}
-              </td>
-
-              <td>
-                {match.venue ? (
-                  <span className="admin-table__muted">{match.venue}</span>
-                ) : (
-                  <span className="admin-table__muted match-table__tbd">
-                    {t('floorball.matches.tbd', 'TBD')}
-                  </span>
-                )}
-              </td>
-
-              <td>
-                {match.status === 'Scheduled' || match.status === 'Postponed' ? (
-                  <span className="admin-table__muted">-</span>
-                ) : (
-                  <span className="admin-table__bold">
-                    {match.homeScore} - {match.awayScore}
-                  </span>
-                )}
-              </td>
-
-              <td>
-                {(() => {
-                  const badge = getMatchStatusBadge(match.status);
-                  return <span className={badge.className}>{badge.label}</span>;
-                })()}
-              </td>
-
-              {!hideActions && (
-                <td
-                  className="admin-table__actions-col"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <ActionsDropdown
-                    actions={getActions(match)}
-                    ariaLabel={t('floorball.matches.actions.menu', 'Match actions menu')}
-                  />
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <AdminMatchTable
+      sport="floorball"
+      matches={matches.map((match) => ({
+        id: match.id,
+        homeTeamName: match.homeTeamName ?? '',
+        awayTeamName: match.awayTeamName ?? '',
+        homeTeamId: match.homeTeamId,
+        awayTeamId: match.awayTeamId,
+        competitionName: match.competitionName || '-',
+        scheduledDateTime: match.scheduledDateTime,
+        venue: match.venue,
+        homeScore: match.homeScore,
+        awayScore: match.awayScore,
+        status: match.status,
+      }))}
+      labels={{
+        loading: t('floorball.matches.loading', 'Loading matches...'),
+        noMatchesFound: t('floorball.matches.noMatchesFound', 'No matches found'),
+        match: t('floorball.matches.columns.match', 'Match'),
+        season: t('floorball.matches.columns.season', 'Season'),
+        dateTime: t('floorball.matches.columns.dateTime', 'Date & Time'),
+        venue: t('floorball.matches.columns.venue', 'Venue'),
+        score: t('floorball.matches.columns.score', 'Score'),
+        status: t('floorball.matches.columns.status', 'Status'),
+        tbd: t('floorball.matches.tbd', 'TBD'),
+        actionsMenu: t('floorball.matches.actions.menu', 'Match actions menu'),
+      }}
+      loading={loading}
+      hideActions={hideActions}
+      formatDateTime={formatDateTime}
+      getStatusBadge={getMatchStatusBadge}
+      getActions={(row) => {
+        const match = byId.get(row.id);
+        return match ? getActions(match) : [];
+      }}
+      onRowClick={(row) => {
+        const match = byId.get(row.id);
+        if (match) onLiveMatch(match);
+      }}
+    />
   );
 };
 

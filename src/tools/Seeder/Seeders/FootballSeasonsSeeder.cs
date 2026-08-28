@@ -43,6 +43,8 @@ public static class FootballSeasonsSeeder
                     {
                         created.Add(existing);
                         Console.WriteLine("Football season exists, skipping: " + existing.Name + " (" + existing.Id + ")");
+                        await SeasonContentBlocksSeeder.EnsureAsync(
+                            http, jsonOptions, "api/FootballSeason", existing.Id, season.ContentBlocks, season.Name);
                         continue;
                     }
                 }
@@ -81,6 +83,8 @@ public static class FootballSeasonsSeeder
 
             created.Add(api.Data);
             Console.WriteLine("Created football season " + api.Data.Name + " (" + api.Data.Id + ") with " + divisionIds.Count + " division(s)");
+            await SeasonContentBlocksSeeder.EnsureAsync(
+                http, jsonOptions, "api/FootballSeason", api.Data.Id, season.ContentBlocks, season.Name);
         }
 
         return created;

@@ -62,9 +62,6 @@ services:
     container_name: myleague-frontend
     environment:
       - DOCKER=true
-    volumes:
-      - ./src/frontend:/app
-      - /app/node_modules
     ports:
       - '5173:5173'
     depends_on:

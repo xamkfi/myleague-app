@@ -17,6 +17,8 @@ interface MatchPageShellProps {
   activeTab: MatchTabType;
   onTabChange: (tab: MatchTabType) => void;
   tableVariant: TableTabVariant;
+  showTableTab?: boolean;
+  showStatsTab?: boolean;
   children: ReactNode;
 }
 
@@ -29,6 +31,8 @@ export default function MatchPageShell({
   activeTab,
   onTabChange,
   tableVariant,
+  showTableTab = true,
+  showStatsTab = false,
   children,
 }: MatchPageShellProps) {
   const { t } = useTranslation();
@@ -77,6 +81,8 @@ export default function MatchPageShell({
             activeTab={activeTab}
             onTabChange={onTabChange}
             tableVariant={tableVariant}
+            showTableTab={showTableTab}
+            showStatsTab={showStatsTab}
           />
           {children}
         </div>

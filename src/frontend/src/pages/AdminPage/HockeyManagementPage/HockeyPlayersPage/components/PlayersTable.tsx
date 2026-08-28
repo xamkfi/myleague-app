@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import CheckIcon from '../../../../../assets/basicIcons/check.svg';
-import CloseIcon from '../../../../../assets/basicIcons/close.svg';
-import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
+import AdminPlayersTable from '../../../../../components/admin/AdminPlayersTable';
 
 export interface HockeyPlayerListRow {
   playerId: string;
@@ -35,92 +33,48 @@ function PlayersTable({
 }: PlayersTableProps) {
   const { t } = useTranslation();
 
-  if (players.length === 0) {
-    return <div className="no-data-state">{t('hockey.players.noPlayers', 'No players found.')}</div>;
-  }
-
   return (
-    <table className="admin-table">
-      <thead>
-        <tr>
-          <th className="admin-table__checkbox-col">
-            <input
-              type="checkbox"
-              checked={players.length > 0 && players.every((player) => selectedPlayers.has(player.playerId))}
-              onChange={(event) => {
-                if (event.target.checked) {
-                  onSelectAll();
-                } else {
-                  onClearSelection();
-                }
-              }}
-              title={t('hockey.players.selectAll', 'Select all players')}
-            />
-          </th>
-          <th>{t('hockey.players.table.name', 'Name')}</th>
-          <th>{t('hockey.players.table.team', 'Team')}</th>
-          <th>{t('hockey.players.table.position', 'Position')}</th>
-          <th>{t('hockey.players.table.status', 'Status')}</th>
-          <th className="admin-table__actions-col">{t('hockey.players.table.actions', 'Actions')}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {players.map((player) => (
-          <tr
-            key={`${player.playerId}-${player.teamId}`}
-            className={`admin-table__row--clickable${selectedPlayers.has(player.playerId) ? ' admin-table__row--selected' : ''}`}
-            onClick={() => onToggleSelection(player.playerId)}
-          >
-            <td className="admin-table__checkbox-col">
-              <input
-                type="checkbox"
-                checked={selectedPlayers.has(player.playerId)}
-                onChange={() => onToggleSelection(player.playerId)}
-                onClick={(event) => event.stopPropagation()}
-              />
-            </td>
-            <td className="admin-table__name">{player.name}</td>
-            <td>{player.teamName}</td>
-            <td>{t(`hockey.positions.${player.position}`, player.position)}</td>
-            <td>
-              <span
-                className={`admin-badge ${player.isActive ? 'admin-badge--active' : 'admin-badge--inactive'}`}
-                title={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
-              >
-                <img
-                  src={player.isActive ? CheckIcon : CloseIcon}
-                  alt={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
-                  className="status-icon"
-                />
-              </span>
-            </td>
-            <td className="admin-table__actions-col" onClick={(event) => event.stopPropagation()}>
-              <ActionsDropdown
-                actions={[
-                  {
-                    label: t('hockey.teams.assignPlayerToTeam', 'Assign to Team'),
-                    onClick: () => onAssignToTeam(player),
-                  },
-                  {
-                    label: player.isActive
-                      ? t('hockey.players.actions.deactivate', 'Deactivate Player')
-                      : t('hockey.players.actions.activate', 'Activate Player'),
-                    onClick: () => onStatusChange(player, !player.isActive),
-                    variant: 'status',
-                  },
-                  {
-                    label: t('hockey.teams.removeFromTeam', 'Remove from Team'),
-                    onClick: () => onDelete(player.playerId, player.teamId),
-                    variant: 'danger',
-                  },
-                ]}
-                ariaLabel={t('hockey.players.actions.menu', 'Player actions menu')}
-              />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <AdminPlayersTable
+      sport="hockey"
+      players={players.map((player) => ({
+        id: player.playerId,
+        rowKey: `${player.playerId}-${player.teamId}`,
+        teamId: player.teamId,
+        name: player.name,
+        teamName: player.teamName,
+        positionLabel: t(`hockey.positions.${player.position}`, player.position),
+        isActive: player.isActive,
+      }))}
+      labels={{
+        noPlayers: t('hockey.players.noPlayers', 'No players found.'),
+        selectAll: t('hockey.players.selectAll', 'Select all players'),
+        name: t('hockey.players.table.name', 'Name'),
+        team: t('hockey.players.table.team', 'Team'),
+        position: t('hockey.players.table.position', 'Position'),
+        status: t('hockey.players.table.status', 'Status'),
+        actions: t('hockey.players.table.actions', 'Actions'),
+        assignToTeam: t('hockey.teams.assignPlayerToTeam', 'Assign to Team'),
+        deactivate: t('hockey.players.actions.deactivate', 'Deactivate Player'),
+        activate: t('hockey.players.actions.activate', 'Activate Player'),
+        delete: t('hockey.teams.removeFromTeam', 'Remove from Team'),
+        actionsMenu: t('hockey.players.actions.menu', 'Player actions menu'),
+      }}
+      selectedPlayers={selectedPlayers}
+      onToggleSelection={onToggleSelection}
+      onSelectAll={onSelectAll}
+      onClearSelection={onClearSelection}
+      onAssignToTeam={(player) => {
+        const source = players.find((row) => `${row.playerId}-${row.teamId}` === player.rowKey);
+        if (source) onAssignToTeam(source);
+      }}
+      onStatusChange={(player, isActive) => {
+        const source = players.find((row) => `${row.playerId}-${row.teamId}` === player.rowKey);
+        if (source) onStatusChange(source, isActive);
+      }}
+      onDelete={(player) => {
+        if (player.teamId) onDelete(player.id, player.teamId);
+      }}
+    />
   );
 }
 

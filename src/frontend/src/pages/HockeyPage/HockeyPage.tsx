@@ -3,13 +3,15 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import SeasonStandingsCard from '../../components/SeasonStandingsCard/SeasonStandingsCard';
+import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
+import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
 import { hockeyStatisticsService } from '../../api/hockey/hockeyStatisticsService';
 import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
 import type { HockeySeasonDto, HockeyTeamCompetitionStatisticsDto } from '../../types/hockey/hockeyTypes';
 import { useAudience } from '../../context/AudienceContext';
 import { uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
-import StatAbbr from '../../components/StatAbbr/StatAbbr';
 import './HockeyPage.scss';
 
 interface SeasonWithStandings {
@@ -27,15 +29,18 @@ function HockeyPage() {
   const [seasonsData, setSeasonsData] = useState<SeasonWithStandings[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
 
   const fetchSeasons = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
-      const [seasons, teams] = await Promise.all([
+      const [seasons, teams, content] = await Promise.all([
         hockeySeasonService.getAll(audience.teamCategory),
         hockeyTeamService.getAll(audience.teamCategory),
+        hockeySeasonService.getFeaturedContentBlocks().catch(() => ({ seasonId: null, blocks: [] })),
       ]);
+      setContentBlocks(content.blocks);
       const teamNames = new Map(teams.map((team) => [team.id, team.name]));
       const sorted = [...seasons].sort((a, b) => {
         if (a.isActive && !b.isActive) return -1;
@@ -66,7 +71,7 @@ function HockeyPage() {
         }
       }
     } catch {
-      setError(t('hockeyPage.error', 'Failed to load leagues'));
+      setError(t('hockeyPage.error'));
       setIsLoading(false);
     }
   }, [t, audience.teamCategory]);
@@ -77,10 +82,10 @@ function HockeyPage() {
 
   if (isLoading) {
     return (
-      <PageTemplate title={t('sports.iceHockey', 'Ice hockey')}>
+      <PageTemplate title={t('sports.iceHockey')}>
         <div className="hockey-page">
           <div className="hockey-page__loading">
-            <LoadingSpinner variant="light" text={t('hockeyPage.loading', 'Loading leagues...')} />
+            <LoadingSpinner variant="light" text={t('hockeyPage.loading')} />
           </div>
         </div>
       </PageTemplate>
@@ -88,92 +93,67 @@ function HockeyPage() {
   }
 
   return (
-    <PageTemplate title={t('sports.iceHockey', 'Ice hockey')}>
+    <PageTemplate title={t('sports.iceHockey')}>
       <div className="hockey-page">
         <div className="hockey-page__header">
-          <h1 className="hockey-page__title">{t('sports.iceHockey', 'Ice hockey')}</h1>
+          <h1 className="hockey-page__title">{t('sports.iceHockey')}</h1>
           <p className="hockey-page__description">
-            {t('hockeyPage.description', 'Browse hockey leagues, standings, and statistics.')}
+            {t('hockeyPage.description')}
           </p>
           <nav className="season-card__links">
             <Link to="/hockey/tournaments" className="season-card__link">
-              {t('hockeyPage.tournaments', 'Tournaments')}
+              {t('hockeyPage.tournaments')}
             </Link>
           </nav>
         </div>
+        <SeasonInfoCards blocks={contentBlocks} className="season-info-cards hockey-page__content-blocks" />
         {error && (
           <div className="hockey-page__error">
             <p>{error}</p>
             <button type="button" className="hockey-page__retry-btn" onClick={() => void fetchSeasons()}>
-              {t('hockeyPage.retry', 'Try again')}
+              {t('hockeyPage.retry')}
             </button>
           </div>
         )}
         {seasonsData.length === 0 ? (
           <div className="hockey-page__empty">
-            <p>{t('hockeyPage.noSeasons', 'No leagues available')}</p>
+            <p>{t('hockeyPage.noSeasons')}</p>
           </div>
         ) : (
           <div className="hockey-page__seasons">
-            {seasonsData.map((data) => (
-              <div key={data.season.id} className="season-card">
-                <div className="season-card__header">
-                  <h2 className="season-card__title">{data.season.name}</h2>
-                  {data.season.isActive && <span className="season-card__badge season-card__badge--active">{t('hockeyPage.active', 'Active')}</span>}
-                </div>
-                <nav className="season-card__links">
-                  <Link to={`/hockey/league/${data.season.id}?tab=fixtures`} className="season-card__link">{t('hockeyPage.fixtures', 'Fixtures')}</Link>
-                  <Link to={`/hockey/league/${data.season.id}?tab=statistics`} className="season-card__link">{t('hockeyPage.standings', 'Standings')}</Link>
-                  <Link to={`/hockey/league/${data.season.id}?tab=players`} className="season-card__link">{t('hockeyPage.playerStats', 'Player Statistics')}</Link>
-                </nav>
-                {data.standingsLoading && (
-                  <div className="standings-table standings-table--loading">
-                    <div className="standings-table__header">
-                      <span className="standings-table__header-title">
-                        {t('hockeyPage.standingsTitle', 'STANDINGS')} {data.season.name}
-                      </span>
-                    </div>
-                    <div className="standings-table__loading">
-                      {t('hockeyPage.loadingStandings', 'Loading standings...')}
-                    </div>
-                  </div>
-                )}
-                {data.standings.length > 0 && (
-                  <div className="standings-table">
-                    <div className="standings-table__header">
-                      <span className="standings-table__header-title">{t('hockeyPage.standingsTitle', 'STANDINGS')} {data.season.name}</span>
-                    </div>
-                    <table className="standings-table__table">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>{t('hockeyPage.team', 'TEAM')}</th>
-                          <th className="standings-table__games">
-                            <StatAbbr abbr={t('hockeyPage.gamesShort', 'GP')} title={t('hockeyPage.gamesShortTitle', 'Games played')} />
-                          </th>
-                          <th className="standings-table__points">
-                            <StatAbbr abbr={t('hockeyPage.pointsShort', 'PTS')} title={t('hockeyPage.pointsShortTitle', 'Points')} />
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {uniqueHockeyStandingsByTeamId(data.standings).slice(0, MAX_STANDINGS_PREVIEW).map((row) => (
-                          <tr key={row.teamId}>
-                            <td>{row.standingRank || ''}</td>
-                            <td>{data.teamNames.get(row.teamId) ?? row.teamId.slice(0, 8)}</td>
-                            <td>{row.gamesPlayed}</td>
-                            <td>{row.points}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <Link to={`/hockey/league/${data.season.id}?tab=statistics`} className="standings-table__full-link">
-                      {t('hockeyPage.viewFullTable', '>> full table')}
-                    </Link>
-                  </div>
-                )}
-              </div>
-            ))}
+            {seasonsData.map((data) => {
+              const namedStandings = uniqueHockeyStandingsByTeamId(data.standings).map((row) => ({
+                teamId: row.teamId,
+                teamName: data.teamNames.get(row.teamId) ?? row.teamId.slice(0, 8),
+                goalDifference: row.goalDifference,
+                points: row.points,
+              }));
+              return (
+                <SeasonStandingsCard
+                  key={data.season.id}
+                  sport="hockey"
+                  seasonId={data.season.id}
+                  seasonName={data.season.name}
+                  standings={namedStandings}
+                  standingsLoading={data.standingsLoading}
+                  isDark={data.season.isActive}
+                  maxRows={MAX_STANDINGS_PREVIEW}
+                  labels={{
+                    standingsTitle: t('hockeyPage.standingsTitle'),
+                    teamShort: t('hockeyPage.team'),
+                    gdShort: t('hockeyPage.colGd'),
+                    ptsShort: t('hockeyPage.pointsShort'),
+                    noStandings: t('hockeyPage.noStats'),
+                    viewFullTable: t('hockeyPage.viewFullTable'),
+                  }}
+                  navLinks={[
+                    { tab: 'fixtures', label: t('hockeyPage.fixtures') },
+                    { tab: 'statistics', label: t('hockeyPage.standings') },
+                    { tab: 'players', label: t('hockeyPage.playerStats') },
+                  ]}
+                />
+              );
+            })}
           </div>
         )}
       </div>

@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { FootballPlayerDto } from '../../../../../api/football/footballPlayerService';
-import CheckIcon from '../../../../../assets/basicIcons/check.svg';
-import CloseIcon from '../../../../../assets/basicIcons/close.svg';
-import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
+import AdminPlayersTable from '../../../../../components/admin/AdminPlayersTable';
 
 interface PlayersTableProps {
   players: FootballPlayerDto[];
@@ -15,102 +13,52 @@ interface PlayersTableProps {
   onClearSelection: () => void;
 }
 
-const PlayersTable = ({ players, onDelete, onStatusChange, onAssignToTeam, selectedPlayers, onToggleSelection, onSelectAll, onClearSelection }: PlayersTableProps) => {
+const PlayersTable = ({
+  players,
+  onDelete,
+  onStatusChange,
+  onAssignToTeam,
+  selectedPlayers,
+  onToggleSelection,
+  onSelectAll,
+  onClearSelection,
+}: PlayersTableProps) => {
   const { t } = useTranslation();
 
-  if (players.length === 0) {
-    return <div className="no-data-state">{t('football.players.noPlayers', 'No players found.')}</div>;
-  }
-
   return (
-    <table className="admin-table">
-      <thead>
-        <tr>
-          <th className="admin-table__checkbox-col">
-            <input
-              type="checkbox"
-              checked={players.length > 0 && players.every(player => selectedPlayers.has(player.id))}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  onSelectAll();
-                } else {
-                  onClearSelection();
-                }
-              }}
-              title={t('football.players.selectAll', 'Select all players')}
-            />
-          </th>
-          <th>{t('football.players.table.name', 'Name')}</th>
-          <th>{t('football.players.table.team', 'Team')}</th>
-          <th>{t('football.players.table.position', 'Position')}</th>
-          <th>{t('football.players.table.status', 'Status')}</th>
-          <th className="admin-table__actions-col">{t('football.players.table.actions', 'Actions')}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {players.map((player) => (
-          <tr
-            key={player.id}
-            className={`admin-table__row--clickable${selectedPlayers.has(player.id) ? ' admin-table__row--selected' : ''}`}
-            onClick={() => onToggleSelection(player.id)}
-          >
-            <td className="admin-table__checkbox-col">
-              <input
-                type="checkbox"
-                checked={selectedPlayers.has(player.id)}
-                onChange={() => onToggleSelection(player.id)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </td>
-            <td className="admin-table__name">
-              {player.person.fullName || `${player.person.firstName} ${player.person.lastName}`}
-            </td>
-            <td>
-              {player.team?.name || 'Not assigned'}
-            </td>
-            <td>
-              {player.position ? t(`football.positions.${player.position.toLowerCase()}`, player.position) : 'None'}
-            </td>
-            <td>
-              <span
-                className={`admin-badge ${player.isActive ? 'admin-badge--active' : 'admin-badge--inactive'}`}
-                aria-label={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
-                title={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
-              >
-                <img
-                  src={player.isActive ? CheckIcon : CloseIcon}
-                  alt={player.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
-                  className="status-icon"
-                />
-              </span>
-            </td>
-            <td className="admin-table__actions-col">
-              <ActionsDropdown
-                actions={[
-                  {
-                    label: t('football.teams.assignPlayerToTeam', 'Assign to Team'),
-                    onClick: () => onAssignToTeam(player.id),
-                  },
-                  {
-                    label: player.isActive
-                      ? t('football.players.actions.deactivate', 'Deactivate Player')
-                      : t('football.players.actions.activate', 'Activate Player'),
-                    onClick: () => onStatusChange(player.id, !player.isActive),
-                    variant: 'status',
-                  },
-                  {
-                    label: t('common.delete', 'Delete'),
-                    onClick: () => onDelete(player.id),
-                    variant: 'danger',
-                  },
-                ]}
-                ariaLabel={t('football.players.actions.menu', 'Player actions menu')}
-              />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <AdminPlayersTable
+      sport="football"
+      players={players.map((player) => ({
+        id: player.id,
+        name: player.person.fullName || `${player.person.firstName} ${player.person.lastName}`,
+        teamName: player.team?.name ?? '',
+        positionLabel: player.position
+          ? t(`football.positions.${player.position.toLowerCase()}`, player.position)
+          : '',
+        isActive: player.isActive,
+      }))}
+      labels={{
+        noPlayers: t('football.players.noPlayers', 'No players found.'),
+        selectAll: t('football.players.selectAll', 'Select all players'),
+        name: t('football.players.table.name', 'Name'),
+        team: t('football.players.table.team', 'Team'),
+        position: t('football.players.table.position', 'Position'),
+        status: t('football.players.table.status', 'Status'),
+        actions: t('football.players.table.actions', 'Actions'),
+        assignToTeam: t('football.teams.assignPlayerToTeam', 'Assign to Team'),
+        deactivate: t('football.players.actions.deactivate', 'Deactivate Player'),
+        activate: t('football.players.actions.activate', 'Activate Player'),
+        delete: t('common.delete'),
+        actionsMenu: t('football.players.actions.menu', 'Player actions menu'),
+      }}
+      selectedPlayers={selectedPlayers}
+      onToggleSelection={onToggleSelection}
+      onSelectAll={onSelectAll}
+      onClearSelection={onClearSelection}
+      onAssignToTeam={(player) => onAssignToTeam(player.id)}
+      onStatusChange={(player, isActive) => onStatusChange(player.id, isActive)}
+      onDelete={(player) => onDelete(player.id)}
+    />
   );
 };
 

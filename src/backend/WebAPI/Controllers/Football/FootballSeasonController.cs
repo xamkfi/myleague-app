@@ -102,6 +102,60 @@ public class FootballSeasonController : BaseApiController
     }
 
     /// <summary>
+    /// Gets intro blocks for the featured season of an optional year.
+    /// </summary>
+    [HttpGet("content-blocks")]
+    [ProducesResponseType(typeof(ApiResponse<FootballSeasonContentBlocksDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse<FootballSeasonContentBlocksDto>>> GetFeaturedContentBlocks(
+        [FromQuery] string? seasonYear)
+    {
+        Result<FootballSeasonContentBlocksDto> result =
+            await _mediator.Send(new GetFootballSeasonContentBlocksByYearQuery(seasonYear));
+
+        return HandleResult(result, "Season content blocks retrieved successfully", "Failed to retrieve season content blocks");
+    }
+
+    /// <summary>
+    /// Gets intro blocks for a football season.
+    /// </summary>
+    [HttpGet("{id:guid}/content-blocks")]
+    [ProducesResponseType(typeof(ApiResponse<FootballSeasonContentBlocksDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse<FootballSeasonContentBlocksDto>>> GetContentBlocks(Guid id)
+    {
+        Result<FootballSeasonContentBlocksDto> result =
+            await _mediator.Send(new GetFootballSeasonContentBlocksQuery(id));
+
+        return HandleResult(result, "Season content blocks retrieved successfully", "Season not found");
+    }
+
+    /// <summary>
+    /// Replaces intro blocks for a football season. Array order is the display order.
+    /// </summary>
+    [HttpPut("{id:guid}/content-blocks")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [ProducesResponseType(typeof(ApiResponse<FootballSeasonContentBlocksDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse<FootballSeasonContentBlocksDto>>> ReplaceContentBlocks(
+        Guid id,
+        [FromBody] ReplaceFootballSeasonContentBlocksRequest request)
+    {
+        ReplaceFootballSeasonContentBlocksCommand command = new(
+            id,
+            request.Items
+                .Select(item => new ReplaceFootballSeasonContentBlockItem(item.Id, item.Title, item.ContentHtml))
+                .ToList());
+
+        Result<FootballSeasonContentBlocksDto> result = await _mediator.Send(command);
+        return HandleResult(result, "Season content blocks updated successfully", "Failed to update season content blocks");
+    }
+
+    /// <summary>
     /// Get seasons by division
     /// </summary>
     [HttpGet("by-division/{division}")]

@@ -15,6 +15,12 @@ import {
   type HockeyTeamDto,
 } from '../../../../types/hockey/hockeyTypes';
 import { loadClubNameMap } from '../../../../utils/hockeyLookups';
+import SeasonContentBlocksEditor from '../../../../components/SeasonContentBlocksEditor/SeasonContentBlocksEditor';
+import {
+  toContentBlockDrafts,
+  toContentBlockItems,
+  type SeasonContentBlockDraft,
+} from '../../../../types/common/seasonContent';
 import './EditSeasonPage.scss';
 
 type SeasonTab = 'details' | 'divisions' | 'teams';
@@ -43,18 +49,21 @@ function EditHockeySeasonPage() {
   const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(new Set());
   const [teamsPage, setTeamsPage] = useState(1);
   const [teamsPageSize, setTeamsPageSize] = useState(10);
+  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDraft[]>([]);
 
   const load = useCallback(async (): Promise<void> => {
     if (!competitionId) {
       return;
     }
-    const [loaded, teamList, divisionsResponse, clubs] = await Promise.all([
+    const [loaded, teamList, divisionsResponse, clubs, content] = await Promise.all([
       hockeySeasonService.getById(competitionId),
       hockeyTeamService.getAll(),
       divisionService.getBySportType(SportsCategory.Icehockey, true).catch(() => ({ data: [] as Array<{ id: string; name: string }> })),
       loadClubNameMap().catch(() => new Map<string, string>()),
+      hockeySeasonService.getContentBlocks(competitionId),
     ]);
     setSeason(loaded);
+    setContentBlocks(toContentBlockDrafts(content.blocks));
     setTeams(teamList);
     setClubNames(clubs);
     setCatalogDivisions((divisionsResponse.data ?? []).map((item) => ({ id: item.id, name: item.name })));
@@ -182,14 +191,24 @@ function EditHockeySeasonPage() {
               className="edit-season-form"
               onSubmit={(event) => {
                 event.preventDefault();
+                if (contentBlocks.some((block) => !block.title.trim())) {
+                  setError(t('seasonContent.titleRequired'));
+                  return;
+                }
                 void run(
-                  () => hockeySeasonService.update(season.id, {
-                    name,
-                    startDate: new Date(startDate).toISOString(),
-                    endDate: new Date(endDate).toISOString(),
-                    seasonCode: seasonCode || null,
-                    teamCategory: competitionCategory,
-                  }),
+                  async () => {
+                    await hockeySeasonService.update(season.id, {
+                      name,
+                      startDate: new Date(startDate).toISOString(),
+                      endDate: new Date(endDate).toISOString(),
+                      seasonCode: seasonCode || null,
+                      teamCategory: competitionCategory,
+                    });
+                    await hockeySeasonService.replaceContentBlocks(
+                      season.id,
+                      toContentBlockItems(contentBlocks),
+                    );
+                  },
                   t('hockey.seasons.seasonUpdated', 'Season updated successfully!'),
                 );
               }}
@@ -263,6 +282,13 @@ function EditHockeySeasonPage() {
                     {t('hockey.seasons.complete', 'Complete')}
                   </button>
                 </div>
+              </div>
+              <div className="form-section">
+                <SeasonContentBlocksEditor
+                  blocks={contentBlocks}
+                  onChange={setContentBlocks}
+                  disabled={saving}
+                />
               </div>
               <div className="form-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => navigate('/admin/hockey/seasons')} disabled={saving}>

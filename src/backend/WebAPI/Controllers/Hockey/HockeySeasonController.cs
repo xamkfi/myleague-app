@@ -75,6 +75,59 @@ public class HockeySeasonController : BaseApiController
     }
 
     /// <summary>
+    /// Gets intro blocks for the featured (active, else newest) hockey season.
+    /// </summary>
+    [HttpGet("content-blocks")]
+    [ProducesResponseType(typeof(ApiResponse<HockeySeasonContentBlocksDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeySeasonContentBlocksDto>>> GetFeaturedContentBlocks(
+        CancellationToken cancellationToken = default)
+    {
+        Result<HockeySeasonContentBlocksDto> result =
+            await _mediator.Send(new GetFeaturedHockeySeasonContentBlocksQuery(), cancellationToken);
+
+        return HandleResult(result, "Season content blocks retrieved successfully", "Failed to retrieve season content blocks");
+    }
+
+    /// <summary>
+    /// Gets intro blocks for a hockey season.
+    /// </summary>
+    [HttpGet("{id:guid}/content-blocks")]
+    [ProducesResponseType(typeof(ApiResponse<HockeySeasonContentBlocksDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeySeasonContentBlocksDto>>> GetContentBlocks(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        Result<HockeySeasonContentBlocksDto> result =
+            await _mediator.Send(new GetHockeySeasonContentBlocksQuery(id), cancellationToken);
+
+        return HandleResult(result, "Season content blocks retrieved successfully", "Season not found");
+    }
+
+    /// <summary>
+    /// Replaces intro blocks for a hockey season. Array order is the display order.
+    /// </summary>
+    [HttpPut("{id:guid}/content-blocks")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [ProducesResponseType(typeof(ApiResponse<HockeySeasonContentBlocksDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeySeasonContentBlocksDto>>> ReplaceContentBlocks(
+        Guid id,
+        [FromBody] ReplaceHockeySeasonContentBlocksRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ReplaceHockeySeasonContentBlocksCommand command = new(
+            id,
+            request.Items
+                .Select(item => new ReplaceHockeySeasonContentBlockItem(item.Id, item.Title, item.ContentHtml))
+                .ToList());
+
+        Result<HockeySeasonContentBlocksDto> result = await _mediator.Send(command, cancellationToken);
+        return HandleResult(result, "Season content blocks updated successfully", "Failed to update season content blocks");
+    }
+
+    /// <summary>
     /// Creates a new hockey season.
     /// </summary>
     /// <param name="request">Season create payload</param>

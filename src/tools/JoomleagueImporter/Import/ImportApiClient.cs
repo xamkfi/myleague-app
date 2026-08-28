@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Application.Features.Common.Clubs.DTOs;
 using Application.Features.Common.Divisions.DTOs;
 using Application.Features.Common.Persons.DTOs;
+using JoomleagueImporter.Models;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
 
@@ -85,6 +86,25 @@ public class ImportApiClient : IDisposable
     {
         HttpResponseMessage resp = await Http.PostAsJsonAsync("api/divisions", new { name, description, level, sportType });
         return await ReadDataOrNull<DivisionDto>(resp, $"Create division '{name}'");
+    }
+
+    public async Task EnsureSeasonContentBlocksAsync(string routePrefix, Guid seasonId, OldProject project)
+    {
+        HttpResponseMessage get = await Http.GetAsync($"{routePrefix}/{seasonId}/content-blocks");
+        SeasonContentBlocksPayload? existing =
+            await ReadDataOrNull<SeasonContentBlocksPayload>(get, $"Get season content blocks {seasonId}");
+        if (existing?.Blocks is { Count: > 0 })
+        {
+            Console.WriteLine($"  Season content blocks already present ({existing.Blocks.Count}), skipping.");
+            return;
+        }
+
+        List<SeasonContentBlockPutItem> items = SeasonContentFromProject.BuildItems(project);
+        HttpResponseMessage put = await Http.PutAsJsonAsync(
+            $"{routePrefix}/{seasonId}/content-blocks",
+            new { items });
+        if (await OkOrWarn(put, "Replace season content blocks"))
+            Console.WriteLine($"  Set {items.Count} content block(s) for '{project.Name}'");
     }
 
     public async Task<List<PersonDto>> SearchPersonsAsync(string name)

@@ -2,6 +2,7 @@ import './SummarySection.scss';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { FootballSeasonStatisticsSummaryDto } from '../../../api/football/footballStatistics';
+import { TeamLink } from '../../../components/SportLinks';
 
 interface SummarySectionProps {
   seasonSummary: FootballSeasonStatisticsSummaryDto | null;
@@ -118,7 +119,13 @@ export default function SummarySection({ seasonSummary, loading, error }: Summar
                       ) : (
                         <div className="summary-section__team-logo-empty" />
                       )}
-                      <span className="summary-section__team-name">{team.teamName}</span>
+                      <TeamLink
+                        sport="football"
+                        teamId={team.teamId}
+                        teamName={team.teamName}
+                        teams={standings.map((row) => ({ id: row.teamId, name: row.teamName }))}
+                        className="summary-section__team-name"
+                      />
                     </div>
                   </td>
                   <td className="summary-section__col-gp">{team.gamesPlayed}</td>

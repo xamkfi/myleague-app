@@ -10,5 +10,13 @@ public class HockeySeasonConfiguration : IEntityTypeConfiguration<HockeySeason>
     {
         builder.Property(s => s.SeasonCode).HasMaxLength(50);
         builder.Property(s => s.ChampionCompetitionTeamId);
+
+        builder.HasMany(season => season.ContentBlocks)
+            .WithOne()
+            .HasForeignKey(block => block.SeasonId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(season => season.ContentBlocks)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

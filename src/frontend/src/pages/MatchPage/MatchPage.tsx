@@ -12,6 +12,7 @@ import {
 } from '../../components/match';
 import MatchTabContent from './components/MatchTabContent';
 import { getCompetitionPath, isTournamentCompetition } from '../../utils/competitionPath';
+import { getTeamPath } from '../../utils/sportRoutes';
 import { slugify } from '../../utils/slugUtils';
 
 export default function MatchPage() {
@@ -120,12 +121,12 @@ export default function MatchPage() {
               home: {
                 name: match.homeTeamName,
                 logo: match.homeTeamLogo,
-                href: match.homeTeamName ? `/team/${slugify(match.homeTeamName)}` : null,
+                href: match.homeTeamName ? getTeamPath('floorball', slugify(match.homeTeamName)) : null,
               },
               away: {
                 name: match.awayTeamName,
                 logo: match.awayTeamLogo,
-                href: match.awayTeamName ? `/team/${slugify(match.awayTeamName)}` : null,
+                href: match.awayTeamName ? getTeamPath('floorball', slugify(match.awayTeamName)) : null,
               },
               homeScore: match.homeScore,
               awayScore: match.awayScore,

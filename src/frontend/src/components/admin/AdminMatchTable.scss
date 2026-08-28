@@ -1,0 +1,47 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.match-table__loading {
+  display: flex;
+  justify-content: center;
+  padding: map.get($spacing, 'xl') 0;
+}
+
+.match-table__empty {
+  text-align: center;
+  padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+  border: 1px dashed $color-neutral-medium-grey;
+  border-radius: map.get($border-radius, 'lg-plus');
+  background-color: $color-neutral-light-grey;
+
+  .match-table__empty-icon {
+    font-size: 2.5rem;
+    color: $color-neutral-medium-grey;
+    margin-bottom: map.get($spacing, 'base');
+    display: block;
+  }
+
+  p {
+    color: $color-text-muted;
+    margin: 0;
+    font-size: map.get($font-sizes, 'base');
+  }
+}
+
+.match-table__teams {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'xs');
+  flex-wrap: wrap;
+}
+
+.match-table__vs {
+  color: $color-text-muted;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'medium');
+}
+
+.match-table__tbd {
+  font-style: italic;
+  opacity: 0.6;
+}

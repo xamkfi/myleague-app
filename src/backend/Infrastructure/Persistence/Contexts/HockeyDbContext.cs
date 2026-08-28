@@ -26,6 +26,7 @@ public class HockeyDbContext : DbContext
 
     public DbSet<HockeyCompetition> HockeyCompetitions => Set<HockeyCompetition>();
     public DbSet<HockeySeason> HockeySeasons => Set<HockeySeason>();
+    public DbSet<HockeySeasonContentBlock> HockeySeasonContentBlocks => Set<HockeySeasonContentBlock>();
     public DbSet<HockeyTournament> HockeyTournaments => Set<HockeyTournament>();
     public DbSet<HockeyCompetitionTeam> HockeyCompetitionTeams => Set<HockeyCompetitionTeam>();
     public DbSet<HockeyCompetitionDivision> HockeyCompetitionDivisions => Set<HockeyCompetitionDivision>();
@@ -83,6 +84,7 @@ public class HockeyDbContext : DbContext
 
         modelBuilder.ApplyConfiguration(new HockeyCompetitionConfiguration());
         modelBuilder.ApplyConfiguration(new HockeySeasonConfiguration());
+        modelBuilder.ApplyConfiguration(new HockeySeasonContentBlockConfiguration());
         modelBuilder.ApplyConfiguration(new HockeyTournamentConfiguration());
         modelBuilder.ApplyConfiguration(new HockeyCompetitionTeamConfiguration());
         modelBuilder.ApplyConfiguration(new HockeyCompetitionDivisionConfiguration());

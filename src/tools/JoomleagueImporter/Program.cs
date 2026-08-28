@@ -65,6 +65,8 @@ public static class Program
             dryRun = true;
         if (args.Contains("--repair-all", StringComparer.OrdinalIgnoreCase))
             repairAll = true;
+        bool autoConfirm = args.Contains("--yes", StringComparer.OrdinalIgnoreCase)
+            || args.Contains("-y", StringComparer.OrdinalIgnoreCase);
 
         if (string.IsNullOrWhiteSpace(dumpPath) || !File.Exists(dumpPath))
         {
@@ -111,15 +113,28 @@ public static class Program
             return 0;
         }
 
-        string apiBaseUrl = PromptForApiUrl(config["JoomleagueImporter:ApiBaseUrl"] ?? "http://localhost:8080/");
-        string loginEmail = ResolveLoginEmail(config);
+        string apiBaseUrl = autoConfirm
+            ? NormalizeApiUrl(config["JoomleagueImporter:ApiBaseUrl"] ?? "http://localhost:8080/")
+            : PromptForApiUrl(config["JoomleagueImporter:ApiBaseUrl"] ?? "http://localhost:8080/");
+        string loginEmail = autoConfirm
+            ? ResolveLoginEmailNonInteractive(config)
+            : ResolveLoginEmail(config);
 
-        Console.Write("Start import? [y/N]: ");
-        string? confirm = Console.ReadLine()?.Trim();
-        if (!string.Equals(confirm, "y", StringComparison.OrdinalIgnoreCase))
+        if (!autoConfirm)
         {
-            Console.WriteLine("Aborted.");
-            return 0;
+            Console.Write("Start import? [y/N]: ");
+            string? confirm = Console.ReadLine()?.Trim();
+            if (!string.Equals(confirm, "y", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("Aborted.");
+                return 0;
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Using API: {apiBaseUrl}");
+            Console.WriteLine($"Login email: {loginEmail}");
+            Console.WriteLine("Starting import (--yes).");
         }
         Console.WriteLine();
 
@@ -349,22 +364,31 @@ public static class Program
         Console.Write($"API base URL [{defaultUrl}]: ");
         string? input = Console.ReadLine()?.Trim();
         string url = string.IsNullOrWhiteSpace(input) ? defaultUrl : input;
+        url = NormalizeApiUrl(url);
+        Console.WriteLine($"Using API: {url}");
+        return url;
+    }
 
+    private static string NormalizeApiUrl(string url)
+    {
         if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
             !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             url = "http://" + url;
         if (!url.EndsWith('/'))
             url += "/";
-
-        Console.WriteLine($"Using API: {url}");
         return url;
+    }
+
+    private static string ResolveLoginEmailNonInteractive(IConfiguration config)
+    {
+        const string defaultEmail = "test@myleague.local";
+        string? configEmail = config["JoomleagueImporter:LoginEmail"]?.Trim();
+        return string.IsNullOrWhiteSpace(configEmail) ? defaultEmail : configEmail;
     }
 
     private static string ResolveLoginEmail(IConfiguration config)
     {
-        const string defaultEmail = "test@myleague.local";
-        string? configEmail = config["JoomleagueImporter:LoginEmail"]?.Trim();
-        string promptDefault = string.IsNullOrWhiteSpace(configEmail) ? defaultEmail : configEmail;
+        string promptDefault = ResolveLoginEmailNonInteractive(config);
 
         Console.Write($"Login email [{promptDefault}]: ");
         string? input = Console.ReadLine()?.Trim();

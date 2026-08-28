@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { footballPlayerService, type FootballPlayerDto } from '../../../../../api/football/footballPlayerService';
 import type { FootballTeam } from '../../../../../types/football/footballTypes';
+import PlayerLink from '../../../../../components/SportLinks/PlayerLink';
 import './TeamPlayersRow.scss';
 
 interface TeamPlayersRowProps {
@@ -150,7 +151,15 @@ const TeamPlayersRow = ({ teamId, isExpanded, isClosing, team }: TeamPlayersRowP
                           className={`admin-roster-player ${!isActive ? 'inactive' : ''}`}
                         >
                           <span className="col-jersey">{jerseyNumber ?? '?'}</span>
-                          <span className="col-name">{playerName}</span>
+                          <span className="col-name">
+                            {'id' in player ? (
+                              <PlayerLink sport="football" playerId={player.id}>
+                                {playerName}
+                              </PlayerLink>
+                            ) : (
+                              playerName
+                            )}
+                          </span>
                           <span className="col-stat">{age ?? '-'}</span>
                           <span className="col-stat">{games}</span>
                           <span className="col-stat">{goals || '-'}</span>

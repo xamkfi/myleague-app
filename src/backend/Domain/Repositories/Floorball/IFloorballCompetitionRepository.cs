@@ -103,4 +103,15 @@ public interface IFloorballCompetitionRepository
         int? endYear,
         Domain.Enums.Common.TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
+
+    Task<FloorballSeason?> GetSeasonWithContentBlocksAsync(
+        Guid id,
+        CancellationToken cancellationToken = default);
+
+    Task<FloorballSeason?> GetFeaturedSeasonWithContentBlocksAsync(
+        int? startYear,
+        int? endYear,
+        CancellationToken cancellationToken = default);
+
+    void MarkNewContentBlocksAdded(FloorballSeason season, IReadOnlyCollection<Guid> existingBlockIds);
 } 

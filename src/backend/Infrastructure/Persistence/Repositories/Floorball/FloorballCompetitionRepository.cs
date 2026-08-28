@@ -1,3 +1,4 @@
+using System.Linq;
 using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
@@ -237,6 +238,48 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .ToListAsync(cancellationToken);
 
             return PagedResult.Create(items, totalCount, page, pageSize);
+        }
+
+        /// <inheritdoc />
+        public async Task<FloorballSeason?> GetSeasonWithContentBlocksAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return await _entities
+                .OfType<FloorballSeason>()
+                .Include(season => season.ContentBlocks)
+                .FirstOrDefaultAsync(season => season.Id == id, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<FloorballSeason?> GetFeaturedSeasonWithContentBlocksAsync(
+            int? startYear,
+            int? endYear,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballSeason> query = _entities.OfType<FloorballSeason>();
+
+            if (startYear.HasValue && endYear.HasValue)
+            {
+                int start = startYear.Value;
+                int end = endYear.Value;
+                query = query.Where(season => season.StartDate.Year == start && season.EndDate.Year == end);
+            }
+
+            return await query
+                .Include(season => season.ContentBlocks)
+                .OrderByDescending(season => season.IsActive)
+                .ThenByDescending(season => season.StartDate)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public void MarkNewContentBlocksAdded(FloorballSeason season, IReadOnlyCollection<Guid> existingBlockIds)
+        {
+            foreach (FloorballSeasonContentBlock block in season.ContentBlocks.Where(block => !existingBlockIds.Contains(block.Id)))
+            {
+                _dbContext.Entry(block).State = EntityState.Added;
+            }
         }
     }
 }

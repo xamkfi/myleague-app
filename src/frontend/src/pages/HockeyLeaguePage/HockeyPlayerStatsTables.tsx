@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StatAbbr from '../../components/StatAbbr/StatAbbr';
+import { PlayerLink, TeamLink } from '../../components/SportLinks';
 import type {
   HockeyGoalieCompetitionStatisticsDto,
   HockeyPlayerCompetitionStatisticsDto,
@@ -23,6 +23,7 @@ function HockeyPlayerStatsTables({
   const { t } = useTranslation();
   const scorers = [...players].sort((a, b) => b.points - a.points || b.goals - a.goals);
   const rankedGoalies = [...goalies].sort((a, b) => b.savePercentage - a.savePercentage);
+  const namedTeams = [...teamNames.entries()].map(([id, name]) => ({ id, name }));
 
   return (
     <>
@@ -52,11 +53,18 @@ function HockeyPlayerStatsTables({
               <tr key={row.id}>
                 <td className="rank-col">{index + 1}</td>
                 <td className="team-col">
-                  <Link to={`/hockeyplayer/${row.playerId}`}>
+                  <PlayerLink sport="hockey" playerId={row.playerId}>
                     {playerNames.get(row.playerId) ?? row.playerId.slice(0, 8)}
-                  </Link>
+                  </PlayerLink>
                 </td>
-                <td className="team-col">{teamNames.get(row.teamId) ?? ''}</td>
+                <td className="team-col">
+                  <TeamLink
+                    sport="hockey"
+                    teamId={row.teamId}
+                    teamName={teamNames.get(row.teamId) ?? ''}
+                    teams={namedTeams}
+                  />
+                </td>
                 <td className="stats-col">{row.gamesPlayed}</td>
                 <td className="stats-col">{row.goals}</td>
                 <td className="stats-col">{row.assists}</td>
@@ -94,11 +102,18 @@ function HockeyPlayerStatsTables({
                 <tr key={row.id}>
                   <td className="rank-col">{index + 1}</td>
                   <td className="team-col">
-                    <Link to={`/hockeyplayer/${row.playerId}`}>
+                    <PlayerLink sport="hockey" playerId={row.playerId}>
                       {playerNames.get(row.playerId) ?? row.playerId.slice(0, 8)}
-                    </Link>
+                    </PlayerLink>
                   </td>
-                  <td className="team-col">{teamNames.get(row.teamId) ?? ''}</td>
+                  <td className="team-col">
+                    <TeamLink
+                      sport="hockey"
+                      teamId={row.teamId}
+                      teamName={teamNames.get(row.teamId) ?? ''}
+                      teams={namedTeams}
+                    />
+                  </td>
                   <td className="stats-col">{row.gamesPlayed}</td>
                   <td className="stats-col">{row.wins}</td>
                   <td className="stats-col">{row.savePercentage.toFixed(1)}</td>

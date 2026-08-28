@@ -3,6 +3,7 @@ import type {
   HockeySeasonDto,
   UpdateHockeySeasonRequest,
 } from '../../types/hockey/hockeyTypes';
+import type { SeasonContentBlockItem, SeasonContentBlocksDto } from '../../types/common/seasonContent';
 import { hockeyRequest, jsonBody, withTeamCategory } from './hockeyApi';
 
 const action = (seasonId: string, verb: string, fallback: string): Promise<HockeySeasonDto> =>
@@ -86,5 +87,27 @@ export const hockeySeasonService = {
       `/HockeySeason/${seasonId}/divisions/${competitionDivisionId}/teams`,
       'Failed to place team in division',
       { method: 'POST', ...jsonBody({ competitionTeamId, seed }) },
+    ),
+
+  getContentBlocks: (seasonId: string): Promise<SeasonContentBlocksDto> =>
+    hockeyRequest<SeasonContentBlocksDto>(
+      `/HockeySeason/${seasonId}/content-blocks`,
+      'Failed to fetch season content blocks',
+    ),
+
+  getFeaturedContentBlocks: (): Promise<SeasonContentBlocksDto> =>
+    hockeyRequest<SeasonContentBlocksDto>(
+      '/HockeySeason/content-blocks',
+      'Failed to fetch season content blocks',
+    ),
+
+  replaceContentBlocks: (
+    seasonId: string,
+    items: SeasonContentBlockItem[],
+  ): Promise<SeasonContentBlocksDto> =>
+    hockeyRequest<SeasonContentBlocksDto>(
+      `/HockeySeason/${seasonId}/content-blocks`,
+      'Failed to update season content blocks',
+      { method: 'PUT', ...jsonBody({ items }) },
     ),
 };
