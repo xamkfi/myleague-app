@@ -44,24 +44,6 @@ const formatDate = (dateStr: string, locale: string): string => {
   });
 };
 
-const calculateAge = (birthDate: string | null): number | null => {
-  if (!birthDate) return null;
-  const birth = new Date(birthDate);
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-  return age;
-};
-
-const formatBirthDate = (birthDate: string | null, locale: string): string => {
-  if (!birthDate) return '';
-  const date = new Date(birthDate);
-  return date.toLocaleDateString(locale);
-};
-
 interface SeasonTotals {
   gamesPlayed: number;
   goals: number;
@@ -207,7 +189,6 @@ const FloorballTeamPlayerUserPage = () => {
   const { player } = profile;
   const playerName = player.person.fullName;
   const isCreator = playerName === 'Tuomas Reijonen';
-  const age = calculateAge(player.person.birthDate);
   const teamName = matchData?.teamName ?? player.team?.name ?? '';
   const position = matchData?.position ?? player.position;
   const jerseyNumber = matchData?.jerseyNumber;
@@ -257,12 +238,6 @@ const FloorballTeamPlayerUserPage = () => {
             </div>
 
             <div className="player-stats-box">
-              {age !== null && (
-                <div className="stat-item">
-                  <span className="stat-label">{t('playerPage.age')}:</span>
-                  <span className="stat-value">{age} ({formatBirthDate(player.person.birthDate, locale)})</span>
-                </div>
-              )}
               <div className="stat-item">
                 <span className="stat-label">{t('playerPage.status')}:</span>
                 <span className={`stat-value ${player.isActive ? 'active' : 'inactive'}`}>

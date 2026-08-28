@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Application.Features.Common.Clubs.DTOs;
 using Application.Features.Common.Divisions.DTOs;
 using Application.Features.Common.Persons.DTOs;
@@ -56,54 +57,8 @@ public class FloorballEntityImporter
 
     // ── Clubs ────────────────────────────────────────────────
 
-    public async Task ImportClubsAsync(FloorballImportSet set, JoomleagueDatabase db)
-    {
-        Console.WriteLine("--- Clubs ---");
-        List<ClubDto> existing = await _api.GetClubsAsync();
-        int created = 0, reused = 0;
-
-        foreach (OldTeam team in set.UniqueTeams.Values)
-        {
-            OldClub? oldClub = team.ClubId.HasValue ? db.Clubs.GetValueOrDefault(team.ClubId.Value) : null;
-            int oldClubKey = oldClub?.Id ?? -team.Id; // teams without a club get a synthetic key
-            if (_idMap.Clubs.ContainsKey(oldClubKey))
-                continue;
-
-            string clubName = !string.IsNullOrWhiteSpace(oldClub?.Name) ? oldClub!.Name : team.Name;
-
-            ClubDto? club = existing.FirstOrDefault(c =>
-                string.Equals(c.Name, clubName, StringComparison.OrdinalIgnoreCase));
-            if (club == null)
-            {
-                string city = !string.IsNullOrWhiteSpace(oldClub?.Location) ? oldClub!.Location : "Mikkeli";
-                club = await _api.CreateClubAsync(clubName, city);
-                if (club == null)
-                {
-                    // "Name already exists" race with a partial club list; refresh and retry.
-                    existing = await _api.GetClubsAsync();
-                    club = existing.FirstOrDefault(c =>
-                        string.Equals(c.Name, clubName, StringComparison.OrdinalIgnoreCase));
-                }
-                if (club == null)
-                {
-                    _log.LogError("CreateClub", new { clubName }, "API returned null.");
-                    continue;
-                }
-                if (!existing.Contains(club))
-                    existing.Add(club);
-                created++;
-            }
-            else
-            {
-                reused++;
-            }
-
-            _idMap.Clubs[oldClubKey] = club.Id;
-        }
-
-        _idMap.Save();
-        Console.WriteLine($"  Clubs: {created} created, {reused} already existed.");
-    }
+    public Task ImportClubsAsync(FloorballImportSet set, JoomleagueDatabase db) =>
+        ClubEntityImport.ImportAsync(_api, _idMap, _log, set, db);
 
     // ── Persons & players ────────────────────────────────────
 
@@ -118,72 +73,53 @@ public class FloorballEntityImporter
         }
 
         List<FloorballPlayerDto> existingPlayers = await _api.GetPlayersAsync();
-        Dictionary<Guid, FloorballPlayerDto> playerByPersonId = [];
+        ConcurrentDictionary<Guid, FloorballPlayerDto> playerByPersonId = new();
         foreach (FloorballPlayerDto p in existingPlayers)
             playerByPersonId[p.PersonId] = p;
 
-        int created = 0, reused = 0, failed = 0, done = 0;
+        List<OldPerson> pending = set.UniquePersons.Values.Where(p => !_idMap.HasPerson(p.Id)).ToList();
+        int created = 0, reused = 0, failed = 0;
+        int done = set.UniquePersons.Count - pending.Count;
         int total = set.UniquePersons.Count;
 
-        foreach (OldPerson oldPerson in set.UniquePersons.Values)
+        Console.WriteLine($"  Importing {pending.Count} persons (concurrency {MatchImportParallel.PersonDegree})...");
+        await MatchImportParallel.ForEachPersonAsync(pending, async oldPerson =>
         {
-            done++;
-            if (_idMap.Persons.ContainsKey(oldPerson.Id))
-                continue;
-
-            List<PersonDto> searchResults = await _api.SearchPersonsAsync(oldPerson.FullName);
-            PersonDto? person = searchResults.FirstOrDefault(p =>
-                string.Equals(p.FirstName, oldPerson.FirstName, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(p.LastName, oldPerson.LastName, StringComparison.OrdinalIgnoreCase));
-
+            (PersonDto? person, bool wasCreated) = await _api.FindOrCreatePersonAsync(
+                oldPerson.FirstName, oldPerson.LastName, oldPerson.Birthday);
             if (person == null)
             {
-                person = await _api.CreatePersonAsync(oldPerson.FirstName, oldPerson.LastName, oldPerson.Birthday);
-                if (person == null)
-                {
-                    // Creation can fail with "name already exists" if the search missed the
-                    // person (e.g. paging); retry the search before giving up.
-                    searchResults = await _api.SearchPersonsAsync(oldPerson.FullName);
-                    person = searchResults.FirstOrDefault(p =>
-                        string.Equals(p.FirstName, oldPerson.FirstName, StringComparison.OrdinalIgnoreCase) &&
-                        string.Equals(p.LastName, oldPerson.LastName, StringComparison.OrdinalIgnoreCase));
-                }
-                if (person == null)
-                {
-                    _log.LogError("CreatePerson", new { oldPerson.Id, oldPerson.FullName }, "API returned null.");
-                    failed++;
-                    continue;
-                }
-                created++;
-            }
-            else
-            {
-                reused++;
+                _log.LogError("CreatePerson", new { oldPerson.Id, oldPerson.FullName }, "API returned null.");
+                Interlocked.Increment(ref failed);
+                return;
             }
 
-            FloorballPlayerDto? player = playerByPersonId.GetValueOrDefault(person.Id);
-            if (player == null)
+            if (wasCreated) Interlocked.Increment(ref created);
+            else Interlocked.Increment(ref reused);
+
+            if (!playerByPersonId.TryGetValue(person.Id, out FloorballPlayerDto? player))
             {
                 player = await _api.CreatePlayerAsync(person.Id);
                 if (player == null)
                 {
                     _log.LogError("CreatePlayer", new { oldPerson.Id, oldPerson.FullName, NewPersonId = person.Id }, "API returned null.");
-                    failed++;
-                    continue;
+                    Interlocked.Increment(ref failed);
+                    return;
                 }
                 playerByPersonId[person.Id] = player;
             }
 
-            _idMap.Persons[oldPerson.Id] = new IdMapStore.PersonMapping { PersonId = person.Id, PlayerId = player.Id };
+            _idMap.MapPerson(oldPerson.Id, new IdMapStore.PersonMapping { PersonId = person.Id, PlayerId = player.Id });
 
-            if (done % 100 == 0)
+            int n = Interlocked.Increment(ref done);
+            if (n % 100 == 0)
             {
-                _idMap.Save();
-                Console.WriteLine($"  ... {done}/{total} persons processed");
+                _idMap.Save(force: true);
+                Console.WriteLine($"  ... {n}/{total} persons processed");
             }
-        }
+        });
 
-        _idMap.Save();
+        _idMap.Save(force: true);
         Console.WriteLine($"  Persons: {created} created, {reused} already existed, {failed} failed (total {total}).");
     }
 
@@ -199,35 +135,14 @@ public class FloorballEntityImporter
             return;
         }
 
-        List<FloorballTeamDto> existing = await _api.GetTeamsAsync();
-        int created = 0, reused = 0;
+        ConcurrentDictionary<string, FloorballTeamDto> byName = new(StringComparer.OrdinalIgnoreCase);
+        foreach (FloorballTeamDto t in await _api.GetTeamsAsync())
+            byName.TryAdd(t.Name, t);
 
-        // Union roster per team across all selected projects. Prefer data from newer projects.
-        // Also collect the strongest inferred TeamCategory from projects that include the team.
-        Dictionary<int, Dictionary<int, RosterEntry>> rosterByTeam = [];
-        Dictionary<int, TeamCategory> categoryByTeam = [];
-        foreach (ProjectImport pi in set.Projects.OrderBy(p => p.Project.Id))
-        {
-            TeamCategory projectCategory = TeamCategoryResolver.InferFromName(pi.Project.Name);
-            foreach (ProjectTeamImport pti in pi.Teams.Values)
-            {
-                if (!rosterByTeam.TryGetValue(pti.Team.Id, out Dictionary<int, RosterEntry>? union))
-                {
-                    union = [];
-                    rosterByTeam[pti.Team.Id] = union;
-                }
-                foreach (RosterEntry re in pti.Roster)
-                    union[re.Person.Id] = re; // later projects overwrite: newest jersey/position wins
+        (Dictionary<int, Dictionary<int, RosterEntry>> rosterByTeam, Dictionary<int, TeamCategory> categoryByTeam) =
+            TeamRosterUnion.Build(set);
 
-                TeamCategory fromTeamName = TeamCategoryResolver.InferFromName(pti.Team.Name);
-                TeamCategory combined = TeamCategoryResolver.Prefer(projectCategory, fromTeamName);
-                if (categoryByTeam.TryGetValue(pti.Team.Id, out TeamCategory existingCat))
-                    categoryByTeam[pti.Team.Id] = TeamCategoryResolver.Prefer(existingCat, combined);
-                else
-                    categoryByTeam[pti.Team.Id] = combined;
-            }
-        }
-
+        List<OldTeam> pending = [];
         foreach (OldTeam oldTeam in set.UniqueTeams.Values)
         {
             if (!rosterByTeam.TryGetValue(oldTeam.Id, out Dictionary<int, RosterEntry>? unionRoster) ||
@@ -237,71 +152,62 @@ public class FloorballEntityImporter
                 continue;
             }
 
-            FloorballTeamDto? team = null;
-            TeamCategory teamCategory = categoryByTeam.GetValueOrDefault(oldTeam.Id, TeamCategory.Adult);
-
             if (_idMap.HasTeam(oldTeam.Id))
-            {
-                reused++;
                 continue;
-            }
-
-            if (team == null)
-            {
-                team = existing.FirstOrDefault(t =>
-                    string.Equals(t.Name, oldTeam.Name, StringComparison.OrdinalIgnoreCase));
-
-                if (team == null)
-                {
-                    int clubKey = oldTeam.ClubId.HasValue && db.Clubs.ContainsKey(oldTeam.ClubId.Value)
-                        ? oldTeam.ClubId.Value
-                        : -oldTeam.Id;
-                    if (!_idMap.Clubs.TryGetValue(clubKey, out Guid clubId))
-                    {
-                        _log.LogError("CreateTeam", new { oldTeam.Id, oldTeam.Name }, "No club mapping found.");
-                        continue;
-                    }
-
-                    team = await _api.CreateTeamAsync(
-                        oldTeam.Name, MakeShortName(oldTeam), clubId, division.Id, teamCategory);
-                    if (team == null)
-                    {
-                        _log.LogError("CreateTeam", new { oldTeam.Id, oldTeam.Name }, "API returned null.");
-                        continue;
-                    }
-                    existing.Add(team);
-                    created++;
-                }
-                else
-                {
-                    reused++;
-                }
-
-                _idMap.Teams[oldTeam.Id] = team.Id;
-                _idMap.Save();
-            }
-
-            // Roster
-            int added = 0, rosterTotal = 0;
-            if (rosterByTeam.TryGetValue(oldTeam.Id, out Dictionary<int, RosterEntry>? roster) && roster.Count > 0)
-            {
-                rosterTotal = roster.Count;
-                foreach (RosterEntry re in roster.Values)
-                {
-                    if (!_idMap.Persons.TryGetValue(re.Person.Id, out IdMapStore.PersonMapping? mapping))
-                        continue;
-
-                    int position = re.IsGoalkeeper ? PositionGoalkeeper : PositionForward;
-                    int? jersey = re.TeamPlayer.JerseyNumber is > 0 and < 100 ? re.TeamPlayer.JerseyNumber : null;
-                    bool ok = await _api.AddPlayerToTeamAsync(team.Id, mapping.PlayerId, position, jersey);
-                    if (ok) added++;
-                }
-            }
-
-            Console.WriteLine($"  {oldTeam.Name}: roster {added}/{rosterTotal}");
+            pending.Add(oldTeam);
         }
 
-        _idMap.Save();
+        int created = 0, reused = 0;
+        Console.WriteLine($"  Importing {pending.Count} teams (concurrency {MatchImportParallel.TeamDegree})...");
+        await MatchImportParallel.ForEachTeamAsync(pending, async oldTeam =>
+        {
+            Dictionary<int, RosterEntry> unionRoster = rosterByTeam[oldTeam.Id];
+            TeamCategory teamCategory = categoryByTeam.GetValueOrDefault(oldTeam.Id, TeamCategory.Adult);
+
+            if (!byName.TryGetValue(oldTeam.Name, out FloorballTeamDto? team))
+            {
+                int clubKey = oldTeam.ClubId.HasValue && db.Clubs.ContainsKey(oldTeam.ClubId.Value)
+                    ? oldTeam.ClubId.Value
+                    : -oldTeam.Id;
+                if (!_idMap.TryGetClub(clubKey, out Guid clubId))
+                {
+                    _log.LogError("CreateTeam", new { oldTeam.Id, oldTeam.Name }, "No club mapping found.");
+                    return;
+                }
+
+                team = await _api.CreateTeamAsync(
+                    oldTeam.Name, MakeShortName(oldTeam), clubId, division.Id, teamCategory);
+                if (team == null)
+                {
+                    _log.LogError("CreateTeam", new { oldTeam.Id, oldTeam.Name }, "API returned null.");
+                    return;
+                }
+                byName.TryAdd(team.Name, team);
+                Interlocked.Increment(ref created);
+            }
+            else
+            {
+                Interlocked.Increment(ref reused);
+            }
+
+            _idMap.MapTeam(oldTeam.Id, team.Id);
+
+            int added = 0;
+            foreach (RosterEntry re in unionRoster.Values)
+            {
+                if (!_idMap.TryGetPerson(re.Person.Id, out IdMapStore.PersonMapping? mapping) || mapping == null)
+                    continue;
+
+                int position = re.IsGoalkeeper ? PositionGoalkeeper : PositionForward;
+                int? jersey = re.TeamPlayer.JerseyNumber is > 0 and < 100 ? re.TeamPlayer.JerseyNumber : null;
+                if (await _api.AddPlayerToTeamAsync(team.Id, mapping.PlayerId, position, jersey))
+                    added++;
+            }
+
+            Console.WriteLine($"  {oldTeam.Name}: roster {added}/{unionRoster.Count}");
+        });
+
+        _idMap.Save(force: true);
         Console.WriteLine($"  Teams: {created} created, {reused} already existed.");
     }
 

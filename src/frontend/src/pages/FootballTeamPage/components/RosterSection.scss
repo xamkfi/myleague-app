@@ -23,9 +23,9 @@
 
 .roster-section .table{
    display: grid;
-   grid-template-columns: 40px minmax(200px, 400px) 60px repeat(3, 1fr);
+   grid-template-columns: 40px minmax(200px, 400px) repeat(3, 1fr);
    gap: 16px;
-   grid-template-areas: "jersey playerName age gamesPlayed goals assists";
+   grid-template-areas: "jersey playerName gamesPlayed goals assists";
    width: 100%;
    box-sizing: border-box;
    min-width: 600px;
@@ -149,11 +149,6 @@
   50% { background-position: 200% center; }
 }
 
-.roster-age{
-   grid-area: age;
-   text-align: center;
-}
-
 .roster-games-played{
    grid-area: gamesPlayed;
    text-align: center;
@@ -190,7 +185,7 @@
   }
 
   .roster-section .table {
-    grid-template-columns: 30px minmax(75px, 150px) 40px repeat(3, 48px);
+    grid-template-columns: 30px minmax(75px, 150px) repeat(3, 48px);
     gap: map.get($spacing, 'xxs');
     font-size: map.get($font-sizes, 'xs');
   }
@@ -234,7 +229,7 @@
   }
 
   .roster-section .table {
-    grid-template-columns: 25px minmax(75px, 1fr) 36px repeat(3, 40px);
+    grid-template-columns: 25px minmax(75px, 1fr) repeat(3, 40px);
     gap: map.get($spacing, 'xxs');
     font-size: map.get($font-sizes, 'xs');
   }

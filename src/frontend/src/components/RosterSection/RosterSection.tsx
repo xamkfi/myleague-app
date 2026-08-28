@@ -8,7 +8,6 @@ export interface RosterPlayerRow {
   playerName: string;
   position: string;
   jerseyNumber?: number | null;
-  age?: number;
   gamesPlayed?: number;
   goals?: number;
   assists?: number;
@@ -55,7 +54,6 @@ export default function RosterSection({
               <div className="table stats-header">
                 <div className="roster-jersey" title={t('roster.tooltips.jerseyNumber')}>{t('roster.jerseyNumber')}</div>
                 <div className="roster-player-name">{t('roster.name')}</div>
-                <div className="roster-age" title={t('roster.tooltips.age')}>{t('roster.age')}</div>
                 <div className="roster-games-played" title={t('roster.tooltips.matchesPlayed')}>{t('roster.matchesPlayed')}</div>
                 <div className="roster-goals" title={t('roster.tooltips.goals')}>{t('roster.goals')}</div>
                 <div className="roster-assists" title={t('roster.tooltips.assists')}>{t('roster.assists')}</div>
@@ -83,9 +81,6 @@ export default function RosterSection({
                             `${player.playerName}${player.nameSuffix ?? ''}`
                           )}
                         </PlayerLink>
-                      </div>
-                      <div className="roster-age">
-                        {player.age && player.age !== 99 ? player.age : '—'}
                       </div>
                       <div className="roster-games-played">
                         {seasonStats?.gamesPlayed ?? player.gamesPlayed ?? '—'}

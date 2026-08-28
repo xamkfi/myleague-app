@@ -172,6 +172,32 @@ public class ImportApiClient : IDisposable
         return await ReadDataOrNull<PersonDto>(resp, $"Create person '{firstName} {lastName}'");
     }
 
+    /// <summary>
+    /// Search by full name, then create. If create races another import of the same name,
+    /// search again before giving up.
+    /// </summary>
+    public async Task<(PersonDto? Person, bool Created)> FindOrCreatePersonAsync(
+        string firstName,
+        string lastName,
+        DateTime? birthDate)
+    {
+        PersonDto? existing = FindPersonByName(await SearchPersonsAsync($"{firstName} {lastName}".Trim()), firstName, lastName);
+        if (existing != null)
+            return (existing, false);
+
+        PersonDto? created = await CreatePersonAsync(firstName, lastName, birthDate);
+        if (created != null)
+            return (created, true);
+
+        PersonDto? retry = FindPersonByName(await SearchPersonsAsync($"{firstName} {lastName}".Trim()), firstName, lastName);
+        return (retry, false);
+    }
+
+    private static PersonDto? FindPersonByName(List<PersonDto> results, string firstName, string lastName) =>
+        results.FirstOrDefault(p =>
+            string.Equals(p.FirstName, firstName, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(p.LastName, lastName, StringComparison.OrdinalIgnoreCase));
+
     protected async Task<bool> AddPlayerToTeamByQueryAsync(
         string url,
         int? jerseyNumber,
