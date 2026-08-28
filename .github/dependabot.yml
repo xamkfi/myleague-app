@@ -89,6 +89,10 @@ updates:
     commit-message:
       prefix: "chore(ci)"
       include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   # Frontend Dockerfile base image
   - package-ecosystem: "docker"

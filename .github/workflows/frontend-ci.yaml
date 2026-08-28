@@ -6,12 +6,14 @@ on:
     paths:
       - 'src/frontend/**'
       - 'docker-compose.yml'
+      - 'docker-compose.ci.yml'
       - '.github/workflows/frontend-ci.yaml'
   pull_request:
     branches: [master, development]
     paths:
       - 'src/frontend/**'
       - 'docker-compose.yml'
+      - 'docker-compose.ci.yml'
       - '.github/workflows/frontend-ci.yaml'
   workflow_dispatch:
 
@@ -34,7 +36,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
@@ -42,7 +44,7 @@ jobs:
         version: 10.11.0
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'pnpm'
@@ -89,7 +91,7 @@ jobs:
         fi
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: frontend-build
         path: ${{ env.WORKING_DIRECTORY }}/dist/
@@ -103,10 +105,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
 
     - name: Build Docker image
       working-directory: ${{ env.WORKING_DIRECTORY }}
@@ -154,12 +156,12 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Test Frontend in Docker Compose
       run: |
-        docker compose -f docker-compose.yml build frontend
-        docker compose -f docker-compose.yml up -d --no-deps frontend
+        docker compose -f docker-compose.yml -f docker-compose.ci.yml build frontend
+        docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --no-deps frontend
 
         for i in {1..30}; do
           if curl -f -s http://localhost:5173 >/dev/null 2>&1; then
@@ -167,8 +169,8 @@ jobs:
             break
           elif [ $i -eq 30 ]; then
             echo "Frontend not accessible after 30 attempts"
-            docker compose -f docker-compose.yml logs frontend
-            docker compose -f docker-compose.yml ps
+            docker compose -f docker-compose.yml -f docker-compose.ci.yml logs frontend
+            docker compose -f docker-compose.yml -f docker-compose.ci.yml ps
             exit 1
           else
             echo "Attempt $i: Frontend not ready yet, waiting 3 seconds..."
@@ -179,4 +181,4 @@ jobs:
     - name: Cleanup
       if: always()
       run: |
-        docker compose -f docker-compose.yml down -v
+        docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v

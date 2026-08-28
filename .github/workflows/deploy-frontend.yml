@@ -55,7 +55,7 @@ jobs:
           echo "Deploying to: myleague-${ENV}-web (rg: myleague-${ENV}-rg)"
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -63,7 +63,7 @@ jobs:
           package_json_file: ${{ env.FRONTEND_PATH }}/package.json
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
