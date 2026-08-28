@@ -44,7 +44,7 @@ public class GetFloorballSeasonContentBlocksByYearHandler
 
             return Result<FloorballSeasonContentBlocksDto>.Success(FloorballSeasonContentBlockMapper.ToDtos(season));
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Failed to get featured floorball season content blocks");
             return Result<FloorballSeasonContentBlocksDto>.Failure(
