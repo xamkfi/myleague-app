@@ -55,11 +55,11 @@ public class ReplaceFootballSeasonContentBlocksHandler
             _logger.LogWarning(ex, "Invalid football season content blocks for {SeasonId}", request.SeasonId);
             return Result<FootballSeasonContentBlocksDto>.Failure(ex.Message);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException ex)
         {
-            _logger.LogError(ex, "Failed to replace football season content blocks {SeasonId}", request.SeasonId);
+            _logger.LogWarning(ex, "Replacing football season content blocks was canceled for {SeasonId}", request.SeasonId);
             return Result<FootballSeasonContentBlocksDto>.Failure(
-                "An error occurred while updating the season content blocks.");
+                "The operation was canceled while updating the season content blocks.");
         }
     }
 }
