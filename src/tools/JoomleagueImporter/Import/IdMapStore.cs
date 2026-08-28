@@ -84,6 +84,25 @@ public class IdMapStore
             return Persons.ContainsKey(oldPersonId);
     }
 
+    public bool TryGetSeason(int oldProjectId, out Guid seasonId)
+    {
+        lock (_sync)
+            return Seasons.TryGetValue(oldProjectId, out seasonId);
+    }
+
+    public bool HasMappedSeasonId(Guid seasonId)
+    {
+        lock (_sync)
+            return Seasons.ContainsValue(seasonId);
+    }
+
+    public void MapSeason(int oldProjectId, Guid seasonId)
+    {
+        lock (_sync)
+            Seasons[oldProjectId] = seasonId;
+        Save(force: true);
+    }
+
     public void MapMatch(int oldMatchId, Guid newMatchId)
     {
         lock (_sync)

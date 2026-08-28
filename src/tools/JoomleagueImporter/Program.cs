@@ -85,6 +85,10 @@ public static class Program
         if (int.TryParse(concurrencyArg, out int concurrency) && concurrency > 0)
             MatchImportParallel.Degree = concurrency;
 
+        string? seasonConcurrencyArg = GetArg(args, "season-concurrency");
+        if (int.TryParse(seasonConcurrencyArg, out int seasonConcurrency) && seasonConcurrency > 0)
+            MatchImportParallel.SeasonDegree = seasonConcurrency;
+
         string? cliDump = GetArg(args, "dump");
         if (!string.IsNullOrWhiteSpace(cliDump))
             dumpPath = cliDump;
@@ -174,6 +178,7 @@ public static class Program
                 ? "Auth: provided access/refresh token"
                 : $"Login email: {loginEmail}");
             Console.WriteLine($"Match concurrency: {MatchImportParallel.Degree}");
+            Console.WriteLine($"Season concurrency: {MatchImportParallel.SeasonDegree}");
             Console.WriteLine("Starting import (--yes).");
         }
         Console.WriteLine();
@@ -235,17 +240,17 @@ public static class Program
         FloorballMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
         PrintRepairMode(repairAll, repairMatchIds);
 
-        foreach (ProjectImport pi in set.Projects)
+        await MatchImportParallel.ForEachSeasonAsync(set.Projects, async pi =>
         {
             Console.WriteLine($"\n=== {pi.Project.Name} (JL project {pi.Project.Id}, {pi.Matches.Count} matches) ===");
             FloorballSeasonDto? season = await entities.ImportSeasonAsync(pi, division);
             if (season == null)
             {
                 Console.WriteLine("  SKIP: season could not be created.");
-                continue;
+                return;
             }
             await matches.ImportProjectMatchesAsync(pi, season, refereeId);
-        }
+        });
 
         PrintImportComplete(matches.Succeeded, matches.ScheduledOnly, matches.Skipped, matches.Repaired, matches.Failed, log);
         return 0;
@@ -272,17 +277,17 @@ public static class Program
         FootballMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
         PrintRepairMode(repairAll, repairMatchIds);
 
-        foreach (ProjectImport pi in set.Projects)
+        await MatchImportParallel.ForEachSeasonAsync(set.Projects, async pi =>
         {
             Console.WriteLine($"\n=== {pi.Project.Name} (JL project {pi.Project.Id}, {pi.Matches.Count} matches) ===");
             FootballSeasonDto? season = await entities.ImportSeasonAsync(pi, division);
             if (season == null)
             {
                 Console.WriteLine("  SKIP: season could not be created.");
-                continue;
+                return;
             }
             await matches.ImportProjectMatchesAsync(pi, season, refereeId);
-        }
+        });
 
         PrintImportComplete(matches.Succeeded, matches.ScheduledOnly, matches.Skipped, matches.Repaired, matches.Failed, log);
         return 0;
@@ -309,18 +314,18 @@ public static class Program
         HockeyMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
         PrintRepairMode(repairAll, repairMatchIds);
 
-        foreach (ProjectImport pi in set.Projects)
+        await MatchImportParallel.ForEachSeasonAsync(set.Projects, async pi =>
         {
             Console.WriteLine($"\n=== {pi.Project.Name} (JL project {pi.Project.Id}, {pi.Matches.Count} matches) ===");
             HockeySeasonDto? season = await entities.ImportSeasonAsync(pi, division);
             if (season == null)
             {
                 Console.WriteLine("  SKIP: season could not be created.");
-                continue;
+                return;
             }
             await matches.ImportProjectMatchesAsync(pi, season, officialId);
             await api.RecalculateCompetitionAsync(season.Id);
-        }
+        });
 
         PrintImportComplete(matches.Succeeded, matches.ScheduledOnly, matches.Skipped, matches.Repaired, matches.Failed, log);
         return 0;

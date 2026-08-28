@@ -415,7 +415,7 @@ public class FloorballEntityImporter
 
         List<FloorballSeasonDto> existing = await _api.GetSeasonsAsync();
 
-        if (_idMap.Seasons.TryGetValue(project.Id, out Guid mappedSeasonId))
+        if (_idMap.TryGetSeason(project.Id, out Guid mappedSeasonId))
         {
             FloorballSeasonDto? mapped = existing.FirstOrDefault(s => s.Id == mappedSeasonId);
             if (mapped != null)
@@ -434,7 +434,7 @@ public class FloorballEntityImporter
         string seasonName = project.Name;
         FloorballSeasonDto? byName = existing.FirstOrDefault(s =>
             string.Equals(s.Name, seasonName, StringComparison.OrdinalIgnoreCase));
-        if (byName != null && _idMap.Seasons.Values.Contains(byName.Id))
+        if (byName != null && _idMap.HasMappedSeasonId(byName.Id))
         {
             // Name collision with another old project; disambiguate.
             seasonName = $"{project.Name} [JL{project.Id}]";
@@ -472,8 +472,7 @@ public class FloorballEntityImporter
             Console.WriteLine($"  Using existing season '{seasonName}' ({season.Id}) [{season.TeamCategory}]");
         }
 
-        _idMap.Seasons[project.Id] = season.Id;
-        _idMap.Save();
+        _idMap.MapSeason(project.Id, season.Id);
 
         await _api.EnsureSeasonContentBlocksAsync("api/floorballseason", season.Id, project);
         await EnsureTeamsInSeasonAsync(pi, season, division);

@@ -52,6 +52,11 @@ public class ExceptionHandlingMiddleware
                 StatusCode = (int)HttpStatusCode.BadRequest,
                 Response = ApiResponse.ErrorResponse(exception.Message)
             },
+            InvalidOperationException => new
+            {
+                StatusCode = (int)HttpStatusCode.BadRequest,
+                Response = ApiResponse.ErrorResponse(exception.Message)
+            },
             KeyNotFoundException => new
             {
                 StatusCode = (int)HttpStatusCode.NotFound,

@@ -17,6 +17,6 @@ public class HockeyUnitOfWork : IHockeyUnitOfWork
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbContext.SaveChangesAsync(cancellationToken);
+        return await UniqueConstraint.SaveChangesAsync(_dbContext, cancellationToken);
     }
 }

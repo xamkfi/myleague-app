@@ -263,10 +263,44 @@ public class ImportApiClient : IDisposable
         return api?.Data;
     }
 
-    protected async Task<T?> PostDataOrNullAsync<T>(string url, object payload, string operation) where T : class
+    protected async Task<T?> PostDataOrNullAsync<T>(
+        string url,
+        object payload,
+        string operation,
+        int maxRetries = 0) where T : class
     {
-        HttpResponseMessage resp = await Http.PostAsJsonAsync(url, payload);
-        return await ReadDataOrNull<T>(resp, operation);
+        for (int attempt = 0; attempt <= maxRetries; attempt++)
+        {
+            HttpResponseMessage resp = await Http.PostAsJsonAsync(url, payload);
+            if (resp.IsSuccessStatusCode)
+            {
+                ApiResponse<T>? api = await resp.Content.ReadFromJsonAsync<ApiResponse<T>>(Json);
+                return api?.Data;
+            }
+
+            string body = await resp.Content.ReadAsStringAsync();
+            bool retryable = attempt < maxRetries && IsRetryableUniqueConflict(resp.StatusCode, body);
+            if (retryable)
+            {
+                await Task.Delay(200 * (attempt + 1));
+                continue;
+            }
+
+            Console.WriteLine($"  WARN: {operation} failed ({(int)resp.StatusCode}): {Truncate(body)}");
+            return null;
+        }
+
+        return null;
+    }
+
+    private static bool IsRetryableUniqueConflict(System.Net.HttpStatusCode statusCode, string body)
+    {
+        if (statusCode == System.Net.HttpStatusCode.Conflict)
+            return true;
+
+        return body.Contains("concurrent", StringComparison.OrdinalIgnoreCase)
+            || body.Contains("duplicate key", StringComparison.OrdinalIgnoreCase)
+            || body.Contains("23505", StringComparison.Ordinal);
     }
 
     protected static async Task<bool> OkOrWarn(HttpResponseMessage resp, string operation)
