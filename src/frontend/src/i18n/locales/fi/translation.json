@@ -98,6 +98,12 @@
     "clubs": "Seurat",
     "team": "Joukkue"
   },
+  "sessionExpiry": {
+    "message": "Istuntosi vanhenee noin {{minutes}} minuutin kuluttua. Pysy kirjautuneena, jos tarvitset sivua vielä.",
+    "stayLoggedIn": "Pysy kirjautuneena",
+    "dismiss": "Sulje",
+    "refreshFailed": "Istuntoa ei voitu jatkaa. Kirjaudu sisään uudelleen."
+  },
   "deletion": {
     "personHasMatchRecords": "Henkilöä ei voi poistaa, koska hänellä on ottelu- tai tilastotietoja.",
     "personHasUserAccount": "Henkilöä ei voi poistaa, koska hänellä on käyttäjätili.",
@@ -320,6 +326,28 @@
       "manageUsers": "Hallitse järjestelmäkäyttäjiä",
       "rules": "Säännöt",
       "manageRules": "Hallitse sääntöjä"
+    },
+    "settings": {
+      "navSection": "Asetukset",
+      "nav": "Sivuston asetukset",
+      "pageTitle": "Sivuston asetukset",
+      "description": "Tunnisteiden ja kirjautumiskoodin kestot koskevat vain uusia istuntoja. Salaisuudet pysyvät palvelimen asetuksissa.",
+      "sourcePersisted": "Nämä arvot on tallennettu tälle sivustolle.",
+      "sourceDefaults": "Näytetään palvelimen oletukset. Tallenna, niin arvot jäävät sivuston omiksi.",
+      "accessTokenMinutes": "Käyttötunniste (minuuttia)",
+      "accessTokenMinutesHint": "Välillä {{min}}–{{max}} minuuttia.",
+      "refreshTokenDays": "Virkistystunniste (päiviä)",
+      "refreshTokenDaysHint": "Välillä {{min}}–{{max}} päivää.",
+      "loginCodeMinutes": "Kirjautumiskoodi (minuuttia)",
+      "loginCodeMinutesHint": "Välillä {{min}}–{{max}} minuuttia.",
+      "loginCodeMaxAttempts": "Kirjautumiskoodin yrityskertoja",
+      "loginCodeMaxAttemptsHint": "Välillä {{min}}–{{max}} yritystä.",
+      "sessionWarningMinutes": "Istuntomuistutus (minuuttia)",
+      "sessionWarningMinutesHint": "Näytä pysy-kirjautuneena-muistutus näin monta minuuttia ennen käyttötunnisteen vanhenemista ({{min}}–{{max}}).",
+      "save": "Tallenna asetukset",
+      "saveSuccess": "Asetukset tallennettu.",
+      "saveFailed": "Asetusten tallennus epäonnistui.",
+      "loadFailed": "Asetusten lataus epäonnistui."
     },
     "siteContent": {
       "title": "Sivuston sisällöt",

@@ -3,6 +3,7 @@ using Application.Common;
 using Application.Configuration;
 using Application.Features.Auth.Commands;
 using Application.Interfaces.Auth;
+using Application.Interfaces.Common;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,7 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
+    private readonly ISiteSettingsProvider _siteSettingsProvider;
     private readonly LoginCodeConfiguration _loginCodeConfig;
     private readonly ILogger<RequestLoginCodeHandler> _logger;
 
@@ -26,12 +28,14 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
         IUserRepository userRepository,
         IUnitOfWork unitOfWork,
         IEmailService emailService,
+        ISiteSettingsProvider siteSettingsProvider,
         IOptions<LoginCodeConfiguration> loginCodeConfig,
         ILogger<RequestLoginCodeHandler> logger)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
         _emailService = emailService;
+        _siteSettingsProvider = siteSettingsProvider;
         _loginCodeConfig = loginCodeConfig.Value;
         _logger = logger;
     }
@@ -54,9 +58,11 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
                 return Result<string?>.Success(null);
             }
 
+            EffectiveAuthSettings authSettings = await _siteSettingsProvider.GetEffectiveAsync(cancellationToken);
+
             // Generate cryptographically secure code
             string code = GenerateSecureCode(_loginCodeConfig.CodeLength);
-            DateTime expiresAt = DateTime.UtcNow.AddMinutes(_loginCodeConfig.ExpirationMinutes);
+            DateTime expiresAt = DateTime.UtcNow.AddMinutes(authSettings.LoginCodeExpirationMinutes);
 
             user.SetLoginCode(code, expiresAt);
             await _userRepository.UpdateAsync(user);

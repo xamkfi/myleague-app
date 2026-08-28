@@ -1,13 +1,12 @@
 using Application.Common;
-using Application.Configuration;
 using Application.Features.Auth.Commands;
 using Application.Features.Auth.DTOs;
 using Application.Interfaces.Auth;
+using Application.Interfaces.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Application.Features.Auth.Handlers;
 
@@ -22,7 +21,7 @@ public class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, Result<A
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IJwtTokenService _jwtTokenService;
-    private readonly JwtConfiguration _jwtConfig;
+    private readonly ISiteSettingsProvider _siteSettingsProvider;
     private readonly ILogger<RefreshTokenHandler> _logger;
 
     public RefreshTokenHandler(
@@ -30,14 +29,14 @@ public class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, Result<A
         IRefreshTokenRepository refreshTokenRepository,
         IUnitOfWork unitOfWork,
         IJwtTokenService jwtTokenService,
-        IOptions<JwtConfiguration> jwtConfig,
+        ISiteSettingsProvider siteSettingsProvider,
         ILogger<RefreshTokenHandler> logger)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _unitOfWork = unitOfWork;
         _jwtTokenService = jwtTokenService;
-        _jwtConfig = jwtConfig.Value;
+        _siteSettingsProvider = siteSettingsProvider;
         _logger = logger;
     }
 
@@ -75,12 +74,16 @@ public class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, Result<A
                 return Result<AuthTokenDto>.Failure("User account is not available.");
             }
 
+            EffectiveAuthSettings authSettings = await _siteSettingsProvider.GetEffectiveAsync(cancellationToken);
+
             // Generate new token pair
-            (string accessToken, DateTime expiresAt) = _jwtTokenService.GenerateAccessToken(user);
+            (string accessToken, DateTime expiresAt) = _jwtTokenService.GenerateAccessToken(
+                user,
+                authSettings.AccessTokenExpirationMinutes);
 
             string rawNewRefreshToken = _jwtTokenService.GenerateRefreshToken();
             string newRefreshTokenHash = _jwtTokenService.HashToken(rawNewRefreshToken);
-            DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(_jwtConfig.RefreshTokenExpirationDays);
+            DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(authSettings.RefreshTokenExpirationDays);
 
             RefreshToken newRefreshToken = new(user.Id, newRefreshTokenHash, refreshTokenExpiresAt);
 
@@ -92,7 +95,11 @@ public class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, Result<A
 
             _logger.LogInformation("Tokens refreshed for user {Email}.", user.Email);
 
-            AuthTokenDto tokenDto = new(accessToken, rawNewRefreshToken, expiresAt);
+            AuthTokenDto tokenDto = new(
+                accessToken,
+                rawNewRefreshToken,
+                expiresAt,
+                authSettings.SessionExpiryWarningMinutes);
             return Result<AuthTokenDto>.Success(tokenDto);
         }
         catch (Exception ex)

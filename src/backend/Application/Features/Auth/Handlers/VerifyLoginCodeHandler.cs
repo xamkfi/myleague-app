@@ -3,6 +3,7 @@ using Application.Configuration;
 using Application.Features.Auth.Commands;
 using Application.Features.Auth.DTOs;
 using Application.Interfaces.Auth;
+using Application.Interfaces.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using MediatR;
@@ -21,8 +22,8 @@ public class VerifyLoginCodeHandler : IRequestHandler<VerifyLoginCodeCommand, Re
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IJwtTokenService _jwtTokenService;
+    private readonly ISiteSettingsProvider _siteSettingsProvider;
     private readonly LoginCodeConfiguration _loginCodeConfig;
-    private readonly JwtConfiguration _jwtConfig;
     private readonly ILogger<VerifyLoginCodeHandler> _logger;
 
     public VerifyLoginCodeHandler(
@@ -30,16 +31,16 @@ public class VerifyLoginCodeHandler : IRequestHandler<VerifyLoginCodeCommand, Re
         IRefreshTokenRepository refreshTokenRepository,
         IUnitOfWork unitOfWork,
         IJwtTokenService jwtTokenService,
+        ISiteSettingsProvider siteSettingsProvider,
         IOptions<LoginCodeConfiguration> loginCodeConfig,
-        IOptions<JwtConfiguration> jwtConfig,
         ILogger<VerifyLoginCodeHandler> logger)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _unitOfWork = unitOfWork;
         _jwtTokenService = jwtTokenService;
+        _siteSettingsProvider = siteSettingsProvider;
         _loginCodeConfig = loginCodeConfig.Value;
-        _jwtConfig = jwtConfig.Value;
         _logger = logger;
     }
 
@@ -73,8 +74,10 @@ public class VerifyLoginCodeHandler : IRequestHandler<VerifyLoginCodeCommand, Re
                 return Result<AuthTokenDto>.Failure("The login code has expired. Please request a new code.");
             }
 
+            EffectiveAuthSettings authSettings = await _siteSettingsProvider.GetEffectiveAsync(cancellationToken);
+
             // Check brute-force attempts
-            if (user.LoginCodeAttempts >= _loginCodeConfig.MaxAttempts)
+            if (user.LoginCodeAttempts >= authSettings.LoginCodeMaxAttempts)
             {
                 user.ClearLoginCode();
                 await _userRepository.UpdateAsync(user);
@@ -89,18 +92,20 @@ public class VerifyLoginCodeHandler : IRequestHandler<VerifyLoginCodeCommand, Re
                 await _userRepository.UpdateAsync(user);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                int remainingAttempts = _loginCodeConfig.MaxAttempts - user.LoginCodeAttempts;
+                int remainingAttempts = authSettings.LoginCodeMaxAttempts - user.LoginCodeAttempts;
                 _logger.LogInformation("Failed login code attempt for {Email}. {Remaining} attempts remaining.", request.Email, remainingAttempts);
                 return Result<AuthTokenDto>.Failure("Invalid login code.");
             }
 
             // Code is valid -- generate tokens
-            (string accessToken, DateTime expiresAt) = _jwtTokenService.GenerateAccessToken(user);
+            (string accessToken, DateTime expiresAt) = _jwtTokenService.GenerateAccessToken(
+                user,
+                authSettings.AccessTokenExpirationMinutes);
 
             string rawRefreshToken = _jwtTokenService.GenerateRefreshToken();
             string refreshTokenHash = _jwtTokenService.HashToken(rawRefreshToken);
 
-            DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(_jwtConfig.RefreshTokenExpirationDays);
+            DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(authSettings.RefreshTokenExpirationDays);
             RefreshToken refreshToken = new(user.Id, refreshTokenHash, refreshTokenExpiresAt);
 
             await _refreshTokenRepository.AddAsync(refreshToken);
@@ -112,7 +117,11 @@ public class VerifyLoginCodeHandler : IRequestHandler<VerifyLoginCodeCommand, Re
 
             _logger.LogInformation("User {Email} logged in successfully.", request.Email);
 
-            AuthTokenDto tokenDto = new(accessToken, rawRefreshToken, expiresAt);
+            AuthTokenDto tokenDto = new(
+                accessToken,
+                rawRefreshToken,
+                expiresAt,
+                authSettings.SessionExpiryWarningMinutes);
             return Result<AuthTokenDto>.Success(tokenDto);
         }
         catch (Exception ex)

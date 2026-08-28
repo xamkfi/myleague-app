@@ -11,6 +11,12 @@
     "clubs": "Clubs",
     "team": "Team"
   },
+  "sessionExpiry": {
+    "message": "Your session expires in about {{minutes}} minutes. Stay logged in if you still need this page.",
+    "stayLoggedIn": "Stay logged in",
+    "dismiss": "Dismiss",
+    "refreshFailed": "Session could not be extended. Please log in again."
+  },
   "deletion": {
     "personHasMatchRecords": "Cannot delete this person because they have match or statistics records.",
     "personHasUserAccount": "Cannot delete this person because they have a user account.",
@@ -320,6 +326,28 @@
       "manageUsers": "Manage system users",
       "rules": "Rules",
       "manageRules": "Manage rules"
+    },
+    "settings": {
+      "navSection": "Settings",
+      "nav": "Site settings",
+      "pageTitle": "Site settings",
+      "description": "Token and login-code lifetimes apply to newly issued sessions only. Secrets stay in server configuration.",
+      "sourcePersisted": "These values are saved for this site.",
+      "sourceDefaults": "Showing server defaults. Save to store site-owned values.",
+      "accessTokenMinutes": "Access token (minutes)",
+      "accessTokenMinutesHint": "Between {{min}} and {{max}} minutes.",
+      "refreshTokenDays": "Refresh token (days)",
+      "refreshTokenDaysHint": "Between {{min}} and {{max}} days.",
+      "loginCodeMinutes": "Login code (minutes)",
+      "loginCodeMinutesHint": "Between {{min}} and {{max}} minutes.",
+      "loginCodeMaxAttempts": "Login code max attempts",
+      "loginCodeMaxAttemptsHint": "Between {{min}} and {{max}} attempts.",
+      "sessionWarningMinutes": "Session reminder (minutes)",
+      "sessionWarningMinutesHint": "Show a stay-logged-in reminder this many minutes before the access token expires ({{min}}–{{max}}).",
+      "save": "Save settings",
+      "saveSuccess": "Settings saved.",
+      "saveFailed": "Failed to save settings.",
+      "loadFailed": "Failed to load settings."
     },
     "siteContent": {
       "title": "Site content",

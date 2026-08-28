@@ -19,6 +19,7 @@ import {
   type StoredTokens,
 } from '../api/utils/tokenManager';
 import type { AuthTokenResponse, AuthUser } from '../types/auth/authTypes';
+import SessionExpiryWarning from '../components/SessionExpiryWarning/SessionExpiryWarning';
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -52,6 +53,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         expiresAt: tokens.expiresAt,
+        issuedAt: new Date().toISOString(),
+        sessionExpiryWarningMinutes: tokens.sessionExpiryWarningMinutes,
       };
       storeTokens(stored);
       setAccessToken(tokens.accessToken);
@@ -158,6 +161,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       value={{ isAuthenticated, isLoading, user, accessToken, login, logout }}
     >
       {children}
+      {!isLoading && <SessionExpiryWarning isAuthenticated={isAuthenticated} />}
     </AuthContext.Provider>
   );
 }

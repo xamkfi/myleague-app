@@ -22,9 +22,9 @@ public class JwtTokenService : IJwtTokenService
         _jwtConfig = jwtConfig.Value;
     }
 
-    public (string Token, DateTime ExpiresAt) GenerateAccessToken(User user)
+    public (string Token, DateTime ExpiresAt) GenerateAccessToken(User user, int accessTokenExpirationMinutes)
     {
-        DateTime expiresAt = DateTime.UtcNow.AddMinutes(_jwtConfig.AccessTokenExpirationMinutes);
+        DateTime expiresAt = DateTime.UtcNow.AddMinutes(accessTokenExpirationMinutes);
 
         List<Claim> claims = new()
         {

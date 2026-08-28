@@ -83,6 +83,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<IInfoPageContentRepository, InfoPageContentRepository>();
             services.AddScoped<IRulesSectionRepository, RulesSectionRepository>();
             services.AddScoped<IFooterContactRepository, FooterContactRepository>();
+            services.AddScoped<ISiteSettingsRepository, SiteSettingsRepository>();
             services.AddScoped<IDivisionRepository, DivisionRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
             services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();
@@ -131,6 +132,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     sp.GetRequiredService<ILogger<AzureBlobImageStorageService>>());
             });
             services.AddScoped<IPersonNameProvider, PersonNameProvider>();
+            services.AddSingleton<SiteSettingsCache>();
+            services.AddScoped<ISiteSettingsProvider, SiteSettingsProvider>();
 
             // Add authentication services
             services.AddScoped<IJwtTokenService, JwtTokenService>();

@@ -1,0 +1,68 @@
+.settings-page {
+  max-width: 40rem;
+
+  &__description,
+  &__source {
+    margin: 0 0 1.25rem;
+    color: #475467;
+    line-height: 1.5;
+  }
+
+  &__source {
+    font-size: 0.95rem;
+  }
+
+  &__alert {
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+
+    &--success {
+      background: #ecfdf3;
+      color: #027a48;
+    }
+
+    &--error {
+      background: #fef3f2;
+      color: #b42318;
+    }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    background: #fff;
+    border: 1px solid #e4e7ec;
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-weight: 600;
+    color: #344054;
+
+    input {
+      font-weight: 400;
+      padding: 0.7rem 0.85rem;
+      border: 1px solid #d0d5dd;
+      border-radius: 12px;
+      font: inherit;
+      max-width: 12rem;
+    }
+  }
+
+  &__hint {
+    font-weight: 400;
+    font-size: 0.85rem;
+    color: #667085;
+  }
+
+  &__actions {
+    margin-top: 0.5rem;
+  }
+}

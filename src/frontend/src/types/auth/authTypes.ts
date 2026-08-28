@@ -2,6 +2,7 @@ export interface AuthTokenResponse {
   accessToken: string;
   refreshToken: string;
   expiresAt: string;
+  sessionExpiryWarningMinutes?: number;
 }
 
 export interface AuthUserPerson {

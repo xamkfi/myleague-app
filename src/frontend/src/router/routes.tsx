@@ -45,6 +45,7 @@ const RulesManagementPage = lazyWithRetry(
 const FooterContactsManagementPage = lazyWithRetry(
   () => import('../pages/AdminPage/FooterContactsPage/FooterContactsManagementPage')
 );
+const SettingsPage = lazyWithRetry(() => import('../pages/AdminPage/SettingsPage/SettingsPage'));
 const PersonForm = lazyWithRetry(() =>
   import('../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm').then((m) => ({ default: m.default as ComponentType<unknown> }))
 );
@@ -287,6 +288,16 @@ export const routes: RouteObject[] = [
         element: <ProtectedRoute><SuspenseWrapper><UsersPage /></SuspenseWrapper></ProtectedRoute>
       }
     ]
+  },
+  {
+    path: '/admin/settings',
+    element: (
+      <ProtectedRoute>
+        <SuspenseWrapper>
+          <SettingsPage />
+        </SuspenseWrapper>
+      </ProtectedRoute>
+    )
   },
   {
     path: '/uutiset',

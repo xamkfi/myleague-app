@@ -13,6 +13,8 @@ An organization that manages and sponsors floorball teams. A Club typically has 
 ### FooterContact
 An entry in the public site footer. `Section` is Contact, SeasonalSports, or OtherActivities. Contact rows may include details, email, and phone; the other sections are a title plus an optional link.
 
+### SiteSettings
+A singleton row of site-owned configuration. The first slice is authentication timings: access-token minutes, refresh-token days, login-code minutes and max attempts, and how many minutes before access-token expiry the session reminder appears. Secrets stay in application configuration.
 
 ### FloorballTeam
 A floorball team belonging to a Club, competing in a specific Division. Has a roster of players.

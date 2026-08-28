@@ -6,4 +6,5 @@ namespace Application.Features.Auth.DTOs;
 public record AuthTokenDto(
     string AccessToken,
     string RefreshToken,
-    DateTime ExpiresAt);
+    DateTime ExpiresAt,
+    int SessionExpiryWarningMinutes);
