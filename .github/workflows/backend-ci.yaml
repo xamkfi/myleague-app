@@ -7,6 +7,7 @@ on:
       - 'src/backend/**'
       - 'tests/backend/**'
       - 'docker-compose.yml'
+      - 'docker-compose.ci.yml'
       - '.github/workflows/backend-ci.yaml'
   pull_request:
     branches: [master, development]
@@ -14,6 +15,7 @@ on:
       - 'src/backend/**'
       - 'tests/backend/**'
       - 'docker-compose.yml'
+      - 'docker-compose.ci.yml'
       - '.github/workflows/backend-ci.yaml'
   workflow_dispatch:
 
@@ -36,15 +38,15 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Cache NuGet packages
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/packages.lock.json') }}
@@ -74,14 +76,14 @@ jobs:
         --collect:"XPlat Code Coverage"
 
     - name: Upload test results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: test-results
         path: TestResults/**/*.trx
 
     - name: Upload coverage results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: coverage-results
@@ -96,21 +98,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-    - name: Create CI compose override
-      run: |
-        cat > docker-compose.ci.yml << 'EOF'
-        services:
-          webapi:
-            ports:
-              - "8080:8080"
-            environment:
-              Jwt__SecretKey: "ci-test-secret-key-at-least-32-characters-long!!"
-        EOF
+      uses: docker/setup-buildx-action@v4
 
     - name: Start backend services
       run: |
@@ -164,15 +155,15 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Cache NuGet packages
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/packages.lock.json') }}

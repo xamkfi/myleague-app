@@ -21,6 +21,14 @@ on:
           - frontend
           - both
 
+  # Staging only: apply Bicep when infra lands on development, then deploy apps.
+  # Prod stays workflow_dispatch and is gated by the prod environment reviewers.
+  push:
+    branches: [development]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra-deploy.yml'
+
   pull_request:
     paths:
       - 'infra/**'
@@ -49,7 +57,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build Bicep templates
         working-directory: ${{ env.PROVISION_DIR }}
@@ -78,7 +86,7 @@ jobs:
     needs: validate
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Azure login (OIDC)
         uses: azure/login@v2
@@ -105,18 +113,47 @@ jobs:
             --parameters alertEmail="${{ vars.ALERT_EMAIL }}"
 
   # --------------------------------------------------------------------------
-  # Provision: manual dispatch, gated by GitHub environment protection rules
-  # (configure required reviewers on the 'prod' environment)
+  # Resolve env/component: push to development always provisions staging (both).
+  # Prod is dispatch-only so the prod environment reviewers still confirm.
+  # --------------------------------------------------------------------------
+  resolve-targets:
+    name: Resolve provision targets
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/development')
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      environment: ${{ steps.resolve.outputs.environment }}
+      component: ${{ steps.resolve.outputs.component }}
+    steps:
+      - name: Set targets
+        id: resolve
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "environment=${{ inputs.environment }}" >> "$GITHUB_OUTPUT"
+            echo "component=${{ inputs.component }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "environment=staging" >> "$GITHUB_OUTPUT"
+            echo "component=both" >> "$GITHUB_OUTPUT"
+          fi
+
+  # --------------------------------------------------------------------------
+  # Provision: staging auto on infra pushes; prod only via dispatch + reviewers
   # --------------------------------------------------------------------------
   provision:
-    name: Provision ${{ inputs.environment }} (${{ inputs.component }})
-    if: github.event_name == 'workflow_dispatch'
+    name: Provision ${{ needs.resolve-targets.outputs.environment }} (${{ needs.resolve-targets.outputs.component }})
+    if: needs.resolve-targets.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: ${{ inputs.environment }}
+    needs: resolve-targets
+    environment: ${{ needs.resolve-targets.outputs.environment }}
+    env:
+      TARGET_ENV: ${{ needs.resolve-targets.outputs.environment }}
+      TARGET_COMPONENT: ${{ needs.resolve-targets.outputs.component }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Azure login (OIDC)
         uses: azure/login@v2
@@ -127,7 +164,7 @@ jobs:
 
       - name: Ensure resource group exists
         run: |
-          RG="${BASE_NAME}-${{ inputs.environment }}-rg"
+          RG="${BASE_NAME}-${TARGET_ENV}-rg"
           echo "RESOURCE_GROUP=$RG" >> $GITHUB_ENV
           if [ "$(az group exists --name "$RG")" != "true" ]; then
             az group create --name "$RG" --location westeurope --output none
@@ -137,27 +174,27 @@ jobs:
           fi
 
       - name: What-if (backend)
-        if: inputs.component == 'backend' || inputs.component == 'both'
+        if: env.TARGET_COMPONENT == 'backend' || env.TARGET_COMPONENT == 'both'
         working-directory: ${{ env.PROVISION_DIR }}
         run: |
           az deployment group what-if \
             --resource-group "$RESOURCE_GROUP" \
             --template-file backend.bicep \
-            --parameters backend.${{ inputs.environment }}.bicepparam \
+            --parameters backend.${TARGET_ENV}.bicepparam \
             --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
             --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
             --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
             --parameters alertEmail="${{ vars.ALERT_EMAIL }}"
 
       - name: Deploy backend infrastructure
-        if: inputs.component == 'backend' || inputs.component == 'both'
+        if: env.TARGET_COMPONENT == 'backend' || env.TARGET_COMPONENT == 'both'
         working-directory: ${{ env.PROVISION_DIR }}
         run: |
           az deployment group create \
             --resource-group "$RESOURCE_GROUP" \
             --name "infra-backend-$(date +%Y%m%d-%H%M%S)" \
             --template-file backend.bicep \
-            --parameters backend.${{ inputs.environment }}.bicepparam \
+            --parameters backend.${TARGET_ENV}.bicepparam \
             --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
             --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
             --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
@@ -169,16 +206,40 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Deploy frontend infrastructure
-        if: inputs.component == 'frontend' || inputs.component == 'both'
+        if: env.TARGET_COMPONENT == 'frontend' || env.TARGET_COMPONENT == 'both'
         working-directory: ${{ env.PROVISION_DIR }}
         run: |
           az deployment group create \
             --resource-group "$RESOURCE_GROUP" \
             --name "infra-frontend-$(date +%Y%m%d-%H%M%S)" \
             --template-file frontend.bicep \
-            --parameters frontend.${{ inputs.environment }}.bicepparam \
+            --parameters frontend.${TARGET_ENV}.bicepparam \
             --query "properties.outputs.frontendUrl.value" -o tsv > frontend-url.txt
           echo "### Frontend URL" >> $GITHUB_STEP_SUMMARY
           cat frontend-url.txt >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "If this is the first provision, add this URL to allowedOrigins and frontendBaseUrl in backend.${{ inputs.environment }}.bicepparam and re-run the backend provision." >> $GITHUB_STEP_SUMMARY
+          echo "If this is the first provision, add this URL to allowedOrigins and frontendBaseUrl in backend.${TARGET_ENV}.bicepparam and re-run the backend provision." >> $GITHUB_STEP_SUMMARY
+
+  # Staging only: after a successful provision, ship the current apps so CORS /
+  # stack changes are live. Prod app deploys stay manual (environment reviewers).
+  deploy-staging-backend:
+    name: Deploy staging backend
+    needs: [resolve-targets, provision]
+    if: >-
+      needs.provision.result == 'success' &&
+      needs.resolve-targets.outputs.environment == 'staging'
+    uses: ./.github/workflows/deploy-backend.yml
+    with:
+      environment: staging
+    secrets: inherit
+
+  deploy-staging-frontend:
+    name: Deploy staging frontend
+    needs: [resolve-targets, provision]
+    if: >-
+      needs.provision.result == 'success' &&
+      needs.resolve-targets.outputs.environment == 'staging'
+    uses: ./.github/workflows/deploy-frontend.yml
+    with:
+      environment: staging
+    secrets: inherit
