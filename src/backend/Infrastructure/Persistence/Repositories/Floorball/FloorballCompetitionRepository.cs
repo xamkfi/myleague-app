@@ -1,3 +1,4 @@
+using System.Linq;
 using Domain.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
@@ -275,11 +276,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <inheritdoc />
         public void MarkNewContentBlocksAdded(FloorballSeason season, IReadOnlyCollection<Guid> existingBlockIds)
         {
-            foreach (FloorballSeasonContentBlock block in season.ContentBlocks)
+            foreach (FloorballSeasonContentBlock block in season.ContentBlocks.Where(block => !existingBlockIds.Contains(block.Id)))
             {
-                if (existingBlockIds.Contains(block.Id))
-                    continue;
-
                 _dbContext.Entry(block).State = EntityState.Added;
             }
         }
