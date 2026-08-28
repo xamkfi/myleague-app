@@ -44,7 +44,7 @@ public class GetFootballSeasonContentBlocksByYearHandler
 
             return Result<FootballSeasonContentBlocksDto>.Success(FootballSeasonContentBlockMapper.ToDtos(season));
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
             _logger.LogError(ex, "Failed to get featured football season content blocks");
             return Result<FootballSeasonContentBlocksDto>.Failure(
