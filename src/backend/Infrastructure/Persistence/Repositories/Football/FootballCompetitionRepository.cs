@@ -3,6 +3,7 @@ using Domain.Entities.Football.Competitions;
 using Domain.Repositories.Football;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
+using System.Linq;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Football
 {
@@ -239,11 +240,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
 
         public void MarkNewContentBlocksAdded(FootballSeason season, IReadOnlyCollection<Guid> existingBlockIds)
         {
-            foreach (FootballSeasonContentBlock block in season.ContentBlocks)
+            foreach (FootballSeasonContentBlock block in season.ContentBlocks.Where(block => !existingBlockIds.Contains(block.Id)))
             {
-                if (existingBlockIds.Contains(block.Id))
-                    continue;
-
                 _dbContext.Entry(block).State = EntityState.Added;
             }
         }
