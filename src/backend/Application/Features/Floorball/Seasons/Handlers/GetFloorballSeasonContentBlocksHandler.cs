@@ -40,7 +40,12 @@ public class GetFloorballSeasonContentBlocksHandler
 
             return Result<FloorballSeasonContentBlocksDto>.Success(FloorballSeasonContentBlockMapper.ToDtos(season));
         }
-        catch (Exception ex)
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogWarning(ex, "Request was cancelled while getting floorball season content blocks {SeasonId}", request.SeasonId);
+            throw;
+        }
+        catch (InvalidOperationException ex)
         {
             _logger.LogError(ex, "Failed to get floorball season content blocks {SeasonId}", request.SeasonId);
             return Result<FloorballSeasonContentBlocksDto>.Failure(
