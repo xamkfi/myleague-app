@@ -1,6 +1,6 @@
 # WebAPI
 
-ASP.NET Core 9 host for MyLeague. Controllers translate HTTP to MediatR requests and wrap results in a consistent `ApiResponse` / paged envelope.
+ASP.NET Core 10 host for MyLeague. Controllers translate HTTP to MediatR requests and wrap results in a consistent `ApiResponse` / paged envelope.
 
 See the [root README](../../../README.md) for ports, auth, and Docker, and [WebAPIDevelopmentGuide.md](./WebAPIDevelopmentGuide.md) for endpoint conventions.
 
@@ -17,10 +17,10 @@ See the [root README](../../../README.md) for ports, auth, and Docker, and [WebA
 
 ## Technology
 
-- .NET 9 / ASP.NET Core 9
+- .NET 10 / ASP.NET Core 10
 - MediatR 12.5
 - FluentValidation.AspNetCore 11.3
-- JWT Bearer 9.0
+- JWT Bearer 10.0
 - Scalar.AspNetCore 1.2
 - Serilog (console, file, Seq, Application Insights)
 - Health Checks UI 8

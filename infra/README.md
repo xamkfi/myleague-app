@@ -57,7 +57,7 @@ The preferred way to provision and deploy is via GitHub Actions (see below). The
 ## Architecture (per environment)
 
 ### Backend
-- **App Service Plan** (Basic B1, Linux) - hosts the .NET 9 API
+- **App Service Plan** (Basic B1, Linux) - hosts the .NET 10 API
   - Keep instance count at **1**: SignalR uses an in-memory timer store, so scaling out requires a Redis/Azure SignalR backplane first
 - **App Service** - the MyLeague API (`myleague-{env}-api`)
 - **PostgreSQL Flexible Server** (Burstable B1ms) - database
