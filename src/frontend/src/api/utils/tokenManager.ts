@@ -2,27 +2,21 @@ import { authService } from '../auth/authService';
 
 const TOKEN_STORAGE_KEY = 'myleague_auth_tokens';
 
-// Refresh the access token when this much time (or less) is left before it expires.
-// Access tokens currently live for 15 minutes (see backend Jwt:AccessTokenExpirationMinutes),
-// so refreshing with 3 min of headroom guarantees we never serve a stale token even if the
-// periodic check is slightly delayed by background-tab throttling or short sleep periods.
-const REFRESH_BUFFER_MS = 3 * 60_000;
+const MAX_REFRESH_BUFFER_MS = 3 * 60_000;
+const MIN_REFRESH_BUFFER_MS = 15_000;
+const MIN_SESSION_WARNING_MS = 30_000;
 
-// How often we re-check whether the access token needs refreshing while the app is open.
-// Using an interval (rather than a single setTimeout) means we self-heal after the browser
-// returns from sleep / suspends timers — the next tick simply notices the token is near
-// expiry and refreshes it.
 const REFRESH_CHECK_INTERVAL_MS = 30_000;
-
-// After this much inactivity the user is considered idle and we stop proactively refreshing.
-// The refresh token still lives in storage so a subsequent activity event (or API call) can
-// recover the session, but we don't keep extending the session indefinitely for an idle tab.
 const INACTIVITY_THRESHOLD_MS = 30 * 60_000;
+
+export const DEFAULT_SESSION_EXPIRY_WARNING_MINUTES = 5;
 
 export interface StoredTokens {
   accessToken: string;
   refreshToken: string;
   expiresAt: string;
+  issuedAt?: string;
+  sessionExpiryWarningMinutes?: number;
 }
 
 type AuthListener = (tokens: StoredTokens | null) => void;
@@ -44,9 +38,19 @@ export function getStoredTokens(): StoredTokens | null {
   }
 }
 
+function normalizeTokens(tokens: StoredTokens): StoredTokens {
+  return {
+    ...tokens,
+    issuedAt: tokens.issuedAt ?? new Date().toISOString(),
+    sessionExpiryWarningMinutes:
+      tokens.sessionExpiryWarningMinutes ?? DEFAULT_SESSION_EXPIRY_WARNING_MINUTES,
+  };
+}
+
 export function storeTokens(tokens: StoredTokens): void {
-  localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokens));
-  emit(tokens);
+  const normalized = normalizeTokens(tokens);
+  localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(normalized));
+  emit(normalized);
 }
 
 export function clearStoredTokens(): void {
@@ -83,9 +87,47 @@ export function isTokenExpired(expiresAt: string): boolean {
   return new Date(expiresAt).getTime() <= Date.now();
 }
 
-export function isTokenNearExpiry(expiresAt: string): boolean {
-  const remainingMs = new Date(expiresAt).getTime() - Date.now();
-  return remainingMs <= REFRESH_BUFFER_MS;
+export function getTokenLifetimeMs(tokens: StoredTokens): number {
+  const expiresAtMs = new Date(tokens.expiresAt).getTime();
+  if (tokens.issuedAt) {
+    const issuedAtMs = new Date(tokens.issuedAt).getTime();
+    if (issuedAtMs < expiresAtMs) {
+      return expiresAtMs - issuedAtMs;
+    }
+  }
+
+  return Math.max(expiresAtMs - Date.now(), MIN_REFRESH_BUFFER_MS);
+}
+
+export function getRefreshBufferMs(tokens: StoredTokens): number {
+  const lifetimeMs = getTokenLifetimeMs(tokens);
+  return Math.min(MAX_REFRESH_BUFFER_MS, Math.max(MIN_REFRESH_BUFFER_MS, lifetimeMs * 0.25));
+}
+
+export function getSessionWarningLeadMs(tokens: StoredTokens): number {
+  const configuredMs =
+    (tokens.sessionExpiryWarningMinutes ?? DEFAULT_SESSION_EXPIRY_WARNING_MINUTES) * 60_000;
+  const expiresAtMs = new Date(tokens.expiresAt).getTime();
+  const issuedAtMs = tokens.issuedAt ? new Date(tokens.issuedAt).getTime() : Number.NaN;
+  const lifetimeMs =
+    Number.isFinite(issuedAtMs) && issuedAtMs < expiresAtMs
+      ? expiresAtMs - issuedAtMs
+      : configuredMs * 2;
+  return Math.max(MIN_SESSION_WARNING_MS, Math.min(configuredMs, lifetimeMs * 0.5));
+}
+
+export function isTokenNearExpiry(tokens: StoredTokens): boolean {
+  const remainingMs = new Date(tokens.expiresAt).getTime() - Date.now();
+  return remainingMs <= getRefreshBufferMs(tokens);
+}
+
+export function isSessionNearingExpiry(tokens: StoredTokens): boolean {
+  const remainingMs = new Date(tokens.expiresAt).getTime() - Date.now();
+  return remainingMs > 0 && remainingMs <= getSessionWarningLeadMs(tokens);
+}
+
+export function getRemainingSessionMs(tokens: StoredTokens): number {
+  return Math.max(0, new Date(tokens.expiresAt).getTime() - Date.now());
 }
 
 async function performRefresh(refreshToken: string): Promise<StoredTokens | null> {
@@ -95,6 +137,9 @@ async function performRefresh(refreshToken: string): Promise<StoredTokens | null
       accessToken: newTokens.accessToken,
       refreshToken: newTokens.refreshToken,
       expiresAt: newTokens.expiresAt,
+      issuedAt: new Date().toISOString(),
+      sessionExpiryWarningMinutes:
+        newTokens.sessionExpiryWarningMinutes ?? DEFAULT_SESSION_EXPIRY_WARNING_MINUTES,
     };
     storeTokens(stored);
     return stored;
@@ -130,7 +175,7 @@ export async function getValidAccessToken(): Promise<string | null> {
   const tokens = getStoredTokens();
   if (!tokens) return null;
 
-  if (isTokenExpired(tokens.expiresAt) || isTokenNearExpiry(tokens.expiresAt)) {
+  if (isTokenExpired(tokens.expiresAt) || isTokenNearExpiry(tokens)) {
     const refreshed = await refreshTokens();
     return refreshed?.accessToken ?? null;
   }
@@ -148,7 +193,7 @@ function handleVisibilityChange(): void {
   if (!isUserActive()) return;
   const tokens = getStoredTokens();
   if (!tokens) return;
-  if (isTokenExpired(tokens.expiresAt) || isTokenNearExpiry(tokens.expiresAt)) {
+  if (isTokenExpired(tokens.expiresAt) || isTokenNearExpiry(tokens)) {
     void refreshTokens();
   }
 }
@@ -157,7 +202,7 @@ function runPeriodicCheck(): void {
   const tokens = getStoredTokens();
   if (!tokens) return;
   if (!isUserActive()) return;
-  if (isTokenExpired(tokens.expiresAt) || isTokenNearExpiry(tokens.expiresAt)) {
+  if (isTokenExpired(tokens.expiresAt) || isTokenNearExpiry(tokens)) {
     void refreshTokens();
   }
 }

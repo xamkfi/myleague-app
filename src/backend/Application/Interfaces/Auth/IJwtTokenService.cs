@@ -11,8 +11,9 @@ public interface IJwtTokenService
     /// Generates a short-lived JWT access token for the given user
     /// </summary>
     /// <param name="user">The user to generate the token for</param>
+    /// <param name="accessTokenExpirationMinutes">Lifetime of the access token in minutes</param>
     /// <returns>A tuple of (token string, expiration UTC time)</returns>
-    (string Token, DateTime ExpiresAt) GenerateAccessToken(User user);
+    (string Token, DateTime ExpiresAt) GenerateAccessToken(User user, int accessTokenExpirationMinutes);
 
     /// <summary>
     /// Generates a cryptographically random refresh token string

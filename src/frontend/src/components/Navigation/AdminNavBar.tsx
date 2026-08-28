@@ -144,6 +144,20 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
 
         <div className="admin-navbar-section">
           {!collapsed && (
+            <h3 className="admin-navbar-section-title">{t('admin.settings.navSection', 'Settings')}</h3>
+          )}
+          <ul className="admin-navbar-menu">
+            <li className={`admin-navbar-item ${isActive('/admin/settings') ? 'active' : ''}`}>
+              <Link to="/admin/settings" title={collapsed ? t('admin.settings.nav', 'Settings') : undefined}>
+                <img src={LeaguesIcon} alt="Settings" className="icon" />
+                {!collapsed && <span>{t('admin.settings.nav', 'Settings')}</span>}
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div className="admin-navbar-section">
+          {!collapsed && (
             <h3 className="admin-navbar-section-title">{t('admin.siteContent.title', 'Sivuston sisällöt')}</h3>
           )}
           <ul className="admin-navbar-menu">
