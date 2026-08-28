@@ -26,10 +26,10 @@ param postgresAdminPassword = ''
 // PostgreSQL backups - minimum retention for staging
 param postgresBackupRetentionDays = 7
 
-// CORS - update with the actual Static Web App hostname after the frontend
-// is provisioned for the first time (SWA hostnames are auto-generated)
+// CORS - staging Static Web App + local Vite against the staging API
 param allowedOrigins = [
-  'http://localhost:5173' // Vite dev server (handy for testing against staging API)
+  'http://localhost:5173'
+  'https://mango-sky-00d1a9c03.7.azurestaticapps.net'
 ]
 
 // Secret - provided at deploy time (GitHub environment secret or CLI/script prompt)
@@ -38,8 +38,7 @@ param jwtSecretKey = ''
 // Seed - admin email for initial user (provided at deploy time)
 param seedAdminEmail = ''
 
-// Frontend base URL - update after the frontend SWA is provisioned
-param frontendBaseUrl = ''
+param frontendBaseUrl = 'https://mango-sky-00d1a9c03.7.azurestaticapps.net'
 
 // ============================================================================
 // Monitoring & alerting
