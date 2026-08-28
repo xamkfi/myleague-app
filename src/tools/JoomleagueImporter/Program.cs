@@ -63,12 +63,12 @@ public static class Program
         string? repairMatchesArg = GetArg(args, "repair-matches");
         if (!string.IsNullOrWhiteSpace(repairMatchesArg))
         {
-            foreach (string part in repairMatchesArg.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            foreach (int repairId in repairMatchesArg
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(part => int.TryParse(part, out int id) ? id : -1)
+                .Where(id => id > 0))
             {
-                if (int.TryParse(part, out int repairId) && repairId > 0)
-                {
-                    repairMatchIds.Add(repairId);
-                }
+                repairMatchIds.Add(repairId);
             }
         }
 
@@ -439,14 +439,20 @@ public static class Program
         if (isLocal)
         {
             if (isHockey)
-                return Path.Combine(AppContext.BaseDirectory, "id-map-hockey.json");
+                return CombineWithBaseDirectory("id-map-hockey.json");
             if (isFootball)
-                return Path.Combine(AppContext.BaseDirectory, "id-map-football.json");
-            return Path.Combine(AppContext.BaseDirectory, "id-map.json");
+                return CombineWithBaseDirectory("id-map-football.json");
+            return CombineWithBaseDirectory("id-map.json");
         }
 
-        string safeHost = host.Host.Replace('.', '-');
-        return Path.Combine(AppContext.BaseDirectory, $"id-map-{safeHost}-{sport}.json");
+        string safeHost = Path.GetFileName(host.Host.Replace('.', '-'));
+        string sportFilePart = Path.GetFileName(sport);
+        return CombineWithBaseDirectory($"id-map-{safeHost}-{sportFilePart}.json");
+    }
+
+    private static string CombineWithBaseDirectory(string fileName)
+    {
+        return Path.Combine(AppContext.BaseDirectory, Path.GetFileName(fileName));
     }
 
     private static string PromptForApiUrl(string defaultUrl)

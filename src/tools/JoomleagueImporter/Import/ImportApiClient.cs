@@ -340,7 +340,22 @@ public class ImportApiClient : IDisposable
             await RefreshTokensAsync(cancellationToken, force: true);
             return true;
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"  WARN: token refresh failed: {ex.Message}");
+            return false;
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"  WARN: token refresh failed: {ex.Message}");
+            return false;
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"  WARN: token refresh failed: {ex.Message}");
+            return false;
+        }
+        catch (InvalidOperationException ex)
         {
             Console.WriteLine($"  WARN: token refresh failed: {ex.Message}");
             return false;

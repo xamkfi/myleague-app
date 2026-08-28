@@ -78,7 +78,17 @@ public class ImportHockeyMatchEventsHandler
                         eventErrors.Add($"[{index}] Unknown event type '{item.EventType}'.");
                     }
                 }
-                catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+                catch (InvalidOperationException ex)
+                {
+                    eventErrors.Add($"[{index}] {item.EventType}: {ex.Message}");
+                    _logger.LogWarning(
+                        ex,
+                        "Skipped import event {Index} of type {EventType} on match {MatchId}",
+                        index,
+                        item.EventType,
+                        request.MatchId);
+                }
+                catch (ArgumentException ex)
                 {
                     eventErrors.Add($"[{index}] {item.EventType}: {ex.Message}");
                     _logger.LogWarning(
@@ -115,7 +125,17 @@ public class ImportHockeyMatchEventsHandler
 
             return Result<HockeyMatchEventsImportDto>.Success(dto);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Failed importing events for hockey match {MatchId}", request.MatchId);
+            string detail = ex.InnerException?.Message ?? ex.Message;
+            return Result<HockeyMatchEventsImportDto>.Failure(detail, ex.Flatten());
+        }
+        catch (ArgumentException ex)
         {
             _logger.LogError(ex, "Failed importing events for hockey match {MatchId}", request.MatchId);
             string detail = ex.InnerException?.Message ?? ex.Message;

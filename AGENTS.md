@@ -38,6 +38,7 @@ tests/backend               Domain / Application / WebAPI unit tests + Infrastru
 - Vertical slices under `Application/Features/{Auth,Common,Floorball,Football,Hockey}/`. Shared DTOs go in `Features/Common/Shared`.
 - No AutoMapper. Static mappers next to the feature (`ToDto`, `ToDtos`, `ToEntity`, `UpdateFromCommand`).
 - Return `Result<T>` / `PagedResult<T>`. Payload is `.Data`, not `.Value`. Do not throw for expected business failures. Use `Result<T>.NotFound(...)` so WebAPI can map to 404.
+- Catch explicit exception types (`InvalidOperationException`, `ArgumentException`, `JsonException`, …). Rethrow `OperationCanceledException`. Do not use `catch (Exception)` or a bare `catch` when a narrower type will do.
 - Four DbContexts, one PostgreSQL database. Cross-context navigations are ignored; store foreign key Guids only. Seasons/tournaments are TPH on `*Competition` (`CompetitionType` discriminator). Matches and stats use `competitionId` for both.
 - Auth: `[Authorize(Roles = AuthRoles.AdminOnly)]` or `AuthRoles.ClubAdminOrAdmin`. Public GETs stay anonymous unless the sibling sport already requires auth.
 - Frontend: no `React.FC`. Explicit types, no `any` / `var` in new C#. User-facing strings go through i18next (`fi` + `en`). Call the API with `authFetch`.

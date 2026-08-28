@@ -19,7 +19,7 @@ Features/<Area>/<Feature>/
 - Mapper: static `ToDto` / `ToDtos` / `ToEntity` / `UpdateFromCommand` — pass related aggregates as arguments (navigations may be unloaded)
 - Validator: FluentValidation on every command/query with input
 - Handler: load via repository → domain method → `IUnitOfWork` / `IFloorballUnitOfWork` / `IFootballUnitOfWork` / `IHockeyUnitOfWork` → map → `Result<T>.Success`
-- Expected failures: `Result<T>.Failure(...)` or `Result<T>.NotFound(name, key)`. Catch unexpected exceptions, log, return Failure
+- Expected failures: `Result<T>.Failure(...)` or `Result<T>.NotFound(name, key)`. Catch only the exception types that can actually happen (`InvalidOperationException`, `ArgumentException`, `OperationCanceledException` rethrow). Do not use `catch (Exception)` or a bare `catch` unless there is no more specific type.
 
 ## Domain
 

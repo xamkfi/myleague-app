@@ -37,7 +37,7 @@ public class ImportLogger : IDisposable
                     string json = JsonSerializer.Serialize(input, new JsonSerializerOptions { WriteIndented = true });
                     _writer.WriteLine($"  Input: {json}");
                 }
-                catch
+                catch (JsonException)
                 {
                     _writer.WriteLine($"  Input: {input}");
                 }
