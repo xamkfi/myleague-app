@@ -6,6 +6,7 @@ using Domain.Entities.Football.Competitions;
 using Domain.Repositories.Football;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using System.Data.Common;
 
 namespace Application.Features.Football.Seasons.Handlers;
 
@@ -40,7 +41,7 @@ public class GetFootballSeasonContentBlocksHandler
 
             return Result<FootballSeasonContentBlocksDto>.Success(FootballSeasonContentBlockMapper.ToDtos(season));
         }
-        catch (Exception ex)
+        catch (DbException ex)
         {
             _logger.LogError(ex, "Failed to get football season content blocks {SeasonId}", request.SeasonId);
             return Result<FootballSeasonContentBlocksDto>.Failure(
