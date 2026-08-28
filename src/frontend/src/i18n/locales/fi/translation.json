@@ -350,6 +350,37 @@
           "updated": "Viimeksi muokattu",
           "actions": "Toiminnot"
         }
+      },
+      "footerContacts": {
+        "nav": "Alatunnisteen sisältö",
+        "pageTitle": "Alatunnisteen sisältö",
+        "description": "Hallitse julkisen sivuston footerin sarakkeita. Valitse osio ja lisää, muokkaa tai poista rivejä.",
+        "sectionLabel": "Osio",
+        "sections": {
+          "Contact": "Yhteystiedot",
+          "SeasonalSports": "Kausilajit",
+          "OtherActivities": "Muu toiminta"
+        },
+        "add": "Lisää",
+        "addTitle": "Lisää",
+        "editTitle": "Muokkaa",
+        "empty": "Rivejä ei ole vielä.",
+        "loadFailed": "Lataus epäonnistui.",
+        "saveFailed": "Tallennus epäonnistui.",
+        "createSuccess": "Tieto lisätty.",
+        "updateSuccess": "Tieto päivitetty.",
+        "deleteSuccess": "Tieto poistettu.",
+        "deleteFailed": "Poisto epäonnistui.",
+        "confirmDeleteTitle": "Poista",
+        "confirmDelete": "Poistetaanko \"{{title}}\"?",
+        "fields": {
+          "title": "Nimi / otsikko",
+          "details": "Lisätiedot (esim. osoite)",
+          "email": "Sähköposti",
+          "phone": "Puhelinnumero",
+          "url": "Verkkosivu tai linkki",
+          "sortOrder": "Järjestys"
+        }
       }
     },
     "users": {
@@ -2816,6 +2847,32 @@
     "errors": {
       "loadLeagueData": "Sarjan tietojen lataus epäonnistui",
       "loadMatches": "Otteluiden lataus epäonnistui"
+    }
+  },
+  "footer": {
+    "seasonSports": "KAUSILAJIT",
+    "otherActivities": "MUU TOIMINTA",
+    "sports": {
+      "empty": "Kausilajeja ei ole vielä lisätty.",
+      "football": "Jalkapallo",
+      "iceHockey": "Jääkiekko",
+      "floorball": "Salibandy",
+      "floorballManager": "Salibandyn Manager",
+      "winterFootball": "Talvijalkapallo",
+      "bandy": "Jääpallo",
+      "puumalaliga": "Puumalaliga",
+      "iceHockey40": "Jääkiekko +40"
+    },
+    "activities": {
+      "empty": "Muuta toimintaa ei ole vielä lisätty.",
+      "pmt": "PMT Turnaukset",
+      "kortteli": "Korttelitoiminta",
+      "whl": "WHL Liikuntaleirit",
+      "turnauspiste": "Turnauspiste"
+    },
+    "contacts": {
+      "title": "YHTEYSTIEDOT",
+      "empty": "Yhteystietoja ei ole vielä lisätty."
     }
   },
   "clubsPage": {

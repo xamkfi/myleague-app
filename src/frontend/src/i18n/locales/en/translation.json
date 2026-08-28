@@ -350,6 +350,37 @@
           "updated": "Last updated",
           "actions": "Actions"
         }
+      },
+      "footerContacts": {
+        "nav": "Footer content",
+        "pageTitle": "Footer content",
+        "description": "Manage the public footer columns. Choose a section, then add, edit, or delete rows.",
+        "sectionLabel": "Section",
+        "sections": {
+          "Contact": "Contacts",
+          "SeasonalSports": "Season sports",
+          "OtherActivities": "Other activities"
+        },
+        "add": "Add",
+        "addTitle": "Add",
+        "editTitle": "Edit",
+        "empty": "No rows yet.",
+        "loadFailed": "Failed to load footer content.",
+        "saveFailed": "Failed to save.",
+        "createSuccess": "Entry added.",
+        "updateSuccess": "Entry updated.",
+        "deleteSuccess": "Entry deleted.",
+        "deleteFailed": "Failed to delete.",
+        "confirmDeleteTitle": "Delete",
+        "confirmDelete": "Delete \"{{title}}\"?",
+        "fields": {
+          "title": "Name / title",
+          "details": "Details (e.g. address)",
+          "email": "Email",
+          "phone": "Phone number",
+          "url": "Website or other link",
+          "sortOrder": "Order"
+        }
       }
     },
     "users": {
@@ -2826,6 +2857,32 @@
     "errors": {
       "loadLeagueData": "Failed to load league data",
       "loadMatches": "Failed to load matches"
+    }
+  },
+  "footer": {
+    "seasonSports": "SEASON SPORTS",
+    "otherActivities": "OTHER ACTIVITIES",
+    "sports": {
+      "empty": "No season sports added yet.",
+      "football": "Football",
+      "iceHockey": "Ice hockey",
+      "floorball": "Floorball",
+      "floorballManager": "Floorball Manager",
+      "winterFootball": "Winter football",
+      "bandy": "Bandy",
+      "puumalaliga": "Puumalaliga",
+      "iceHockey40": "Ice hockey +40"
+    },
+    "activities": {
+      "empty": "No other activities added yet.",
+      "pmt": "PMT Tournaments",
+      "kortteli": "Neighbourhood activity",
+      "whl": "WHL sports camps",
+      "turnauspiste": "Turnauspiste"
+    },
+    "contacts": {
+      "title": "CONTACTS",
+      "empty": "No contacts have been added yet."
     }
   },
   "clubsPage": {

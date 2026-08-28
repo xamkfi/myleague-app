@@ -78,3 +78,67 @@ public class RulesSectionTests
         section.LastModifiedBy.Should().Be("admin");
     }
 }
+
+public class FooterContactTests
+{
+    [Fact]
+    public void Constructor_ValidInput_SetsProperties()
+    {
+        FooterContact contact = new(
+            Guid.NewGuid(),
+            " Office ",
+            " Street 1 ",
+            " office@mahl.fi ",
+            " 044 123 ",
+            " https://mahl.fi ",
+            2,
+            lastModifiedBy: "admin");
+
+        contact.Title.Should().Be("Office");
+        contact.Details.Should().Be("Street 1");
+        contact.Email.Should().Be("office@mahl.fi");
+        contact.Phone.Should().Be("044 123");
+        contact.Url.Should().Be("https://mahl.fi");
+        contact.SortOrder.Should().Be(2);
+        contact.Section.Should().Be(FooterSection.Contact);
+    }
+
+    [Fact]
+    public void Constructor_EmptyTitle_Throws()
+    {
+        Action act = () => new FooterContact(Guid.NewGuid(), " ", null, null, null, null, 0);
+
+        act.Should().Throw<ArgumentException>().WithParameterName("title");
+    }
+
+    [Fact]
+    public void Constructor_InvalidEmail_Throws()
+    {
+        Action act = () => new FooterContact(Guid.NewGuid(), "Office", null, "not-an-email", null, null, 0);
+
+        act.Should().Throw<ArgumentException>().WithParameterName("email");
+    }
+
+    [Fact]
+    public void Constructor_InvalidUrl_Throws()
+    {
+        Action act = () => new FooterContact(Guid.NewGuid(), "Office", null, null, null, "ftp://mahl.fi", 0);
+
+        act.Should().Throw<ArgumentException>().WithParameterName("url");
+    }
+
+    [Fact]
+    public void Update_ReplacesFields()
+    {
+        FooterContact contact = new(Guid.NewGuid(), "Old", null, null, null, null, 0);
+
+        contact.Update("New", "Details", "a@b.fi", "123", "https://example.com", 5, FooterSection.OtherActivities, "editor");
+
+        contact.Title.Should().Be("New");
+        contact.Details.Should().Be("Details");
+        contact.Email.Should().Be("a@b.fi");
+        contact.SortOrder.Should().Be(5);
+        contact.Section.Should().Be(FooterSection.OtherActivities);
+        contact.LastModifiedBy.Should().Be("editor");
+    }
+}

@@ -40,6 +40,32 @@ public class SiteContentRepositoryIntegrationTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task FooterContact_RoundTripsById()
+    {
+        FooterContactRepository repo = new(_dbContext);
+        FooterContact contact = new(
+            Guid.NewGuid(),
+            "Office",
+            "Main street 1",
+            "office@mahl.fi",
+            "044 000 0000",
+            "https://mahl.fi",
+            1,
+            lastModifiedBy: "admin");
+
+        await repo.AddAsync(contact);
+        await _dbContext.SaveChangesAsync();
+
+        FooterContact? loaded = await repo.GetByIdAsync(contact.Id);
+
+        loaded.Should().NotBeNull();
+        loaded!.Title.Should().Be("Office");
+        loaded.Email.Should().Be("office@mahl.fi");
+        loaded.Url.Should().Be("https://mahl.fi");
+        loaded.Section.Should().Be(FooterSection.Contact);
+    }
+
+    [Fact]
     public async Task Division_RoundTrips()
     {
         DivisionRepository repo = new(_dbContext);

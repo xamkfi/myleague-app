@@ -43,14 +43,40 @@
   flex-direction: column;
   gap: map.get($spacing, 'xxs');
   font-size: 0.98rem;
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
 }
 
 .footer-contact {
   margin-top: map.get($spacing, 'xs');
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   display: flex;
   flex-direction: column;
   gap: map.get($spacing, 'sm');
+}
+
+.footer-contact-empty {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.footer-contact-entry {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'xxs');
+
+  &__details {
+    white-space: pre-line;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    word-break: break-all;
+  }
 }
 
 .footer-version {

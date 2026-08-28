@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyLeague.Infrastructure.Migrations.CommonDb
 {
     [DbContext(typeof(CommonDbContext))]
-    partial class CommonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260826212816_AddFooterContacts")]
+    partial class AddFooterContacts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -188,11 +191,6 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<string>("Section")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
@@ -210,7 +208,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Section", "SortOrder");
+                    b.HasIndex("SortOrder");
 
                     b.ToTable("FooterContacts", "common");
                 });

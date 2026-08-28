@@ -82,6 +82,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
             services.AddScoped<IInfoPageContentRepository, InfoPageContentRepository>();
             services.AddScoped<IRulesSectionRepository, RulesSectionRepository>();
+            services.AddScoped<IFooterContactRepository, FooterContactRepository>();
             services.AddScoped<IDivisionRepository, DivisionRepository>();
             services.AddScoped<IFloorballPlayerRepository, FloorballPlayerRepository>();
             services.AddScoped<IFloorballTeamRepository, FloorballTeamRepository>();
@@ -194,6 +195,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
                     seeder.SeedAsync(scope.ServiceProvider, env, configuration).GetAwaiter().GetResult();
 
                     InfoPageContentSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                    FooterContactSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
                 }
             }
 

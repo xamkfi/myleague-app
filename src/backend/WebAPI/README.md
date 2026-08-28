@@ -32,7 +32,7 @@ WebAPI/
 ├── Controllers/
 │   ├── Auth/
 │   ├── Common/              # Clubs, ClubAdmin, Divisions, Persons, Users,
-│   │                        # News, Search, Rules, Info pages, MatchTimer
+│   │                        # News, Search, Rules, Info pages, Footer contacts, MatchTimer
 │   ├── Floorball/           # Teams, players, referees, seasons, tournaments,
 │   │   └── Match/           #   matches, events, officials, roster, lifecycle
 │   ├── Football/            # Parallel to floorball

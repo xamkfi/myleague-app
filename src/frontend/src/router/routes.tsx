@@ -42,6 +42,9 @@ const InfoPagesManagementPage = lazyWithRetry(
 const RulesManagementPage = lazyWithRetry(
   () => import('../pages/AdminPage/RulesPage/RulesManagementPage')
 );
+const FooterContactsManagementPage = lazyWithRetry(
+  () => import('../pages/AdminPage/FooterContactsPage/FooterContactsManagementPage')
+);
 const PersonForm = lazyWithRetry(() =>
   import('../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm').then((m) => ({ default: m.default as ComponentType<unknown> }))
 );
@@ -257,6 +260,20 @@ export const routes: RouteObject[] = [
             </SuspenseWrapper>
           </ProtectedRoute>
         )
+      },
+      {
+        path: '/admin/site-content/footer-contacts',
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper>
+              <FooterContactsManagementPage />
+            </SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: '/admin/site-content/footer',
+        element: <Navigate to="/admin/site-content/footer-contacts" replace />
       },
       {
         path: '/admin/rules',
