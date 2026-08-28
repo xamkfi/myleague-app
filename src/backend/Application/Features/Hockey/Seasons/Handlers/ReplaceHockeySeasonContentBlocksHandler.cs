@@ -55,11 +55,5 @@ public class ReplaceHockeySeasonContentBlocksHandler
             _logger.LogWarning(ex, "Invalid hockey season content blocks for {SeasonId}", request.SeasonId);
             return Result<HockeySeasonContentBlocksDto>.Failure(ex.Message);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to replace hockey season content blocks {SeasonId}", request.SeasonId);
-            return Result<HockeySeasonContentBlocksDto>.Failure(
-                "An error occurred while updating the season content blocks.");
-        }
     }
 }
