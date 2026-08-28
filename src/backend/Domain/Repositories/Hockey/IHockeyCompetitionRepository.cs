@@ -25,4 +25,6 @@ public interface IHockeyCompetitionRepository
 
     Task<HockeySeason?> GetFeaturedSeasonWithContentBlocksAsync(
         CancellationToken cancellationToken = default);
+
+    void MarkNewContentBlocksAdded(HockeySeason season, IReadOnlyCollection<Guid> existingBlockIds);
 }

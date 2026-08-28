@@ -125,7 +125,21 @@
         "AllowPenaltyShootout": false,
         "WinPoints": 3,
         "DrawPoints": 1,
-        "LossPoints": 0
+        "LossPoints": 0,
+        "ContentBlocks": [
+          {
+            "Title": "MAHL Jalkapallo",
+            "ContentHtml": "<p>Seuraa MAHL:n jalkapallosarjoja, sarjataulukoita, otteluohjelmia ja tuloksia.</p><p>Valitse kausivuosi selataksesi käynnissä olevia ja arkistoituja kilpailuja.</p><p>Ottelusivuilta löydät maalit, kortit, vaihdot ja kokoonpanot.</p>"
+          },
+          {
+            "Title": "Sarjainfo",
+            "ContentHtml": "<p>Jalkapallosarjat käyttävät voitto–tasapeli–tappio -pistelaskentaa maalieron kera.</p><p>Sarjataulukot ja pelaajatilastot päivittyvät otteluiden valmistuttua.</p><p>Turnauksissa on lohkotaulukot tasapelillä ja tarvittaessa pudotuspelikaavio.</p>"
+          },
+          {
+            "Title": "Kilpailut",
+            "ContentHtml": "<p>Avaa sarja nähdäksesi taulukon, otteluohjelman ja tulokset.</p><p>Avaa turnaus nähdäksesi lohkot, pudotuspelit ja tilastot.</p><p>Käynnissä olevat ottelut päivittyvät reaaliajassa.</p>"
+          }
+        ]
       }
     ],
 

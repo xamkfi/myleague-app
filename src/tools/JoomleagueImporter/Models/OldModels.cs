@@ -33,6 +33,12 @@ public class OldProject
     public DateTime? StartDate { get; init; }
     public int GameRegularTime { get; init; } = 30;
     public int GameParts { get; init; } = 2;
+    public int? SeasonId { get; init; }
+    public string? Description { get; init; }
+    public string? ProjectInfo { get; init; }
+    public string? Extension { get; init; }
+    public string? Extended { get; init; }
+    public string? SeasonExtended { get; set; }
 
     public int NumberOfPeriods => GameParts > 0 ? GameParts : 2;
     public int PeriodDurationMinutes

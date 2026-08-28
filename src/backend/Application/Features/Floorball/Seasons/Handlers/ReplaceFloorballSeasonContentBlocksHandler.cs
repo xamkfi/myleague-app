@@ -41,10 +41,11 @@ public class ReplaceFloorballSeasonContentBlocksHandler
                 return Result<FloorballSeasonContentBlocksDto>.NotFound("FloorballSeason", request.SeasonId);
             }
 
+            List<Guid> existingBlockIds = season.ContentBlocks.Select(block => block.Id).ToList();
             season.ReplaceContentBlocks(
                 request.Items.Select(item => (item.Id, item.Title, item.ContentHtml)).ToList());
+            _competitionRepository.MarkNewContentBlocksAdded(season, existingBlockIds);
 
-            await _competitionRepository.UpdateAsync(season);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result<FloorballSeasonContentBlocksDto>.Success(FloorballSeasonContentBlockMapper.ToDtos(season));

@@ -271,5 +271,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .ThenByDescending(season => season.StartDate)
                 .FirstOrDefaultAsync(cancellationToken);
         }
+
+        /// <inheritdoc />
+        public void MarkNewContentBlocksAdded(FloorballSeason season, IReadOnlyCollection<Guid> existingBlockIds)
+        {
+            foreach (FloorballSeasonContentBlock block in season.ContentBlocks)
+            {
+                if (existingBlockIds.Contains(block.Id))
+                    continue;
+
+                _dbContext.Entry(block).State = EntityState.Added;
+            }
+        }
     }
 }

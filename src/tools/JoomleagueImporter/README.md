@@ -1,6 +1,6 @@
 # JoomleagueImporter
 
-Imports **floorball**, **football**, or **hockey** data from a JoomLeague MySQL dump (`.sql`) into a running WebAPI. It parses clubs, teams, persons, projects (seasons), matches, and match events, then posts them in order. An on-disk id map makes re-runs idempotent.
+Imports **floorball**, **football**, or **hockey** data from a JoomLeague MySQL dump (`.sql`) into a running WebAPI. It parses clubs, teams, persons, projects (seasons), matches, and match events, then posts them in order. Season intro cards come from project/season text columns (`description`, `projectinfo`, `extended`, `extension`) when the dump has them; otherwise the importer stores a single “History data” card. An on-disk id map makes re-runs idempotent.
 
 Each sport has its own importer pair: `FloorballEntityImporter` / `FloorballMatchImporter`, `Football*`, `Hockey*`. HTTP calls go through `ImportApiClient` (auth, clubs, persons) plus `FloorballApiClient`, `FootballApiClient`, or `HockeyApiClient`.
 

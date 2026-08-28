@@ -41,8 +41,10 @@ public class ReplaceHockeySeasonContentBlocksHandler
                 return Result<HockeySeasonContentBlocksDto>.NotFound("HockeySeason", request.SeasonId);
             }
 
+            List<Guid> existingBlockIds = season.ContentBlocks.Select(block => block.Id).ToList();
             season.ReplaceContentBlocks(
                 request.Items.Select(item => (item.Id, item.Title, item.ContentHtml)).ToList());
+            _competitionRepository.MarkNewContentBlocksAdded(season, existingBlockIds);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -117,4 +117,15 @@ public class HockeyCompetitionRepository : IHockeyCompetitionRepository
             .ThenByDescending(season => season.StartDate)
             .FirstOrDefaultAsync(cancellationToken);
     }
+
+    public void MarkNewContentBlocksAdded(HockeySeason season, IReadOnlyCollection<Guid> existingBlockIds)
+    {
+        foreach (HockeySeasonContentBlock block in season.ContentBlocks)
+        {
+            if (existingBlockIds.Contains(block.Id))
+                continue;
+
+            _dbContext.Entry(block).State = EntityState.Added;
+        }
+    }
 }

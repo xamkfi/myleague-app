@@ -236,5 +236,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                 .ThenByDescending(season => season.StartDate)
                 .FirstOrDefaultAsync(cancellationToken);
         }
+
+        public void MarkNewContentBlocksAdded(FootballSeason season, IReadOnlyCollection<Guid> existingBlockIds)
+        {
+            foreach (FootballSeasonContentBlock block in season.ContentBlocks)
+            {
+                if (existingBlockIds.Contains(block.Id))
+                    continue;
+
+                _dbContext.Entry(block).State = EntityState.Added;
+            }
+        }
     }
 }

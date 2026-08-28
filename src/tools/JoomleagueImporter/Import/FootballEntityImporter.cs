@@ -452,6 +452,7 @@ public class FootballEntityImporter
                 mapped = await EnsureSeasonCategoryAsync(mapped, teamCategory);
                 Console.WriteLine(
                     $"  Season already imported: '{mapped.Name}' ({mapped.Id}) [{mapped.TeamCategory}]");
+                await _api.EnsureSeasonContentBlocksAsync("api/FootballSeason", mapped.Id, project);
                 await EnsureTeamsInSeasonAsync(pi, mapped, division);
                 return mapped;
             }
@@ -500,6 +501,7 @@ public class FootballEntityImporter
         _idMap.Seasons[project.Id] = season.Id;
         _idMap.Save();
 
+        await _api.EnsureSeasonContentBlocksAsync("api/FootballSeason", season.Id, project);
         await EnsureTeamsInSeasonAsync(pi, season, division);
 
         return season;

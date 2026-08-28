@@ -37,4 +37,6 @@ public interface IFootballCompetitionRepository
         int? startYear,
         int? endYear,
         CancellationToken cancellationToken = default);
+
+    void MarkNewContentBlocksAdded(FootballSeason season, IReadOnlyCollection<Guid> existingBlockIds);
 }

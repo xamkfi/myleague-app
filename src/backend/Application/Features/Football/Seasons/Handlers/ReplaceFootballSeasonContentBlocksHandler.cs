@@ -41,10 +41,11 @@ public class ReplaceFootballSeasonContentBlocksHandler
                 return Result<FootballSeasonContentBlocksDto>.NotFound("FootballSeason", request.SeasonId);
             }
 
+            List<Guid> existingBlockIds = season.ContentBlocks.Select(block => block.Id).ToList();
             season.ReplaceContentBlocks(
                 request.Items.Select(item => (item.Id, item.Title, item.ContentHtml)).ToList());
+            _competitionRepository.MarkNewContentBlocksAdded(season, existingBlockIds);
 
-            await _competitionRepository.UpdateAsync(season);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result<FootballSeasonContentBlocksDto>.Success(FootballSeasonContentBlockMapper.ToDtos(season));

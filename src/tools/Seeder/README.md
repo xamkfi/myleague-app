@@ -118,7 +118,7 @@ Football persons use `@fb.fi` / `@fb-ref.fi` emails so `--sport=all` does not co
 
 #### Using a test data file (recommended)
 
-The seeder loads `data/testdata.json` (floorball + compact hockey) and/or `data/testdata-football.json` depending on `--sport`. These files hold persons, clubs, divisions, seasons, teams (with rosters), season matches, and tournaments (with groups). They are the canonical local-development datasets that the menu and `--scope` selections operate against.
+The seeder loads `data/testdata.json` (floorball + compact hockey) and/or `data/testdata-football.json` depending on `--sport`. These files hold persons, clubs, divisions, seasons (including ordered `ContentBlocks` intro cards), teams (with rosters), season matches, and tournaments (with groups). They are the canonical local-development datasets that the menu and `--scope` selections operate against. Seasons without `ContentBlocks` get a single “History data” card.
 
 Each file is layered on top of `appsettings.json` and `appsettings.Development.json` via `ConfigurationBuilder`, so anything you put into either of those will be merged with the selected testdata file.
 

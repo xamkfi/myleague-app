@@ -112,4 +112,6 @@ public interface IFloorballCompetitionRepository
         int? startYear,
         int? endYear,
         CancellationToken cancellationToken = default);
+
+    void MarkNewContentBlocksAdded(FloorballSeason season, IReadOnlyCollection<Guid> existingBlockIds);
 } 

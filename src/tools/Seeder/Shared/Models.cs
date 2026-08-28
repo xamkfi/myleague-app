@@ -64,6 +64,8 @@ public class FloorballSeasonSeed
 	public bool AllowOvertime { get; init; } = true;
 	public int OvertimeDurationMinutes { get; init; } = 5;
 	public bool AllowShootout { get; init; } = true;
+
+	public List<SeasonContentBlockSeed> ContentBlocks { get; init; } = new List<SeasonContentBlockSeed>();
 }
 
 public class FloorballTournamentSeed
@@ -147,6 +149,7 @@ public class HockeySeasonSeed
 	public string? SeasonCode { get; init; } = "2026-27-H";
 	public TeamCategory TeamCategory { get; init; } = TeamCategory.Adult;
 	public List<string> DivisionNames { get; init; } = new List<string>();
+	public List<SeasonContentBlockSeed> ContentBlocks { get; init; } = new List<SeasonContentBlockSeed>();
 }
 
 public class HockeyTournamentSeed
@@ -188,6 +191,7 @@ public class FootballSeasonSeed
 	public int DrawPoints { get; init; } = 1;
 	public int LossPoints { get; init; }
 	public TeamCategory TeamCategory { get; init; } = TeamCategory.Adult;
+	public List<SeasonContentBlockSeed> ContentBlocks { get; init; } = new List<SeasonContentBlockSeed>();
 }
 
 public class FootballTournamentSeed
@@ -307,6 +311,12 @@ public class FootballMatchSeed
 public class LoginDevResponse
 {
 	public string? DevCode { get; set; }
+}
+
+public class SeasonContentBlockSeed
+{
+	public string Title { get; init; } = "";
+	public string ContentHtml { get; init; } = "";
 }
 
 public class AuthTokenResponse
