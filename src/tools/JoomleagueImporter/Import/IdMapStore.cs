@@ -4,12 +4,16 @@ using System.Text.Json.Serialization;
 namespace JoomleagueImporter.Import;
 
 /// <summary>
-/// Persistent mapping from old JoomLeague ids to new system Guids. Saved to disk after every
-/// update so an interrupted import can be resumed without duplicating already imported data.
+/// Persistent mapping from old JoomLeague ids to new system Guids. Match-phase writes are
+/// batched (every <see cref="SaveBatchSize"/> changes) so resume stays cheap under parallelism.
 /// </summary>
 public class IdMapStore
 {
+    public const int SaveBatchSize = 10;
+
     private readonly string _path;
+    private readonly object _sync = new();
+    private int _pendingSaves;
 
     public Dictionary<int, PersonMapping> Persons { get; set; } = [];
     public Dictionary<int, Guid> Clubs { get; set; } = [];
@@ -68,10 +72,47 @@ public class IdMapStore
         return new IdMapStore(path);
     }
 
-    public void Save()
+    public bool HasTeam(int oldTeamId)
+    {
+        lock (_sync)
+            return Teams.ContainsKey(oldTeamId);
+    }
+
+    public bool HasPerson(int oldPersonId)
+    {
+        lock (_sync)
+            return Persons.ContainsKey(oldPersonId);
+    }
+
+    public void MapMatch(int oldMatchId, Guid newMatchId)
+    {
+        lock (_sync)
+            ProcessedMatches[oldMatchId] = newMatchId;
+        Save(force: false);
+    }
+
+    public bool TryGetProcessedMatch(int oldMatchId, out Guid newMatchId)
+    {
+        lock (_sync)
+            return ProcessedMatches.TryGetValue(oldMatchId, out newMatchId);
+    }
+
+    /// <param name="force">When false, writes only after <see cref="SaveBatchSize"/> dirty updates.</param>
+    public void Save(bool force = true)
     {
         if (string.IsNullOrEmpty(_path)) return;
-        string json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(_path, json);
+        lock (_sync)
+        {
+            if (!force)
+            {
+                _pendingSaves++;
+                if (_pendingSaves < SaveBatchSize)
+                    return;
+            }
+
+            string json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(_path, json);
+            _pendingSaves = 0;
+        }
     }
 }

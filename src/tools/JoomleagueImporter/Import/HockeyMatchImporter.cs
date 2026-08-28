@@ -23,11 +23,17 @@ public class HockeyMatchImporter
     private readonly HashSet<int> _repairMatchIds;
     private readonly bool _repairAll;
 
-    public int Succeeded { get; private set; }
-    public int ScheduledOnly { get; private set; }
-    public int Skipped { get; private set; }
-    public int Failed { get; private set; }
-    public int Repaired { get; private set; }
+    private int _succeeded;
+    private int _scheduledOnly;
+    private int _skipped;
+    private int _failed;
+    private int _repaired;
+
+    public int Succeeded => _succeeded;
+    public int ScheduledOnly => _scheduledOnly;
+    public int Skipped => _skipped;
+    public int Failed => _failed;
+    public int Repaired => _repaired;
 
     public HockeyMatchImporter(
         HockeyApiClient api,
@@ -110,6 +116,7 @@ public class HockeyMatchImporter
             sides[pti.ProjectTeam.Id] = side;
         }
 
+        List<MatchWork> work = [];
         int index = 0;
         foreach (MatchImport mi in pi.Matches)
         {
@@ -117,18 +124,18 @@ public class HockeyMatchImporter
             OldMatch match = mi.Match;
             string prefix = $"  [{index}/{pi.Matches.Count}] JL#{match.Id}";
 
-            bool alreadyProcessed = _idMap.ProcessedMatches.TryGetValue(match.Id, out Guid existingMatchId);
+            bool alreadyProcessed = _idMap.TryGetProcessedMatch(match.Id, out Guid existingMatchId);
             bool repairRequested = alreadyProcessed && (_repairAll || _repairMatchIds.Contains(match.Id));
 
             if (alreadyProcessed && !repairRequested)
             {
-                Skipped++;
+                Interlocked.Increment(ref _skipped);
                 continue;
             }
 
             if (match.Cancelled)
             {
-                Skipped++;
+                Interlocked.Increment(ref _skipped);
                 _log.LogInfo($"Match JL#{match.Id} skipped (cancelled in old system).");
                 continue;
             }
@@ -137,37 +144,52 @@ public class HockeyMatchImporter
             SideInfo? away = sides.GetValueOrDefault(match.ProjectTeam2Id);
             if (home == null || away == null || home.TeamId == away.TeamId)
             {
-                Skipped++;
+                Interlocked.Increment(ref _skipped);
                 _log.LogError("MatchTeams", new { match.Id, match.ProjectTeam1Id, match.ProjectTeam2Id },
                     "Home or away projectteam could not be resolved to an imported team.");
                 continue;
             }
 
+            work.Add(new MatchWork(mi, home, away, existingMatchId, repairRequested, prefix));
+        }
+
+        Console.WriteLine($"  Importing {work.Count} matches (concurrency {MatchImportParallel.Degree})...");
+        await MatchImportParallel.ForEachAsync(work, async item =>
+        {
             try
             {
-                if (repairRequested)
+                if (item.RepairRequested)
                 {
                     bool ok = await RepairMatchAsync(
-                        mi, existingMatchId, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods, prefix);
-                    if (ok) Repaired++;
-                    else Failed++;
+                        item.Match, item.ExistingMatchId, item.Home, item.Away,
+                        playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
+                    if (ok) Interlocked.Increment(ref _repaired);
+                    else Interlocked.Increment(ref _failed);
+                    return;
                 }
-                else
-                {
-                    bool ok = await ImportSingleMatchAsync(
-                        mi, season, competitionDivisionId, officialId, home, away,
-                        playerByTeamPlayerId, periodSeconds, regularPeriods, prefix);
-                    if (!ok) Failed++;
-                }
+
+                bool imported = await ImportSingleMatchAsync(
+                    item.Match, season, competitionDivisionId, officialId, item.Home, item.Away,
+                    playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
+                if (!imported) Interlocked.Increment(ref _failed);
             }
             catch (Exception ex)
             {
-                Failed++;
-                Console.WriteLine($"{prefix} ERROR: {ex.Message}");
-                _log.LogError("ImportHockeyMatch", new { match.Id }, ex.ToString());
+                Interlocked.Increment(ref _failed);
+                Console.WriteLine($"{item.Prefix} ERROR: {ex.Message}");
+                _log.LogError("ImportHockeyMatch", new { item.Match.Match.Id }, ex.ToString());
             }
-        }
+        });
+        _idMap.Save(force: true);
     }
+
+    private readonly record struct MatchWork(
+        MatchImport Match,
+        SideInfo Home,
+        SideInfo Away,
+        Guid ExistingMatchId,
+        bool RepairRequested,
+        string Prefix);
 
     private async Task<bool> ImportSingleMatchAsync(
         MatchImport mi,
@@ -196,9 +218,8 @@ public class HockeyMatchImporter
 
         if (!match.HasResult)
         {
-            _idMap.ProcessedMatches[match.Id] = created.Id;
-            _idMap.Save();
-            ScheduledOnly++;
+            _idMap.MapMatch(match.Id, created.Id);
+            Interlocked.Increment(ref _scheduledOnly);
             Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: scheduled only");
             return true;
         }
@@ -209,9 +230,8 @@ public class HockeyMatchImporter
         HockeyMatchDto? dressed = await ConfirmSidesAsync(created, home, away, goals, penalties);
         if (dressed == null)
         {
-            _idMap.ProcessedMatches[match.Id] = created.Id;
-            _idMap.Save();
-            ScheduledOnly++;
+            _idMap.MapMatch(match.Id, created.Id);
+            Interlocked.Increment(ref _scheduledOnly);
             _log.LogWarning("NoRoster",
                 $"Match JL#{match.Id} left as Scheduled: could not confirm hockey rosters.");
             Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: scheduled only (roster)");
@@ -222,8 +242,7 @@ public class HockeyMatchImporter
 
         if (!await _api.StartMatchAsync(dressed.Id, scheduled))
         {
-            _idMap.ProcessedMatches[match.Id] = dressed.Id;
-            _idMap.Save();
+            _idMap.MapMatch(match.Id, dressed.Id);
             _log.LogError("StartHockeyMatch", new { match.Id, NewMatchId = dressed.Id }, "Could not start match; left as Scheduled.");
             return false;
         }
@@ -241,9 +260,8 @@ public class HockeyMatchImporter
 
         await _api.RecalculateMatchAsync(dressed.Id);
 
-        _idMap.ProcessedMatches[match.Id] = dressed.Id;
-        _idMap.Save();
-        Succeeded++;
+        _idMap.MapMatch(match.Id, dressed.Id);
+        Interlocked.Increment(ref _succeeded);
 
         string eventNote = ignoredEvents > 0 ? $", {ignoredEvents} events ignored" : "";
         Console.WriteLine(
@@ -594,7 +612,6 @@ public class HockeyMatchImporter
         int periodSeconds,
         int regularPeriods)
     {
-        int goalsRecorded = 0, penaltiesRecorded = 0;
         HockeyMatchTeamDto? homeMatchTeam = matchDto.MatchTeams.FirstOrDefault(t => t.TeamId == home.TeamId);
         HockeyMatchTeamDto? awayMatchTeam = matchDto.MatchTeams.FirstOrDefault(t => t.TeamId == away.TeamId);
         if (homeMatchTeam == null || awayMatchTeam == null)
@@ -607,64 +624,81 @@ public class HockeyMatchImporter
         Guid? homeGoalieActive = homeMatchTeam.ActivePlayers.FirstOrDefault(p => p.IsGoalie)?.Id;
         Guid? awayGoalieActive = awayMatchTeam.ActivePlayers.FirstOrDefault(p => p.IsGoalie)?.Id;
 
-        for (int period = 1; period <= regularPeriods; period++)
+        List<object> events = [];
+
+        foreach (GoalRec goal in goals.OrderBy(g => g.TimeSeconds))
         {
-            int periodStart = (period - 1) * periodSeconds;
-            int periodEnd = period * periodSeconds;
-            await _api.RecordPeriodAsync(matchDto.Id, period, periodStart, HockeyPeriodAction.PeriodStarted);
-
-            int currentPeriod = period;
-            List<GoalRec> periodGoals = goals
-                .Where(g => PeriodOf(g.TimeSeconds, periodSeconds, regularPeriods) == currentPeriod)
-                .OrderBy(g => g.TimeSeconds)
-                .ToList();
-            List<PenaltyRec> periodPenalties = penalties
-                .Where(p => PeriodOf(p.TimeSeconds, periodSeconds, regularPeriods) == currentPeriod)
-                .OrderBy(p => p.TimeSeconds)
-                .ToList();
-
-            foreach (GoalRec goal in periodGoals)
+            bool isHome = goal.ProjectTeamId == match.ProjectTeam1Id;
+            HockeyMatchTeamDto scoringTeam = isHome ? homeMatchTeam : awayMatchTeam;
+            Dictionary<Guid, Guid> actives = isHome ? homeActive : awayActive;
+            if (goal.ScorerPlayerId == null || !actives.TryGetValue(goal.ScorerPlayerId.Value, out Guid scorerActive))
             {
-                bool isHome = goal.ProjectTeamId == match.ProjectTeam1Id;
-                HockeyMatchTeamDto scoringTeam = isHome ? homeMatchTeam : awayMatchTeam;
-                Dictionary<Guid, Guid> actives = isHome ? homeActive : awayActive;
-                if (goal.ScorerPlayerId == null || !actives.TryGetValue(goal.ScorerPlayerId.Value, out Guid scorerActive))
-                {
-                    _log.LogWarning("GoalSkipped", $"Match JL#{match.Id}: goal at {goal.TimeSeconds}s skipped (scorer not dressed).");
-                    continue;
-                }
-
-                Guid? assistActive = goal.AssisterPlayerId is Guid assist && actives.TryGetValue(assist, out Guid assistId)
-                    ? assistId : null;
-                Guid? secondActive = goal.SecondaryAssisterPlayerId is Guid second && actives.TryGetValue(second, out Guid secondId)
-                    ? secondId : null;
-                Guid? goalieActive = isHome ? awayGoalieActive : homeGoalieActive;
-
-                bool ok = await _api.RecordGoalAsync(
-                    matchDto.Id, scoringTeam.Id, scorerActive, assistActive, secondActive, goalieActive,
-                    period, goal.TimeSeconds, goal.Strength);
-                if (ok) goalsRecorded++;
-                else _log.LogError("RecordHockeyGoal", new { match.Id, NewMatchId = matchDto.Id, period, goal.TimeSeconds }, "API call failed.");
+                _log.LogWarning("GoalSkipped", $"Match JL#{match.Id}: goal at {goal.TimeSeconds}s skipped (scorer not dressed).");
+                continue;
             }
 
-            foreach (PenaltyRec pen in periodPenalties)
+            Guid? assistActive = goal.AssisterPlayerId is Guid assist && actives.TryGetValue(assist, out Guid assistId)
+                ? assistId : null;
+            Guid? secondActive = goal.SecondaryAssisterPlayerId is Guid second && actives.TryGetValue(second, out Guid secondId)
+                ? secondId : null;
+            Guid? goalieActive = isHome ? awayGoalieActive : homeGoalieActive;
+            int period = PeriodOf(goal.TimeSeconds, periodSeconds, regularPeriods);
+
+            events.Add(new
             {
-                bool isHome = pen.ProjectTeamId == match.ProjectTeam1Id;
-                HockeyMatchTeamDto penaltyTeam = isHome ? homeMatchTeam : awayMatchTeam;
-                Dictionary<Guid, Guid> actives = isHome ? homeActive : awayActive;
-                Guid? penalized = pen.PlayerId is Guid player && actives.TryGetValue(player, out Guid active)
-                    ? active : null;
-
-                bool ok = await _api.RecordPenaltyAsync(
-                    matchDto.Id, penaltyTeam.Id, penalized, period, pen.TimeSeconds, pen.Severity, pen.Minutes);
-                if (ok) penaltiesRecorded++;
-                else _log.LogError("RecordHockeyPenalty", new { match.Id, NewMatchId = matchDto.Id, period, pen.TimeSeconds }, "API call failed.");
-            }
-
-            await _api.RecordPeriodAsync(matchDto.Id, period, periodEnd, HockeyPeriodAction.PeriodEnded);
+                eventType = "Goal",
+                matchTeamId = scoringTeam.Id,
+                activePlayerId = scorerActive,
+                primaryAssistActivePlayerId = assistActive,
+                secondaryAssistActivePlayerId = secondActive,
+                goalieActivePlayerId = goalieActive,
+                periodNumber = period,
+                timeInSeconds = goal.TimeSeconds,
+                goalStrength = goal.Strength.ToString(),
+            });
         }
 
-        return (goalsRecorded, penaltiesRecorded);
+        foreach (PenaltyRec pen in penalties.OrderBy(p => p.TimeSeconds))
+        {
+            bool isHome = pen.ProjectTeamId == match.ProjectTeam1Id;
+            HockeyMatchTeamDto penaltyTeam = isHome ? homeMatchTeam : awayMatchTeam;
+            Dictionary<Guid, Guid> actives = isHome ? homeActive : awayActive;
+            Guid? penalized = pen.PlayerId is Guid player && actives.TryGetValue(player, out Guid active)
+                ? active : null;
+            int period = PeriodOf(pen.TimeSeconds, periodSeconds, regularPeriods);
+
+            events.Add(new
+            {
+                eventType = "Penalty",
+                matchTeamId = penaltyTeam.Id,
+                activePlayerId = penalized,
+                periodNumber = period,
+                timeInSeconds = pen.TimeSeconds,
+                severity = pen.Severity.ToString(),
+                offence = HockeyPenaltyOffence.UnsportsmanlikeConduct.ToString(),
+                penaltyMinutes = pen.Minutes,
+                isBenchPenalty = penalized == null,
+            });
+        }
+
+        if (events.Count == 0)
+        {
+            return (0, 0);
+        }
+
+        HockeyMatchEventsImportDto? imported = await _api.ImportEventsAsync(matchDto.Id, events);
+        if (imported == null)
+        {
+            _log.LogError("ImportHockeyMatchEvents", new { match.Id, NewMatchId = matchDto.Id, events.Count }, "API call failed.");
+            return (0, 0);
+        }
+
+        foreach (string error in imported.EventErrors)
+        {
+            _log.LogWarning("ImportHockeyMatchEvent", $"Match JL#{match.Id}: {error}");
+        }
+
+        return (imported.GoalsRecorded, imported.PenaltiesRecorded);
     }
 
     private static Dictionary<Guid, Guid> MapActivePlayersByPlayerId(

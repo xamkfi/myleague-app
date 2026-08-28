@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi;
-using Microsoft.Extensions.Configuration;
 
 namespace WebAPI.DependencyInjections;
 
@@ -76,6 +75,7 @@ public static class ServiceCollectionExtensions
                     });
 
                     // Add 401 Unauthorized response
+                    operation.Responses ??= [];
                     operation.Responses.TryAdd("401", new OpenApiResponse
                     {
                         Description = "Unauthorized — authentication required"
@@ -111,27 +111,6 @@ public static class ServiceCollectionExtensions
                       .AllowCredentials(); // Required for SignalR
             });
         });
-
-        return services;
-    }
-
-    /// <summary>
-    /// Add Health Check UI configuration
-    /// </summary>
-    public static IServiceCollection AddHealthCheckUIConfiguration(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddHealthChecksUI(options =>
-        {
-            options.SetEvaluationTimeInSeconds(30); // Check every 30 seconds
-            options.MaximumHistoryEntriesPerEndpoint(50);
-            options.SetApiMaxActiveRequests(1);
-            options.SetMinimumSecondsBetweenFailureNotifications(60);
-
-            // Add health check endpoint from configuration
-            string healthCheckEndpoint = configuration.GetValue<string>("HealthChecks:UI:Endpoint") ?? "http://localhost:8080/health";
-            options.AddHealthCheckEndpoint("MyLeague API", healthCheckEndpoint);
-        })
-        .AddInMemoryStorage();
 
         return services;
     }

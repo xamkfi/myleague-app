@@ -161,9 +161,6 @@ builder.Services.AddApplication();
 // Register infrastructure services 
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// Add Health Check UI configuration using extension method
-builder.Services.AddHealthCheckUIConfiguration(builder.Configuration);
-
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline
@@ -248,18 +245,13 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 // Map liveness check
 app.MapGet("/health/live", () => "Alive");
 
-// Map Health Check UI
-app.MapHealthChecksUI(options =>
-{
-    options.UIPath = "/health-ui";
-    options.ApiPath = "/health-ui-api";
-});
+app.MapGet("/health-ui", () => Results.Redirect("/health-test.html"));
 
 // Log application startup
 app.Logger.LogInformation("MyLeague Club API started successfully");
 app.Logger.LogInformation("API Documentation available at: /scalar/v1");
 app.Logger.LogInformation("OpenAPI JSON available at: /swagger/v1/swagger.json");
-app.Logger.LogInformation("Health Check UI available at: /health-ui");
+app.Logger.LogInformation("Health dashboard available at: /health-ui");
 app.Logger.LogInformation("Health Check endpoints:");
 app.Logger.LogInformation("  - Detailed: /health");
 app.Logger.LogInformation("  - Ready: /health/ready");

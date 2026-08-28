@@ -485,6 +485,47 @@ public class HockeyMatchController : BaseApiController
     }
 
     /// <summary>
+    /// Imports a batch of historical goals and penalties onto an already-started match
+    /// in one request. Failed individual events are listed in <c>eventErrors</c>;
+    /// successful events are still saved. Season statistics are rebuilt on finish.
+    /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [HttpPost("{matchId:guid}/events/import")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchEventsImportDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchEventsImportDto>>> ImportEvents(
+        Guid matchId,
+        [FromBody] ImportHockeyMatchEventsRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        List<ImportHockeyMatchEventItem> events = request.Events
+            .Select(item => new ImportHockeyMatchEventItem(
+                item.EventType,
+                item.MatchTeamId,
+                item.ActivePlayerId,
+                item.PrimaryAssistActivePlayerId,
+                item.SecondaryAssistActivePlayerId,
+                item.GoalieActivePlayerId,
+                item.PeriodNumber,
+                item.TimeInSeconds,
+                item.GoalStrength,
+                item.WasEmptyNet,
+                item.Description,
+                item.Severity,
+                item.Offence,
+                item.PenaltyMinutes,
+                item.ServedByActivePlayerId,
+                item.IsBenchPenalty))
+            .ToList();
+
+        Result<HockeyMatchEventsImportDto> result = await _mediator.Send(
+            new ImportHockeyMatchEventsCommand(matchId, events), cancellationToken);
+
+        return HandleResult(result, "Match events imported", "Failed to import match events");
+    }
+
+    /// <summary>
     /// Deletes a penalty event (live-ops undo).
     /// </summary>
     [Authorize(Roles = AuthRoles.AdminOnly)]

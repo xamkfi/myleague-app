@@ -48,7 +48,7 @@ public class FootballMatchEventsController : BaseApiController
         CancellationToken cancellationToken)
     {
         string rateKey = $"{matchId}:goal:{request.ScoringTeamId}:{request.ScoringPlayerId}";
-        if (_rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.GoalWindow))
+        if (!request.SkipRateLimit && _rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.GoalWindow))
         {
             return StatusCode(
                 StatusCodes.Status429TooManyRequests,
@@ -81,7 +81,7 @@ public class FootballMatchEventsController : BaseApiController
         CancellationToken cancellationToken)
     {
         string rateKey = $"{matchId}:card:{request.TeamId}:{request.PlayerId}";
-        if (_rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.PenaltyWindow))
+        if (!request.SkipRateLimit && _rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.PenaltyWindow))
         {
             return StatusCode(
                 StatusCodes.Status429TooManyRequests,
@@ -219,5 +219,43 @@ public class FootballMatchEventsController : BaseApiController
     {
         Result<FootballMatchDto> result = await _mediator.Send(new EndPeriodCommand(matchId, periodNumber), cancellationToken);
         return HandleResult(result, "Period ended successfully", "Failed to end period");
+    }
+
+    /// <summary>
+    /// Imports a batch of historical goals and cards onto an already-started match
+    /// in one request. Skips the live double-click rate limiter. Failed individual
+    /// events are listed in <c>eventErrors</c>; successful events are still saved.
+    /// </summary>
+    [HttpPost("import")]
+    [ProducesResponseType(typeof(ApiResponse<FootballMatchEventsImportDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<FootballMatchEventsImportDto>>> ImportEvents(
+        Guid matchId,
+        [FromBody] ImportFootballMatchEventsRequest request,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation(
+            "Importing {Count} events for football match {MatchId}",
+            request.Events.Count,
+            matchId);
+
+        List<ImportFootballMatchEventItem> events = request.Events
+            .Select(item => new ImportFootballMatchEventItem(
+                item.EventType,
+                item.TeamId,
+                item.PlayerId,
+                item.AssistingPlayerId,
+                item.PeriodNumber,
+                item.TimeInSeconds,
+                item.GoalType,
+                item.Description,
+                item.CardType))
+            .ToList();
+
+        Result<FootballMatchEventsImportDto> result = await _mediator.Send(
+            new ImportFootballMatchEventsCommand(matchId, events), cancellationToken);
+
+        return HandleResult(result, "Match events imported", "Failed to import match events");
     }
 }

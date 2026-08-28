@@ -96,6 +96,12 @@ namespace WebAPI.Models.Floorball
         /// match events list. May be empty when the operator did not provide a reason.
         /// </summary>
         public string? Description { get; set; }
+
+        /// <summary>
+        /// When <c>true</c>, skips the per-(match, player) double-click window. Intended for
+        /// historical import / admin backfill, not the live scorekeeper UI.
+        /// </summary>
+        public bool SkipRateLimit { get; set; }
     }
 
     /// <summary>
@@ -150,6 +156,89 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "Match ID is required")]
         public Guid MatchId { get; set; }
+    }
+
+    /// <summary>
+    /// Batch import of historical floorball match events. Not rate-limited; intended for
+    /// the JoomLeague importer and admin backfill, not live scorekeeping.
+    /// </summary>
+    public class ImportFloorballMatchEventsRequest
+    {
+        /// <summary>
+        /// Goals and penalties to record, in clock order.
+        /// </summary>
+        [Required]
+        [MinLength(1)]
+        [MaxLength(200)]
+        public List<ImportFloorballMatchEventRequest> Events { get; set; } = [];
+    }
+
+    /// <summary>
+    /// One event in an <see cref="ImportFloorballMatchEventsRequest"/> batch.
+    /// <c>EventType</c> is <c>Goal</c> or <c>Penalty</c>.
+    /// </summary>
+    public class ImportFloorballMatchEventRequest
+    {
+        /// <summary>
+        /// Event kind: <c>Goal</c> or <c>Penalty</c>.
+        /// </summary>
+        [Required]
+        public string EventType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Team associated with the event.
+        /// </summary>
+        [Required]
+        public Guid TeamId { get; set; }
+
+        /// <summary>
+        /// Player who scored or received the penalty.
+        /// </summary>
+        public Guid? PlayerId { get; set; }
+
+        /// <summary>
+        /// Primary assister for a goal, when recorded.
+        /// </summary>
+        public Guid? AssistingPlayerId { get; set; }
+
+        /// <summary>
+        /// Secondary assister for a goal, when recorded.
+        /// </summary>
+        public Guid? SecondaryAssistingPlayerId { get; set; }
+
+        /// <summary>
+        /// Period in which the event occurred.
+        /// </summary>
+        [Range(1, int.MaxValue)]
+        public int PeriodNumber { get; set; }
+
+        /// <summary>
+        /// Elapsed match clock time, in seconds.
+        /// </summary>
+        [Range(0, int.MaxValue)]
+        public int TimeInSeconds { get; set; }
+
+        /// <summary>
+        /// Optional floorball goal type for a goal event.
+        /// </summary>
+        public int? GoalType { get; set; }
+
+        /// <summary>
+        /// Optional free-text description of the event.
+        /// </summary>
+        [StringLength(500)]
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Penalty length in minutes. Required when <see cref="EventType"/> is <c>Penalty</c>.
+        /// </summary>
+        [Range(2, 20)]
+        public int? PenaltyMinutes { get; set; }
+
+        /// <summary>
+        /// Penalty classification (for example Minor). Used when <see cref="EventType"/> is <c>Penalty</c>.
+        /// </summary>
+        public string? PenaltyType { get; set; }
     }
 
 } 

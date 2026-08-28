@@ -6,6 +6,10 @@
 public enum HockeyCompetitionType
 {
     /// <summary>
+    /// Unspecified competition type.
+    /// </summary>
+    None = 0,
+    /// <summary>
     /// Season
     /// </summary>
     Season = 1,

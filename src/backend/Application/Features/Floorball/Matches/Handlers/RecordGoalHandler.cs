@@ -189,10 +189,21 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
 
             return Result<FloorballMatchDto>.Success(matchDto);
         }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Domain rejected RecordGoal for {MatchId}", request.MatchId);
+            return Result<FloorballMatchDto>.Failure(ex.Message, ex.Flatten());
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid RecordGoal for {MatchId}", request.MatchId);
+            return Result<FloorballMatchDto>.Failure(ex.Message, ex.Flatten());
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while recording goal in match {MatchId}", request.MatchId);
-            return Result<FloorballMatchDto>.Failure("An error occurred while recording the goal.");
+            string detail = ex.InnerException?.Message ?? ex.Message;
+            return Result<FloorballMatchDto>.Failure(detail, ex.Flatten());
         }
     }
 

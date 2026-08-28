@@ -57,7 +57,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Recording goal for match ID: {matchId}", matchId);
 
             string rateKey = $"{matchId}:goal:{request.ScoringTeamId}:{request.ScoringPlayerId}";
-            if (_rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.GoalWindow))
+            if (!request.SkipRateLimit && _rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.GoalWindow))
             {
                 return StatusCode(StatusCodes.Status429TooManyRequests,
                     ApiResponse<FloorballMatchDto>.ErrorResponse("Too many goal events; please wait a moment."));
@@ -103,7 +103,7 @@ namespace WebAPI.Controllers.Floorball
             }
 
             string rateKey = $"{matchId}:penalty:{request.TeamId}:{request.PlayerId}";
-            if (_rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.PenaltyWindow))
+            if (!request.SkipRateLimit && _rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.PenaltyWindow))
             {
                 return StatusCode(StatusCodes.Status429TooManyRequests,
                     ApiResponse<FloorballMatchDto>.ErrorResponse("Too many penalty events; please wait a moment."));
@@ -304,6 +304,46 @@ namespace WebAPI.Controllers.Floorball
                 new EndPeriodCommand(matchId, periodNumber), cancellationToken);
 
             return HandleResult(result, "Period ended successfully", "Failed to end period");
+        }
+
+        /// <summary>
+        /// Imports a batch of historical goals and penalties onto an already-started match
+        /// in one request. Skips the live double-click rate limiter. Failed individual
+        /// events are listed in <c>eventErrors</c>; successful events are still saved.
+        /// </summary>
+        [HttpPost("import")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchEventsImportDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchEventsImportDto>>> ImportEvents(
+            Guid matchId,
+            [FromBody] ImportFloorballMatchEventsRequest request,
+            CancellationToken cancellationToken)
+        {
+            _logger.LogInformation(
+                "Importing {Count} events for floorball match {MatchId}",
+                request.Events.Count,
+                matchId);
+
+            List<ImportFloorballMatchEventItem> events = request.Events
+                .Select(item => new ImportFloorballMatchEventItem(
+                    item.EventType,
+                    item.TeamId,
+                    item.PlayerId,
+                    item.AssistingPlayerId,
+                    item.SecondaryAssistingPlayerId,
+                    item.PeriodNumber,
+                    item.TimeInSeconds,
+                    item.GoalType,
+                    item.Description,
+                    item.PenaltyMinutes,
+                    item.PenaltyType))
+                .ToList();
+
+            Result<FloorballMatchEventsImportDto> result = await _mediator.Send(
+                new ImportFloorballMatchEventsCommand(matchId, events), cancellationToken);
+
+            return HandleResult(result, "Match events imported", "Failed to import match events");
         }
     }
 }

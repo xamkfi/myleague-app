@@ -90,7 +90,7 @@ public class FooterContactTests
             " Street 1 ",
             " office@mahl.fi ",
             " 044 123 ",
-            " https://mahl.fi ",
+            new Uri("https://mahl.fi"),
             2,
             lastModifiedBy: "admin");
 
@@ -98,7 +98,7 @@ public class FooterContactTests
         contact.Details.Should().Be("Street 1");
         contact.Email.Should().Be("office@mahl.fi");
         contact.Phone.Should().Be("044 123");
-        contact.Url.Should().Be("https://mahl.fi");
+        contact.Url.Should().Be(new Uri("https://mahl.fi"));
         contact.SortOrder.Should().Be(2);
         contact.Section.Should().Be(FooterSection.Contact);
     }
@@ -122,7 +122,7 @@ public class FooterContactTests
     [Fact]
     public void Constructor_InvalidUrl_Throws()
     {
-        Action act = () => new FooterContact(Guid.NewGuid(), "Office", null, null, null, "ftp://mahl.fi", 0);
+        Action act = () => new FooterContact(Guid.NewGuid(), "Office", null, null, null, new Uri("ftp://mahl.fi"), 0);
 
         act.Should().Throw<ArgumentException>().WithParameterName("url");
     }
@@ -132,7 +132,7 @@ public class FooterContactTests
     {
         FooterContact contact = new(Guid.NewGuid(), "Old", null, null, null, null, 0);
 
-        contact.Update("New", "Details", "a@b.fi", "123", "https://example.com", 5, FooterSection.OtherActivities, "editor");
+        contact.Update("New", "Details", "a@b.fi", "123", new Uri("https://example.com"), 5, FooterSection.OtherActivities, "editor");
 
         contact.Title.Should().Be("New");
         contact.Details.Should().Be("Details");

@@ -1,0 +1,31 @@
+---
+description: Prefer explicit catch types; avoid generic catch (Exception)
+globs: "**/*.cs"
+alwaysApply: false
+---
+
+# C# exception handling
+
+Catch the **narrowest types** that the code can actually throw. GitHub code quality flags `catch (Exception)` and bare `catch`.
+
+```csharp
+// BAD
+try { await work(); }
+catch (Exception ex) { return Result<T>.Failure(ex.Message); }
+
+try { JsonSerializer.Serialize(input); }
+catch { fallback(); }
+
+// GOOD
+try { await work(); }
+catch (OperationCanceledException) { throw; }
+catch (InvalidOperationException ex) { return Result<T>.Failure(ex.Message); }
+catch (ArgumentException ex) { return Result<T>.Failure(ex.Message); }
+
+try { JsonSerializer.Serialize(input); }
+catch (JsonException) { fallback(); }
+```
+
+- Rethrow cancellation; do not map it to `Result.Failure`.
+- Use `catch (Exception ex) when (...)` only if you cannot list the types; prefer separate `catch` clauses.
+- Let unexpected exceptions (for example EF `DbUpdateException`) propagate to the API exception middleware.

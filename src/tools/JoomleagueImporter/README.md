@@ -9,8 +9,10 @@ For day-to-day empty-database setup, prefer the [Seeder](../Seeder/README.md). T
 ## Prerequisites
 
 - .NET 10 SDK
-- WebAPI running (Development login flow)
-- A JoomLeague SQL dump path in `appsettings.json`
+- WebAPI reachable (local Docker/Kestrel, or Azure)
+- A JoomLeague SQL dump path in `appsettings.json` or `--dump`
+- **Local:** Development auto-fill login (`LoginCode:AutoFillLoginCode = true`)
+- **Remote (Azure):** a SystemAdmin access token and preferably a refresh token — never enable auto-fill login on a public environment
 
 ## Configure
 
@@ -44,22 +46,39 @@ For day-to-day empty-database setup, prefer the [Seeder](../Seeder/README.md). T
 ## Run
 
 ```bash
-# Floorball (default, or JoomleagueImporter:Sport)
+# Floorball against local API (prompts for URL + confirmation, uses Dev auto-fill login)
 dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj
 
-# Football
+# Football / hockey
 dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj -- --sport=football
-
-# Hockey
 dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj -- --sport=hockey
 
 # Parse and print the selected set only
 dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj -- --dry-run
+
+# Remote / Azure — pass API URL + tokens (do not commit tokens)
+# Tokens can also be env vars: JoomleagueImporter__AccessToken, JoomleagueImporter__RefreshToken, JoomleagueImporter__ApiBaseUrl
+dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj -- \
+  --sport=floorball \
+  --api-url=https://myleague-staging-api.azurewebsites.net/ \
+  --access-token="$ACCESS_TOKEN" \
+  --refresh-token="$REFRESH_TOKEN" \
+  --yes
 ```
 
-The importer prompts for the API URL and confirmation before writing. `--repair-all` (or `RepairMatches` / `RepairAll` in config) re-sends match events for already imported matches.
+CLI (all optional): `--api-url`, `--access-token` / `--token`, `--refresh-token`, `--dump`, `--id-map`, `--sport`, `--project-id`, `--concurrency` (default 4), `--yes` / `-y`, `--dry-run`, `--repair-all`, `--repair-matches=1119,1124`.
 
-Logs go under the tool’s `Logs` folder. The id map path is derived from config (`IdMapPath` / football / hockey override) so you can resume a large dump.
+Finished matches post **one** `POST .../events/import` with all goals/penalties (or cards) after create / goalies / start. Hockey uses `POST /api/HockeyMatch/{id}/events/import`. The live per-event endpoints stay for the scorekeeper UI.
+
+Resume skips persons/teams already in the id map. Matches import in parallel (`--concurrency`) and the id map is flushed every 10 match writes.
+
+Without a token the importer prompts for URL and email and uses the Development auto-fill login. With a token it skips that and refreshes the JWT for the length of the import.
+
+Remote hosts get their own id-map file (`id-map-{host}-{sport}.json`) so a local import map is not reused against Azure.
+
+`--repair-all` (or `RepairMatches` / `RepairAll` in config) re-sends match events for already imported matches. `--repair-matches=1119,1124` repairs only those JoomLeague match ids.
+
+Logs go under the tool’s `Logs` folder. The id map path is derived from `--id-map`, config (`IdMapPath` / football / hockey override), or the host/sport default above.
 
 ## Related
 
