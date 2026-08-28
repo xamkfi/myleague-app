@@ -59,13 +59,12 @@ public static class SeasonContentFromProject
         string trimmed = raw.Trim();
         if (trimmed.StartsWith("a:", StringComparison.Ordinal) || trimmed.StartsWith("O:", StringComparison.Ordinal))
         {
-            List<string> parts = [];
-            foreach (Match match in PhpStringValue.Matches(trimmed))
-            {
-                string value = UnescapePhp(match.Groups[1].Value).Trim();
-                if (LooksLikeContent(value))
-                    parts.Add(value);
-            }
+            List<string> parts = PhpStringValue
+                .Matches(trimmed)
+                .Cast<Match>()
+                .Select(match => UnescapePhp(match.Groups[1].Value).Trim())
+                .Where(LooksLikeContent)
+                .ToList();
 
             return parts.Count == 0 ? null : string.Join("\n\n", parts);
         }
