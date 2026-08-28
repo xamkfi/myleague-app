@@ -55,11 +55,9 @@ public class ReplaceFloorballSeasonContentBlocksHandler
             _logger.LogWarning(ex, "Invalid floorball season content blocks for {SeasonId}", request.SeasonId);
             return Result<FloorballSeasonContentBlocksDto>.Failure(ex.Message);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
         {
-            _logger.LogError(ex, "Failed to replace floorball season content blocks {SeasonId}", request.SeasonId);
-            return Result<FloorballSeasonContentBlocksDto>.Failure(
-                "An error occurred while updating the season content blocks.");
+            throw;
         }
     }
 }
