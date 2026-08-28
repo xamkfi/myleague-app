@@ -58,8 +58,8 @@ public class HockeySeason : HockeyCompetition
         int sortOrder = 0;
         foreach ((Guid? Id, string Title, string ContentHtml) item in items)
         {
-            HockeySeasonContentBlock? existing = item.Id.HasValue && item.Id.Value != Guid.Empty
-                ? _contentBlocks.FirstOrDefault(block => block.Id == item.Id.Value)
+            HockeySeasonContentBlock? existing = item.Id is Guid itemId && itemId != Guid.Empty
+                ? _contentBlocks.FirstOrDefault(block => block.Id == itemId)
                 : null;
 
             if (existing is not null)
