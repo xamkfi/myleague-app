@@ -12,7 +12,7 @@ There is no AutoMapper. Mappings are explicit classes next to the feature.
 
 ## Technology
 
-- .NET 9
+- .NET 10
 - MediatR 12.5
 - FluentValidation 12
 - Microsoft.Extensions.Logging / DependencyInjection

@@ -6,7 +6,7 @@ Stack setup: [root README](../../../README.md).
 
 ## Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK
 - WebAPI running (`http://localhost:8080` by default)
 - One or more `.jlg` files in a `DataFiles` folder (next to the project or the working directory)
 

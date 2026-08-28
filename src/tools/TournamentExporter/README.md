@@ -6,7 +6,7 @@ The same format is used by **Admin → Floorball → Tournaments → Import from
 
 ## Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK
 - Readable source API (public tournament + match endpoints)
 - For `--import`: target API with Development (or equivalent) login
 

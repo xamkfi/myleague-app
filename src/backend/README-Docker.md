@@ -6,7 +6,7 @@ This directory contains the Docker configuration for the MyLeague backend API wi
 
 The Docker setup includes:
 
-- **MyLeague API**: .NET 9 Web API application
+- **MyLeague API**: .NET 10 Web API application
 - **PostgreSQL**: Database server (v16)
 - **Seq**: Log visualization and analysis platform (Serilog-compatible)
 

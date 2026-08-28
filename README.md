@@ -2,8 +2,8 @@
 
 League management for floorball, football, and ice hockey.
 
-[![.NET](https://img.shields.io/badge/.NET-9.0-purple.svg)](https://dotnet.microsoft.com/)
-[![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-9.0-blue.svg)](https://docs.microsoft.com/en-us/aspnet/core/)
+[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10.0-blue.svg)](https://docs.microsoft.com/en-us/aspnet/core/)
 [![React](https://img.shields.io/badge/React-18.3-blue.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/)
@@ -65,7 +65,7 @@ Azure hosting (staging + prod) is described in [`infra/README.md`](infra/README.
 
 | Area | Stack |
 |------|--------|
-| Backend | .NET 9, ASP.NET Core 9, EF Core 9, MediatR 12.5, FluentValidation 12, Serilog 9, Scalar/OpenAPI |
+| Backend | .NET 10, ASP.NET Core 10, EF Core 10, MediatR 12.5, FluentValidation 12, Serilog 10, Scalar/OpenAPI |
 | Frontend | React 18.3, TypeScript 5.8, Vite 6.3, Tailwind CSS 4.1, SCSS, React Router 7, i18next, SignalR client |
 | Data | PostgreSQL 16 |
 | Local ops | Docker Compose, Seq, pnpm 10, Node 22 |
@@ -108,10 +108,10 @@ Layer guides: [Domain](src/backend/Domain/README.md) · [Application](src/backen
 
 ### Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK
 - Node.js 22+ and [pnpm](https://pnpm.io/)
 - Docker Desktop (recommended) or a local PostgreSQL 16
-- Visual Studio 2022, VS Code, or Rider
+- Visual Studio 2026, VS Code, or Rider
 - Git
 
 ### Quick start with Docker

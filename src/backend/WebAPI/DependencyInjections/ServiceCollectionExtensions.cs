@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.OpenApi.Models;
-using System.Reflection;
+using Microsoft.OpenApi;
 using Microsoft.Extensions.Configuration;
 
 namespace WebAPI.DependencyInjections;
@@ -46,6 +45,7 @@ public static class ServiceCollectionExtensions
             options.AddDocumentTransformer((document, context, cancellationToken) =>
             {
                 document.Components ??= new OpenApiComponents();
+                document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
                 document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -69,20 +69,10 @@ public static class ServiceCollectionExtensions
                 if (hasAuthorize && !hasAllowAnonymous)
                 {
                     // Add security requirement referencing the Bearer scheme
-                    operation.Security ??= new List<OpenApiSecurityRequirement>();
+                    operation.Security ??= [];
                     operation.Security.Add(new OpenApiSecurityRequirement
                     {
-                        {
-                            new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "Bearer"
-                                }
-                            },
-                            Array.Empty<string>()
-                        }
+                        [new OpenApiSecuritySchemeReference("Bearer")] = []
                     });
 
                     // Add 401 Unauthorized response

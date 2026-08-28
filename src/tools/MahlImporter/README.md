@@ -6,7 +6,7 @@ Prefer the [Seeder](../Seeder/README.md) for synthetic dev data, or [JoomleagueI
 
 ## Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK
 - WebAPI running (Development login flow)
 - Network access to the MAHL site
 

@@ -8,7 +8,7 @@ For day-to-day empty-database setup, prefer the [Seeder](../Seeder/README.md). T
 
 ## Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK
 - WebAPI running (Development login flow)
 - A JoomLeague SQL dump path in `appsettings.json`
 

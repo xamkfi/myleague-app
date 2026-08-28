@@ -3,7 +3,7 @@
 // ============================================================================
 // This template deploys:
 // - App Service Plan (Basic B1 Linux)
-// - App Service for .NET 9 API
+// - App Service for .NET 10 API
 // - PostgreSQL Flexible Server (Burstable B1ms)
 // - Storage Account for image uploads
 // - Azure Communication Services (Email with Azure-managed domain)

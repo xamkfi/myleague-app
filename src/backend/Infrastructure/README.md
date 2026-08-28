@@ -6,8 +6,8 @@ See the [root README](../../../README.md) and [InfrastructureDevelopmentGuide.md
 
 ## Technology
 
-- .NET 9
-- EF Core 9 + Npgsql (PostgreSQL 16)
+- .NET 10
+- EF Core 10 + Npgsql (PostgreSQL 16)
 - Azure.Communication.Email
 - Azure.Storage.Blobs
 - ASP.NET Core SignalR

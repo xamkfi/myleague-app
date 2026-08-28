@@ -17,7 +17,7 @@ Match **events** (goals, penalties, cards, shots, and so on) are persisted entit
 
 ## Technology
 
-- .NET 9 / C# 13
+- .NET 10 / C# 14
 - Nullable reference types
 - Microsoft.CodeAnalysis analyzers
 

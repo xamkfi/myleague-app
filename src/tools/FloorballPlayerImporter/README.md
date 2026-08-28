@@ -14,7 +14,7 @@ Console tool that imports floorball players from JSON roster files. It looks up 
 
 ## Prerequisites
 
-- .NET 9.0 SDK
+- .NET 10 SDK
 - Backend API running (default: http://localhost:8080)
 - Persons must already exist in the system
 
