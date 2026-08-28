@@ -32,7 +32,7 @@ public class GetFeaturedHockeySeasonContentBlocksHandler
             HockeySeason? season = await _competitionRepository.GetFeaturedSeasonWithContentBlocksAsync(cancellationToken);
             return Result<HockeySeasonContentBlocksDto>.Success(HockeySeasonContentBlockMapper.ToDtos(season));
         }
-        catch (Exception ex)
+        catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
         {
             _logger.LogError(ex, "Failed to get featured hockey season content blocks");
             return Result<HockeySeasonContentBlocksDto>.Failure(
