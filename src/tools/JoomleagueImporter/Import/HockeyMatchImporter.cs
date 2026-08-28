@@ -612,7 +612,6 @@ public class HockeyMatchImporter
         int periodSeconds,
         int regularPeriods)
     {
-        int goalsRecorded = 0, penaltiesRecorded = 0;
         HockeyMatchTeamDto? homeMatchTeam = matchDto.MatchTeams.FirstOrDefault(t => t.TeamId == home.TeamId);
         HockeyMatchTeamDto? awayMatchTeam = matchDto.MatchTeams.FirstOrDefault(t => t.TeamId == away.TeamId);
         if (homeMatchTeam == null || awayMatchTeam == null)
@@ -625,64 +624,81 @@ public class HockeyMatchImporter
         Guid? homeGoalieActive = homeMatchTeam.ActivePlayers.FirstOrDefault(p => p.IsGoalie)?.Id;
         Guid? awayGoalieActive = awayMatchTeam.ActivePlayers.FirstOrDefault(p => p.IsGoalie)?.Id;
 
-        for (int period = 1; period <= regularPeriods; period++)
+        List<object> events = [];
+
+        foreach (GoalRec goal in goals.OrderBy(g => g.TimeSeconds))
         {
-            int periodStart = (period - 1) * periodSeconds;
-            int periodEnd = period * periodSeconds;
-            await _api.RecordPeriodAsync(matchDto.Id, period, periodStart, HockeyPeriodAction.PeriodStarted);
-
-            int currentPeriod = period;
-            List<GoalRec> periodGoals = goals
-                .Where(g => PeriodOf(g.TimeSeconds, periodSeconds, regularPeriods) == currentPeriod)
-                .OrderBy(g => g.TimeSeconds)
-                .ToList();
-            List<PenaltyRec> periodPenalties = penalties
-                .Where(p => PeriodOf(p.TimeSeconds, periodSeconds, regularPeriods) == currentPeriod)
-                .OrderBy(p => p.TimeSeconds)
-                .ToList();
-
-            foreach (GoalRec goal in periodGoals)
+            bool isHome = goal.ProjectTeamId == match.ProjectTeam1Id;
+            HockeyMatchTeamDto scoringTeam = isHome ? homeMatchTeam : awayMatchTeam;
+            Dictionary<Guid, Guid> actives = isHome ? homeActive : awayActive;
+            if (goal.ScorerPlayerId == null || !actives.TryGetValue(goal.ScorerPlayerId.Value, out Guid scorerActive))
             {
-                bool isHome = goal.ProjectTeamId == match.ProjectTeam1Id;
-                HockeyMatchTeamDto scoringTeam = isHome ? homeMatchTeam : awayMatchTeam;
-                Dictionary<Guid, Guid> actives = isHome ? homeActive : awayActive;
-                if (goal.ScorerPlayerId == null || !actives.TryGetValue(goal.ScorerPlayerId.Value, out Guid scorerActive))
-                {
-                    _log.LogWarning("GoalSkipped", $"Match JL#{match.Id}: goal at {goal.TimeSeconds}s skipped (scorer not dressed).");
-                    continue;
-                }
-
-                Guid? assistActive = goal.AssisterPlayerId is Guid assist && actives.TryGetValue(assist, out Guid assistId)
-                    ? assistId : null;
-                Guid? secondActive = goal.SecondaryAssisterPlayerId is Guid second && actives.TryGetValue(second, out Guid secondId)
-                    ? secondId : null;
-                Guid? goalieActive = isHome ? awayGoalieActive : homeGoalieActive;
-
-                bool ok = await _api.RecordGoalAsync(
-                    matchDto.Id, scoringTeam.Id, scorerActive, assistActive, secondActive, goalieActive,
-                    period, goal.TimeSeconds, goal.Strength);
-                if (ok) goalsRecorded++;
-                else _log.LogError("RecordHockeyGoal", new { match.Id, NewMatchId = matchDto.Id, period, goal.TimeSeconds }, "API call failed.");
+                _log.LogWarning("GoalSkipped", $"Match JL#{match.Id}: goal at {goal.TimeSeconds}s skipped (scorer not dressed).");
+                continue;
             }
 
-            foreach (PenaltyRec pen in periodPenalties)
+            Guid? assistActive = goal.AssisterPlayerId is Guid assist && actives.TryGetValue(assist, out Guid assistId)
+                ? assistId : null;
+            Guid? secondActive = goal.SecondaryAssisterPlayerId is Guid second && actives.TryGetValue(second, out Guid secondId)
+                ? secondId : null;
+            Guid? goalieActive = isHome ? awayGoalieActive : homeGoalieActive;
+            int period = PeriodOf(goal.TimeSeconds, periodSeconds, regularPeriods);
+
+            events.Add(new
             {
-                bool isHome = pen.ProjectTeamId == match.ProjectTeam1Id;
-                HockeyMatchTeamDto penaltyTeam = isHome ? homeMatchTeam : awayMatchTeam;
-                Dictionary<Guid, Guid> actives = isHome ? homeActive : awayActive;
-                Guid? penalized = pen.PlayerId is Guid player && actives.TryGetValue(player, out Guid active)
-                    ? active : null;
-
-                bool ok = await _api.RecordPenaltyAsync(
-                    matchDto.Id, penaltyTeam.Id, penalized, period, pen.TimeSeconds, pen.Severity, pen.Minutes);
-                if (ok) penaltiesRecorded++;
-                else _log.LogError("RecordHockeyPenalty", new { match.Id, NewMatchId = matchDto.Id, period, pen.TimeSeconds }, "API call failed.");
-            }
-
-            await _api.RecordPeriodAsync(matchDto.Id, period, periodEnd, HockeyPeriodAction.PeriodEnded);
+                eventType = "Goal",
+                matchTeamId = scoringTeam.Id,
+                activePlayerId = scorerActive,
+                primaryAssistActivePlayerId = assistActive,
+                secondaryAssistActivePlayerId = secondActive,
+                goalieActivePlayerId = goalieActive,
+                periodNumber = period,
+                timeInSeconds = goal.TimeSeconds,
+                goalStrength = goal.Strength.ToString(),
+            });
         }
 
-        return (goalsRecorded, penaltiesRecorded);
+        foreach (PenaltyRec pen in penalties.OrderBy(p => p.TimeSeconds))
+        {
+            bool isHome = pen.ProjectTeamId == match.ProjectTeam1Id;
+            HockeyMatchTeamDto penaltyTeam = isHome ? homeMatchTeam : awayMatchTeam;
+            Dictionary<Guid, Guid> actives = isHome ? homeActive : awayActive;
+            Guid? penalized = pen.PlayerId is Guid player && actives.TryGetValue(player, out Guid active)
+                ? active : null;
+            int period = PeriodOf(pen.TimeSeconds, periodSeconds, regularPeriods);
+
+            events.Add(new
+            {
+                eventType = "Penalty",
+                matchTeamId = penaltyTeam.Id,
+                activePlayerId = penalized,
+                periodNumber = period,
+                timeInSeconds = pen.TimeSeconds,
+                severity = pen.Severity.ToString(),
+                offence = HockeyPenaltyOffence.UnsportsmanlikeConduct.ToString(),
+                penaltyMinutes = pen.Minutes,
+                isBenchPenalty = penalized == null,
+            });
+        }
+
+        if (events.Count == 0)
+        {
+            return (0, 0);
+        }
+
+        HockeyMatchEventsImportDto? imported = await _api.ImportEventsAsync(matchDto.Id, events);
+        if (imported == null)
+        {
+            _log.LogError("ImportHockeyMatchEvents", new { match.Id, NewMatchId = matchDto.Id, events.Count }, "API call failed.");
+            return (0, 0);
+        }
+
+        foreach (string error in imported.EventErrors)
+        {
+            _log.LogWarning("ImportHockeyMatchEvent", $"Match JL#{match.Id}: {error}");
+        }
+
+        return (imported.GoalsRecorded, imported.PenaltiesRecorded);
     }
 
     private static Dictionary<Guid, Guid> MapActivePlayersByPlayerId(

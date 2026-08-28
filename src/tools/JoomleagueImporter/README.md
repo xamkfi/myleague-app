@@ -68,7 +68,7 @@ dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj -- \
 
 CLI (all optional): `--api-url`, `--access-token` / `--token`, `--refresh-token`, `--dump`, `--id-map`, `--sport`, `--project-id`, `--concurrency` (default 4), `--yes` / `-y`, `--dry-run`, `--repair-all`, `--repair-matches=1119,1124`.
 
-Finished matches post **one** `POST .../events/import` with all goals/penalties (or cards) after create / goalies / start. The live per-event endpoints stay for the scorekeeper UI.
+Finished matches post **one** `POST .../events/import` with all goals/penalties (or cards) after create / goalies / start. Hockey uses `POST /api/HockeyMatch/{id}/events/import`. The live per-event endpoints stay for the scorekeeper UI.
 
 Resume skips persons/teams already in the id map. Matches import in parallel (`--concurrency`) and the id map is flushed every 10 match writes.
 

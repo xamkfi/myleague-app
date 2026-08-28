@@ -1920,3 +1920,112 @@ public class ResetHockeyCompetitionStatisticsRequest
     public Guid? PlayoffSeriesId { get; set; }
 }
 
+/// <summary>
+/// Batch import of historical hockey match events. Intended for the JoomLeague
+/// importer and admin backfill, not live scorekeeping.
+/// </summary>
+public class ImportHockeyMatchEventsRequest
+{
+    /// <summary>
+    /// Goals and penalties to record, in clock order.
+    /// </summary>
+    [Required]
+    [MinLength(1)]
+    [MaxLength(200)]
+    public List<ImportHockeyMatchEventRequest> Events { get; set; } = [];
+}
+
+/// <summary>
+/// One event in an <see cref="ImportHockeyMatchEventsRequest"/> batch.
+/// <c>EventType</c> is <c>Goal</c> or <c>Penalty</c>. Player ids are dressed
+/// match-active-player ids, matching the live goal and penalty endpoints.
+/// </summary>
+public class ImportHockeyMatchEventRequest
+{
+    /// <summary>
+    /// Event kind: <c>Goal</c> or <c>Penalty</c>.
+    /// </summary>
+    [Required]
+    public string EventType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Match-team id of the scoring or penalized side.
+    /// </summary>
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    /// <summary>
+    /// Dressed player who scored or received the penalty.
+    /// </summary>
+    public Guid? ActivePlayerId { get; set; }
+
+    /// <summary>
+    /// Primary assister for a goal, when recorded.
+    /// </summary>
+    public Guid? PrimaryAssistActivePlayerId { get; set; }
+
+    /// <summary>
+    /// Secondary assister for a goal, when recorded.
+    /// </summary>
+    public Guid? SecondaryAssistActivePlayerId { get; set; }
+
+    /// <summary>
+    /// Opposing goalie for a goal, when known.
+    /// </summary>
+    public Guid? GoalieActivePlayerId { get; set; }
+
+    /// <summary>
+    /// Period in which the event occurred.
+    /// </summary>
+    [Range(1, int.MaxValue)]
+    public int PeriodNumber { get; set; }
+
+    /// <summary>
+    /// Elapsed match clock time, in seconds.
+    /// </summary>
+    [Range(0, int.MaxValue)]
+    public int TimeInSeconds { get; set; }
+
+    /// <summary>
+    /// Manpower situation for a goal. Defaults to even strength when omitted.
+    /// </summary>
+    public HockeyGoalStrength? GoalStrength { get; set; }
+
+    /// <summary>
+    /// Whether the goal was scored on an empty net.
+    /// </summary>
+    public bool WasEmptyNet { get; set; }
+
+    /// <summary>
+    /// Optional free-text description of the event.
+    /// </summary>
+    [StringLength(500)]
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Penalty severity. Used when <see cref="EventType"/> is <c>Penalty</c>.
+    /// </summary>
+    public HockeyPenaltySeverity? Severity { get; set; }
+
+    /// <summary>
+    /// Penalty offence. Used when <see cref="EventType"/> is <c>Penalty</c>.
+    /// </summary>
+    public HockeyPenaltyOffence? Offence { get; set; }
+
+    /// <summary>
+    /// Penalty length in minutes. Used when <see cref="EventType"/> is <c>Penalty</c>.
+    /// </summary>
+    [Range(0, 20)]
+    public int? PenaltyMinutes { get; set; }
+
+    /// <summary>
+    /// Player serving a bench or coincidental penalty, when different from the offender.
+    /// </summary>
+    public Guid? ServedByActivePlayerId { get; set; }
+
+    /// <summary>
+    /// Whether this is a bench penalty (no individual offender).
+    /// </summary>
+    public bool IsBenchPenalty { get; set; }
+}
+

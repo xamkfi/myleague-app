@@ -323,6 +323,14 @@ public class HockeyApiClient : ImportApiClient
         return resp.IsSuccessStatusCode;
     }
 
+    public Task<HockeyMatchEventsImportDto?> ImportEventsAsync(
+        Guid matchId,
+        IReadOnlyList<object> events) =>
+        PostDataOrNullAsync<HockeyMatchEventsImportDto>(
+            $"api/HockeyMatch/{matchId}/events/import",
+            new { events },
+            "ImportHockeyMatchEvents");
+
     public Task<bool> RecordGoalAsync(
         Guid matchId,
         Guid scoringMatchTeamId,
