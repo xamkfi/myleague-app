@@ -54,9 +54,11 @@ public class FloorballSeason : FloorballCompetition
         int sortOrder = 0;
         foreach ((Guid? Id, string Title, string ContentHtml) item in items)
         {
-            FloorballSeasonContentBlock? existing = item.Id.HasValue && item.Id.Value != Guid.Empty
-                ? _contentBlocks.FirstOrDefault(block => block.Id == item.Id.Value)
-                : null;
+            FloorballSeasonContentBlock? existing = null;
+            if (item.Id is Guid id && id != Guid.Empty)
+            {
+                existing = _contentBlocks.FirstOrDefault(block => block.Id == id);
+            }
 
             if (existing is not null)
             {
