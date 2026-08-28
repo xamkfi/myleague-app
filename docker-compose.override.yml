@@ -27,3 +27,9 @@ services:
       - ./src/backend/WebAPI/logs:/app/logs
     networks:
       - myleague-network
+
+  frontend:
+    volumes:
+      - ./src/frontend:/app
+      - /app/node_modules
+    command: sh -c "pnpm install --frozen-lockfile && pnpm dev --mode development"
