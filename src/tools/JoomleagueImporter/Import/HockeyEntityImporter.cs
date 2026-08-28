@@ -527,7 +527,7 @@ public class HockeyEntityImporter
 
         List<HockeySeasonDto> existing = await _api.GetSeasonsAsync();
 
-        if (_idMap.Seasons.TryGetValue(project.Id, out Guid mappedSeasonId))
+        if (_idMap.TryGetSeason(project.Id, out Guid mappedSeasonId))
         {
             HockeySeasonDto? mapped = existing.FirstOrDefault(s => s.Id == mappedSeasonId)
                 ?? await _api.GetSeasonByIdAsync(mappedSeasonId);
@@ -542,7 +542,7 @@ public class HockeyEntityImporter
         string seasonName = project.Name;
         HockeySeasonDto? byName = existing.FirstOrDefault(s =>
             string.Equals(s.Name, seasonName, StringComparison.OrdinalIgnoreCase));
-        if (byName != null && _idMap.Seasons.Values.Contains(byName.Id))
+        if (byName != null && _idMap.HasMappedSeasonId(byName.Id))
         {
             seasonName = $"{project.Name} [JL{project.Id}]";
             byName = existing.FirstOrDefault(s =>
@@ -575,8 +575,7 @@ public class HockeyEntityImporter
             Console.WriteLine($"  Using existing season '{seasonName}' ({season.Id})");
         }
 
-        _idMap.Seasons[project.Id] = season.Id;
-        _idMap.Save();
+        _idMap.MapSeason(project.Id, season.Id);
 
         await EnsureSeasonReadyAsync(season, pi, division, periodCount, periodMinutes);
         return await _api.GetSeasonByIdAsync(season.Id) ?? season;

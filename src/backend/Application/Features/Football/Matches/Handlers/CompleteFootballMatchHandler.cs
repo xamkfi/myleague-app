@@ -92,10 +92,19 @@ public class CompleteFootballMatchHandler : IRequestHandler<CompleteFootballMatc
 
             return Result<FootballMatchDto>.Success(matchDto);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (InvalidOperationException ex)
         {
             _logger.LogError(ex, "Error occurred while completing football match: {MatchId}", request.Id);
-            return Result<FootballMatchDto>.Failure("An error occurred while completing the match.");
+            return Result<FootballMatchDto>.Failure(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Error occurred while completing football match: {MatchId}", request.Id);
+            return Result<FootballMatchDto>.Failure(ex.Message);
         }
     }
 

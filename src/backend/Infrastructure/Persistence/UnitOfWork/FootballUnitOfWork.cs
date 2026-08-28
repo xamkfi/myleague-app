@@ -28,6 +28,6 @@ public class FootballUnitOfWork : IFootballUnitOfWork
     /// <returns>The number of state entries written to the database</returns>
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbContext.SaveChangesAsync(cancellationToken);
+        return await UniqueConstraint.SaveChangesAsync(_dbContext, cancellationToken);
     }
 }

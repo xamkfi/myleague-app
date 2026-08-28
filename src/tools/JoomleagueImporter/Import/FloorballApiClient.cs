@@ -201,7 +201,8 @@ public class FloorballApiClient : ImportApiClient
         PostDataOrNullAsync<FloorballMatchEventsImportDto>(
             $"api/floorball-matches/{matchId}/events/import",
             new { events },
-            "ImportMatchEvents");
+            "ImportMatchEvents",
+            maxRetries: 2);
 
     public Task<bool> RecordPenaltyAsync(
         Guid matchId,

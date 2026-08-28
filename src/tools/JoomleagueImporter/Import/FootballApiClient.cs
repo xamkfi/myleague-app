@@ -222,7 +222,8 @@ public class FootballApiClient : ImportApiClient
         PostDataOrNullAsync<FootballMatchEventsImportDto>(
             $"api/football-matches/{matchId}/events/import",
             new { events },
-            "ImportFootballMatchEvents");
+            "ImportFootballMatchEvents",
+            maxRetries: 2);
 
     public Task<bool> RecordCardAsync(
         Guid matchId,

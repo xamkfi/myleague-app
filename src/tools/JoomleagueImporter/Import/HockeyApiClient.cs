@@ -329,7 +329,8 @@ public class HockeyApiClient : ImportApiClient
         PostDataOrNullAsync<HockeyMatchEventsImportDto>(
             $"api/HockeyMatch/{matchId}/events/import",
             new { events },
-            "ImportHockeyMatchEvents");
+            "ImportHockeyMatchEvents",
+            maxRetries: 2);
 
     public Task<bool> RecordGoalAsync(
         Guid matchId,
