@@ -1,4 +1,5 @@
 using Domain.Common;
+using Domain.Entities;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.EntityFrameworkCore;
@@ -73,13 +74,34 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         if (existing == null)
         {
             await _context.FloorballTeamSeasonStatistics.AddAsync(statistics, cancellationToken);
+            return;
         }
-        else
+
+        if (ReferenceEquals(existing, statistics))
         {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
-            _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
         }
-        // SaveChanges is deferred to the UnitOfWork
+
+        if (existing.Id != statistics.Id)
+        {
+            // Incoming was new()'d after Get missed the row; a concurrent request inserted first.
+            // Treat incoming counters as this-request deltas instead of overwriting the PK.
+            for (int i = 0; i < statistics.GoalsFor; i++)
+            {
+                existing.IncrementGoalsFor();
+            }
+
+            for (int i = 0; i < statistics.GoalsAgainst; i++)
+            {
+                existing.IncrementGoalsAgainst();
+            }
+
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
+        }
+
+        ApplyNonKeyValues(existing, statistics);
     }
 
     #endregion
@@ -171,13 +193,37 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         if (existing == null)
         {
             await _context.FloorballPlayerSeasonStatistics.AddAsync(statistics, cancellationToken);
+            return;
         }
-        else
+
+        if (ReferenceEquals(existing, statistics))
         {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
-            _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
         }
-        // SaveChanges is deferred to the UnitOfWork
+
+        if (existing.Id != statistics.Id)
+        {
+            for (int i = 0; i < statistics.Goals; i++)
+            {
+                existing.RecordGoal();
+            }
+
+            for (int i = 0; i < statistics.Assists; i++)
+            {
+                existing.RecordAssist();
+            }
+
+            if (statistics.PenaltyMinutes > 0)
+            {
+                existing.RecordPenaltyMinutes(statistics.PenaltyMinutes);
+            }
+
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
+        }
+
+        ApplyNonKeyValues(existing, statistics);
     }
 
     #endregion
@@ -232,13 +278,27 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         if (existing == null)
         {
             await _context.FloorballGoalieSeasonStatistics.AddAsync(statistics, cancellationToken);
+            return;
         }
-        else
+
+        if (ReferenceEquals(existing, statistics))
         {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
-            _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
         }
-        // SaveChanges is deferred to the UnitOfWork
+
+        if (existing.Id != statistics.Id)
+        {
+            if (statistics.Saves != 0 || statistics.ShotsAgainst != 0 || statistics.GoalsAgainst != 0)
+            {
+                existing.RecordSaves(statistics.Saves, statistics.ShotsAgainst, statistics.GoalsAgainst);
+            }
+
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
+        }
+
+        ApplyNonKeyValues(existing, statistics);
     }
 
     #endregion
@@ -268,12 +328,32 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         if (existing == null)
         {
             await _context.FloorballMatchTeamStatistics.AddAsync(statistics, cancellationToken);
+            return;
         }
-        else
+
+        if (ReferenceEquals(existing, statistics))
         {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
         }
-        // SaveChanges is deferred to the UnitOfWork
+
+        if (existing.Id != statistics.Id)
+        {
+            if (statistics.ShotsOnGoal > 0 || statistics.ShotsTotal > 0)
+            {
+                existing.UpdateShotStatistics(statistics.ShotsOnGoal, statistics.ShotsTotal);
+            }
+
+            if (statistics.PenaltyMinutes > 0)
+            {
+                existing.UpdatePenaltyMinutes(statistics.PenaltyMinutes);
+            }
+
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
+        }
+
+        ApplyNonKeyValues(existing, statistics);
     }
 
     #endregion
@@ -352,9 +432,27 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
             {
                 await _context.FloorballTeamSeasonStatistics.AddAsync(stat, cancellationToken);
             }
+            else if (ReferenceEquals(existing, stat))
+            {
+                existing.SetUpdatedAt(DateTime.UtcNow);
+            }
+            else if (existing.Id != stat.Id)
+            {
+                for (int i = 0; i < stat.GoalsFor; i++)
+                {
+                    existing.IncrementGoalsFor();
+                }
+
+                for (int i = 0; i < stat.GoalsAgainst; i++)
+                {
+                    existing.IncrementGoalsAgainst();
+                }
+
+                existing.SetUpdatedAt(DateTime.UtcNow);
+            }
             else
             {
-                _context.Entry(existing).CurrentValues.SetValues(stat);
+                ApplyNonKeyValues(existing, stat);
             }
         }
         
@@ -422,6 +520,18 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         }
         
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ApplyNonKeyValues<T>(T existing, T incoming) where T : BaseEntity
+    {
+        EntityEntry<T> entry = _context.Entry(existing);
+        Guid id = existing.Id;
+        DateTime createdAt = existing.CreatedAt;
+        entry.CurrentValues.SetValues(incoming);
+        entry.CurrentValues["Id"] = id;
+        entry.Property(e => e.Id).IsModified = false;
+        entry.CurrentValues["CreatedAt"] = createdAt;
+        existing.SetUpdatedAt(DateTime.UtcNow);
     }
 
     /// <inheritdoc />

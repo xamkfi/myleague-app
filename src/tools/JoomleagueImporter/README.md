@@ -66,7 +66,7 @@ dotnet run --project src/tools/JoomleagueImporter/JoomleagueImporter.csproj -- \
   --yes
 ```
 
-CLI (all optional): `--api-url`, `--access-token` / `--token`, `--refresh-token`, `--dump`, `--id-map`, `--sport`, `--project-id`, `--concurrency` (default 4), `--yes` / `-y`, `--dry-run`, `--repair-all`.
+CLI (all optional): `--api-url`, `--access-token` / `--token`, `--refresh-token`, `--dump`, `--id-map`, `--sport`, `--project-id`, `--concurrency` (default 4), `--yes` / `-y`, `--dry-run`, `--repair-all`, `--repair-matches=1119,1124`.
 
 Finished matches post **one** `POST .../events/import` with all goals/penalties (or cards) after create / goalies / start. The live per-event endpoints stay for the scorekeeper UI.
 
@@ -76,7 +76,7 @@ Without a token the importer prompts for URL and email and uses the Development 
 
 Remote hosts get their own id-map file (`id-map-{host}-{sport}.json`) so a local import map is not reused against Azure.
 
-`--repair-all` (or `RepairMatches` / `RepairAll` in config) re-sends match events for already imported matches.
+`--repair-all` (or `RepairMatches` / `RepairAll` in config) re-sends match events for already imported matches. `--repair-matches=1119,1124` repairs only those JoomLeague match ids.
 
 Logs go under the tool’s `Logs` folder. The id map path is derived from `--id-map`, config (`IdMapPath` / football / hockey override), or the host/sport default above.
 

@@ -1,6 +1,8 @@
+using Domain.Entities;
 using Domain.Entities.Football.Statistics;
 using Domain.Repositories.Football;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MyLeague.Infrastructure.Persistence.Contexts;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Football;
@@ -70,13 +72,22 @@ public class FootballStatisticsRepository : IFootballStatisticsRepository
         if (existing == null)
         {
             await _context.FootballTeamSeasonStatistics.AddAsync(statistics, cancellationToken);
+            return;
         }
-        else
+
+        if (ReferenceEquals(existing, statistics))
         {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
-            _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
         }
-        // SaveChanges is deferred to the UnitOfWork
+
+        if (existing.Id != statistics.Id)
+        {
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
+        }
+
+        ApplyNonKeyValues(existing, statistics);
     }
 
     #endregion
@@ -168,13 +179,42 @@ public class FootballStatisticsRepository : IFootballStatisticsRepository
         if (existing == null)
         {
             await _context.FootballPlayerSeasonStatistics.AddAsync(statistics, cancellationToken);
+            return;
         }
-        else
+
+        if (ReferenceEquals(existing, statistics))
         {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
-            _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
         }
-        // SaveChanges is deferred to the UnitOfWork
+
+        if (existing.Id != statistics.Id)
+        {
+            for (int i = 0; i < statistics.Goals; i++)
+            {
+                existing.RecordGoal();
+            }
+
+            for (int i = 0; i < statistics.Assists; i++)
+            {
+                existing.RecordAssist();
+            }
+
+            for (int i = 0; i < statistics.YellowCards; i++)
+            {
+                existing.RecordYellowCard();
+            }
+
+            for (int i = 0; i < statistics.RedCards; i++)
+            {
+                existing.RecordRedCard();
+            }
+
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
+        }
+
+        ApplyNonKeyValues(existing, statistics);
     }
 
     #endregion
@@ -204,12 +244,22 @@ public class FootballStatisticsRepository : IFootballStatisticsRepository
         if (existing == null)
         {
             await _context.FootballMatchTeamStatistics.AddAsync(statistics, cancellationToken);
+            return;
         }
-        else
+
+        if (ReferenceEquals(existing, statistics))
         {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
         }
-        // SaveChanges is deferred to the UnitOfWork
+
+        if (existing.Id != statistics.Id)
+        {
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
+        }
+
+        ApplyNonKeyValues(existing, statistics);
     }
 
     #endregion
@@ -294,4 +344,16 @@ public class FootballStatisticsRepository : IFootballStatisticsRepository
     }
 
     #endregion
+
+    private void ApplyNonKeyValues<T>(T existing, T incoming) where T : BaseEntity
+    {
+        EntityEntry<T> entry = _context.Entry(existing);
+        Guid id = existing.Id;
+        DateTime createdAt = existing.CreatedAt;
+        entry.CurrentValues.SetValues(incoming);
+        entry.CurrentValues["Id"] = id;
+        entry.Property(e => e.Id).IsModified = false;
+        entry.CurrentValues["CreatedAt"] = createdAt;
+        existing.SetUpdatedAt(DateTime.UtcNow);
+    }
 }

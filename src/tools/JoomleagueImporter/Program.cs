@@ -60,6 +60,18 @@ public static class Program
             .Select(s => int.TryParse(s, out int id) ? id : -1)
             .Where(id => id > 0)
             .ToHashSet();
+        string? repairMatchesArg = GetArg(args, "repair-matches");
+        if (!string.IsNullOrWhiteSpace(repairMatchesArg))
+        {
+            foreach (string part in repairMatchesArg.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (int.TryParse(part, out int repairId) && repairId > 0)
+                {
+                    repairMatchIds.Add(repairId);
+                }
+            }
+        }
+
         bool repairAll = bool.TryParse(config["JoomleagueImporter:RepairAll"], out bool ra) && ra;
 
         if (args.Contains("--dry-run", StringComparer.OrdinalIgnoreCase))

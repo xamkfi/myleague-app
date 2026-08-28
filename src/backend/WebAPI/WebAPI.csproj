@@ -37,12 +37,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.11" />
     
-    <!-- Health Check UI. InMemory.Storage still pins EF InMemory 8.x; an explicit
-         10.0.11 reference is required so the provider matches EF Core 10. Without
-         it AddInMemoryStorage() throws MissingMethodException at startup. -->
-    <PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />
-    <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.11" />
+    <!-- Health endpoints are mapped in Program.cs. The Xabaril HealthChecks.UI
+         package is not referenced: it pulls KubernetesClient for unused k8s
+         discovery (GHSA-w7r3-mgwf-4mqq). The dashboard is /health-test.html. -->
   </ItemGroup>
 
   <ItemGroup>

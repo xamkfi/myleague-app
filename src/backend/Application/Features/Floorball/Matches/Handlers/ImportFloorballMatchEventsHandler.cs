@@ -202,7 +202,13 @@ public class ImportFloorballMatchEventsHandler
         }
 
         await stats.ApplyTeamGoalAsync(item.TeamId, match.CompetitionId, isGoalFor: true, cancellationToken);
-        Guid opposingTeamId = (item.TeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId)!.Value;
+        Guid? opposingTeamIdOrNull = item.TeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId;
+        if (!opposingTeamIdOrNull.HasValue)
+        {
+            throw new InvalidOperationException("Both teams must be assigned before importing goals.");
+        }
+
+        Guid opposingTeamId = opposingTeamIdOrNull.Value;
         await stats.ApplyTeamGoalAsync(opposingTeamId, match.CompetitionId, isGoalFor: false, cancellationToken);
         await stats.ApplyMatchShotsAsync(match.Id, item.TeamId, cancellationToken);
 

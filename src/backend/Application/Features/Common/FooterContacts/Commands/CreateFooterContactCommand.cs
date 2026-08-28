@@ -45,7 +45,7 @@ public class CreateFooterContactCommandHandler
                 request.Details,
                 request.Email,
                 request.Phone,
-                request.Url,
+                FooterContactMapper.ParseUrl(request.Url),
                 request.SortOrder,
                 request.Section,
                 request.LastModifiedBy);

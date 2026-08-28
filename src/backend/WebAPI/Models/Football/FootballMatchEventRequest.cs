@@ -100,6 +100,9 @@ public class MatchIdRequest
 /// </summary>
 public class ImportFootballMatchEventsRequest
 {
+    /// <summary>
+    /// Goals and cards to record, in clock order.
+    /// </summary>
     [Required]
     [MinLength(1)]
     [MaxLength(200)]
@@ -112,26 +115,53 @@ public class ImportFootballMatchEventsRequest
 /// </summary>
 public class ImportFootballMatchEventRequest
 {
+    /// <summary>
+    /// Event kind: <c>Goal</c> or <c>Card</c>.
+    /// </summary>
     [Required]
     public string EventType { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Team associated with the event.
+    /// </summary>
     [Required]
     public Guid TeamId { get; set; }
 
+    /// <summary>
+    /// Player who scored or received the card.
+    /// </summary>
     public Guid? PlayerId { get; set; }
 
+    /// <summary>
+    /// Assister for a goal, when recorded.
+    /// </summary>
     public Guid? AssistingPlayerId { get; set; }
 
+    /// <summary>
+    /// Period in which the event occurred.
+    /// </summary>
     [Range(1, int.MaxValue)]
     public int PeriodNumber { get; set; }
 
+    /// <summary>
+    /// Elapsed match clock time, in seconds.
+    /// </summary>
     [Range(0, int.MaxValue)]
     public int TimeInSeconds { get; set; }
 
+    /// <summary>
+    /// Optional football goal type for a goal event.
+    /// </summary>
     public FootballGoalType? GoalType { get; set; }
 
+    /// <summary>
+    /// Optional free-text description of the event.
+    /// </summary>
     [StringLength(500)]
     public string? Description { get; set; }
 
+    /// <summary>
+    /// Card color. Required when <see cref="EventType"/> is <c>Card</c>.
+    /// </summary>
     public FootballCardType? CardType { get; set; }
 }

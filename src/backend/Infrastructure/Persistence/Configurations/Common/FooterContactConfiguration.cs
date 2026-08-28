@@ -26,6 +26,9 @@ public class FooterContactConfiguration : IEntityTypeConfiguration<FooterContact
             .HasMaxLength(50);
 
         builder.Property(x => x.Url)
+            .HasConversion(
+                uri => uri != null ? uri.ToString() : null,
+                value => value != null ? new Uri(value) : null)
             .HasMaxLength(500);
 
         builder.Property(x => x.SortOrder)

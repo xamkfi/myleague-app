@@ -49,7 +49,7 @@ public class SiteContentRepositoryIntegrationTests : BaseIntegrationTest
             "Main street 1",
             "office@mahl.fi",
             "044 000 0000",
-            "https://mahl.fi",
+            new Uri("https://mahl.fi"),
             1,
             lastModifiedBy: "admin");
 
@@ -61,7 +61,7 @@ public class SiteContentRepositoryIntegrationTests : BaseIntegrationTest
         loaded.Should().NotBeNull();
         loaded!.Title.Should().Be("Office");
         loaded.Email.Should().Be("office@mahl.fi");
-        loaded.Url.Should().Be("https://mahl.fi");
+        loaded.Url.Should().Be(new Uri("https://mahl.fi"));
         loaded.Section.Should().Be(FooterSection.Contact);
     }
 

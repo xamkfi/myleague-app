@@ -11,7 +11,7 @@ public class FooterContact : BaseEntity
     public string? Details { get; private set; }
     public string? Email { get; private set; }
     public string? Phone { get; private set; }
-    public string? Url { get; private set; }
+    public Uri? Url { get; private set; }
     public int SortOrder { get; private set; }
     public FooterSection Section { get; private set; }
     public string? LastModifiedBy { get; private set; }
@@ -26,7 +26,7 @@ public class FooterContact : BaseEntity
         string? details,
         string? email,
         string? phone,
-        string? url,
+        Uri? url,
         int sortOrder,
         FooterSection section = FooterSection.Contact,
         string? lastModifiedBy = null)
@@ -48,7 +48,7 @@ public class FooterContact : BaseEntity
         string? details,
         string? email,
         string? phone,
-        string? url,
+        Uri? url,
         int sortOrder,
         FooterSection section,
         string? lastModifiedBy = null)
@@ -106,23 +106,26 @@ public class FooterContact : BaseEntity
         return normalized;
     }
 
-    private static string? ValidateUrl(string? url)
+    private static Uri? ValidateUrl(Uri? url)
     {
-        string? normalized = NormalizeOptional(url, 500, nameof(url));
-
-        if (normalized is null)
+        if (url is null)
         {
             return null;
         }
 
-        if (!Uri.TryCreate(normalized, UriKind.Absolute, out Uri? uri)
-            || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
-            || string.IsNullOrWhiteSpace(uri.Host))
+        if (!url.IsAbsoluteUri
+            || (url.Scheme != Uri.UriSchemeHttp && url.Scheme != Uri.UriSchemeHttps)
+            || string.IsNullOrWhiteSpace(url.Host))
         {
             throw new ArgumentException("Url must be an http or https address", nameof(url));
         }
 
-        return normalized;
+        if (url.OriginalString.Length > 500)
+        {
+            throw new ArgumentException("url cannot exceed 500 characters", nameof(url));
+        }
+
+        return url;
     }
 
     private static string? NormalizeOptional(string? value, int maxLength, string paramName)
