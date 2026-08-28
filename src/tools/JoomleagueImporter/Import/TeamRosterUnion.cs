@@ -29,10 +29,9 @@ internal static class TeamRosterUnion
 
                 TeamCategory fromTeamName = TeamCategoryResolver.InferFromName(pti.Team.Name);
                 TeamCategory combined = TeamCategoryResolver.Prefer(projectCategory, fromTeamName);
-                if (categoryByTeam.TryGetValue(pti.Team.Id, out TeamCategory existingCat))
-                    categoryByTeam[pti.Team.Id] = TeamCategoryResolver.Prefer(existingCat, combined);
-                else
-                    categoryByTeam[pti.Team.Id] = combined;
+                categoryByTeam[pti.Team.Id] = categoryByTeam.TryGetValue(pti.Team.Id, out TeamCategory existingCat)
+                    ? TeamCategoryResolver.Prefer(existingCat, combined)
+                    : combined;
             }
         }
 
