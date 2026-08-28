@@ -375,3 +375,9 @@ src/backend/Application/refactor-namespaces.ps1
 src/backend/Application/fix-usings.ps1
 /src/frontend/.pnpm-store/
 src/tools/TournamentExporter/exports/
+src/tools/JoomleagueImporter/id-map-smoke-floorball.json
+src/tools/JoomleagueImporter/id-map-smoke-football.json
+src/tools/JoomleagueImporter/id-map-smoke-hockey-batch.json
+src/tools/JoomleagueImporter/id-map-smoke-hockey.json
+src/tools/JoomleagueImporter/id-map-staging-smoke-floorball.json
+src/tools/JoomleagueImporter/id-map-staging-smoke-football.json

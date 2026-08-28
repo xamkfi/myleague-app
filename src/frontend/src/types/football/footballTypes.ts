@@ -75,7 +75,6 @@ export interface FootballTeamPlayer {
   jerseyNumber?: number;
   requestedJerseyNumber?: number | null;
   isActive: boolean;
-  age?: number;
   gamesPlayed: number;
   goals: number;
   assists: number;

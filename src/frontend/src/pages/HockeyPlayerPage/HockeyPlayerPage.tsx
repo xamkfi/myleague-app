@@ -60,20 +60,6 @@ interface PlayerMatchRow {
   faceoffAttempts: number;
 }
 
-function calculateAge(birthDate: string | null): number | null {
-  if (!birthDate) {
-    return null;
-  }
-  const birth = new Date(birthDate);
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age -= 1;
-  }
-  return age;
-}
-
 async function loadCompetitionNameMap(): Promise<Map<string, string>> {
   const [seasons, tournaments] = await Promise.all([
     hockeySeasonService.getAll().catch(() => []),
@@ -154,7 +140,6 @@ function HockeyPlayerPage() {
   const { id } = useParams<{ id: string }>();
   const [player, setPlayer] = useState<HockeyPlayerDto | null>(null);
   const [name, setName] = useState('');
-  const [birthDate, setBirthDate] = useState<string | null>(null);
   const [teams, setTeams] = useState<HockeyTeamDto[]>([]);
   const [seasonRows, setSeasonRows] = useState<SeasonRow[]>([]);
   const [goalieRows, setGoalieRows] = useState<GoalieSeasonRow[]>([]);
@@ -174,7 +159,6 @@ function HockeyPlayerPage() {
       try {
         const person = await personApi.getById(loaded.personId);
         setName(person.fullName);
-        setBirthDate(person.birthDate);
       } catch {
         setName(t('hockey.players.title', 'Player'));
       }
@@ -356,7 +340,6 @@ function HockeyPlayerPage() {
   }, [id, t, audience.teamCategory]);
 
   const namedTeams = teams.map((team) => ({ id: team.id, name: team.name }));
-  const age = calculateAge(birthDate);
   const totals = useMemo(() => seasonRows.reduce(
     (sum, row) => ({
       gamesPlayed: sum.gamesPlayed + row.stats.gamesPlayed,
@@ -419,12 +402,6 @@ function HockeyPlayerPage() {
                   </div>
                 </div>
                 <div className="player-stats-box">
-                  {age !== null && (
-                    <div className="stat-item">
-                      <span className="stat-label">{t('hockey.players.age', 'Age')}</span>
-                      <span className="stat-value">{age}</span>
-                    </div>
-                  )}
                   <div className="stat-item">
                     <span className="stat-label">{t('hockey.players.shoots', 'Shoots')}</span>
                     <span className="stat-value">{t(`hockey.shoots.${player.shoots}`, player.shoots)}</span>

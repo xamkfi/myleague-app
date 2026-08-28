@@ -7,7 +7,6 @@ import './PersonUserPage.scss';
 interface PersonWithTeams {
   Id: string;
   Name: string;
-  Age: number;
   teams: Team[];
   totalMatchesPlayed: number;
 }
@@ -73,7 +72,6 @@ const PersonUserPage = () => {
           <div className="person-avatar"></div>
           <div className="person-info">
             <div className="person-name">{person.Name}</div>
-            <div className="person-subtitle">Ikä: {person.Age}</div>
             <div className="person-subtitle">Joukkueita: {person.teams.length}</div>
           </div>
         </div>

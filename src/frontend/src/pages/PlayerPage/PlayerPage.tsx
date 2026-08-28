@@ -41,7 +41,6 @@ const PlayerPage = () => {
           <div className="player-info">
             <div className="player-name">{player.Name}</div>
             <div className="player-subtitle">Joukkue: {player.teamName}</div>
-            <div className="player-subtitle">Ikä: {player.Age}</div>
           </div>
         </div>
 
