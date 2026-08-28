@@ -12,6 +12,13 @@ on:
           - staging
           - prod
 
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: string
+
   # Auto-deploy to staging after Frontend CI succeeds on the development branch.
   # Prod deploys are manual (workflow_dispatch) and gated by the 'prod'
   # GitHub environment protection rules (required reviewers).
@@ -36,19 +43,21 @@ env:
 
 jobs:
   build-and-deploy:
-    name: Build and Deploy to Azure Static Web App (${{ inputs.environment || 'staging' }})
+    name: Build and Deploy to Azure Static Web App (${{ github.event_name == 'workflow_run' && 'staging' || inputs.environment }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment: ${{ inputs.environment || 'staging' }}
+    environment: ${{ github.event_name == 'workflow_run' && 'staging' || inputs.environment }}
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
+      github.event_name == 'workflow_call' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'development')
 
     steps:
       - name: Set deployment targets
         run: |
-          ENV="${{ inputs.environment || 'staging' }}"
+          ENV="${{ github.event_name == 'workflow_run' && 'staging' || inputs.environment }}"
           echo "DEPLOY_ENV=$ENV" >> $GITHUB_ENV
           echo "SWA_NAME=myleague-${ENV}-web" >> $GITHUB_ENV
           echo "AZURE_RESOURCE_GROUP=myleague-${ENV}-rg" >> $GITHUB_ENV

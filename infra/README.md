@@ -97,13 +97,13 @@ Alert costs: metric alert rules ~$0.10/month each, availability test pennies at 
 |----------|---------|--------------|
 | `backend-ci.yaml` / `frontend-ci.yaml` | Push and PRs to `master` and `development` | Build, lint/tests, Docker startup checks |
 | `protect-master.yml` | PRs targeting `master` | Fails unless the source branch is `development` |
-| `infra-deploy.yml` | Manual (choose env + component); PRs touching `infra/**` | Provisions Azure resources via Bicep. PRs get template validation + what-if against staging |
-| `deploy-backend.yml` | Auto to **staging** after Backend CI on `development`; manual for staging/prod | Builds and zip-deploys the API, health-checks it, then runs smoke tests |
-| `deploy-frontend.yml` | Auto to **staging** after Frontend CI on `development`; manual for staging/prod | Builds the SPA with the right `VITE_API_URL`, deploys to SWA, then smoke tests it |
+| `infra-deploy.yml` | PRs touching `infra/**` validate + staging what-if. Push of `infra/**` to `development` provisions **staging** (no approval) and then deploys FE/BE. **Prod** is manual dispatch only (prod environment reviewers). |
+| `deploy-backend.yml` | Auto to **staging** after Backend CI on `development`, and after a successful staging provision; manual for staging/prod | Builds and zip-deploys the API, health-checks it, then runs smoke tests |
+| `deploy-frontend.yml` | Auto to **staging** after Frontend CI on `development`, and after a successful staging provision; manual for staging/prod | Builds the SPA with the right `VITE_API_URL`, deploys to SWA, then smoke tests it |
 
 After every backend deploy, a smoke-test job hits the live environment with public read-only requests: liveness/readiness (includes DB health), `GET /api/News`, `GET /api/Clubs`, `GET /api/Divisions` (valid JSON expected), an admin endpoint without a token (must return 401 - proves auth is enforced), and an unknown route (must return 404). The frontend deploy verifies the SPA loads (HTTP 200 with the React root element) both on `/` and on a deep link like `/clubs` (SPA fallback). Any failed check fails the workflow, so a broken staging or prod deploy is visible immediately - and on prod the deploy job's approval gate means the smoke failure emails/notifies right after an intentional release.
 
-All workflows authenticate with **OIDC** (federated credentials) - no publish profiles or long-lived secrets. Prod deploys are gated by required reviewers on the `prod` GitHub environment.
+All workflows authenticate with **OIDC** (federated credentials) - no publish profiles or long-lived secrets. Keep **required reviewers on the `prod` GitHub environment only** — the `staging` environment must not require approval, or the auto provision/deploy path will wait for a person.
 
 ### One-time OIDC setup
 
@@ -183,10 +183,9 @@ Release path after that: feature branch → PR into `development` → PR from `d
 
 ### First-time provisioning order
 
-1. Run `infra-deploy.yml` with component **backend** - creates API, DB, storage, email, monitoring
-2. Run `infra-deploy.yml` with component **frontend** - creates the SWA; note the generated URL from the job summary
-3. Add the SWA URL to `allowedOrigins` and `frontendBaseUrl` in `backend.{env}.bicepparam`, merge, and re-run the backend provision (CORS + email links need it)
-4. Run `deploy-backend.yml` and `deploy-frontend.yml`
+1. Merge the SWA hostname into `backend.staging.bicepparam` (`allowedOrigins` + `frontendBaseUrl`)
+2. Push/merge to `development` (or dispatch `infra-deploy.yml` for **staging** / **both**) — staging is provisioned automatically, then FE/BE deploy
+3. **Prod** is never auto-provisioned: dispatch `infra-deploy.yml` for **prod** (reviewers confirm), then dispatch `deploy-backend.yml` / `deploy-frontend.yml` for **prod** (reviewers confirm again)
 
 ## Manual Provisioning (fallback)
 

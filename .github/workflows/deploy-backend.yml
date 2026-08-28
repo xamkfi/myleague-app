@@ -12,6 +12,13 @@ on:
           - staging
           - prod
 
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: string
+
   # Auto-deploy to staging after Backend CI succeeds on the development branch.
   # Prod deploys are manual (workflow_dispatch) and gated by the 'prod'
   # GitHub environment protection rules (required reviewers).
@@ -36,19 +43,21 @@ env:
 
 jobs:
   deploy:
-    name: Deploy to Azure (${{ inputs.environment || 'staging' }})
+    name: Deploy to Azure (${{ github.event_name == 'workflow_run' && 'staging' || inputs.environment }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment: ${{ inputs.environment || 'staging' }}
+    environment: ${{ github.event_name == 'workflow_run' && 'staging' || inputs.environment }}
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
+      github.event_name == 'workflow_call' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'development')
 
     steps:
       - name: Set deployment targets
         run: |
-          ENV="${{ inputs.environment || 'staging' }}"
+          ENV="${{ github.event_name == 'workflow_run' && 'staging' || inputs.environment }}"
           echo "AZURE_WEBAPP_NAME=myleague-${ENV}-api" >> $GITHUB_ENV
           echo "AZURE_RESOURCE_GROUP=myleague-${ENV}-rg" >> $GITHUB_ENV
           echo "Deploying to: myleague-${ENV}-api (rg: myleague-${ENV}-rg)"
@@ -117,7 +126,7 @@ jobs:
   # database connectivity across contexts, JSON responses, and that
   # authorization is still enforced on admin endpoints.
   smoke-test:
-    name: Smoke tests (${{ inputs.environment || 'staging' }})
+    name: Smoke tests (${{ github.event_name == 'workflow_run' && 'staging' || inputs.environment }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: deploy
@@ -125,7 +134,7 @@ jobs:
     steps:
       - name: Run API smoke tests
         run: |
-          ENV="${{ inputs.environment || 'staging' }}"
+          ENV="${{ github.event_name == 'workflow_run' && 'staging' || inputs.environment }}"
           BASE="https://myleague-${ENV}-api.azurewebsites.net"
           FAIL=0
 
