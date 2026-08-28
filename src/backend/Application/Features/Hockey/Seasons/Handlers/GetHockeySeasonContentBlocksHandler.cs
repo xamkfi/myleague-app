@@ -6,6 +6,7 @@ using Domain.Entities.Hockey.Competitions;
 using Domain.Repositories.Hockey;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using System.Data.Common;
 
 namespace Application.Features.Hockey.Seasons.Handlers;
 
@@ -40,7 +41,7 @@ public class GetHockeySeasonContentBlocksHandler
 
             return Result<HockeySeasonContentBlocksDto>.Success(HockeySeasonContentBlockMapper.ToDtos(season));
         }
-        catch (Exception ex)
+        catch (DbException ex)
         {
             _logger.LogError(ex, "Failed to get hockey season content blocks {SeasonId}", request.SeasonId);
             return Result<HockeySeasonContentBlocksDto>.Failure(
