@@ -242,17 +242,17 @@ public class FootballApiClient : ImportApiClient
             timeInSeconds,
         }, "RecordFootballCard");
 
-    public async Task<bool> CompleteMatchAsync(Guid matchId)
-    {
-        HttpResponseMessage resp = await Http.PutAsync($"api/football-matches/{matchId}/complete", null);
-        return await OkOrWarn(resp, "CompleteFootballMatch");
-    }
+    public Task<bool> CompleteMatchAsync(Guid matchId) =>
+        PutWithRetryAsync($"api/football-matches/{matchId}/complete", "CompleteFootballMatch");
 
     public async Task<FootballMatchDto?> GetMatchByIdAsync(Guid matchId)
     {
         HttpResponseMessage resp = await Http.GetAsync($"api/football-matches/by-id/{matchId}");
         return await ReadDataOrNull<FootballMatchDto>(resp, $"Get football match {matchId}");
     }
+
+    public Task<List<FootballMatchDto>> GetMatchesByCompetitionAsync(Guid competitionId) =>
+        GetUnpaginatedListAsync<FootballMatchDto>($"api/football-matches/by-competitionId/{competitionId}");
 
     public async Task<bool> ReopenMatchAsync(Guid matchId)
     {

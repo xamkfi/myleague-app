@@ -292,6 +292,7 @@ public class FootballEntityImporter
             int extraIndex = nextSlot - 2;
             if (extraIndex < extras.Count)
             {
+                await _api.AddPlayerToTeamAsync(newTeamId, extras[extraIndex], (int)FootballPosition.Forward, null);
                 result.Add(extras[extraIndex]);
                 nextSlot++;
                 continue;
@@ -317,7 +318,10 @@ public class FootballEntityImporter
         bool cachePrimary)
     {
         if (cachePrimary && _idMap.UnknownPlayers.TryGetValue(oldTeam.Id, out Guid cached))
+        {
+            await _api.AddPlayerToTeamAsync(newTeamId, cached, (int)FootballPosition.Forward, null);
             return cached;
+        }
 
         const string firstName = "Tuntematon";
 

@@ -304,6 +304,7 @@ public static class Program
             await matches.ImportProjectMatchesAsync(pi, season, refereeId);
         });
 
+        await matches.CompleteUnfinishedMappedMatchesAsync();
         PrintImportComplete(matches.Succeeded, matches.ScheduledOnly, matches.Skipped, matches.Repaired, matches.Failed, log);
         return 0;
     }
