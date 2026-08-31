@@ -141,6 +141,12 @@ public class IdMapStore
             return Seasons.ContainsValue(seasonId);
     }
 
+    public List<Guid> GetMappedSeasonIds()
+    {
+        lock (_sync)
+            return Seasons.Values.Distinct().ToList();
+    }
+
     public void MapSeason(int oldProjectId, Guid seasonId)
     {
         lock (_sync)

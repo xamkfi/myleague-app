@@ -223,24 +223,43 @@ public class ImportApiClient : IDisposable
         return false;
     }
 
-    protected async Task<bool> PostWithRetryAsync(string url, object payload, string operationName, int maxRetries = 5)
+    protected Task<bool> PostWithRetryAsync(string url, object payload, string operationName, int maxRetries = 5) =>
+        SendWithRetryAsync(
+            () => Http.PostAsJsonAsync(url, payload),
+            operationName,
+            maxRetries);
+
+    protected Task<bool> PutWithRetryAsync(string url, string operationName, int maxRetries = 5) =>
+        SendWithRetryAsync(
+            () => Http.PutAsync(url, content: null),
+            operationName,
+            maxRetries);
+
+    private async Task<bool> SendWithRetryAsync(
+        Func<Task<HttpResponseMessage>> send,
+        string operationName,
+        int maxRetries)
     {
         for (int attempt = 0; attempt <= maxRetries; attempt++)
         {
-            HttpResponseMessage resp = await Http.PostAsJsonAsync(url, payload);
+            HttpResponseMessage resp = await send();
             if (resp.IsSuccessStatusCode)
                 return true;
 
-            if (resp.StatusCode == System.Net.HttpStatusCode.TooManyRequests && attempt < maxRetries)
+            string body = await resp.Content.ReadAsStringAsync();
+            bool retryable = attempt < maxRetries && (
+                resp.StatusCode == System.Net.HttpStatusCode.TooManyRequests
+                || IsRetryableUniqueConflict(resp.StatusCode, body));
+            if (retryable)
             {
-                await Task.Delay(150);
+                await Task.Delay(200 * (attempt + 1));
                 continue;
             }
 
-            string body = await resp.Content.ReadAsStringAsync();
-            Console.WriteLine($"    WARN: {operationName} failed: {Truncate(body)}");
+            Console.WriteLine($"  WARN: {operationName} failed: {Truncate(body)}");
             return false;
         }
+
         return false;
     }
 

@@ -374,15 +374,12 @@ public class HockeyApiClient : ImportApiClient
             isBenchPenalty = penalizedActivePlayerId == null,
         }, "RecordHockeyPenalty");
 
-    public async Task<bool> FinishMatchAsync(Guid matchId, DateTime? actualEndTime, HockeyMatchResultType resultType)
-    {
-        HttpResponseMessage resp = await Http.PostAsJsonAsync($"api/HockeyMatch/{matchId}/finish", new
+    public Task<bool> FinishMatchAsync(Guid matchId, DateTime? actualEndTime, HockeyMatchResultType resultType) =>
+        PostWithRetryAsync($"api/HockeyMatch/{matchId}/finish", new
         {
             actualEndTime = actualEndTime.HasValue ? UtcDateTime(actualEndTime.Value) : null,
             resultType = resultType.ToString(),
-        });
-        return await OkOrWarn(resp, "FinishHockeyMatch");
-    }
+        }, "FinishHockeyMatch");
 
     public async Task<bool> SetMatchStatusAsync(Guid matchId, HockeyMatchStatus status)
     {

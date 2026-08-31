@@ -223,11 +223,8 @@ public class FloorballApiClient : ImportApiClient
             penaltyType,
         }, "RecordPenalty");
 
-    public async Task<bool> CompleteMatchAsync(Guid matchId)
-    {
-        HttpResponseMessage resp = await Http.PutAsync($"api/floorball-matches/{matchId}/complete", null);
-        return await OkOrWarn(resp, "CompleteMatch");
-    }
+    public Task<bool> CompleteMatchAsync(Guid matchId) =>
+        PutWithRetryAsync($"api/floorball-matches/{matchId}/complete", "CompleteMatch");
 
     public async Task<FloorballMatchDto?> GetMatchByIdAsync(Guid matchId)
     {

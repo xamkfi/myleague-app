@@ -52,6 +52,40 @@ public class FootballMatchImporter
         _repairAll = repairAll;
     }
 
+    public async Task CompleteUnfinishedMappedMatchesAsync()
+    {
+        List<Guid> seasonIds = _idMap.GetMappedSeasonIds();
+        if (seasonIds.Count == 0)
+            return;
+
+        Console.WriteLine($"\nCompleting unfinished matches in {seasonIds.Count} mapped season(s)...");
+        int completed = 0;
+        int failed = 0;
+
+        foreach (Guid seasonId in seasonIds)
+        {
+            List<FootballMatchDto> matches = await _api.GetMatchesByCompetitionAsync(seasonId);
+            foreach (FootballMatchDto match in matches)
+            {
+                if (match.Status != FootballMatchStatus.InProgress)
+                    continue;
+
+                if (await _api.CompleteMatchAsync(match.Id))
+                {
+                    completed++;
+                    Console.WriteLine($"  Completed unfinished match {match.Id}");
+                }
+                else
+                {
+                    failed++;
+                    _log.LogError("CompleteFootballMatch", new { match.Id, match.CompetitionId }, "Retry complete failed.");
+                }
+            }
+        }
+
+        Console.WriteLine($"Unfinished completes: {completed} completed, {failed} failed.");
+    }
+
     private class LineupCandidate
     {
         public required Guid PlayerId { get; init; }
@@ -241,6 +275,8 @@ public class FootballMatchImporter
             return true;
         }
 
+        await EnsureLineupOnRosterAsync(home.TeamId, homeLineup);
+        await EnsureLineupOnRosterAsync(away.TeamId, awayLineup);
         await _api.SetLineupAsync(created.Id, home.TeamId, homeLineup);
         await _api.SetLineupAsync(created.Id, away.TeamId, awayLineup);
 
@@ -314,6 +350,8 @@ public class FootballMatchImporter
                 _log.LogError("RepairFootballMatch", new { match.Id, newMatchId }, "Could not build lineup; cannot start match.");
                 return false;
             }
+            await EnsureLineupOnRosterAsync(home.TeamId, homeLineup);
+            await EnsureLineupOnRosterAsync(away.TeamId, awayLineup);
             await _api.SetLineupAsync(newMatchId, home.TeamId, homeLineup);
             await _api.SetLineupAsync(newMatchId, away.TeamId, awayLineup);
             if (!await _api.StartMatchAsync(newMatchId))
@@ -400,6 +438,19 @@ public class FootballMatchImporter
         }
 
         return lineup;
+    }
+
+    /// <summary>
+    /// Lineup is built from the JoomLeague project roster (and unknown pads). Those
+    /// players may be missing on the MyLeague team when a resume skipped roster
+    /// updates or an earlier add failed. Add them before SetLineup.
+    /// </summary>
+    private async Task EnsureLineupOnRosterAsync(
+        Guid teamId,
+        List<(Guid PlayerId, FootballPosition Position, bool IsOnField)> lineup)
+    {
+        foreach ((Guid playerId, FootballPosition position, bool _) in lineup)
+            await _api.AddPlayerToTeamAsync(teamId, playerId, (int)position, jerseyNumber: null);
     }
 
     private async Task<(List<GoalRec> Goals, List<CardRec> Cards, int IgnoredEvents)> BuildEventsAsync(
