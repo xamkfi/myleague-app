@@ -57,6 +57,98 @@
   }
 }
 
+.club-admin-goalie-search {
+  position: relative;
+  flex: 1 1 260px;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &--disabled {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid #d5d8e0;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    background: #fff;
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+  }
+
+  &__clear {
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: #2258b4;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: underline;
+
+    &:hover {
+      color: #163d80;
+    }
+  }
+
+  &__list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    margin: 0;
+    padding: 6px 0;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #d5d8e0;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    max-height: 260px;
+    overflow-y: auto;
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.88rem;
+    color: #1c2233;
+    cursor: pointer;
+
+    &:hover,
+    &--active {
+      background: #eef4ff;
+    }
+
+    &--selected {
+      font-weight: 600;
+    }
+  }
+
+  &__empty {
+    padding: 10px 12px;
+    color: #6e6d75;
+    font-size: 0.85rem;
+  }
+}
+
 .club-admin-position-select {
   padding: 6px 8px;
   border: 1px solid #d5d8e0;

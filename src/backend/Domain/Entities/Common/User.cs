@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Domain.Enums.Common;
+using Domain.ValueObjects.Common;
 
 namespace Domain.Entities.Common
 {
@@ -11,7 +12,7 @@ namespace Domain.Entities.Common
         /// <summary>
         /// Email address used as the login identifier
         /// </summary>
-        public string Email { get; set; }
+        public string Email { get; private set; }
 
         /// <summary>
         /// PersonId of the user
@@ -94,10 +95,18 @@ namespace Domain.Entities.Common
             if (personId == Guid.Empty)
                 throw new ArgumentException("Person ID cannot be empty.", nameof(personId));
 
-            Email = email;
+            Email = EmailAddress.Normalize(email);
             PersonId = personId;
             Role = role;
             IsActive = true;
+        }
+
+        /// <summary>
+        /// Updates the login email. The address is stored trimmed and lowercased.
+        /// </summary>
+        public void ChangeEmail(string email)
+        {
+            Email = EmailAddress.Normalize(email);
         }
 
         /// <summary>

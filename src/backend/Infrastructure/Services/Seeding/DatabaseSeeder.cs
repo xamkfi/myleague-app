@@ -64,7 +64,7 @@ public class DatabaseSeeder
         string lastName,
         PersonRole role)
     {
-        bool userExists = await dbContext.Users.AnyAsync(u => u.Email == email);
+        bool userExists = await dbContext.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower());
         if (userExists)
         {
             logger.LogInformation("Seed user '{Email}' already exists, skipping.", email);
@@ -99,7 +99,7 @@ public class DatabaseSeeder
     /// </summary>
     private static async Task SeedClubAdminAsync(CommonDbContext dbContext, ILogger logger)
     {
-        User? existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == DevClubAdminEmail);
+        User? existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == DevClubAdminEmail);
         Guid personId;
         if (existingUser is null)
         {

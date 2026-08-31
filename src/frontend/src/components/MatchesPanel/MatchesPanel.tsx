@@ -232,26 +232,20 @@ function MatchesPanel() {
 
   return (
     <div className="matches-panel">
-      {/* --- LIVE: always show all --- */}
-      <div className="matches-panel__section">
-        <div className="matches-panel__section-header matches-panel__section-header--live">
-          <span className="pulse-dot" />
-          <h3 className="matches-panel__section-title">
-            {t('sidebar.liveMatches', 'Käynnissä')}
-          </h3>
-          {liveMatches.length > 0 && (
+      {liveMatches.length > 0 && (
+        <div className="matches-panel__section">
+          <div className="matches-panel__section-header matches-panel__section-header--live">
+            <span className="pulse-dot" />
+            <h3 className="matches-panel__section-title">
+              {t('sidebar.liveMatches', 'Käynnissä')}
+            </h3>
             <span className="matches-panel__section-count">({liveMatches.length})</span>
-          )}
+          </div>
+          {liveMatches.map((match) => (
+            <MatchPanelCard key={match.id} match={match} />
+          ))}
         </div>
-
-        {liveMatches.length > 0 ? (
-          liveMatches.map((match) => <MatchPanelCard key={match.id} match={match} />)
-        ) : (
-          <p className="matches-panel__empty-text">
-            {t('sidebar.noLiveMatches', 'Ei käynnissä olevia otteluita')}
-          </p>
-        )}
-      </div>
+      )}
 
       {/* --- UPCOMING: expandable --- */}
       <div className="matches-panel__section">

@@ -1,6 +1,7 @@
 using Domain.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
+using Domain.ValueObjects.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -334,8 +335,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
 
         public Task<Person?> GetByEmailAsync(string email)
         {
+            string? normalized = EmailAddress.NormalizeOptional(email);
+            if (normalized is null)
+            {
+                return Task.FromResult<Person?>(null);
+            }
+
             return _entities
-                .FirstOrDefaultAsync(p => p.ContactInfo != null && p.ContactInfo.Email == email);
+                .FirstOrDefaultAsync(p =>
+                    p.ContactInfo != null
+                    && p.ContactInfo.Email != null
+                    && p.ContactInfo.Email.ToLower() == normalized);
         }
     }
 } 
