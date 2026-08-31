@@ -14,10 +14,11 @@ export const authService = {
    * for local development / trusted internal environments only.
    */
   requestLoginCode: async (email: string): Promise<{ message: string; autoFillCode?: string }> => {
+    const normalizedEmail = email.trim().toLowerCase();
     const response = await fetch(`${BASE_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email: normalizedEmail }),
     });
     const data = await response.json();
 
@@ -36,10 +37,11 @@ export const authService = {
    * Verify the login code and receive authentication tokens.
    */
   verifyLoginCode: async (email: string, code: string): Promise<AuthTokenResponse> => {
+    const normalizedEmail = email.trim().toLowerCase();
     const response = await fetch(`${BASE_URL}/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code }),
+      body: JSON.stringify({ email: normalizedEmail, code }),
     });
     const data: ApiResponse<AuthTokenResponse> = await response.json();
 

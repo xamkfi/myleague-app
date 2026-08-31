@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { FootballPlayerDto } from '../../../../../api/football/footballPlayerService';
 import { FootballPosition } from '../../../../../types/football/footballTypes';
 import { footballTeamNameSearchService } from '../../../../../api/football/footballTeamNameSearchService';
+import JerseyNumberSelect, { useTakenJerseyNumbers } from '../../../../../components/JerseyNumberSelect';
 import './AssignToTeamModal.scss';
 
 interface AssignToTeamModalProps {
@@ -27,6 +28,10 @@ const AssignToTeamModal = ({ isOpen, player, onConfirm, onCancel, isAssigning, b
   const [teams, setTeams] = useState<TeamOption[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { takenNumbers: takenJerseyNumbers, isLoading: loadingJerseyNumbers } = useTakenJerseyNumbers(
+    'football',
+    selectedTeamId,
+  );
 
   const fetchTeams = useCallback (async () => {
     try {
@@ -110,7 +115,10 @@ const AssignToTeamModal = ({ isOpen, player, onConfirm, onCancel, isAssigning, b
               <select
                 id="team-select"
                 value={selectedTeamId}
-                onChange={(e) => setSelectedTeamId(e.target.value)}
+                onChange={(e) => {
+                  setSelectedTeamId(e.target.value);
+                  setJerseyNumber('');
+                }}
                 disabled={loadingTeams || isAssigning}
                 className="form-select"
               >
@@ -152,16 +160,13 @@ const AssignToTeamModal = ({ isOpen, player, onConfirm, onCancel, isAssigning, b
                 <label htmlFor="jersey-number">
                   {t('football.players.jerseyNumber', 'Jersey Number')}
                 </label>
-                <input
+                <JerseyNumberSelect
                   id="jersey-number"
-                  type="number"
-                  min="1"
-                  max="99"
-                  value={jerseyNumber}
-                  onChange={(e) => setJerseyNumber(e.target.value)}
-                  disabled={isAssigning}
-                  className="form-input"
-                  placeholder="1-99"
+                  value={jerseyNumber ? Number(jerseyNumber) : null}
+                  takenNumbers={takenJerseyNumbers}
+                  disabled={isAssigning || !selectedTeamId || loadingJerseyNumbers}
+                  className="form-select"
+                  onChange={(next) => setJerseyNumber(next === null ? '' : String(next))}
                 />
               </div>
             )}

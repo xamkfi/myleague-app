@@ -14,6 +14,7 @@ import { FloorballPosition } from '../../../types/floorball/floorballTypes';
 import { FootballPosition } from '../../../types/football/footballTypes';
 import type { ClubAdminSport } from '../../../types/clubAdmin/clubAdminTypes';
 import { loadHockeyRosterNameMaps, loadTeamNameMap } from '../../../utils/hockeyLookups';
+import GoalieSearchSelect from './components/GoalieSearchSelect';
 import './ClubAdminMatchRosterPage.scss';
 
 interface RosterPlayerOption {
@@ -381,22 +382,14 @@ function ClubAdminMatchRosterPage() {
               {isFloorball && !isHockey && (
                 <div className="club-admin-goalie-row">
                   <label htmlFor="goalie-select" className="club-admin-goalie-label">
-                    {t('clubAdmin.goalie', 'Goalie')}
+                    {t('clubAdmin.goalie')}
                   </label>
-                  <select
-                    id="goalie-select"
-                    className="club-admin-position-select club-admin-position-select--wide"
+                  <GoalieSearchSelect
+                    players={players}
                     value={goalieId}
-                    onChange={(e) => setGoalieId(e.target.value)}
+                    onChange={setGoalieId}
                     disabled={isSaving}
-                  >
-                    <option value="">{t('clubAdmin.noGoalie', 'No goalie selected')}</option>
-                    {players.map((p) => (
-                      <option key={p.playerId} value={p.playerId}>
-                        {p.jerseyNumber != null ? `#${p.jerseyNumber} ` : ''}{p.playerName}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
               )}
 

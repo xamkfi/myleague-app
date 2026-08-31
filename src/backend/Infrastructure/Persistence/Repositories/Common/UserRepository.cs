@@ -1,6 +1,7 @@
 using Domain.Entities.Common;
 using Domain.Enums.Common;
 using Domain.Repositories.Common;
+using Domain.ValueObjects.Common;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
 
@@ -24,9 +25,15 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
 
     public async Task<User?> GetByEmailAsync(string email)
     {
+        string? normalized = EmailAddress.NormalizeOptional(email);
+        if (normalized is null)
+        {
+            return null;
+        }
+
         return await _entities
             .Include(u => u.Person)
-            .FirstOrDefaultAsync(u => u.Email == email);
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == normalized);
     }
 
     public async Task<User?> GetByPersonIdAsync(Guid personId)
@@ -70,7 +77,13 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
 
     public async Task<bool> ExistsByEmailAsync(string email)
     {
-        return await _entities.AnyAsync(u => u.Email == email);
+        string? normalized = EmailAddress.NormalizeOptional(email);
+        if (normalized is null)
+        {
+            return false;
+        }
+
+        return await _entities.AnyAsync(u => u.Email.ToLower() == normalized);
     }
 
     public async Task<bool> ExistsByPersonIdAsync(Guid personId)

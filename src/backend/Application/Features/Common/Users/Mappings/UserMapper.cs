@@ -74,7 +74,7 @@ public static class UserMapper
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(command);
 
-        user.Email = command.Email;
+        user.ChangeEmail(command.Email);
         user.Role = command.Role;
         user.IsActive = command.IsActive;
     }

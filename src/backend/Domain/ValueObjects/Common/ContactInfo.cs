@@ -41,7 +41,7 @@ public class ContactInfo : IEquatable<ContactInfo>
     /// </summary>
     public ContactInfo(string? email, string? phone = null, string? alternativePhone = null)
     {
-        string? normalizedEmail = string.IsNullOrWhiteSpace(email) ? null : email.Trim();
+        string? normalizedEmail = EmailAddress.NormalizeOptional(email);
 
         if (normalizedEmail != null
             && (!normalizedEmail.Contains('@', StringComparison.Ordinal)

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
@@ -13,6 +13,7 @@ import SearchField from '../../../../components/SearchField';
 import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import JerseyNumberSelect, { collectJerseyNumbers } from '../../../../components/JerseyNumberSelect';
 import './EditRosterPage.scss';
 
 const EditRosterPage = () => {
@@ -134,14 +135,10 @@ const EditRosterPage = () => {
     }
   };
 
-  // Generate jersey number options (1-99 plus "None" option)
-  const jerseyNumberOptions = [
-    { value: '', label: '-' },
-    ...Array.from({ length: 99 }, (_, i) => ({ 
-      value: String(i + 1), 
-      label: `#${i + 1}` 
-    }))
-  ];
+  const takenJerseyNumbers = useMemo(
+    () => collectJerseyNumbers(currentTeam?.roster ?? []),
+    [currentTeam],
+  );
 
   // Position options for dropdown
   const positionOptions = [
@@ -279,25 +276,17 @@ const EditRosterPage = () => {
                       <span className="player-name">{player.playerName}</span>
                     </td>
                     <td className="jersey-column">
-                      <select
+                      <JerseyNumberSelect
                         className={`jersey-select${hasSubstitutedJersey ? ' jersey-select--substituted' : ''}`}
-                        value={player.jerseyNumber !== undefined && player.jerseyNumber !== null
-                          ? String(player.jerseyNumber)
-                          : ''}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const jerseyNum = value === '' ? undefined : parseInt(value, 10);
-                          handleUpdateJerseyNumber(player, jerseyNum);
-                        }}
+                        value={player.jerseyNumber}
+                        takenNumbers={takenJerseyNumbers}
+                        prefixHash
                         disabled={updatingPlayer === player.playerId}
                         title={jerseyTooltip}
-                      >
-                        {jerseyNumberOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(next) => {
+                          void handleUpdateJerseyNumber(player, next ?? undefined);
+                        }}
+                      />
                       {hasSubstitutedJersey && (
                         <span className="jersey-substituted-badge" title={jerseyTooltip}>
                           {t(

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
@@ -17,6 +17,7 @@ import {
   type HockeyTeamPlayerDto,
 } from '../../../../types/hockey/hockeyTypes';
 import { loadPersonNameMap } from '../../../../utils/hockeyLookups';
+import JerseyNumberSelect, { collectJerseyNumbers } from '../../../../components/JerseyNumberSelect';
 import './EditRosterPage.scss';
 
 function EditHockeyRosterPage() {
@@ -122,13 +123,10 @@ function EditHockeyRosterPage() {
     }
   }, [dropdownOpen]);
 
-  const jerseyNumberOptions = [
-    { value: '', label: '-' },
-    ...Array.from({ length: 99 }, (_, index) => ({
-      value: String(index + 1),
-      label: `#${index + 1}`,
-    })),
-  ];
+  const takenJerseyNumbers = useMemo(
+    () => collectJerseyNumbers(currentTeam?.roster ?? []),
+    [currentTeam],
+  );
 
   if (loading) {
     return (
@@ -207,19 +205,16 @@ function EditHockeyRosterPage() {
                       <span className="player-name">{names.get(player.playerId) ?? player.playerId.slice(0, 8)}</span>
                     </td>
                     <td className="jersey-column">
-                      <select
+                      <JerseyNumberSelect
                         className="jersey-select"
-                        value={player.jerseyNumber !== null ? String(player.jerseyNumber) : ''}
-                        onChange={(event) => {
-                          const value = event.target.value;
-                          void handleUpdate(player, { jerseyNumber: value === '' ? null : Number(value) });
-                        }}
+                        value={player.jerseyNumber}
+                        takenNumbers={takenJerseyNumbers}
+                        prefixHash
                         disabled={updatingPlayer === player.playerId}
-                      >
-                        {jerseyNumberOptions.map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
+                        onChange={(next) => {
+                          void handleUpdate(player, { jerseyNumber: next });
+                        }}
+                      />
                     </td>
                     <td className="position-column">
                       <select

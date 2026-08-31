@@ -139,7 +139,7 @@ export const personApi = {
    */
   getByEmail: async (email: string): Promise<Person | null> => {
     if (!email || !email.trim()) return null;
-    const response = await authFetch(`${API_URL}/persons/by-email?email=${encodeURIComponent(email.trim())}`);
+    const response = await authFetch(`${API_URL}/persons/by-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
     if (response.status === 404) return null;
     const apiResponse: ApiResponse<Person> = await response.json();
     if (!response.ok || !apiResponse.success) {

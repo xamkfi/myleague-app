@@ -240,7 +240,7 @@ const UserFormModal = ({
 
     try {
       setSaving(true);
-      await onSave(email.trim(), selectedPersonId, role, isActive, clubAssignments);
+      await onSave(email.trim().toLowerCase(), selectedPersonId, role, isActive, clubAssignments);
     } catch {
       // Parent handles the error
     } finally {

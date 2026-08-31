@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClubAdminPageTemplate from '../components/ClubAdminPageTemplate';
 import SearchField from '../../../components/SearchField';
+import JerseyNumberSelect, { collectJerseyNumbers } from '../../../components/JerseyNumberSelect';
 import { clubAdminService } from '../../../api/clubAdmin/clubAdminService';
 import { floorballTeamService } from '../../../api/floorball/floorballTeamService';
 import { footballTeamService } from '../../../api/football/footballTeamService';
@@ -18,8 +19,6 @@ interface RosterRow {
   isActive: boolean;
   jerseyNumber: number | null;
 }
-
-const JERSEY_OPTIONS: number[] = Array.from({ length: 99 }, (_, i) => i + 1);
 
 function ClubAdminRosterPage() {
   const { t } = useTranslation();
@@ -101,6 +100,11 @@ function ClubAdminRosterPage() {
     }
   };
 
+  const takenJerseyNumbers = useMemo(
+    () => collectJerseyNumbers(roster),
+    [roster],
+  );
+
   const filteredRoster = useMemo(() => {
     const needle = searchQuery.trim().toLowerCase();
     if (!needle) return roster;
@@ -154,17 +158,15 @@ function ClubAdminRosterPage() {
                 {filteredRoster.map((row) => (
                   <tr key={row.playerId} className={row.isActive ? '' : 'club-admin-roster-row--inactive'}>
                     <td>
-                      <select
+                      <JerseyNumberSelect
                         className="club-admin-jersey-select"
-                        value={row.jerseyNumber ?? ''}
+                        value={row.jerseyNumber}
+                        takenNumbers={takenJerseyNumbers}
                         disabled={savingPlayerId !== null}
-                        onChange={(e) => { void handleJerseyChange(row.playerId, e.target.value); }}
-                      >
-                        <option value="">{t('clubAdmin.noNumber', '—')}</option>
-                        {JERSEY_OPTIONS.map((num) => (
-                          <option key={num} value={num}>{num}</option>
-                        ))}
-                      </select>
+                        onChange={(next) => {
+                          void handleJerseyChange(row.playerId, next === null ? '' : String(next));
+                        }}
+                      />
                       {savingPlayerId === row.playerId && (
                         <span className="club-admin-jersey-status">{t('clubAdmin.saving', 'Saving...')}</span>
                       )}

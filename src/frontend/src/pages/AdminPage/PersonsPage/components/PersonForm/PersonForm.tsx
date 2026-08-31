@@ -27,6 +27,7 @@ import PageTemplate from '../../../../../components/PageTemplate/AdminPageTempla
 import './PersonForm.scss';
 import { ACTIVE_SPORTS, type SportType } from '../../../../../types/common/sports';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import JerseyNumberSelect, { useTakenJerseyNumbers } from '../../../../../components/JerseyNumberSelect';
 
 interface PersonFormProps {
   mode?: 'standalone' | 'embedded';
@@ -99,6 +100,7 @@ const PersonForm = ({
   
   const [formData, setFormData] = useState<EnhancedPersonFormData>(getInitialFormData());
   const [selectedSport, setSelectedSport] = useState<SportType | ''>('');
+  const { takenNumbers: takenJerseyNumbers } = useTakenJerseyNumbers(selectedSport, formData.teamId);
 
   const formatBirthDateForInput = (dateString: string | null | undefined): string => {
     if (!dateString) return '';
@@ -261,10 +263,11 @@ const PersonForm = ({
   const handleTeamChange = (teamId: string) => {
     setFormData(prev => ({
       ...prev,
-      teamId: teamId || undefined
+      teamId: teamId || undefined,
+      jerseyNumber: undefined,
     }));
     // Clear field error when team selection changes
-    setFieldErrors(prev => ({ ...prev, teamId: '', position: '' }));
+    setFieldErrors(prev => ({ ...prev, teamId: '', position: '', jerseyNumber: '' }));
   };
 
   const validateForm = (): boolean => {
@@ -375,7 +378,10 @@ const PersonForm = ({
         isRegistered: formData.isRegistered,
         role: formData.role,
         address: formData.address,
-        contactInfo: formData.contactInfo
+        contactInfo: {
+          ...formData.contactInfo,
+          email: formData.contactInfo.email.trim().toLowerCase(),
+        },
       };
 
       let createdPerson;
@@ -808,15 +814,18 @@ const PersonForm = ({
                 <label htmlFor="jerseyNumber">
                   {t('admin.persons.form.jerseyNumber')}
                 </label>
-                <input
-                  type="number"
+                <JerseyNumberSelect
                   id="jerseyNumber"
                   name="jerseyNumber"
-                  value={formData.jerseyNumber || ''}
-                  onChange={handleInputChange}
-                  min="1"
-                  max="99"
+                  value={formData.jerseyNumber}
+                  takenNumbers={takenJerseyNumbers}
                   className={fieldErrors.jerseyNumber ? 'person-error' : ''}
+                  onChange={(next) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      jerseyNumber: next ?? undefined,
+                    }));
+                  }}
                 />
                 {fieldErrors.jerseyNumber && (
                   <div className="field-error">{fieldErrors.jerseyNumber}</div>
