@@ -11,6 +11,36 @@
   margin: 0 0 16px;
 }
 
+.club-admin-roster-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.club-admin-roster-count {
+  color: #6e6d75;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.club-admin-roster-table-wrap {
+  max-height: min(60vh, 640px);
+  overflow: auto;
+  border: 1px solid #eef0f4;
+  border-radius: 8px;
+
+  .club-admin-roster-table {
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #fff;
+    }
+  }
+}
+
 .club-admin-roster-table {
   width: 100%;
   border-collapse: collapse;

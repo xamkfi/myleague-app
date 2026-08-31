@@ -85,12 +85,9 @@ export const floorballSeasonService = {
   getAll: async (): Promise<ApiResponse<FloorballSeasonDto[]>> => {
     try {
       const url = `${API_URL}/FloorballSeason`;
-      console.log('Fetching seasons from URL:', url);
       
       const response = await authFetch(url);
       
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch floorball seasons');
@@ -98,7 +95,6 @@ export const floorballSeasonService = {
       }
       
       const apiResponse: ApiResponse<FloorballSeasonDto[]> = await response.json();
-      console.log('API Response:', apiResponse);
       
       if (!apiResponse.success) {
         throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch floorball seasons'));
@@ -165,7 +161,6 @@ export const floorballSeasonService = {
   getActive: async (): Promise<ApiResponse<FloorballSeasonDto[]>> => {
     try {
       const url = `${API_URL}/FloorballSeason/active`;
-      console.log('Fetching active seasons from URL:', url);
       
       const response = await authFetch(url);
       
@@ -193,7 +188,6 @@ export const floorballSeasonService = {
   getById: async (id: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
       const url = `${API_URL}/FloorballSeason/${id}`;
-      console.log('Fetching season from URL:', url);
       
       const response = await authFetch(url);
       
@@ -220,7 +214,6 @@ export const floorballSeasonService = {
    */
   create: async (data: CreateFloorballSeasonRequest): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Creating season:', data);
       
       const response = await authFetch(`${API_URL}/FloorballSeason`, {
         method: 'POST',
@@ -230,8 +223,6 @@ export const floorballSeasonService = {
         body: JSON.stringify(data),
       });
       
-      console.log('Create response status:', response.status);
-      console.log('Create response ok:', response.ok);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to create floorball season');
@@ -239,7 +230,6 @@ export const floorballSeasonService = {
       }
       
       const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
-      console.log('Create API Response:', apiResponse);
       
       if (!apiResponse.success) {
         throw new Error(await parseErrorResponse(apiResponse, 'Failed to create floorball season'));
@@ -256,38 +246,26 @@ export const floorballSeasonService = {
    * Update a floorball season
    */
   update: async (id: string, data: UpdateFloorballSeasonRequest): Promise<ApiResponse<FloorballSeasonDto>> => {
-    try {
-      console.log('Updating season with ID:', id);
-      console.log('Update data:', data);
-      
-      const response = await authFetch(`${API_URL}/FloorballSeason/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      
-      console.log('Update response status:', response.status);
-      console.log('Update response ok:', response.ok);
-      
-      if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to update floorball season');
-        throw new Error(errorMessage);
-      }
-      
-      const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
-      console.log('Update API Response:', apiResponse);
-      
-      if (!apiResponse.success) {
-        throw new Error(await parseErrorResponse(apiResponse, 'Failed to update floorball season'));
-      }
-      
-      return apiResponse;
-    } catch (error) {
-      console.error('Error in floorballSeasonService.update:', error);
-      throw error;
+    const response = await authFetch(`${API_URL}/FloorballSeason/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to update floorball season');
+      throw new Error(errorMessage);
     }
+
+    const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
+
+    if (!apiResponse.success) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to update floorball season'));
+    }
+
+    return apiResponse;
   },
 
   /**
@@ -295,14 +273,11 @@ export const floorballSeasonService = {
    */
   delete: async (id: string): Promise<void> => {
     try {
-      console.log('Deleting season with ID:', id);
       
       const response = await authFetch(`${API_URL}/FloorballSeason/${id}`, {
         method: 'DELETE',
       });
       
-      console.log('Delete response status:', response.status);
-      console.log('Delete response ok:', response.ok);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to delete floorball season');
@@ -310,7 +285,6 @@ export const floorballSeasonService = {
       }
       
       const apiResponse: ApiResponse<void> = await response.json();
-      console.log('Delete API Response:', apiResponse);
       
       if (!apiResponse.success) {
         throw new Error(await parseErrorResponse(apiResponse, 'Failed to delete floorball season'));
@@ -326,7 +300,6 @@ export const floorballSeasonService = {
    */
   activate: async (id: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Activating season with ID:', id);
       
       const response = await authFetch(`${API_URL}/FloorballSeason/${id}/activate`, {
         method: 'PUT',
@@ -355,7 +328,6 @@ export const floorballSeasonService = {
    */
   deactivate: async (id: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Deactivating season with ID:', id);
       
       const response = await authFetch(`${API_URL}/FloorballSeason/${id}/deactivate`, {
         method: 'PUT',
@@ -384,7 +356,6 @@ export const floorballSeasonService = {
    */
   complete: async (id: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Completing season with ID:', id);
       
       const response = await authFetch(`${API_URL}/FloorballSeason/${id}/complete`, {
         method: 'PUT',
@@ -413,7 +384,6 @@ export const floorballSeasonService = {
    */
   addTeamToSeason: async (competitionId: string, teamId: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Adding team to season:', { competitionId, teamId });
       
       const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/teams/${teamId}`, {
         method: 'POST',
@@ -442,7 +412,6 @@ export const floorballSeasonService = {
    */
   removeTeamFromSeason: async (competitionId: string, teamId: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Removing team from season:', { competitionId, teamId });
       
       const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/teams/${teamId}`, {
         method: 'DELETE',
@@ -471,7 +440,6 @@ export const floorballSeasonService = {
    */
   addDivisionToSeason: async (competitionId: string, divisionId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Adding division to season:', { competitionId, divisionId });
       
       const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}`, {
         method: 'POST',
@@ -500,7 +468,6 @@ export const floorballSeasonService = {
    */
   removeDivisionFromSeason: async (competitionId: string, divisionId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Removing division from season:', { competitionId, divisionId });
       
       const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}`, {
         method: 'DELETE',
@@ -529,7 +496,6 @@ export const floorballSeasonService = {
    */
   addTeamToSeasonDivision: async (competitionId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Adding team to season division:', { competitionId, divisionId, teamId });
       
       const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}/teams/${teamId}`, {
         method: 'POST',
@@ -558,7 +524,6 @@ export const floorballSeasonService = {
    */
   removeTeamFromSeasonDivision: async (competitionId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Removing team from season division:', { competitionId, divisionId, teamId });
       
       const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}/teams/${teamId}`, {
         method: 'DELETE',

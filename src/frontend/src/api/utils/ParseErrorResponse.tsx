@@ -68,3 +68,51 @@ export async function parseErrorResponse(
   }
   return parseErrorBody(responseOrBody, defaultMessage);
 }
+
+/**
+ * Turns a thrown API error (plain text or JSON `{ title, errors }`) into a single
+ * user-facing sentence. ErrorPopup can still parse JSON if the caller prefers that shape.
+ */
+export function unwrapApiErrorMessage(err: unknown, fallback: string): string {
+  const raw = err instanceof Error ? err.message : String(err ?? '');
+  const stripped = raw.replace(/^Error:\s*/, '').trim();
+
+  if (!stripped) {
+    return fallback;
+  }
+
+  if (stripped.includes('Failed to fetch') || stripped.includes('NetworkError')) {
+    return fallback;
+  }
+
+  try {
+    const parsed = JSON.parse(stripped) as {
+      title?: unknown;
+      message?: unknown;
+      errors?: unknown;
+    };
+
+    if (parsed && typeof parsed === 'object') {
+      if (Array.isArray(parsed.errors)) {
+        const first = parsed.errors.find(
+          (item): item is string => typeof item === 'string' && item.trim().length > 0,
+        );
+        if (first) {
+          return first;
+        }
+      }
+
+      if (typeof parsed.title === 'string' && parsed.title.trim()) {
+        return parsed.title;
+      }
+
+      if (typeof parsed.message === 'string' && parsed.message.trim()) {
+        return parsed.message;
+      }
+    }
+  } catch {
+    // Already a plain message from the API or a local validation throw.
+  }
+
+  return stripped;
+}

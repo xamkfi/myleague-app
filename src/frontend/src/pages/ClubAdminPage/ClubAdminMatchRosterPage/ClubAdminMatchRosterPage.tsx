@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClubAdminPageTemplate from '../components/ClubAdminPageTemplate';
+import SearchField from '../../../components/SearchField';
 import { clubAdminService } from '../../../api/clubAdmin/clubAdminService';
 import { floorballTeamService } from '../../../api/floorball/floorballTeamService';
 import { footballTeamService } from '../../../api/football/footballTeamService';
@@ -36,6 +37,8 @@ interface MatchInfo {
   status: string;
 }
 
+type RosterListFilter = 'all' | 'selected' | 'available';
+
 const FLOORBALL_FIELD_POSITIONS: FloorballPosition[] = [
   FloorballPosition.Defender,
   FloorballPosition.Center,
@@ -61,6 +64,24 @@ function defaultFootballPosition(position: string): string {
     : FootballPosition.Midfielder;
 }
 
+function matchesPlayerSearch(player: RosterPlayerOption, query: string): boolean {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  const jersey = player.jerseyNumber != null ? String(player.jerseyNumber) : '';
+  const haystack = `${player.playerName} ${jersey} #${jersey}`.toLowerCase();
+  return haystack.includes(needle);
+}
+
+function isInMatchRoster(
+  player: RosterPlayerOption,
+  selections: Record<string, SelectionState>,
+  goalieId: string,
+  isFloorball: boolean,
+): boolean {
+  if (isFloorball && player.playerId === goalieId) return true;
+  return Boolean(selections[player.playerId]?.selected);
+}
+
 function ClubAdminMatchRosterPage() {
   const { t, i18n } = useTranslation();
   const { sport, teamId, matchId } = useParams<{ sport: ClubAdminSport; teamId: string; matchId: string }>();
@@ -71,6 +92,8 @@ function ClubAdminMatchRosterPage() {
   const [players, setPlayers] = useState<RosterPlayerOption[]>([]);
   const [selections, setSelections] = useState<Record<string, SelectionState>>({});
   const [goalieId, setGoalieId] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [listFilter, setListFilter] = useState<RosterListFilter>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -203,11 +226,46 @@ function ClubAdminMatchRosterPage() {
     void load();
   }, [load]);
 
+  const filteredPlayers = useMemo(() => {
+    return players
+      .filter((player) => {
+        if (!matchesPlayerSearch(player, searchQuery)) return false;
+        const inRoster = isInMatchRoster(player, selections, goalieId, isFloorball);
+        if (listFilter === 'selected') return inRoster;
+        if (listFilter === 'available') return !inRoster;
+        return true;
+      })
+      .sort((a, b) => {
+        const aGoalie = isFloorball && a.playerId === goalieId;
+        const bGoalie = isFloorball && b.playerId === goalieId;
+        if (aGoalie !== bGoalie) return aGoalie ? -1 : 1;
+        const aNum = a.jerseyNumber ?? Number.MAX_SAFE_INTEGER;
+        const bNum = b.jerseyNumber ?? Number.MAX_SAFE_INTEGER;
+        if (aNum !== bNum) return aNum - bNum;
+        return a.playerName.localeCompare(b.playerName, undefined, { sensitivity: 'base' });
+      });
+  }, [players, searchQuery, listFilter, selections, goalieId, isFloorball]);
+
   const toggleSelected = (playerId: string) => {
     setSelections((prev) => ({
       ...prev,
       [playerId]: { ...prev[playerId], selected: !prev[playerId].selected },
     }));
+  };
+
+  const setVisibleSelected = (selected: boolean) => {
+    const visibleIds = new Set(
+      filteredPlayers
+        .filter((player) => !(isFloorball && player.playerId === goalieId))
+        .map((player) => player.playerId),
+    );
+    setSelections((prev) => {
+      const next: Record<string, SelectionState> = { ...prev };
+      visibleIds.forEach((playerId) => {
+        next[playerId] = { ...next[playerId], selected };
+      });
+      return next;
+    });
   };
 
   const setPosition = (playerId: string, position: string) => {
@@ -280,6 +338,8 @@ function ClubAdminMatchRosterPage() {
     ? players.filter((p) => selections[p.playerId]?.selected).length
     : players.filter((p) => selections[p.playerId]?.selected && p.playerId !== goalieId).length;
   const isScheduled = matchInfo?.status === 'Scheduled';
+  const columnCount = isHockey ? 2 : isFloorball ? 3 : 4;
+  const hasActiveFilters = searchQuery.trim() !== '' || listFilter !== 'all';
 
   return (
     <ClubAdminPageTemplate title={t('clubAdmin.announceRosterTitle', 'Announce match roster')}>
@@ -294,13 +354,15 @@ function ClubAdminMatchRosterPage() {
       {!isLoading && matchInfo && (
         <>
           <div className="club-admin-match-summary">
-            <span className="club-admin-match-teams">
-              {matchInfo.homeTeamName ?? 'TBD'} – {matchInfo.awayTeamName ?? 'TBD'}
-            </span>
-            <span className="club-admin-match-meta">
-              {formatDate(matchInfo.scheduledDateTime)}
-              {matchInfo.venue ? ` · ${matchInfo.venue}` : ''}
-            </span>
+            <div className="club-admin-match-summary__main">
+              <span className="club-admin-match-teams">
+                {matchInfo.homeTeamName ?? 'TBD'} – {matchInfo.awayTeamName ?? 'TBD'}
+              </span>
+              <span className="club-admin-match-meta">
+                {formatDate(matchInfo.scheduledDateTime)}
+                {matchInfo.venue ? ` · ${matchInfo.venue}` : ''}
+              </span>
+            </div>
             {hasExistingRoster && (
               <span className="club-admin-announced-badge">
                 {t('clubAdmin.rosterAnnounced', 'Roster announced')}
@@ -323,7 +385,7 @@ function ClubAdminMatchRosterPage() {
                   </label>
                   <select
                     id="goalie-select"
-                    className="club-admin-position-select"
+                    className="club-admin-position-select club-admin-position-select--wide"
                     value={goalieId}
                     onChange={(e) => setGoalieId(e.target.value)}
                     disabled={isSaving}
@@ -346,83 +408,174 @@ function ClubAdminMatchRosterPage() {
                     : t('clubAdmin.footballRosterHint', 'Select the players for this match, set their position, and mark the starting lineup.')}
               </p>
 
-              <table className="club-admin-roster-table">
-                <thead>
-                  <tr>
-                    <th className="club-admin-select-col">{t('clubAdmin.inRoster', 'In roster')}</th>
-                    <th>{t('clubAdmin.playerName', 'Player')}</th>
-                    {!isHockey && <th>{t('clubAdmin.matchPosition', 'Match position')}</th>}
-                    {!isFloorball && !isHockey && <th>{t('clubAdmin.starting', 'Starting')}</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {players.map((player) => {
-                    const selection = selections[player.playerId];
-                    const isGoalie = isFloorball && goalieId === player.playerId;
-                    return (
-                      <tr key={player.playerId} className={isGoalie ? 'club-admin-roster-row--goalie' : ''}>
-                        <td>
-                          {isGoalie ? (
-                            <span className="club-admin-goalie-tag">{t('clubAdmin.goalie', 'Goalie')}</span>
-                          ) : (
-                            <input
-                              type="checkbox"
-                              checked={selection?.selected ?? false}
-                              onChange={() => toggleSelected(player.playerId)}
-                              disabled={isSaving}
-                            />
-                          )}
-                        </td>
-                        <td>
-                          {player.jerseyNumber != null && (
-                            <span className="club-admin-jersey-badge">#{player.jerseyNumber}</span>
-                          )}
-                          {player.playerName}
-                          {isHockey && player.defaultPosition && (
-                            <span className="club-admin-upcoming-meta">
-                              {' '}
-                              {t(`hockey.positions.${player.defaultPosition}`, player.defaultPosition)}
-                            </span>
-                          )}
-                        </td>
-                        {!isHockey && (
-                        <td>
-                          {!isGoalie && (
-                            <select
-                              className="club-admin-position-select"
-                              value={selection?.position ?? ''}
-                              onChange={(e) => setPosition(player.playerId, e.target.value)}
-                              disabled={isSaving || !selection?.selected}
-                            >
-                              {(isFloorball ? FLOORBALL_FIELD_POSITIONS : FOOTBALL_POSITIONS).map((pos) => (
-                                <option key={pos} value={pos}>{t(`positions.${pos}`, pos)}</option>
-                              ))}
-                            </select>
-                          )}
-                        </td>
-                        )}
-                        {!isFloorball && !isHockey && (
-                          <td>
-                            <input
-                              type="checkbox"
-                              checked={selection?.isOnField ?? false}
-                              onChange={() => toggleOnField(player.playerId)}
-                              disabled={isSaving || !selection?.selected}
-                            />
-                          </td>
-                        )}
-                      </tr>
-                    );
+              <div className="club-admin-roster-toolbar">
+                <SearchField
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder={t('clubAdmin.searchPlayers', 'Search by name or jersey number...')}
+                  rounded="md"
+                  size="sm"
+                />
+                <div className="club-admin-roster-filters" role="group" aria-label={t('clubAdmin.filterAll', 'All')}>
+                  {([
+                    ['all', t('clubAdmin.filterAll', 'All')],
+                    ['selected', t('clubAdmin.filterSelected', 'In roster')],
+                    ['available', t('clubAdmin.filterAvailable', 'Not in roster')],
+                  ] as const).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={`club-admin-filter-chip${listFilter === value ? ' club-admin-filter-chip--active' : ''}`}
+                      aria-pressed={listFilter === value}
+                      onClick={() => setListFilter(value)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="club-admin-roster-toolbar-meta">
+                <span className="club-admin-roster-count">
+                  {t('clubAdmin.showingPlayers', '{{shown}} / {{total}} players', {
+                    shown: filteredPlayers.length,
+                    total: players.length,
                   })}
-                  {players.length === 0 && (
+                </span>
+                {filteredPlayers.length > 0 && (
+                  <div className="club-admin-roster-bulk">
+                    <button
+                      type="button"
+                      className="club-admin-text-button"
+                      onClick={() => setVisibleSelected(true)}
+                      disabled={isSaving}
+                    >
+                      {t('clubAdmin.selectVisible', 'Select visible')}
+                    </button>
+                    <button
+                      type="button"
+                      className="club-admin-text-button"
+                      onClick={() => setVisibleSelected(false)}
+                      disabled={isSaving}
+                    >
+                      {t('clubAdmin.clearVisible', 'Clear visible')}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="club-admin-roster-table-wrap">
+                <table className="club-admin-roster-table">
+                  <thead>
                     <tr>
-                      <td colSpan={isHockey ? 2 : isFloorball ? 3 : 4} className="club-admin-roster-empty">
-                        {t('clubAdmin.emptyRoster', 'This team has no players on its roster yet.')}
-                      </td>
+                      <th className="club-admin-select-col">{t('clubAdmin.inRoster', 'In roster')}</th>
+                      <th>{t('clubAdmin.playerName', 'Player')}</th>
+                      {!isHockey && <th>{t('clubAdmin.matchPosition', 'Match position')}</th>}
+                      {!isFloorball && !isHockey && <th>{t('clubAdmin.starting', 'Starting')}</th>}
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredPlayers.map((player) => {
+                      const selection = selections[player.playerId];
+                      const isGoalie = isFloorball && goalieId === player.playerId;
+                      const isSelected = isInMatchRoster(player, selections, goalieId, isFloorball);
+                      const rowClass = [
+                        isGoalie ? 'club-admin-roster-row--goalie' : '',
+                        isSelected && !isGoalie ? 'club-admin-roster-row--selected' : '',
+                      ].filter(Boolean).join(' ');
+                      return (
+                        <tr key={player.playerId} className={rowClass || undefined}>
+                          <td>
+                            {isGoalie ? (
+                              <span className="club-admin-goalie-tag">{t('clubAdmin.goalie', 'Goalie')}</span>
+                            ) : (
+                              <label className="club-admin-roster-check">
+                                <input
+                                  type="checkbox"
+                                  checked={selection?.selected ?? false}
+                                  onChange={() => toggleSelected(player.playerId)}
+                                  disabled={isSaving}
+                                />
+                                <span className="club-admin-visually-hidden">
+                                  {t('clubAdmin.inRoster', 'In roster')}
+                                </span>
+                              </label>
+                            )}
+                          </td>
+                          <td>
+                            <div className="club-admin-player-cell">
+                              <span className="club-admin-jersey-badge">
+                                {player.jerseyNumber != null ? `#${player.jerseyNumber}` : '—'}
+                              </span>
+                              <span className="club-admin-player-name">{player.playerName}</span>
+                              {isHockey && player.defaultPosition && (
+                                <span className="club-admin-upcoming-meta">
+                                  {t(`hockey.positions.${player.defaultPosition}`, player.defaultPosition)}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          {!isHockey && (
+                            <td>
+                              {!isGoalie && (
+                                <select
+                                  className="club-admin-position-select"
+                                  value={selection?.position ?? ''}
+                                  onChange={(e) => setPosition(player.playerId, e.target.value)}
+                                  disabled={isSaving || !selection?.selected}
+                                >
+                                  {(isFloorball ? FLOORBALL_FIELD_POSITIONS : FOOTBALL_POSITIONS).map((pos) => (
+                                    <option key={pos} value={pos}>{t(`positions.${pos}`, pos)}</option>
+                                  ))}
+                                </select>
+                              )}
+                            </td>
+                          )}
+                          {!isFloorball && !isHockey && (
+                            <td>
+                              <input
+                                type="checkbox"
+                                checked={selection?.isOnField ?? false}
+                                onChange={() => toggleOnField(player.playerId)}
+                                disabled={isSaving || !selection?.selected}
+                              />
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                    {players.length === 0 && (
+                      <tr>
+                        <td colSpan={columnCount} className="club-admin-roster-empty">
+                          {t('clubAdmin.emptyRoster', 'This team has no players on its roster yet.')}
+                        </td>
+                      </tr>
+                    )}
+                    {players.length > 0 && filteredPlayers.length === 0 && (
+                      <tr>
+                        <td colSpan={columnCount} className="club-admin-roster-empty">
+                          {t('clubAdmin.searchNoResults', 'No players match the current search.')}
+                          {hasActiveFilters && (
+                            <>
+                              {' '}
+                              <button
+                                type="button"
+                                className="club-admin-text-button"
+                                onClick={() => {
+                                  setSearchQuery('');
+                                  setListFilter('all');
+                                }}
+                              >
+                                {t('common.clear', 'Clear')}
+                              </button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
               <div className="club-admin-save-row">
                 <span className="club-admin-selected-count">

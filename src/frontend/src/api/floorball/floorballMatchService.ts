@@ -206,8 +206,6 @@ export const floorballMatchService = {
   getById: async (id: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       const url = `${API_URL}/${MATCHES_PATH}/by-id/${id}`;
-      console.log('Fetching match from URL:', url);
-      
       const response = await authFetch(url);
       const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
@@ -509,7 +507,6 @@ export const floorballMatchService = {
    */
   changeDateTime: async (id: string, scheduledDateTime: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      console.log('Changing date/time for match with ID:', id, 'to:', scheduledDateTime);
       // Fetch current match to preserve venue
       const current = await (await authFetch(`${API_URL}/${MATCHES_PATH}/by-id/${id}`)).json() as ApiResponse<FloorballMatchDto>;
       if (!current.success || !current.data) {

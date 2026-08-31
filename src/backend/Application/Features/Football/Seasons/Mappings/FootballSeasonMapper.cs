@@ -4,6 +4,7 @@ using Application.Features.Football.Seasons.Commands;
 using Application.Features.Football.Seasons.DTOs;
 using Domain.Entities.Common;
 using Domain.Entities.Football.Competitions;
+using Domain.Entities.Football.Matches;
 using Domain.Entities.Football.Teams;
 using Domain.ValueObjects.Football;
 
@@ -32,12 +33,14 @@ public static class FootballSeasonMapper
         FootballCompetition season,
         IReadOnlyCollection<FootballSeasonDivisionDto> seasonDivisions,
         Dictionary<Guid, Club>? clubs = null,
-        IEnumerable<FootballTeam>? seasonTeams = null)
+        IEnumerable<FootballTeam>? seasonTeams = null,
+        IEnumerable<FootballMatch>? seasonMatches = null)
     {
         ArgumentNullException.ThrowIfNull(season);
         ArgumentNullException.ThrowIfNull(seasonDivisions);
 
         IEnumerable<FootballTeam> teamsToMap = seasonTeams ?? season.Teams;
+        IEnumerable<FootballMatch> matchesToMap = seasonMatches ?? season.Matches;
 
         FootballMatchRulesDto matchRulesDto = new(
             season.MatchRules.NumberOfHalves,
@@ -65,7 +68,7 @@ public static class FootballSeasonMapper
             season.IsCompleted,
             seasonDivisions,
             ToTeamSummaryDtos(teamsToMap, clubs).ToList().AsReadOnly(),
-            FootballMatchMapper.ToDtos(season.Matches).ToList().AsReadOnly(),
+            FootballMatchMapper.ToDtos(matchesToMap).ToList().AsReadOnly(),
             matchRulesDto,
             standingRulesDto,
             season.TeamCategory);

@@ -157,34 +157,17 @@ const UserFormModal = ({
   };
 
   const fetchPersons = useCallback(async (searchTerm: string) => {
+    const trimmed = searchTerm.trim();
+    if (trimmed.length < 2) {
+      setPersons([]);
+      return;
+    }
+
     try {
       setLoadingPersons(true);
-      const trimmed = searchTerm.trim();
-
-      let allPersons: Person[] = [];
-
-      if (trimmed.length >= 2) {
-        const response = await personApi.search(trimmed, 1, MAX_PAGE_SIZE);
-        allPersons = response.data ?? [];
-      } else {
-        const firstPage = await personApi.getAll(1, MAX_PAGE_SIZE);
-        allPersons = firstPage.data ?? [];
-
-        if (firstPage.pagination && firstPage.pagination.totalPages > 1) {
-          const fetchPromises = [];
-          for (let page = 2; page <= firstPage.pagination.totalPages; page++) {
-            fetchPromises.push(personApi.getAll(page, MAX_PAGE_SIZE));
-          }
-          const pages = await Promise.all(fetchPromises);
-          for (const p of pages) {
-            allPersons = allPersons.concat(p.data ?? []);
-          }
-        }
-      }
-
-      setPersons(allPersons);
-    } catch (err) {
-      console.error('Failed to load persons for user form:', err);
+      const response = await personApi.search(trimmed, 1, MAX_PAGE_SIZE);
+      setPersons(response.data ?? []);
+    } catch {
       setPersons([]);
     } finally {
       setLoadingPersons(false);
@@ -205,7 +188,7 @@ const UserFormModal = ({
 
   const handleSearchFocus = () => {
     setIsDropdownOpen(true);
-    if (persons.length === 0 && !loadingPersons) {
+    if (personSearch.trim().length >= 2 && persons.length === 0 && !loadingPersons) {
       fetchPersons(personSearch);
     }
   };
@@ -332,10 +315,15 @@ const UserFormModal = ({
                         )}
                         {!loadingPersons && persons.length === 0 && (
                           <div className="user-form-person-list__empty">
-                            {t(
-                              'admin.users.form.noPerson',
-                              'No available persons found',
-                            )}
+                            {personSearch.trim().length < 2
+                              ? t(
+                                  'admin.users.form.typeToSearch',
+                                  'Type at least 2 characters to search',
+                                )
+                              : t(
+                                  'admin.users.form.noPerson',
+                                  'No available persons found',
+                                )}
                           </div>
                         )}
                         {!loadingPersons &&

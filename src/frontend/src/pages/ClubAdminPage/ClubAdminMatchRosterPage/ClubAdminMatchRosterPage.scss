@@ -12,6 +12,7 @@
 .club-admin-match-summary {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
   background: #fff;
@@ -20,9 +21,17 @@
   margin-bottom: 18px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
   .club-admin-match-teams {
     font-weight: 700;
     color: #1c2233;
+    font-size: 1.05rem;
   }
 
   .club-admin-match-meta {
@@ -35,7 +44,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
   margin-bottom: 16px;
+  padding: 12px 14px;
+  background: #f2f7ff;
+  border-radius: 8px;
 
   .club-admin-goalie-label {
     font-weight: 600;
@@ -55,6 +68,11 @@
   &:disabled {
     opacity: 0.55;
   }
+
+  &--wide {
+    flex: 1 1 220px;
+    min-width: 220px;
+  }
 }
 
 .club-admin-select-col {
@@ -62,15 +80,37 @@
 }
 
 .club-admin-jersey-badge {
-  display: inline-block;
-  min-width: 30px;
-  margin-right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  padding: 2px 6px;
+  margin-right: 0;
   font-weight: 700;
+  font-size: 0.82rem;
   color: #2258b4;
+  background: #e7f0fd;
+  border-radius: 6px;
+}
+
+.club-admin-player-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.club-admin-player-name {
+  font-weight: 600;
+  color: #1c2233;
 }
 
 .club-admin-roster-row--goalie td {
   background: #f2f7ff;
+}
+
+.club-admin-roster-row--selected td {
+  background: #f7faf5;
 }
 
 .club-admin-goalie-tag {
@@ -83,11 +123,135 @@
   white-space: nowrap;
 }
 
+.club-admin-roster-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  cursor: pointer;
+
+  input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+}
+
+.club-admin-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.club-admin-roster-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.club-admin-roster-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.club-admin-filter-chip {
+  border: 1px solid #d5d8e0;
+  background: #fff;
+  color: #3d4454;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: #f5f6f8;
+  }
+
+  &--active {
+    background: #1c2233;
+    border-color: #1c2233;
+    color: #fff;
+  }
+}
+
+.club-admin-roster-toolbar-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.club-admin-roster-count {
+  color: #6e6d75;
+  font-size: 0.82rem;
+}
+
+.club-admin-roster-bulk {
+  display: flex;
+  gap: 12px;
+}
+
+.club-admin-text-button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #2258b4;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.club-admin-roster-table-wrap {
+  max-height: min(60vh, 640px);
+  overflow: auto;
+  border: 1px solid #eef0f4;
+  border-radius: 8px;
+
+  .club-admin-roster-table {
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #fff;
+    }
+  }
+}
+
 .club-admin-save-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 18px;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eef0f4;
+  position: sticky;
+  bottom: 0;
+  background: #fff;
 
   .club-admin-selected-count {
     color: #6e6d75;

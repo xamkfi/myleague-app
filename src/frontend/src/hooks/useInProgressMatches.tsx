@@ -159,21 +159,25 @@ export const useInProgressMatchesController = (active: boolean): InProgressMatch
       }
     };
 
+    const startPolling = (): void => {
+      pollIntervalId = setInterval(() => {
+        void fetchInProgress();
+      }, POLL_INTERVAL_MS);
+    };
+
     const setupLiveUpdates = async (): Promise<void> => {
       try {
         await signalRService.connect();
         if (!signalRService.isConnected || !isMountedRef.current) {
-          throw new Error('SignalR not connected');
+          startPolling();
+          return;
         }
 
         await signalRService.subscribeToEventType(STATUS_CHANGED_EVENT);
         signalRUnsubscribe = signalRService.onMatchEvent(handleSignalREvent);
         signalRConnected = true;
-      } catch (err) {
-        console.warn('useInProgressMatches: SignalR unavailable, falling back to polling', err);
-        pollIntervalId = setInterval(() => {
-          void fetchInProgress();
-        }, POLL_INTERVAL_MS);
+      } catch {
+        startPolling();
       }
     };
 
