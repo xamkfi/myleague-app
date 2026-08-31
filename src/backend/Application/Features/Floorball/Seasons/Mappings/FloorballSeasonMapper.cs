@@ -62,7 +62,8 @@ public static class FloorballSeasonMapper
         FloorballCompetition season,
         IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisions,
         Dictionary<Guid, Club>? clubs = null,
-        IEnumerable<FloorballTeam>? seasonTeams = null)
+        IEnumerable<FloorballTeam>? seasonTeams = null,
+        IEnumerable<FloorballMatch>? seasonMatches = null)
     {
         if (season == null)
         {
@@ -75,6 +76,7 @@ public static class FloorballSeasonMapper
         }
 
         IEnumerable<FloorballTeam> teamsToMap = seasonTeams ?? season.Teams;
+        IEnumerable<FloorballMatch> matchesToMap = seasonMatches ?? season.Matches;
 
         FloorballMatchRulesDto matchRulesDto = new FloorballMatchRulesDto(
             season.MatchRules.NumberOfPeriods,
@@ -92,7 +94,7 @@ public static class FloorballSeasonMapper
             season.IsCompleted,
             seasonDivisions,
             FloorballTeamMapper.ToDtos(teamsToMap, clubs, new Dictionary<Guid, Person>()).ToList().AsReadOnly(),
-            FloorballMatchMapper.ToDtos(season.Matches).ToList().AsReadOnly(),
+            FloorballMatchMapper.ToDtos(matchesToMap).ToList().AsReadOnly(),
             matchRulesDto,
             season.TeamCategory
         );

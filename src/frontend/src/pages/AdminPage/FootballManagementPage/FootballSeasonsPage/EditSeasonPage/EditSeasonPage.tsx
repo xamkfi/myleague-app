@@ -11,6 +11,7 @@ import {
   type FootballSeasonDto,
   type UpdateFootballSeasonRequest,
 } from '../../../../../api/football/footballSeasonService';
+import { unwrapApiErrorMessage } from '../../../../../api/utils/ParseErrorResponse';
 import { footballTeamService } from '../../../../../api/football/footballTeamService';
 import { type FootballTeam, TeamCategory } from '../../../../../types/football/footballTypes';
 import { useDivisions } from '../../../../../hooks/useDivisions';
@@ -206,18 +207,23 @@ const EditSeasonPage = () => {
   };
 
   const parseApiError = (err: unknown): string => {
-    const msg = err instanceof Error ? err.message : String(err);
-    if (msg?.includes('Failed to fetch') || msg?.includes('NetworkError'))
+    const msg = unwrapApiErrorMessage(
+      err,
+      t('football.seasons.errors.updateFailed', 'Operation failed. Please try again.'),
+    );
+    if (msg.includes('Failed to fetch') || msg.includes('NetworkError'))
       return t('football.seasons.errors.networkError', 'Network error. Please check your connection.');
-    if (msg?.includes('HTTP 400'))
+    if (msg.includes('HTTP 400'))
       return t('football.seasons.errors.validationError', 'Invalid data. Please check your input.');
-    if (msg?.includes('HTTP 404'))
+    if (msg.includes('HTTP 404'))
       return t('football.seasons.errors.notFound', 'Not found. It may have been deleted.');
-    if (msg?.includes('HTTP 409'))
+    if (msg.includes('HTTP 409'))
       return t('football.seasons.errors.conflictError', 'A season with overlapping dates already exists.');
-    if (msg?.includes('HTTP 500'))
+    if (msg.includes('HTTP 500'))
       return t('football.seasons.errors.serverError', 'Server error. Please try again later.');
-    return msg || t('football.seasons.errors.updateFailed', 'Operation failed. Please try again.');
+    if (msg.includes('Cannot update a completed'))
+      return t('football.seasons.errors.cannotUpdateCompleted', 'Cannot update a completed season.');
+    return msg;
   };
 
   // ── Season Details submit ──
@@ -243,8 +249,41 @@ const EditSeasonPage = () => {
         throw new Error(t('seasonContent.titleRequired'));
       }
 
-      await footballSeasonService.update(competitionId, formData);
-      await footballSeasonService.replaceContentBlocks(competitionId, toContentBlockItems(contentBlocks));
+      let contentSaved = false;
+      const saveErrors: string[] = [];
+      try {
+        await footballSeasonService.replaceContentBlocks(competitionId, toContentBlockItems(contentBlocks));
+        contentSaved = true;
+      } catch (contentErr) {
+        saveErrors.push(
+          t('seasonContent.saveFailed', 'Introduction blocks could not be saved: {{reason}}', {
+            reason: parseApiError(contentErr),
+          }),
+        );
+      }
+
+      try {
+        await footballSeasonService.update(competitionId, formData);
+      } catch (detailsErr) {
+        const detailsMessage = t(
+          'football.seasons.errors.detailsSaveFailed',
+          'Season details could not be saved: {{reason}}',
+          { reason: parseApiError(detailsErr) },
+        );
+        saveErrors.push(
+          contentSaved
+            ? t('seasonContent.savedButDetailsFailed', 'Introduction blocks were saved. {{reason}}', {
+                reason: detailsMessage,
+              })
+            : detailsMessage,
+        );
+      }
+
+      if (saveErrors.length > 0) {
+        setError(saveErrors.join(' '));
+        return;
+      }
+
       showSuccess(t('football.seasons.seasonUpdated', 'Season "{{seasonName}}" has been updated successfully!', { seasonName: formData.name }), true);
       await loadSeason();
     } catch (err) {

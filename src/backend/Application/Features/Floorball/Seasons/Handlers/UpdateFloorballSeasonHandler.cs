@@ -72,15 +72,27 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
             IEnumerable<FloorballCompetitionDivision> seasonDivisions = await _seasonDivisionRepository.GetCompetitionDivisionsAsync(existingSeason.Id);
             IReadOnlyCollection<FloorballSeasonDivisionDto> seasonDivisionDtos = FloorballSeasonMapper.ToDivisionDtos(seasonDivisions);
 
-            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(existingSeason, seasonDivisionDtos);
+            FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(
+                existingSeason,
+                seasonDivisionDtos,
+                seasonMatches: Array.Empty<FloorballMatch>());
             _logger.LogInformation("Successfully updated floorball season with ID: {SeasonId}", existingSeason.Id);
 
             return Result<FloorballSeasonDto>.Success(seasonDto);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
         {
-            _logger.LogError(ex, "Error occurred while updating floorball season: {SeasonId}", request.Id);
-            return Result<FloorballSeasonDto>.Failure("An error occurred while updating the floorball season.");
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Rejected floorball season update: {SeasonId}", request.Id);
+            return Result<FloorballSeasonDto>.Failure(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid floorball season update: {SeasonId}", request.Id);
+            return Result<FloorballSeasonDto>.Failure(ex.Message);
         }
     }
 } 

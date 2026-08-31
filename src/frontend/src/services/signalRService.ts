@@ -22,7 +22,7 @@ function getAccessToken(): string | null {
 export class SignalRService {
   private connection: HubConnection | null = null;
   private matchEventCallbacks: ((event: MatchEvent) => void)[] = [];
-  private isConnecting = false;
+  private connectPromise: Promise<void> | null = null;
   private subscribedEventTypes = new Set<string>();
   private subscribedMatches = new Set<string>();
 
@@ -40,22 +40,29 @@ export class SignalRService {
   }
 
   async connect(): Promise<void> {
-    if (this.connection?.state === HubConnectionState.Connected || this.isConnecting) {
+    if (this.connection?.state === HubConnectionState.Connected) {
       return;
     }
 
-    this.isConnecting = true;
+    if (this.connectPromise) {
+      await this.connectPromise;
+      return;
+    }
 
-    let signalRUrl = '';
+    this.connectPromise = this.startConnection();
+    try {
+      await this.connectPromise;
+    } finally {
+      this.connectPromise = null;
+    }
+  }
+
+  private async startConnection(): Promise<void> {
+    const signalRUrl = import.meta.env.DEV
+      ? 'http://localhost:8080/api/hubs/domainevent'
+      : `${API_URL.replace('/api', '')}/api/hubs/domainevent`;
 
     try {
-      if (import.meta.env.DEV) {
-        signalRUrl = 'http://localhost:8080/api/hubs/domainevent';
-      } else {
-        const baseUrl = API_URL.replace('/api', '');
-        signalRUrl = `${baseUrl}/api/hubs/domainevent`;
-      }
-
       this.connection = new HubConnectionBuilder()
         .withUrl(signalRUrl, {
           withCredentials: true,
@@ -74,20 +81,12 @@ export class SignalRService {
       });
 
       this.connection.onreconnected(() => {
-        this.resubscribeAll();
-      });
-
-      this.connection.onclose(() => {
-        console.warn('SignalR connection closed');
+        void this.resubscribeAll();
       });
 
       await this.connection.start();
-    } catch (error) {
-      console.error('SignalR connection failed:', error);
+    } catch {
       this.connection = null;
-      throw error;
-    } finally {
-      this.isConnecting = false;
     }
   }
 

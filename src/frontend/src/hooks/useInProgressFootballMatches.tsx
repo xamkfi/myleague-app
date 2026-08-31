@@ -137,11 +137,18 @@ export const useInProgressFootballMatchesController = (active: boolean): InProgr
       }
     };
 
+    const startPolling = (): void => {
+      pollIntervalId = setInterval(() => {
+        void fetchInProgress();
+      }, POLL_INTERVAL_MS);
+    };
+
     const setupLiveUpdates = async (): Promise<void> => {
       try {
         await signalRService.connect();
         if (!signalRService.isConnected || !isMountedRef.current) {
-          throw new Error('SignalR not connected');
+          startPolling();
+          return;
         }
 
         for (const eventName of STATUS_EVENTS) {
@@ -150,11 +157,8 @@ export const useInProgressFootballMatchesController = (active: boolean): InProgr
         }
         signalRUnsubscribe = signalRService.onMatchEvent(handleSignalREvent);
         signalRConnected = true;
-      } catch (err) {
-        console.warn('useInProgressFootballMatches: SignalR unavailable, falling back to polling', err);
-        pollIntervalId = setInterval(() => {
-          void fetchInProgress();
-        }, POLL_INTERVAL_MS);
+      } catch {
+        startPolling();
       }
     };
 

@@ -60,7 +60,7 @@ export const useSeasonsManagement = () => {
       return t('floorball.seasons.errors.cannotActivateCompleted', 'Cannot activate a completed season.');
     }
     
-    if (errorMessage.includes('Cannot update a completed season')) {
+    if (errorMessage.includes('Cannot update a completed')) {
       return t('floorball.seasons.errors.cannotUpdateCompleted', 'Cannot update a completed season.');
     }
     

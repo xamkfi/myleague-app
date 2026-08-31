@@ -50,15 +50,27 @@ public class UpdateFootballSeasonHandler : IRequestHandler<UpdateFootballSeasonC
             IReadOnlyCollection<FootballSeasonDivisionDto> seasonDivisionDtos =
                 FootballSeasonMapper.ToDivisionDtos(seasonDivisions);
 
-            FootballSeasonDto seasonDto = FootballSeasonMapper.ToDto(existingSeason, seasonDivisionDtos);
+            FootballSeasonDto seasonDto = FootballSeasonMapper.ToDto(
+                existingSeason,
+                seasonDivisionDtos,
+                seasonMatches: Array.Empty<Domain.Entities.Football.Matches.FootballMatch>());
             _logger.LogInformation("Successfully updated football season with ID: {SeasonId}", existingSeason.Id);
 
             return Result<FootballSeasonDto>.Success(seasonDto);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
         {
-            _logger.LogError(ex, "Error occurred while updating football season: {SeasonId}", request.Id);
-            return Result<FootballSeasonDto>.Failure("An error occurred while updating the football season.");
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Rejected football season update: {SeasonId}", request.Id);
+            return Result<FootballSeasonDto>.Failure(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid football season update: {SeasonId}", request.Id);
+            return Result<FootballSeasonDto>.Failure(ex.Message);
         }
     }
 }

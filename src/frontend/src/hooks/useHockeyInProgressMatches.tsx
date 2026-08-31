@@ -82,42 +82,45 @@ export const useHockeyInProgressMatchesController = (active: boolean): HockeyInP
   const isMountedRef = useRef(true);
 
   const fetchLive = useCallback(async (): Promise<void> => {
-    try {
-      const pages = await Promise.all(
-        LIVE_HOCKEY_STATUSES.map((status) =>
-          hockeyMatchService.getPaged({ status, page: 1, pageSize: 100 }),
-        ),
-      );
+    const pages = await Promise.allSettled(
+      LIVE_HOCKEY_STATUSES.map((status) =>
+        hockeyMatchService.getPaged({ status, page: 1, pageSize: 50 }),
+      ),
+    );
 
-      if (!isMountedRef.current) {
-        return;
+    if (!isMountedRef.current) {
+      return;
+    }
+
+    const seen = new Set<string>();
+    const matches: HockeyMatchDto[] = [];
+    let failedCount = 0;
+
+    for (const page of pages) {
+      if (page.status === 'rejected') {
+        failedCount += 1;
+        continue;
       }
 
-      const seen = new Set<string>();
-      const matches: HockeyMatchDto[] = [];
-      for (const page of pages) {
-        for (const match of page.data) {
-          if (seen.has(match.id)) {
-            continue;
-          }
-          seen.add(match.id);
-          matches.push(match);
+      for (const match of page.value.data) {
+        if (seen.has(match.id)) {
+          continue;
         }
+        seen.add(match.id);
+        matches.push(match);
       }
+    }
 
-      setState(buildState(matches));
-    } catch (err) {
-      if (!isMountedRef.current) {
-        return;
-      }
-
-      const message = err instanceof Error ? err.message : 'Failed to load live hockey matches';
+    if (failedCount === LIVE_HOCKEY_STATUSES.length) {
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: message,
+        error: prev.error ?? 'Failed to load live hockey matches',
       }));
+      return;
     }
+
+    setState(buildState(matches));
   }, []);
 
   useEffect(() => {

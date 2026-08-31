@@ -61,7 +61,7 @@ export const useSeasonsManagement = () => {
       return t('football.seasons.errors.cannotActivateCompleted', 'Cannot activate a completed season.');
     }
     
-    if (errorMessage.includes('Cannot update a completed season')) {
+    if (errorMessage.includes('Cannot update a completed')) {
       return t('football.seasons.errors.cannotUpdateCompleted', 'Cannot update a completed season.');
     }
     
