@@ -29,7 +29,7 @@
          integration smoke tests or local Docker), which is a regression from 2.x.
          Pinned to 2.23.0 (graceful no-op when unconfigured). The matching Serilog sink
          is 4.1.0, which depends on Microsoft.ApplicationInsights >= 2.23.0. -->
-    <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="4.1.0" />
+    <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="5.0.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
     
