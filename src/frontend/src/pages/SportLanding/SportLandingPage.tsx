@@ -11,6 +11,7 @@ import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
 import { TeamLink } from '../../components/SportLinks';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { getMatchPath, type SportKind } from '../../utils/sportRoutes';
+import SportIcon from '../../components/SportIcon/SportIcon';
 import { formatMatchDateTime } from '../../utils/helpers';
 import { formatSeasonYearLabel } from '../../utils/seasonYear';
 import './SportLanding.scss';
@@ -265,7 +266,10 @@ export default function SportLandingPage({
         <header className="fb-banner">
           <img className="fb-banner__image" src={bannerImage} alt="" aria-hidden="true" />
           <div className="fb-banner__content">
-            <h1 className="fb-banner__title">{title}</h1>
+            <div className="fb-banner__title-row">
+              <SportIcon sport={sport} size="lg" inverted decorative />
+              <h1 className="fb-banner__title">{title}</h1>
+            </div>
             {years.length > 0 && (
               <div className="fb-banner__nav">
                 <label className="fb-banner__select-wrap">

@@ -6,9 +6,11 @@ import './Navbar.scss';
 import SearchBar from '../SearchBar';
 import { MAHL_INFO_PAGES } from '../../constants/mahlInfoPages';
 import AudienceSwitcher from '../AudienceSwitcher/AudienceSwitcher';
+import SportIcon, { type SportIconSport } from '../SportIcon/SportIcon';
+import mahlLogo from '../../assets/logos/Mahl_primary_V3.svg';
 
 interface NavbarSportLink {
-  id: string;
+  id: SportIconSport;
   path: string;
   translationKey: string;
   disabled?: boolean;
@@ -83,8 +85,8 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <Link to="/" onClick={closeMobileMenu}>
-          <h1>MAHL</h1>
+        <Link to="/" onClick={closeMobileMenu} className="navbar-brand-logo-link">
+          <img src={mahlLogo} alt="MAHL" className="navbar-brand-logo" />
         </Link>
         <AudienceSwitcher />
       </div>
@@ -159,9 +161,19 @@ function Navbar() {
                 {SPORTS_CONFIG.map((sport: NavbarSportLink) => (
                   <li key={sport.id}>
                     {sport.disabled ? (
-                      <span className="disabled-link">{t(sport.translationKey)}</span>
+                      <span className="disabled-link navbar-sport-link">
+                        <SportIcon sport={sport.id} size="sm" decorative />
+                        {t(sport.translationKey)}
+                      </span>
                     ) : (
-                      <Link to={sport.path} onClick={() => setActiveDropdown(null)}>{t(sport.translationKey)}</Link>
+                      <Link
+                        to={sport.path}
+                        onClick={() => setActiveDropdown(null)}
+                        className="navbar-sport-link"
+                      >
+                        <SportIcon sport={sport.id} size="sm" decorative />
+                        {t(sport.translationKey)}
+                      </Link>
                     )}
                   </li>
                 ))}
@@ -228,9 +240,19 @@ function Navbar() {
                 {SPORTS_CONFIG.map((sport: NavbarSportLink) => (
                   <li key={sport.id}>
                     {sport.disabled ? (
-                      <span className="disabled-link">{t(sport.translationKey)}</span>
+                      <span className="disabled-link navbar-sport-link">
+                        <SportIcon sport={sport.id} size="sm" inverted decorative />
+                        {t(sport.translationKey)}
+                      </span>
                     ) : (
-                      <Link to={sport.path} onClick={closeMobileMenu}>{t(sport.translationKey)}</Link>
+                      <Link
+                        to={sport.path}
+                        onClick={closeMobileMenu}
+                        className="navbar-sport-link"
+                      >
+                        <SportIcon sport={sport.id} size="sm" inverted decorative />
+                        {t(sport.translationKey)}
+                      </Link>
                     )}
                   </li>
                 ))}

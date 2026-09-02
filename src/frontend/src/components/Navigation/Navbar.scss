@@ -26,17 +26,19 @@
     gap: map.get($spacing, 'xxs');
     flex-shrink: 0;
 
-    h1 {
-      font-size: map.get($font-sizes, 'lg');
-      font-weight: map.get($font-weights, 'bold');
-      margin: 0;
-      line-height: 1;
-      letter-spacing: $letter-spacing-wide;
-    }
-
-    a {
+    &-logo-link {
+      display: flex;
+      align-items: center;
       color: $color-white;
       text-decoration: none;
+    }
+
+    &-logo {
+      height: 22px;
+      width: auto;
+      max-width: 160px;
+      display: block;
+      filter: brightness(0) invert(1);
     }
   }
 
@@ -205,6 +207,12 @@
             }
           }
 
+          .navbar-sport-link {
+            display: flex;
+            align-items: center;
+            gap: map.get($spacing, 'xs');
+          }
+
           .disabled-link {
             font-size: map.get($font-sizes, 'base');
             padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
@@ -311,6 +319,12 @@
         color: rgba($color-navbar, 0.4);
         cursor: not-allowed;
       }
+
+      .navbar-sport-link {
+        display: flex;
+        align-items: center;
+        gap: map.get($spacing, 'xs');
+      }
     }
   }
 }
@@ -321,8 +335,9 @@
     height: $mobile-navbar-height;
     padding: map.get($spacing, 'xs') map.get($spacing, 'base');
     
-    &-brand h1 {
-      font-size: map.get($font-sizes, 'md');
+    &-brand-logo {
+      height: 18px;
+      max-width: 120px;
     }
 
     &-brand .audience-switcher__trigger {

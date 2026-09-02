@@ -4,6 +4,7 @@ import defaultNewsImage from '../../../assets/defaultImage.jpg';
 import { newsListUrl } from '../newsListFilters';
 import { SportsCategory } from '../../../types/common/sports';
 import { useTranslation } from 'react-i18next';
+import SportIcon from '../../../components/SportIcon/SportIcon';
 
 function sportLabelKey(sport: string): string {
   if (sport === SportsCategory.Floorball) return 'newsPage.sportCategory.floorball';
@@ -47,6 +48,7 @@ export default function NewsCard({ news }: { news: NewsArticleDto }) {
                     navigate(newsListUrl({ sportCategory: news.sportCategory }));
                   }}
                 >
+                  <SportIcon sport={news.sportCategory} size="sm" inverted decorative />
                   {t(sportLabelKey(news.sportCategory), news.sportCategory)}
                 </button>
               )}

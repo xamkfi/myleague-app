@@ -18,6 +18,7 @@ import MatchesIcon from '../../assets/adminIcons/Matches.svg';
 import RefereesIcon from '../../assets/adminIcons/Referees.svg';
 import ClubsIcon from '../../assets/adminIcons/Clubs.svg';
 import LeaguesIcon from '../../assets/adminIcons/Leagues.svg';
+import SportIcon from '../SportIcon/SportIcon';
 
 interface AdminNavBarProps {
   collapsed: boolean;
@@ -218,7 +219,7 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
               {collapsed ? (
                 <Link to="/admin/floorball" title={t('admin.actions.floorball', 'Floorball')}>
                   <span className="admin-navbar-icon-wrapper">
-                    <img src={SportsIcon} alt="Floorball" className="icon" />
+                    <SportIcon sport="floorball" size="sm" className="icon" decorative={false} alt={t('admin.actions.floorball', 'Floorball')} />
                     {totalLive > 0 && (
                       <LiveDot
                         tone="dark"
@@ -234,7 +235,7 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                     to="/admin/floorball" 
                     className="admin-navbar-dropdown-trigger-content"
                   >
-                    <img src={SportsIcon} alt="Floorball" className="icon" />
+                    <SportIcon sport="floorball" size="sm" className="icon" decorative={false} alt={t('admin.actions.floorball', 'Floorball')} />
                     <span>{t('admin.actions.floorball', 'Floorball')}</span>
                     {totalLive > 0 && (
                       <LiveDot
@@ -321,7 +322,7 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
               {collapsed ? (
                 <Link to="/admin/football" title={t('admin.actions.football', 'Football')}>
                   <span className="admin-navbar-icon-wrapper">
-                    <img src={SportsIcon} alt="Football" className="icon" />
+                    <SportIcon sport="football" size="sm" className="icon" decorative={false} alt={t('admin.actions.football', 'Football')} />
                     {footballTotalLive > 0 && (
                       <LiveDot
                         tone="dark"
@@ -337,7 +338,7 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                     to="/admin/football"
                     className="admin-navbar-dropdown-trigger-content"
                   >
-                    <img src={SportsIcon} alt="Football" className="icon" />
+                    <SportIcon sport="football" size="sm" className="icon" decorative={false} alt={t('admin.actions.football', 'Football')} />
                     <span>{t('admin.actions.football', 'Football')}</span>
                     {footballTotalLive > 0 && (
                       <LiveDot
@@ -424,7 +425,7 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
               {collapsed ? (
                 <Link to="/admin/hockey" title={t('admin.actions.hockey', 'Ice hockey')}>
                   <span className="admin-navbar-icon-wrapper">
-                    <img src={SportsIcon} alt="Hockey" className="icon" />
+                    <SportIcon sport="hockey" size="sm" className="icon" decorative={false} alt={t('admin.actions.hockey', 'Ice hockey')} />
                     {hockeyLive.totalCount > 0 && (
                       <LiveDot
                         tone="dark"
@@ -437,7 +438,7 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
               ) : (
                 <div className="admin-navbar-dropdown-trigger">
                   <Link to="/admin/hockey" className="admin-navbar-dropdown-trigger-content">
-                    <img src={SportsIcon} alt="Hockey" className="icon" />
+                    <SportIcon sport="hockey" size="sm" className="icon" decorative={false} alt={t('admin.actions.hockey', 'Ice hockey')} />
                     <span>{t('admin.actions.hockey', 'Ice hockey')}</span>
                     {hockeyLive.totalCount > 0 && (
                       <LiveDot

@@ -4,6 +4,7 @@ import { fetchBackendVersion } from '../../api/version/versionService';
 import { footerContactService } from '../../api/common/footerContactService';
 import type { FooterContact } from '../../types/admin/footerContactTypes';
 import FooterLinkList from './FooterLinkList';
+import mahlLogo from '../../assets/logos/Mahl_primary_V3.svg';
 import './Footer.scss';
 
 function obfuscateEmail(email: string): string {
@@ -29,6 +30,7 @@ export default function Footer() {
 
   return (
     <footer className="footer">
+      <img src={mahlLogo} alt="MAHL" className="footer-logo" />
       <div className="footer-sections">
         <div className="footer-section">
           <h4 className="footer-title">{t('footer.seasonSports', 'KAUSILAJIT')}</h4>
