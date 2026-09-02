@@ -1,0 +1,24 @@
+.sport-icon {
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+
+  &--sm {
+    width: 20px;
+    height: 20px;
+  }
+
+  &--md {
+    width: 32px;
+    height: 32px;
+  }
+
+  &--lg {
+    width: 64px;
+    height: 64px;
+  }
+
+  &--inverted {
+    filter: brightness(0) invert(1);
+  }
+}

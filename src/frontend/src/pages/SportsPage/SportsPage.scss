@@ -2,83 +2,94 @@
 @use '@variables' as *;
 
 .sports-page {
-  max-width: $max-width-page;
-  margin: 0 auto;
-  padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'lg');
+  width: 100%;
+  background: $color-neutral-light-grey;
 
-  &__header {
-    text-align: center;
-    background: $color-banner-bg;
-    border-radius: map.get($border-radius, 'lg');
-    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
-    margin-bottom: map.get($spacing, 'xl');
+  &__banner {
     position: relative;
+    width: 100%;
+    min-height: 280px;
+    background: $color-brand-light;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
     overflow: hidden;
+  }
 
-    &::before {
-      content: '';
-      position: absolute;
-      top: -40%;
-      left: -15%;
-      width: 350px;
-      height: 350px;
-      background: radial-gradient(circle, rgba($color-blue-secondary, 0.12) 0%, transparent 70%);
-      pointer-events: none;
-    }
+  &__banner-image {
+    position: absolute;
+    width: 154.25%;
+    height: 365.22%;
+    max-width: none;
+    left: -54.28%;
+    top: -265.15%;
+    object-fit: cover;
+    opacity: 0.2;
+    pointer-events: none;
+  }
 
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -40%;
-      right: -10%;
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, rgba($color-blue-light, 0.1) 0%, transparent 70%);
-      pointer-events: none;
-    }
+  &__banner-content {
+    position: relative;
+    width: 100%;
+    max-width: 920px;
+    padding: map.get($spacing, 'md') map.get($spacing, 'md') 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
   &__title {
-    font-size: map.get($font-sizes, 'xxl');
-    font-weight: map.get($font-weights, 'extrabold');
-    color: $color-white;
-    margin-bottom: map.get($spacing, 'sm');
+    margin: 0;
     font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 48px;
+    line-height: 64px;
+    letter-spacing: 2.4px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    position: relative;
+    color: $color-neutral-white;
   }
 
   &__description {
-    font-size: map.get($font-sizes, 'md');
-    color: rgba($color-white, 0.75);
+    margin: 0;
     max-width: 600px;
-    margin: 0 auto;
+    font-family: $font-family-body;
+    font-size: map.get($font-sizes, 'base');
     line-height: 1.6;
-    position: relative;
+    color: rgba($color-neutral-white, 0.85);
+  }
+
+  &__content {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: map.get($spacing, 'lg') map.get($spacing, 'md') map.get($spacing, 'xl');
   }
 
   &__grid {
+    width: 100%;
+    max-width: 920px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: map.get($spacing, 'xl');
+    grid-template-columns: repeat(3, 1fr);
+    gap: map.get($spacing, 'md');
   }
 }
 
 .sport-card {
-  background: linear-gradient(145deg, $color-blue-darkest 0%, darken($color-blue-darkest, 5%) 100%);
-  border-radius: map.get($border-radius, 'lg');
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid rgba($color-white, 0.1);
   display: flex;
   flex-direction: column;
+  background: $color-white;
+  border-radius: map.get($border-radius, 'lg-plus');
+  overflow: hidden;
+  text-decoration: none;
+  border: 1px solid $color-neutral-light-grey;
+  box-shadow: $box-shadow-drop-1;
+  @include transition(all);
 
   &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-    border-color: rgba($color-blue-secondary, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border-color: $color-blue-light;
   }
 
   &:focus-visible {
@@ -89,60 +100,72 @@
   &--disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    background: linear-gradient(145deg, $color-neutral-dark-grey 0%, darken($color-neutral-dark-grey, 5%) 100%);
-
-    &:hover {
-      transform: none;
-      box-shadow: none;
-      border-color: rgba($color-white, 0.1);
-    }
+    pointer-events: none;
   }
 
   &__icon {
-    font-size: 4rem;
-    text-align: center;
-    padding: map.get($spacing, 'xl') 0;
-    background: linear-gradient(180deg, rgba($color-blue-deep, 0.4) 0%, transparent 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 140px;
+    background: linear-gradient(
+      180deg,
+      $color-neutral-light-grey 0%,
+      rgba($color-neutral-light-grey, 0.3) 100%
+    );
+    padding: map.get($spacing, 'md');
+  }
+
+  &:hover &__icon .sport-icon {
+    transform: scale(1.08);
+  }
+
+  &__icon .sport-icon {
+    @include transition(transform);
   }
 
   &__content {
-    padding: map.get($spacing, 'lg');
-    flex: 1;
+    padding: map.get($spacing, 'md');
     display: flex;
     flex-direction: column;
+    flex: 1;
   }
 
   &__title {
-    font-size: map.get($font-sizes, 'xl');
-    font-weight: map.get($font-weights, 'bold');
-    color: $color-white;
-    margin-bottom: map.get($spacing, 'sm');
+    margin: 0 0 map.get($spacing, 'xxs');
+    font-family: $font-family-display;
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'medium');
+    line-height: 1.3;
+    text-transform: uppercase;
+    color: $color-blue-deep;
   }
 
   &__description {
-    font-size: map.get($font-sizes, 'base');
-    color: rgba($color-white, 0.7);
-    line-height: 1.6;
-    margin-bottom: map.get($spacing, 'md');
+    margin: 0 0 map.get($spacing, 'sm');
     flex: 1;
+    font-family: $font-family-body;
+    font-size: map.get($font-sizes, 'sm');
+    line-height: 1.6;
+    color: $color-neutral-dark-grey;
   }
 
   &__link {
     display: inline-block;
-    color: $color-blue-secondary;
+    color: $color-blue-secondary-muted;
     font-weight: map.get($font-weights, 'semibold');
     font-size: map.get($font-sizes, 'sm');
     @include transition(color);
 
     .sport-card:hover & {
-      color: $color-blue-secondary-light;
+      color: $color-blue-deep;
     }
   }
 
   &__coming-soon {
     display: inline-block;
-    background: rgba($color-white, 0.1);
-    color: rgba($color-white, 0.5);
+    background: $color-neutral-light-grey;
+    color: $color-neutral-dark-grey;
     padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
     border-radius: map.get($border-radius, 'sm');
     font-size: map.get($font-sizes, 'sm');
@@ -150,33 +173,38 @@
   }
 }
 
+@media (max-width: map.get($breakpoints, 'desktop')) {
+  .sports-page {
+    &__grid {
+      grid-template-columns: 1fr;
+      max-width: 480px;
+    }
+  }
+}
+
 @media (max-width: map.get($breakpoints, 'tablet')) {
   .sports-page {
-    padding: map.get($spacing, 'md');
+    &__banner {
+      min-height: 200px;
+    }
 
-    &__header {
-      padding: map.get($spacing, 'lg') map.get($spacing, 'md');
-      margin-bottom: map.get($spacing, 'lg');
+    &__banner-content {
+      padding: map.get($spacing, 'md') map.get($spacing, 'md') map.get($spacing, 'lg');
     }
 
     &__title {
-      font-size: map.get($font-sizes, 'xl');
+      font-size: 32px;
+      line-height: 44px;
     }
 
-    &__description {
-      font-size: map.get($font-sizes, 'base');
-    }
-
-    &__grid {
-      grid-template-columns: 1fr;
-      gap: map.get($spacing, 'md');
+    &__content {
+      padding: map.get($spacing, 'md') map.get($spacing, 'sm') map.get($spacing, 'lg');
     }
   }
 
   .sport-card {
     &__icon {
-      font-size: 3rem;
-      padding: map.get($spacing, 'lg') 0;
+      height: 112px;
     }
 
     &__content {

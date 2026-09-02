@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { newsListUrl, formatNewsTagLabel } from '../NewsPage/newsListFilters';
 import type { RelatedNewsTeam } from './extractRelatedNewsTeams';
 import { SportsCategory } from '../../types/common/sports';
+import SportIcon from '../../components/SportIcon/SportIcon';
 
 type NewsTaxonomyBarProps = {
   sportCategory?: string;
@@ -58,16 +59,23 @@ export default function NewsTaxonomyBar({
     return null;
   }
 
-  const renderChip = (label: string, className: string, to?: string) => {
+  const renderChip = (label: string, className: string, to?: string, icon?: ReactNode) => {
+    const content = (
+      <>
+        {icon}
+        {label}
+      </>
+    );
+
     if (clickable && to) {
       return (
         <Link to={to} className={className}>
-          {label}
+          {content}
         </Link>
       );
     }
 
-    return <span className={className}>{label}</span>;
+    return <span className={className}>{content}</span>;
   };
 
   return (
@@ -84,7 +92,8 @@ export default function NewsTaxonomyBar({
           renderChip(
             t(sportLabelKey(sportCategory), sportCategory),
             'news-taxonomy-bar__chip news-taxonomy-bar__chip--sport',
-            newsListUrl({ sportCategory })
+            newsListUrl({ sportCategory }),
+            <SportIcon sport={sportCategory} size="sm" decorative />
           )}
         {category &&
           renderChip(

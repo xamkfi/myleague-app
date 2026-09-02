@@ -14,6 +14,14 @@
   margin-top: auto;
 }
 
+.footer-logo {
+  height: 28px;
+  width: auto;
+  max-width: 220px;
+  margin-bottom: map.get($spacing, 'lg');
+  filter: brightness(0) invert(1);
+}
+
 .footer-sections {
   display: flex;
   flex-wrap: wrap;
