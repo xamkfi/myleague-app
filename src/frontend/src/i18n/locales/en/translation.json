@@ -1851,6 +1851,13 @@
     "shortHandedAssists": "Shorthanded assists",
     "career": "Career",
     "noCareer": "No career data available.",
+    "sportsLabel": "Sports",
+    "noSports": "This player has no sport profiles.",
+    "sports": {
+      "floorball": "Floorball",
+      "football": "Football",
+      "hockey": "Ice hockey"
+    },
     "positions": {
       "goalkeeper": "Goalkeeper",
       "defender": "Defender",

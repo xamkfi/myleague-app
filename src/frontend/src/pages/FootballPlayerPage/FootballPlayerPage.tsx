@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, type ReactElement } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FootballPosition } from '../../types/football/footballTypes';
 import {
@@ -90,9 +90,14 @@ const calculateMatchTotals = (matches: FootballPlayerMatchDto[]): MatchTotals =>
 
 const MATCHES_PER_PAGE = 20;
 
-function FootballPlayerPage() {
+export interface FootballPlayerProfileProps {
+  playerId: string;
+  embedded?: boolean;
+}
+
+export function FootballPlayerProfile({ playerId, embedded = false }: FootballPlayerProfileProps) {
   const { t } = useTranslation();
-  const { id } = useParams<{ id: string }>();
+  const id = playerId;
   const [profile, setProfile] = useState<FootballPlayerProfileDto | null>(null);
   const [matchData, setMatchData] = useState<FootballPlayerWithMatchesDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -135,14 +140,21 @@ function FootballPlayerPage() {
     [matches, matchPage],
   );
 
+  const wrap = (inner: ReactElement, title: string): ReactElement => {
+    if (embedded) {
+      return inner;
+    }
+    return <PageTemplate title={title}>{inner}</PageTemplate>;
+  };
+
   if (loading) {
-    return <PageTemplate title={t('football.player.title', 'Player')}><div className="player-loading">{t('common.loading', 'Loading...')}</div></PageTemplate>;
+    return wrap(<div className="player-loading">{t('common.loading', 'Loading...')}</div>, t('football.player.title', 'Player'));
   }
   if (error) {
-    return <PageTemplate title={t('football.player.title', 'Player')}><div className="player-error">{error}</div></PageTemplate>;
+    return wrap(<div className="player-error">{error}</div>, t('football.player.title', 'Player'));
   }
   if (!profile) {
-    return <PageTemplate title={t('football.player.title', 'Player')}><div className="player-error">{t('football.player.notFound', 'Player not found')}</div></PageTemplate>;
+    return wrap(<div className="player-error">{t('football.player.notFound', 'Player not found')}</div>, t('football.player.title', 'Player'));
   }
 
   const { player } = profile;
@@ -151,9 +163,8 @@ function FootballPlayerPage() {
   const position = matchData?.position ?? player.position;
   const jerseyNumber = matchData?.jerseyNumber;
 
-  return (
-    <PageTemplate title={playerName}>
-      <div className="player-page">
+  return wrap(
+    <div className="player-page">
         <div className="player-container">
           <div className="player-info-layout">
             <div className="player-info-box">
@@ -358,9 +369,15 @@ function FootballPlayerPage() {
             )}
           </div>
         </div>
-      </div>
-    </PageTemplate>
+    </div>,
+    playerName,
   );
 }
 
-export default FootballPlayerPage;
+export default function FootballPlayerPage() {
+  const { id } = useParams<{ id: string }>();
+  if (!id) {
+    return null;
+  }
+  return <FootballPlayerProfile playerId={id} />;
+}

@@ -14,6 +14,7 @@ public class FloorballSeasonConfiguration : IEntityTypeConfiguration<FloorballSe
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Navigation(season => season.ContentBlocks)
+            .HasField("_contentBlocks")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

@@ -5,6 +5,7 @@ import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
 import RouteErrorBoundary from '../components/RouteErrorBoundary/RouteErrorBoundary';
 import SuspenseWrapper from './SuspenseWrapper';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
+import RedirectToPlayer from '../pages/PlayerPage/RedirectToPlayer';
 
 // Public pages
 const HomePage = lazyWithRetry(() => import('../pages/HomePage/HomePage'));
@@ -21,9 +22,7 @@ const PlayerPage = lazyWithRetry(() => import('../pages/PlayerPage/PlayerPage'))
 const SingleNewsPage = lazyWithRetry(() =>
   import('../pages/SingleNewsPage/SingleNewsPage').then((m) => ({ default: m.default as ComponentType<unknown> }))
 );
-const PersonUserPage = lazyWithRetry(() => import('../pages/PersonUserPage/PersonUserPage'));
 const FloorballTeamPage = lazyWithRetry(() => import('../pages/FloorballTeamPage/FloorballTeamPage'));
-const FloorballTeamPlayerUserPage = lazyWithRetry(() => import('../pages/FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage'));
 const MatchPage = lazyWithRetry(() => import('../pages/MatchPage/MatchPage'));
 const LeaguePage = lazyWithRetry(() => import('../pages/LeaguePage/LeaguePage'));
 const FloorballPage = lazyWithRetry(() => import('../pages/FloorballPage/FloorballPage'));
@@ -119,7 +118,6 @@ const FootballTournamentsListPage = lazyWithRetry(() => import('../pages/Footbal
 const FootballTournamentPage = lazyWithRetry(() => import('../pages/FootballTournamentPage/FootballTournamentPage'));
 const FootballMatchPage = lazyWithRetry(() => import('../pages/FootballMatchPage/FootballMatchPage'));
 const FootballTeamPage = lazyWithRetry(() => import('../pages/FootballTeamPage/FootballTeamPage'));
-const FootballPlayerPage = lazyWithRetry(() => import('../pages/FootballPlayerPage/FootballPlayerPage'));
 
 const HockeyPage = lazyWithRetry(() => import('../pages/HockeyPage/HockeyPage'));
 const HockeyLeaguePage = lazyWithRetry(() => import('../pages/HockeyLeaguePage/HockeyLeaguePage'));
@@ -127,7 +125,6 @@ const HockeyTournamentsPage = lazyWithRetry(() => import('../pages/HockeyTournam
 const HockeyTournamentPage = lazyWithRetry(() => import('../pages/HockeyTournamentPage/HockeyTournamentPage'));
 const HockeyMatchPage = lazyWithRetry(() => import('../pages/HockeyMatchPage/HockeyMatchPage'));
 const HockeyTeamPage = lazyWithRetry(() => import('../pages/HockeyTeamPage/HockeyTeamPage'));
-const HockeyPlayerPage = lazyWithRetry(() => import('../pages/HockeyPlayerPage/HockeyPlayerPage'));
 const HockeyManagementPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyManagementPage'));
 const HockeyTeamsPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/HockeyTeamsPage'));
 const CreateHockeyTeamPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/CreateTeamPage'));
@@ -397,7 +394,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/hockeyplayer/:id',
-    element: <SuspenseWrapper><HockeyPlayerPage /></SuspenseWrapper>
+    element: <RedirectToPlayer sport="hockey" />
   },
   {
     path: '/clubs',
@@ -413,7 +410,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/pelaaja/:id',
-    element: <SuspenseWrapper><PlayerPage /></SuspenseWrapper>
+    element: <RedirectToPlayer />
   },
   {
     path: '/admin',
@@ -787,11 +784,15 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/person/:id',
-    element: <SuspenseWrapper><PersonUserPage /></SuspenseWrapper>
+    element: <RedirectToPlayer />
+  },
+  {
+    path: '/player/:id',
+    element: <SuspenseWrapper><PlayerPage /></SuspenseWrapper>
   },
   {
     path: '/floorballplayer/:id',
-    element: <SuspenseWrapper><FloorballTeamPlayerUserPage /></SuspenseWrapper>
+    element: <RedirectToPlayer sport="floorball" />
   },
   {
     path: '/admin/news',
@@ -840,7 +841,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/football/player/:id',
-    element: <SuspenseWrapper><FootballPlayerPage /></SuspenseWrapper>
+    element: <RedirectToPlayer sport="football" />
   }
     ]
   }

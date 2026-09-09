@@ -17,6 +17,7 @@ public class HockeySeasonConfiguration : IEntityTypeConfiguration<HockeySeason>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Navigation(season => season.ContentBlocks)
+            .HasField("_contentBlocks")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

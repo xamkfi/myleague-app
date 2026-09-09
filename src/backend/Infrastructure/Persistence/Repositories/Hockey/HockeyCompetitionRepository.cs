@@ -2,6 +2,7 @@ using Domain.Entities.Hockey.Competitions;
 using Domain.Enums.Hockey.Competitions;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MyLeague.Infrastructure.Persistence.Contexts;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Hockey;
@@ -122,7 +123,17 @@ public class HockeyCompetitionRepository : IHockeyCompetitionRepository
     {
         foreach (HockeySeasonContentBlock block in season.ContentBlocks.Where(block => !existingBlockIds.Contains(block.Id)))
         {
-            _dbContext.Entry(block).State = EntityState.Added;
+            EntityEntry<HockeySeasonContentBlock> entry = _dbContext.Entry(block);
+            if (entry.State == EntityState.Detached)
+            {
+                entry = _dbContext.Add(block);
+            }
+            else if (entry.State != EntityState.Added)
+            {
+                entry.State = EntityState.Added;
+            }
+
+            entry.Property(added => added.Id).IsTemporary = false;
         }
     }
 }

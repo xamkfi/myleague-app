@@ -48,6 +48,35 @@ public class FloorballCompetitionRepositoryTests : FloorballIntegrationTestBase
         seasonCount.Should().Be(1);
         tournamentCount.Should().Be(1);
     }
+
+    [Fact]
+    public async Task ReplaceContentBlocks_NewBlock_PersistsAndReloads()
+    {
+        FloorballSeason season = new(
+            "League 2026",
+            new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc));
+        await CompetitionRepository.AddAsync(season);
+        await DbContext.SaveChangesAsync();
+        DbContext.ChangeTracker.Clear();
+
+        FloorballSeason? loaded = await CompetitionRepository.GetSeasonWithContentBlocksAsync(season.Id);
+        loaded.Should().NotBeNull();
+
+        List<Guid> existingBlockIds = loaded!.ContentBlocks.Select(block => block.Id).ToList();
+        loaded.ReplaceContentBlocks([(null, "Intro", "<p>Hello</p>")]);
+        CompetitionRepository.MarkNewContentBlocksAdded(loaded, existingBlockIds);
+        await DbContext.SaveChangesAsync();
+        DbContext.ChangeTracker.Clear();
+
+        FloorballSeason? reloaded = await CompetitionRepository.GetSeasonWithContentBlocksAsync(season.Id);
+        reloaded.Should().NotBeNull();
+        FloorballSeasonContentBlock block = reloaded!.ContentBlocks.Should().ContainSingle().Subject;
+        block.Title.Should().Be("Intro");
+        block.ContentHtml.Should().Be("<p>Hello</p>");
+        block.SortOrder.Should().Be(0);
+        block.Id.Should().NotBe(Guid.Empty);
+    }
 }
 
 public class FloorballTeamAndMatchRepositoryTests : FloorballIntegrationTestBase

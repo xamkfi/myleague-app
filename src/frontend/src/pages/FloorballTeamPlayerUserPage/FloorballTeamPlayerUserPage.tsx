@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, type ReactElement } from "react";
 import { useParams, Link } from "react-router-dom";
 import { FloorballPosition } from "../../types/floorball/floorballTypes";
 import {
@@ -134,10 +134,15 @@ const calculateOverallSavePercentage = (totals: GoalieTotals): number => {
 
 const MATCHES_PER_PAGE = 20;
 
-const FloorballTeamPlayerUserPage = () => {
+export interface FloorballPlayerProfileProps {
+  playerId: string;
+  embedded?: boolean;
+}
+
+export function FloorballPlayerProfile({ playerId, embedded = false }: FloorballPlayerProfileProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fi-FI';
-  const { id } = useParams<{ id: string }>();
+  const id = playerId;
   const [profile, setProfile] = useState<FloorballPlayerProfileDto | null>(null);
   const [matchData, setMatchData] = useState<FloorballPlayerWithMatchesDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -182,9 +187,16 @@ const FloorballTeamPlayerUserPage = () => {
     [matches, matchPage]
   );
 
-  if (loading) return <PageTemplate title={t('playerPage.title')}><div className="player-loading">{t('common.loading')}</div></PageTemplate>;
-  if (error) return <PageTemplate title={t('playerPage.title')}><div className="player-error">{error}</div></PageTemplate>;
-  if (!profile) return <PageTemplate title={t('playerPage.title')}><div className="player-error">{t('playerPage.notFound')}</div></PageTemplate>;
+  const wrap = (inner: ReactElement, title: string): ReactElement => {
+    if (embedded) {
+      return inner;
+    }
+    return <PageTemplate title={title}>{inner}</PageTemplate>;
+  };
+
+  if (loading) return wrap(<div className="player-loading">{t('common.loading')}</div>, t('playerPage.title'));
+  if (error) return wrap(<div className="player-error">{error}</div>, t('playerPage.title'));
+  if (!profile) return wrap(<div className="player-error">{t('playerPage.notFound')}</div>, t('playerPage.title'));
 
   const { player } = profile;
   const playerName = player.person.fullName;
@@ -193,8 +205,7 @@ const FloorballTeamPlayerUserPage = () => {
   const position = matchData?.position ?? player.position;
   const jerseyNumber = matchData?.jerseyNumber;
 
-  return (
-    <PageTemplate title={playerName}>
+  return wrap(
       <div className="player-page">
         {/* Player Header */}
         <div className="player-container">
@@ -593,9 +604,15 @@ const FloorballTeamPlayerUserPage = () => {
             )}
           </div>
         </div>
-      </div>
-    </PageTemplate>
+      </div>,
+    playerName,
   );
-};
+}
 
-export default FloorballTeamPlayerUserPage;
+export default function FloorballTeamPlayerUserPage() {
+  const { id } = useParams<{ id: string }>();
+  if (!id) {
+    return null;
+  }
+  return <FloorballPlayerProfile playerId={id} />;
+}

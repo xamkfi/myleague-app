@@ -107,7 +107,7 @@ namespace Application.Features.Common.Search.Handlers
                     floorballPlayerTeamMap.TryGetValue(floorballPlayer.Id, out FloorballTeam? team);
                     Club? club = team != null && clubMap.TryGetValue(team.ClubId, out Club? mappedClub) ? mappedClub : null;
                     return new GlobalSearchResultPersonDto(
-                        floorballPlayer.Id,
+                        person.Id,
                         person.FirstName,
                         person.LastName,
                         team?.Id,
@@ -122,7 +122,7 @@ namespace Application.Features.Common.Search.Handlers
                     footballPlayerTeamMap.TryGetValue(footballPlayer.Id, out FootballTeam? team);
                     Club? club = team != null && clubMap.TryGetValue(team.ClubId, out Club? mappedClub) ? mappedClub : null;
                     return new GlobalSearchResultPersonDto(
-                        footballPlayer.Id,
+                        person.Id,
                         person.FirstName,
                         person.LastName,
                         team?.Id,

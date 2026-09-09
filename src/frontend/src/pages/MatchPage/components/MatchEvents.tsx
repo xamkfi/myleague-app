@@ -10,6 +10,7 @@ import { getPeriodName, getTeamInitials } from './matchUtils';
 import { formatMatchEventTime } from '../../../utils/matchEventFormat';
 import { getFloorballGoalTypeInfo } from '../../../utils/floorballGoalType';
 import { floorballTeamService } from '../../../api/floorball/floorballTeamService';
+import { getPlayerPath } from '../../../utils/sportRoutes';
 
 type MatchEventItem = {
   type: 'goal' | 'penalty';
@@ -77,7 +78,7 @@ export default function MatchEvents({ match }: MatchEventsProps) {
   const handlePlayerClick = (playerId: string | undefined, e: React.MouseEvent): void => {
     if (!playerId) return;
     e.stopPropagation();
-    navigate(`/floorballplayer/${playerId}`);
+    navigate(getPlayerPath('floorball', playerId));
   };
 
   const allEvents: MatchEventItem[] = [
