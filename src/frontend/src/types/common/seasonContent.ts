@@ -35,11 +35,16 @@ export function toContentBlockDrafts(blocks: SeasonContentBlockDto[]): SeasonCon
 }
 
 export function toContentBlockItems(drafts: SeasonContentBlockDraft[]): SeasonContentBlockItem[] {
-  return drafts.map((draft) => ({
-    id: draft.id,
-    title: draft.title.trim(),
-    contentHtml: draft.contentHtml,
-  }));
+  return drafts.map((draft) => {
+    const item: SeasonContentBlockItem = {
+      title: draft.title.trim(),
+      contentHtml: typeof draft.contentHtml === 'string' ? draft.contentHtml : '',
+    };
+    if (draft.id) {
+      item.id = draft.id;
+    }
+    return item;
+  });
 }
 
 export function createEmptyContentBlockDraft(): SeasonContentBlockDraft {

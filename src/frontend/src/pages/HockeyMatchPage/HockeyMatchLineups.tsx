@@ -8,6 +8,7 @@ import {
   type HockeyMatchDto,
   type HockeyTeamDto,
 } from '../../types/hockey/hockeyTypes';
+import { getPlayerPath } from '../../utils/sportRoutes';
 import '../MatchPage/components/MatchLineups.scss';
 
 interface HockeyMatchLineupsProps {
@@ -77,7 +78,7 @@ function HockeyMatchLineups({
                   <div className="lineup-col-number">{player.jerseyNumber}</div>
                   <div className="lineup-col-name">
                     {roster ? (
-                      <Link to={`/hockeyplayer/${roster.playerId}`}>{label}{captain}</Link>
+                      <Link to={getPlayerPath('hockey', roster.playerId)}>{label}{captain}</Link>
                     ) : (
                       <>{label}{captain}</>
                     )}

@@ -5,6 +5,7 @@ import StatRow from '../MatchPage/components/StatRow';
 import { getTeamInitials } from '../MatchPage/components/matchUtils';
 import type { HockeyMatchStatisticsDto } from '../../types/hockey/hockeyTypes';
 import { formatHockeyFaceoffPercentage } from '../../utils/hockeyLookups';
+import { getPlayerPath } from '../../utils/sportRoutes';
 import '../MatchPage/components/MatchStats.scss';
 
 interface HockeyMatchStatsProps {
@@ -108,7 +109,7 @@ function HockeyMatchStats({
               {players.map((row) => (
                 <tr key={`${row.playerId}-${row.teamId}`}>
                   <td className="team-col">
-                    <Link to={`/hockeyplayer/${row.playerId}`}>
+                    <Link to={getPlayerPath('hockey', row.playerId)}>
                       {playerNames.get(row.playerId) ?? row.playerId.slice(0, 8)}
                     </Link>
                   </td>
@@ -139,7 +140,7 @@ function HockeyMatchStats({
               {goalies.map((row) => (
                 <tr key={`${row.playerId}-${row.teamId}`}>
                   <td className="team-col">
-                    <Link to={`/hockeyplayer/${row.playerId}`}>
+                    <Link to={getPlayerPath('hockey', row.playerId)}>
                       {playerNames.get(row.playerId) ?? row.playerId.slice(0, 8)}
                     </Link>
                   </td>

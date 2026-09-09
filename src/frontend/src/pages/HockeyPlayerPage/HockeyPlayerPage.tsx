@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
@@ -135,9 +135,22 @@ async function mapInBatches<T, R>(
 }
 
 function HockeyPlayerPage() {
+  const { id } = useParams<{ id: string }>();
+  if (!id) {
+    return null;
+  }
+  return <HockeyPlayerProfile playerId={id} />;
+}
+
+export interface HockeyPlayerProfileProps {
+  playerId: string;
+  embedded?: boolean;
+}
+
+export function HockeyPlayerProfile({ playerId, embedded = false }: HockeyPlayerProfileProps) {
   const { t } = useTranslation();
   const { audience } = useAudience();
-  const { id } = useParams<{ id: string }>();
+  const id = playerId;
   const [player, setPlayer] = useState<HockeyPlayerDto | null>(null);
   const [name, setName] = useState('');
   const [teams, setTeams] = useState<HockeyTeamDto[]>([]);
@@ -373,16 +386,21 @@ function HockeyPlayerPage() {
     ? { wins: totals.faceoffWins, attempts: totals.faceoffAttempts }
     : { wins: matchTotals.faceoffWins, attempts: matchTotals.faceoffAttempts };
 
+  const wrap = (inner: ReactElement, title: string): ReactElement => {
+    if (embedded) {
+      return inner;
+    }
+    return <PageTemplate title={title}>{inner}</PageTemplate>;
+  };
+
   if (loading) {
-    return (
-      <PageTemplate title={t('hockey.players.title', 'Player')}>
-        <div className="player-loading">{t('common.loading', 'Loading...')}</div>
-      </PageTemplate>
+    return wrap(
+      <div className="player-loading">{t('common.loading', 'Loading...')}</div>,
+      t('hockey.players.title', 'Player'),
     );
   }
 
-  return (
-    <PageTemplate title={name || t('hockey.players.title', 'Player')}>
+  return wrap(
       <div className="player-page">
         {error && <div className="player-error">{error}</div>}
         {player && (
@@ -648,8 +666,8 @@ function HockeyPlayerPage() {
             </div>
           </>
         )}
-      </div>
-    </PageTemplate>
+      </div>,
+    name || t('hockey.players.title', 'Player'),
   );
 }
 

@@ -313,6 +313,23 @@ namespace WebAPI.Controllers.Common
         }
 
         /// <summary>
+        /// Get the public player-sports view for a person (or a sport-specific player id).
+        /// </summary>
+        /// <param name="id">Person ID or sport-specific player ID</param>
+        /// <returns>Person identity and linked sport player profiles</returns>
+        [HttpGet("{id:guid}/player-sports")]
+        [ProducesResponseType(typeof(ApiResponse<PersonPlayerSportsDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<PersonPlayerSportsDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<PersonPlayerSportsDto>), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<PersonPlayerSportsDto>>> GetPersonPlayerSports(Guid id)
+        {
+            _logger.LogInformation("Getting player sports for Id: {Id}", id);
+
+            Result<PersonPlayerSportsDto> result = await _mediator.Send(new GetPersonPlayerSportsQuery(id));
+            return HandleResult(result, "Person player sports retrieved successfully", "Person not found");
+        }
+
+        /// <summary>
         /// Get person with their teams
         /// </summary>
         /// <param name="id">Person ID</param>

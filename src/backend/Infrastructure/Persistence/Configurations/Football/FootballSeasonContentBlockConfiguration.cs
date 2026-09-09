@@ -12,6 +12,9 @@ public class FootballSeasonContentBlockConfiguration : IEntityTypeConfiguration<
 
         builder.HasKey(block => block.Id);
 
+        builder.Property(block => block.Id)
+            .ValueGeneratedNever();
+
         builder.Property(block => block.SeasonId)
             .IsRequired();
 

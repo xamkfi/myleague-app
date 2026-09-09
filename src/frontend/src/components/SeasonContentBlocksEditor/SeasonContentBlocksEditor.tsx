@@ -110,6 +110,7 @@ export default function SeasonContentBlocksEditor({
                   onChange={(html) => updateBlock(block.clientId, { contentHtml: html })}
                   variant="compact"
                   readOnly={disabled}
+                  showMatchInsert={false}
                 />
               </div>
             </li>

@@ -8,6 +8,7 @@ import {
   type FootballMatchDto,
   type FootballTeamPlayer,
 } from '../../../types/football/footballTypes';
+import { getPlayerPath } from '../../../utils/sportRoutes';
 import './MatchLineups.scss';
 
 type RosterLookup = Map<string, FootballTeamPlayer>;
@@ -115,7 +116,7 @@ export default function MatchLineups({ match }: { match: FootballMatchDto }) {
   );
 
   const handlePlayerClick = (playerId: string): void => {
-    navigate(`/football/player/${playerId}`);
+    navigate(getPlayerPath('football', playerId));
   };
 
   const renderTeamRoster = (roster: ActiveRosterEntry[], teamName: string) => {

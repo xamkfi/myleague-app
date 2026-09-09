@@ -5,6 +5,7 @@ using Application.Features.Hockey.Seasons.Mappings;
 using Domain.Entities.Hockey.Competitions;
 using Domain.Repositories.Hockey;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Hockey.Seasons.Handlers;
@@ -54,6 +55,21 @@ public class ReplaceHockeySeasonContentBlocksHandler
         {
             _logger.LogWarning(ex, "Invalid hockey season content blocks for {SeasonId}", request.SeasonId);
             return Result<HockeySeasonContentBlocksDto>.Failure(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Failed to replace hockey season content blocks for {SeasonId}", request.SeasonId);
+            return Result<HockeySeasonContentBlocksDto>.Failure(ex.Message);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database error replacing hockey season content blocks for {SeasonId}", request.SeasonId);
+            return Result<HockeySeasonContentBlocksDto>.Failure(
+                "Season content blocks could not be saved. Please try again.");
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
     }
 }

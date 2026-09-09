@@ -137,7 +137,8 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
 
   return (
     <>
-      <button 
+      <button
+        type="button"
         className="match-browser__trigger-btn"
         onClick={() => {
           setShowBrowser(true);
@@ -155,7 +156,8 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
           <div className="match-browser-modal__content">
             <div className="match-browser-modal__header">
               <h2>{t('admin.news.matches.add_matches', 'ADD MATCHES')}</h2>
-              <button 
+              <button
+                type="button"
                 className="match-browser-modal__close-btn"
                 onClick={() => setShowBrowser(false)}
               >
@@ -168,31 +170,35 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
               {error && (
                 <div className="match-browser__error">
                   <p>{t('admin.news.matches.error', 'Error')}: {error}</p>
-                  <button onClick={fetchMatches}>{t('admin.news.matches.try_again', 'Try again')}</button>
+                  <button type="button" onClick={fetchMatches}>{t('admin.news.matches.try_again', 'Try again')}</button>
                 </div>
               )}
 
               {/* Category filter buttons */}
               <div className="match-browser__categories">
-                <button 
+                <button
+                  type="button"
                   className={getCategoryButtonClass('all')}
                   onClick={() => handleCategoryChange('all')}
                 >
                   {t('admin.news.matches.all_matches', 'All')}
                 </button>
-                <button 
+                <button
+                  type="button"
                   className={getCategoryButtonClass('scheduled')}
                   onClick={() => handleCategoryChange('scheduled')}
                 >
                   {t('admin.news.matches.upcoming_matches', 'Upcoming')}
                 </button>
-                <button 
+                <button
+                  type="button"
                   className={getCategoryButtonClass('results')}
                   onClick={() => handleCategoryChange('results')}
                 >
                   {t('admin.news.matches.results', 'Results')}
                 </button>
-                <button 
+                <button
+                  type="button"
                   className={getCategoryButtonClass('cancelled')}
                   onClick={() => handleCategoryChange('cancelled')}
                 >
@@ -282,7 +288,8 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
                     {selectedMatches.map(match => (
                       <span key={match.id} className="match-browser__selected-chip">
                         {match.homeTeamName ?? 'TBD'} vs {match.awayTeamName ?? 'TBD'}
-                        <button 
+                        <button
+                          type="button"
                           onClick={() => handleMatchSelect(match)}
                           className="match-browser__selected-chip-remove"
                         >
@@ -291,7 +298,8 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
                       </span>
                     ))}
                   </div>
-                  <button 
+                  <button
+                    type="button"
                     onClick={clearSelection}
                     className="match-browser__clear-all"
                   >
@@ -302,13 +310,15 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
 
               {/* Action buttons */}
               <div className="match-browser__actions">
-                <button 
+                <button
+                  type="button"
                   onClick={() => setShowBrowser(false)}
                   className="match-browser__cancel-btn"
                 >
                   {t('admin.news.matches.cancel', 'Cancel')}
                 </button>
-                <button 
+                <button
+                  type="button"
                   onClick={insertSelectedMatches}
                   disabled={selectedMatches.length === 0}
                   className="match-browser__add-btn"

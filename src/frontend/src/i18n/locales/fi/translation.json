@@ -1859,6 +1859,13 @@
     "shortHandedAssists": "Alivoimasyötöt",
     "career": "Pelaajaura",
     "noCareer": "Ei uratietoja saatavilla.",
+    "sportsLabel": "Lajit",
+    "noSports": "Pelaajalla ei ole lajiprofiileja.",
+    "sports": {
+      "floorball": "Salibandy",
+      "football": "Jalkapallo",
+      "hockey": "Jääkiekko"
+    },
     "positions": {
       "goalkeeper": "Maalivahti",
       "defender": "Puolustaja",

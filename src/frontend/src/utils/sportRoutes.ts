@@ -40,13 +40,7 @@ export function getTeamPath(sport: SportKind, slug: string): string {
 }
 
 export function getPlayerPath(sport: SportKind, playerId: string): string {
-  if (sport === 'football') {
-    return `/football/player/${playerId}`;
-  }
-  if (sport === 'hockey') {
-    return `/hockeyplayer/${playerId}`;
-  }
-  return `/floorballplayer/${playerId}`;
+  return `/player/${playerId}?sport=${sport}`;
 }
 
 export function getMatchPath(sport: SportKind, matchId: string): string {

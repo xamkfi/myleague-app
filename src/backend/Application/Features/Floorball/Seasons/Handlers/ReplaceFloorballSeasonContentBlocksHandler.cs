@@ -5,6 +5,7 @@ using Application.Features.Floorball.Seasons.Mappings;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Floorball.Seasons.Handlers;
@@ -54,6 +55,17 @@ public class ReplaceFloorballSeasonContentBlocksHandler
         {
             _logger.LogWarning(ex, "Invalid floorball season content blocks for {SeasonId}", request.SeasonId);
             return Result<FloorballSeasonContentBlocksDto>.Failure(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Failed to replace floorball season content blocks for {SeasonId}", request.SeasonId);
+            return Result<FloorballSeasonContentBlocksDto>.Failure(ex.Message);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database error replacing floorball season content blocks for {SeasonId}", request.SeasonId);
+            return Result<FloorballSeasonContentBlocksDto>.Failure(
+                "Season content blocks could not be saved. Please try again.");
         }
         catch (OperationCanceledException)
         {

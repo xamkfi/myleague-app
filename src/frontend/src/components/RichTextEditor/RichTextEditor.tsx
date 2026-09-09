@@ -17,7 +17,7 @@ import {
   insertMatchBoxes,
   splitCombinedMatchBlots,
 } from './matchResultEditor';
-import { parseSanitizedHtmlRoot } from './parseSanitizedHtml';
+import { extractRichTextImageUrls, parseSanitizedHtmlRoot } from './parseSanitizedHtml';
 
 import './RichTextEditor.scss';
 import '../../pages/AdminPage/NewsPage/styles/MatchResult.scss';
@@ -53,14 +53,6 @@ export interface RichTextEditorProps {
   className?: string;
 }
 
-export const extractRichTextImageUrls = (html: string): string[] => {
-  if (!html) return [];
-  const root = parseSanitizedHtmlRoot(html);
-  return Array.from(root.getElementsByTagName('img'))
-    .map((img) => img.getAttribute('src') ?? '')
-    .filter(Boolean);
-};
-
 const extractImageUrls = extractRichTextImageUrls;
 
 const extractMatchResults = (html: string): MatchResultValue[] => {
@@ -95,7 +87,7 @@ const RichTextEditor = ({
   value,
   onChange,
   onUploadingChange,
-  showMatchInsert = true,
+  showMatchInsert = false,
   id,
   placeholder,
   variant = 'default',
@@ -193,6 +185,10 @@ const RichTextEditor = ({
 
   const handleChange = useCallback(
     (content: string, _delta: unknown, source: QuillChangeSource) => {
+      if (typeof content !== 'string') {
+        return;
+      }
+
       // Only react to user-driven changes. Programmatic updates (e.g. parent
       // setting `value` after loading an article) come through with source
       // 'api' and must not trigger a destructive confirm dialog.

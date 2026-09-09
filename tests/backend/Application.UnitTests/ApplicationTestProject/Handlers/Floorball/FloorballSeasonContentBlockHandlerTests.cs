@@ -111,6 +111,32 @@ public class FloorballSeasonContentBlockHandlerTests
     }
 
     [Fact]
+    public async Task Replace_WhenSaveThrowsInvalidOperation_ReturnsFailure()
+    {
+        FloorballSeason season = CreateSeason();
+        _competitionRepo
+            .Setup(repo => repo.GetSeasonWithContentBlocksAsync(season.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(season);
+        _unitOfWork
+            .Setup(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Unable to track content blocks"));
+
+        ReplaceFloorballSeasonContentBlocksHandler handler = new(
+            _competitionRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<ReplaceFloorballSeasonContentBlocksHandler>>());
+
+        Result<FloorballSeasonContentBlocksDto> result = await handler.Handle(
+            new ReplaceFloorballSeasonContentBlocksCommand(
+                season.Id,
+                [new ReplaceFloorballSeasonContentBlockItem(null, "Intro", "<p>Hello</p>")]),
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Contain("Unable to track content blocks");
+    }
+
+    [Fact]
     public void ReplaceValidator_EmptyTitle_HasError()
     {
         ReplaceFloorballSeasonContentBlocksCommandValidator validator = new();

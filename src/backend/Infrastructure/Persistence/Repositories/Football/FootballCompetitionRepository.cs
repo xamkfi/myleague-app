@@ -2,6 +2,7 @@ using Domain.Common;
 using Domain.Entities.Football.Competitions;
 using Domain.Repositories.Football;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using System.Linq;
 
@@ -242,7 +243,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         {
             foreach (FootballSeasonContentBlock block in season.ContentBlocks.Where(block => !existingBlockIds.Contains(block.Id)))
             {
-                _dbContext.Entry(block).State = EntityState.Added;
+                EntityEntry<FootballSeasonContentBlock> entry = _dbContext.Entry(block);
+                if (entry.State == EntityState.Detached)
+                {
+                    entry = _dbContext.Add(block);
+                }
+                else if (entry.State != EntityState.Added)
+                {
+                    entry.State = EntityState.Added;
+                }
+
+                entry.Property(added => added.Id).IsTemporary = false;
             }
         }
     }

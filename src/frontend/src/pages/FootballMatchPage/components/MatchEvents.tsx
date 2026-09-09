@@ -12,6 +12,7 @@ import { getPeriodName, getTeamInitials } from './matchUtils';
 import { formatMatchEventTime } from '../../../utils/matchEventFormat';
 import { getFootballGoalTypeInfo } from '../../../utils/footballGoalType';
 import { footballTeamService } from '../../../api/football/footballTeamService';
+import { getPlayerPath } from '../../../utils/sportRoutes';
 
 type MatchEventItem = {
   type: 'goal' | 'card' | 'substitution';
@@ -77,7 +78,7 @@ export default function MatchEvents({ match }: MatchEventsProps) {
   const handlePlayerClick = (playerId: string | undefined, e: MouseEvent): void => {
     if (!playerId) return;
     e.stopPropagation();
-    navigate(`/football/player/${playerId}`);
+    navigate(getPlayerPath('football', playerId));
   };
 
   const allEvents: MatchEventItem[] = [

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { floorballTeamService } from "../../../api/floorball/floorballTeamService";
+import { getPlayerPath } from "../../../utils/sportRoutes";
 import {
     FloorballPosition,
     type FloorballActiveLineupPlayer,
@@ -125,7 +126,7 @@ export default function MatchLineups({ match }: { match: FloorballMatchDto }) {
     );
 
     const handlePlayerClick = (playerId: string): void => {
-        navigate(`/floorballplayer/${playerId}`);
+        navigate(getPlayerPath('floorball', playerId));
     };
 
     const renderTeamRoster = (roster: ActiveRosterEntry[], teamName: string) => {

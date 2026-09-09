@@ -4,6 +4,7 @@ using Domain.Entities.Floorball;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MyLeague.Infrastructure.Persistence;
 using MyLeague.Infrastructure.Persistence.Contexts;
 
@@ -278,7 +279,19 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             foreach (FloorballSeasonContentBlock block in season.ContentBlocks.Where(block => !existingBlockIds.Contains(block.Id)))
             {
-                _dbContext.Entry(block).State = EntityState.Added;
+                EntityEntry<FloorballSeasonContentBlock> entry = _dbContext.Entry(block);
+                if (entry.State == EntityState.Detached)
+                {
+                    entry = _dbContext.Add(block);
+                }
+                else if (entry.State != EntityState.Added)
+                {
+                    entry.State = EntityState.Added;
+                }
+
+                // Client-generated Guids must be sent in the INSERT. Forcing Added can
+                // otherwise mark Id as temporary and omit it → PostgreSQL NOT NULL error.
+                entry.Property(added => added.Id).IsTemporary = false;
             }
         }
     }

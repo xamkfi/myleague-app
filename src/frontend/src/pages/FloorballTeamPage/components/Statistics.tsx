@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
 import type { FloorballTeamSeasonStatisticsDto, FloorballPlayerSeasonStatisticsDto } from '../../../api/floorball/floorballStatistics';
 import type { FloorballTeamPlayer } from '../../../types/floorball/floorballTypes';
+import { getPlayerPath } from '../../../utils/sportRoutes';
 
 type SortField = 'pts' | 'g' | 'a' | 'gp' | 'pim' | 'playerName';
 
@@ -333,7 +334,7 @@ export default function Statistics({ teamStatistics, playerStatistics, roster = 
                   <tr
                     key={player.playerId}
                     className="ps-row"
-                    onClick={() => navigate(`/floorballplayer/${player.playerId}`)}
+                    onClick={() => navigate(getPlayerPath('floorball', player.playerId))}
                   >
                     <td className="ps-col-rank">{idx + 1}</td>
                     <td className="ps-col-name">{player.playerName}</td>
@@ -403,7 +404,7 @@ export default function Statistics({ teamStatistics, playerStatistics, roster = 
                   <tr
                     key={player.playerId}
                     className="ps-row"
-                    onClick={() => navigate(`/floorballplayer/${player.playerId}`)}
+                    onClick={() => navigate(getPlayerPath('floorball', player.playerId))}
                   >
                     <td className="ps-col-rank">{idx + 1}</td>
                     <td className="ps-col-name">{player.playerName}</td>

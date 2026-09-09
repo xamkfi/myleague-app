@@ -26,6 +26,17 @@ export function parseSanitizedHtmlRoot(html: string): Element {
   return root;
 }
 
+export function extractRichTextImageUrls(html: string): string[] {
+  if (!html) {
+    return [];
+  }
+
+  const root = parseSanitizedHtmlRoot(html);
+  return Array.from(root.getElementsByTagName('img'))
+    .map((img) => img.getAttribute('src') ?? '')
+    .filter(Boolean);
+}
+
 export function replaceChildrenWithSanitizedHtml(target: Element, html: string): void {
   const root = parseSanitizedHtmlRoot(html);
   target.replaceChildren(...Array.from(root.childNodes));
