@@ -18,21 +18,18 @@ internal static class ActiveRosterApplicator
 
         int deactivated = 0;
         int failed = 0;
-        foreach (OldTeam oldTeam in set.UniqueTeams.Values)
+        foreach (OldTeam oldTeam in set.UniqueTeams.Values
+            .Where(team => idMap.TryGetTeam(team.Id, out _) && rosterByTeam.ContainsKey(team.Id)))
         {
             if (!idMap.TryGetTeam(oldTeam.Id, out Guid teamId))
                 continue;
             if (!rosterByTeam.TryGetValue(oldTeam.Id, out Dictionary<int, RosterEntry>? roster))
                 continue;
 
-            foreach (RosterEntry entry in roster.Values)
+            foreach (RosterEntry entry in roster.Values.Where(rosterEntry =>
+                HasPersonMapping(idMap, rosterEntry) && !IsLatestTeam(latestTeamByPerson, rosterEntry, oldTeam.Id)))
             {
                 if (!idMap.TryGetPerson(entry.Person.Id, out IdMapStore.PersonMapping? mapping) || mapping == null)
-                    continue;
-
-                bool shouldBeActive = latestTeamByPerson.TryGetValue(entry.Person.Id, out int latestTeamId)
-                    && latestTeamId == oldTeam.Id;
-                if (shouldBeActive)
                     continue;
 
                 if (await setActiveOnTeam(teamId, entry, mapping.PlayerId, false))
@@ -44,5 +41,18 @@ internal static class ActiveRosterApplicator
 
         Console.WriteLine($"  Active club: deactivated {deactivated} stale memberships" +
                           (failed > 0 ? $", {failed} failed" : "") + ".");
+    }
+
+    private static bool HasPersonMapping(IdMapStore idMap, RosterEntry entry)
+    {
+        return idMap.TryGetPerson(entry.Person.Id, out IdMapStore.PersonMapping? mapping) && mapping != null;
+    }
+
+    private static bool IsLatestTeam(
+        Dictionary<int, int> latestTeamByPerson,
+        RosterEntry entry,
+        int oldTeamId)
+    {
+        return latestTeamByPerson.TryGetValue(entry.Person.Id, out int latestTeamId) && latestTeamId == oldTeamId;
     }
 }

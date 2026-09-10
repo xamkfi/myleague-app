@@ -17,9 +17,8 @@ internal static class PlayerLatestTeamResolver
             DateTime sortDate = pi.Project.StartDate ?? DateTime.MinValue;
             foreach (ProjectTeamImport pti in pi.Teams.Values)
             {
-                foreach (RosterEntry re in pti.Roster)
+                foreach (int personId in pti.Roster.Select(entry => entry.Person.Id))
                 {
-                    int personId = re.Person.Id;
                     if (latest.TryGetValue(personId, out (DateTime SortDate, int ProjectId, int TeamId) existing)
                         && (existing.SortDate > sortDate
                             || (existing.SortDate == sortDate && existing.ProjectId >= pi.Project.Id)))

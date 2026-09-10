@@ -571,12 +571,8 @@ public class FloorballMatchImporter
         appeared.Remove(goalieId);
 
         List<(Guid PlayerId, FloorballPosition Position)> fieldPlayers = [];
-        foreach (Guid playerId in appeared)
-        {
-            if (playerId == goalieId || fieldPlayers.Any(p => p.PlayerId == playerId))
-                continue;
+        foreach (Guid playerId in appeared.Where(id => id != goalieId))
             fieldPlayers.Add((playerId, FloorballPosition.Forward));
-        }
 
         await _api.AddPlayerToTeamAsync(side.TeamId, goalieId, position: 4, jerseyNumber: null);
         foreach ((Guid playerId, FloorballPosition _) in fieldPlayers)
@@ -604,10 +600,11 @@ public class FloorballMatchImporter
                 ids.Add(goal.SecondaryAssisterPlayerId.Value);
         }
 
-        foreach (PenaltyRec penalty in penalties.Where(p => p.ProjectTeamId == projectTeamId))
+        foreach (Guid playerId in penalties
+            .Where(penalty => penalty.ProjectTeamId == projectTeamId && penalty.PlayerId.HasValue)
+            .Select(penalty => penalty.PlayerId!.Value))
         {
-            if (penalty.PlayerId.HasValue)
-                ids.Add(penalty.PlayerId.Value);
+            ids.Add(playerId);
         }
 
         return ids;

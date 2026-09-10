@@ -397,19 +397,15 @@ public class FootballMatchImporter
             match, playerByTeamPlayerId, side.TeamPlayerIds, eventPlayerIds);
 
         List<LineupCandidate> selected = [];
-        foreach (LineupCandidate candidate in side.Roster)
+        foreach (LineupCandidate candidate in side.Roster.Where(c => appeared.Contains(c.PlayerId)))
         {
-            if (!appeared.Contains(candidate.PlayerId))
-                continue;
             if (selected.Any(c => c.PlayerId == candidate.PlayerId))
                 continue;
             selected.Add(candidate);
         }
 
-        foreach (Guid eventPlayerId in eventPlayerIds)
+        foreach (Guid eventPlayerId in eventPlayerIds.Where(id => selected.All(c => c.PlayerId != id)))
         {
-            if (selected.Any(c => c.PlayerId == eventPlayerId))
-                continue;
             LineupCandidate? fromRoster = side.Roster.FirstOrDefault(c => c.PlayerId == eventPlayerId);
             selected.Add(fromRoster ?? new LineupCandidate { PlayerId = eventPlayerId, Position = FootballPosition.Forward });
         }

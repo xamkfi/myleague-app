@@ -384,10 +384,11 @@ public class HockeyMatchImporter
                 ids.Add(goal.SecondaryAssisterPlayerId.Value);
         }
 
-        foreach (PenaltyRec penalty in penalties.Where(p => p.ProjectTeamId == projectTeamId))
+        foreach (Guid playerId in penalties
+            .Where(penalty => penalty.ProjectTeamId == projectTeamId && penalty.PlayerId.HasValue)
+            .Select(penalty => penalty.PlayerId!.Value))
         {
-            if (penalty.PlayerId.HasValue)
-                ids.Add(penalty.PlayerId.Value);
+            ids.Add(playerId);
         }
 
         return ids;
