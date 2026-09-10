@@ -9,29 +9,31 @@
   &__trigger {
     display: inline-flex;
     align-items: center;
-    gap: map.get($spacing, 'xxs');
-    padding: 0.2rem 0.45rem;
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    gap: map.get($spacing, 'xs');
+    min-height: 32px;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: map.get($border-radius, 'xl');
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.16);
     color: $color-white;
     font-family: $font-family-body;
-    font-size: map.get($font-sizes, 'sm-xs');
-    font-weight: map.get($font-weights, 'medium');
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
     line-height: 1;
+    letter-spacing: 0.02em;
     cursor: pointer;
     transition: background-color $transition-default, border-color $transition-default;
 
     &:hover,
     &:focus-visible {
-      background: rgba(255, 255, 255, 0.22);
-      border-color: rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.24);
+      border-color: rgba(255, 255, 255, 0.7);
     }
   }
 
   &__dot {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: map.get($border-radius, 'full');
     background: var(--brand-light, #{$color-blue-light});
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
@@ -66,15 +68,15 @@
 
   &__menu {
     position: absolute;
-    top: calc(100% + #{map.get($spacing, 'xxs')});
+    top: calc(100% + #{map.get($spacing, 'xs')});
     left: 0;
-    min-width: 160px;
+    min-width: 196px;
     margin: 0;
-    padding: map.get($spacing, 'xxs') 0;
+    padding: map.get($spacing, 'xxs');
     list-style: none;
     background: $color-white;
-    border-radius: map.get($border-radius, 'sm');
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: map.get($border-radius, 'lg-plus');
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
     z-index: 1100;
   }
 
@@ -83,8 +85,9 @@
     align-items: center;
     gap: map.get($spacing, 'xs');
     width: 100%;
-    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    padding: 0.6rem map.get($spacing, 'sm');
     border: none;
+    border-radius: map.get($border-radius, 'lg');
     background: transparent;
     color: $color-navbar;
     font-family: $font-family-body;

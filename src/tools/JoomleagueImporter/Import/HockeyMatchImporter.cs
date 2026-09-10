@@ -59,8 +59,9 @@ public class HockeyMatchImporter
     {
         public required OldTeam OldTeam { get; init; }
         public required Guid TeamId { get; init; }
-        public Guid? GoaliePlayerId { get; set; }
         public List<Guid> RosterPlayerIds { get; } = [];
+        public List<int> TeamPlayerIds { get; } = [];
+        public List<RosterEntry> Roster { get; } = [];
     }
 
     private class GoalRec
@@ -99,16 +100,13 @@ public class HockeyMatchImporter
 
             SideInfo side = new() { OldTeam = pti.Team, TeamId = teamId };
 
-            RosterEntry? goalie = pti.Roster.FirstOrDefault(r => r.IsGoalkeeper && _idMap.Persons.ContainsKey(r.Person.Id))
-                               ?? pti.Roster.FirstOrDefault(r => _idMap.Persons.ContainsKey(r.Person.Id));
-            if (goalie != null)
-                side.GoaliePlayerId = _idMap.Persons[goalie.Person.Id].PlayerId;
-
             foreach (RosterEntry re in pti.Roster)
             {
                 if (!_idMap.Persons.TryGetValue(re.Person.Id, out IdMapStore.PersonMapping? mapping))
                     continue;
                 playerByTeamPlayerId[re.TeamPlayer.Id] = mapping.PlayerId;
+                side.TeamPlayerIds.Add(re.TeamPlayer.Id);
+                side.Roster.Add(re);
                 if (!side.RosterPlayerIds.Contains(mapping.PlayerId))
                     side.RosterPlayerIds.Add(mapping.PlayerId);
             }
@@ -227,7 +225,7 @@ public class HockeyMatchImporter
         (List<GoalRec> goals, List<PenaltyRec> penalties, int ignoredEvents) =
             await BuildEventsAsync(mi, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods);
 
-        HockeyMatchDto? dressed = await ConfirmSidesAsync(created, home, away, goals, penalties);
+        HockeyMatchDto? dressed = await ConfirmSidesAsync(created, mi, home, away, goals, penalties, playerByTeamPlayerId);
         if (dressed == null)
         {
             _idMap.MapMatch(match.Id, created.Id);
@@ -307,7 +305,7 @@ public class HockeyMatchImporter
         {
             (List<GoalRec> pendingGoals, List<PenaltyRec> pendingPenalties, _) =
                 await BuildEventsAsync(mi, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods);
-            dto = await ConfirmSidesAsync(dto, home, away, pendingGoals, pendingPenalties);
+            dto = await ConfirmSidesAsync(dto, mi, home, away, pendingGoals, pendingPenalties, playerByTeamPlayerId);
             if (dto == null)
             {
                 _log.LogError("RepairHockeyMatch", new { match.Id, newMatchId }, "Could not confirm rosters.");
@@ -350,48 +348,56 @@ public class HockeyMatchImporter
 
     private async Task<HockeyMatchDto?> ConfirmSidesAsync(
         HockeyMatchDto match,
+        MatchImport mi,
         SideInfo home,
         SideInfo away,
         List<GoalRec> goals,
-        List<PenaltyRec> penalties)
+        List<PenaltyRec> penalties,
+        Dictionary<int, Guid> playerByTeamPlayerId)
     {
-        HashSet<Guid> homePlayers = CollectNeededFromSide(home, goals, penalties);
-        HashSet<Guid> awayPlayers = CollectNeededFromSide(away, goals, penalties);
+        HashSet<Guid> homePlayers = MatchAppearanceSelector.PlayerIdsOnSide(
+            mi, playerByTeamPlayerId, home.TeamPlayerIds, EventPlayerIds(goals, penalties, mi.Match.ProjectTeam1Id));
+        HashSet<Guid> awayPlayers = MatchAppearanceSelector.PlayerIdsOnSide(
+            mi, playerByTeamPlayerId, away.TeamPlayerIds, EventPlayerIds(goals, penalties, mi.Match.ProjectTeam2Id));
+
+        Guid? homeGoalie = MatchAppearanceSelector.GoaliePlayerId(mi, playerByTeamPlayerId, home.Roster);
+        Guid? awayGoalie = MatchAppearanceSelector.GoaliePlayerId(mi, playerByTeamPlayerId, away.Roster);
 
         HockeyMatchDto? current = match;
-        current = await ConfirmOneSideAsync(current, home, homePlayers);
+        current = await ConfirmOneSideAsync(current, home, homePlayers, homeGoalie);
         if (current == null)
             return null;
-        current = await ConfirmOneSideAsync(current, away, awayPlayers);
+        current = await ConfirmOneSideAsync(current, away, awayPlayers, awayGoalie);
         return current;
     }
 
-    private static HashSet<Guid> CollectNeededFromSide(SideInfo side, List<GoalRec> goals, List<PenaltyRec> penalties)
+    private static IEnumerable<Guid> EventPlayerIds(List<GoalRec> goals, List<PenaltyRec> penalties, int projectTeamId)
     {
-        HashSet<Guid> needed = [];
-        foreach (GoalRec goal in goals)
+        HashSet<Guid> ids = [];
+        foreach (GoalRec goal in goals.Where(g => g.ProjectTeamId == projectTeamId))
         {
-            if (goal.ScorerPlayerId is Guid scorer)
-                needed.Add(scorer);
-            if (goal.AssisterPlayerId is Guid assist)
-                needed.Add(assist);
-            if (goal.SecondaryAssisterPlayerId is Guid second)
-                needed.Add(second);
-        }
-        foreach (PenaltyRec pen in penalties)
-        {
-            if (pen.PlayerId is Guid player)
-                needed.Add(player);
+            if (goal.ScorerPlayerId.HasValue)
+                ids.Add(goal.ScorerPlayerId.Value);
+            if (goal.AssisterPlayerId.HasValue)
+                ids.Add(goal.AssisterPlayerId.Value);
+            if (goal.SecondaryAssisterPlayerId.HasValue)
+                ids.Add(goal.SecondaryAssisterPlayerId.Value);
         }
 
-        HashSet<Guid> onSide = side.RosterPlayerIds.ToHashSet();
-        if (side.GoaliePlayerId.HasValue)
-            onSide.Add(side.GoaliePlayerId.Value);
-        needed.IntersectWith(onSide);
-        return needed;
+        foreach (PenaltyRec penalty in penalties.Where(p => p.ProjectTeamId == projectTeamId))
+        {
+            if (penalty.PlayerId.HasValue)
+                ids.Add(penalty.PlayerId.Value);
+        }
+
+        return ids;
     }
 
-    private async Task<HockeyMatchDto?> ConfirmOneSideAsync(HockeyMatchDto match, SideInfo side, HashSet<Guid> neededPlayerIds)
+    private async Task<HockeyMatchDto?> ConfirmOneSideAsync(
+        HockeyMatchDto match,
+        SideInfo side,
+        HashSet<Guid> neededPlayerIds,
+        Guid? appearedGoalieId)
     {
         HockeyMatchTeamDto? matchTeam = match.MatchTeams.FirstOrDefault(t => t.TeamId == side.TeamId);
         if (matchTeam == null)
@@ -428,14 +434,10 @@ public class HockeyMatchImporter
             dressedTeamPlayerIds.Add(rosterRow.Id);
         }
 
-        if (side.GoaliePlayerId.HasValue)
-            TryAdd(side.GoaliePlayerId.Value, allowGoalie: true);
-        foreach (HockeyTeamPlayerDto goalieRow in team.Roster.Where(IsGoalieRow))
-            TryAdd(goalieRow.PlayerId, allowGoalie: true);
+        if (appearedGoalieId.HasValue)
+            TryAdd(appearedGoalieId.Value, allowGoalie: true);
         foreach (Guid playerId in neededPlayerIds)
-            TryAdd(playerId, allowGoalie: false);
-        foreach (Guid playerId in side.RosterPlayerIds)
-            TryAdd(playerId, allowGoalie: false);
+            TryAdd(playerId, allowGoalie: true);
 
         if (dressedGoalies == 0)
         {

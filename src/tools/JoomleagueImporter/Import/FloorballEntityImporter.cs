@@ -7,6 +7,7 @@ using Application.Features.Floorball.Referees.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Teams.DTOs;
 using Domain.Enums.Common;
+using Domain.Enums.Floorball;
 using JoomleagueImporter.Models;
 
 namespace JoomleagueImporter.Import;
@@ -209,6 +210,21 @@ public class FloorballEntityImporter
 
         _idMap.Save(force: true);
         Console.WriteLine($"  Teams: {created} created, {reused} already existed.");
+    }
+
+    public Task ApplyActiveMembershipsAsync(FloorballImportSet set)
+    {
+        Console.WriteLine("--- Active club memberships ---");
+        return ActiveRosterApplicator.ApplyAsync(set, _idMap, async (teamId, entry, playerId, isActive) =>
+        {
+            FloorballPosition position = entry.IsGoalkeeper
+                ? FloorballPosition.Goalkeeper
+                : FloorballPosition.Forward;
+            int jersey = entry.TeamPlayer.JerseyNumber is > 0 and < 100
+                ? entry.TeamPlayer.JerseyNumber.Value
+                : 0;
+            return await _api.UpdateTeamPlayerAsync(teamId, playerId, position, jersey, isActive);
+        });
     }
 
     private static string MakeShortName(OldTeam team)

@@ -97,6 +97,7 @@ public class FootballMatchImporter
         public required OldTeam OldTeam { get; init; }
         public required Guid TeamId { get; init; }
         public List<LineupCandidate> Roster { get; } = [];
+        public List<int> TeamPlayerIds { get; } = [];
     }
 
     private class GoalRec
@@ -136,6 +137,7 @@ public class FootballMatchImporter
                 if (!_idMap.Persons.TryGetValue(re.Person.Id, out IdMapStore.PersonMapping? mapping))
                     continue;
                 playerByTeamPlayerId[re.TeamPlayer.Id] = mapping.PlayerId;
+                side.TeamPlayerIds.Add(re.TeamPlayer.Id);
                 if (side.Roster.All(c => c.PlayerId != mapping.PlayerId))
                 {
                     side.Roster.Add(new LineupCandidate
@@ -262,9 +264,9 @@ public class FootballMatchImporter
             await BuildEventsAsync(mi, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods);
 
         List<(Guid PlayerId, FootballPosition Position, bool IsOnField)>? homeLineup =
-            await BuildLineupAsync(home, playersOnField);
+            await BuildLineupAsync(mi, home, playersOnField, playerByTeamPlayerId, EventPlayerIds(goals, cards, match.ProjectTeam1Id));
         List<(Guid PlayerId, FootballPosition Position, bool IsOnField)>? awayLineup =
-            await BuildLineupAsync(away, playersOnField);
+            await BuildLineupAsync(mi, away, playersOnField, playerByTeamPlayerId, EventPlayerIds(goals, cards, match.ProjectTeam2Id));
         if (homeLineup == null || awayLineup == null)
         {
             _idMap.MapMatch(match.Id, created.Id);
@@ -341,10 +343,12 @@ public class FootballMatchImporter
         }
         else if (dto.Status == FootballMatchStatus.Scheduled)
         {
+            (List<GoalRec> pendingGoals, List<CardRec> pendingCards, _) =
+                await BuildEventsAsync(mi, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods);
             List<(Guid PlayerId, FootballPosition Position, bool IsOnField)>? homeLineup =
-                await BuildLineupAsync(home, playersOnField);
+                await BuildLineupAsync(mi, home, playersOnField, playerByTeamPlayerId, EventPlayerIds(pendingGoals, pendingCards, match.ProjectTeam1Id));
             List<(Guid PlayerId, FootballPosition Position, bool IsOnField)>? awayLineup =
-                await BuildLineupAsync(away, playersOnField);
+                await BuildLineupAsync(mi, away, playersOnField, playerByTeamPlayerId, EventPlayerIds(pendingGoals, pendingCards, match.ProjectTeam2Id));
             if (homeLineup == null || awayLineup == null)
             {
                 _log.LogError("RepairFootballMatch", new { match.Id, newMatchId }, "Could not build lineup; cannot start match.");
@@ -383,38 +387,62 @@ public class FootballMatchImporter
     }
 
     private async Task<List<(Guid PlayerId, FootballPosition Position, bool IsOnField)>?> BuildLineupAsync(
+        MatchImport match,
         SideInfo side,
-        int playersOnField)
+        int playersOnField,
+        Dictionary<int, Guid> playerByTeamPlayerId,
+        IEnumerable<Guid> eventPlayerIds)
     {
-        if (side.Roster.Count < playersOnField)
+        HashSet<Guid> appeared = MatchAppearanceSelector.PlayerIdsOnSide(
+            match, playerByTeamPlayerId, side.TeamPlayerIds, eventPlayerIds);
+
+        List<LineupCandidate> selected = [];
+        foreach (LineupCandidate candidate in side.Roster)
         {
-            for (int unknownCount = 1; unknownCount <= playersOnField && side.Roster.Count < playersOnField; unknownCount++)
+            if (!appeared.Contains(candidate.PlayerId))
+                continue;
+            if (selected.Any(c => c.PlayerId == candidate.PlayerId))
+                continue;
+            selected.Add(candidate);
+        }
+
+        foreach (Guid eventPlayerId in eventPlayerIds)
+        {
+            if (selected.Any(c => c.PlayerId == eventPlayerId))
+                continue;
+            LineupCandidate? fromRoster = side.Roster.FirstOrDefault(c => c.PlayerId == eventPlayerId);
+            selected.Add(fromRoster ?? new LineupCandidate { PlayerId = eventPlayerId, Position = FootballPosition.Forward });
+        }
+
+        if (selected.Count < playersOnField)
+        {
+            int needed = playersOnField - selected.Count;
+            List<Guid> pads = await _entities.EnsureUnknownPlayersAsync(side.OldTeam, side.TeamId, needed);
+            foreach (Guid padId in pads)
             {
-                List<Guid> pads = await _entities.EnsureUnknownPlayersAsync(side.OldTeam, side.TeamId, unknownCount);
-                foreach (Guid padId in pads)
-                {
-                    if (side.Roster.Any(c => c.PlayerId == padId))
-                        continue;
-                    side.Roster.Add(new LineupCandidate { PlayerId = padId, Position = FootballPosition.Forward });
-                }
+                if (selected.Any(c => c.PlayerId == padId))
+                    continue;
+                selected.Add(new LineupCandidate { PlayerId = padId, Position = FootballPosition.Forward });
+                if (selected.Count >= playersOnField)
+                    break;
             }
         }
 
-        if (side.Roster.Count < playersOnField)
+        if (selected.Count < playersOnField)
             return null;
 
         List<(Guid PlayerId, FootballPosition Position, bool IsOnField)> lineup = [];
         HashSet<Guid> used = [];
 
-        LineupCandidate? gk = side.Roster.FirstOrDefault(c => c.Position == FootballPosition.Goalkeeper)
-                              ?? side.Roster.FirstOrDefault();
+        LineupCandidate? gk = selected.FirstOrDefault(c => c.Position == FootballPosition.Goalkeeper)
+                              ?? selected.FirstOrDefault();
         if (gk == null)
             return null;
 
         lineup.Add((gk.PlayerId, FootballPosition.Goalkeeper, true));
         used.Add(gk.PlayerId);
 
-        foreach (LineupCandidate candidate in side.Roster)
+        foreach (LineupCandidate candidate in selected)
         {
             if (lineup.Count(p => p.IsOnField) >= playersOnField)
                 break;
@@ -429,7 +457,7 @@ public class FootballMatchImporter
         if (lineup.Count(p => p.IsOnField) != playersOnField)
             return null;
 
-        foreach (LineupCandidate candidate in side.Roster)
+        foreach (LineupCandidate candidate in selected)
         {
             if (used.Contains(candidate.PlayerId))
                 continue;
@@ -438,6 +466,26 @@ public class FootballMatchImporter
         }
 
         return lineup;
+    }
+
+    private static IEnumerable<Guid> EventPlayerIds(List<GoalRec> goals, List<CardRec> cards, int projectTeamId)
+    {
+        HashSet<Guid> ids = [];
+        foreach (GoalRec goal in goals.Where(g => g.ProjectTeamId == projectTeamId))
+        {
+            if (goal.ScorerPlayerId.HasValue)
+                ids.Add(goal.ScorerPlayerId.Value);
+            if (goal.AssisterPlayerId.HasValue)
+                ids.Add(goal.AssisterPlayerId.Value);
+        }
+
+        foreach (CardRec card in cards.Where(c => c.ProjectTeamId == projectTeamId))
+        {
+            if (card.PlayerId.HasValue)
+                ids.Add(card.PlayerId.Value);
+        }
+
+        return ids;
     }
 
     /// <summary>

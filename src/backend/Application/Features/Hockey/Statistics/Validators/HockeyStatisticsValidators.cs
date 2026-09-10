@@ -131,9 +131,6 @@ public class GetHockeyPlayerCompetitionStatisticsQueryValidator
         RuleFor(x => x.PlayerId)
             .NotEmpty()
             .When(x => x.TeamId is not null);
-        RuleFor(x => x.TeamId)
-            .NotEmpty()
-            .When(x => x.PlayerId is not null);
         RuleFor(x => x.CompetitionDivisionId)
             .NotEmpty()
             .When(x => x.Scope == HockeyStatisticsScope.Division);
@@ -156,9 +153,6 @@ public class GetHockeyGoalieCompetitionStatisticsQueryValidator
         RuleFor(x => x.PlayerId)
             .NotEmpty()
             .When(x => x.TeamId is not null);
-        RuleFor(x => x.TeamId)
-            .NotEmpty()
-            .When(x => x.PlayerId is not null);
         RuleFor(x => x.CompetitionDivisionId)
             .NotEmpty()
             .When(x => x.Scope == HockeyStatisticsScope.Division);

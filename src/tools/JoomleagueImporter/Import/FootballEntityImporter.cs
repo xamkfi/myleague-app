@@ -221,6 +221,21 @@ public class FootballEntityImporter
         Console.WriteLine($"  Teams: {created} created, {reused} already existed.");
     }
 
+    public Task ApplyActiveMembershipsAsync(FloorballImportSet set)
+    {
+        Console.WriteLine("--- Active club memberships ---");
+        return ActiveRosterApplicator.ApplyAsync(set, _idMap, async (teamId, entry, playerId, isActive) =>
+        {
+            FootballPosition position = entry.FootballPosition == FootballPosition.None
+                ? FootballPosition.Forward
+                : entry.FootballPosition;
+            int jersey = entry.TeamPlayer.JerseyNumber is > 0 and < 100
+                ? entry.TeamPlayer.JerseyNumber.Value
+                : 0;
+            return await _api.UpdateTeamPlayerAsync(teamId, playerId, position, jersey, isActive);
+        });
+    }
+
     private static string MakeShortName(OldTeam team)
     {
         string source = !string.IsNullOrWhiteSpace(team.ShortName) ? team.ShortName : team.Name;

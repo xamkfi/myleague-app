@@ -341,8 +341,9 @@
     }
 
     &-brand .audience-switcher__trigger {
-      padding: 0.15rem 0.4rem;
-      font-size: map.get($font-sizes, 'xs');
+      min-height: 28px;
+      padding: 0.3rem 0.65rem;
+      font-size: map.get($font-sizes, 'sm-xs');
     }
     
     &-search {
