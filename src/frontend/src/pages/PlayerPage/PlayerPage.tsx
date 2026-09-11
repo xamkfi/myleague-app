@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import SportIcon from '../../components/SportIcon/SportIcon';
 import { FloorballPlayerProfile } from '../FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage';
 import { FootballPlayerProfile } from '../FootballPlayerPage/FootballPlayerPage';
 import { HockeyPlayerProfile } from '../HockeyPlayerPage/HockeyPlayerPage';
@@ -120,18 +121,26 @@ function PlayerPage() {
       <div className="player-page player-page--shell">
         {availableSports.length > 1 && activeSport && (
           <div className="player-sport-tabs" role="tablist" aria-label={t('playerPage.sportsLabel')}>
-            {availableSports.map((sport) => (
-              <button
-                key={sport}
-                type="button"
-                role="tab"
-                aria-selected={sport === activeSport}
-                className={`tab-button${sport === activeSport ? ' active' : ''}`}
-                onClick={() => handleSportChange(sport)}
-              >
-                {t(`playerPage.sports.${sport}`)}
-              </button>
-            ))}
+            <div className="player-sport-tabs__group">
+              {availableSports.map((sport) => (
+                <button
+                  key={sport}
+                  type="button"
+                  role="tab"
+                  aria-selected={sport === activeSport}
+                  className={`tab-button${sport === activeSport ? ' active' : ''}`}
+                  onClick={() => handleSportChange(sport)}
+                >
+                  <SportIcon
+                    sport={sport}
+                    size="sm"
+                    inverted={sport === activeSport}
+                    decorative
+                  />
+                  <span>{t(`playerPage.sports.${sport}`)}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

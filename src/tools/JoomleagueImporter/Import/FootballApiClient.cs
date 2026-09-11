@@ -57,6 +57,28 @@ public class FootballApiClient : ImportApiClient
             jerseyNumber,
             "Add football player to team");
 
+    public async Task<FootballTeamDto?> GetTeamByIdAsync(Guid teamId)
+    {
+        HttpResponseMessage resp = await Http.GetAsync($"api/FootballTeam/{teamId}");
+        return await ReadDataOrNull<FootballTeamDto>(resp, $"Get football team {teamId}");
+    }
+
+    public async Task<bool> UpdateTeamPlayerAsync(
+        Guid teamId,
+        Guid playerId,
+        FootballPosition position,
+        int jerseyNumber,
+        bool isActive)
+    {
+        HttpResponseMessage resp = await Http.PutAsJsonAsync($"api/FootballTeam/{teamId}/players/{playerId}", new
+        {
+            position = position.ToString(),
+            jerseyNumber,
+            isActive,
+        });
+        return await OkOrWarn(resp, "Update football team player");
+    }
+
     public async Task<List<FootballRefereeDto>> GetRefereesAsync() =>
         await GetPaginatedListAsync<FootballRefereeDto>("api/FootballReferee?page=1&PageSize=50");
 

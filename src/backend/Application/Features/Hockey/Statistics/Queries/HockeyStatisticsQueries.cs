@@ -46,7 +46,7 @@ public record GetHockeyTeamCompetitionStatisticsQuery(
     Guid? PlayoffSeriesId = null) : IRequest<Result<HockeyTeamCompetitionStatisticsDto>>;
 
 /// <summary>
-/// Gets player competition statistics (single player when PlayerId+TeamId set, otherwise list).
+/// Gets player competition statistics (filter by PlayerId and/or TeamId; list when omitted).
 /// </summary>
 public record GetHockeyPlayerCompetitionStatisticsQuery(
     Guid CompetitionId,
@@ -58,7 +58,7 @@ public record GetHockeyPlayerCompetitionStatisticsQuery(
     Guid? PlayoffSeriesId = null) : IRequest<Result<List<HockeyPlayerCompetitionStatisticsDto>>>;
 
 /// <summary>
-/// Gets goalie competition statistics (single goalie when PlayerId+TeamId set, otherwise list).
+/// Gets goalie competition statistics (filter by PlayerId and/or TeamId; list when omitted).
 /// </summary>
 public record GetHockeyGoalieCompetitionStatisticsQuery(
     Guid CompetitionId,

@@ -56,7 +56,8 @@ public class FloorballMatchImporter
     {
         public required OldTeam OldTeam { get; init; }
         public required Guid TeamId { get; init; }
-        public Guid? GoaliePlayerId { get; set; }
+        public List<RosterEntry> Roster { get; } = [];
+        public List<int> TeamPlayerIds { get; } = [];
     }
 
     private class GoalRec
@@ -94,15 +95,13 @@ public class FloorballMatchImporter
 
             SideInfo side = new() { OldTeam = pti.Team, TeamId = teamId };
 
-            RosterEntry? goalie = pti.Roster.FirstOrDefault(r => r.IsGoalkeeper && _idMap.Persons.ContainsKey(r.Person.Id))
-                               ?? pti.Roster.FirstOrDefault(r => _idMap.Persons.ContainsKey(r.Person.Id));
-            if (goalie != null)
-                side.GoaliePlayerId = _idMap.Persons[goalie.Person.Id].PlayerId;
-
             foreach (RosterEntry re in pti.Roster)
             {
-                if (_idMap.Persons.TryGetValue(re.Person.Id, out IdMapStore.PersonMapping? mapping))
-                    playerByTeamPlayerId[re.TeamPlayer.Id] = mapping.PlayerId;
+                if (!_idMap.Persons.TryGetValue(re.Person.Id, out IdMapStore.PersonMapping? mapping))
+                    continue;
+                playerByTeamPlayerId[re.TeamPlayer.Id] = mapping.PlayerId;
+                side.TeamPlayerIds.Add(re.TeamPlayer.Id);
+                side.Roster.Add(re);
             }
 
             sides[pti.ProjectTeam.Id] = side;
@@ -218,21 +217,20 @@ public class FloorballMatchImporter
         (List<GoalRec> goals, List<PenaltyRec> penalties, int ignoredEvents) =
             await BuildEventsAsync(mi, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods);
 
-        // ── Lifecycle ────────────────────────────────────────
-        Guid homeGoalie = home.GoaliePlayerId ?? await ResolveUnknownScorerAsync(home) ?? Guid.Empty;
-        Guid awayGoalie = away.GoaliePlayerId ?? await ResolveUnknownScorerAsync(away) ?? Guid.Empty;
+        Guid homeGoalie = await ResolveMatchGoalieAsync(mi, home, playerByTeamPlayerId);
+        Guid awayGoalie = await ResolveMatchGoalieAsync(mi, away, playerByTeamPlayerId);
         if (homeGoalie == Guid.Empty || awayGoalie == Guid.Empty)
         {
             _idMap.MapMatch(match.Id, created.Id);
             Interlocked.Increment(ref _scheduledOnly);
             _log.LogWarning("NoGoalie",
-                $"Match JL#{match.Id} left as Scheduled: no roster players found for goalie assignment.");
+                $"Match JL#{match.Id} left as Scheduled: could not assign goalies.");
             Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: scheduled only (no goalies)");
             return true;
         }
 
-        await _api.SetGoalieAsync(created.Id, home.TeamId, homeGoalie);
-        await _api.SetGoalieAsync(created.Id, away.TeamId, awayGoalie);
+        await ApplyAppearancesAsync(created.Id, mi, home, homeGoalie, playerByTeamPlayerId, EventPlayerIds(goals, penalties, match.ProjectTeam1Id));
+        await ApplyAppearancesAsync(created.Id, mi, away, awayGoalie, playerByTeamPlayerId, EventPlayerIds(goals, penalties, match.ProjectTeam2Id));
 
         bool started = await _api.StartMatchAsync(created.Id);
         if (!started)
@@ -301,15 +299,17 @@ public class FloorballMatchImporter
         {
             // The match was created but never started (e.g. an earlier run failed at goalie
             // assignment); bring it to InProgress so events can be recorded.
-            Guid homeGoalie = home.GoaliePlayerId ?? await ResolveUnknownScorerAsync(home) ?? Guid.Empty;
-            Guid awayGoalie = away.GoaliePlayerId ?? await ResolveUnknownScorerAsync(away) ?? Guid.Empty;
+            (List<GoalRec> pendingGoals, List<PenaltyRec> pendingPenalties, _) =
+                await BuildEventsAsync(mi, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods);
+            Guid homeGoalie = await ResolveMatchGoalieAsync(mi, home, playerByTeamPlayerId);
+            Guid awayGoalie = await ResolveMatchGoalieAsync(mi, away, playerByTeamPlayerId);
             if (homeGoalie == Guid.Empty || awayGoalie == Guid.Empty)
             {
                 _log.LogError("RepairMatch", new { match.Id, newMatchId }, "No goalies available; cannot start match.");
                 return false;
             }
-            await _api.SetGoalieAsync(newMatchId, home.TeamId, homeGoalie);
-            await _api.SetGoalieAsync(newMatchId, away.TeamId, awayGoalie);
+            await ApplyAppearancesAsync(newMatchId, mi, home, homeGoalie, playerByTeamPlayerId, EventPlayerIds(pendingGoals, pendingPenalties, match.ProjectTeam1Id));
+            await ApplyAppearancesAsync(newMatchId, mi, away, awayGoalie, playerByTeamPlayerId, EventPlayerIds(pendingGoals, pendingPenalties, match.ProjectTeam2Id));
             if (!await _api.StartMatchAsync(newMatchId))
             {
                 _log.LogError("RepairMatch", new { match.Id, newMatchId }, "StartMatch failed during repair.");
@@ -544,6 +544,70 @@ public class FloorballMatchImporter
         }
 
         return (imported.GoalsRecorded, imported.PenaltiesRecorded);
+    }
+
+    private async Task<Guid> ResolveMatchGoalieAsync(
+        MatchImport match,
+        SideInfo side,
+        Dictionary<int, Guid> playerByTeamPlayerId)
+    {
+        Guid? appearedGoalie = MatchAppearanceSelector.GoaliePlayerId(match, playerByTeamPlayerId, side.Roster);
+        if (appearedGoalie.HasValue)
+            return appearedGoalie.Value;
+
+        return await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId) ?? Guid.Empty;
+    }
+
+    private async Task ApplyAppearancesAsync(
+        Guid matchId,
+        MatchImport match,
+        SideInfo side,
+        Guid goalieId,
+        Dictionary<int, Guid> playerByTeamPlayerId,
+        IEnumerable<Guid> eventPlayerIds)
+    {
+        HashSet<Guid> appeared = MatchAppearanceSelector.PlayerIdsOnSide(
+            match, playerByTeamPlayerId, side.TeamPlayerIds, eventPlayerIds);
+        appeared.Remove(goalieId);
+
+        List<(Guid PlayerId, FloorballPosition Position)> fieldPlayers = [];
+        foreach (Guid playerId in appeared.Where(id => id != goalieId))
+            fieldPlayers.Add((playerId, FloorballPosition.Forward));
+
+        await _api.AddPlayerToTeamAsync(side.TeamId, goalieId, position: 4, jerseyNumber: null);
+        foreach ((Guid playerId, FloorballPosition _) in fieldPlayers)
+            await _api.AddPlayerToTeamAsync(side.TeamId, playerId, position: 1, jerseyNumber: null);
+
+        if (fieldPlayers.Count == 0)
+        {
+            await _api.SetGoalieAsync(matchId, side.TeamId, goalieId);
+            return;
+        }
+
+        await _api.SetActiveRosterAsync(matchId, side.TeamId, fieldPlayers, goalieId);
+    }
+
+    private static IEnumerable<Guid> EventPlayerIds(List<GoalRec> goals, List<PenaltyRec> penalties, int projectTeamId)
+    {
+        HashSet<Guid> ids = [];
+        foreach (GoalRec goal in goals.Where(g => g.ProjectTeamId == projectTeamId))
+        {
+            if (goal.ScorerPlayerId.HasValue)
+                ids.Add(goal.ScorerPlayerId.Value);
+            if (goal.AssisterPlayerId.HasValue)
+                ids.Add(goal.AssisterPlayerId.Value);
+            if (goal.SecondaryAssisterPlayerId.HasValue)
+                ids.Add(goal.SecondaryAssisterPlayerId.Value);
+        }
+
+        foreach (Guid playerId in penalties
+            .Where(penalty => penalty.ProjectTeamId == projectTeamId && penalty.PlayerId.HasValue)
+            .Select(penalty => penalty.PlayerId!.Value))
+        {
+            ids.Add(playerId);
+        }
+
+        return ids;
     }
 
     private async Task<Guid?> ResolveUnknownScorerAsync(SideInfo side)

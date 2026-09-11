@@ -5,6 +5,7 @@ using Application.Features.Floorball.Referees.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Teams.DTOs;
 using Domain.Enums.Common;
+using Domain.Enums.Floorball;
 
 namespace JoomleagueImporter.Import;
 
@@ -54,6 +55,48 @@ public class FloorballApiClient : ImportApiClient
             $"api/floorballteam/{teamId}/players/{playerId}?position={position}",
             jerseyNumber,
             "Add player to team");
+
+    public async Task<FloorballTeamDto?> GetTeamByIdAsync(Guid teamId)
+    {
+        HttpResponseMessage resp = await Http.GetAsync($"api/floorballteam/{teamId}");
+        return await ReadDataOrNull<FloorballTeamDto>(resp, $"Get floorball team {teamId}");
+    }
+
+    public async Task<bool> UpdateTeamPlayerAsync(
+        Guid teamId,
+        Guid playerId,
+        FloorballPosition position,
+        int jerseyNumber,
+        bool isActive)
+    {
+        HttpResponseMessage resp = await Http.PutAsJsonAsync($"api/floorballteam/{teamId}/players/{playerId}", new
+        {
+            position = position.ToString(),
+            jerseyNumber,
+            isActive,
+        });
+        return await OkOrWarn(resp, "Update floorball team player");
+    }
+
+    public async Task<bool> SetActiveRosterAsync(
+        Guid matchId,
+        Guid teamId,
+        IReadOnlyList<(Guid PlayerId, FloorballPosition Position)> fieldPlayers,
+        Guid? goalieId)
+    {
+        object request = new
+        {
+            players = fieldPlayers.Select(p => new
+            {
+                playerId = p.PlayerId,
+                position = p.Position.ToString(),
+            }),
+            goalieId,
+        };
+        HttpResponseMessage resp = await Http.PutAsJsonAsync(
+            $"api/floorball-matches/{matchId}/teams/{teamId}/active-roster", request);
+        return await OkOrWarn(resp, "Set floorball active roster");
+    }
 
     public async Task<List<FloorballRefereeDto>> GetRefereesAsync() =>
         await GetPaginatedListAsync<FloorballRefereeDto>("api/floorballreferee?page=1&PageSize=50");

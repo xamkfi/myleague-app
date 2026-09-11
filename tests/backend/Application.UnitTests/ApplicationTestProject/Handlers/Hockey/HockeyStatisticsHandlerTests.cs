@@ -253,4 +253,80 @@ public class HockeyStatisticsHandlerTests
         result.Data![0].TeamId.Should().Be(teamId);
         result.Data[0].StandingRank.Should().Be(1);
     }
+
+    [Fact]
+    public async Task GetPlayerStats_PlayerIdOnly_FiltersCompetitionRows()
+    {
+        Guid competitionId = Guid.NewGuid();
+        Guid playerId = Guid.NewGuid();
+        HockeyPlayerCompetitionStatistics matching = new(
+            playerId,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            competitionId,
+            HockeyStatisticsScope.Competition);
+        HockeyPlayerCompetitionStatistics other = new(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            competitionId,
+            HockeyStatisticsScope.Competition);
+
+        _statsRepo.Setup(r => r.GetPlayerCompetitionStatisticsAsync(
+                competitionId,
+                HockeyStatisticsScope.Competition,
+                null,
+                null,
+                null))
+            .ReturnsAsync(new List<HockeyPlayerCompetitionStatistics> { matching, other });
+
+        GetHockeyPlayerCompetitionStatisticsHandler handler = new(
+            _statsRepo.Object,
+            Mock.Of<ILogger<GetHockeyPlayerCompetitionStatisticsHandler>>());
+
+        Result<List<HockeyPlayerCompetitionStatisticsDto>> result = await handler.Handle(
+            new GetHockeyPlayerCompetitionStatisticsQuery(competitionId, PlayerId: playerId),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data.Should().ContainSingle(row => row.PlayerId == playerId);
+    }
+
+    [Fact]
+    public async Task GetGoalieStats_PlayerIdOnly_FiltersCompetitionRows()
+    {
+        Guid competitionId = Guid.NewGuid();
+        Guid playerId = Guid.NewGuid();
+        HockeyGoalieCompetitionStatistics matching = new(
+            playerId,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            competitionId,
+            HockeyStatisticsScope.Competition);
+        HockeyGoalieCompetitionStatistics other = new(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            competitionId,
+            HockeyStatisticsScope.Competition);
+
+        _statsRepo.Setup(r => r.GetGoalieCompetitionStatisticsAsync(
+                competitionId,
+                HockeyStatisticsScope.Competition,
+                null,
+                null,
+                null))
+            .ReturnsAsync(new List<HockeyGoalieCompetitionStatistics> { matching, other });
+
+        GetHockeyGoalieCompetitionStatisticsHandler handler = new(
+            _statsRepo.Object,
+            Mock.Of<ILogger<GetHockeyGoalieCompetitionStatisticsHandler>>());
+
+        Result<List<HockeyGoalieCompetitionStatisticsDto>> result = await handler.Handle(
+            new GetHockeyGoalieCompetitionStatisticsQuery(competitionId, PlayerId: playerId),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data.Should().ContainSingle(row => row.PlayerId == playerId);
+    }
 }

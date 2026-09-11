@@ -15,6 +15,7 @@ using Domain.Entities.Common;
 using Domain.Repositories.Football;
 using Domain.Repositories.Common;
 using Domain.Enums.Football;
+using Application.Features.Football.Matches.Handlers;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -97,19 +98,18 @@ namespace Application.Features.Football.Players.Handlers
                     return Result<FootballPlayerWithMatchesDto>.Success(emptyResult);
                 }
 
-                // Get the most recent team (assuming the player's current team)
-                FootballTeam currentTeam = playerTeams.OrderByDescending(t => t.CreatedAt).First();
+                FootballTeam currentTeam = SelectCurrentTeam(playerTeams, player.Id);
                 FootballTeamPlayer? teamPlayer = currentTeam.Roster.FirstOrDefault(r => r.PlayerId == player.Id);
 
-                // Get all matches for all teams the player has been part of
                 List<FootballMatch> allMatches = new List<FootballMatch>();
                 foreach (FootballTeam team in playerTeams)
                 {
                     IEnumerable<FootballMatch> teamMatches = await _matchRepository.GetByTeamIdAsync(team.Id);
-                    allMatches.AddRange(teamMatches.Where(m => m.Status == FootballMatchStatus.Completed));
+                    allMatches.AddRange(teamMatches.Where(m =>
+                        m.Status == FootballMatchStatus.Completed &&
+                        PlayerAppearedInMatch(m, player.Id)));
                 }
 
-                // Sort matches by date (most recent first) and take the requested limit
                 List<FootballMatch> recentMatches = allMatches
                     .OrderByDescending(m => m.ScheduledDateTime)
                     .Take(request.Limit)
@@ -217,6 +217,20 @@ namespace Application.Features.Football.Players.Handlers
                 _logger.LogError(ex, "Error occurred while retrieving match history for player: {PlayerId}", request.PlayerId);
                 return Result<FootballPlayerWithMatchesDto>.Failure($"Error retrieving player match history: {ex.Message}");
             }
+        }
+
+        private static FootballTeam SelectCurrentTeam(IReadOnlyList<FootballTeam> playerTeams, Guid playerId)
+        {
+            return playerTeams
+                .OrderByDescending(t => t.Roster.Any(r => r.PlayerId == playerId && r.IsActive))
+                .ThenByDescending(t => t.CreatedAt)
+                .First();
+        }
+
+        private static bool PlayerAppearedInMatch(FootballMatch match, Guid playerId)
+        {
+            return CompleteFootballMatchHandler.CollectMatchParticipants(match)
+                .Any(participant => participant.PlayerId == playerId);
         }
 
         /// <summary>
