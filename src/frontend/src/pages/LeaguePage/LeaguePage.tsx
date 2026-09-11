@@ -1,27 +1,68 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 import ResultsSection from './components/ResultsSection';
 import FixturesSection from './components/FixturesSection';
 import SummarySection from './components/SummarySection';
+import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
+import { floorballSeasonService } from '../../api/floorball/floorballSeasonService';
+import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { floorballStatisticsService, type FloorballSeasonStatisticsSummaryDto } from '../../api/floorball/floorballStatistics';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
-import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
+import { type FloorballMatchDto, FloorballMatchStatus } from '../../types/floorball/floorballTypes';
 import './LeaguePage.scss';
 
-type TabType = 'summary' | 'news' | 'results' | 'fixtures' | 'standings';
+type TabType = 'summary' | 'news' | 'results' | 'fixtures' | 'statistics';
+
+const VALID_TABS: TabType[] = ['summary', 'news', 'results', 'fixtures', 'statistics'];
+
+function getStatusForTab(tab: TabType): FloorballMatchStatus | undefined {
+  if (tab === 'results') return FloorballMatchStatus.Completed;
+  return undefined;
+}
+
+function getSortOrderForTab(tab: TabType): string {
+  return tab === 'results' ? 'desc' : 'asc';
+}
 
 export default function LeaguePage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const [activeTab, setActiveTab] = useState<TabType>('summary');
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  const getInitialTab = (): TabType => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && VALID_TABS.includes(tabParam as TabType)) {
+      return tabParam as TabType;
+    }
+    if (tabParam === 'standings') {
+      return 'statistics';
+    }
+    return 'summary';
+  };
+  
+  const [activeTab, setActiveTab] = useState<TabType>(getInitialTab);
+  
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && VALID_TABS.includes(tabParam as TabType)) {
+      setActiveTab(tabParam as TabType);
+    }
+  }, [searchParams]);
+  
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+    setCurrentPage(1);
+  };
   
   // State for season statistics data
   const [seasonSummary, setSeasonSummary] = useState<FloorballSeasonStatisticsSummaryDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
 
   // State for matches data
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null);
@@ -38,12 +79,7 @@ export default function LeaguePage() {
       try {
         setLoading(true);
         setError(null);
-        
-        // Use the league ID from the URL as the season ID
-        // The league ID (e.g., 63ed4ed5-1c56-47ce-8047-1e8f595575dc) will be used to fetch season data
-        const seasonId = id;
-        
-        const data = await floorballStatisticsService.getSeasonStatistics(seasonId);
+        const data = await floorballStatisticsService.getSeasonStatistics(id);
         setSeasonSummary(data);
       } catch (err) {
         console.error('Failed to fetch season statistics:', err);
@@ -56,22 +92,49 @@ export default function LeaguePage() {
     fetchSeasonData();
   }, [id, t]);
 
-  // Fetch matches data
+  useEffect(() => {
+    if (!id) {
+      setContentBlocks([]);
+      return;
+    }
+
+    let cancelled = false;
+    floorballSeasonService
+      .getContentBlocks(id)
+      .then((result) => {
+        if (!cancelled) {
+          setContentBlocks(result.blocks);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setContentBlocks([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  // Fetch matches data - filtered by tab status
   useEffect(() => {
     const fetchMatchesData = async () => {
       if (!id) return;
+      if (activeTab !== 'fixtures' && activeTab !== 'results') return;
       
       try {
         setMatchesLoading(true);
         setMatchesError(null);
         
-        // Use the same API call pattern as FloorballTeamPage
-        // For league page, we'll fetch all matches for the season/league
+        const pageSize = activeTab === 'fixtures' ? 20 : 10;
+        
         const response = await floorballMatchService.getAll({
-          seasonId: id, // Use league ID as season ID
+          competitionId: id,
           page: currentPage,
-          pageSize: 10,
-          sortOrder: 'asc'
+          pageSize,
+          sortOrder: getSortOrderForTab(activeTab),
+          status: getStatusForTab(activeTab),
         });
 
         setMatches(response.data || []);
@@ -85,15 +148,15 @@ export default function LeaguePage() {
     };
 
     fetchMatchesData();
-  }, [id, currentPage, t]);
+  }, [id, currentPage, activeTab, t]);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-  };
+  }, []);
 
   const tabs: { key: TabType; label: string }[] = [
     { key: 'summary', label: t('leaguePage.tabs.summary') },
-    { key: 'standings', label: t('leaguePage.tabs.standings') },
+    { key: 'statistics', label: t('leaguePage.tabs.statistics') },
     { key: 'results', label: t('leaguePage.tabs.results') },
     { key: 'fixtures', label: t('leaguePage.tabs.fixtures') }
   ];
@@ -102,11 +165,14 @@ export default function LeaguePage() {
     switch (activeTab) {
       case 'summary':
         return (
-          <SummarySection 
-            seasonSummary={seasonSummary}
-            loading={loading}
-            error={error}
-          />
+          <>
+            <SeasonInfoCards blocks={contentBlocks} className="season-info-cards" />
+            <SummarySection 
+              seasonSummary={seasonSummary}
+              loading={loading}
+              error={error}
+            />
+          </>
         );
       case 'results':
         return (
@@ -130,7 +196,7 @@ export default function LeaguePage() {
             handlePageChange={handlePageChange}
           />
         );
-      case 'standings':
+      case 'statistics':
         return (
           <LeagueStanding 
             seasonSummary={seasonSummary}
@@ -166,7 +232,7 @@ export default function LeaguePage() {
                     <button
                       key={tab.key}
                       className={`tab-button ${activeTab === tab.key ? 'active' : ''}`}
-                      onClick={() => setActiveTab(tab.key)}
+                      onClick={() => handleTabChange(tab.key)}
                     >
                       {tab.label}
                     </button>

@@ -61,7 +61,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             int pageSize,
             string searchTerm = "",
             Guid? clubId = null, 
-            Guid? divisionId = null,    
+            Guid? divisionId = null,
+            IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? teamCategories = null,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballTeam> query = _entities.AsQueryable();
@@ -75,6 +76,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             if (divisionId.HasValue)
             {
                 query = query.Where(t => t.DivisionId == divisionId);
+            }
+
+            if (teamCategories is { Count: > 0 })
+            {
+                query = query.Where(t => teamCategories.Contains(t.TeamCategory));
             }
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -199,35 +205,33 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
-        /// Gets teams participating in a season
+        /// Gets teams participating in a competition
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
-        /// <returns>A collection of teams in the season</returns>
-        public async Task<IEnumerable<FloorballTeam>> GetBySeasonIdAsync(Guid seasonId)
+        /// <param name="competitionId">The competition ID</param>
+        /// <returns>A collection of teams in the competition</returns>
+        public async Task<IEnumerable<FloorballTeam>> GetByCompetitionIdAsync(Guid competitionId)
         {
-            FloorballSeason? season = await _dbContext.FloorballSeasons
+            FloorballCompetition? competition = await _dbContext.FloorballCompetitions
                 .Include(s => s.Teams)
-                .FirstOrDefaultAsync(s => s.Id == seasonId);
+                .FirstOrDefaultAsync(s => s.Id == competitionId);
 
-            return season?.Teams ?? new List<FloorballTeam>();
+            return competition?.Teams ?? new List<FloorballTeam>();
         }
 
         /// <summary>
-        /// Gets the team standings for a season
+        /// Gets the team standings for a competition
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
-        /// <returns>Teams ordered by their standing in the season</returns>
-        public async Task<IEnumerable<FloorballTeam>> GetStandingsAsync(Guid seasonId)
+        /// <param name="competitionId">The competition ID</param>
+        /// <returns>Teams ordered by their standing in the competition</returns>
+        public async Task<IEnumerable<FloorballTeam>> GetStandingsAsync(Guid competitionId)
         {
-            // Get all matches for the season
             List<FloorballMatch> matches = await _dbContext.FloorballMatches
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
-                .Where(m => m.SeasonId == seasonId && m.Status == FloorballMatchStatus.Completed)
+                .Where(m => m.CompetitionId == competitionId && m.Status == FloorballMatchStatus.Completed)
                 .ToListAsync();
 
-            // Get all teams in the season
-            IEnumerable<FloorballTeam> teams = await GetBySeasonIdAsync(seasonId);
+            IEnumerable<FloorballTeam> teams = await GetByCompetitionIdAsync(competitionId);
             List<FloorballTeam> teamList = teams.ToList();
 
             // Calculate points for each team
@@ -242,26 +246,34 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
 
             foreach (FloorballMatch match in matches)
             {
+                // Standings only count matches where both participants are known. Skip placeholder
+                // entries gracefully so future fixtures don't crash this query.
+                if (!match.HomeTeamId.HasValue || !match.AwayTeamId.HasValue)
+                    continue;
+
+                Guid homeId = match.HomeTeamId.Value;
+                Guid awayId = match.AwayTeamId.Value;
+
                 // Home team won
                 if (match.HomeScore > match.AwayScore)
                 {
-                    teamPoints[match.HomeTeamId] += 3;
+                    teamPoints[homeId] += 3;
                 }
                 // Away team won
                 else if (match.AwayScore > match.HomeScore)
                 {
-                    teamPoints[match.AwayTeamId] += 3;
+                    teamPoints[awayId] += 3;
                 }
                 // Draw
                 else
                 {
-                    teamPoints[match.HomeTeamId] += 1;
-                    teamPoints[match.AwayTeamId] += 1;
+                    teamPoints[homeId] += 1;
+                    teamPoints[awayId] += 1;
                 }
 
                 // Update goal difference
-                teamGoalDifference[match.HomeTeamId] += match.HomeScore - match.AwayScore;
-                teamGoalDifference[match.AwayTeamId] += match.AwayScore - match.HomeScore;
+                teamGoalDifference[homeId] += match.HomeScore - match.AwayScore;
+                teamGoalDifference[awayId] += match.AwayScore - match.HomeScore;
             }
 
             // Sort teams by points and goal difference
@@ -430,6 +442,16 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .ToListAsync(cancellationToken);
 
             return PagedResult.Create(items, totalCount, page, pageSize);
+        }
+
+        public async Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default)
+        {
+            return await _entities.AnyAsync(t => t.ClubId == clubId, cancellationToken);
+        }
+
+        public async Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default)
+        {
+            return await _entities.AnyAsync(t => t.DivisionId == divisionId, cancellationToken);
         }
     }
 } 

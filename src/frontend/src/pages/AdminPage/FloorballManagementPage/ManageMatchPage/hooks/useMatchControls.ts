@@ -10,6 +10,7 @@ interface UseMatchControlsProps {
   setLoading: (loading: boolean) => void;
   onGoLive?: (matchId: string, updatedMatch?: FloorballMatchDto) => void;
   onCompleteLive?: (matchId: string, updatedMatch?: FloorballMatchDto) => void;
+  onReopen?: (matchId: string, updatedMatch?: FloorballMatchDto) => void;
 }
 
 export const useMatchControls = ({
@@ -18,7 +19,8 @@ export const useMatchControls = ({
   setError,
   setLoading,
   onGoLive,
-  onCompleteLive
+  onCompleteLive,
+  onReopen,
 }: UseMatchControlsProps) => {
 
   /**
@@ -91,8 +93,37 @@ export const useMatchControls = ({
     // Don't close the modal - let it stay open with "Match Finished" status
   }, [currentMatch.id, setCurrentMatch, setError, setLoading, onCompleteLive]);
 
+  /**
+   * Reopens a previously completed match back to InProgress so the operator can correct
+   * accidentally recorded results or continue play. The backend reverses the per-match
+   * aggregates that were applied at completion time.
+   */
+  const handleReopenMatch = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await floorballMatchService.reopen(currentMatch.id);
+
+      if (response.success && response.data) {
+        setCurrentMatch(response.data);
+        if (onReopen) {
+          onReopen(currentMatch.id, response.data);
+        }
+      } else {
+        throw new Error('Failed to reopen match');
+      }
+    } catch (error) {
+      console.error('Error reopening match:', error);
+      setError(error instanceof Error ? error.message : 'Failed to reopen match');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentMatch.id, setCurrentMatch, setError, setLoading, onReopen]);
+
   return {
     handleStartMatch,
-    handleCompleteLive
+    handleCompleteLive,
+    handleReopenMatch,
   };
 }; 

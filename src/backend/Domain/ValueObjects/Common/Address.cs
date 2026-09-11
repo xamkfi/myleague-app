@@ -3,7 +3,14 @@ using System;
 namespace Domain.ValueObjects.Common;
 
 /// <summary>
-/// Represents a physical address as a value object
+/// Represents a physical address as a value object.
+///
+/// All fields — including <see cref="Country"/> — are optional. Tournament-imported player rosters
+/// (PMT, ad-hoc events) don't carry address data, and demanding a country in those flows used to
+/// surface as "Country is required" validation failures even though no address was supplied at all.
+/// Callers that want to skip persisting an <see cref="Address"/> entirely should pass <c>null</c>
+/// to the relevant Person setter; see <c>PersonMapper.ToAddress</c> for the "all-empty → null"
+/// convention.
 /// </summary>
 public class Address : IEquatable<Address>
 {
@@ -11,45 +18,45 @@ public class Address : IEquatable<Address>
     /// Gets the street line 1
     /// </summary>
     public string? Street1 { get; private set; }
-    
+
     /// <summary>
     /// Gets the street line 2 (optional)
     /// </summary>
     public string? Street2 { get; private set; }
-    
+
     /// <summary>
     /// Gets the city
     /// </summary>
     public string? City { get; private set; }
-    
+
     /// <summary>
     /// Gets the postal code
     /// </summary>
     public string? PostalCode { get; private set; }
-    
-    /// <summary>
-    /// Gets the country
-    /// </summary>
-    public string Country { get; private set; }
 
-    private Address() 
+    /// <summary>
+    /// Gets the country (optional)
+    /// </summary>
+    public string? Country { get; private set; }
+
+    private Address()
     {
-        Street1 = string.Empty;
-        City = string.Empty;
-        PostalCode = string.Empty;
-        Country = string.Empty;
+        Street1 = null;
+        City = null;
+        PostalCode = null;
+        Country = null;
     }
 
     /// <summary>
-    /// Creates a new address
+    /// Creates a new address. Every part is optional.
     /// </summary>
-    public Address(string? street1, string? city, string? postalCode, string country, string? street2 = null)
+    public Address(string? street1, string? city, string? postalCode, string? country, string? street2 = null)
     {
-        Street1 = street1;
-        Street2 = street2;
-        City = city;
-        PostalCode = postalCode;
-        Country = country;
+        Street1 = string.IsNullOrWhiteSpace(street1) ? null : street1;
+        Street2 = string.IsNullOrWhiteSpace(street2) ? null : street2;
+        City = string.IsNullOrWhiteSpace(city) ? null : city;
+        PostalCode = string.IsNullOrWhiteSpace(postalCode) ? null : postalCode;
+        Country = string.IsNullOrWhiteSpace(country) ? null : country;
     }
 
     public override bool Equals(object? obj)

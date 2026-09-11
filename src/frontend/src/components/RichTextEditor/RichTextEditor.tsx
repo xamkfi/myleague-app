@@ -1,0 +1,334 @@
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import ReactQuill from 'react-quill';
+import { useTranslation } from 'react-i18next';
+import 'react-quill/dist/quill.snow.css';
+
+import { handleImageUploadService } from '../../api/admin/News/handleImageUploadService';
+import MatchSelectionHeader from '../../pages/AdminPage/NewsPage/components/MatchSelectionHeader';
+import type { FloorballMatch } from '../../api/admin/News/GetMatchesService';
+import {
+  ensureMatchResultBlotRegistered,
+  type MatchResultValue,
+} from './MatchResultTableBlot';
+import { usableTeamLogo } from './matchResultRender';
+import {
+  enableMatchResultDrag,
+  hasCombinedMatchBox,
+  insertMatchBoxes,
+  splitCombinedMatchBlots,
+} from './matchResultEditor';
+import { extractRichTextImageUrls, parseSanitizedHtmlRoot } from './parseSanitizedHtml';
+
+import './RichTextEditor.scss';
+import '../../pages/AdminPage/NewsPage/styles/MatchResult.scss';
+
+// react-quill@2 ships typings that reference Quill v1 names (Sources,
+// DeltaStatic, UnprivilegedEditor). Quill v2 no longer exposes those names
+// directly, so we re-declare the small subset we need locally to avoid
+// pulling in mismatched ambient types.
+type QuillChangeSource = 'user' | 'api' | 'silent';
+
+ensureMatchResultBlotRegistered();
+
+export type RichTextEditorVariant = 'default' | 'compact';
+
+export interface RichTextEditorProps {
+  /** Current HTML content. */
+  value: string;
+  /** Called with the updated HTML whenever the user edits the content. */
+  onChange: (value: string) => void;
+  /** Optional callback fired while an image is being uploaded. */
+  onUploadingChange?: (uploading: boolean) => void;
+  /** Show the "Lisää otteluita / Add matches" button above the editor. */
+  showMatchInsert?: boolean;
+  /** Stable id for the editor host element (useful for labels). */
+  id?: string;
+  /** Placeholder shown in the editor when empty. */
+  placeholder?: string;
+  /** Visual size preset. */
+  variant?: RichTextEditorVariant;
+  /** Read-only mode. */
+  readOnly?: boolean;
+  /** Extra className applied to the outer wrapper. */
+  className?: string;
+}
+
+const extractImageUrls = extractRichTextImageUrls;
+
+const extractMatchResults = (html: string): MatchResultValue[] => {
+  if (!html) return [];
+  const root = parseSanitizedHtmlRoot(html);
+  const containers = Array.from(root.querySelectorAll('.match-result-table-container'));
+  const results: MatchResultValue[] = [];
+  containers.forEach((element) => {
+    const dataElement = element.querySelector('.match-result-data');
+    if (!dataElement?.textContent) return;
+    try {
+      const parsed = JSON.parse(dataElement.textContent) as { matches?: MatchResultValue[] };
+      if (parsed?.matches) {
+        results.push(...parsed.matches);
+      }
+    } catch {
+      // Ignore malformed embeds — they will be removed on the next save.
+    }
+  });
+  return results;
+};
+
+/**
+ * Shared rich-text editor used across admin pages (news, tournaments, …).
+ *
+ * Built on Quill. Adds:
+ *  - Inline image upload via the admin News upload endpoint
+ *  - Confirm prompt when the user removes images or match embeds
+ *  - Optional "insert match results" button that embeds a custom Quill blot
+ */
+const RichTextEditor = ({
+  value,
+  onChange,
+  onUploadingChange,
+  showMatchInsert = false,
+  id,
+  placeholder,
+  variant = 'default',
+  readOnly = false,
+  className,
+}: RichTextEditorProps) => {
+  const { t } = useTranslation();
+  const quillRef = useRef<ReactQuill | null>(null);
+
+  // Track the previous user-visible content so we can detect deletions that
+  // happen as a result of *user* actions (not programmatic prop updates).
+  // Kept in sync with `value` so external loads (e.g. fetching an article in
+  // edit mode) and programmatic clears (after publishing) don't trigger the
+  // "are you sure you want to delete N images?" prompt.
+  const lastUserHtmlRef = useRef<string>(value);
+  useEffect(() => {
+    lastUserHtmlRef.current = value;
+  }, [value]);
+
+  useEffect(() => {
+    if (readOnly) {
+      return undefined;
+    }
+
+    let dragCleanup: (() => void) | undefined;
+    const timer = window.setTimeout(() => {
+      const editor = quillRef.current?.getEditor();
+      if (editor) {
+        dragCleanup = enableMatchResultDrag(editor, t('admin.editor.dragMatchHint'));
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+      dragCleanup?.();
+    };
+  }, [readOnly, t]);
+
+  useEffect(() => {
+    if (readOnly || !hasCombinedMatchBox(value)) {
+      return;
+    }
+
+    const editor = quillRef.current?.getEditor();
+    if (!editor || !splitCombinedMatchBlots(editor)) {
+      return;
+    }
+
+    const html = editor.root.innerHTML;
+    lastUserHtmlRef.current = html;
+    onChange(html);
+  }, [value, readOnly, onChange]);
+
+  const confirmDeletions = useCallback(
+    (deletedImages: string[], deletedMatches: MatchResultValue[]): boolean => {
+      if (deletedImages.length === 0 && deletedMatches.length === 0) return true;
+
+      let message: string;
+      if (deletedImages.length > 0 && deletedMatches.length > 0) {
+        message = t(
+          'admin.editor.confirmDeleteBoth',
+          'Are you sure you want to delete {{images}} image(s) and {{matches}} match result(s)?',
+          { images: deletedImages.length, matches: deletedMatches.length }
+        );
+      } else if (deletedImages.length > 0) {
+        message = t(
+          'admin.editor.confirmDeleteImages',
+          'Are you sure you want to delete {{count}} image(s)?',
+          { count: deletedImages.length }
+        );
+      } else {
+        message = t(
+          'admin.editor.confirmDeleteMatches',
+          'Are you sure you want to delete {{count}} match result(s)?',
+          { count: deletedMatches.length }
+        );
+      }
+
+      return window.confirm(message);
+    },
+    [t]
+  );
+
+  const reinsertElements = useCallback(
+    (images: string[], matches: MatchResultValue[]): void => {
+      const editor = quillRef.current?.getEditor();
+      if (!editor) return;
+      const range = editor.getSelection();
+      const index = range?.index ?? editor.getLength();
+      images.forEach((url) => editor.insertEmbed(index, 'image', url));
+      insertMatchBoxes(editor, matches);
+    },
+    []
+  );
+
+  const handleChange = useCallback(
+    (content: string, _delta: unknown, source: QuillChangeSource) => {
+      if (typeof content !== 'string') {
+        return;
+      }
+
+      // Only react to user-driven changes. Programmatic updates (e.g. parent
+      // setting `value` after loading an article) come through with source
+      // 'api' and must not trigger a destructive confirm dialog.
+      if (source !== 'user') {
+        lastUserHtmlRef.current = content;
+        onChange(content);
+        return;
+      }
+
+      const previousImages = extractImageUrls(lastUserHtmlRef.current);
+      const previousMatches = extractMatchResults(lastUserHtmlRef.current);
+      const currentImages = extractImageUrls(content);
+      const currentMatches = extractMatchResults(content);
+
+      const deletedImages = previousImages.filter((url) => !currentImages.includes(url));
+      const deletedMatches = previousMatches.filter(
+        (prev) => !currentMatches.some((curr) => JSON.stringify(curr) === JSON.stringify(prev))
+      );
+
+      if (deletedImages.length === 0 && deletedMatches.length === 0) {
+        lastUserHtmlRef.current = content;
+        onChange(content);
+        return;
+      }
+
+      const confirmed = confirmDeletions(deletedImages, deletedMatches);
+      if (!confirmed) {
+        // Restore the deleted embeds. We deliberately commit `content` first
+        // because Quill has already applied the deletion internally; the
+        // re-insert call below puts the embeds back in.
+        lastUserHtmlRef.current = content;
+        onChange(content);
+        reinsertElements(deletedImages, deletedMatches);
+        return;
+      }
+
+      lastUserHtmlRef.current = content;
+      onChange(content);
+    },
+    [confirmDeletions, onChange, reinsertElements]
+  );
+
+  const openImageUploader = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async () => {
+      if (!input.files?.length) return;
+      const file = input.files[0];
+      try {
+        onUploadingChange?.(true);
+        const imageUrl = await handleImageUploadService(file);
+        const editor = quillRef.current?.getEditor();
+        if (editor) {
+          const range = editor.getSelection(true);
+          const index = range?.index ?? editor.getLength();
+          editor.insertEmbed(index, 'image', imageUrl);
+          editor.setSelection({ index: index + 1, length: 0 });
+        }
+      } catch (error) {
+        console.error('Image upload error:', error);
+        window.alert(t('admin.editor.uploadFailed', 'Image upload failed.'));
+      } finally {
+        onUploadingChange?.(false);
+      }
+    };
+    input.click();
+  }, [onUploadingChange, t]);
+
+  const modules = useMemo(
+    () => ({
+      toolbar: {
+        container: [
+          [{ header: [1, 2, 3, 4, 5, 6, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          ['blockquote'],
+          [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+          ['link', 'image'],
+          ['clean'],
+        ],
+        handlers: {
+          image: openImageUploader,
+        },
+      },
+    }),
+    [openImageUploader]
+  );
+
+  const handleInsertMatches = useCallback((matches: FloorballMatch[]) => {
+    const editor = quillRef.current?.getEditor();
+    if (!editor || matches.length === 0) return;
+
+    const matchesData: MatchResultValue[] = matches.map((match) => ({
+      homeTeam: match.homeTeamName,
+      awayTeam: match.awayTeamName,
+      homeScore: match.homeScore,
+      awayScore: match.awayScore,
+      date: match.scheduledDateTime,
+      status: match.status,
+      link: match.id,
+      homeTeamImage: usableTeamLogo(match.homeTeamLogo),
+      awayTeamImage: usableTeamLogo(match.awayTeamLogo),
+    }));
+
+    insertMatchBoxes(editor, matchesData);
+  }, []);
+
+  return (
+    <div
+      id={id}
+      className={[
+        'rich-text-editor',
+        `rich-text-editor--${variant}`,
+        className ?? '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      {showMatchInsert && !readOnly && (
+        <div className="rich-text-editor__toolbar-row">
+          <MatchSelectionHeader onInsertMatches={handleInsertMatches} />
+          <p className="rich-text-editor__match-hint">{t('admin.editor.dragMatchHint')}</p>
+        </div>
+      )}
+      <ReactQuill
+        ref={(element) => {
+          if (element != null) {
+            quillRef.current = element;
+          }
+        }}
+        className="rich-text-editor__quill"
+        theme="snow"
+        value={value}
+        onChange={handleChange}
+        modules={modules}
+        readOnly={readOnly}
+        placeholder={placeholder}
+      />
+    </div>
+  );
+};
+
+export default RichTextEditor;

@@ -1,0 +1,284 @@
+@use 'sass:map';
+@use '../../../../../styles/variables' as *;
+
+.bulk-save-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.bulk-save-modal {
+  background: $color-neutral-white;
+  border-radius: 12px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
+  width: min(480px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.bulk-save-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid $color-neutral-medium-grey;
+  gap: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 24px;
+    font-weight: 600;
+    color: $color-text-primary;
+  }
+}
+
+.bulk-save-modal__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: $color-neutral-dark-grey;
+}
+
+.bulk-save-modal__close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: $color-neutral-dark-grey;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  flex: 0 0 auto;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: $color-neutral-light-grey;
+    color: $color-text-primary;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.bulk-save-modal__body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bulk-save-modal__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+
+  @media (max-width: 420px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.bulk-save-modal .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  label {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: $color-text-primary;
+  }
+
+  .field-help {
+    font-size: 12px;
+    line-height: 16px;
+    color: $color-neutral-dark-grey;
+  }
+}
+
+.bulk-save-modal .number-input,
+.bulk-save-modal .select-field {
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: $color-neutral-light-grey;
+  border: 1px solid #d1d5db;
+  font-size: 15px;
+  line-height: 24px;
+  color: $color-text-primary;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: $color-neutral-white;
+    border-color: $color-neutral-dark-grey;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $color-blue-deep;
+    background: $color-neutral-white;
+    box-shadow: 0 0 0 3px rgba(47, 96, 186, 0.15);
+  }
+
+  /* Remove the native spinner arrows so the count input matches the modal aesthetic and
+   * doesn't compete with the explicit preset buttons below. */
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  -moz-appearance: textfield;
+}
+
+.bulk-save-modal .time-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+
+  .time-input {
+    flex: 1;
+    height: 40px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: $color-neutral-light-grey;
+    border: 1px solid #d1d5db;
+    font-size: 16px;
+    line-height: 24px;
+    color: $color-text-primary;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    min-width: 0;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: $color-neutral-white;
+      border-color: $color-neutral-dark-grey;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-deep;
+      background: $color-neutral-white;
+      box-shadow: 0 0 0 3px rgba(47, 96, 186, 0.15);
+    }
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    -moz-appearance: textfield;
+  }
+
+  .time-separator {
+    font-size: 20px;
+    font-weight: 700;
+    color: $color-neutral-dark-grey;
+    user-select: none;
+  }
+}
+
+.bulk-save-modal__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bulk-save-modal .preset-btn {
+  height: 32px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  background: $color-neutral-white;
+  border: 1px solid $color-neutral-medium-grey;
+  color: $color-text-primary;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: $color-neutral-light-grey;
+    border-color: $color-neutral-dark-grey;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.bulk-save-modal .field-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.bulk-save-modal__footer {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-top: 1px solid $color-neutral-medium-grey;
+
+  .cancel-btn,
+  .submit-btn {
+    height: 40px;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 24px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .cancel-btn {
+    color: $color-red-primary;
+    background: transparent;
+    border: 1px solid $color-red-primary;
+
+    &:hover:not(:disabled) {
+      background: rgba(215, 68, 64, 0.08);
+    }
+  }
+
+  .submit-btn {
+    background: $color-blue-deep;
+    color: $color-neutral-white;
+    border: 1px solid $color-blue-deep;
+
+    &:hover:not(:disabled) {
+      /* Avoid `darken()` (deprecated in Dart Sass 3) by using a filter-based hover state,
+       * matching the rest of the manage match page. */
+      filter: brightness(0.92);
+    }
+  }
+}

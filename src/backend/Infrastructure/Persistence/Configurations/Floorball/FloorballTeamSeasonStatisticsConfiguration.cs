@@ -26,9 +26,9 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .IsRequired()
                 .HasComment("ID of the team these statistics belong to");
 
-            builder.Property(s => s.SeasonId)
+            builder.Property(s => s.CompetitionId)
                 .IsRequired()
-                .HasComment("ID of the season these statistics are for");
+                .HasComment("ID of the competition these statistics are for");
 
             // Configure basic game statistics
             builder.Property(s => s.GamesPlayed)
@@ -167,10 +167,10 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.HasIndex(s => s.TeamId)
                 .HasDatabaseName("IX_FloorballTeamSeasonStatistics_TeamId");
 
-            builder.HasIndex(s => s.SeasonId)
+            builder.HasIndex(s => s.CompetitionId)
                 .HasDatabaseName("IX_FloorballTeamSeasonStatistics_SeasonId");
 
-            builder.HasIndex(s => new { s.TeamId, s.SeasonId })
+            builder.HasIndex(s => new { s.TeamId, s.CompetitionId })
                 .IsUnique()
                 .HasDatabaseName("IX_FloorballTeamSeasonStatistics_TeamId_SeasonId");
 

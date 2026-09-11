@@ -9,9 +9,9 @@ import type {
   FloorballPosition,
   TeamCategory
 } from '../../types/floorball/floorballTypes';
+import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { API_URL } from '../../constants/config';
 
 export const floorballTeamService = {
   /**
@@ -24,10 +24,12 @@ export const floorballTeamService = {
     if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
     if (params?.clubId) searchParams.append('clubId', params.clubId);
     if (params?.division) searchParams.append('division', params.division);
+    if (params?.searchTerm) searchParams.append('searchTerm', params.searchTerm);
+    params?.teamCategories?.forEach(category => searchParams.append('teamCategory', category));
 
     const url = `${API_URL}/FloorballTeam${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
     
-    const response = await fetch(url);
+    const response = await authFetch(url);
     if (!response.ok) {
       throw new Error('Failed to fetch floorball teams');
     }
@@ -44,7 +46,7 @@ export const floorballTeamService = {
    * Get a floorball team by ID
    */
   getById: async (id: string): Promise<FloorballTeam> => {
-    const response = await fetch(`${API_URL}/FloorballTeam/${id}`);
+    const response = await authFetch(`${API_URL}/FloorballTeam/${id}`);
     if (!response.ok) {
       throw new Error('Failed to fetch floorball team');
     }
@@ -61,25 +63,39 @@ export const floorballTeamService = {
    * Create a new floorball team
    */
   create: async (data: FloorballTeamRequest): Promise<FloorballTeam> => {
-    const response = await fetch(`${API_URL}/FloorballTeam`, {
+    const response = await authFetch(`${API_URL}/FloorballTeam`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
     });
-    
-    if (!response.ok) {
-      throw new Error('Failed to create floorball team');
+
+    // Read the body regardless of status so server-side validation messages reach the caller.
+    let apiResponse: ApiResponse<FloorballTeam> | null = null;
+    try {
+      apiResponse = await response.json();
+    } catch {
+      apiResponse = null;
     }
-    
-    const apiResponse: ApiResponse<FloorballTeam> = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(
+        apiResponse ?? response,
+        `Failed to create floorball team (HTTP ${response.status})`,
+      );
+      throw new Error(errorMessage);
+    }
+
+    if (!apiResponse) {
+      throw new Error('Failed to create floorball team — empty response body.');
+    }
+
     if (!apiResponse.success) {
       const errorMessage = await parseErrorResponse(apiResponse, 'Failed to create floorball team');
-
       throw new Error(errorMessage || 'Failed to create floorball team');
     }
-    
+
     return apiResponse.data;
   },
 
@@ -91,7 +107,7 @@ export const floorballTeamService = {
       console.log('Updating team with ID:', id);
       console.log('Update data:', data);
       
-      const response = await fetch(`${API_URL}/FloorballTeam/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballTeam/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +141,7 @@ export const floorballTeamService = {
    * Delete a floorball team
    */
   delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/FloorballTeam/${id}`, {
+    const response = await authFetch(`${API_URL}/FloorballTeam/${id}`, {
       method: 'DELETE',
     });
     const apiResponse: ApiResponse<void> = await response.json();
@@ -145,18 +161,28 @@ export const floorballTeamService = {
    * Add a player to a team with position and jersey number
    */
   addPlayerToTeam: async (
-    teamId: string, 
-    playerId: string, 
-    position: FloorballPosition, 
-    jerseyNumber?: number
+    teamId: string,
+    playerId: string,
+    position: FloorballPosition,
+    jerseyNumber?: number,
+    /**
+     * Optional originally-requested jersey number. Set this when the caller wanted a
+     * specific number but had to substitute another (e.g. the tournament import flow
+     * picks the next free number on a conflict). The backend stores it so the roster
+     * UI can highlight the row for admin review.
+     */
+    requestedJerseyNumber?: number
   ): Promise<FloorballTeam> => {
     const searchParams = new URLSearchParams();
     searchParams.append('position', position);
     if (jerseyNumber !== undefined) {
       searchParams.append('jerseyNumber', jerseyNumber.toString());
     }
+    if (requestedJerseyNumber !== undefined && requestedJerseyNumber !== jerseyNumber) {
+      searchParams.append('requestedJerseyNumber', requestedJerseyNumber.toString());
+    }
 
-    const response = await fetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}?${searchParams.toString()}`, {
+    const response = await authFetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}?${searchParams.toString()}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -187,7 +213,7 @@ export const floorballTeamService = {
   ): Promise<FloorballTeamPlayerDto> => {
     console.log('Updating team player:', { teamId, playerId, updateData });
 
-    const response = await fetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}`, {
+    const response = await authFetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -210,7 +236,7 @@ export const floorballTeamService = {
    * Remove a player from a team
    */
   removePlayerFromTeam: async (teamId: string, playerId: string): Promise<FloorballTeam> => {
-    const response = await fetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}`, {
+    const response = await authFetch(`${API_URL}/FloorballTeam/${teamId}/players/${playerId}`, {
       method: 'DELETE',
     });
     
@@ -245,7 +271,7 @@ export const floorballTeamService = {
 
     const url = `${API_URL}/FloorballTeam/without-roster${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
     
-    const response = await fetch(url);
+    const response = await authFetch(url);
     if (!response.ok) {
       throw new Error('Failed to fetch floorball teams');
     }

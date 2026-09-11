@@ -1,6 +1,5 @@
-
-import type { FloorballMatchDto } from "../../../types/floorball/floorballTypes";
-import MatchesList from '../../../components/MatchesList/MatchesList';
+import SharedFixturesSection from '../../../components/FixturesSection/FixturesSection';
+import type { FloorballMatchDto } from '../../../types/floorball/floorballTypes';
 
 interface FixturesSectionProps {
   matchesLoading: boolean;
@@ -12,15 +11,5 @@ interface FixturesSectionProps {
 }
 
 export default function FixturesSection(props: FixturesSectionProps) {
-  return (
-    <MatchesList
-      variant="fixtures"
-      matchesLoading={props.matchesLoading}
-      matchesError={props.matchesError}
-      matches={props.matches}
-      currentPage={props.currentPage}
-      totalPages={props.totalPages}
-      handlePageChange={props.handlePageChange}
-    />
-  );
+  return <SharedFixturesSection sport="floorball" {...props} />;
 }

@@ -2,7 +2,6 @@ export interface Goalkeeper {
   Id: string;
   Number: number;
   Name: string;
-  Age: number;
   MatchesPlayed: number;
   SavePercentage: number;
   GoalsAgainstAverage: number;
@@ -13,7 +12,6 @@ export interface FieldPlayer {
   Id: string;
   Number: number;
   Name: string;
-  Age: number;
   MatchesPlayed: number;
   GoalsScored: number;
   Assists: number;
@@ -23,7 +21,6 @@ export interface FieldPlayer {
 export interface Coach {
   Id: string;
   Name: string;
-  Age: number;
 }
 
 export interface Team {

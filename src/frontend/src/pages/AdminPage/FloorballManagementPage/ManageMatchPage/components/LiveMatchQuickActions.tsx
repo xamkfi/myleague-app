@@ -4,16 +4,24 @@ import './LiveMatchQuickActions.scss';
 interface LiveMatchQuickActionsProps {
   loading: boolean;
   currentMatch: FloorballMatchDto;
-  homeTeamId?: string;
-  awayTeamId?: string;
-  homeTeamName?: string;
-  awayTeamName?: string;
+  leftTeamId?: string;
+  rightTeamId?: string;
+  leftTeamName?: string;
+  rightTeamName?: string;
+  leftTeamSide: 'home' | 'away';
+  rightTeamSide: 'home' | 'away';
   onShowGoalForm: (teamId: string) => void;
   onShowPenaltyForm: (teamId: string) => void;
   // Save recording controls
-  homeGoalieId?: string;
-  awayGoalieId?: string;
+  leftGoalieId?: string;
+  rightGoalieId?: string;
   onRecordSave?: (team: 'home' | 'away', goalieId: string) => void;
+  /**
+   * Opens the bulk save dialog for the given side. Used for the "backfill missed saves"
+   * recovery flow when the recorder forgot to mark individual saves during the period.
+   * Optional so consumers that don't yet support bulk entry can omit it.
+   */
+  onShowBulkSave?: (team: 'home' | 'away', goalieId: string) => void;
   keybindsEnabled?: boolean;
   saveLoading?: boolean;
 }
@@ -21,91 +29,88 @@ interface LiveMatchQuickActionsProps {
 const LiveMatchQuickActions = ({
   loading,
   currentMatch,
-  homeTeamId,
-  awayTeamId,
-  homeTeamName,
-  awayTeamName,
+  leftTeamId,
+  rightTeamId,
+  leftTeamName,
+  rightTeamName,
+  leftTeamSide,
+  rightTeamSide,
   onShowGoalForm,
   onShowPenaltyForm,
-  homeGoalieId,
-  awayGoalieId,
+  leftGoalieId,
+  rightGoalieId,
   onRecordSave,
+  onShowBulkSave,
   keybindsEnabled,
   saveLoading
 }: LiveMatchQuickActionsProps) => {
-  const isMatchInProgress = currentMatch.status === 'InProgress';
+  const isMatchInProgress: boolean = currentMatch.status === 'InProgress';
+
+  const renderTeamActions = (
+    side: 'left' | 'right',
+    teamId: string | undefined,
+    goalieId: string | undefined,
+    teamSide: 'home' | 'away',
+    saveKeyLabel: string,
+  ) => (
+    <div className="team-actions">
+      {onRecordSave && (
+        <div className="save-action-group">
+          <button
+            onClick={() => goalieId && onRecordSave(teamSide, goalieId)}
+            className="action-btn save-btn"
+            disabled={Boolean(saveLoading) || !isMatchInProgress || !goalieId}
+            title={!goalieId ? 'Select goalie to enable' : undefined}
+            type="button"
+          >
+            <span className="btn-label">Record Save</span>
+            <span className="btn-meta">
+              <span className={`btn-key ${keybindsEnabled ? '' : 'disabled'}`}>({saveKeyLabel})</span>
+              <span className="btn-icon" aria-hidden="true">🛡️</span>
+            </span>
+          </button>
+          {onShowBulkSave && (
+            <button
+              onClick={() => goalieId && onShowBulkSave(teamSide, goalieId)}
+              className="bulk-save-btn"
+              disabled={Boolean(saveLoading) || !isMatchInProgress || !goalieId}
+              title={!goalieId ? 'Select goalie to enable bulk save entry' : 'Bulk record saves'}
+              aria-label={`Bulk record saves for ${side === 'left' ? leftTeamName ?? 'left team' : rightTeamName ?? 'right team'}`}
+              type="button"
+            >
+              +N
+            </button>
+          )}
+        </div>
+      )}
+      <button
+        onClick={() => teamId && onShowGoalForm(teamId)}
+        className="action-btn goal-btn"
+        disabled={loading || !isMatchInProgress || !teamId}
+        type="button"
+      >
+        <span className="btn-label">Record Goal</span>
+        <span className="btn-icon" aria-hidden="true">⚽</span>
+      </button>
+      <button
+        onClick={() => teamId && onShowPenaltyForm(teamId)}
+        className="action-btn penalty-btn"
+        disabled={loading || !isMatchInProgress || !teamId}
+        type="button"
+      >
+        <span className="btn-label">Record Penalty</span>
+        <span className="btn-icon" aria-hidden="true">🟧</span>
+      </button>
+    </div>
+  );
 
   return (
     <div className="quick-actions-grid">
       <h3 className="qa-title">RECORD EVENT</h3>
-      <h4 className="team-name home">{homeTeamName || 'Home Team'}</h4>
-      <h4 className="team-name away">{awayTeamName || 'Away Team'}</h4>
-      <div className="team-actions">
-        {onRecordSave && (
-          <button
-            onClick={() => homeGoalieId && onRecordSave('home', homeGoalieId)}
-            className="action-btn save-btn"
-            disabled={Boolean(saveLoading) || !isMatchInProgress || !homeGoalieId}
-            title={!homeGoalieId ? 'Select home goalie to enable' : undefined}
-          >
-            <span className="btn-label">Record Home Save</span>
-            <span className="btn-meta">
-              <span className={`btn-key ${keybindsEnabled ? '' : 'disabled'}`}>(Q)</span>
-              <span className="btn-icon" aria-hidden="true">🛡️</span>
-            </span>
-          </button>
-        )}
-        <button 
-          onClick={() => homeTeamId && onShowGoalForm(homeTeamId)} 
-          className="action-btn goal-btn"
-          disabled={loading || !isMatchInProgress || !homeTeamId}
-        >
-          <span className="btn-label">Record Home Goal</span>
-          <span className="btn-icon" aria-hidden="true">⚽</span>
-        </button>
-        <button 
-          onClick={() => homeTeamId && onShowPenaltyForm(homeTeamId)} 
-          className="action-btn penalty-btn"
-          disabled={loading || !isMatchInProgress || !homeTeamId}
-        >
-          <span className="btn-label">Record Home Penalty</span>
-          <span className="btn-icon" aria-hidden="true">🟧</span>
-        </button>
-        
-      </div>
-      <div className="team-actions">
-        {onRecordSave && (
-          <button
-            onClick={() => awayGoalieId && onRecordSave('away', awayGoalieId)}
-            className="action-btn save-btn"
-            disabled={Boolean(saveLoading) || !isMatchInProgress || !awayGoalieId}
-            title={!awayGoalieId ? 'Select away goalie to enable' : undefined}
-          >
-            <span className="btn-label">Record Away Save</span>
-            <span className="btn-meta">
-              <span className={`btn-key ${keybindsEnabled ? '' : 'disabled'}`}>(R)</span>
-              <span className="btn-icon" aria-hidden="true">🛡️</span>
-            </span>
-          </button>
-        )}
-        <button 
-          onClick={() => awayTeamId && onShowGoalForm(awayTeamId)} 
-          className="action-btn goal-btn"
-          disabled={loading || !isMatchInProgress || !awayTeamId}
-        >
-          <span className="btn-label">Record Away Goal</span>
-          <span className="btn-icon" aria-hidden="true">⚽</span>
-        </button>
-        <button 
-          onClick={() => awayTeamId && onShowPenaltyForm(awayTeamId)} 
-          className="action-btn penalty-btn"
-          disabled={loading || !isMatchInProgress || !awayTeamId}
-        >
-          <span className="btn-label">Record Away Penalty</span>
-          <span className="btn-icon" aria-hidden="true">🟧</span>
-        </button>
-        
-      </div>
+      <h4 className="team-name left">{leftTeamName || 'Left Team'}</h4>
+      <h4 className="team-name right">{rightTeamName || 'Right Team'}</h4>
+      {renderTeamActions('left', leftTeamId, leftGoalieId, leftTeamSide, 'Q')}
+      {renderTeamActions('right', rightTeamId, rightGoalieId, rightTeamSide, 'R')}
     </div>
   );
 };

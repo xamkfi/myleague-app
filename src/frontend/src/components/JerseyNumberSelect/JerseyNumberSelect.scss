@@ -1,0 +1,6 @@
+.jersey-number-select {
+  option:disabled,
+  &__option--taken {
+    color: #9aa0ad;
+  }
+}

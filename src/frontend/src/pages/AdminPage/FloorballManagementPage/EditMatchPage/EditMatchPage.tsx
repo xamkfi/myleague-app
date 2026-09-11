@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { 
   FloorballMatchDto,
   CreateFloorballMatchRequest,
@@ -10,13 +11,13 @@ import type {
 } from '../../../../types/floorball/floorballTypes';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { floorballMatchEventService } from '../../../../api/floorball/floorballMatchEventService';
-import MatchForm from '../MatchOverviewPage/Components/MatchForm/MatchForm';
+import MatchForm from '../Components/MatchForm/MatchForm';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import './EditMatchPage.scss';
-import '../MatchOverviewPage/MatchOverviewPage.scss';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 
 const EditMatchPage = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [matchData, setMatchData] = useState<FloorballMatchDto | null>(null);
@@ -63,6 +64,20 @@ const EditMatchPage = () => {
     }
   };
 
+  const handleReactivateMatch = async (matchId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await floorballMatchEventService.reactivateMatch(matchId);
+      navigate('/admin/floorball/matches');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred during reactivation';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUpdateMatch = async (updatedData: CreateFloorballMatchRequest) => {
     if (!matchData) {
       setError('Original match data is not available.');
@@ -75,16 +90,32 @@ const EditMatchPage = () => {
 
       const changes: Promise<unknown>[] = [];
 
-      if (updatedData.seasonId && updatedData.seasonId !== matchData.seasonId) {
-        changes.push(floorballMatchService.changeSeason(matchData.id, updatedData.seasonId));
+      // Changing the competition (season / tournament) of an already-created match is not
+      // currently supported by the backend — the previous controller exposed a route that
+      // never existed in any controller's implementation, so the request silently 404'd. We
+      // surface that explicitly here instead of pretending the change succeeded.
+      if (updatedData.competitionId && updatedData.competitionId !== matchData.competitionId) {
+        throw new Error(
+          'Changing the competition (season/tournament) of an existing match is not supported. ' +
+          'Delete the match and create a new one in the target competition instead.'
+        );
       }
-      
-      if (
-        updatedData.homeTeamId &&
-        updatedData.awayTeamId &&
-        (updatedData.homeTeamId !== matchData.homeTeamId || updatedData.awayTeamId !== matchData.awayTeamId)
-      ) {
-        changes.push(floorballMatchService.changeTeams(matchData.id, updatedData.homeTeamId, updatedData.awayTeamId));
+
+      // Detect ANY change to the team slots — including clearing a slot back to TBD or filling in
+      // a previously empty slot. The form treats both fields as optional, so undefined ↔ null are
+      // interchangeable from the form's perspective; normalize both to null for the API.
+      const normalizedHome: string | null = updatedData.homeTeamId ?? null;
+      const normalizedAway: string | null = updatedData.awayTeamId ?? null;
+      const homeChanged: boolean = normalizedHome !== (matchData.homeTeamId ?? null);
+      const awayChanged: boolean = normalizedAway !== (matchData.awayTeamId ?? null);
+      if (homeChanged || awayChanged) {
+        // Route through the new AssignMatchTeams endpoint so the backend can propagate the change
+        // forward through the playoff bracket where applicable. Works for the "create with no
+        // teams → fill them in later" flow as well as for jury overrides.
+        changes.push(floorballMatchService.assignTeams(matchData.id, {
+          homeTeamId: normalizedHome,
+          awayTeamId: normalizedAway,
+        }));
       }
       
       if (updatedData.venue !== matchData.venue) {
@@ -128,18 +159,27 @@ const EditMatchPage = () => {
   };
 
   if (loading) {
-    return <div>Loading match data...</div>;
+    return <div>{t('floorball.matches.matchForm.loading', 'Ladataan ottelua...')}</div>;
   }
-  
+
+  // Detect tournament matches so the form switches its competition dropdown to tournaments.
+  const isTournamentMatch: boolean = Boolean(
+    matchData?.tournamentGroupId ||
+      (matchData?.tournamentStage && matchData.tournamentStage !== 'None')
+  );
+  const pageTitle: string = isTournamentMatch
+    ? t('floorball.matches.matchForm.editTournamentMatch', 'Muokkaa turnausottelua')
+    : t('floorball.matches.matchForm.editSeasonMatch', 'Muokkaa kauden ottelua');
+
   return (
-    <PageTemplate title={'Edit match'}>
+    <PageTemplate title={pageTitle}>
     <div className="match-management">
       <div className="match-management__content edit-match-page">
         <div className="page-header">
           <div className="header-left">
           </div>
           <div className="header-center">
-            <h1>Edit Match</h1>
+            <h1>{pageTitle}</h1>
           </div>
           <div className="header-right"></div>
         </div>
@@ -154,10 +194,12 @@ const EditMatchPage = () => {
               onSubmit={handleFormSubmit}
               onCancel={handleCancel}
               onCancelMatch={handleCancelMatch}
+              onReactivateMatch={handleReactivateMatch}
               loading={loading}
+              competitionKind={isTournamentMatch ? 'tournament' : 'season'}
             />
           ) : (
-            !loading && <p>Match data could not be loaded.</p>
+            <p>{t('floorball.matches.matchForm.notLoaded', 'Ottelun tietojen lataus epäonnistui.')}</p>
           )}
         </div>
       </div>

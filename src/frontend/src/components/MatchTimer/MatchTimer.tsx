@@ -5,6 +5,17 @@ import './MatchTimer.scss';
 import type { TimerUpdate } from '../../api/common/timerService';
 import EditIcon from '../../assets/basicIcons/edit.svg';
 
+function formatElapsedMs(ms: number): string {
+  const totalSeconds = Math.floor(Math.max(0, ms) / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) {
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
 interface MatchTimerProps {
   matchId: string;
   periodNumber?: number;
@@ -18,6 +29,17 @@ interface MatchTimerProps {
   controlsEnabled?: boolean;
   isActive?: boolean;
   keybindsEnabled?: boolean;
+  /**
+   * Absolute elapsed-second mark at which the current period started. The Reset button
+   * rewinds to this value instead of 0, because the match clock is continuous across
+   * periods (e.g. period 2 starts at 20:00, so reset goes back to 20:00 there).
+   */
+  periodStartSeconds?: number;
+  /**
+   * When `period`, the digits show time inside the current period (0–20) and the
+   * time editor writes period-relative values.
+   */
+  clockDisplayMode?: 'absolute' | 'period';
   // Period control props
   onPeriodControlClick?: () => void;
   canEndPeriod?: () => boolean;
@@ -39,6 +61,8 @@ export const MatchTimer = ({
   controlsEnabled = true,
   isActive = true,
   keybindsEnabled = false,
+  periodStartSeconds = 0,
+  clockDisplayMode = 'absolute',
   onPeriodControlClick,
   canEndPeriod,
   getPeriodControlButtonText,
@@ -46,16 +70,16 @@ export const MatchTimer = ({
   nextPeriodToStart,
 }: MatchTimerProps) => {
   const [showTimeInputModal, setShowTimeInputModal] = useState(false);
-  
+
   const {
     displayTime,
+    displayTimeMs,
     isRunning,
     loading,
     error,
     initialLoadComplete,
     startTimer,
     stopTimer,
-    resetTimer,
     setTimer,
     adjustTimer,
     createTimer,
@@ -65,9 +89,12 @@ export const MatchTimer = ({
     autoConnect: isActive,
     onTimerUpdate,
   });
-  
-  // Provide getCurrentTime function to parent
-  const getCurrentTime = useCallback(() => displayTime, [displayTime]);
+
+  const visibleDisplayTime = clockDisplayMode === 'period'
+    ? formatElapsedMs(Math.max(0, displayTimeMs - Math.max(0, periodStartSeconds) * 1000))
+    : displayTime;
+
+  const getCurrentTime = useCallback(() => visibleDisplayTime, [visibleDisplayTime]);
   
   useEffect(() => {
     if (onGetCurrentTime && isActive) {
@@ -86,7 +113,10 @@ export const MatchTimer = ({
   const handleStart = useCallback(async () => {
     try {
       await createTimer();
-      await startTimer(periodNumber);
+      const resolvedPeriod = typeof periodNumber === 'number' && Number.isFinite(periodNumber) && periodNumber >= 1
+        ? periodNumber
+        : undefined;
+      await startTimer(resolvedPeriod);
     } catch (err) {
       console.error('Error starting timer:', err);
     }
@@ -101,14 +131,20 @@ export const MatchTimer = ({
     }
   }, [stopTimer]);
   
-  // Handle reset button
+  // Handle reset button. With a continuous match clock, "reset" no longer means "back
+  // to 0" — it means "back to the start of the current period". For period 1 this is
+  // still 0; for later periods it's the absolute elapsed-second mark we recorded when
+  // the operator started that period.
   const handleReset = useCallback(async () => {
     try {
-      await resetTimer();
+      const target: number = Number.isFinite(periodStartSeconds) && periodStartSeconds >= 0
+        ? Math.floor(periodStartSeconds)
+        : 0;
+      await setTimer(target);
     } catch (err) {
       console.error('Error resetting timer:', err);
     }
-  }, [resetTimer]);
+  }, [setTimer, periodStartSeconds]);
   
   // Handle toggle (play/pause)
   const handleToggle = useCallback(async () => {
@@ -122,12 +158,15 @@ export const MatchTimer = ({
   // Handle set time from modal
   const handleSetTime = useCallback(async (timeInSeconds: number) => {
     try {
-      await setTimer(timeInSeconds);
+      const absoluteSeconds = clockDisplayMode === 'period'
+        ? Math.max(0, Math.floor(periodStartSeconds) + timeInSeconds)
+        : timeInSeconds;
+      await setTimer(absoluteSeconds);
       setShowTimeInputModal(false);
     } catch (err) {
       console.error('Error setting timer:', err);
     }
-  }, [setTimer]);
+  }, [setTimer, clockDisplayMode, periodStartSeconds]);
   
   // Handle time adjustment
   const handleAdjustTime = useCallback(async (adjustmentInSeconds: number) => {
@@ -180,7 +219,7 @@ export const MatchTimer = ({
   }, [canEndPeriod, periodNumber, nextPeriodToStart, periodLoading, getPeriodControlButtonText]);
   
   // Show loading indicator until initial load is complete
-  const timeDisplay = initialLoadComplete ? displayTime : '--:--';
+  const timeDisplay = initialLoadComplete ? visibleDisplayTime : '--:--';
   
   return (
     <div className="timer-component" data-keybinds-enabled={keybindsEnabled ? 'true' : undefined}>
@@ -220,11 +259,27 @@ export const MatchTimer = ({
                 10s
               </button>
               <button
+                onClick={() => handleAdjustTime(-1)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time decrease one-second-back"
+                title="Go back 1 second"
+              >
+                1s
+              </button>
+              <button
                 onClick={handleToggle}
                 disabled={buttonStates.toggleDisabled}
                 className={`timer-button ${isRunning ? 'pause' : 'start'}`}
               >
                 {isRunning ? 'Pause' : 'Play'}
+              </button>
+              <button
+                onClick={() => handleAdjustTime(1)}
+                disabled={buttonStates.adjustDisabled}
+                className="timer-button adjust-time increase one-second-forward"
+                title="Advance 1 second"
+              >
+                1s
               </button>
               <button
                 onClick={() => handleAdjustTime(10)}
@@ -271,7 +326,7 @@ export const MatchTimer = ({
 
       <TimeInputModal
         isOpen={showTimeInputModal}
-        currentTime={displayTime}
+        currentTime={visibleDisplayTime}
         onSetTime={handleSetTime}
         onClose={() => setShowTimeInputModal(false)}
         loading={loading}

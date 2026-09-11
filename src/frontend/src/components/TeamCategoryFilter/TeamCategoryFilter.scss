@@ -1,0 +1,89 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+// Multi-select category chips used in admin list filters. Each chip carries its
+// category's fixed primary color when active.
+.team-category-filter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: map.get($spacing, 'xs');
+
+  &__heading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  &__label {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-text-primary;
+  }
+
+  &__hint {
+    font-size: map.get($font-sizes, 'sm-xs');
+    color: $color-neutral-dark-grey;
+  }
+
+  &__chips {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    flex-wrap: wrap;
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+    padding: 0.3rem 0.7rem;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: map.get($border-radius, 'xl');
+    background: $color-white;
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'medium');
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+    .team-category-filter__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: map.get($border-radius, 'full');
+      flex-shrink: 0;
+    }
+
+    &--adult .team-category-filter__dot {
+      background: #1c356d;
+    }
+    &--youth .team-category-filter__dot {
+      background: #4e8100;
+    }
+    &--women .team-category-filter__dot {
+      background: #dd1e84;
+    }
+
+    &.active {
+      color: $color-white;
+
+      .team-category-filter__dot {
+        background: $color-white;
+      }
+    }
+
+    &--adult.active {
+      background: #1c356d;
+      border-color: #1c356d;
+    }
+    &--youth.active {
+      background: #4e8100;
+      border-color: #4e8100;
+    }
+    &--women.active {
+      background: #dd1e84;
+      border-color: #dd1e84;
+    }
+  }
+}

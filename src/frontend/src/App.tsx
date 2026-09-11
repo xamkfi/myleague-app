@@ -1,5 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { routes } from './router/routes';
+import { AuthProvider } from './context/AuthContext';
+import { AudienceProvider } from './context/AudienceContext';
 import './App.scss';
 
 // Initialize i18n
@@ -9,7 +11,11 @@ const router = createBrowserRouter(routes);
 
 function App() {
   return (
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <AudienceProvider>
+        <RouterProvider router={router} />
+      </AudienceProvider>
+    </AuthProvider>
   );
 }
 

@@ -1,110 +1,40 @@
 @use 'sass:map';
 @use '@variables' as *;
-@use '../../styles/common' as *;
 
-.player {
-  &-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  &-header {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: map.get($spacing, 'base');
-    border-bottom: 2px solid $color-border;
-    padding-bottom: map.get($spacing, 'base');
-    margin-bottom: map.get($spacing, 'lg');
-  }
-
-  &-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: map.get($border-radius, 'full');
-    background-color: $color-placeholder;
-  }
-
-  &-info {
-    display: flex;
-    flex-direction: column;
-  }
-
-  &-name {
-    font-size: map.get($font-sizes, 'lg');
-    font-weight: map.get($font-weights, 'bold');
-    color: $color-text-primary;
-  }
-
-  &-subtitle {
-    font-size: map.get($font-sizes, 'sm');
-    color: $color-text-muted;
-  }
+.player-page--shell {
+  width: 100%;
 }
 
-.stats {
-  &-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: map.get($spacing, 'base');
-    margin-bottom: map.get($spacing, 'lg');
-    width: 100%;
-  }
+.player-sport-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map.get($spacing, 'xs');
+  width: 100%;
+  max-width: $max-width-page;
+  margin: map.get($spacing, 'md') auto 0;
+  padding: 0 map.get($spacing, 'base');
 
-  &-box {
-    background-color: $color-background-light;
-    padding: map.get($spacing, 'base');
-    border-radius: map.get($border-radius, 'sm');
-    box-shadow: var(--shadow-sm);
-    text-align: center;
-  }
-
-  &-label {
+  .tab-button {
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    background: transparent;
+    border: 2px solid rgba($color-blue-deep, 0.3);
+    color: $color-blue-deep;
+    border-radius: map.get($border-radius, 'lg');
+    cursor: pointer;
+    font-weight: map.get($font-weights, 'medium');
     font-size: map.get($font-sizes, 'sm');
-    color: $color-text-muted;
-  }
+    transition: all 0.3s ease;
 
-  &-value {
-    font-size: map.get($font-sizes, 'md');
-    font-weight: map.get($font-weights, 'bold');
-    color: $color-text-primary;
-  }
-}
-
-.match {
-  &-history {
-    width: 100%;
-    border-top: 2px solid $color-border;
-    padding-top: map.get($spacing, 'base');
-
-    h3 {
-      font-size: map.get($font-sizes, 'lg');
-      margin-bottom: map.get($spacing, 'base');
-      color: $color-text-primary;
+    &:hover {
+      background: rgba($color-blue-deep, 0.08);
+      border-color: rgba($color-blue-deep, 0.5);
     }
-  }
 
-  &-item {
-    display: flex;
-    justify-content: space-between;
-    padding: map.get($spacing, 'xs') 0;
-    border-bottom: 1px solid $color-border;
-    font-size: map.get($font-sizes, 'base');
-
-    &:last-child {
-      border-bottom: none;
+    &.active {
+      background: $color-blue-deep;
+      color: $color-white;
+      border-color: $color-blue-deep;
+      font-weight: map.get($font-weights, 'bold');
     }
   }
 }
-
-.win {
-  color: green;
-  font-weight: map.get($font-weights, 'bold');
-}
-
-.loss {
-  color: red;
-  font-weight: map.get($font-weights, 'bold');
-} 

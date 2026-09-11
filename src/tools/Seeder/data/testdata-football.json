@@ -1,0 +1,374 @@
+{
+  "Seeder": {
+    "PlayerPersons": [
+      { "FirstName": "Kasper", "LastName": "Holm", "BirthDate": "1996-03-12", "IsRegistered": true, "ContactInfo": { "Email": "kasper.holm@fb.fi" } },
+      { "FirstName": "Linus", "LastName": "Berg", "BirthDate": "1998-07-21", "IsRegistered": true, "ContactInfo": { "Email": "linus.berg@fb.fi" } },
+      { "FirstName": "Noel", "LastName": "Strom", "BirthDate": "1999-01-08", "IsRegistered": true, "ContactInfo": { "Email": "noel.strom@fb.fi" } },
+      { "FirstName": "Viktor", "LastName": "Ahl", "BirthDate": "1997-11-15", "IsRegistered": true, "ContactInfo": { "Email": "viktor.ahl@fb.fi" } },
+      { "FirstName": "Emil", "LastName": "Nyberg", "BirthDate": "2000-04-02", "IsRegistered": true, "ContactInfo": { "Email": "emil.nyberg@fb.fi" } },
+      { "FirstName": "Lucas", "LastName": "Bergstrom", "BirthDate": "1998-09-19", "IsRegistered": true, "ContactInfo": { "Email": "lucas.bergstrom@fb.fi" } },
+      { "FirstName": "Noah", "LastName": "Lind", "BirthDate": "1999-06-27", "IsRegistered": true, "ContactInfo": { "Email": "noah.lind@fb.fi" } },
+      { "FirstName": "Adam", "LastName": "Sjoberg", "BirthDate": "1997-02-14", "IsRegistered": true, "ContactInfo": { "Email": "adam.sjoberg@fb.fi" } },
+      { "FirstName": "Oliver", "LastName": "Falk", "BirthDate": "2001-08-05", "IsRegistered": true, "ContactInfo": { "Email": "oliver.falk@fb.fi" } },
+
+      { "FirstName": "Filip", "LastName": "Holmgren", "BirthDate": "1995-12-03", "IsRegistered": true, "ContactInfo": { "Email": "filip.holmgren@fb.fi" } },
+      { "FirstName": "Isak", "LastName": "Blom", "BirthDate": "1998-05-18", "IsRegistered": true, "ContactInfo": { "Email": "isak.blom@fb.fi" } },
+      { "FirstName": "Melvin", "LastName": "Asplund", "BirthDate": "1999-10-11", "IsRegistered": true, "ContactInfo": { "Email": "melvin.asplund@fb.fi" } },
+      { "FirstName": "Albin", "LastName": "Ek", "BirthDate": "1997-03-29", "IsRegistered": true, "ContactInfo": { "Email": "albin.ek@fb.fi" } },
+      { "FirstName": "Liam", "LastName": "Forsberg", "BirthDate": "2000-01-22", "IsRegistered": true, "ContactInfo": { "Email": "liam.forsberg@fb.fi" } },
+      { "FirstName": "Anton", "LastName": "Lund", "BirthDate": "1998-08-16", "IsRegistered": true, "ContactInfo": { "Email": "anton.lund@fb.fi" } },
+      { "FirstName": "Theo", "LastName": "Grahn", "BirthDate": "1999-04-09", "IsRegistered": true, "ContactInfo": { "Email": "theo.grahn@fb.fi" } },
+      { "FirstName": "Viggo", "LastName": "Svanberg", "BirthDate": "1996-11-30", "IsRegistered": true, "ContactInfo": { "Email": "viggo.svanberg@fb.fi" } },
+      { "FirstName": "Melker", "LastName": "Nygren", "BirthDate": "2001-06-13", "IsRegistered": true, "ContactInfo": { "Email": "melker.nygren@fb.fi" } },
+
+      { "FirstName": "Max", "LastName": "Enberg", "BirthDate": "1996-02-20", "IsRegistered": true, "ContactInfo": { "Email": "max.enberg@fb.fi" } },
+      { "FirstName": "William", "LastName": "Dahl", "BirthDate": "1998-09-04", "IsRegistered": true, "ContactInfo": { "Email": "william.dahl@fb.fi" } },
+      { "FirstName": "Alexander", "LastName": "Roos", "BirthDate": "1999-12-17", "IsRegistered": true, "ContactInfo": { "Email": "alexander.roos@fb.fi" } },
+      { "FirstName": "Benjamin", "LastName": "Koivu", "BirthDate": "1997-07-08", "IsRegistered": true, "ContactInfo": { "Email": "benjamin.koivu@fb.fi" } },
+      { "FirstName": "Daniel", "LastName": "Nurminen", "BirthDate": "2000-03-25", "IsRegistered": true, "ContactInfo": { "Email": "daniel.nurminen@fb.fi" } },
+      { "FirstName": "Gabriel", "LastName": "Saari", "BirthDate": "1998-10-01", "IsRegistered": true, "ContactInfo": { "Email": "gabriel.saari@fb.fi" } },
+      { "FirstName": "Milton", "LastName": "Sari", "BirthDate": "1999-05-14", "IsRegistered": true, "ContactInfo": { "Email": "milton.sari@fb.fi" } },
+      { "FirstName": "Casper", "LastName": "Eloranta", "BirthDate": "1996-08-28", "IsRegistered": true, "ContactInfo": { "Email": "casper.eloranta@fb.fi" } },
+      { "FirstName": "Sixten", "LastName": "Karhu", "BirthDate": "2001-01-19", "IsRegistered": true, "ContactInfo": { "Email": "sixten.karhu@fb.fi" } },
+
+      { "FirstName": "Edvin", "LastName": "Hietala", "BirthDate": "1995-06-07", "IsRegistered": true, "ContactInfo": { "Email": "edvin.hietala@fb.fi" } },
+      { "FirstName": "Joel", "LastName": "Koistinen", "BirthDate": "1998-02-23", "IsRegistered": true, "ContactInfo": { "Email": "joel.koistinen@fb.fi" } },
+      { "FirstName": "Kevin", "LastName": "Lehto", "BirthDate": "1999-09-12", "IsRegistered": true, "ContactInfo": { "Email": "kevin.lehto@fb.fi" } },
+      { "FirstName": "Mateo", "LastName": "Mylly", "BirthDate": "1997-04-18", "IsRegistered": true, "ContactInfo": { "Email": "mateo.mylly@fb.fi" } },
+      { "FirstName": "Nicolas", "LastName": "Siltanen", "BirthDate": "2000-11-06", "IsRegistered": true, "ContactInfo": { "Email": "nicolas.siltanen@fb.fi" } },
+      { "FirstName": "Pablo", "LastName": "Haapala", "BirthDate": "1998-01-29", "IsRegistered": true, "ContactInfo": { "Email": "pablo.haapala@fb.fi" } },
+      { "FirstName": "Quinn", "LastName": "Tervo", "BirthDate": "1999-07-03", "IsRegistered": true, "ContactInfo": { "Email": "quinn.tervo@fb.fi" } },
+      { "FirstName": "Ruben", "LastName": "Oksa", "BirthDate": "1996-12-21", "IsRegistered": true, "ContactInfo": { "Email": "ruben.oksa@fb.fi" } },
+      { "FirstName": "Samuel", "LastName": "Puro", "BirthDate": "2001-05-09", "IsRegistered": true, "ContactInfo": { "Email": "samuel.puro@fb.fi" } },
+
+      { "FirstName": "Rafael", "LastName": "Maki", "BirthDate": "1996-04-16", "IsRegistered": true, "ContactInfo": { "Email": "rafael.maki@fb.fi" } },
+      { "FirstName": "Sergio", "LastName": "Kivi", "BirthDate": "1998-08-02", "IsRegistered": true, "ContactInfo": { "Email": "sergio.kivi@fb.fi" } },
+      { "FirstName": "Tobias", "LastName": "Salmi", "BirthDate": "1999-03-27", "IsRegistered": true, "ContactInfo": { "Email": "tobias.salmi@fb.fi" } },
+      { "FirstName": "Victor", "LastName": "Niemela", "BirthDate": "1997-10-10", "IsRegistered": true, "ContactInfo": { "Email": "victor.niemela@fb.fi" } },
+      { "FirstName": "Walter", "LastName": "Ahlqvist", "BirthDate": "2000-06-24", "IsRegistered": true, "ContactInfo": { "Email": "walter.ahlqvist@fb.fi" } },
+      { "FirstName": "Xavier", "LastName": "Boman", "BirthDate": "1998-12-08", "IsRegistered": true, "ContactInfo": { "Email": "xavier.boman@fb.fi" } },
+      { "FirstName": "Yannick", "LastName": "Cederschiold", "BirthDate": "1999-02-01", "IsRegistered": true, "ContactInfo": { "Email": "yannick.cederschiold@fb.fi" } },
+      { "FirstName": "Zachary", "LastName": "Dufva", "BirthDate": "1996-09-15", "IsRegistered": true, "ContactInfo": { "Email": "zachary.dufva@fb.fi" } },
+      { "FirstName": "Adrian", "LastName": "Eklund", "BirthDate": "2001-07-28", "IsRegistered": true, "ContactInfo": { "Email": "adrian.eklund@fb.fi" } },
+
+      { "FirstName": "Bruno", "LastName": "Fager", "BirthDate": "1995-11-04", "IsRegistered": true, "ContactInfo": { "Email": "bruno.fager@fb.fi" } },
+      { "FirstName": "Carlos", "LastName": "Gren", "BirthDate": "1998-04-21", "IsRegistered": true, "ContactInfo": { "Email": "carlos.gren@fb.fi" } },
+      { "FirstName": "Dario", "LastName": "Haglund", "BirthDate": "1999-08-13", "IsRegistered": true, "ContactInfo": { "Email": "dario.haglund@fb.fi" } },
+      { "FirstName": "Enzo", "LastName": "Ivarsson", "BirthDate": "1997-01-26", "IsRegistered": true, "ContactInfo": { "Email": "enzo.ivarsson@fb.fi" } },
+      { "FirstName": "Giovanni", "LastName": "Jansson", "BirthDate": "2000-09-07", "IsRegistered": true, "ContactInfo": { "Email": "giovanni.jansson@fb.fi" } },
+      { "FirstName": "Hector", "LastName": "Kraft", "BirthDate": "1998-06-19", "IsRegistered": true, "ContactInfo": { "Email": "hector.kraft@fb.fi" } },
+      { "FirstName": "Ivan", "LastName": "Lager", "BirthDate": "1999-12-02", "IsRegistered": true, "ContactInfo": { "Email": "ivan.lager@fb.fi" } },
+      { "FirstName": "Jonas", "LastName": "Molin", "BirthDate": "1996-03-31", "IsRegistered": true, "ContactInfo": { "Email": "jonas.molin@fb.fi" } },
+      { "FirstName": "Kristian", "LastName": "Nordin", "BirthDate": "2001-10-14", "IsRegistered": true, "ContactInfo": { "Email": "kristian.nordin@fb.fi" } },
+
+      { "FirstName": "Lorenzo", "LastName": "Ofverberg", "BirthDate": "1996-05-05", "IsRegistered": true, "ContactInfo": { "Email": "lorenzo.ofverberg@fb.fi" } },
+      { "FirstName": "Marco", "LastName": "Palme", "BirthDate": "1998-11-22", "IsRegistered": true, "ContactInfo": { "Email": "marco.palme@fb.fi" } },
+      { "FirstName": "Nils", "LastName": "Qvist", "BirthDate": "1999-06-08", "IsRegistered": true, "ContactInfo": { "Email": "nils.qvist@fb.fi" } },
+      { "FirstName": "Otto", "LastName": "Rosengren", "BirthDate": "1997-02-17", "IsRegistered": true, "ContactInfo": { "Email": "otto.rosengren@fb.fi" } },
+      { "FirstName": "Pascal", "LastName": "Stenberg", "BirthDate": "2000-08-30", "IsRegistered": true, "ContactInfo": { "Email": "pascal.stenberg@fb.fi" } },
+      { "FirstName": "Ricardo", "LastName": "Torell", "BirthDate": "1998-03-11", "IsRegistered": true, "ContactInfo": { "Email": "ricardo.torell@fb.fi" } },
+      { "FirstName": "Sebastian", "LastName": "Ulfsson", "BirthDate": "1999-10-24", "IsRegistered": true, "ContactInfo": { "Email": "sebastian.ulfsson@fb.fi" } },
+      { "FirstName": "Tomas", "LastName": "Vestman", "BirthDate": "1996-07-06", "IsRegistered": true, "ContactInfo": { "Email": "tomas.vestman@fb.fi" } },
+      { "FirstName": "Ulrik", "LastName": "Wahlgren", "BirthDate": "2001-01-03", "IsRegistered": true, "ContactInfo": { "Email": "ulrik.wahlgren@fb.fi" } },
+
+      { "FirstName": "Valter", "LastName": "Yberg", "BirthDate": "1995-09-09", "IsRegistered": true, "ContactInfo": { "Email": "valter.yberg@fb.fi" } },
+      { "FirstName": "Wilhelm", "LastName": "Zacke", "BirthDate": "1998-12-26", "IsRegistered": true, "ContactInfo": { "Email": "wilhelm.zacke@fb.fi" } },
+      { "FirstName": "Axel", "LastName": "Almqvist", "BirthDate": "1999-04-14", "IsRegistered": true, "ContactInfo": { "Email": "axel.almqvist@fb.fi" } },
+      { "FirstName": "Bo", "LastName": "Bjurstrom", "BirthDate": "1997-08-01", "IsRegistered": true, "ContactInfo": { "Email": "bo.bjurstrom@fb.fi" } },
+      { "FirstName": "Calle", "LastName": "Cronholm", "BirthDate": "2000-02-12", "IsRegistered": true, "ContactInfo": { "Email": "calle.cronholm@fb.fi" } },
+      { "FirstName": "Dag", "LastName": "Drakenberg", "BirthDate": "1998-05-28", "IsRegistered": true, "ContactInfo": { "Email": "dag.drakenberg@fb.fi" } },
+      { "FirstName": "Eskil", "LastName": "Edstrom", "BirthDate": "1999-11-09", "IsRegistered": true, "ContactInfo": { "Email": "eskil.edstrom@fb.fi" } },
+      { "FirstName": "Folke", "LastName": "Falkenberg", "BirthDate": "1996-01-15", "IsRegistered": true, "ContactInfo": { "Email": "folke.falkenberg@fb.fi" } },
+      { "FirstName": "Gosta", "LastName": "Gyllenhaal", "BirthDate": "2001-09-20", "IsRegistered": true, "ContactInfo": { "Email": "gosta.gyllenhaal@fb.fi" } }
+    ],
+
+    "GoaliePersons": [],
+
+    "RefereePersons": [
+      { "FirstName": "Magnus", "LastName": "Wikman", "BirthDate": "1980-03-12", "IsRegistered": true, "ContactInfo": { "Email": "magnus.wikman@fb-ref.fi" } },
+      { "FirstName": "Stefan", "LastName": "Palmqvist", "BirthDate": "1978-07-25", "IsRegistered": true, "ContactInfo": { "Email": "stefan.palmqvist@fb-ref.fi" } },
+      { "FirstName": "Bjorn", "LastName": "Ekman", "BirthDate": "1981-11-08", "IsRegistered": true, "ContactInfo": { "Email": "bjorn.ekman@fb-ref.fi" } },
+      { "FirstName": "Anders", "LastName": "Soderberg", "BirthDate": "1979-02-19", "IsRegistered": true, "ContactInfo": { "Email": "anders.soderberg@fb-ref.fi" } },
+      { "FirstName": "Henrik", "LastName": "Lindback", "BirthDate": "1983-09-04", "IsRegistered": true, "ContactInfo": { "Email": "henrik.lindback@fb-ref.fi" } }
+    ],
+
+    "Clubs": [
+      { "Name": "Helsinki FC", "City": "Helsinki", "Country": "Finland", "FoundingDate": "1991-01-15T00:00:00Z", "WebsiteUrl": "https://helsinkifc.fi", "LogoUrl": "https://example.com/logo-helsinkifc.png", "ContactEmail": "info@helsinkifc.fi" },
+      { "Name": "Tampere United", "City": "Tampere", "Country": "Finland", "FoundingDate": "1993-04-20T00:00:00Z", "WebsiteUrl": "https://tampereunited.fi", "LogoUrl": "https://example.com/logo-tampereunited.png", "ContactEmail": "info@tampereunited.fi" },
+      { "Name": "Turku City", "City": "Turku", "Country": "Finland", "FoundingDate": "1989-06-11T00:00:00Z", "WebsiteUrl": "https://turkucity.fi", "LogoUrl": "https://example.com/logo-turkucity.png", "ContactEmail": "info@turkucity.fi" },
+      { "Name": "Oulu Kickers", "City": "Oulu", "Country": "Finland", "FoundingDate": "1996-09-02T00:00:00Z", "WebsiteUrl": "https://oulukickers.fi", "LogoUrl": "https://example.com/logo-oulukickers.png", "ContactEmail": "info@oulukickers.fi" },
+      { "Name": "Espoo Athletic", "City": "Espoo", "Country": "Finland", "FoundingDate": "1998-03-08T00:00:00Z", "WebsiteUrl": "https://espooathletic.fi", "LogoUrl": "https://example.com/logo-espooathletic.png", "ContactEmail": "info@espooathletic.fi" },
+      { "Name": "Vantaa Wanderers", "City": "Vantaa", "Country": "Finland", "FoundingDate": "2001-05-19T00:00:00Z", "WebsiteUrl": "https://vantaawanderers.fi", "LogoUrl": "https://example.com/logo-vantaawanderers.png", "ContactEmail": "info@vantaawanderers.fi" },
+      { "Name": "Lahti Rovers", "City": "Lahti", "Country": "Finland", "FoundingDate": "1994-08-27T00:00:00Z", "WebsiteUrl": "https://lahtirovers.fi", "LogoUrl": "https://example.com/logo-lahtirovers.png", "ContactEmail": "info@lahtirovers.fi" },
+      { "Name": "Kuopio United", "City": "Kuopio", "Country": "Finland", "FoundingDate": "1997-12-04T00:00:00Z", "WebsiteUrl": "https://kuopiounited.fi", "LogoUrl": "https://example.com/logo-kuopiounited.png", "ContactEmail": "info@kuopiounited.fi" }
+    ],
+
+    "Divisions": [
+      { "Name": "Football Championship", "Description": "Top hobby 5v5 football league", "Level": 1, "SportType": "Football" }
+    ],
+
+    "FootballSeasons": [
+      {
+        "Name": "2026 Football Championship",
+        "StartDate": "2026-04-01",
+        "EndDate": "2026-10-31",
+        "DivisionNames": ["Football Championship"],
+        "NumberOfHalves": 2,
+        "HalfDurationMinutes": 25,
+        "PlayersOnField": 5,
+        "RequireGoalkeeper": true,
+        "MaxSubstitutions": 0,
+        "RequireOfficialsToStart": false,
+        "AllowExtraTime": false,
+        "ExtraTimeHalfCount": 2,
+        "ExtraTimeHalfDurationMinutes": 15,
+        "AllowPenaltyShootout": false,
+        "WinPoints": 3,
+        "DrawPoints": 1,
+        "LossPoints": 0,
+        "ContentBlocks": [
+          {
+            "Title": "MAHL Jalkapallo",
+            "ContentHtml": "<p>Seuraa MAHL:n jalkapallosarjoja, sarjataulukoita, otteluohjelmia ja tuloksia.</p><p>Valitse kausivuosi selataksesi käynnissä olevia ja arkistoituja kilpailuja.</p><p>Ottelusivuilta löydät maalit, kortit, vaihdot ja kokoonpanot.</p>"
+          },
+          {
+            "Title": "Sarjainfo",
+            "ContentHtml": "<p>Jalkapallosarjat käyttävät voitto–tasapeli–tappio -pistelaskentaa maalieron kera.</p><p>Sarjataulukot ja pelaajatilastot päivittyvät otteluiden valmistuttua.</p><p>Turnauksissa on lohkotaulukot tasapelillä ja tarvittaessa pudotuspelikaavio.</p>"
+          },
+          {
+            "Title": "Kilpailut",
+            "ContentHtml": "<p>Avaa sarja nähdäksesi taulukon, otteluohjelman ja tulokset.</p><p>Avaa turnaus nähdäksesi lohkot, pudotuspelit ja tilastot.</p><p>Käynnissä olevat ottelut päivittyvät reaaliajassa.</p>"
+          }
+        ]
+      }
+    ],
+
+    "FootballTournaments": [
+      {
+        "Name": "2026 Football Cup",
+        "StartDate": "2026-08-01",
+        "EndDate": "2026-08-31",
+        "Venue": "Helsinki Football Park",
+        "ContentHtml": "<p>Hobby 5v5 football cup with two groups of four. Group stage completed for playoff testing.</p>",
+        "GroupStageNumberOfHalves": 2,
+        "GroupStageHalfDurationMinutes": 25,
+        "GroupStagePlayersOnField": 5,
+        "GroupStageRequireGoalkeeper": true,
+        "GroupStageMaxSubstitutions": 0,
+        "GroupStageRequireOfficialsToStart": false,
+        "GroupStageAllowExtraTime": false,
+        "GroupStageExtraTimeHalfCount": 2,
+        "GroupStageExtraTimeHalfDurationMinutes": 5,
+        "GroupStageAllowPenaltyShootout": false,
+        "PlayoffNumberOfHalves": 2,
+        "PlayoffHalfDurationMinutes": 25,
+        "PlayoffPlayersOnField": 5,
+        "PlayoffRequireGoalkeeper": true,
+        "PlayoffMaxSubstitutions": 0,
+        "PlayoffRequireOfficialsToStart": false,
+        "PlayoffAllowExtraTime": true,
+        "PlayoffExtraTimeHalfCount": 2,
+        "PlayoffExtraTimeHalfDurationMinutes": 5,
+        "PlayoffAllowPenaltyShootout": true,
+        "TeamsAdvancingPerGroup": 2,
+        "HasPlayoffStage": true,
+        "HasThirdPlaceMatch": false,
+        "AllGroupMatchesCompleted": true,
+        "Groups": [
+          {
+            "Name": "Group A",
+            "TeamNames": ["Helsinki FC", "Tampere United", "Turku City", "Oulu Kickers"]
+          },
+          {
+            "Name": "Group B",
+            "TeamNames": ["Espoo Athletic", "Vantaa Wanderers", "Lahti Rovers", "Kuopio United"]
+          }
+        ]
+      }
+    ],
+
+    "FootballTeams": [
+      {
+        "Name": "Helsinki FC",
+        "DivisionName": "Football Championship",
+        "ClubName": "Helsinki FC",
+        "HomeArena": "Helsinki Football Park",
+        "PrimaryJerseyColor": "Blue",
+        "SecondaryJerseyColor": "White",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "kasper.holm@fb.fi", "Position": 1, "JerseyNumber": 1 },
+          { "PersonEmail": "linus.berg@fb.fi", "Position": 2, "JerseyNumber": 2 },
+          { "PersonEmail": "noel.strom@fb.fi", "Position": 2, "JerseyNumber": 4 },
+          { "PersonEmail": "viktor.ahl@fb.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "emil.nyberg@fb.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "lucas.bergstrom@fb.fi", "Position": 4, "JerseyNumber": 9 },
+          { "PersonEmail": "noah.lind@fb.fi", "Position": 4, "JerseyNumber": 10 },
+          { "PersonEmail": "adam.sjoberg@fb.fi", "Position": 4, "JerseyNumber": 11 },
+          { "PersonEmail": "oliver.falk@fb.fi", "Position": 3, "JerseyNumber": 14 }
+        ]
+      },
+      {
+        "Name": "Tampere United",
+        "DivisionName": "Football Championship",
+        "ClubName": "Tampere United",
+        "HomeArena": "Tampere Stadium",
+        "PrimaryJerseyColor": "Red",
+        "SecondaryJerseyColor": "Black",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "filip.holmgren@fb.fi", "Position": 1, "JerseyNumber": 1 },
+          { "PersonEmail": "isak.blom@fb.fi", "Position": 2, "JerseyNumber": 3 },
+          { "PersonEmail": "melvin.asplund@fb.fi", "Position": 2, "JerseyNumber": 5 },
+          { "PersonEmail": "albin.ek@fb.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "liam.forsberg@fb.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "anton.lund@fb.fi", "Position": 4, "JerseyNumber": 9 },
+          { "PersonEmail": "theo.grahn@fb.fi", "Position": 4, "JerseyNumber": 10 },
+          { "PersonEmail": "viggo.svanberg@fb.fi", "Position": 4, "JerseyNumber": 17 },
+          { "PersonEmail": "melker.nygren@fb.fi", "Position": 2, "JerseyNumber": 15 }
+        ]
+      },
+      {
+        "Name": "Turku City",
+        "DivisionName": "Football Championship",
+        "ClubName": "Turku City",
+        "HomeArena": "Turku City Ground",
+        "PrimaryJerseyColor": "Yellow",
+        "SecondaryJerseyColor": "Black",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "max.enberg@fb.fi", "Position": 1, "JerseyNumber": 1 },
+          { "PersonEmail": "william.dahl@fb.fi", "Position": 2, "JerseyNumber": 2 },
+          { "PersonEmail": "alexander.roos@fb.fi", "Position": 2, "JerseyNumber": 4 },
+          { "PersonEmail": "benjamin.koivu@fb.fi", "Position": 3, "JerseyNumber": 7 },
+          { "PersonEmail": "daniel.nurminen@fb.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "gabriel.saari@fb.fi", "Position": 4, "JerseyNumber": 9 },
+          { "PersonEmail": "milton.sari@fb.fi", "Position": 4, "JerseyNumber": 11 },
+          { "PersonEmail": "casper.eloranta@fb.fi", "Position": 4, "JerseyNumber": 19 },
+          { "PersonEmail": "sixten.karhu@fb.fi", "Position": 3, "JerseyNumber": 16 }
+        ]
+      },
+      {
+        "Name": "Oulu Kickers",
+        "DivisionName": "Football Championship",
+        "ClubName": "Oulu Kickers",
+        "HomeArena": "Oulu Kickers Park",
+        "PrimaryJerseyColor": "Green",
+        "SecondaryJerseyColor": "White",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "edvin.hietala@fb.fi", "Position": 1, "JerseyNumber": 1 },
+          { "PersonEmail": "joel.koistinen@fb.fi", "Position": 2, "JerseyNumber": 3 },
+          { "PersonEmail": "kevin.lehto@fb.fi", "Position": 2, "JerseyNumber": 5 },
+          { "PersonEmail": "mateo.mylly@fb.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "nicolas.siltanen@fb.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "pablo.haapala@fb.fi", "Position": 4, "JerseyNumber": 9 },
+          { "PersonEmail": "quinn.tervo@fb.fi", "Position": 4, "JerseyNumber": 10 },
+          { "PersonEmail": "ruben.oksa@fb.fi", "Position": 4, "JerseyNumber": 21 },
+          { "PersonEmail": "samuel.puro@fb.fi", "Position": 2, "JerseyNumber": 12 }
+        ]
+      },
+      {
+        "Name": "Espoo Athletic",
+        "DivisionName": "Football Championship",
+        "ClubName": "Espoo Athletic",
+        "HomeArena": "Espoo Athletic Field",
+        "PrimaryJerseyColor": "Orange",
+        "SecondaryJerseyColor": "Navy",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "rafael.maki@fb.fi", "Position": 1, "JerseyNumber": 1 },
+          { "PersonEmail": "sergio.kivi@fb.fi", "Position": 2, "JerseyNumber": 2 },
+          { "PersonEmail": "tobias.salmi@fb.fi", "Position": 2, "JerseyNumber": 4 },
+          { "PersonEmail": "victor.niemela@fb.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "walter.ahlqvist@fb.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "xavier.boman@fb.fi", "Position": 4, "JerseyNumber": 7 },
+          { "PersonEmail": "yannick.cederschiold@fb.fi", "Position": 4, "JerseyNumber": 9 },
+          { "PersonEmail": "zachary.dufva@fb.fi", "Position": 4, "JerseyNumber": 10 },
+          { "PersonEmail": "adrian.eklund@fb.fi", "Position": 3, "JerseyNumber": 18 }
+        ]
+      },
+      {
+        "Name": "Vantaa Wanderers",
+        "DivisionName": "Football Championship",
+        "ClubName": "Vantaa Wanderers",
+        "HomeArena": "Vantaa Wanderers Park",
+        "PrimaryJerseyColor": "Purple",
+        "SecondaryJerseyColor": "White",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "bruno.fager@fb.fi", "Position": 1, "JerseyNumber": 1 },
+          { "PersonEmail": "carlos.gren@fb.fi", "Position": 2, "JerseyNumber": 3 },
+          { "PersonEmail": "dario.haglund@fb.fi", "Position": 2, "JerseyNumber": 5 },
+          { "PersonEmail": "enzo.ivarsson@fb.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "giovanni.jansson@fb.fi", "Position": 3, "JerseyNumber": 10 },
+          { "PersonEmail": "hector.kraft@fb.fi", "Position": 4, "JerseyNumber": 9 },
+          { "PersonEmail": "ivan.lager@fb.fi", "Position": 4, "JerseyNumber": 11 },
+          { "PersonEmail": "jonas.molin@fb.fi", "Position": 4, "JerseyNumber": 19 },
+          { "PersonEmail": "kristian.nordin@fb.fi", "Position": 2, "JerseyNumber": 14 }
+        ]
+      },
+      {
+        "Name": "Lahti Rovers",
+        "DivisionName": "Football Championship",
+        "ClubName": "Lahti Rovers",
+        "HomeArena": "Lahti Rovers Ground",
+        "PrimaryJerseyColor": "Maroon",
+        "SecondaryJerseyColor": "Gold",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "lorenzo.ofverberg@fb.fi", "Position": 1, "JerseyNumber": 1 },
+          { "PersonEmail": "marco.palme@fb.fi", "Position": 2, "JerseyNumber": 2 },
+          { "PersonEmail": "nils.qvist@fb.fi", "Position": 2, "JerseyNumber": 4 },
+          { "PersonEmail": "otto.rosengren@fb.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "pascal.stenberg@fb.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "ricardo.torell@fb.fi", "Position": 4, "JerseyNumber": 9 },
+          { "PersonEmail": "sebastian.ulfsson@fb.fi", "Position": 4, "JerseyNumber": 10 },
+          { "PersonEmail": "tomas.vestman@fb.fi", "Position": 4, "JerseyNumber": 11 },
+          { "PersonEmail": "ulrik.wahlgren@fb.fi", "Position": 3, "JerseyNumber": 16 }
+        ]
+      },
+      {
+        "Name": "Kuopio United",
+        "DivisionName": "Football Championship",
+        "ClubName": "Kuopio United",
+        "HomeArena": "Kuopio United Arena",
+        "PrimaryJerseyColor": "Black",
+        "SecondaryJerseyColor": "Yellow",
+        "Category": 0,
+        "Players": [
+          { "PersonEmail": "valter.yberg@fb.fi", "Position": 1, "JerseyNumber": 1 },
+          { "PersonEmail": "wilhelm.zacke@fb.fi", "Position": 2, "JerseyNumber": 3 },
+          { "PersonEmail": "axel.almqvist@fb.fi", "Position": 2, "JerseyNumber": 5 },
+          { "PersonEmail": "bo.bjurstrom@fb.fi", "Position": 3, "JerseyNumber": 6 },
+          { "PersonEmail": "calle.cronholm@fb.fi", "Position": 3, "JerseyNumber": 8 },
+          { "PersonEmail": "dag.drakenberg@fb.fi", "Position": 4, "JerseyNumber": 9 },
+          { "PersonEmail": "eskil.edstrom@fb.fi", "Position": 4, "JerseyNumber": 10 },
+          { "PersonEmail": "folke.falkenberg@fb.fi", "Position": 4, "JerseyNumber": 11 },
+          { "PersonEmail": "gosta.gyllenhaal@fb.fi", "Position": 2, "JerseyNumber": 15 }
+        ]
+      }
+    ],
+
+    "FootballMatches": [
+      { "HomeTeamName": "Helsinki FC", "AwayTeamName": "Tampere United", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-04-12T14:00:00", "Venue": "Helsinki Football Park", "RefereeEmail": "magnus.wikman@fb-ref.fi" },
+      { "HomeTeamName": "Turku City", "AwayTeamName": "Oulu Kickers", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-04-19T16:00:00", "Venue": "Turku City Ground", "RefereeEmail": "stefan.palmqvist@fb-ref.fi" },
+      { "HomeTeamName": "Espoo Athletic", "AwayTeamName": "Vantaa Wanderers", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-04-26T14:00:00", "Venue": "Espoo Athletic Field", "RefereeEmail": "bjorn.ekman@fb-ref.fi" },
+      { "HomeTeamName": "Lahti Rovers", "AwayTeamName": "Kuopio United", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-05-03T16:00:00", "Venue": "Lahti Rovers Ground", "RefereeEmail": "anders.soderberg@fb-ref.fi" },
+      { "HomeTeamName": "Helsinki FC", "AwayTeamName": "Turku City", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-05-17T14:00:00", "Venue": "Helsinki Football Park", "RefereeEmail": "henrik.lindback@fb-ref.fi" },
+      { "HomeTeamName": "Tampere United", "AwayTeamName": "Oulu Kickers", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-05-24T16:00:00", "Venue": "Tampere Stadium", "RefereeEmail": "magnus.wikman@fb-ref.fi" },
+      { "HomeTeamName": "Espoo Athletic", "AwayTeamName": "Lahti Rovers", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-06-07T14:00:00", "Venue": "Espoo Athletic Field", "RefereeEmail": "stefan.palmqvist@fb-ref.fi" },
+      { "HomeTeamName": "Vantaa Wanderers", "AwayTeamName": "Kuopio United", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-06-14T16:00:00", "Venue": "Vantaa Wanderers Park", "RefereeEmail": "bjorn.ekman@fb-ref.fi" },
+      { "HomeTeamName": "Helsinki FC", "AwayTeamName": "Espoo Athletic", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-07-05T14:00:00", "Venue": "Helsinki Football Park", "RefereeEmail": "anders.soderberg@fb-ref.fi" },
+      { "HomeTeamName": "Tampere United", "AwayTeamName": "Vantaa Wanderers", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-07-19T16:00:00", "Venue": "Tampere Stadium", "RefereeEmail": "henrik.lindback@fb-ref.fi" },
+      { "HomeTeamName": "Turku City", "AwayTeamName": "Lahti Rovers", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-08-01T14:00:00", "Venue": "Turku City Ground", "RefereeEmail": "magnus.wikman@fb-ref.fi" },
+      { "HomeTeamName": "Oulu Kickers", "AwayTeamName": "Kuopio United", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-09-06T16:00:00", "Venue": "Oulu Kickers Park", "RefereeEmail": "stefan.palmqvist@fb-ref.fi" },
+      { "HomeTeamName": "Helsinki FC", "AwayTeamName": "Oulu Kickers", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-09-13T14:00:00", "Venue": "Helsinki Football Park", "RefereeEmail": "bjorn.ekman@fb-ref.fi" },
+      { "HomeTeamName": "Tampere United", "AwayTeamName": "Turku City", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-09-20T16:00:00", "Venue": "Tampere Stadium", "RefereeEmail": "anders.soderberg@fb-ref.fi" },
+      { "HomeTeamName": "Espoo Athletic", "AwayTeamName": "Kuopio United", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-09-27T14:00:00", "Venue": "Espoo Athletic Field", "RefereeEmail": "henrik.lindback@fb-ref.fi" },
+      { "HomeTeamName": "Vantaa Wanderers", "AwayTeamName": "Lahti Rovers", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-10-04T16:00:00", "Venue": "Vantaa Wanderers Park", "RefereeEmail": "magnus.wikman@fb-ref.fi" },
+      { "HomeTeamName": "Helsinki FC", "AwayTeamName": "Lahti Rovers", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-10-11T14:00:00", "Venue": "Helsinki Football Park", "RefereeEmail": "stefan.palmqvist@fb-ref.fi" },
+      { "HomeTeamName": "Tampere United", "AwayTeamName": "Espoo Athletic", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-10-18T16:00:00", "Venue": "Tampere Stadium", "RefereeEmail": "bjorn.ekman@fb-ref.fi" }
+    ]
+  }
+}

@@ -1,4 +1,6 @@
 import type { NewsArticleDto } from '../../news/newsService';
+import { authFetch } from '../../utils/authFetch';
+import { API_URL } from '../../../constants/config';
 
 interface UpdateNewsData {
   title: string;
@@ -19,11 +21,9 @@ interface ApiResponse<T> {
   errors: string[];
 }
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
-
 export async function UpdateNewsService(id: string, newsData: UpdateNewsData): Promise<NewsArticleDto> {
   try {
-    const response = await fetch(`${API_URL}/News/${id}`, {
+    const response = await authFetch(`${API_URL}/News/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
@@ -13,6 +13,7 @@ import SearchField from '../../../../components/SearchField';
 import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import JerseyNumberSelect, { collectJerseyNumbers } from '../../../../components/JerseyNumberSelect';
 import './EditRosterPage.scss';
 
 const EditRosterPage = () => {
@@ -134,14 +135,10 @@ const EditRosterPage = () => {
     }
   };
 
-  // Generate jersey number options (1-99 plus "None" option)
-  const jerseyNumberOptions = [
-    { value: '', label: '-' },
-    ...Array.from({ length: 99 }, (_, i) => ({ 
-      value: String(i + 1), 
-      label: `#${i + 1}` 
-    }))
-  ];
+  const takenJerseyNumbers = useMemo(
+    () => collectJerseyNumbers(currentTeam?.roster ?? []),
+    [currentTeam],
+  );
 
   // Position options for dropdown
   const positionOptions = [
@@ -248,30 +245,56 @@ const EditRosterPage = () => {
                   </td>
                 </tr>
               ) : (
-                filteredRoster.map((player) => (
-                  <tr key={player.playerId}>
+                filteredRoster.map((player) => {
+                  // A "substituted" jersey is one whose originally-requested number (typically
+                  // set by the tournament import flow when the preferred number was taken)
+                  // differs from the actually-assigned number. We highlight the row until the
+                  // admin picks a different number — at which point the backend clears the
+                  // requestedJerseyNumber and the highlight disappears on the next refresh.
+                  const hasSubstitutedJersey: boolean =
+                    typeof player.requestedJerseyNumber === 'number'
+                    && player.requestedJerseyNumber !== player.jerseyNumber;
+                  const jerseyTooltip: string | undefined = hasSubstitutedJersey
+                    ? t(
+                        'floorball.teams.requestedJerseyTooltip',
+                        'Requested #{{requested}} during import but it was taken; assigned #{{assigned}} instead. Pick a different number to clear this notice.',
+                        {
+                          requested: player.requestedJerseyNumber,
+                          assigned: player.jerseyNumber ?? '–',
+                        }
+                      )
+                    : undefined;
+
+                  return (
+                  <tr
+                    key={player.playerId}
+                    className={hasSubstitutedJersey ? 'roster-row roster-row--substituted-jersey' : 'roster-row'}
+                    title={jerseyTooltip}
+                  >
                     <td className="name-column">
                       <span className="player-name">{player.playerName}</span>
                     </td>
                     <td className="jersey-column">
-                      <select
-                        className="jersey-select"
-                        value={player.jerseyNumber !== undefined && player.jerseyNumber !== null 
-                          ? String(player.jerseyNumber) 
-                          : ''}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const jerseyNum = value === '' ? undefined : parseInt(value, 10);
-                          handleUpdateJerseyNumber(player, jerseyNum);
-                        }}
+                      <JerseyNumberSelect
+                        className={`jersey-select${hasSubstitutedJersey ? ' jersey-select--substituted' : ''}`}
+                        value={player.jerseyNumber}
+                        takenNumbers={takenJerseyNumbers}
+                        prefixHash
                         disabled={updatingPlayer === player.playerId}
-                      >
-                        {jerseyNumberOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                        title={jerseyTooltip}
+                        onChange={(next) => {
+                          void handleUpdateJerseyNumber(player, next ?? undefined);
+                        }}
+                      />
+                      {hasSubstitutedJersey && (
+                        <span className="jersey-substituted-badge" title={jerseyTooltip}>
+                          {t(
+                            'floorball.teams.requestedJerseyBadge',
+                            'requested #{{requested}}',
+                            { requested: player.requestedJerseyNumber }
+                          )}
+                        </span>
+                      )}
                     </td>
                     <td className="position-column">
                       <select
@@ -327,7 +350,8 @@ const EditRosterPage = () => {
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

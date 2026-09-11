@@ -97,4 +97,8 @@ public interface IFloorballRefereeRepository
     /// <param name="id">The referee ID</param>
     /// <returns>True if the referee exists, false otherwise</returns>
     Task<bool> ExistsAsync(Guid id);
+
+    Task<FloorballReferee?> GetByPersonIdAsync(Guid personId);
+
+    Task<bool> IsAssignedToAnyMatchAsync(Guid refereeId, CancellationToken cancellationToken = default);
 } 

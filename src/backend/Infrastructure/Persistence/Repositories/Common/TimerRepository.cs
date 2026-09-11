@@ -104,6 +104,23 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                     savedState?.IsRunning, savedState?.StartedAt, savedState?.PausedAt);
                 _logger.LogInformation("=== TIMER STATE SAVE COMPLETE ===");
             }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                bool stillExists = await _dbContext.TimerStates
+                    .AsNoTracking()
+                    .AnyAsync(t => t.MatchId == matchId);
+                if (!stillExists)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "Timer row was removed while saving match {MatchId}; treating save as no-op",
+                        matchId);
+                    return;
+                }
+
+                _logger.LogError(ex, "Error saving timer state for match {MatchId}", matchId);
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saving timer state for match {MatchId}", matchId);

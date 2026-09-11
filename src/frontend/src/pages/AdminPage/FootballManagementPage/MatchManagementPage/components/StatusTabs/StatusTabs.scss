@@ -1,0 +1,78 @@
+@use 'sass:map';
+@use '../../../../../../styles/variables' as *;
+
+.status-tabs {
+  display: flex;
+  gap: map.get($spacing, 'xxs');
+  border-bottom: 2px solid $color-neutral-medium-grey;
+  margin-bottom: map.get($spacing, 'lg');
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  // Hide scrollbar but keep scroll functionality
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.status-tabs__tab {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'xs');
+  padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'medium');
+  color: $color-text-muted;
+  white-space: nowrap;
+  @include transition(all);
+
+  &:hover:not(&--active) {
+    color: $color-text-primary;
+    background-color: $color-neutral-light-grey;
+    border-radius: map.get($border-radius, 'sm') map.get($border-radius, 'sm') 0 0;
+  }
+
+  &--active {
+    color: $color-blue-medium;
+    border-bottom-color: $color-blue-medium;
+    font-weight: map.get($font-weights, 'semibold');
+  }
+}
+
+.status-tabs__label {
+  line-height: 1.4;
+}
+
+.status-tabs__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 map.get($spacing, 'xxs');
+  border-radius: 999px;
+  font-size: map.get($font-sizes, 'xs');
+  font-weight: map.get($font-weights, 'semibold');
+  background-color: $color-neutral-light-grey;
+  color: $color-text-muted;
+  line-height: 1;
+
+  &--active {
+    background-color: rgba($color-blue-medium, 0.12);
+    color: $color-blue-medium;
+  }
+}
+
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .status-tabs__tab {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    font-size: map.get($font-sizes, 'sm-xs');
+  }
+}

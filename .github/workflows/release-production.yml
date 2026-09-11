@@ -1,0 +1,303 @@
+name: Release Production
+
+# Happy path: merge development → master, then Approve the prod environment.
+# workflow_dispatch is for replay/hotfix and is also restricted to master.
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: release-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  BASE_NAME: myleague
+  TARGET_ENV: prod
+  PROVISION_DIR: infra/provision
+  DOTNET_VERSION: '10.0.x'
+  WORKING_DIRECTORY: src/backend/WebAPI
+  NODE_VERSION: '22'
+  FRONTEND_PATH: src/frontend
+
+jobs:
+  release:
+    name: Provision and deploy production
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    environment: prod
+    steps:
+      - name: Guard production releases to master
+        run: |
+          if [ "${{ github.ref }}" != "refs/heads/master" ]; then
+            echo "::error::Production releases are only allowed from master (current ref: ${{ github.ref }})."
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Ensure resource group exists
+        run: |
+          RG="${BASE_NAME}-${TARGET_ENV}-rg"
+          echo "RESOURCE_GROUP=$RG" >> $GITHUB_ENV
+          echo "AZURE_WEBAPP_NAME=${BASE_NAME}-${TARGET_ENV}-api" >> $GITHUB_ENV
+          echo "SWA_NAME=${BASE_NAME}-${TARGET_ENV}-web" >> $GITHUB_ENV
+          if [ "$(az group exists --name "$RG")" != "true" ]; then
+            az group create --name "$RG" --location westeurope --output none
+            echo "Created resource group $RG"
+          else
+            echo "Resource group $RG already exists"
+          fi
+
+      - name: Deploy frontend infrastructure
+        working-directory: ${{ env.PROVISION_DIR }}
+        run: |
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "infra-frontend-$(date +%Y%m%d-%H%M%S)" \
+            --template-file frontend.bicep \
+            --parameters frontend.${TARGET_ENV}.bicepparam \
+            --query "properties.outputs.frontendUrl.value" -o tsv > frontend-url.txt
+          FRONTEND_URL=$(tr -d '\r' < frontend-url.txt)
+          echo "FRONTEND_URL=$FRONTEND_URL" >> $GITHUB_ENV
+          echo "### Frontend URL" >> $GITHUB_STEP_SUMMARY
+          echo "$FRONTEND_URL" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "After the first successful release, commit this URL to \`allowedOrigins\` and \`frontendBaseUrl\` in \`backend.prod.bicepparam\`." >> $GITHUB_STEP_SUMMARY
+
+      - name: What-if (backend)
+        working-directory: ${{ env.PROVISION_DIR }}
+        run: |
+          az deployment group what-if \
+            --resource-group "$RESOURCE_GROUP" \
+            --template-file backend.bicep \
+            --parameters backend.${TARGET_ENV}.bicepparam \
+            --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
+            --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
+            --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
+            --parameters alertEmail="${{ vars.ALERT_EMAIL }}" \
+            --parameters frontendBaseUrl="${FRONTEND_URL}" \
+            --parameters "allowedOrigins=[\"${FRONTEND_URL}\"]"
+
+      - name: Deploy backend infrastructure
+        working-directory: ${{ env.PROVISION_DIR }}
+        run: |
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "infra-backend-$(date +%Y%m%d-%H%M%S)" \
+            --template-file backend.bicep \
+            --parameters backend.${TARGET_ENV}.bicepparam \
+            --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
+            --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
+            --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
+            --parameters alertEmail="${{ vars.ALERT_EMAIL }}" \
+            --parameters frontendBaseUrl="${FRONTEND_URL}" \
+            --parameters "allowedOrigins=[\"${FRONTEND_URL}\"]" \
+            --query "properties.outputs" -o json > backend-outputs.json
+          echo "### Backend outputs" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          cat backend-outputs.json >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Publish
+        run: dotnet publish --configuration Release --output ./publish
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Create deployment package
+        run: cd publish && zip -r ../app.zip .
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Azure login (OIDC, refresh)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure Web App
+        run: |
+          az webapp deploy \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$AZURE_WEBAPP_NAME" \
+            --src-path "${{ env.WORKING_DIRECTORY }}/app.zip" \
+            --type zip
+
+      - name: Health check
+        run: |
+          URL="https://${AZURE_WEBAPP_NAME}.azurewebsites.net/health/ready"
+          echo "Checking $URL"
+          for i in $(seq 1 10); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check passed (HTTP $STATUS)"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $STATUS - retrying in 15s..."
+            sleep 15
+          done
+          echo "Health check failed after 10 attempts"
+          exit 1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: ${{ env.FRONTEND_PATH }}/package.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          cache-dependency-path: ${{ env.FRONTEND_PATH }}/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ${{ env.FRONTEND_PATH }}
+
+      - name: Create production environment file
+        run: |
+          API_URL="${{ vars.VITE_API_URL }}"
+          if [ -z "$API_URL" ]; then
+            API_URL="https://myleague-${TARGET_ENV}-api.azurewebsites.net/api"
+          fi
+          echo "Using API URL: $API_URL"
+          echo "VITE_API_URL=$API_URL" > .env.production
+        working-directory: ${{ env.FRONTEND_PATH }}
+
+      - name: Build frontend
+        run: pnpm run build
+        working-directory: ${{ env.FRONTEND_PATH }}
+
+      - name: Fetch Static Web App deployment token
+        run: |
+          TOKEN=$(az staticwebapp secrets list \
+            --name "$SWA_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query "properties.apiKey" -o tsv)
+          echo "::add-mask::$TOKEN"
+          echo "SWA_DEPLOYMENT_TOKEN=$TOKEN" >> $GITHUB_ENV
+
+      - name: Deploy to Azure Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ env.SWA_DEPLOYMENT_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: ${{ env.FRONTEND_PATH }}/dist
+          output_location: '.'
+          skip_app_build: true
+
+      - name: Frontend smoke test
+        run: |
+          HOSTNAME=$(az staticwebapp show \
+            --name "$SWA_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query "defaultHostname" -o tsv)
+          URL="https://${HOSTNAME}"
+          echo "Smoke testing $URL"
+          FAIL=0
+
+          check_page() {
+            local desc="$1" url="$2"
+            for i in $(seq 1 5); do
+              BODY=$(curl -s --max-time 30 -w "\n%{http_code}" "$url" || echo "000")
+              STATUS=$(echo "$BODY" | tail -n 1)
+              if [ "$STATUS" = "200" ] && echo "$BODY" | grep -q 'id="root"'; then
+                echo "PASS: $desc (HTTP 200, root element present)"
+                return
+              fi
+              echo "Attempt $i for '$desc': HTTP $STATUS - retrying in 10s..."
+              sleep 10
+            done
+            echo "FAIL: $desc ($url)"
+            FAIL=1
+          }
+
+          check_page "Landing page loads"        "$URL/"
+          check_page "SPA fallback on deep link" "$URL/clubs"
+
+          if [ "$FAIL" -ne 0 ]; then
+            echo "Frontend smoke tests FAILED"
+            exit 1
+          fi
+          echo "All frontend smoke tests passed"
+
+      - name: API smoke tests
+        run: |
+          BASE="https://${AZURE_WEBAPP_NAME}.azurewebsites.net"
+          FAIL=0
+
+          check() {
+            local desc="$1" url="$2" expected="$3" mode="${4:-}"
+            local body_file status
+            body_file=$(mktemp)
+            status=$(curl -s -o "$body_file" -w "%{http_code}" --max-time 30 "$url" || echo "000")
+
+            if [ "$status" != "$expected" ]; then
+              echo "FAIL: $desc - expected HTTP $expected, got $status ($url)"
+              FAIL=1
+              return
+            fi
+
+            if [ "$mode" = "json" ] && ! jq -e . "$body_file" > /dev/null 2>&1; then
+              echo "FAIL: $desc - HTTP $status but response is not valid JSON ($url)"
+              FAIL=1
+              return
+            fi
+
+            echo "PASS: $desc (HTTP $status)"
+          }
+
+          echo "Running smoke tests against $BASE"
+          echo ""
+
+          check "Liveness endpoint"            "$BASE/health/live"  200
+          check "Readiness endpoint (incl DB)" "$BASE/health/ready" 200
+          check "News list returns JSON"       "$BASE/api/News?page=1&pageSize=1" 200 json
+          check "Clubs list returns JSON"      "$BASE/api/Clubs"                        200 json
+          check "Divisions list returns JSON"  "$BASE/api/Divisions"                    200 json
+          check "Admin endpoint requires auth" "$BASE/api/Users" 401
+
+          UNKNOWN_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$BASE/api/DoesNotExist" || echo "000")
+          if [ "$UNKNOWN_STATUS" = "404" ]; then
+            echo "PASS: Unknown route returns 404"
+          else
+            echo "FAIL: Unknown route - expected HTTP 404, got $UNKNOWN_STATUS"
+            FAIL=1
+          fi
+
+          echo ""
+          if [ "$FAIL" -ne 0 ]; then
+            echo "Smoke tests FAILED for $TARGET_ENV"
+            exit 1
+          fi
+          echo "All smoke tests passed for $TARGET_ENV"

@@ -33,7 +33,27 @@ public class FloorballTeamPlayer : BaseEntity
     /// Gets the jersey number of the player in this team
     /// </summary>
     public int? JerseyNumber { get; private set; }
-    
+
+    /// <summary>
+    /// Gets the jersey number originally requested for this player when the assigned
+    /// <see cref="JerseyNumber"/> had to be substituted (e.g. by the tournament import
+    /// flow when the requested number was already taken on the team).
+    ///
+    /// When <see cref="HasJerseyNumberSubstituted"/> is <c>true</c>, the UI is expected
+    /// to highlight the row so a human can confirm or change the assignment. As soon as
+    /// the admin explicitly updates <see cref="JerseyNumber"/> via
+    /// <see cref="UpdateJerseyNumber"/>, this field is cleared because the new value is
+    /// taken to be the admin's intentional choice.
+    /// </summary>
+    public int? RequestedJerseyNumber { get; private set; }
+
+    /// <summary>
+    /// True when an alternate jersey number was assigned because the originally requested
+    /// number was unavailable. Drives the "needs admin review" highlight in the roster UI.
+    /// </summary>
+    public bool HasJerseyNumberSubstituted
+        => RequestedJerseyNumber.HasValue && RequestedJerseyNumber != JerseyNumber;
+
     /// <summary>
     /// Gets the number of games played for this team
     /// </summary>
@@ -74,11 +94,38 @@ public class FloorballTeamPlayer : BaseEntity
     /// <param name="position">The player's position in the team</param>
     /// <param name="jerseyNumber">The player's jersey number in this team (optional)</param>
     public FloorballTeamPlayer(Guid teamId, Guid playerId, FloorballPosition position, int? jerseyNumber = null)
+        : this(teamId, playerId, position, jerseyNumber, requestedJerseyNumber: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the FloorballTeamPlayer class, optionally recording the
+    /// originally requested jersey number when it differs from the actually assigned one.
+    /// </summary>
+    /// <param name="teamId">The ID of the team</param>
+    /// <param name="playerId">The ID of the player</param>
+    /// <param name="position">The player's position in the team</param>
+    /// <param name="jerseyNumber">The player's jersey number in this team (optional)</param>
+    /// <param name="requestedJerseyNumber">
+    /// The jersey number originally requested by the caller, used to flag substituted
+    /// assignments. Pass <c>null</c> when there was no substitution.
+    /// </param>
+    public FloorballTeamPlayer(
+        Guid teamId,
+        Guid playerId,
+        FloorballPosition position,
+        int? jerseyNumber,
+        int? requestedJerseyNumber)
     {
         TeamId = teamId;
         PlayerId = playerId;
         Position = position;
         JerseyNumber = jerseyNumber;
+        // Only persist the requested number when it differs from the assigned one — equal values
+        // would just light up the UI for no useful reason.
+        RequestedJerseyNumber = requestedJerseyNumber.HasValue && requestedJerseyNumber != jerseyNumber
+            ? requestedJerseyNumber
+            : null;
         IsActive = true;
         GamesPlayed = 0;
         Goals = 0;
@@ -105,12 +152,31 @@ public class FloorballTeamPlayer : BaseEntity
     }
 
     /// <summary>
-    /// Updates the player's jersey number in this team
+    /// Updates the player's jersey number in this team. When the value actually changes
+    /// (admin picks a different number), any previously stored
+    /// <see cref="RequestedJerseyNumber"/> is cleared because the new value is taken to
+    /// be an intentional choice, so the "needs review" highlight disappears from the
+    /// roster UI. Calling this with the same number does not clear the flag — the admin
+    /// still needs to make a deliberate decision.
     /// </summary>
     /// <param name="jerseyNumber">The new jersey number</param>
     public void UpdateJerseyNumber(int? jerseyNumber)
     {
-        JerseyNumber = jerseyNumber;
+        if (JerseyNumber != jerseyNumber)
+        {
+            JerseyNumber = jerseyNumber;
+            RequestedJerseyNumber = null;
+        }
+    }
+
+    /// <summary>
+    /// Marks the current <see cref="JerseyNumber"/> as accepted by the admin, clearing
+    /// any pending <see cref="RequestedJerseyNumber"/> highlight without changing the
+    /// number itself. Useful when the substituted number is the desired one after all.
+    /// </summary>
+    public void AcknowledgeJerseyNumber()
+    {
+        RequestedJerseyNumber = null;
     }
     
     /// <summary>

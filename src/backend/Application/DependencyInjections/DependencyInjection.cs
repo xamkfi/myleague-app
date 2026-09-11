@@ -1,10 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using Application.Handlers.Clubs;
-using Application.Commands.Clubs;
-using Application.Queries.Clubs;
-using Application.DTOs.Common;
 using Application.Behaviors;
+using Application.Features.Common.Deletion;
+using Application.Features.Common.MatchTimer.Services;
 using Application.Services.Common;
 using MediatR;
 using FluentValidation;
@@ -40,6 +38,8 @@ public static class DependencyInjection
         
         // Register application services
         services.AddScoped<IPaginationService, PaginationService>();
+        services.AddScoped<IClubAdminAccessService, ClubAdminAccessService>();
+        services.AddScoped<IPersonDeletionGuard, PersonDeletionGuard>();
         
         // Register timer services
         services.AddScoped<IMatchTimerService, PersistentMatchTimerService>();

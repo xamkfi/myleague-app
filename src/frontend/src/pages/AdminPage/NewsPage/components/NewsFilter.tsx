@@ -1,13 +1,15 @@
 import { type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import TeamCategoryFilter from '../../../../components/TeamCategoryFilter/TeamCategoryFilter';
 import './NewsFilter.scss';
-import { NewsCategory, SportsCategory } from '../Utils/NewsFilterContstants';
+import { NEWS_CATEGORY_OPTIONS, NEWS_SPORT_CATEGORY_OPTIONS } from '../Utils/NewsFilterContstants';
 
 export type NewsFilters = {
   category: string;
   sportCategory: string;
   searchTerm: string;
   includeArchived: boolean;
+  teamCategories: string[];
 };
 
 type NewsFilterProps = {
@@ -41,9 +43,7 @@ export default function NewsFilter({ filters, onFiltersChange, onClearFilters }:
             onChange={(event) => onFiltersChange({ category: event.target.value })}
           >
             <option value="">{t('admin.news.filter.allCategories', 'All Categories')}</option>
-            {Object.values(NewsCategory)
-              .filter(value => value !== NewsCategory.None)
-              .map((category) => (
+            {NEWS_CATEGORY_OPTIONS.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
@@ -61,9 +61,7 @@ export default function NewsFilter({ filters, onFiltersChange, onClearFilters }:
             onChange={(event) => onFiltersChange({ sportCategory: event.target.value })}
           >
             <option value="">{t('admin.news.filter.allSports', 'All Sports')}</option>
-            {Object.values(SportsCategory)
-              .filter(value => value !== SportsCategory.None)
-              .map((sport) => (
+            {NEWS_SPORT_CATEGORY_OPTIONS.map((sport) => (
                 <option key={sport} value={sport}>
                   {sport}
                 </option>
@@ -81,6 +79,13 @@ export default function NewsFilter({ filters, onFiltersChange, onClearFilters }:
             placeholder={t('admin.news.filter.searchPlaceholder', 'Search news articles...')}
             value={filters.searchTerm}
             onChange={handleSearchChange}
+          />
+        </div>
+
+        <div className="filter-group">
+          <TeamCategoryFilter
+            selected={filters.teamCategories}
+            onChange={(categories) => onFiltersChange({ teamCategories: categories })}
           />
         </div>
 

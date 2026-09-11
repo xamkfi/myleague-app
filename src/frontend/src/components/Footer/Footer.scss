@@ -3,8 +3,8 @@
 
 .footer {
   width: 100%;
-  background: #1a237e;
-  color: #fff;
+  background: $color-banner-bg;
+  color: $color-banner-text;
   padding: map.get($spacing, 'xl') 0 map.get($spacing, 'lg') 0;
   min-height: 120px;
   display: flex;
@@ -12,6 +12,14 @@
   align-items: center;
   font-size: 1rem;
   margin-top: auto;
+}
+
+.footer-logo {
+  height: 28px;
+  width: auto;
+  max-width: 220px;
+  margin-bottom: map.get($spacing, 'lg');
+  filter: brightness(0) invert(1);
 }
 
 .footer-sections {
@@ -43,14 +51,51 @@
   flex-direction: column;
   gap: map.get($spacing, 'xxs');
   font-size: 0.98rem;
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
 }
 
 .footer-contact {
   margin-top: map.get($spacing, 'xs');
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   display: flex;
   flex-direction: column;
   gap: map.get($spacing, 'sm');
+}
+
+.footer-contact-empty {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.footer-contact-entry {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'xxs');
+
+  &__details {
+    white-space: pre-line;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    word-break: break-all;
+  }
+}
+
+.footer-version {
+  width: 100%;
+  max-width: 1200px;
+  text-align: right;
+  font-size: 0.7rem;
+  opacity: 0.4;
+  padding: map.get($spacing, 'sm') map.get($spacing, 'lg') 0;
+  margin-top: map.get($spacing, 'sm');
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 // Mobile responsive styles

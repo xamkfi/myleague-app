@@ -1,9 +1,7 @@
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
-using Domain.Entities.Hockey;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
-using Domain.Enums.Hockey;
 
 namespace DomainTestProject;
 
@@ -195,35 +193,4 @@ public class ClubDomainEventsTests
     //    club.DomainEvents.Should().BeEmpty();
     //}
 
-    [Fact]
-    public void AddHockeyTeam_ShouldNotRaiseDomainEventFromClub()
-    {
-        // Arrange
-        Club club = new Club("Test Club", "Test City", "Test Country");
-
-
-        // Act
-        HockeyTeam team = club.AddHockeyTeam("Test Team", HockeyDivision.Premier, "Arena", "Red");
-
-        // Assert
-        // The Club itself should not raise an event for adding a team
-        // The team might raise its own events, but that's tested elsewhere
-
-    }
-
-    [Fact]
-    public void RemoveHockeyTeam_ShouldNotRaiseDomainEvent()
-    {
-        // Arrange
-        Club club = new Club("Test Club", "Test City", "Test Country");
-        HockeyTeam team = club.AddHockeyTeam("Test Team", HockeyDivision.Premier, "Arena", "Red");
-
-        // Act
-        bool result = club.RemoveHockeyTeam(team.Id);
-
-        // Assert
-        result.Should().BeTrue();
-        // Hockey team removal doesn't raise a domain event in the current implementation
-
-    }
 } 

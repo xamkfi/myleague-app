@@ -2,6 +2,13 @@ import type {
   ApiResponse,
   FloorballMatchDto
 } from '../../types/floorball/floorballTypes';
+import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
+import { API_URL } from '../../constants/config';
+
+// Phase 2 of the floorball match controller refactor moved every per-match write path to
+// api/floorball-matches/{matchId}/... — this constant keeps the new prefix grep-friendly.
+const MATCHES_PATH = 'floorball-matches';
 
 // Event DTOs
 export interface FloorballGoalEventDto {
@@ -13,6 +20,12 @@ export interface FloorballGoalEventDto {
   timeInSeconds: number;
   wasInOvertime: boolean;
   wasInShootout: boolean;
+  /**
+   * Optional goal type. The backend's `JsonStringEnumConverter` serializes the
+   * `FloorballGoalType` enum as its string name (e.g. `"PenaltyShot"`), so the
+   * type allows either form depending on the request path.
+   */
+  goalType?: number | string | null;
 }
 
 export interface FloorballPenaltyEventDto {
@@ -31,8 +44,6 @@ export interface FloorballDomainEventDto {
   data: Record<string, unknown>;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
-
 // Request interfaces matching backend models
 export interface RecordGoalEventRequest {
   matchId: string;
@@ -43,6 +54,11 @@ export interface RecordGoalEventRequest {
   timeInSeconds: number;
   wasInOvertime: boolean;
   wasInShootout: boolean;
+  /**
+   * Optional goal type as numeric `FloorballGoalType` enum value. Omitted means
+   * "no specific type" which the backend treats as a regular goal.
+   */
+  goalType?: number;
 }
 
 export interface RecordPenaltyEventRequest {
@@ -66,6 +82,13 @@ export interface RecordSaveEventRequest {
   timeInSeconds: number;
   wasInOvertime: boolean;
   wasInShootout: boolean;
+  /**
+   * Number of save events to record at the supplied (period, time) coordinate. Defaults to
+   * `1` (single save). Values greater than 1 are interpreted by the backend as a bulk
+   * backfill: rate limiting is skipped and all `count` events are written in a single
+   * transaction. Used by the bulk save dialog.
+   */
+  count?: number;
 }
 
 export interface UpdateGoalEventRequest extends RecordGoalEventRequest {
@@ -86,6 +109,11 @@ export interface FloorballGoalEventDto {
   timeInSeconds: number;
   wasInOvertime: boolean;
   wasInShootout: boolean;
+  /**
+   * Optional goal type. Backend's `JsonStringEnumConverter` serializes the
+   * enum as its string name (e.g. `"PenaltyShot"`).
+   */
+  goalType?: number | string | null;
 }
 
 export interface FloorballPenaltyEventDto {
@@ -110,19 +138,17 @@ export interface FloorballSaveEventDto {
 /**
  * Helper function to handle API responses consistently
  */
-const handleApiResponse = async <T>(response: Response): Promise<ApiResponse<T>> => {
+const handleApiResponse = async <T>(response: Response, defaultMessage = 'API request failed'): Promise<ApiResponse<T>> => {
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error('API Error Response:', errorText);
-    throw new Error(`HTTP ${response.status}: ${errorText || 'API request failed'}`);
+    throw new Error(await parseErrorResponse(response, defaultMessage));
   }
-  
+
   const apiResponse: ApiResponse<T> = await response.json();
-  
+
   if (!apiResponse.success) {
-    throw new Error(apiResponse.errors?.join(', ') || 'API request failed');
+    throw new Error(await parseErrorResponse(apiResponse, defaultMessage));
   }
-  
+
   return apiResponse;
 };
 
@@ -133,8 +159,8 @@ export const floorballMatchEventService = {
   getMatchEvents: async (matchId: string): Promise<ApiResponse<FloorballDomainEventDto[]>> => {
     try {
       console.log('Fetching match events for match:', matchId);
-      // Use FloorballMatchController to fetch the match and synthesize events
-      const response = await fetch(`${API_URL}/FloorballMatch/by-id/${matchId}`, {
+      // Fetch the match through the queries controller and synthesize events on the client.
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/by-id/${matchId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -159,7 +185,8 @@ export const floorballMatchEventService = {
           isOvertime: g.wasInOvertime,
           isShootout: g.wasInShootout,
           assisterId: g.assisterId,
-          secondaryAssisterId: g.secondaryAssisterId
+          secondaryAssisterId: g.secondaryAssisterId,
+          goalType: g.goalType ?? null
         }
       }));
 
@@ -224,20 +251,29 @@ export const floorballMatchEventService = {
   recordGoal: async (data: RecordGoalEventRequest): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording goal:', data);
-      // Switch to FloorballMatchController endpoint
+      // Normalize empty/whitespace IDs to `undefined` so the backend treats them
+      // as "no assister" instead of receiving Guid.Empty (which fails the
+      // `NotEqual(Guid.Empty).When(...HasValue)` validator and surfaces only
+      // as a generic "Validation failed" to the user).
+      const normalizeId = (id?: string | null): string | undefined => {
+        if (!id) return undefined;
+        const trimmed = id.trim();
+        return trimmed.length > 0 ? trimmed : undefined;
+      };
+
+      // The matchId now lives in the URL; the backend ignores any value sent in the body.
       const payload = {
-        matchId: data.matchId,
         scoringTeamId: data.teamId,
         scoringPlayerId: data.playerId,
-        assistingPlayerId: data.assisterId,
+        assistingPlayerId: normalizeId(data.assisterId),
         secondaryAssistingPlayerIs: undefined,
         periodNumber: data.periodNumber,
         timeInSeconds: data.timeInSeconds,
         description: '',
-        goalType: null
+        goalType: data.goalType ?? null
       };
 
-      const response = await fetch(`${API_URL}/FloorballMatch/record-goal`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${data.matchId}/events/goal`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -258,9 +294,7 @@ export const floorballMatchEventService = {
   recordPenalty: async (data: RecordPenaltyEventRequest): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording penalty:', data);
-      // Switch to FloorballMatchController endpoint
       const payload = {
-        matchId: data.matchId,
         teamId: data.teamId,
         playerId: data.playerId,
         penaltyType: data.penaltyType,
@@ -270,7 +304,7 @@ export const floorballMatchEventService = {
         description: data.description ?? ''
       };
 
-      const response = await fetch(`${API_URL}/FloorballMatch/record-penalty`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${data.matchId}/events/penalty`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -291,18 +325,17 @@ export const floorballMatchEventService = {
   recordSave: async (data: RecordSaveEventRequest): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording save:', data);
-      // Switch to FloorballMatchController endpoint
       const payload = {
-        matchId: data.matchId,
         teamId: data.teamId,
         playerId: data.goalieId,
         periodNumber: data.periodNumber,
         timeInSeconds: data.timeInSeconds,
         wasInOvertime: data.wasInOvertime,
-        wasInShootout: data.wasInShootout
+        wasInShootout: data.wasInShootout,
+        count: data.count && data.count > 1 ? data.count : 1,
       };
 
-      const response = await fetch(`${API_URL}/FloorballMatch/record-save`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${data.matchId}/events/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -322,17 +355,17 @@ export const floorballMatchEventService = {
     try {
       console.log('Starting period:', periodNumber, 'for match:', matchId);
       
-      // Period 1 handled by start-match (existing)
+      // Period 1 transitions the match into InProgress and is handled by the lifecycle controller.
       if (periodNumber === 1) {
-        const response = await fetch(`${API_URL}/FloorballMatch/start-match/${matchId}`, {
+        const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/start`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
         });
         return await handleApiResponse<FloorballMatchDto>(response);
       }
       
-      // Period 2+ handled by new start-period endpoint (backend will auto-start timer)
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/period/${periodNumber}/start`, {
+      // Period 2+ are progression events that auto-start the timer on the server.
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/events/periods/${periodNumber}/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -349,7 +382,7 @@ export const floorballMatchEventService = {
   endPeriod: async (matchId: string, periodNumber: number): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Ending period:', periodNumber, 'for match:', matchId);
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/period/${periodNumber}/end`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/events/periods/${periodNumber}/end`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
         });
@@ -366,7 +399,7 @@ export const floorballMatchEventService = {
   recordOvertime: async (matchId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording overtime for match:', matchId);
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/overtime`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/events/overtime`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -385,7 +418,7 @@ export const floorballMatchEventService = {
   recordShootout: async (matchId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Recording shootout for match:', matchId);
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/shootout`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/events/shootout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -404,7 +437,7 @@ export const floorballMatchEventService = {
   cancelMatch: async (matchId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Canceling match:', matchId);
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/cancel`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/cancel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -413,6 +446,25 @@ export const floorballMatchEventService = {
       return await handleApiResponse<FloorballMatchDto>(response);
     } catch (error) {
       console.error('Error canceling match:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Reactivate a cancelled floorball match back to Scheduled status
+   */
+  reactivateMatch: async (matchId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      console.log('Reactivating match:', matchId);
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/reactivate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return await handleApiResponse<FloorballMatchDto>(response);
+    } catch (error) {
+      console.error('Error reactivating match:', error);
       throw error;
     }
   }

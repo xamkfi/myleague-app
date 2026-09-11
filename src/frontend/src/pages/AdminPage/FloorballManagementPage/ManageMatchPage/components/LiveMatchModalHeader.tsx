@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { FloorballMatchDto, FloorballTeam } from '../../../../../types/floorball/floorballTypes';
 import './LiveMatchModalHeader.scss';
 
@@ -5,27 +6,53 @@ interface LiveMatchModalHeaderProps {
   homeTeam: FloorballTeam | null;
   awayTeam: FloorballTeam | null;
   currentMatch: FloorballMatchDto;
+  isSidesSwapped: boolean;
+  onToggleSides: () => void;
   onClose: () => void;
   onCompleteLive: () => void;
+  onReopen: () => void;
 }
 
 const LiveMatchModalHeader = ({
   homeTeam,
   awayTeam,
   currentMatch,
+  isSidesSwapped,
+  onToggleSides,
   onClose,
-  onCompleteLive
+  onCompleteLive,
+  onReopen,
 }: LiveMatchModalHeaderProps) => {
+  const { t } = useTranslation();
+  const leftTeamName = isSidesSwapped ? awayTeam?.name || 'Away' : homeTeam?.name || 'Home';
+  const rightTeamName = isSidesSwapped ? homeTeam?.name || 'Home' : awayTeam?.name || 'Away';
+
   return (
     <div className="modal-header">
       <div className="live-match-info">
-        <h2>{homeTeam?.name || 'Home'} vs {awayTeam?.name || 'Away'}</h2>
+        <div className="title-and-swap">
+          <h2>{leftTeamName} vs {rightTeamName}</h2>
+          <button
+            onClick={onToggleSides}
+            className="swap-sides-button"
+            title="Swap visual sides for teams"
+          >
+            ↔ Swap sides
+          </button>
+        </div>
         <div className="status-controls">
           {currentMatch.status === 'Completed' ? (
             <>
-              <span className="match-status">🏁 FINISHED</span>
+              <span className="match-status">🏁 {t('floorball.matches.manage.finished', 'FINISHED')}</span>
+              <button
+                onClick={onReopen}
+                className="reopen-match-button"
+                title={t('floorball.matches.manage.reopenMatchTitle', 'Reopen this match for editing')}
+              >
+                🔓 {t('floorball.matches.manage.reopenMatch', 'Open match')}
+              </button>
               <button onClick={onClose} className="close-modal-button" title="Close the match modal">
-                ✕ Close
+                ✕ {t('common.close', 'Close')}
               </button>
             </>
           ) : currentMatch.status === 'InProgress' ? (
@@ -42,4 +69,4 @@ const LiveMatchModalHeader = ({
   );
 };
 
-export default LiveMatchModalHeader; 
+export default LiveMatchModalHeader;

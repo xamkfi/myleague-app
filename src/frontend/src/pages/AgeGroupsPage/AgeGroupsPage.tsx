@@ -1,35 +1,45 @@
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import { AUDIENCE_REGISTRY } from '../../audience/audienceRegistry';
+import { useAudience } from '../../context/AudienceContext';
 import './AgeGroupsPage.css';
 
 function AgeGroupsPage() {
   const { t } = useTranslation();
-  
-  const ageGroups = [
-    { id: 1, name: 'U12', description: 'Under 12 years old' },
-    { id: 2, name: 'U15', description: 'Under 15 years old' },
-    { id: 3, name: 'U18', description: 'Under 18 years old' },
-    { id: 4, name: 'Adult', description: '18+ years old' },
-    { id: 5, name: 'Senior', description: '40+ years old' }
-  ];
-  
+  const { selectedAudienceId, setAudience } = useAudience();
+
   return (
     <PageTemplate title={t('nav.ageGroups')}>
       <div className="age-groups-container">
-        <p className="intro-text">Select your age group to see relevant information and teams.</p>
-        
+        <p className="intro-text">{t('audience.intro')}</p>
+
         <div className="age-groups-grid">
-          {ageGroups.map(group => (
-            <div key={group.id} className="age-group-card">
-              <h2 className="age-group-title">{group.name}</h2>
-              <p className="age-group-description">{group.description}</p>
-              <button className="age-group-button">View Details</button>
-            </div>
-          ))}
+          {AUDIENCE_REGISTRY.map((group) => {
+            const isSelected = selectedAudienceId === group.id;
+
+            return (
+              <div
+                key={group.id}
+                className={`age-group-card${isSelected ? ' selected' : ''}`}
+                data-audience-card={group.themeId}
+              >
+                <h2 className="age-group-title">{t(group.i18nKey)}</h2>
+                <p className="age-group-description">{t(`audience.descriptions.${group.id}`)}</p>
+                <button
+                  type="button"
+                  className="age-group-button"
+                  onClick={() => setAudience(group.id)}
+                  disabled={isSelected}
+                >
+                  {isSelected ? t('audience.selected') : t('audience.select')}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
     </PageTemplate>
   );
 }
 
-export default AgeGroupsPage; 
+export default AgeGroupsPage;

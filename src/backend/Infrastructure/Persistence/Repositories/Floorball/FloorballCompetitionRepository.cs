@@ -1,0 +1,298 @@
+using System.Linq;
+using Domain.Common;
+using Domain.Entities.Floorball;
+using Domain.Enums.Floorball;
+using Domain.Repositories.Floorball;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using MyLeague.Infrastructure.Persistence;
+using MyLeague.Infrastructure.Persistence.Contexts;
+
+namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
+{
+    /// <summary>
+    /// Implementation of the floorball competition repository
+    /// </summary>
+    public class FloorballCompetitionRepository : RepositoryBase<FloorballCompetition, FloorballDbContext>, IFloorballCompetitionRepository
+    {
+        /// <summary>
+        /// Initializes a new instance of the FloorballCompetitionRepository class
+        /// </summary>
+        /// <param name="dbContext">The database context</param>
+        public FloorballCompetitionRepository(FloorballDbContext dbContext) : base(dbContext)
+        {
+        }
+
+        /// <summary>
+        /// Gets a floorball competition by ID
+        /// </summary>
+        /// <param name="id">The competition ID</param>
+        /// <returns>The competition if found, null otherwise</returns>
+        public async Task<FloorballCompetition?> GetByIdAsync(Guid? id)
+        {
+            return await _entities
+                .Include(s => s.Teams)
+                .Include(s => s.Matches)
+                    .ThenInclude(m => m.HomeTeam)
+                .Include(s => s.Matches)
+                    .ThenInclude(m => m.AwayTeam)
+                .FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        /// <summary>
+        /// Gets all floorball competitions
+        /// </summary>
+        /// <returns>A collection of all floorball competitions</returns>
+        public override async Task<IEnumerable<FloorballCompetition>> GetAllAsync()
+        {
+            return await _entities
+                .Include(s => s.Teams)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Gets a floorball competition by name
+        /// </summary>
+        /// <param name="name">The competition name</param>
+        /// <returns>The competition if found, null otherwise</returns>
+        public async Task<FloorballCompetition?> GetByNameAsync(string name)
+        {
+            return await _entities
+                .Include(s => s.Teams)
+                .Include(s => s.Matches)
+                    .ThenInclude(m => m.HomeTeam)
+                .Include(s => s.Matches)
+                    .ThenInclude(m => m.AwayTeam)
+                .FirstOrDefaultAsync(s => s.Name == name);
+        }
+
+        /// <summary>
+        /// Gets active floorball competitions
+        /// </summary>
+        /// <returns>A collection of active floorball competitions</returns>
+        public async Task<IEnumerable<FloorballCompetition>> GetActiveAsync()
+        {
+            return await _entities
+                .Include(s => s.Teams)
+                .Where(s => s.IsActive)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Gets completed floorball competitions
+        /// </summary>
+        /// <returns>A collection of completed floorball competitions</returns>
+        public async Task<IEnumerable<FloorballCompetition>> GetCompletedAsync()
+        {
+            return await _entities
+                .Include(s => s.Teams)
+                .Where(s => s.IsCompleted)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Gets floorball competitions by division
+        /// </summary>
+        /// <param name="divisionId">The division to filter by</param>
+        /// <returns>A collection of floorball competitions for the specified division</returns>
+        public async Task<IEnumerable<FloorballCompetition>> GetByDivisionAsync(Guid divisionId)
+        {
+            HashSet<Guid> competitionIds = await _dbContext.Set<FloorballCompetitionDivision>()
+                .Where(sd => sd.DivisionId == divisionId)
+                .Select(sd => sd.CompetitionId)
+                .ToHashSetAsync();
+
+            return await _entities
+                .Include(s => s.Teams)
+                .Where(s => competitionIds.Contains(s.Id))
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Gets competitions containing a specific team
+        /// </summary>
+        /// <param name="teamId">The team ID</param>
+        /// <returns>A collection of competitions with the team participating</returns>
+        public async Task<IEnumerable<FloorballCompetition>> GetByTeamIdAsync(Guid teamId)
+        {
+            return await _entities
+                .Include(s => s.Teams)
+                .Where(s => s.Teams.Any(t => t.Id == teamId))
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Gets the current or upcoming competition for a division
+        /// </summary>
+        /// <param name="divisionId">The division</param>
+        /// <returns>The current or next competition for the division</returns>
+        public async Task<FloorballCompetition> GetCurrentOrUpcomingAsync(Guid divisionId)
+        {
+            DateTime now = DateTime.UtcNow;
+            
+            HashSet<Guid> competitionIds = await _dbContext.Set<FloorballCompetitionDivision>()
+                .Where(sd => sd.DivisionId == divisionId)
+                .Select(sd => sd.CompetitionId)
+                .ToHashSetAsync();
+            
+            FloorballCompetition? activeCompetition = await _entities
+                .Include(s => s.Teams)
+                .Where(s => competitionIds.Contains(s.Id) && s.IsActive)
+                .FirstOrDefaultAsync();
+                
+            if (activeCompetition != null)
+                return activeCompetition;
+                
+            FloorballCompetition? futureCompetition = await _entities
+                .Include(s => s.Teams)
+                .Where(s => competitionIds.Contains(s.Id) && s.StartDate > now && !s.IsCompleted)
+                .OrderBy(s => s.StartDate)
+                .FirstOrDefaultAsync();
+                
+            return futureCompetition ?? throw new KeyNotFoundException($"No current or upcoming competition found for division {divisionId}.");
+        }
+
+        /// <summary>
+        /// Adds a new floorball competition
+        /// </summary>
+        /// <param name="competition">The competition to add</param>
+        public override async Task AddAsync(FloorballCompetition competition)
+        {
+            await base.AddAsync(competition);
+        }
+
+        /// <summary>
+        /// Updates an existing floorball competition
+        /// </summary>
+        /// <param name="competition">The competition to update</param>
+        public override async Task UpdateAsync(FloorballCompetition competition)
+        {
+            await base.UpdateAsync(competition);
+        }
+
+        /// <summary>
+        /// Deletes a floorball competition by ID
+        /// </summary>
+        /// <param name="id">The ID of the competition to delete</param>
+        public async Task DeleteAsync(Guid id)
+        {
+            FloorballCompetition? competition = await _entities.FindAsync(id);
+            if (competition != null)
+            {
+                await DeleteAsync(competition);
+            }
+        }
+
+        /// <summary>
+        /// Checks if a floorball competition exists
+        /// </summary>
+        /// <param name="id">The competition ID</param>
+        /// <returns>True if the competition exists, false otherwise</returns>
+        public async Task<bool> ExistsAsync(Guid id)
+        {
+            return await _entities.AnyAsync(s => s.Id == id);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<FloorballSeasonDateSummary>> GetSeasonDateSummariesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _entities
+                .OfType<FloorballSeason>()
+                .AsNoTracking()
+                .Select(s => new FloorballSeasonDateSummary(s.StartDate, s.EndDate, s.IsActive))
+                .ToListAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<PagedResult<FloorballSeason>> GetSeasonsPagedAsync(
+            int page,
+            int pageSize,
+            int? startYear,
+            int? endYear,
+            Domain.Enums.Common.TeamCategory? teamCategory = null,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballSeason> query = _entities
+                .OfType<FloorballSeason>()
+                .AsNoTracking();
+
+            if (startYear.HasValue && endYear.HasValue)
+            {
+                int start = startYear.Value;
+                int end = endYear.Value;
+                query = query.Where(s => s.StartDate.Year == start && s.EndDate.Year == end);
+            }
+
+            if (teamCategory.HasValue)
+            {
+                query = query.Where(s => s.TeamCategory == teamCategory.Value);
+            }
+
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            List<FloorballSeason> items = await query
+                .OrderByDescending(s => s.IsActive)
+                .ThenByDescending(s => s.StartDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return PagedResult.Create(items, totalCount, page, pageSize);
+        }
+
+        /// <inheritdoc />
+        public async Task<FloorballSeason?> GetSeasonWithContentBlocksAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return await _entities
+                .OfType<FloorballSeason>()
+                .Include(season => season.ContentBlocks)
+                .FirstOrDefaultAsync(season => season.Id == id, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<FloorballSeason?> GetFeaturedSeasonWithContentBlocksAsync(
+            int? startYear,
+            int? endYear,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FloorballSeason> query = _entities.OfType<FloorballSeason>();
+
+            if (startYear.HasValue && endYear.HasValue)
+            {
+                int start = startYear.Value;
+                int end = endYear.Value;
+                query = query.Where(season => season.StartDate.Year == start && season.EndDate.Year == end);
+            }
+
+            return await query
+                .Include(season => season.ContentBlocks)
+                .OrderByDescending(season => season.IsActive)
+                .ThenByDescending(season => season.StartDate)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public void MarkNewContentBlocksAdded(FloorballSeason season, IReadOnlyCollection<Guid> existingBlockIds)
+        {
+            foreach (FloorballSeasonContentBlock block in season.ContentBlocks.Where(block => !existingBlockIds.Contains(block.Id)))
+            {
+                EntityEntry<FloorballSeasonContentBlock> entry = _dbContext.Entry(block);
+                if (entry.State == EntityState.Detached)
+                {
+                    entry = _dbContext.Add(block);
+                }
+                else if (entry.State != EntityState.Added)
+                {
+                    entry.State = EntityState.Added;
+                }
+
+                // Client-generated Guids must be sent in the INSERT. Forcing Added can
+                // otherwise mark Id as temporary and omit it → PostgreSQL NOT NULL error.
+                entry.Property(added => added.Id).IsTemporary = false;
+            }
+        }
+    }
+}

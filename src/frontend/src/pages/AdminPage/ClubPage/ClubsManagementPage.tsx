@@ -2,10 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AdminPageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
+import Button from '../../../components/Button/Button';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
+import ActionsDropdown from '../../../components/ActionsDropdown/ActionsDropdown';
+import BulkActionsBar from '../../../components/BulkActionsBar/BulkActionsBar';
+import AddIcon from '../../../assets/basicIcons/add.svg';
 import { clubService, type Club } from '../../../api/common/clubService';
-import './ClubsManagementPage.scss';
 import Pagination from '../../../components/Pagination/Pagination';
+import '../../../styles/AdminTable.scss';
+import './ClubsManagementPage.scss';
 
 type SortKey = 'name' | 'city' | 'country' | 'foundingDate';
 type SortDir = 'asc' | 'desc';
@@ -24,6 +29,7 @@ function ClubsManagementPage() {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const fetchClubs = useCallback(async (page: number, size: number) => {
     setLoading(true);
@@ -65,24 +71,18 @@ function ClubsManagementPage() {
     }
   }, []);
 
-  // Debounced search effect
   useEffect(() => {
     const handler = setTimeout(() => {
       if (search.trim().length >= 2) {
         searchClubs(search);
       } else if (search.trim().length === 0) {
-        // Reset to paginated view when search is cleared
         setIsSearching(false);
         fetchClubs(1, pageSize);
       }
     }, 300);
-
-    return () => {
-      clearTimeout(handler);
-    };
+    return () => clearTimeout(handler);
   }, [search, searchClubs, pageSize, fetchClubs]);
 
-  // Initial load on mount and when pageSize changes (only if not searching)
   useEffect(() => {
     if (!isSearching) {
       fetchClubs(1, pageSize);
@@ -94,15 +94,15 @@ function ClubsManagementPage() {
       const dir = sortDir === 'asc' ? 1 : -1;
       switch (sortKey) {
         case 'name':
-          return a.name.localeCompare(b.name) * dir;
+          return (a.name ?? '').localeCompare(b.name ?? '') * dir;
         case 'city':
-          return a.city.localeCompare(b.city) * dir;
+          return (a.city ?? '').localeCompare(b.city ?? '') * dir;
         case 'country':
-          return a.country.localeCompare(b.country) * dir;
+          return (a.country ?? '').localeCompare(b.country ?? '') * dir;
         case 'foundingDate': {
-          const da = new Date(a.foundingDate).getTime();
-          const db = new Date(b.foundingDate).getTime();
-          return (da - db) * (sortDir === 'asc' ? 1 : -1);
+          const da = a.foundingDate ? new Date(a.foundingDate).getTime() : 0;
+          const db = b.foundingDate ? new Date(b.foundingDate).getTime() : 0;
+          return (da - db) * dir;
         }
       }
     };
@@ -118,13 +118,42 @@ function ClubsManagementPage() {
     }
   };
 
-  const formatDmy = (iso: string) => {
+  const formatDmy = (iso: string | null | undefined) => {
+    if (!iso) return '-';
     const dt = new Date(iso);
+    if (Number.isNaN(dt.getTime()) || dt.getUTCFullYear() <= 1) return '-';
     const dd = String(dt.getUTCDate()).padStart(2, '0');
     const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
     const yyyy = dt.getUTCFullYear();
     return `${dd}-${mm}-${yyyy}`;
   };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => setSelectedIds(new Set(sortedClubs.map((c) => c.id)));
+  const handleClearSelection = () => setSelectedIds(new Set());
+
+  const handleBulkDelete = async () => {
+    for (const id of selectedIds) {
+      try {
+        await clubService.remove(id);
+        setClubs((prev) => prev.filter((c) => c.id !== id));
+      } catch (err) {
+        console.error('Failed to delete club', err);
+      }
+    }
+    setSelectedIds(new Set());
+  };
+
+  const allSelected = sortedClubs.length > 0 && sortedClubs.every((c) => selectedIds.has(c.id));
+  const sortIcon = (key: SortKey) => sortKey === key ? (sortDir === 'asc' ? ' ▲' : ' ▼') : '';
 
   return (
     <AdminPageTemplate title={t('clubs.manage.title', 'Manage Clubs')}>
@@ -136,17 +165,14 @@ function ClubsManagementPage() {
               {t('clubs.manage.title', 'Manage Clubs')}
             </h2>
             <p className="count">
-              {isSearching 
-                ? t('clubs.searchResults', 'Search Results'): t('clubs.total', 'Total')}: {totalCount}
+              {isSearching
+                ? t('clubs.searchResults', 'Search Results') : t('clubs.total', 'Total')}: {totalCount}
             </p>
           </div>
           <div className="right">
-            <button
-              className="btn create-club-button"
-              onClick={() => navigate('/admin/clubs/create')}
-            >
-              + {t('clubs.createNew', 'Create New Club')}
-            </button>
+            <Button iconLeft={AddIcon} rounded="pill" onClick={() => navigate('/admin/clubs/create')}>
+              {t('clubs.createNew', 'Create New Club')}
+            </Button>
           </div>
         </div>
 
@@ -163,42 +189,43 @@ function ClubsManagementPage() {
 
         <ErrorPopup message={error} />
 
-        <div className="clubs-table-wrapper">
-          <table className="clubs-table">
+        <BulkActionsBar
+          selectedCount={selectedIds.size}
+          totalCount={sortedClubs.length}
+          onSelectAll={handleSelectAll}
+          onClearSelection={handleClearSelection}
+          actions={[
+            { label: t('common.delete', 'Delete'), onClick: handleBulkDelete, variant: 'danger' },
+          ]}
+        />
+
+        <div className="admin-table__wrapper">
+          <table className="admin-table">
             <thead>
               <tr>
-                <th>
-                  <button className={`table-sort ${sortKey === 'name' ? 'active' : ''}`} onClick={() => toggleSort('name')}>
-                    {t('clubs.table.name', 'Club Name')}
-                    {sortKey === 'name' && <span className="arrow">{sortDir === 'asc' ? '▲' : '▼'}</span>}
-                  </button>
+                <th className="admin-table__checkbox-col">
+                  <input type="checkbox" checked={allSelected} onChange={() => (allSelected ? handleClearSelection() : handleSelectAll())} />
                 </th>
-                <th>
-                  <button className={`table-sort ${sortKey === 'city' ? 'active' : ''}`} onClick={() => toggleSort('city')}>
-                    {t('clubs.table.city', 'City')}
-                    {sortKey === 'city' && <span className="arrow">{sortDir === 'asc' ? '▲' : '▼'}</span>}
-                  </button>
+                <th className="admin-table__sortable" onClick={() => toggleSort('name')}>
+                  {t('clubs.table.name', 'Club Name')}{sortIcon('name')}
                 </th>
-                <th>
-                  <button className={`table-sort ${sortKey === 'country' ? 'active' : ''}`} onClick={() => toggleSort('country')}>
-                    {t('clubs.table.country', 'Country')}
-                    {sortKey === 'country' && <span className="arrow">{sortDir === 'asc' ? '▲' : '▼'}</span>}
-                  </button>
+                <th className="admin-table__sortable" onClick={() => toggleSort('city')}>
+                  {t('clubs.table.city', 'City')}{sortIcon('city')}
                 </th>
-                <th>
-                  <button className={`table-sort ${sortKey === 'foundingDate' ? 'active' : ''}`} onClick={() => toggleSort('foundingDate')}>
-                    {t('clubs.table.foundingDate', 'Founding Date')}
-                    {sortKey === 'foundingDate' && <span className="arrow">{sortDir === 'asc' ? '▲' : '▼'}</span>}
-                  </button>
+                <th className="admin-table__sortable" onClick={() => toggleSort('country')}>
+                  {t('clubs.table.country', 'Country')}{sortIcon('country')}
                 </th>
-                <th className="actions-col">{t('clubs.table.actions', 'Actions')}</th>
+                <th className="admin-table__sortable" onClick={() => toggleSort('foundingDate')}>
+                  {t('clubs.table.foundingDate', 'Founding Date')}{sortIcon('foundingDate')}
+                </th>
+                <th className="admin-table__actions-col">{t('clubs.table.actions', 'Actions')}</th>
               </tr>
             </thead>
             <tbody>
               {!loading && sortedClubs.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="empty-row">
-                    {isSearching 
+                  <td colSpan={6} style={{ textAlign: 'center', color: '#6b7280' }}>
+                    {isSearching
                       ? t('clubs.noSearchResults', 'No clubs found matching your search')
                       : t('clubs.empty', 'No clubs found')}
                   </td>
@@ -207,37 +234,35 @@ function ClubsManagementPage() {
 
               {loading && (
                 <tr>
-                  <td colSpan={5} className="loading-row">
+                  <td colSpan={6} style={{ textAlign: 'center', color: '#6b7280' }}>
                     {t('common.loading', 'Loading...')}
                   </td>
                 </tr>
               )}
 
-              {!loading &&
-                sortedClubs.map((club) => (
-                  <tr
-                    key={club.id}
-                    className="clickable-row"
-                    onClick={() => navigate(`/admin/clubs/${club.id}`)}
-                  >
-                    <td data-label={t('clubs.table.name', 'Club Name')}>{club.name}</td>
-                    <td data-label={t('clubs.table.city', 'City')}>{club.city}</td>
-                    <td data-label={t('clubs.table.country', 'Country')}>{club.country}</td>
-                    <td data-label={t('clubs.table.foundingDate', 'Founding Date')}>{formatDmy(club.foundingDate)}</td>
-                    <td
-                      className="actions"
-                      onClick={(e) => e.stopPropagation()}
-                      aria-label={t('clubs.table.actions', 'Actions')}
-                    >
-                      <button
-                        className="btn btn-secondary"
-                        onClick={() => navigate(`/admin/clubs/${club.id}/edit`)}
-                      >
-                        {t('common.edit', 'Edit')}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+              {!loading && sortedClubs.map((club) => (
+                <tr
+                  key={club.id}
+                  className={`admin-table__row--clickable ${selectedIds.has(club.id) ? 'admin-table__row--selected' : ''}`}
+                  onClick={() => navigate(`/admin/clubs/${club.id}`)}
+                >
+                  <td className="admin-table__checkbox-col" onClick={(e) => e.stopPropagation()}>
+                    <input type="checkbox" checked={selectedIds.has(club.id)} onChange={() => handleToggleSelect(club.id)} />
+                  </td>
+                  <td className="admin-table__name">{club.name}</td>
+                  <td>{club.city || '-'}</td>
+                  <td>{club.country || '-'}</td>
+                  <td>{formatDmy(club.foundingDate)}</td>
+                  <td className="admin-table__actions-col" onClick={(e) => e.stopPropagation()}>
+                    <ActionsDropdown
+                      ariaLabel={t('clubs.table.actionsMenu', 'Club actions menu')}
+                      actions={[
+                        { label: t('common.edit', 'Edit'), onClick: () => navigate(`/admin/clubs/${club.id}/edit`) },
+                      ]}
+                    />
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -263,5 +288,3 @@ function ClubsManagementPage() {
 }
 
 export default ClubsManagementPage;
-
-

@@ -1,0 +1,321 @@
+@use '@variables' as *;
+@use "sass:map";
+
+.delete-success-toast {
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001; // Higher than modal overlay (1000)
+  
+  padding: 1rem 1.5rem;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  animation: slideInDown 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards;
+  
+  p {
+    margin: 0;
+    font-weight: 500;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+
+// Main page wrapper
+.floorball-players-page {
+  background-color: $color-blue-darkest;
+  min-height: 100vh;
+}
+
+.floorball-players-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #111827;
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.floorball-players-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: $color-neutral-white;
+}
+
+.floorball-players-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  
+  p {
+    font-size: 1.1rem;
+    color: $color-neutral-medium-grey;
+  }
+}
+
+// Header Section
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.players-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 1;
+}
+
+.floorball-players-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.players-team-filter {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'sm');
+  margin: 0.75rem 0 1.25rem;
+  padding: map.get($spacing, 'base');
+  background-color: $color-neutral-light-grey;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-default;
+  flex-wrap: wrap;
+
+  label {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-text-primary;
+    white-space: nowrap;
+  }
+
+  select {
+    flex: 1;
+    min-width: 240px;
+    max-width: 100%;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'sm');
+    background-color: $color-white;
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-light;
+      box-shadow: 0 0 0 2px rgba(74, 103, 159, 0.15);
+    }
+  }
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.floorball-players-header .search-icon {
+  position: absolute;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  color: $color-neutral-dark-grey;
+}
+
+.search-input {
+  flex: 1;
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem !important;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 24px;
+
+  &:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+  }
+
+  &::placeholder { color: #6c757d; }
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: $color-blue-deep;
+  border-bottom: none;
+  margin: 0;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.create-player-button {
+  padding: 0.75rem 1.5rem;
+  background-color: $color-blue-light;
+  color: white;
+  border: none;
+  border-radius: 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .button-icon {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(1);
+  }
+
+  &:hover {
+    background-color: $color-blue-deep;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+  }
+}
+
+// Pagination loading overlay within admin-table__wrapper
+.admin-table__wrapper {
+  position: relative;
+
+  &.pagination-loading {
+    .admin-table {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  }
+}
+
+.pagination-loading-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.loading-spinner-small {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  background-color: $color-red-pale;
+  color: $color-red-muted;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid $color-red-muted;
+  margin-bottom: 1rem;
+  
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.success-message {
+  background-color: $color-green-pale;
+  color: $color-green-muted;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid $color-green-muted;
+  margin-bottom: 1rem;
+  
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+// No data states
+.no-data,
+.no-search-results {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: $color-neutral-black;
+  font-size: 1.1rem;
+  background-color: $color-neutral-white;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
+}
+
+.no-search-results {
+  background-color: $color-yellow-pale;
+  color: $color-yellow-muted;
+  border: 1px solid $color-yellow-muted;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .floorball-players-container {
+    padding: 0.5rem;
+  }
+
+  .floorball-players-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    
+    .players-actions {
+      justify-content: center;
+    }
+  }
+}
+
+// Animation for loading states
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}

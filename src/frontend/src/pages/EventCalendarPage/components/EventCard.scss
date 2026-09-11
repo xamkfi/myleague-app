@@ -1,0 +1,173 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.event-card {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'md');
+  padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+  background: $color-neutral-white;
+  border-radius: map.get($border-radius, 'md');
+  text-decoration: none;
+  border: 1px solid $color-border;
+  transition: transform $transition-default, box-shadow $transition-default, border-color $transition-default;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border-color: $color-blue-medium;
+  }
+
+  &--live {
+    border-left: 3px solid $color-red-primary;
+  }
+
+  &--completed {
+    opacity: 0.85;
+  }
+
+  &__time-col {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    min-width: 80px;
+    flex-shrink: 0;
+  }
+
+  &__status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &--scheduled {
+      background: $color-blue-medium;
+    }
+
+    &--live {
+      background: $color-red-primary;
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+
+    &--completed {
+      background: $color-text-muted;
+    }
+
+    &--cancelled {
+      background: $color-neutral-medium-grey;
+    }
+  }
+
+  &__time {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-text-primary;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    display: block;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    margin-top: 2px;
+  }
+
+  &__venue,
+  &__subtitle {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-text-muted;
+  }
+
+  &__venue::after {
+    content: '·';
+    margin-left: map.get($spacing, 'xs');
+    color: $color-neutral-medium-grey;
+  }
+
+  &__venue:last-child::after {
+    display: none;
+  }
+
+  &__right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    gap: 2px;
+  }
+
+  &__score {
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__badge {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-blue-medium;
+    font-weight: map.get($font-weights, 'medium');
+    padding: 2px 8px;
+    background: rgba($color-blue-light, 0.12);
+    border-radius: map.get($border-radius, 'sm');
+  }
+
+  &__live-label {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-red-primary;
+    font-weight: map.get($font-weights, 'bold');
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@media (max-width: map.get($breakpoints, 'mobile')) {
+  .event-card {
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'sm');
+
+    &__time-col {
+      min-width: auto;
+    }
+
+    &__info {
+      flex-basis: 100%;
+      order: 2;
+    }
+
+    &__right {
+      order: 1;
+      margin-left: auto;
+    }
+
+    &__title {
+      white-space: normal;
+    }
+  }
+}

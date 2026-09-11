@@ -108,9 +108,11 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
     if (!searchTerm) {
       return matches;
     }
-    return matches.filter(match => 
-      match.homeTeamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      match.awayTeamName.toLowerCase().includes(searchTerm.toLowerCase())
+    // Placeholder fixtures (no team yet) cannot match a text query — treat them as a non-match.
+    const term: string = searchTerm.toLowerCase();
+    return matches.filter(match =>
+      (match.homeTeamName?.toLowerCase().includes(term) ?? false) ||
+      (match.awayTeamName?.toLowerCase().includes(term) ?? false)
     );
   };
 
@@ -135,7 +137,8 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
 
   return (
     <>
-      <button 
+      <button
+        type="button"
         className="match-browser__trigger-btn"
         onClick={() => {
           setShowBrowser(true);
@@ -153,7 +156,8 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
           <div className="match-browser-modal__content">
             <div className="match-browser-modal__header">
               <h2>{t('admin.news.matches.add_matches', 'ADD MATCHES')}</h2>
-              <button 
+              <button
+                type="button"
                 className="match-browser-modal__close-btn"
                 onClick={() => setShowBrowser(false)}
               >
@@ -166,31 +170,35 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
               {error && (
                 <div className="match-browser__error">
                   <p>{t('admin.news.matches.error', 'Error')}: {error}</p>
-                  <button onClick={fetchMatches}>{t('admin.news.matches.try_again', 'Try again')}</button>
+                  <button type="button" onClick={fetchMatches}>{t('admin.news.matches.try_again', 'Try again')}</button>
                 </div>
               )}
 
               {/* Category filter buttons */}
               <div className="match-browser__categories">
-                <button 
+                <button
+                  type="button"
                   className={getCategoryButtonClass('all')}
                   onClick={() => handleCategoryChange('all')}
                 >
                   {t('admin.news.matches.all_matches', 'All')}
                 </button>
-                <button 
+                <button
+                  type="button"
                   className={getCategoryButtonClass('scheduled')}
                   onClick={() => handleCategoryChange('scheduled')}
                 >
                   {t('admin.news.matches.upcoming_matches', 'Upcoming')}
                 </button>
-                <button 
+                <button
+                  type="button"
                   className={getCategoryButtonClass('results')}
                   onClick={() => handleCategoryChange('results')}
                 >
                   {t('admin.news.matches.results', 'Results')}
                 </button>
-                <button 
+                <button
+                  type="button"
                   className={getCategoryButtonClass('cancelled')}
                   onClick={() => handleCategoryChange('cancelled')}
                 >
@@ -235,7 +243,7 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
                               football
                             </div>
                             <div className="match-browser__item-teams">
-                              {match.homeTeamName} {match.homeScore} - {match.awayScore} {match.awayTeamName}
+                              {match.homeTeamName ?? 'TBD'} {match.homeScore} - {match.awayScore} {match.awayTeamName ?? 'TBD'}
                             </div>
                           </div>
                           <input
@@ -279,8 +287,9 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
                   <div className="match-browser__selected-chips">
                     {selectedMatches.map(match => (
                       <span key={match.id} className="match-browser__selected-chip">
-                        {match.homeTeamName} vs {match.awayTeamName}
-                        <button 
+                        {match.homeTeamName ?? 'TBD'} vs {match.awayTeamName ?? 'TBD'}
+                        <button
+                          type="button"
                           onClick={() => handleMatchSelect(match)}
                           className="match-browser__selected-chip-remove"
                         >
@@ -289,7 +298,8 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
                       </span>
                     ))}
                   </div>
-                  <button 
+                  <button
+                    type="button"
                     onClick={clearSelection}
                     className="match-browser__clear-all"
                   >
@@ -300,13 +310,15 @@ export default function MatchBrowser({ onInsertMatches }: MatchBrowserProps) {
 
               {/* Action buttons */}
               <div className="match-browser__actions">
-                <button 
+                <button
+                  type="button"
                   onClick={() => setShowBrowser(false)}
                   className="match-browser__cancel-btn"
                 >
                   {t('admin.news.matches.cancel', 'Cancel')}
                 </button>
-                <button 
+                <button
+                  type="button"
                   onClick={insertSelectedMatches}
                   disabled={selectedMatches.length === 0}
                   className="match-browser__add-btn"

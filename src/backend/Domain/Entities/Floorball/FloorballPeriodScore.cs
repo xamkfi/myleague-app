@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Enums.Floorball;
 
 namespace Domain.Entities.Floorball;
 
@@ -150,6 +151,20 @@ public class FloorballPeriodScore : BaseEntity
         AwayScore--;
     }
     
+    /// <summary>
+    /// Updates the denormalized team identifier for one slot. Called by
+    /// <c>FloorballMatch.AssignTeam</c> when a participant is assigned (or re-assigned) after the
+    /// period scores have already been created. Accepts <see cref="Guid.Empty"/> to mark the slot
+    /// as "to be determined". No effect on the score columns.
+    /// </summary>
+    public void UpdateTeamId(FloorballPlayoffSlot slot, Guid teamId)
+    {
+        if (slot == FloorballPlayoffSlot.Home)
+            HomeTeamId = teamId;
+        else
+            AwayTeamId = teamId;
+    }
+
     /// <summary>
     /// Marks the period as completed
     /// </summary>

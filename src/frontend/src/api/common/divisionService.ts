@@ -1,4 +1,6 @@
-import { VITE_API_URL } from '../../constants/config';
+import { API_URL } from '../../constants/config';
+import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import type {
   CreateDivisionInput,
   DivisionType,
@@ -7,7 +9,6 @@ import type {
 import type { SportsCategory } from '../../types/common/sports';
 import type { ApiResponse } from '../../types/common/apiResponseType';
 
-const API_URL = VITE_API_URL || '/api';
 const BASE_URL = `${API_URL}/Divisions`;
 
 const parseApiResponse = async <T>(
@@ -27,8 +28,7 @@ const parseApiResponse = async <T>(
   }
 
   if (!response.ok || !payload.success) {
-    const errorMessage =
-      payload.errors?.join(', ') || payload.message || defaultMessage;
+    const errorMessage = await parseErrorResponse(payload, defaultMessage);
     throw new Error(errorMessage);
   }
 
@@ -37,12 +37,12 @@ const parseApiResponse = async <T>(
 
 export const divisionService = {
   getAll: async (): Promise<ApiResponse<DivisionType[]>> => {
-    const response = await fetch(BASE_URL);
+    const response = await authFetch(BASE_URL);
     return parseApiResponse<DivisionType[]>(response, 'Failed to load divisions');
   },
 
   getById: async (id: string): Promise<ApiResponse<DivisionType>> => {
-    const response = await fetch(`${BASE_URL}/${id}`);
+    const response = await authFetch(`${BASE_URL}/${id}`);
     return parseApiResponse<DivisionType>(response, 'Failed to load division');
   },
 
@@ -53,7 +53,7 @@ export const divisionService = {
     const url = `${BASE_URL}/sport/${encodeURIComponent(
       sportType,
     )}?activeOnly=${activeOnly}`;
-    const response = await fetch(url);
+    const response = await authFetch(url);
     return parseApiResponse<DivisionType[]>(
       response,
       'Failed to load divisions by sport type',
@@ -63,7 +63,7 @@ export const divisionService = {
   create: async (
     payload: CreateDivisionInput,
   ): Promise<ApiResponse<DivisionType>> => {
-    const response = await fetch(BASE_URL, {
+    const response = await authFetch(BASE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ export const divisionService = {
     id: string,
     payload: UpdateDivisionInput,
   ): Promise<ApiResponse<DivisionType>> => {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await authFetch(`${BASE_URL}/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -90,7 +90,7 @@ export const divisionService = {
   },
 
   activate: async (id: string): Promise<ApiResponse<void>> => {
-    const response = await fetch(`${BASE_URL}/${id}/activate`, {
+    const response = await authFetch(`${BASE_URL}/${id}/activate`, {
       method: 'PATCH',
     });
 
@@ -98,7 +98,7 @@ export const divisionService = {
   },
 
   deactivate: async (id: string): Promise<ApiResponse<void>> => {
-    const response = await fetch(`${BASE_URL}/${id}/deactivate`, {
+    const response = await authFetch(`${BASE_URL}/${id}/deactivate`, {
       method: 'PATCH',
     });
 
@@ -106,7 +106,7 @@ export const divisionService = {
   },
 
   delete: async (id: string): Promise<ApiResponse<void>> => {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await authFetch(`${BASE_URL}/${id}`, {
       method: 'DELETE',
     });
 

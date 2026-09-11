@@ -37,6 +37,7 @@ export const useFormState = ({
     assisterId: '',
     timeMinutes: 0,
     timeSeconds: 0,
+    goalType: null,
   });
   
   const [penaltyForm, setPenaltyForm] = useState<PenaltyForm>({
@@ -126,6 +127,7 @@ export const useFormState = ({
         timeInSeconds: timeInSeconds,
         wasInOvertime: currentMatch.wentToOvertime || clock.period > 2,
         wasInShootout: currentMatch.wentToShootout || clock.period > 3,
+        goalType: goalForm.goalType ?? undefined,
       };
       
       await floorballMatchEventService.recordGoal(goalData);
@@ -136,7 +138,7 @@ export const useFormState = ({
       await loadCurrentMatchStatus();
       
       // Reset form
-      setGoalForm({ teamId: '', playerId: '', assisterId: '', timeMinutes: 0, timeSeconds: 0 });
+      setGoalForm({ teamId: '', playerId: '', assisterId: '', timeMinutes: 0, timeSeconds: 0, goalType: null });
       setShowGoalForm(false);
       setError(null);
       

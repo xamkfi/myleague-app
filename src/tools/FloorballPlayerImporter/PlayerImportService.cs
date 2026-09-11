@@ -1,7 +1,9 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Application.DTOs.Common;
-using Application.DTOs.Floorball;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 using FloorballPlayerImporter.Models;

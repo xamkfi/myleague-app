@@ -1,0 +1,284 @@
+@use 'sass:map';
+@use 'variables' as *;
+
+/* ============================================================================
+   Shared Admin Table Styles
+   All admin-panel tables should use these classes for a consistent look.
+   ============================================================================ */
+
+// ── Wrapper ──
+.admin-table__wrapper {
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  background-color: $color-white;
+  box-shadow: 0 1px 3px rgba(12, 29, 62, 0.06);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+// ── Table base ──
+.admin-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: $color-neutral-dark-grey;
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 1rem;
+    border-top: 1px solid $color-neutral-light-grey;
+    font-size: 0.95rem;
+    vertical-align: middle;
+    color: $color-neutral-black;
+  }
+
+  tbody tr:first-of-type td {
+    border-top: none;
+  }
+
+  // Clickable rows
+  tbody tr.admin-table__row--clickable {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: $color-neutral-light-grey;
+    }
+  }
+
+  // Selected rows
+  tbody tr.admin-table__row--selected {
+    background-color: rgba($color-blue-light, 0.08);
+
+    &:hover {
+      background-color: rgba($color-blue-light, 0.14);
+    }
+  }
+}
+
+// ── Checkbox column ──
+.admin-table__checkbox-col {
+  width: 50px;
+  text-align: center;
+
+  input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: $color-blue-light;
+  }
+}
+
+// ── Actions column ──
+.admin-table__actions-col {
+  width: 80px;
+  text-align: center;
+}
+
+// ── Primary name cell ──
+.admin-table__name {
+  font-weight: 600;
+  color: $color-neutral-black;
+}
+
+// Inline wrapper inside .admin-table__name used to anchor inline indicators
+// (e.g. live-match dots) next to the name without breaking row layout.
+.admin-table__name-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-table__subtitle {
+  margin-top: 0.25rem;
+  color: $color-neutral-dark-grey;
+  font-size: 0.85rem;
+}
+
+.admin-table__muted {
+  color: $color-neutral-dark-grey;
+  font-size: 0.9rem;
+}
+
+.admin-table__bold {
+  font-weight: 600;
+}
+
+// ── Status badges ──
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  // Active → green palette from design system
+  &--active {
+    background-color: $color-green-almost;
+    color: $color-green-muted;
+  }
+
+  // Inactive → red palette from design system
+  &--inactive {
+    background-color: $color-red-almost;
+    color: $color-red-muted;
+  }
+
+  // SystemAdmin → navy-blue palette (darkest shade)
+  &--system {
+    background-color: $color-blue-background;
+    color: $color-blue-deep;
+  }
+
+  // ClubAdmin → secondary blue palette
+  &--club {
+    background-color: $color-blue-secondary-almost;
+    color: $color-blue-secondary-muted;
+  }
+
+  // Informational → secondary blue palette
+  &--info {
+    background-color: $color-blue-secondary-almost;
+    color: $color-blue-secondary-muted;
+  }
+
+  &--pending {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+  }
+
+  &--warning {
+    background-color: $color-yellow-almost;
+    color: $color-yellow-muted;
+  }
+
+  // Danger / error → red palette
+  &--danger {
+    background-color: $color-red-almost;
+    color: $color-red-muted;
+  }
+
+  // Completed / neutral → light grey
+  &--completed {
+    background-color: $color-neutral-light-grey;
+    color: $color-neutral-dark-grey;
+  }
+}
+
+// ── Toggle button (inline status toggler) ──
+.admin-table__toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--on {
+    background-color: $color-green-almost;
+    color: $color-green-muted;
+  }
+
+  &--off {
+    background-color: $color-neutral-light-grey;
+    color: $color-neutral-dark-grey;
+  }
+}
+
+// ── Tags (e.g. category badges) ──
+.admin-tag {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &--blue {
+    background-color: $color-blue-secondary-almost;
+    color: $color-blue-secondary-muted;
+  }
+
+  &--purple {
+    background-color: $color-blue-background;
+    color: $color-blue-deep;
+  }
+}
+
+// ── Empty state ──
+.admin-table__empty {
+  padding: 2rem;
+  text-align: center;
+  color: $color-neutral-dark-grey;
+  font-size: 1rem;
+  border: 1px dashed $color-neutral-medium-grey;
+  border-radius: 12px;
+  background-color: $color-neutral-light-grey;
+}
+
+// ── Sort header ──
+.admin-table__sortable {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    color: $color-blue-medium;
+  }
+}
+
+.admin-table__sort-icon {
+  margin-left: 0.25rem;
+  font-size: 0.7rem;
+}
+
+// ── Responsive ──
+@media (max-width: 900px) {
+  .admin-table__wrapper {
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+  }
+
+  .admin-table {
+    th {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.7rem;
+    }
+
+    td {
+      padding: 0.75rem;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-table__wrapper {
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+  }
+}

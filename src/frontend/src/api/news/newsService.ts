@@ -1,3 +1,7 @@
+import { API_URL } from '../../constants/config';
+import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
+
 export interface NewsArticleDto {
   id: string;
   title: string;
@@ -9,6 +13,7 @@ export interface NewsArticleDto {
   updatedAt?: string;
   category?: string;
   sportCategory?: string;
+  teamCategory?: string;
   tags: string[];
   isArchived: boolean;
 }
@@ -16,6 +21,10 @@ export interface NewsArticleDto {
 export interface NewsParameters{
   category: string;
   sportCategory: string;
+  tag?: string;
+  teamCategory?: string;
+  /** Multi-select category filter (admin views); each value is sent as its own teamCategory param. */
+  teamCategories?: string[];
   searchTerm: string;
   includeArchived?: boolean;
   page?: number;
@@ -38,28 +47,27 @@ export interface PaginatedNewsResponse {
   pagination: PaginationInfo;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
-
 export async function newsService(params?: Partial<NewsParameters>): Promise<PaginatedNewsResponse | NewsArticleDto[]> {
   try {
     const queryParams = new URLSearchParams();
 
     if (params?.category) queryParams.append("category", params.category);
     if (params?.sportCategory) queryParams.append("sportCategory", params.sportCategory);
+    if (params?.tag) queryParams.append("tag", params.tag);
+    if (params?.teamCategory) queryParams.append("teamCategory", params.teamCategory);
+    params?.teamCategories?.forEach(category => queryParams.append("teamCategory", category));
     if (params?.searchTerm) queryParams.append("search", params.searchTerm);
     if (params?.includeArchived !== undefined) queryParams.append("includeArchived", params.includeArchived.toString());
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.pageSize) queryParams.append("pageSize", params.pageSize.toString());
 
     const queryString = queryParams.toString();
-    const response = await fetch(`${API_URL}/News${queryString ? `?${queryString}` : ''}`, {
+    const response = await authFetch(`${API_URL}/News${queryString ? `?${queryString}` : ''}`, {
       method: "GET"
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.log("Upload error response:", errorText);
-      throw new Error("Failed to fetch news.");
+      throw new Error(await parseErrorResponse(response, 'Failed to fetch news.'));
     }
 
     // The backend returns the data directly, not wrapped in ApiResponse
@@ -74,7 +82,7 @@ export async function newsService(params?: Partial<NewsParameters>): Promise<Pag
 
 export async function archiveNewsService(id: string) {
   try {
-    const response = await fetch(`${API_URL}/News/${id}/archive`, {
+    const response = await authFetch(`${API_URL}/News/${id}/archive`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
@@ -82,9 +90,7 @@ export async function archiveNewsService(id: string) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.log("Archive error response:", errorText);
-      throw new Error("Failed to archive news article.");
+      throw new Error(await parseErrorResponse(response, 'Failed to archive news article.'));
     }
 
     // The backend returns the data directly, not wrapped in ApiResponse
@@ -99,7 +105,7 @@ export async function archiveNewsService(id: string) {
 
 export async function restoreNewsService(id: string) {
   try {
-    const response = await fetch(`${API_URL}/News/${id}/restore`, {
+    const response = await authFetch(`${API_URL}/News/${id}/restore`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
@@ -107,9 +113,7 @@ export async function restoreNewsService(id: string) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.log("Restore error response:", errorText);
-      throw new Error("Failed to restore news article.");
+      throw new Error(await parseErrorResponse(response, 'Failed to restore news article.'));
     }
 
     // The backend returns the data directly, not wrapped in ApiResponse
@@ -124,7 +128,7 @@ export async function restoreNewsService(id: string) {
 
 export async function deleteNewsService(id: string) {
   try {
-    const response = await fetch(`${API_URL}/News/${id}`, {
+    const response = await authFetch(`${API_URL}/News/${id}`, {
       method: "DELETE",
       headers: {
         'Content-Type': 'application/json',
@@ -132,9 +136,7 @@ export async function deleteNewsService(id: string) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.log("Delete error response:", errorText);
-      throw new Error("Failed to delete news article.");
+      throw new Error(await parseErrorResponse(response, 'Failed to delete news article.'));
     }
 
     // The backend returns a boolean wrapped in ApiResponse
@@ -147,9 +149,43 @@ export async function deleteNewsService(id: string) {
   }
 }
 
+export async function getNewsTags(): Promise<string[]> {
+  try {
+    const response = await authFetch(`${API_URL}/News/tags`, { method: 'GET' });
+    if (!response.ok) {
+      return [];
+    }
+    const payload: { data?: string[] } | string[] = await response.json();
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+    return payload.data ?? [];
+  } catch (error) {
+    console.error('Failed to fetch news tags:', error);
+    return [];
+  }
+}
+
+export async function getRecentNewsArticles(count = 4): Promise<NewsArticleDto[]> {
+  try {
+    const response = await authFetch(`${API_URL}/News/recent?count=${count}`, { method: 'GET' });
+    if (!response.ok) {
+      return [];
+    }
+    const payload: { data?: NewsArticleDto[] } | NewsArticleDto[] = await response.json();
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+    return payload.data ?? [];
+  } catch (error) {
+    console.error('Failed to fetch recent news:', error);
+    return [];
+  }
+}
+
 export async function getMainNewsArticle() {
   try {
-    const response = await fetch(`${API_URL}/News/main-news`, { method: 'GET' });
+    const response = await authFetch(`${API_URL}/News/main-news`, { method: 'GET' });
     if (!response.ok) {
       return null;
     }

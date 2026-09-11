@@ -1,0 +1,611 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+// Football landing implemented from the Figma "Summary" design:
+// full-width photo banner with season-year pill navigation, light content
+// area with info cards on the left and league standings / upcoming match
+// cards on the right.
+
+.football-page {
+  width: 100%;
+  background: $color-neutral-light-grey;
+
+  &__state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    gap: map.get($spacing, 'md');
+    color: $color-blue-deep;
+
+    &--inline {
+      min-height: 180px;
+    }
+  }
+}
+
+// ── Banner ────────────────────────────────────────────────
+.fb-banner {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  background: $color-brand-light;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+
+  // Crop values come from the Figma design: only the lower-right floor area
+  // of the source photo is shown, heavily faded over the blue fill.
+  &__image {
+    position: absolute;
+    width: 154.25%;
+    height: 365.22%;
+    max-width: none;
+    left: -54.28%;
+    top: -265.15%;
+    object-fit: cover;
+    opacity: 0.2;
+    pointer-events: none;
+  }
+
+  &__content {
+    position: relative;
+    width: 100%;
+    max-width: 920px;
+    padding: map.get($spacing, 'md') map.get($spacing, 'md') 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 48px;
+    line-height: 64px;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: $color-neutral-white;
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: $color-neutral-white;
+    border-radius: 20px;
+    padding: 0 14px 0 16px;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease;
+
+    &:hover {
+      box-shadow: 0 0 0 3px rgba($color-neutral-white, 0.25);
+    }
+
+    &:focus-within {
+      box-shadow: 0 0 0 3px rgba($color-neutral-white, 0.4);
+    }
+  }
+
+  &__select-label {
+    font-family: $font-family-link;
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: map.get($font-weights, 'regular');
+    color: $color-neutral-dark-grey;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  &__select {
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 8px 20px 8px 0;
+    font-family: $font-family-link;
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-neutral-black;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__select-chevron {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-top: -6px;
+    border-right: 2px solid $color-neutral-black;
+    border-bottom: 2px solid $color-neutral-black;
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+}
+
+// ── Content layout ────────────────────────────────────────
+.fb-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: map.get($spacing, 'lg') map.get($spacing, 'md') map.get($spacing, 'xl');
+}
+
+.fb-container {
+  width: 100%;
+  max-width: 920px;
+}
+
+.fb-columns {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+
+  &__main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  &__side {
+    width: 323px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
+// ── Info cards (left column) ──────────────────────────────
+.fb-info-card {
+  background: $color-white;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 22px;
+    line-height: 32px;
+    text-transform: uppercase;
+    color: $color-blue-deep;
+    overflow-wrap: break-word;
+  }
+
+  p {
+    margin: 0;
+    font-family: $font-family-body;
+    font-size: 16px;
+    line-height: 24px;
+    color: $color-neutral-black;
+    overflow-wrap: break-word;
+  }
+
+  &__contact {
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &__link-button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-family: $font-family-body;
+    font-size: 16px;
+    line-height: 24px;
+    color: $color-blue-secondary-muted;
+    cursor: pointer;
+    text-decoration: underline;
+
+    &:hover {
+      color: $color-blue-deep;
+    }
+  }
+}
+
+// ── Standings card (right column) ─────────────────────────
+.fb-standings-card {
+  background: $color-neutral-white;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: $box-shadow-drop-1;
+
+  &__title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 18px;
+    line-height: 32px;
+    text-transform: uppercase;
+    color: $color-blue-darkest;
+    overflow-wrap: break-word;
+  }
+
+  &__links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    a {
+      font-family: $font-family-body;
+      font-size: 14px;
+      line-height: 24px;
+      color: $color-blue-secondary-muted;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__label {
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 16px;
+    line-height: 24px;
+    text-transform: uppercase;
+    color: $color-blue-darkest;
+  }
+
+  &__skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__skeleton-row {
+    height: 32px;
+    border-radius: 4px;
+    background: linear-gradient(
+      90deg,
+      rgba($color-blue-deep, 0.06) 0%,
+      rgba($color-blue-deep, 0.14) 50%,
+      rgba($color-blue-deep, 0.06) 100%
+    );
+    background-size: 200% 100%;
+    animation: fb-shimmer 1.1s ease-in-out infinite;
+  }
+
+  &__empty {
+    margin: 0;
+    font-family: $font-family-body;
+    font-size: 14px;
+    line-height: 24px;
+    color: $color-neutral-dark-grey;
+  }
+
+  &__full-link {
+    align-self: flex-end;
+    font-family: $font-family-body;
+    font-size: 14px;
+    line-height: 24px;
+    color: $color-blue-deep;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  // Dark (active league) variant per the Figma design
+  &--dark {
+    background: $color-brand-deep;
+    box-shadow: none;
+
+    .fb-standings-card__title,
+    .fb-standings-card__label {
+      color: $color-neutral-white;
+    }
+
+    .fb-standings-card__links a {
+      color: $color-neutral-white;
+    }
+
+    .fb-standings-card__empty {
+      color: rgba($color-neutral-white, 0.7);
+    }
+
+    .fb-standings-card__full-link {
+      color: $color-neutral-white;
+    }
+
+    .fb-standings-card__skeleton-row {
+      background: linear-gradient(
+        90deg,
+        rgba($color-white, 0.06) 0%,
+        rgba($color-white, 0.16) 50%,
+        rgba($color-white, 0.06) 100%
+      );
+      background-size: 200% 100%;
+    }
+
+    .fb-standings-table__head {
+      background: $color-gradient-blue;
+      color: $color-neutral-white;
+    }
+
+    .fb-standings-table__row {
+      border-bottom-color: rgba($color-neutral-medium-grey, 0.35);
+      color: $color-neutral-white;
+
+      &:hover {
+        background: rgba($color-white, 0.06);
+      }
+    }
+  }
+}
+
+// ── Standings table ───────────────────────────────────────
+.fb-standings-table {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    padding: 4px 16px;
+    border-radius: 4px;
+    background: $color-banner-bg;
+    color: $color-neutral-white;
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'bold');
+    font-size: 12px;
+    line-height: 24px;
+
+    .fb-standings-table__team {
+      font-size: 14px;
+    }
+
+    .fb-standings-table__rank {
+      font-size: 14px;
+    }
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 4px 16px;
+    border-bottom: 1px solid $color-neutral-medium-grey;
+    font-family: $font-family-body;
+    font-size: 12px;
+    line-height: 16px;
+    color: $color-neutral-black;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: rgba($color-blue-secondary, 0.06);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__rank {
+    width: 32px;
+    flex-shrink: 0;
+    font-weight: map.get($font-weights, 'bold');
+  }
+
+  &__team {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: map.get($font-weights, 'semibold');
+  }
+
+  &__team-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__num {
+    width: 40px;
+    flex-shrink: 0;
+    text-align: center;
+
+    &--pts {
+      font-weight: map.get($font-weights, 'bold');
+    }
+  }
+}
+
+.fb-team-logo {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  object-fit: contain;
+
+  &--empty {
+    display: inline-block;
+    border-radius: 50%;
+    background: rgba($color-neutral-dark-grey, 0.3);
+  }
+}
+
+// ── Upcoming matches card ─────────────────────────────────
+.fb-upcoming-card {
+  background: $color-neutral-white;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: $box-shadow-drop-1;
+
+  &__title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: 18px;
+    line-height: 32px;
+    text-transform: uppercase;
+    color: $color-blue-darkest;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0 8px 16px;
+    border-bottom: 1px solid $color-neutral-medium-grey;
+    text-decoration: none;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: rgba($color-blue-secondary, 0.06);
+    }
+  }
+
+  &__datetime {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    font-family: $font-family-body;
+    font-size: 12px;
+    line-height: 16px;
+    color: $color-neutral-dark-grey;
+
+    span {
+      width: 40px;
+      text-align: center;
+    }
+  }
+
+  &__teams {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__team {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: $font-family-body;
+    font-size: 12px;
+    line-height: 16px;
+    color: $color-neutral-black;
+
+    .fb-team-logo {
+      width: 16px;
+      height: 16px;
+    }
+
+    span:last-child {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+// ── Pagination & misc ─────────────────────────────────────
+.fb-pagination {
+  display: flex;
+  justify-content: center;
+
+  .pagination-container {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+.fb-retry-btn {
+  background: $color-blue-secondary;
+  color: $color-white;
+  border: none;
+  padding: map.get($spacing, 'sm') map.get($spacing, 'lg');
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: map.get($font-weights, 'semibold');
+
+  &:hover {
+    background: $color-blue-secondary-muted;
+  }
+}
+
+@keyframes fb-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────
+@media (max-width: map.get($breakpoints, 'desktop')) {
+  .fb-columns {
+    flex-direction: column;
+
+    &__side {
+      width: 100%;
+      order: -1;
+    }
+  }
+}
+
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .fb-banner {
+    min-height: 220px;
+
+    &__content {
+      padding: map.get($spacing, 'md') map.get($spacing, 'md') map.get($spacing, 'lg');
+    }
+
+    &__title {
+      font-size: 32px;
+      line-height: 44px;
+    }
+  }
+
+  .fb-content {
+    padding: map.get($spacing, 'md') map.get($spacing, 'sm') map.get($spacing, 'lg');
+  }
+
+  .fb-info-card,
+  .fb-standings-card,
+  .fb-upcoming-card {
+    padding: map.get($spacing, 'md');
+  }
+}

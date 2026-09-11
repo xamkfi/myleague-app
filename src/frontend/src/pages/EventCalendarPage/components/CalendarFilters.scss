@@ -1,0 +1,215 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.calendar-filters {
+  background: $color-neutral-white;
+  border-radius: map.get($border-radius, 'lg');
+  box-shadow: $box-shadow-drop-1;
+  padding: map.get($spacing, 'md');
+
+  &__mobile-toggle {
+    display: none;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    background: none;
+    border: none;
+    padding: map.get($spacing, 'xs') 0;
+    cursor: pointer;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-text-primary;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: $color-blue-medium;
+    color: $color-white;
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'bold');
+    margin-left: map.get($spacing, 'xs');
+  }
+
+  &__chevron {
+    display: inline-block;
+    transition: transform $transition-default;
+    font-size: 1.25rem;
+    margin-left: auto;
+
+    &--open {
+      transform: rotate(90deg);
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'md');
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__label {
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid $color-border;
+    border-radius: 999px;
+    background: $color-neutral-white;
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'medium');
+    cursor: pointer;
+    transition: background $transition-default, border-color $transition-default, color $transition-default;
+
+    &:hover {
+      border-color: $color-blue-medium;
+      background: rgba($color-blue-light, 0.08);
+    }
+
+    &--active {
+      background: $color-blue-medium;
+      color: $color-white;
+      border-color: $color-blue-medium;
+
+      &:hover {
+        background: $color-blue-deep;
+        border-color: $color-blue-deep;
+      }
+
+      .calendar-filters__chip-dot {
+        border-color: $color-white;
+      }
+    }
+  }
+
+  &__chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+
+    &--scheduled {
+      background: $color-blue-medium;
+    }
+
+    &--live {
+      background: $color-red-primary;
+    }
+
+    &--completed {
+      background: $color-text-muted;
+    }
+  }
+
+  &__chip--active &__chip-dot {
+    &--scheduled {
+      background: $color-white;
+    }
+
+    &--live {
+      background: $color-red-light;
+    }
+
+    &--completed {
+      background: rgba($color-white, 0.7);
+    }
+  }
+
+  &__select {
+    width: 100%;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'md');
+    background: $color-neutral-white;
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+    cursor: pointer;
+    transition: border-color $transition-default;
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-medium;
+      box-shadow: 0 0 0 2px rgba($color-blue-medium, 0.15);
+    }
+  }
+
+  &__input {
+    width: 100%;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'md');
+    background: $color-neutral-white;
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+    transition: border-color $transition-default;
+
+    &::placeholder {
+      color: $color-neutral-medium-grey;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-medium;
+      box-shadow: 0 0 0 2px rgba($color-blue-medium, 0.15);
+    }
+  }
+
+  &__clear {
+    align-self: flex-start;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    background: none;
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'md');
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'medium');
+    cursor: pointer;
+    transition: background $transition-default, color $transition-default;
+
+    &:hover {
+      background: $color-neutral-light-grey;
+      color: $color-text-primary;
+    }
+  }
+}
+
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .calendar-filters {
+    &__mobile-toggle {
+      display: flex;
+    }
+
+    &__body {
+      display: none;
+      padding-top: map.get($spacing, 'sm');
+
+      &--open {
+        display: flex;
+      }
+    }
+  }
+}

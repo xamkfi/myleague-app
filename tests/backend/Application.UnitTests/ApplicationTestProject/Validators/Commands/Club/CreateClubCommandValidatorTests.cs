@@ -1,5 +1,5 @@
-using Application.Commands.Clubs;
-using Application.Validators.Commands.Club;
+using Application.Features.Common.Clubs.Commands;
+using Application.Features.Common.Clubs.Validators;
 using FluentValidation.TestHelper;
 using System;
 using Xunit;

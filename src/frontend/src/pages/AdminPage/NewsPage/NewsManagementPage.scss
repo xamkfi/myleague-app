@@ -18,37 +18,6 @@
       font-weight: 600;
     }
 
-    .create-new-button {
-      background-color: #198754;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-
-      &:hover {
-        background-color: #157347;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
-
-      &:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-
-      &::before {
-        content: '+';
-        font-size: 1.25rem;
-        font-weight: bold;
-      }
-    }
   }
 
   .news-content {
@@ -84,7 +53,7 @@
         text-align: center;
       }
 
-      .create-new-button {
+      .btn {
         width: 100%;
         justify-content: center;
       }

@@ -45,6 +45,7 @@ public interface IFloorballTeamRepository
         string searchTerm = "",
         Guid? clubId = null,
         Guid? divisionId = null,
+        IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? teamCategories = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>
@@ -81,18 +82,18 @@ public interface IFloorballTeamRepository
     Task<IEnumerable<FloorballTeam>> GetByDivisionAsync(Guid divisionId);
     
     /// <summary>
-    /// Gets floorball teams participating in a season
+    /// Gets floorball teams participating in a competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
-    /// <returns>A collection of floorball teams in the season</returns>
-    Task<IEnumerable<FloorballTeam>> GetBySeasonIdAsync(Guid seasonId);
+    /// <param name="competitionId">The competition ID</param>
+    /// <returns>A collection of floorball teams in the competition</returns>
+    Task<IEnumerable<FloorballTeam>> GetByCompetitionIdAsync(Guid competitionId);
     
     /// <summary>
-    /// Gets the team standings for a season
+    /// Gets the team standings for a competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
-    /// <returns>Teams ordered by their standing in the season</returns>
-    Task<IEnumerable<FloorballTeam>> GetStandingsAsync(Guid seasonId);
+    /// <param name="competitionId">The competition ID</param>
+    /// <returns>Teams ordered by their standing in the competition</returns>
+    Task<IEnumerable<FloorballTeam>> GetStandingsAsync(Guid competitionId);
     
     /// <summary>
     /// Adds a new floorball team
@@ -166,4 +167,14 @@ public interface IFloorballTeamRepository
         string? searchTerm = null,
         Domain.Enums.Common.TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns true when any team belongs to the club.
+    /// </summary>
+    Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns true when any team uses the division.
+    /// </summary>
+    Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default);
 } 

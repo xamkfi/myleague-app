@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useDivisions } from '../../../../../hooks/useDivisions';
+import { useInProgressMatches } from '../../../../../hooks/useInProgressMatches';
 import type { FloorballSeasonDto } from '../../../../../api/floorball/floorballSeasonService';
+import AdminSeasonsTable from '../../../../../components/admin/AdminSeasonsTable';
 
 interface SeasonsTableProps {
   seasons: FloorballSeasonDto[];
@@ -17,130 +19,73 @@ export const SeasonsTable = ({
   onDelete,
   onActivateToggle,
   onComplete,
-  operationLoading
+  operationLoading,
 }: SeasonsTableProps) => {
   const { t } = useTranslation();
   const { divisions } = useDivisions();
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString();
-    } catch {
-      return dateString;
-    }
-  };
+  const { countByCompetitionId } = useInProgressMatches();
 
-  const getStatusBadge = (season: FloorballSeasonDto) => {
-    if (season.isCompleted) {
-      return <span className="status-badge completed">{t('floorball.seasons.status.completed', 'Completed')}</span>;
-    }
-    if (season.isActive) {
-      return <span className="status-badge active">{t('floorball.seasons.status.active', 'Active')}</span>;
-    }
-    return <span className="status-badge inactive">{t('floorball.seasons.status.inactive', 'Inactive')}</span>;
-  };
+  const byId = new Map(seasons.map((season) => [season.id, season]));
 
   return (
-      <table className="seasons-table">
-        <thead>
-          <tr>
-            <th>{t('floorball.seasons.fields.name', 'Name')}</th>
-            <th>{t('floorball.seasons.fields.division', 'Division')}</th>
-            <th>{t('floorball.seasons.fields.startDate', 'Starts')}</th>
-            <th>{t('floorball.seasons.fields.endDate', 'Ends')}</th>
-            <th>{t('floorball.seasons.fields.teams', 'Teams')}</th>
-            <th>{t('floorball.seasons.fields.status', 'Status')}</th>
-            <th>{t('common.actions', 'Actions')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {seasons.map((season) => (
-            <tr key={season.id}>
-              <td>
-                <div className="season-name">
-                  <strong>{season.name}</strong>
-                </div>
-              </td>
-              <td>
-                <div className="divisions-list">
-                  {season.seasonDivisions && season.seasonDivisions.length > 0 ? (
-                    season.seasonDivisions.map((seasonDivision) => {
-                      const division = divisions.find(d => d.id === seasonDivision.divisionId);
-                      return (
-                        <span 
-                          key={seasonDivision.divisionId} 
-                          className={`division-badge division-${seasonDivision.divisionId.toLowerCase()}`}
-                        >
-                          {division?.name || seasonDivision.divisionId}
-                        </span>
-                      );
-                    })
-                  ) : (
-                    <span className="no-divisions">{t('floorball.seasons.noDivisions', 'No divisions')}</span>
-                  )}
-                </div>
-              </td>
-              <td>{formatDate(season.startDate)}</td>
-              <td>{formatDate(season.endDate)}</td>
-              <td>
-                <span className="teams-count">
-                  {season.teams?.length || 0} {t('floorball.seasons.teamsCount', 'teams')}
-                </span>
-              </td>
-              <td>{getStatusBadge(season)}</td>
-              <td>
-                <div className="actions-group">
-                  <button
-                    className="btn btn-sm btn-outline-primary"
-                    onClick={() => onEdit(season)}
-                    title={t('common.edit', 'Edit')}
-                    disabled={operationLoading === season.id}
-                  >
-                    ✏️
-                  </button>
-                  
-                  {!season.isCompleted && (
-                    <button
-                      className={`btn btn-sm ${season.isActive ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                      onClick={() => onActivateToggle(season)}
-                      title={season.isActive ? t('floorball.seasons.deactivate', 'Deactivate') : t('floorball.seasons.activate', 'Activate')}
-                      disabled={operationLoading === season.id}
-                    >
-                      {operationLoading === season.id ? (
-                        <i className="fas fa-spinner fa-spin"></i>
-                      ) : (
-                        season.isActive ? '⏸️' : '▶️'
-                      )}
-                    </button>
-                  )}
-                  
-                  {season.isActive && !season.isCompleted && (
-                    <button
-                      className="btn btn-sm btn-outline-info"
-                      onClick={() => onComplete(season)}
-                      title={t('floorball.seasons.complete', 'Complete')}
-                      disabled={operationLoading === season.id}
-                    >
-                      {operationLoading === season.id ? (
-                        <i className="fas fa-spinner fa-spin"></i>
-                      ) : (
-                        '✅'
-                      )}
-                    </button>
-                  )}
-                  
-                  <button
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={() => onDelete(season)}
-                    title={t('common.delete', 'Delete')}
-                    disabled={operationLoading === season.id}
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <AdminSeasonsTable
+      sport="floorball"
+      seasons={seasons.map((season) => ({
+        id: season.id,
+        name: season.name,
+        teamCategory: season.teamCategory,
+        startDate: season.startDate,
+        endDate: season.endDate,
+        teamCount: season.teams?.length || 0,
+        isActive: season.isActive,
+        isCompleted: season.isCompleted,
+        divisions: (season.seasonDivisions ?? []).map((seasonDivision) => ({
+          id: seasonDivision.divisionId,
+          name: divisions.find((division) => division.id === seasonDivision.divisionId)?.name
+            || seasonDivision.divisionId,
+        })),
+      }))}
+      labels={{
+        name: t('floorball.seasons.fields.name', 'Name'),
+        division: t('floorball.seasons.fields.division', 'Division'),
+        startDate: t('floorball.seasons.fields.startDate', 'Starts'),
+        endDate: t('floorball.seasons.fields.endDate', 'Ends'),
+        teams: t('floorball.seasons.fields.teams', 'Teams'),
+        status: t('floorball.seasons.fields.status', 'Status'),
+        completed: t('floorball.seasons.status.completed', 'Completed'),
+        active: t('floorball.seasons.status.active', 'Active'),
+        inactive: t('floorball.seasons.status.inactive', 'Inactive'),
+        deactivate: t('floorball.seasons.deactivate', 'Deactivate'),
+        activate: t('floorball.seasons.activate', 'Activate'),
+        complete: t('floorball.seasons.complete', 'Complete Season'),
+        noDivisions: t('floorball.seasons.noDivisions', 'No divisions'),
+        teamsCount: t('floorball.seasons.teamsCount', 'teams'),
+        matchesInProgress: (count) => t(
+          'floorball.seasons.matchesInProgress',
+          '{{count}} match(es) in progress',
+          { count },
+        ),
+        openEdit: t('floorball.seasons.actions.openEdit', 'Open and edit season'),
+        actionsMenu: t('floorball.seasons.actions.menu', 'Season actions menu'),
+      }}
+      liveCounts={countByCompetitionId}
+      onEdit={(seasonId) => {
+        const season = byId.get(seasonId);
+        if (season) onEdit(season);
+      }}
+      onDelete={(seasonId) => {
+        const season = byId.get(seasonId);
+        if (season) onDelete(season);
+      }}
+      onActivateToggle={(seasonId) => {
+        const season = byId.get(seasonId);
+        if (season) onActivateToggle(season);
+      }}
+      onComplete={(seasonId) => {
+        const season = byId.get(seasonId);
+        if (season) onComplete(season);
+      }}
+      operationLoading={operationLoading}
+    />
   );
-}; 
+};

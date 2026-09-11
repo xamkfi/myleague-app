@@ -7,6 +7,7 @@ import Button from '../../../components/Button/Button';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import AddIcon from '../../../assets/basicIcons/add.svg';
 import { divisionService } from '../../../api/common/divisionService';
+import { mapDeletionError } from '../../../utils/mapDeletionError';
 import type { DivisionType } from '../../../types/common/divisionType';
 import type { DivisionStatusFilter } from '../../../types/common/divisionUiTypes';
 import { ACTIVE_SPORTS, SportsCategory, SPORT_LABELS } from '../../../types/common/sports';
@@ -28,6 +29,7 @@ const DivisionsPage = () => {
   const [divisionToDelete, setDivisionToDelete] = useState<DivisionType | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const loadDivisions = useCallback(async () => {
     try {
@@ -121,13 +123,66 @@ const DivisionsPage = () => {
     } catch (err) {
       console.error('Failed to delete division', err);
       setError(
-        err instanceof Error
-          ? err.message
-          : t('admin.divisions.errors.delete', 'Failed to delete division. Please try again.'),
+        mapDeletionError(err, t) ??
+          t('admin.divisions.errors.delete', 'Failed to delete division. Please try again.'),
       );
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    setSelectedIds(new Set(filteredDivisions.map((d) => d.id)));
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkActivate = async () => {
+    for (const id of selectedIds) {
+      const division = divisions.find((d) => d.id === id);
+      if (division && !division.isActive) {
+        await handleToggleStatus(division);
+      }
+    }
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDeactivate = async () => {
+    for (const id of selectedIds) {
+      const division = divisions.find((d) => d.id === id);
+      if (division && division.isActive) {
+        await handleToggleStatus(division);
+      }
+    }
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    for (const id of selectedIds) {
+      try {
+        await divisionService.delete(id);
+        setDivisions((prev) => prev.filter((d) => d.id !== id));
+      } catch (err) {
+        console.error('Failed to delete division', err);
+        setError(
+          mapDeletionError(err, t) ??
+            t('admin.divisions.errors.delete', 'Failed to delete division. Please try again.'),
+        );
+        return;
+      }
+    }
+    setSelectedIds(new Set());
   };
 
   if (loading) {
@@ -218,6 +273,13 @@ const DivisionsPage = () => {
           onDelete={(division) => openDeleteModal(division)}
           onToggleStatus={(division) => handleToggleStatus(division)}
           statusUpdatingId={statusUpdatingId}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onSelectAll={handleSelectAll}
+          onClearSelection={handleClearSelection}
+          onBulkDelete={handleBulkDelete}
+          onBulkActivate={handleBulkActivate}
+          onBulkDeactivate={handleBulkDeactivate}
         />
 
         {filteredDivisions.length === 0 && (

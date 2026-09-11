@@ -1,0 +1,65 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.event-agenda-list {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'md');
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__date-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    background: $color-neutral-light-grey;
+    border-radius: map.get($border-radius, 'md');
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  &__date-label {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-text-primary;
+    text-transform: capitalize;
+  }
+
+  &__event-count {
+    font-size: map.get($font-sizes, 'xs');
+    color: $color-text-muted;
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &__events {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
+    text-align: center;
+  }
+
+  &__empty-icon {
+    color: $color-neutral-medium-grey;
+    margin-bottom: map.get($spacing, 'md');
+  }
+
+  &__empty-text {
+    font-size: map.get($font-sizes, 'md');
+    color: $color-text-muted;
+    margin: 0;
+  }
+}

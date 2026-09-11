@@ -1,0 +1,137 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../../../../styles/common' as *;
+
+// Admin roster section - compact styles for admin team players list
+.admin-roster-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map.get($spacing, "lg");
+  width: 100%;
+}
+
+.admin-roster-group {
+  flex: 1;
+  min-width: 280px;
+  max-width: 400px;
+}
+
+.admin-roster-position-header {
+  font-size: map.get($font-sizes, "base");
+  font-weight: map.get($font-weights, "bold");
+  color: $color-text-primary;
+  margin-bottom: map.get($spacing, "xs");
+}
+
+.admin-roster-table-header {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, "xs");
+  padding: map.get($spacing, "xxs") 0;
+  font-size: map.get($font-sizes, "xs");
+  font-weight: map.get($font-weights, "semi-bold");
+  color: $color-text-muted;
+  border-bottom: 1px solid $color-border;
+  margin-bottom: map.get($spacing, "xxs");
+}
+
+.admin-roster-players {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-roster-player {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, "xs");
+  padding: map.get($spacing, "xxs") 0;
+  font-size: map.get($font-sizes, "sm");
+  color: $color-text-primary;
+  border-bottom: 1px solid rgba($color-border, 0.5);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  &.inactive {
+    opacity: 0.5;
+    text-decoration: line-through;
+  }
+}
+
+// Column widths
+.col-jersey {
+  width: 28px;
+  text-align: center;
+  font-weight: map.get($font-weights, "medium");
+  color: $color-text-muted;
+  flex-shrink: 0;
+}
+
+.col-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.col-stat {
+  width: 32px;
+  text-align: center;
+  flex-shrink: 0;
+  font-size: map.get($font-sizes, "xs");
+  color: $color-text-muted;
+}
+
+.admin-roster-player .col-stat {
+  color: $color-text-primary;
+}
+
+// ===== RESPONSIVE STYLES =====
+
+@media (max-width: 768px) {
+  .admin-roster-section {
+    gap: map.get($spacing, "md");
+  }
+
+  .admin-roster-group {
+    min-width: 240px;
+    max-width: 100%;
+  }
+
+  .admin-roster-position-header {
+    font-size: map.get($font-sizes, "sm");
+  }
+
+  .admin-roster-player {
+    font-size: map.get($font-sizes, "xs");
+  }
+
+  .col-stat {
+    width: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-roster-section {
+    flex-direction: column;
+    gap: map.get($spacing, "sm");
+  }
+
+  .admin-roster-group {
+    min-width: 100%;
+  }
+
+  .col-jersey {
+    width: 24px;
+  }
+
+  .col-stat {
+    width: 24px;
+  }
+}

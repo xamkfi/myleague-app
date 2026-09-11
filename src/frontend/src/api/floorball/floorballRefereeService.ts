@@ -1,6 +1,6 @@
 import type { ApiResponse, PaginatedApiResponse } from '../../types/floorball/floorballTypes';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { authFetch } from '../utils/authFetch';
+import { API_URL } from '../../constants/config';
 
 // Referee types based on the backend DTOs
 export interface FloorballRefereeDto {
@@ -68,7 +68,7 @@ export const floorballRefereeService = {
       console.log('Fetching referees from URL:', url);
       console.log('Request params:', params);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       console.log('Response status:', response.status);
       console.log('Response ok:', response.ok);
@@ -112,7 +112,7 @@ export const floorballRefereeService = {
       const url = `${API_URL}/FloorballReferee/${id}`;
       console.log('Fetching referee from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -140,7 +140,7 @@ export const floorballRefereeService = {
     try {
       console.log('Creating referee for person ID:', data.PersonId);
       
-      const response = await fetch(`${API_URL}/FloorballReferee`, {
+      const response = await authFetch(`${API_URL}/FloorballReferee`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -179,7 +179,7 @@ export const floorballRefereeService = {
       console.log('Updating referee with ID:', id);
       console.log('Update data:', data);
       
-      const response = await fetch(`${API_URL}/FloorballReferee/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballReferee/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -217,7 +217,7 @@ export const floorballRefereeService = {
     try {
       console.log('Deleting referee with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballReferee/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballReferee/${id}`, {
         method: 'DELETE',
       });
       

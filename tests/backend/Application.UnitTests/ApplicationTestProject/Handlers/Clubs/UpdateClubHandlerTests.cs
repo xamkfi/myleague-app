@@ -1,8 +1,8 @@
-using Application.Commands.Clubs;
 using Application.Common;
-using Application.DTOs.Common;
-using Application.Handlers.Clubs;
-using Application.Mappings.Common;
+using Application.Features.Common.Clubs.Commands;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Clubs.Handlers;
+using Application.Features.Common.Clubs.Mappings;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;

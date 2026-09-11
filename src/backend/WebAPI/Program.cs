@@ -1,22 +1,49 @@
+using System.Text;
 using Application.Configuration;
 using Application.DependencyInjections;
 using MyLeague.Infrastructure.DependencyInjections;
 using MyLeague.Infrastructure.SignalR;
 using WebAPI.Middlewares;
 using WebAPI.DependencyInjections;
+using WebAPI.Services;
 using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
-builder.Host.UseSerilog((context, configuration) =>
-    configuration.ReadFrom.Configuration(context.Configuration));
+// Register Application Insights telemetry only when a connection string is supplied.
+// Source: APPLICATIONINSIGHTS_CONNECTION_STRING env var (set by the App Service app
+// settings via Bicep) or the ApplicationInsights:ConnectionString config key.
+// Skipping registration in unconfigured environments (CI smoke tests, local Docker,
+// developer machines without AI) keeps startup robust and lets the Serilog
+// ApplicationInsights sink no-op cleanly when it cannot resolve TelemetryConfiguration.
+string? appInsightsConnectionString =
+    builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+    ?? builder.Configuration["ApplicationInsights:ConnectionString"];
+
+if (!string.IsNullOrWhiteSpace(appInsightsConnectionString))
+{
+    builder.Services.AddApplicationInsightsTelemetry(options =>
+    {
+        options.ConnectionString = appInsightsConnectionString;
+    });
+}
+
+// Configure Serilog. The ApplicationInsights sink reads TelemetryConfiguration from
+// the service provider via ReadFrom.Services(), so this MUST come after the AI
+// registration above. When AI is not registered, the sink silently writes nowhere.
+builder.Host.UseSerilog((context, services, configuration) =>
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services));
 
 // Add services to the container
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -31,8 +58,21 @@ builder.Services.AddEndpointsApiExplorer();
 // Add OpenAPI and Scalar configuration using thread-safe extension method
 builder.Services.AddOpenApiConfiguration();
 
-// Add CORS configuration using extension method
-builder.Services.AddCorsConfiguration();
+// Add CORS for local development (Azure handles CORS in production via Portal/Bicep)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Development", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:4200",
+                "http://127.0.0.1:5173")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
 
 // Configure pagination options
 builder.Services.Configure<PaginationConfiguration>(
@@ -42,14 +82,84 @@ builder.Services.Configure<PaginationConfiguration>(
 builder.Services.Configure<PeriodDurationConfiguration>(
     builder.Configuration.GetSection(PeriodDurationConfiguration.SectionName));
 
+// Configure JWT options
+builder.Services.Configure<JwtConfiguration>(
+    builder.Configuration.GetSection(JwtConfiguration.SectionName));
+
+// Configure login code options
+builder.Services.Configure<LoginCodeConfiguration>(
+    builder.Configuration.GetSection(LoginCodeConfiguration.SectionName));
+
+// Configure Azure Communication Services options
+builder.Services.Configure<AzureCommunicationServicesConfiguration>(
+    builder.Configuration.GetSection(AzureCommunicationServicesConfiguration.SectionName));
+
+// Configure Frontend options
+builder.Services.Configure<FrontendConfiguration>(
+    builder.Configuration.GetSection(FrontendConfiguration.SectionName));
+
+// Add JWT authentication
+const string JwtSecretFallback = "development-secret-key-that-is-at-least-32-characters-long!!";
+builder.Services.PostConfigure<JwtConfiguration>(options =>
+{
+    if (string.IsNullOrWhiteSpace(options.SecretKey))
+    {
+        options.SecretKey = JwtSecretFallback;
+        Log.Warning("JWT SecretKey is not set; using fallback. Set Jwt:SecretKey or Jwt__SecretKey for production.");
+    }
+});
+
+JwtConfiguration jwtConfig = builder.Configuration
+    .GetSection(JwtConfiguration.SectionName)
+    .Get<JwtConfiguration>() ?? new JwtConfiguration();
+if (string.IsNullOrWhiteSpace(jwtConfig.SecretKey))
+    jwtConfig.SecretKey = JwtSecretFallback;
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtConfig.Issuer,
+        ValidAudience = jwtConfig.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey)),
+        ClockSkew = TimeSpan.FromMinutes(1)
+    };
+
+    // SignalR WebSocket transport cannot send HTTP headers, so tokens arrive via query string
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            string? accessToken = context.Request.Query["access_token"];
+            PathString path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api/hubs"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
+});
+
+builder.Services.AddAuthorization();
+
+// Register WebAPI-layer services
+builder.Services.AddSingleton<IMatchEventRateLimiter, MatchEventRateLimiter>();
+
 // Register application services
 builder.Services.AddApplication();
 
 // Register infrastructure services 
 builder.Services.AddInfrastructure(builder.Configuration);
-
-// Add Health Check UI configuration using extension method
-builder.Services.AddHealthCheckUIConfiguration(builder.Configuration);
 
 WebApplication app = builder.Build();
 
@@ -75,8 +185,13 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 // Use built-in middleware
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
+// Use code-level CORS only in development; Azure handles CORS in production
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("Development");
+}
 app.UseStaticFiles();
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Map controllers
@@ -130,18 +245,13 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 // Map liveness check
 app.MapGet("/health/live", () => "Alive");
 
-// Map Health Check UI
-app.MapHealthChecksUI(options =>
-{
-    options.UIPath = "/health-ui";
-    options.ApiPath = "/health-ui-api";
-});
+app.MapGet("/health-ui", () => Results.Redirect("/health-test.html"));
 
 // Log application startup
 app.Logger.LogInformation("MyLeague Club API started successfully");
 app.Logger.LogInformation("API Documentation available at: /scalar/v1");
 app.Logger.LogInformation("OpenAPI JSON available at: /swagger/v1/swagger.json");
-app.Logger.LogInformation("Health Check UI available at: /health-ui");
+app.Logger.LogInformation("Health dashboard available at: /health-ui");
 app.Logger.LogInformation("Health Check endpoints:");
 app.Logger.LogInformation("  - Detailed: /health");
 app.Logger.LogInformation("  - Ready: /health/ready");

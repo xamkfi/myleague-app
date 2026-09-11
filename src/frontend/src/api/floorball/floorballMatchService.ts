@@ -1,14 +1,23 @@
-import type { 
+import type {
   ApiResponse,
   PaginatedApiResponse,
   FloorballMatchDto,
   CreateFloorballMatchRequest,
   UpdateFloorballMatchRequest,
-  GetFloorballMatchesRequest
+  GetFloorballMatchesRequest,
+  AssignMatchTeamsRequest
 } from '../../types/floorball/floorballTypes';
+import type { FloorballPosition } from '../../types/floorball/floorballTypes';
+import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
+import { API_URL } from '../../constants/config';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+// Phase 2 of the floorball match controller refactor split the original FloorballMatchController
+// into smaller controllers grouped by concern: queries+CRUD live at api/floorball-matches; the
+// per-match lifecycle, events, officials and roster operations live at sibling routes under
+// api/floorball-matches/{matchId}/... Keep this constant local to this service so it's easy to
+// grep when the routes change again.
+const MATCHES_PATH = 'floorball-matches';
 
 export const floorballMatchService = {
   /**
@@ -20,25 +29,26 @@ export const floorballMatchService = {
       
       if (params?.page) searchParams.append('page', params.page.toString());
       if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
-      if (params?.seasonId) searchParams.append('seasonId', params.seasonId);
+      if (params?.competitionId) searchParams.append('competitionId', params.competitionId);
       if (params?.teamId) searchParams.append('teamId', params.teamId);
       if (params?.startDate) searchParams.append('startDate', params.startDate);
       if (params?.endDate) searchParams.append('endDate', params.endDate);
       if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+      if (params?.status) searchParams.append('status', params.status);
       if (params?.searchQuery) searchParams.append('searchQuery', params.searchQuery);
+      if (params?.tournamentGroupId) searchParams.append('tournamentGroupId', params.tournamentGroupId);
+      if (params?.competitionType) searchParams.append('competitionType', params.competitionType);
+      if (params?.teamCategory) searchParams.append('teamCategory', params.teamCategory);
 
-      const url = `${API_URL}/FloorballMatch?${searchParams.toString()}`;
-      console.log('Fetching matches from URL:', url);
+      const url = `${API_URL}/${MATCHES_PATH}?${searchParams.toString()}`;
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       const apiResponse: PaginatedApiResponse<FloorballMatchDto> = await response.json();
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(apiResponse, 'Failed to fetch floorball matches');
         throw new Error(errorMessage);
       }
-      
-      console.log('API Response:', apiResponse);
       
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch floorball matches');
@@ -55,9 +65,9 @@ export const floorballMatchService = {
    * Delete a goal event from a match
    */
   deleteGoal: async (matchId: string, goalEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
-    const url = `${API_URL}/FloorballMatch/${matchId}/goal/${goalEventId}`;
+    const url = `${API_URL}/${MATCHES_PATH}/${matchId}/events/goal/${goalEventId}`;
     console.log('DELETE goal URL:', url);
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'DELETE'
     });
 
@@ -74,9 +84,9 @@ export const floorballMatchService = {
    * Delete a penalty event from a match
    */
   deletePenalty: async (matchId: string, penaltyEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
-    const url = `${API_URL}/FloorballMatch/${matchId}/penalty/${penaltyEventId}`;
+    const url = `${API_URL}/${MATCHES_PATH}/${matchId}/events/penalty/${penaltyEventId}`;
     console.log('DELETE penalty URL:', url);
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'DELETE'
     });
     const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
@@ -91,9 +101,9 @@ export const floorballMatchService = {
    * Delete a save event from a match
    */
   deleteSave: async (matchId: string, saveEventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
-    const url = `${API_URL}/FloorballMatch/${matchId}/save/${saveEventId}`;
+    const url = `${API_URL}/${MATCHES_PATH}/${matchId}/events/save/${saveEventId}`;
     console.log('DELETE save URL:', url);
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: 'DELETE'
     });
 
@@ -109,12 +119,12 @@ export const floorballMatchService = {
   /**
    * Get matches by season ID
    */
-  getBySeason: async (seasonId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {
+  getBySeason: async (competitionId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {
     try {
-      const url = `${API_URL}/FloorballMatch/by-seasonId/${seasonId}`;
+      const url = `${API_URL}/${MATCHES_PATH}/by-competitionId/${competitionId}`;
       console.log('Fetching matches by season from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       
       if (!response.ok) {
@@ -139,10 +149,10 @@ export const floorballMatchService = {
    */
   getByTeam: async (teamId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {
     try {
-      const url = `${API_URL}/FloorballMatch/by-team/${teamId}`;
+      const url = `${API_URL}/${MATCHES_PATH}/by-team/${teamId}`;
       console.log('Fetching matches by team from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       
       if (!response.ok) {
@@ -167,10 +177,10 @@ export const floorballMatchService = {
    */
   getTodaysMatchesByTeam: async (teamId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {
     try {
-      const url = `${API_URL}/FloorballMatch/by-team/${teamId}/today`;
+      const url = `${API_URL}/${MATCHES_PATH}/by-team/${teamId}/today`;
       console.log('Fetching today\'s matches by team from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       const apiResponse: ApiResponse<FloorballMatchDto[]> = await response.json();
       if (!response.ok) {
@@ -195,10 +205,8 @@ export const floorballMatchService = {
    */
   getById: async (id: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      const url = `${API_URL}/FloorballMatch/by-id/${id}`;
-      console.log('Fetching match from URL:', url);
-      
-      const response = await fetch(url);
+      const url = `${API_URL}/${MATCHES_PATH}/by-id/${id}`;
+      const response = await authFetch(url);
       const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
       
       if (!response.ok) {
@@ -225,7 +233,7 @@ export const floorballMatchService = {
     try {
       console.log('Creating match:', data);
       
-      const response = await fetch(`${API_URL}/FloorballMatch`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -262,7 +270,7 @@ export const floorballMatchService = {
     try {
       console.log('Updating match:', data);
       
-      const response = await fetch(`${API_URL}/FloorballMatch`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -289,13 +297,42 @@ export const floorballMatchService = {
   },
 
   /**
+   * Permanently delete a floorball match. Only allowed for matches still in the
+   * Scheduled state (server enforces this). Used by the tournament JSON import
+   * revert flow to remove freshly created matches.
+   */
+  delete: async (id: string): Promise<ApiResponse<void>> => {
+    try {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${id}`, {
+        method: 'DELETE',
+      });
+
+      const apiResponse: ApiResponse<void> = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete floorball match');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete floorball match');
+      }
+
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.delete:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Start a floorball match
    */
   start: async (id: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Starting match with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballMatch/start-match/${id}`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${id}/start`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -321,13 +358,53 @@ export const floorballMatchService = {
   },
 
   /**
+   * Assign or clear the home/away team slots on a scheduled (or postponed) match. Pass
+   * `null` for either side to reset that slot back to "to be determined". When the match
+   * is a playoff bracket match the change is also automatically propagated forward to the
+   * downstream bracket slot (provided the next match has not started yet).
+   *
+   * Throws on validation failure / 4xx / 5xx with the server's error message so the
+   * caller can surface it directly in a toast or banner.
+   */
+  assignTeams: async (
+    id: string,
+    payload: AssignMatchTeamsRequest
+  ): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${id}/teams`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to update match teams');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || apiResponse.message || 'Failed to update match teams');
+      }
+
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.assignTeams:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Complete a floorball match
    */
   complete: async (id: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       console.log('Completing match with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballMatch/complete-match/${id}`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${id}/complete`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -354,67 +431,36 @@ export const floorballMatchService = {
   },
 
   /**
-   * Change match season
+   * Reopen a previously completed floorball match. Reverts the per-match aggregates that the
+   * backend applied at completion time (team / player / goalie season stats) and moves the
+   * status back to InProgress so the operator can keep editing events or finish the match
+   * again. The backend rejects this for playoff matches.
    */
-  changeSeason: async (id: string, seasonId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+  reopen: async (id: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      console.log('Changing season for match with ID:', id, 'to season:', seasonId);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/season`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ newSeasonId: seasonId }),
-      });
-      
-      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
-      if (!response.ok) {
-        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to change match season');
-        throw new Error(errorMessage);
-      }
-      
-      
-      if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match season');
-      }
-      
-      return apiResponse;
-    } catch (error) {
-      console.error('Error in floorballMatchService.changeSeason:', error);
-      throw error;
-    }
-  },
+      console.log('Reopening match with ID:', id);
 
-  /**
-   * Change match teams
-   */
-  changeTeams: async (id: string, homeTeamId: string, awayTeamId: string): Promise<ApiResponse<FloorballMatchDto>> => {
-    try {
-      console.log('Changing teams for match with ID:', id, 'home:', homeTeamId, 'away:', awayTeamId);
-      
-      const response = await fetch(`${API_URL}/FloorballMatchEvent/match/${id}/teams`, {
-        method: 'PATCH',
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${id}/reopen`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ newHomeTeamId: homeTeamId, newAwayTeamId: awayTeamId }),
       });
-      
+
       const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+
       if (!response.ok) {
-        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to change match teams');
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to reopen floorball match');
         throw new Error(errorMessage);
       }
-      
-      
+
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to change match teams');
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to reopen floorball match');
       }
-      
+
       return apiResponse;
     } catch (error) {
-      console.error('Error in floorballMatchService.changeTeams:', error);
+      console.error('Error in floorballMatchService.reopen:', error);
       throw error;
     }
   },
@@ -426,11 +472,11 @@ export const floorballMatchService = {
     try {
       console.log('Changing venue for match with ID:', id, 'to venue:', venue);
       // Fetch current match to preserve scheduledDateTime
-      const current = await (await fetch(`${API_URL}/FloorballMatch/by-id/${id}`)).json() as ApiResponse<FloorballMatchDto>;
+      const current = await (await authFetch(`${API_URL}/${MATCHES_PATH}/by-id/${id}`)).json() as ApiResponse<FloorballMatchDto>;
       if (!current.success || !current.data) {
         throw new Error(current.errors?.join(', ') || 'Failed to fetch current match');
       }
-      const response = await fetch(`${API_URL}/FloorballMatch`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -461,13 +507,12 @@ export const floorballMatchService = {
    */
   changeDateTime: async (id: string, scheduledDateTime: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      console.log('Changing date/time for match with ID:', id, 'to:', scheduledDateTime);
       // Fetch current match to preserve venue
-      const current = await (await fetch(`${API_URL}/FloorballMatch/by-id/${id}`)).json() as ApiResponse<FloorballMatchDto>;
+      const current = await (await authFetch(`${API_URL}/${MATCHES_PATH}/by-id/${id}`)).json() as ApiResponse<FloorballMatchDto>;
       if (!current.success || !current.data) {
         throw new Error(current.errors?.join(', ') || 'Failed to fetch current match');
       }
-      const response = await fetch(`${API_URL}/FloorballMatch`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -498,7 +543,7 @@ export const floorballMatchService = {
    */
   changeGoalie: async (matchId: string, teamId: string, goalieId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/team/${teamId}/goalie/${goalieId}`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/teams/${teamId}/goalie/${goalieId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -522,11 +567,50 @@ export const floorballMatchService = {
   },
 
   /**
-   * Change match referee
+   * Replaces the active field player lineup for a team in a match. Each entry in
+   * `payload.players` carries the per-match role (Forward, Center or Defender). Optionally
+   * updates the goalie in the same operation; pass `goalieId: null` to leave the existing
+   * goalie untouched.
+   */
+  setActiveRoster: async (
+    matchId: string,
+    teamId: string,
+    payload: { players: { playerId: string; position: FloorballPosition }[]; goalieId: string | null }
+  ): Promise<ApiResponse<FloorballMatchDto>> => {
+    try {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/teams/${teamId}/active-roster`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          players: payload.players,
+          goalieId: payload.goalieId,
+        }),
+      });
+
+      const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to update active roster');
+        throw new Error(errorMessage);
+      }
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to update active roster');
+      }
+      return apiResponse;
+    } catch (error) {
+      console.error('Error in floorballMatchService.setActiveRoster:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Change match referee — replaces the officials list with this single referee.
    */
   changeReferee: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/referee/${refereeId}`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/officials/referee/${refereeId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -555,7 +639,7 @@ export const floorballMatchService = {
    */
   updateOfficials: async (matchId: string, officials: string[]): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/officials`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -585,7 +669,7 @@ export const floorballMatchService = {
    */
   addOfficial: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/officials`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -615,7 +699,7 @@ export const floorballMatchService = {
    */
   deleteOfficial: async (matchId: string, refereeId: string): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
-      const response = await fetch(`${API_URL}/FloorballMatch/${matchId}/officials/${refereeId}`, {
+      const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/officials/${refereeId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -638,4 +722,4 @@ export const floorballMatchService = {
       throw error;
     }
   }
-}; 
+};

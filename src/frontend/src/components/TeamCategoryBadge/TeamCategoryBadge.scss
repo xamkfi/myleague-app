@@ -1,0 +1,29 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+// Audience/age-group category badge. Colors are the fixed per-category primary
+// colors (same as the audience themes), NOT the active theme variables — each
+// row must show its own category color regardless of the selected audience.
+.team-category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: map.get($border-radius, 'xl');
+  font-size: map.get($font-sizes, 'sm-xs');
+  font-weight: map.get($font-weights, 'semibold');
+  line-height: 1.3;
+  color: $color-white;
+  white-space: nowrap;
+
+  &--adult {
+    background: #1c356d;
+  }
+
+  &--youth {
+    background: #4e8100;
+  }
+
+  &--women {
+    background: #dd1e84;
+  }
+}

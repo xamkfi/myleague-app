@@ -1,26 +1,27 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
-import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
+import { FloorballMatchStatus, type FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import './MatchPage.scss';
 import { signalRService, type MatchEvent } from '../../services/signalRService';
 import { MATCH_NOTIFICATION_EVENTS } from '../../constants/MatchNotifications';
-import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import MatchBreadcrumb from './components/MatchBreadcrumb';
-import MatchHeader from './components/MatchHeader';
-import MatchNavigation, { type TabType } from './components/MatchNavigation';
+import {
+  MatchPageShell,
+  resolveTableTabVariant,
+  type MatchTabType,
+} from '../../components/match';
 import MatchTabContent from './components/MatchTabContent';
-
-
+import { getCompetitionPath, isTournamentCompetition } from '../../utils/competitionPath';
+import { getTeamPath } from '../../utils/sportRoutes';
+import { slugify } from '../../utils/slugUtils';
 
 export default function MatchPage() {
   const { id } = useParams<{ id: string }>();
   const [match, setMatch] = useState<FloorballMatchDto | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('summary');
+  const [activeTab, setActiveTab] = useState<MatchTabType>('summary');
 
-  // Helper that loads the latest state of the match from the API.
   const loadMatch = useCallback(async () => {
     if (!id) return;
     try {
@@ -34,67 +35,38 @@ export default function MatchPage() {
     }
   }, [id]);
 
-  // SignalR integration for match-specific events
+  const isLive = match?.status === FloorballMatchStatus.InProgress;
+
   useEffect(() => {
-    if (!id) return;
+    if (!id || !isLive) return;
 
     let unsubscribeCallback: (() => void) | null = null;
 
     const setupMatchSignalR = async () => {
       try {
-        // Connect to SignalR and wait for connection to be established
         await signalRService.connect();
-        
-        // Wait a bit for connection to stabilize
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Check if we're actually connected before subscribing
-        if (!signalRService.isConnected) {
-          throw new Error('SignalR connection not established');
-        }
-        
-        // Subscribe to this specific match
         await signalRService.subscribeToMatch(id);
-        
-        // Listen for match-specific events
+
         unsubscribeCallback = signalRService.onMatchEvent((evt: MatchEvent) => {
-          // These are events specific to our match, no need to filter by matchId
           switch (evt.eventType) {
             case MATCH_NOTIFICATION_EVENTS.GOAL_SCORED:
-              console.log(`Goal scored in match ${id}:`, evt);
-              loadMatch();
-              break;
             case MATCH_NOTIFICATION_EVENTS.PENALTY_ASSIGNED:
-              console.log(`Penalty assigned in match ${id}:`, evt);
-              loadMatch();
-              break;
             case MATCH_NOTIFICATION_EVENTS.SAVE_RECORDED:
-              console.log(`Save recorded in match ${id}:`, evt);
-              loadMatch();
-              break;
             case MATCH_NOTIFICATION_EVENTS.MATCH_STARTED:
-              console.log(`Match ${id} has started:`, evt);
-              loadMatch();
-              break;
             case MATCH_NOTIFICATION_EVENTS.MATCH_COMPLETED:
-              console.log(`Match ${id} has completed:`, evt);
               loadMatch();
               break;
             default:
-              // Ignore other events
               break;
           }
         });
-        
-        console.log(`Successfully subscribed to match ${id} events`);
-      } catch (error) {
-        console.error('Failed to setup SignalR for match:', error);
+      } catch (signalRError) {
+        console.error('Failed to setup SignalR for match:', signalRError);
       }
     };
 
-    setupMatchSignalR();
+    void setupMatchSignalR();
 
-    // Cleanup on unmount or when match ID changes
     return () => {
       if (unsubscribeCallback) {
         unsubscribeCallback();
@@ -103,7 +75,7 @@ export default function MatchPage() {
         signalRService.unsubscribeFromMatch(id).catch(console.error);
       }
     };
-  }, [id, loadMatch]);
+  }, [id, isLive, loadMatch]);
 
   useEffect(() => {
     const fetchMatch = async () => {
@@ -119,40 +91,57 @@ export default function MatchPage() {
       }
     };
 
-    fetchMatch();
+    void fetchMatch();
   }, [id, loadMatch]);
 
-  if (loading) {
-    return (
-      <div className="match-page">
-        <div className="loading">Loading match...</div>
-      </div>
-    );
-  }
-
-  if (error || !match) {
-    return (
-      <div className="match-page">
-        <div className="error">{error || 'Match not found'}</div>
-      </div>
-    );
-  }
-
-
+  const isTournament = match
+    ? isTournamentCompetition({
+        tournamentGroupId: match.tournamentGroupId,
+        tournamentStage: match.tournamentStage,
+      })
+    : false;
+  const tableVariant = resolveTableTabVariant(isTournament, match?.tournamentGroupId);
 
   return (
-    <div className="match-page-wrapper">
-      <PageTemplate title="Match Details">
-        <div className="match-page">
-          <MatchBreadcrumb 
-            seasonName={match.seasonName}
-            seasonId={match.seasonId}
-          />
-          <MatchHeader match={match} />
-          <MatchNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-          <MatchTabContent activeTab={activeTab} match={match} />
-        </div>
-      </PageTemplate>
-    </div>
+    <MatchPageShell
+      isLoading={loading}
+      error={error}
+      competitionName={match?.competitionName}
+      competitionPath={
+        match
+          ? getCompetitionPath(match.competitionId, {
+              tournamentGroupId: match.tournamentGroupId,
+              tournamentStage: match.tournamentStage,
+            })
+          : undefined
+      }
+      header={
+        match
+          ? {
+              home: {
+                name: match.homeTeamName,
+                logo: match.homeTeamLogo,
+                href: match.homeTeamName ? getTeamPath('floorball', slugify(match.homeTeamName)) : null,
+              },
+              away: {
+                name: match.awayTeamName,
+                logo: match.awayTeamLogo,
+                href: match.awayTeamName ? getTeamPath('floorball', slugify(match.awayTeamName)) : null,
+              },
+              homeScore: match.homeScore,
+              awayScore: match.awayScore,
+              scheduledDateTime: match.scheduledDateTime,
+              isScheduled: match.status === FloorballMatchStatus.Scheduled,
+              isLive: match.status === FloorballMatchStatus.InProgress,
+              isFinal: match.status === FloorballMatchStatus.Completed,
+            }
+          : undefined
+      }
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      tableVariant={tableVariant}
+    >
+      {match && <MatchTabContent activeTab={activeTab} match={match} />}
+    </MatchPageShell>
   );
 }

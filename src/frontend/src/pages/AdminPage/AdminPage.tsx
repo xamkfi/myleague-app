@@ -4,9 +4,9 @@ import AdminPageTemplate from '../../components/PageTemplate/AdminPageTemplate';
 import './AdminPage.scss';
 import PersonIcon from '../../assets/adminIcons/Persons.svg';
 import NewsIcon from '../../assets/adminIcons/News.svg';
-import SportsIcon from '../../assets/adminIcons/Sports.svg';
 import LeaguesIcon from '../../assets/adminIcons/Leagues.svg';
 import ClubsIcon from '../../assets/adminIcons/Clubs.svg';
+import SportIcon from '../../components/SportIcon/SportIcon';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -59,6 +59,17 @@ const AdminPage = () => {
             </div>
             <img src={ClubsIcon} alt="Clubs" className="button-icon" />
           </button>
+
+          <button
+            className="admin-action-button"
+            onClick={() => navigate('/admin/users')}
+          >
+            <div className="button-text">
+              <span className="button-title">{t('admin.actions.users', 'System Users')}</span>
+              <span className="button-subtitle">{t('admin.actions.manageUsers', 'Manage system users')}</span>
+            </div>
+            <img src={PersonIcon} alt="System Users" className="button-icon" />
+          </button>
           
         </div>
         <h2 className="admin-sport-selection">SPORTS SELECTION</h2>
@@ -71,7 +82,45 @@ const AdminPage = () => {
               <span className="button-title">{t('admin.actions.floorball', 'Floorball')}</span>
               <span className="button-subtitle">{t('admin.actions.manageFloorball', 'Manage floorball')}</span>
             </div>
-            <img src={SportsIcon} alt="Floorball" className="button-icon" />
+            <SportIcon
+              sport="floorball"
+              size="md"
+              className="button-icon"
+              decorative={false}
+              alt={t('admin.actions.floorball', 'Floorball')}
+            />
+          </button>
+          <button
+            className="admin-action-button"
+            onClick={() => navigate('/admin/football')}
+          >
+            <div className="button-text">
+              <span className="button-title">{t('admin.actions.football', 'Football')}</span>
+              <span className="button-subtitle">{t('admin.actions.manageFootball', 'Manage football')}</span>
+            </div>
+            <SportIcon
+              sport="football"
+              size="md"
+              className="button-icon"
+              decorative={false}
+              alt={t('admin.actions.football', 'Football')}
+            />
+          </button>
+          <button
+            className="admin-action-button"
+            onClick={() => navigate('/admin/hockey')}
+          >
+            <div className="button-text">
+              <span className="button-title">{t('admin.actions.hockey', 'Ice hockey')}</span>
+              <span className="button-subtitle">{t('admin.actions.manageHockey', 'Manage hockey')}</span>
+            </div>
+            <SportIcon
+              sport="hockey"
+              size="md"
+              className="button-icon"
+              decorative={false}
+              alt={t('admin.actions.hockey', 'Ice hockey')}
+            />
           </button>
         </div>
       </div>

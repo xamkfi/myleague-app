@@ -52,14 +52,18 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
                     .IsRequired(false)
                     .HasMaxLength(20);
                 addressBuilder.Property(a => a.Country)
-                    .IsRequired()
+                    .IsRequired(false)
                     .HasMaxLength(100);
             });
 
             builder.OwnsOne(p => p.ContactInfo, contactBuilder =>
             {
+                // Email is optional at the domain level (see ContactInfo value object), so the
+                // column must allow NULL too. EF still skips writing the owned type entirely when
+                // PersonMapper.ToContactInfo returns null, but when at least one phone is present
+                // the row materializes with a NULL email.
                 contactBuilder.Property(c => c.Email)
-                    .IsRequired()
+                    .IsRequired(false)
                     .HasMaxLength(255);
                 contactBuilder.Property(c => c.Phone)
                     .IsRequired(false)

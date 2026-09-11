@@ -1,67 +1,71 @@
-# MyLeague App - Frontend
+# Frontend
 
-This is the frontend application for MyLeague, a sports league management platform.
+React SPA for MyLeague: public league pages and an admin console. Full stack setup is in the [root README](../../README.md).
 
-## Project Structure
+## Stack
 
-The project follows a well-organized folder structure:
+- React 18.3 + TypeScript 5.8
+- Vite 6.3
+- Tailwind CSS 4.1 (Vite plugin; no `tailwind.config.js`) and SCSS
+- React Router 7
+- i18next (Finnish default, English)
+- SignalR (`@microsoft/signalr`) for live match updates
+- pnpm 10, Node 22
+
+## Structure
 
 ```
 src/
-  ├── assets/              # Static assets (images, fonts, icons)
-  ├── components/          # Reusable UI components
-  │   ├── Navigation/      # Navigation components
-  │   ├── HeroSection/     # Hero section components
-  │   └── MatchSidebar/    # Match sidebar components
-  ├── pages/               # Route-level components
-  │   └── HomePage/        # Home page component
-  ├── hooks/               # Custom React hooks
-  ├── utils/               # Shared utility functions
-  ├── context/             # React context providers
-  ├── store/               # State management setup
-  ├── styles/              # Global styles and themes
-  ├── api/                 # Backend communication logic
-  ├── constants/           # Project-wide constants
-  └── types/               # Global TypeScript definitions
+  ├── api/                 # HTTP clients per resource
+  ├── assets/              # Images, fonts, icons
+  ├── audience/            # Adult / youth / women theming
+  ├── components/          # Shared UI
+  ├── constants/
+  ├── context/
+  ├── functions/
+  ├── hooks/
+  ├── i18n/                # locales/fi, locales/en
+  ├── pages/               # Route-level screens
+  ├── router/
+  ├── services/            # SignalR and other non-REST clients
+  ├── styles/
+  ├── types/
+  └── utils/
 ```
 
-## Component Structure
+Public pages cover floorball, football, and ice hockey (home, clubs, leagues, teams, players, matches, tournaments, news, calendar, rules). Hockey live pages poll REST instead of SignalR.
 
-Each component typically follows this structure:
-- `ComponentName.tsx` - The main component file
-- `ComponentName.css` - Component-specific styles
-- `index.ts` - Barrel file for cleaner imports
-- `ComponentName.test.tsx` - Tests for the component (when applicable)
+Admin covers clubs, divisions, persons, users, news, rules, info pages, and floorball/football/hockey management (including live match control and floorball tournament JSON import). Club admins have a narrower roster / match-day area.
 
-## Naming Conventions
+## Run
 
-- **Components**: PascalCase (e.g., `UserCard.tsx`)
-- **Functions/hooks**: camelCase (e.g., `useFetch.ts`)
-- **Files**: camelCase (e.g., `matchService.ts`)
-- **CSS classes**: kebab-case (e.g., `team-logo`)
+Prerequisites: Node 22+, pnpm, and a running WebAPI ([root README](../../README.md)).
 
-## Getting Started
+```bash
+cd src/frontend
+pnpm install
+pnpm dev          # http://localhost:5173
+pnpm lint
+pnpm build
+pnpm preview
+```
 
-1. Install dependencies:
-   ```
-   npm install
-   ```
+`/.env.development` sets `VITE_API_URL=http://localhost:8080/api` (Docker). For a local `dotnet run` API, use `http://localhost:65533/api` and restart Vite.
 
-2. Start development server:
-   ```
-   npm run dev
-   ```
+Seed the database with the [Seeder](../tools/Seeder/README.md) so lists and standings have data.
 
-## Features
+## Conventions
 
-- Navigation menu with dropdown capabilities
-- Hero section with call-to-action
-- Match sidebar displaying upcoming games and standings
-- Responsive design for various screen sizes
+| Kind | Style | Example |
+|------|--------|---------|
+| Components | PascalCase | `UserCard.tsx` |
+| Hooks | `use` + camelCase | `useFetch.ts` |
+| Services / utils | camelCase | `matchService.ts` |
+| CSS classes | kebab-case | `team-logo` |
+| Types | PascalCase | `FloorballMatchDto` |
 
-## Technologies Used
+## Related
 
-- React
-- TypeScript
-- CSS (with potential for CSS modules or a CSS-in-JS solution)
-- Modern JavaScript features and patterns
+- [Root README](../../README.md) — ports, auth, Docker
+- [WebAPI](../backend/WebAPI/README.md) — endpoints
+- [Azure / CI](../../infra/README.md) — Static Web App deploy

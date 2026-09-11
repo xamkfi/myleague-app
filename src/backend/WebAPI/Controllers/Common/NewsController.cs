@@ -1,23 +1,26 @@
-﻿using Application.Common;
+using Domain.Constants;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Application.Common;
+using Application.Features.Common.Images.Commands;
+using Application.Features.Common.News.Commands;
+using Application.Features.Common.News.DTOs;
+using Application.Features.Common.News.Queries;
 using Domain.Common;
-using Application.DTOs.Common;
-using Application.Commands.NewsArticles;
-using Application.Queries.NewsArticles;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
-using Application.Commands.Common;
 
 namespace WebAPI.Controllers.Common
 {
     /// <summary>
     /// Controller for managing news articles
     /// </summary>
-    [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    public class NewsController : ControllerBase
+    public class NewsController : BaseApiController
     {
         private readonly IMediator _mediator;
         private readonly ILogger<NewsController> _logger;
@@ -53,18 +56,14 @@ namespace WebAPI.Controllers.Common
                 request.SportCategory,
                 request.Search,
                 request.Author,
-                request.IncludeArchived
+                request.IncludeArchived,
+                request.TeamCategories,
+                request.Tag
             );
 
             Result<PagedResult<NewsArticleListDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(PaginatedApiResponse<NewsArticleListDto>.SuccessResponse(result.Data, "News articles retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, PaginatedApiResponse<NewsArticleListDto>.ErrorResponse(errorMessage));
+            return HandlePaginatedResult(result, "News articles retrieved successfully", "Failed to retrieve news articles");
         }
 
         /// <summary>
@@ -83,18 +82,7 @@ namespace WebAPI.Controllers.Common
             var query = new GetNewsArticleByIdQuery(id);
             Result<NewsArticleDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<NewsArticleDto>.SuccessResponse(result.Data, "News article retrieved successfully"));
-            }
-
-            if (result.Error?.Contains("not found") == true)
-            {
-                return NotFound(ApiResponse<NewsArticleDto>.ErrorResponse($"News article with ID '{id}' not found."));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<NewsArticleDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "News article retrieved successfully", "News article not found");
         }
 
         /// <summary>
@@ -103,12 +91,13 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The news article creation data</param>
         /// <returns>The created news article</returns>
         [HttpPost]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<NewsArticleDto>>> CreateNews([FromBody] CreateNewsArticleRequest request)
         {
-            _logger.LogInformation("Creating new news article with title: {Title}", request.Title);
+            _logger.LogInformation("Creating new news article with title: {Title}", SanitizeForLog(request.Title));
 
             var command = new CreateNewsArticleCommand(
                 request.Title,
@@ -119,21 +108,19 @@ namespace WebAPI.Controllers.Common
                 request.Author,
                 request.Category,
                 request.SportCategory,
-                request.Tags
+                request.Tags,
+                request.TeamCategory
             );
 
             Result<NewsArticleDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
+            if (result.IsSuccess && result.Data is not null)
             {
-                return CreatedAtAction(nameof(GetNewsById), new { id = result.Data.Id }, 
+                return CreatedAtAction(nameof(GetNewsById), new { id = result.Data.Id },
                     ApiResponse<NewsArticleDto>.SuccessResponse(result.Data, "News article created successfully"));
             }
 
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            List<string> errorList = result.ValidationFailures.Select(x => x.ErrorMessage).ToList();
-
-            return BadRequest(ApiResponse<NewsArticleDto>.ErrorResponse(errorMessage, errorList));
+            return ToErrorResponse(result, "Failed to create news article");
         }
 
         /// <summary>
@@ -143,6 +130,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The news article update data</param>
         /// <returns>The updated news article</returns>
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status404NotFound)]
@@ -161,23 +149,13 @@ namespace WebAPI.Controllers.Common
                 request.Author,
                 request.Category,
                 request.SportCategory,
-                request.Tags
+                request.Tags,
+                request.TeamCategory
             );
 
             Result<NewsArticleDto> result = await _mediator.Send(command);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<NewsArticleDto>.SuccessResponse(result.Data, "News article updated successfully"));
-            }
-
-            if (result.Error?.Contains("not found") == true)
-            {
-                return NotFound(ApiResponse<NewsArticleDto>.ErrorResponse($"News article with ID '{id}' not found."));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return BadRequest(ApiResponse<NewsArticleDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "News article updated successfully", "Failed to update news article");
         }
 
         /// <summary>
@@ -186,6 +164,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="id">The news article ID</param>
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/archive")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
@@ -196,18 +175,7 @@ namespace WebAPI.Controllers.Common
             var command = new ArchiveNewsArticleCommand(id);
             Result<bool> result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse<bool>.SuccessResponse(result.Data, "News article archived successfully"));
-            }
-
-            if (result.Error?.Contains("not found") == true)
-            {
-                return NotFound(ApiResponse<bool>.ErrorResponse($"News article with ID '{id}' not found."));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<bool>.ErrorResponse(errorMessage));
+            return HandleResult(result, "News article archived successfully", "Failed to archive news article");
         }
 
         /// <summary>
@@ -216,6 +184,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="id">The news article ID</param>
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/restore")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
@@ -226,18 +195,7 @@ namespace WebAPI.Controllers.Common
             var command = new RestoreNewsArticleCommand(id);
             Result<bool> result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse<bool>.SuccessResponse(result.Data, "News article restored successfully"));
-            }
-
-            if (result.Error?.Contains("not found") == true)
-            {
-                return NotFound(ApiResponse<bool>.ErrorResponse($"News article with ID '{id}' not found."));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<bool>.ErrorResponse(errorMessage));
+            return HandleResult(result, "News article restored successfully", "Failed to restore news article");
         }
 
         /// <summary>
@@ -247,6 +205,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The image URL to set</param>
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/image")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
@@ -258,18 +217,7 @@ namespace WebAPI.Controllers.Common
             var command = new SetNewsArticleImageCommand(id, request.ImageUrl);
             Result<bool> result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse<bool>.SuccessResponse(result.Data, "News article image set successfully"));
-            }
-
-            if (result.Error?.Contains("not found") == true)
-            {
-                return NotFound(ApiResponse<bool>.ErrorResponse($"News article with ID '{id}' not found."));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return BadRequest(ApiResponse<bool>.ErrorResponse(errorMessage));
+            return HandleResult(result, "News article image set successfully", "Failed to set news article image");
         }
 
         /// <summary>
@@ -279,29 +227,19 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The tag to add</param>
         /// <returns>Success status</returns>
         [HttpPost("{id:guid}/tags")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<bool>>> AddNewsTag(Guid id, [FromBody] AddNewsArticleTagRequest request)
         {
-            _logger.LogInformation("Adding tag '{Tag}' to news article with ID: {NewsId}", request.Tag, id);
+            _logger.LogInformation("Adding tag '{Tag}' to news article with ID: {NewsId}", SanitizeForLog(request.Tag), id);
 
             var command = new AddNewsArticleTagCommand(id, request.Tag);
             Result<bool> result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse<bool>.SuccessResponse(result.Data, "Tag added to news article successfully"));
-            }
-
-            if (result.Error?.Contains("not found") == true)
-            {
-                return NotFound(ApiResponse<bool>.ErrorResponse($"News article with ID '{id}' not found."));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return BadRequest(ApiResponse<bool>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Tag added to news article successfully", "Failed to add tag to news article");
         }
 
         /// <summary>
@@ -311,29 +249,19 @@ namespace WebAPI.Controllers.Common
         /// <param name="request">The tag to remove</param>
         /// <returns>Success status</returns>
         [HttpDelete("{id:guid}/tags")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<bool>>> RemoveNewsTag(Guid id, [FromBody] RemoveNewsArticleTagRequest request)
         {
-            _logger.LogInformation("Removing tag '{Tag}' from news article with ID: {NewsId}", request.Tag, id);
+            _logger.LogInformation("Removing tag '{Tag}' from news article with ID: {NewsId}", SanitizeForLog(request.Tag), id);
 
             var command = new RemoveNewsArticleTagCommand(id, request.Tag);
             Result<bool> result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse<bool>.SuccessResponse(result.Data, "Tag removed from news article successfully"));
-            }
-
-            if (result.Error?.Contains("not found") == true)
-            {
-                return NotFound(ApiResponse<bool>.ErrorResponse($"News article with ID '{id}' not found."));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return BadRequest(ApiResponse<bool>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Tag removed from news article successfully", "Failed to remove tag from news article");
         }
 
         /// <summary>
@@ -347,19 +275,12 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> SearchNews([FromQuery] SearchNewsArticlesRequest request)
         {
-            _logger.LogInformation("Searching news articles with term: {SearchTerm}", request.SearchTerm);
+            _logger.LogInformation("Searching news articles with term: {SearchTerm}", SanitizeForLog(request.SearchTerm));
 
             var query = new SearchNewsArticlesQuery(request.SearchTerm);
             Result<IEnumerable<NewsArticleListDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                List<NewsArticleListDto> newsArticleList = result.Data.ToList();
-                return Ok(ApiResponse<List<NewsArticleListDto>>.SuccessResponse(newsArticleList, "News articles found successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return BadRequest(ApiResponse<List<NewsArticleListDto>>.ErrorResponse(errorMessage));
+            return HandleListResult(result, "News articles found successfully", "Failed to search news articles");
         }
 
         /// <summary>
@@ -377,14 +298,7 @@ namespace WebAPI.Controllers.Common
             var query = new GetRecentNewsArticlesQuery(request.Count, request.IncludeArchived);
             Result<IEnumerable<NewsArticleListDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                List<NewsArticleListDto> newsArticleList = result.Data.ToList();
-                return Ok(ApiResponse<List<NewsArticleListDto>>.SuccessResponse(newsArticleList, "Recent news articles retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<List<NewsArticleListDto>>.ErrorResponse(errorMessage));
+            return HandleListResult(result, "Recent news articles retrieved successfully", "Failed to retrieve recent news articles");
         }
 
         /// <summary>
@@ -397,19 +311,12 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> GetNewsByCategory(string category)
         {
-            _logger.LogInformation("Getting news articles by category: {Category}", category);
+            _logger.LogInformation("Getting news articles by category: {Category}", SanitizeForLog(category));
 
             var query = new GetNewsArticlesByCategoryQuery(category);
             Result<IEnumerable<NewsArticleListDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                List<NewsArticleListDto> newsArticleList = result.Data.ToList();
-                return Ok(ApiResponse<List<NewsArticleListDto>>.SuccessResponse(newsArticleList, $"News articles in category '{category}' retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<List<NewsArticleListDto>>.ErrorResponse(errorMessage));
+            return HandleListResult(result, $"News articles in category '{category}' retrieved successfully", "Failed to retrieve news articles by category");
         }
 
         /// <summary>
@@ -422,19 +329,12 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> GetNewsByTag(string tag)
         {
-            _logger.LogInformation("Getting news articles by tag: {Tag}", tag);
+            _logger.LogInformation("Getting news articles by tag: {Tag}", SanitizeForLog(tag));
 
             var query = new GetNewsArticlesByTagQuery(tag);
             Result<IEnumerable<NewsArticleListDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                List<NewsArticleListDto> newsArticleList = result.Data.ToList();
-                return Ok(ApiResponse<List<NewsArticleListDto>>.SuccessResponse(newsArticleList, $"News articles with tag '{tag}' retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<List<NewsArticleListDto>>.ErrorResponse(errorMessage));
+            return HandleListResult(result, $"News articles with tag '{tag}' retrieved successfully", "Failed to retrieve news articles by tag");
         }
 
         /// <summary>
@@ -447,19 +347,12 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(typeof(ApiResponse<List<NewsArticleListDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<NewsArticleListDto>>>> GetNewsByAuthor(string author)
         {
-            _logger.LogInformation("Getting news articles by author: {Author}", author);
+            _logger.LogInformation("Getting news articles by author: {Author}", SanitizeForLog(author));
 
             var query = new GetNewsArticlesByAuthorQuery(author);
             Result<IEnumerable<NewsArticleListDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                List<NewsArticleListDto> newsArticleList = result.Data.ToList();
-                return Ok(ApiResponse<List<NewsArticleListDto>>.SuccessResponse(newsArticleList, $"News articles by author '{author}' retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<List<NewsArticleListDto>>.ErrorResponse(errorMessage));
+            return HandleListResult(result, $"News articles by author '{author}' retrieved successfully", "Failed to retrieve news articles by author");
         }
 
         /// <summary>
@@ -476,14 +369,7 @@ namespace WebAPI.Controllers.Common
             var query = new GetNewsArticleCategoriesQuery();
             Result<IEnumerable<NewsArticleCategoryDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                List<NewsArticleCategoryDto> categories = result.Data.ToList();
-                return Ok(ApiResponse<List<NewsArticleCategoryDto>>.SuccessResponse(categories, "News categories retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<List<NewsArticleCategoryDto>>.ErrorResponse(errorMessage));
+            return HandleListResult(result, "News categories retrieved successfully", "Failed to retrieve news categories");
         }
 
         /// <summary>
@@ -500,14 +386,7 @@ namespace WebAPI.Controllers.Common
             var query = new GetNewsArticleTagsQuery();
             Result<IEnumerable<string>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                List<string> tags = result.Data.ToList();
-                return Ok(ApiResponse<List<string>>.SuccessResponse(tags, "News tags retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<List<string>>.ErrorResponse(errorMessage));
+            return HandleListResult(result, "News tags retrieved successfully", "Failed to retrieve news tags");
         }
 
         /// <summary>
@@ -516,12 +395,13 @@ namespace WebAPI.Controllers.Common
         /// <param name="file">The image file to upload</param>
         /// <returns>The URL of the uploaded image</returns>
         [HttpPost("upload-image")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> UploadImage([FromForm] IFormFile file)
         {
-            _logger.LogInformation("Uploading image: {FileName}", file?.FileName);
+            _logger.LogInformation("Uploading image: {FileName}", SanitizeForLog(file?.FileName));
 
             if (file == null || file.Length == 0)
             {
@@ -533,7 +413,7 @@ namespace WebAPI.Controllers.Common
             string[] allowedContentTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
             if (!allowedContentTypes.Contains(file.ContentType.ToLower()))
             {
-                _logger.LogWarning("Image upload failed: Invalid file type {ContentType}", file.ContentType);
+                _logger.LogWarning("Image upload failed: Invalid file type {ContentType}", SanitizeForLog(file.ContentType));
                 return BadRequest(ApiResponse<string>.ErrorResponse($"Invalid file type. Allowed types: {string.Join(", ", allowedContentTypes)}"));
             }
 
@@ -548,7 +428,7 @@ namespace WebAPI.Controllers.Common
             try
             {
                 using Stream stream = file.OpenReadStream();
-                
+
                 var command = new UploadImageCommand(
                     stream,
                     file.FileName,
@@ -556,7 +436,7 @@ namespace WebAPI.Controllers.Common
 
                 Result<Uri> result = await _mediator.Send(command);
 
-                if (result.IsSuccess && result.Data != null)
+                if (result.IsSuccess && result.Data is not null)
                 {
                     _logger.LogInformation("Image uploaded successfully: {ImageUrl}", result.Data);
                     return Ok(ApiResponse<string>.SuccessResponse(result.Data.ToString(), "Image uploaded successfully"));
@@ -580,26 +460,27 @@ namespace WebAPI.Controllers.Common
         /// <param name="url"></param>
         /// <returns></returns>
         [HttpDelete("delete-image")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<string>>> DeleteImage([FromQuery] string url)
         {
-            _logger.LogInformation("Deleting image: {url}", url);
+            _logger.LogInformation("Deleting image: {url}", SanitizeForLog(url));
 
             if (url == null)
             {
                 _logger.LogWarning("Image deletion failed: No url provided");
                 return BadRequest(ApiResponse<string>.ErrorResponse("No url provided"));
             }
-            
+
             if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? imageUri))
             {
-                _logger.LogError("Failed to parse URL: '{url}'", url);
-                return BadRequest(ApiResponse<string>.ErrorResponse($"Invalid URL format: {url}"));
+                _logger.LogError("Failed to parse image deletion URL");
+                return BadRequest(ApiResponse<string>.ErrorResponse("Invalid URL format"));
             }
 
-            _logger.LogInformation("Successfully parsed Uri: {parsedUri}", imageUri);
+            _logger.LogInformation("Successfully parsed image deletion URL");
             try
             {
                 DeleteImageCommand command = new DeleteImageCommand(imageUri);
@@ -633,12 +514,9 @@ namespace WebAPI.Controllers.Common
         public async Task<ActionResult<ApiResponse<NewsArticleDto>>> GetMainNews()
         {
             GetMainNewsQuery query = new GetMainNewsQuery();
-            Result<NewsArticleDto> response = await _mediator.Send(query);
+            Result<NewsArticleDto> result = await _mediator.Send(query);
 
-            if (response == null || response.Data == null || response.IsFailure)
-                return NotFound(ApiResponse<NewsArticleDto>.ErrorResponse("No main news found."));
-
-            return Ok(ApiResponse<NewsArticleDto>.SuccessResponse(response.Data, "Main news retrieved successfully"));
+            return HandleResult(result, "Main news retrieved successfully", "No main news found.");
         }
 
         /// <summary>
@@ -647,6 +525,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<NewsArticleDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ApiResponse<bool>>> DeleteNews(Guid id)
@@ -656,18 +535,7 @@ namespace WebAPI.Controllers.Common
             var command = new DeleteNewsArticleCommand(id);
             Result<bool> result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse<bool>.SuccessResponse(result.Data, "News article deleted successfully"));
-            }
-
-            if (result.Error?.Contains("not found") == true)
-            {
-                return NotFound(ApiResponse<bool>.ErrorResponse($"News article with ID '{id}' not found."));
-            }
-
-            string errorMessage = result.Error ?? result.GetErrorsString();
-            return StatusCode(500, ApiResponse<bool>.ErrorResponse(errorMessage));
+            return HandleResult(result, "News article deleted successfully", "Failed to delete news article");
         }
     }
 }

@@ -4,6 +4,7 @@ import type { FloorballMatchDto } from '../../../types/floorball/floorballTypes'
 import { useTranslation } from 'react-i18next';
 import './MatchStats.scss';
 import StatRow from './StatRow';
+import { getTeamInitials } from './matchUtils';
 
 interface MatchStatsProps {
   match: FloorballMatchDto;
@@ -23,7 +24,6 @@ export default function MatchStats({ match }: MatchStatsProps) {
     try {
       const data = await floorballStatisticsService.getMatchStatistics(match.id);
       setStats(data);
-      console.log('Updated match statistics');
     } catch (err) {
       console.error('Error loading match statistics:', err);
       // On error, keep existing stats or show empty stats
@@ -61,18 +61,20 @@ export default function MatchStats({ match }: MatchStatsProps) {
     );
   }
 
-  // Create empty stats if not available
+  // Create empty stats if not available. Placeholder slots (null IDs) get an empty teamId so the
+  // find() above degenerates to the fallback record, which is fine because there cannot be any
+  // recorded stats for an unassigned slot anyway.
   const homeStats = stats.find(s => s.teamId === match.homeTeamId) || {
-    teamId: match.homeTeamId,
-    teamName: match.homeTeamName,
+    teamId: match.homeTeamId ?? '',
+    teamName: match.homeTeamName ?? 'TBD',
     shotsTotal: 0,
     shotsOnGoal: 0,
     penaltyMinutes: 0
   };
-  
+
   const awayStats = stats.find(s => s.teamId === match.awayTeamId) || {
-    teamId: match.awayTeamId,
-    teamName: match.awayTeamName,
+    teamId: match.awayTeamId ?? '',
+    teamName: match.awayTeamName ?? 'TBD',
     shotsTotal: 0,
     shotsOnGoal: 0,
     penaltyMinutes: 0
@@ -86,12 +88,49 @@ export default function MatchStats({ match }: MatchStatsProps) {
 
   
 
+  const homeInitials: string = getTeamInitials(homeStats.teamName);
+  const awayInitials: string = getTeamInitials(awayStats.teamName);
+
   return (
     <div className="match-stats">
       <div className="stats-header">
-        <div className="team-name home">{homeStats.teamName}</div>
+        <div className="team-identity home">
+          <div className="team-crest home-team" title={homeStats.teamName}>
+            {match.homeTeamLogo ? (
+              <img
+                src={match.homeTeamLogo}
+                alt={`${homeStats.teamName} logo`}
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            ) : (
+              <span className="team-initials">{homeInitials}</span>
+            )}
+          </div>
+          <span className="team-name">{homeStats.teamName}</span>
+        </div>
         <div className="header-label">{t('matchPage.stats.title')}</div>
-        <div className="team-name away">{awayStats.teamName}</div>
+        <div className="team-identity away">
+          <span className="team-name">{awayStats.teamName}</span>
+          <div className="team-crest away-team" title={awayStats.teamName}>
+            {match.awayTeamLogo ? (
+              <img
+                src={match.awayTeamLogo}
+                alt={`${awayStats.teamName} logo`}
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            ) : (
+              <span className="team-initials">{awayInitials}</span>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="stats-content">

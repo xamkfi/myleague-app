@@ -1,0 +1,55 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: map.get($spacing, 'sm');
+
+  &__circle {
+    border-radius: 50%;
+    animation: loading-spinner-rotate 1s linear infinite;
+
+    // Default (md)
+    width: 40px;
+    height: 40px;
+    border: 3px solid $color-neutral-light-grey;
+    border-top-color: $color-blue-secondary;
+  }
+
+  &__text {
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  // ── Size variants ──
+  &--sm .loading-spinner__circle {
+    width: 24px;
+    height: 24px;
+    border-width: 2px;
+  }
+
+  &--lg .loading-spinner__circle {
+    width: 48px;
+    height: 48px;
+    border-width: 4px;
+  }
+
+  // ── Color variant for dark backgrounds ──
+  &--light .loading-spinner__circle {
+    border-color: rgba(white, 0.15);
+    border-top-color: $color-blue-secondary;
+  }
+
+  &--light .loading-spinner__text {
+    color: rgba(white, 0.7);
+  }
+}
+
+@keyframes loading-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Floorball;
+using Domain.ValueObjects.Floorball;
 using MyLeague.Infrastructure.Persistence.Extensions;
 using MyLeague.Infrastructure.Persistence.Configurations.Floorball;
 using System.Reflection;
@@ -43,9 +44,34 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballMatch> FloorballMatches { get; set; }
 
         /// <summary>
-        /// Gets or sets the FloorballSeasons DbSet.
+        /// Gets or sets the FloorballCompetitions DbSet (base type for TPH).
+        /// </summary>
+        public DbSet<FloorballCompetition> FloorballCompetitions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballSeasons DbSet (TPH convenience accessor).
         /// </summary>
         public DbSet<FloorballSeason> FloorballSeasons { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballSeasonContentBlocks DbSet.
+        /// </summary>
+        public DbSet<FloorballSeasonContentBlock> FloorballSeasonContentBlocks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballTournaments DbSet (TPH convenience accessor).
+        /// </summary>
+        public DbSet<FloorballTournament> FloorballTournaments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballTournamentGroups DbSet.
+        /// </summary>
+        public DbSet<FloorballTournamentGroup> FloorballTournamentGroups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballTournamentGroupTeams DbSet.
+        /// </summary>
+        public DbSet<FloorballTournamentGroupTeam> FloorballTournamentGroupTeams { get; set; }
 
         /// <summary>
         /// Gets or sets the FloorballReferees DbSet.
@@ -56,6 +82,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         /// Gets or sets the FloorballPeriodScores DbSet.
         /// </summary>
         public DbSet<FloorballPeriodScore> FloorballPeriodScores { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FloorballMatchActivePlayers DbSet (per-match field player lineups).
+        /// </summary>
+        public DbSet<FloorballMatchActivePlayer> FloorballMatchActivePlayers { get; set; }
 
         /// <summary>
         /// Gets or sets the FloorballMatchEvents DbSet.
@@ -109,14 +140,14 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballStatisticsCache> FloorballStatisticsCache { get; set; }
 
         /// <summary>
-        /// Gets or sets the FloorballSeasonDivisions DbSet.
+        /// Gets or sets the FloorballCompetitionDivisions DbSet.
         /// </summary>
-        public DbSet<FloorballSeasonDivision> FloorballSeasonDivisions { get; set; }
+        public DbSet<FloorballCompetitionDivision> FloorballCompetitionDivisions { get; set; }
 
         /// <summary>
-        /// Gets or sets the FloorballSeasonDivisionTeams DbSet.
+        /// Gets or sets the FloorballCompetitionDivisionTeams DbSet.
         /// </summary>
-        public DbSet<FloorballSeasonDivisionTeam> FloorballSeasonDivisionTeams { get; set; }
+        public DbSet<FloorballCompetitionDivisionTeam> FloorballCompetitionDivisionTeams { get; set; }
 
         /// <summary>
         /// Saves changes to the database with domain event dispatching.
@@ -162,14 +193,24 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             // Set default schema for all Floorball entities
             modelBuilder.HasDefaultSchema("floorball");
 
+            // PlayoffScheduleSlot is a value object persisted as JSON inside a single column on
+            // FloorballTournament (see FloorballTournamentConfiguration). EF Core's convention
+            // would otherwise discover it as an entity via the List<PlayoffScheduleSlot> backing
+            // field and demand a primary key — ignore it explicitly to disable that.
+            modelBuilder.Ignore<PlayoffScheduleSlot>();
+
             // Apply only Floorball configurations to avoid cross-context conflicts
             modelBuilder.ApplyConfiguration(new FloorballPlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamPlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballCompetitionConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballSeasonConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballSeasonContentBlockConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballTournamentConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballRefereeConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballPeriodScoreConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballMatchActivePlayerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchEventConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballTeamManagerConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballGoalConfiguration());
@@ -182,8 +223,10 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballGoalieSeasonStatisticsConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballMatchTeamStatisticsConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballStatisticsCacheConfiguration());
-            modelBuilder.ApplyConfiguration(new FloorballSeasonDivisionConfiguration());
-            modelBuilder.ApplyConfiguration(new FloorballSeasonDivisionTeamConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballCompetitionDivisionConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballCompetitionDivisionTeamConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballTournamentGroupConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballTournamentGroupTeamConfiguration());
         }
     }
 }

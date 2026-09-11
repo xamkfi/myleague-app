@@ -1,0 +1,22 @@
+.create-person-container {
+  padding: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.person-form-container {
+  margin-top: 1rem;
+  
+  // Override form styling to fit page context
+  .person-form {
+    .form-actions {
+      position: sticky;
+      bottom: 0;
+      background: white;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e9ecef;
+      margin-top: 2rem;
+      z-index: 10;
+    }
+  }
+}

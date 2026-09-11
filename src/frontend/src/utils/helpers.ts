@@ -1,3 +1,6 @@
+import type { RuleItem } from "../types/admin/ruleTypes";
+import DOMPurify from "dompurify";
+
 /**
  * Formats a date string to a localized format in UTC (D.M.YYYY)
  * @param dateString Date string to format (can be null)
@@ -20,49 +23,52 @@ export function formatDate(dateString: string | null): string {
 }
 
 /**
- * Formats a date/time string to return date and time in DD/MM HH:MM format
- * 
+ * Formats a date/time string to return date and time in DD/MM HH:MM format.
+ * Uses the browser's local timezone (API returns UTC ISO strings).
+ *
  * @param dateTime - ISO date string or Date object
  * @returns Array with [date, time] where date is "DD/MM" and time is "HH:MM"
  */
 export const formatMatchDateTime = (dateTime: string | Date): [string, string] => {
-   const date = new Date(dateTime);
-   
-   const day = date.getUTCDate().toString().padStart(2, '0');
-   const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-   const formattedDate = `${day}/${month}`;
-   
-   const hours = date.getUTCHours().toString().padStart(2, '0');
-   const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-   const formattedTime = `${hours}:${minutes}`;
-   
-   return [formattedDate, formattedTime];
+  const date = new Date(dateTime);
+
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const formattedDate = `${day}/${month}`;
+
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const formattedTime = `${hours}:${minutes}`;
+
+  return [formattedDate, formattedTime];
 };
 
 /**
- * Formats only the date part (DD/MM format without year)
- * 
+ * Formats only the date part (DD/MM format without year).
+ * Uses the browser's local timezone.
+ *
  * @param dateTime - ISO date string or Date object
  * @returns Date string in "DD/MM" format
  */
 export const formatMatchDate = (dateTime: string | Date): string => {
-   const date = new Date(dateTime);
-   const day = date.getUTCDate().toString().padStart(2, '0');
-   const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-   return `${day}/${month}`;
+  const date = new Date(dateTime);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  return `${day}/${month}`;
 };
 
 /**
- * Formats only the time part (HH:MM format)
- * 
+ * Formats only the time part (HH:MM format).
+ * Uses the browser's local timezone.
+ *
  * @param dateTime - ISO date string or Date object
  * @returns Time string in "HH:MM" format
  */
 export const formatMatchTime = (dateTime: string | Date): string => {
-   const date = new Date(dateTime);
-   const hours = date.getUTCHours().toString().padStart(2, '0');
-   const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-   return `${hours}:${minutes}`;
+  const date = new Date(dateTime);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
 };
 
 /**
@@ -82,4 +88,58 @@ export function truncateText(text: string, maxLength: number): string {
  */
 export function generateId(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
-} 
+}
+
+export const createRuleBlock = (
+  html: string,
+  ruleId?: string,
+  order?: number,
+): string => {
+  const sanitizedHtml = DOMPurify.sanitize(html).trim();
+
+  const plainText = DOMPurify.sanitize(sanitizedHtml, { ALLOWED_TAGS: [] })
+    .replace(/\u00A0/g, " ")
+    .trim();
+
+  if (!plainText) return "";
+
+  const id = ruleId ?? crypto.randomUUID();
+  const orderAttr =
+    order != null && order > 0 ? ` data-rule-order="${order}"` : "";
+
+  return `<div class="rules-item" data-rule-id="${id}"${orderAttr}>${sanitizedHtml}</div>`;
+};
+
+export const parseRulesFromHtml = (
+  html: string,
+  sectionId = "",
+): RuleItem[] => {
+  if (!html.trim()) return [];
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = html;
+
+  const rules = Array.from(wrapper.querySelectorAll(".rules-item")).map(
+    (rule, index) => {
+      const parsedOrder = Number.parseInt(
+        rule.getAttribute("data-rule-order") || "",
+        10,
+      );
+
+      return {
+        id: rule.getAttribute("data-rule-id") || crypto.randomUUID(),
+        html: rule.innerHTML,
+        text:
+          (rule.textContent || "").replace(/\u00A0/g, " ").trim() ||
+          "Untitled rule",
+        sectionId,
+        order:
+          Number.isFinite(parsedOrder) && parsedOrder > 0
+            ? parsedOrder
+            : index + 1,
+      };
+    },
+  );
+
+  return rules.sort((a, b) => a.order - b.order);
+};

@@ -4,19 +4,11 @@ using System.Text.Json;
 
 namespace MyLeague.Infrastructure.SignalR
 {
-    /// <summary>
-    /// Service that notifies clients of domain events using SignalR
-    /// </summary>
     public class DomainEventNotifier
     {
         private readonly IHubContext<DomainEventHub> _hubContext;
         private readonly ILogger<DomainEventNotifier> _logger;
 
-        /// <summary>
-        /// Initializes a new instance of the DomainEventNotifier class
-        /// </summary>
-        /// <param name="hubContext">The hub context</param>
-        /// <param name="logger">The logger</param>
         public DomainEventNotifier(
             IHubContext<DomainEventHub> hubContext,
             ILogger<DomainEventNotifier> logger)
@@ -25,84 +17,50 @@ namespace MyLeague.Infrastructure.SignalR
             _logger = logger;
         }
 
-
         /// <summary>
-        /// Notifies clients of a custom event with the specified payload
+        /// Sends an event to the event-type group only (clients who subscribed to this specific event type).
+        /// Does NOT broadcast to all clients.
         /// </summary>
-        /// <param name="eventName">The name of the event</param>
-        /// <param name="payload">The payload to send</param>
-        /// <returns>A task representing the asynchronous operation</returns>
-        public async Task NotifyAsync(string eventName, object payload)
+        public async Task NotifyEventGroupAsync(string eventName, string payloadJson)
         {
             try
             {
-                string payloadJson = JsonSerializer.Serialize(payload);
-                
-                // Notify all clients of the event
-                await _hubContext.Clients.All.SendAsync("DomainEvent", eventName, payloadJson);
-                
-                // Notify clients in the group for this specific event type
                 await _hubContext.Clients.Group(eventName).SendAsync("DomainEvent", eventName, payloadJson);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error notifying clients of custom event {EventName}", eventName);
+                _logger.LogError(ex, "Error notifying event group {EventName}", eventName);
             }
         }
 
         /// <summary>
-        /// Subscribes a client to a specific event type
+        /// Sends an event to a specific match group (clients who subscribed to this match).
         /// </summary>
-        /// <param name="connectionId">The connection ID</param>
-        /// <param name="eventType">The event type to subscribe to</param>
-        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task NotifyMatchGroupAsync(Guid matchId, string eventName, string payloadJson)
+        {
+            try
+            {
+                string groupName = $"Match_{matchId}";
+                await _hubContext.Clients.Group(groupName).SendAsync("MatchEvent", eventName, payloadJson);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error notifying match {MatchId} clients of event {EventName}", matchId, eventName);
+            }
+        }
+
         public async Task SubscribeToEventTypeAsync(string connectionId, string eventType)
         {
             await _hubContext.Groups.AddToGroupAsync(connectionId, eventType);
             _logger.LogInformation("Client {ConnectionId} subscribed to event type {EventType}", connectionId, eventType);
         }
 
-        /// <summary>
-        /// Unsubscribes a client from a specific event type
-        /// </summary>
-        /// <param name="connectionId">The connection ID</param>
-        /// <param name="eventType">The event type to unsubscribe from</param>
-        /// <returns>A task representing the asynchronous operation</returns>
         public async Task UnsubscribeFromEventTypeAsync(string connectionId, string eventType)
         {
             await _hubContext.Groups.RemoveFromGroupAsync(connectionId, eventType);
             _logger.LogInformation("Client {ConnectionId} unsubscribed from event type {EventType}", connectionId, eventType);
         }
 
-        /// <summary>
-        /// Notifies clients in a specific match group of an event
-        /// </summary>
-        /// <param name="matchId">The match ID</param>
-        /// <param name="eventName">The name of the event</param>
-        /// <param name="payload">The payload to send</param>
-        /// <returns>A task representing the asynchronous operation</returns>
-        public async Task NotifyMatchAsync(Guid matchId, string eventName, object payload)
-        {
-            try
-            {
-                string payloadJson = JsonSerializer.Serialize(payload);
-                string groupName = $"Match_{matchId}";
-                
-                // Notify clients in the specific match group
-                await _hubContext.Clients.Group(groupName).SendAsync("MatchEvent", eventName, payloadJson);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "DomainEventNotifier: Error notifying match {MatchId} clients of event {EventName}", matchId, eventName);
-            }
-        }
-
-        /// <summary>
-        /// Subscribes a client to a specific match
-        /// </summary>
-        /// <param name="connectionId">The connection ID</param>
-        /// <param name="matchId">The match ID to subscribe to</param>
-        /// <returns>A task representing the asynchronous operation</returns>
         public async Task SubscribeToMatchAsync(string connectionId, Guid matchId)
         {
             string groupName = $"Match_{matchId}";
@@ -110,12 +68,6 @@ namespace MyLeague.Infrastructure.SignalR
             _logger.LogInformation("Client {ConnectionId} subscribed to match {MatchId}", connectionId, matchId);
         }
 
-        /// <summary>
-        /// Unsubscribes a client from a specific match
-        /// </summary>
-        /// <param name="connectionId">The connection ID</param>
-        /// <param name="matchId">The match ID to unsubscribe from</param>
-        /// <returns>A task representing the asynchronous operation</returns>
         public async Task UnsubscribeFromMatchAsync(string connectionId, Guid matchId)
         {
             string groupName = $"Match_{matchId}";

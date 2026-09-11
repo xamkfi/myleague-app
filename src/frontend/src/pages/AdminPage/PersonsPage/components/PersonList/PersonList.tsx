@@ -1,9 +1,12 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useRef, memo, useImperativeHandle, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Person, PaginatedApiResponse } from '../../../../../types/admin/personTypes';
-import { PersonRole } from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
+import { mapDeletionError } from '../../../../../utils/mapDeletionError';
 import PaginationControls from '../PaginationControls/PaginationControls';
+import ActionsDropdown from '../../../../../components/ActionsDropdown/ActionsDropdown';
+import BulkActionsBar from '../../../../../components/BulkActionsBar/BulkActionsBar';
+import '../../../../../styles/AdminTable.scss';
 import './PersonList.scss';
 
 interface PersonListProps {
@@ -83,7 +86,6 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
   const [paginationLoading, setPaginationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingRegistration, setUpdatingRegistration] = useState<string | null>(null);
-  const [updatingRole, setUpdatingRole] = useState<string | null>(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -229,7 +231,10 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         });
       } catch (error) {
         console.error('Failed to delete person:', error);
-        setError(t('admin.persons.errors.deleteFailed', 'Failed to delete person'));
+        setError(
+          mapDeletionError(error, t) ??
+            t('admin.persons.errors.deleteFailed', 'Failed to delete person'),
+        );
       }
     }
   };
@@ -258,33 +263,6 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         setError(t('admin.persons.errors.updateRegistrationFailed', 'Failed to update registration status'));
       } finally {
         setUpdatingRegistration(null);
-      }
-    }
-  };
-
-  const handleRoleChange = async (id: string, newRole: PersonRole) => {
-    console.log('Role change requested:', { id, newRole, type: typeof newRole }); // Debug log
-    const roleText = t(`admin.persons.roles.${newRole.toLowerCase()}`, newRole);
-    const confirmMessage = t('admin.persons.confirmRoleChange', 'Are you sure you want to change this person\'s role to {{role}}?', { role: roleText });
-    
-    if (window.confirm(confirmMessage)) {
-      setUpdatingRole(id);
-      try {
-        const updatedPerson = await personApi.updateRole(id, newRole);
-        console.log('Updated person received:', updatedPerson); // Debug log
-        setPersons(persons.map(person => 
-          person.id === id ? updatedPerson : person
-        ));
-        setError(null);
-        
-        // Show success message
-        const successMessage = t('admin.persons.success.roleUpdated', 'Person role updated successfully');
-        console.log(successMessage); // You can replace this with a toast notification system
-      } catch (error) {
-        console.error('Failed to update person role:', error);
-        setError(t('admin.persons.errors.updateRoleFailed', 'Failed to update person role'));
-      } finally {
-        setUpdatingRole(null);
       }
     }
   };
@@ -338,7 +316,10 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         console.log(successMessage);
       } catch (error) {
         console.error('Failed to delete selected persons:', error);
-        setError(t('admin.persons.errors.bulkDeleteFailed', 'Failed to delete selected persons'));
+        setError(
+          mapDeletionError(error, t) ??
+            t('admin.persons.errors.bulkDeleteFailed', 'Failed to delete selected persons'),
+        );
       } finally {
         setBulkDeleting(false);
       }
@@ -391,51 +372,23 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
 
       {!loading && !error && (
         <>
-          {/* Selection Controls */}
-      <div className="selection-controls">
-        <div className="selection-info">
-          <span className="selected-count">
-            {t('admin.persons.selected', '{{count}} selected', { count: selectedPersons.size })}
-          </span>
-          {persons.length > 0 && (
-            <div className="selection-buttons">
-              <button
-                type="button"
-                className="control-btn"
-                onClick={selectAllFilteredPersons}
-                disabled={selectedPersons.size === persons.length}
-              >
-                {t('common.selectAll', 'Select All')} ({persons.length})
-              </button>
-              <button
-                type="button"
-                className="control-btn"
-                onClick={clearSelection}
-                disabled={selectedPersons.size === 0}
-              >
-                {t('common.clear', 'Clear')}
-              </button>
-            </div>
-          )}
-        </div>
-        
-        {/* Bulk Actions */}
-        {selectedPersons.size > 0 && (
-          <div className="bulk-actions">
-            <button
-              type="button"
-              className="bulk-delete-btn"
-              onClick={handleBulkDelete}
-              disabled={bulkDeleting}
-            >
-              {bulkDeleting 
-                ? t('admin.persons.actions.deleting', 'Deleting...') 
-                : t('admin.persons.actions.bulkDelete', 'Delete Selected ({{count}})', { count: selectedPersons.size })
-              }
-            </button>
-          </div>
-        )}
-          </div>
+          {/* Bulk Actions Bar */}
+          <BulkActionsBar
+            selectedCount={selectedPersons.size}
+            totalCount={persons.length}
+            onSelectAll={selectAllFilteredPersons}
+            onClearSelection={clearSelection}
+            actions={[
+              {
+                label: bulkDeleting
+                  ? t('admin.persons.actions.deleting', 'Deleting...')
+                  : t('common.delete', 'Delete'),
+                onClick: handleBulkDelete,
+                variant: 'danger',
+                disabled: bulkDeleting,
+              },
+            ]}
+          />
 
           {/* Pagination Controls - Top */}
           <PaginationControls
@@ -447,11 +400,11 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
             onPageSizeChange={handlePageSizeChange}
           />
 
-          <div className="persons-table-wrapper">
-            <table>
+          <div className="admin-table__wrapper persons-table-area">
+            <table className="admin-table">
               <thead>
           <tr>
-            <th className="select-column">
+            <th className="admin-table__checkbox-col">
               <input
                 type="checkbox"
                 checked={paginatedPersons.length > 0 && paginatedPersons.every(person => selectedPersons.has(person.id))}
@@ -473,17 +426,16 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
             <th>{t('admin.persons.table.birthDate', 'Birth Date')}</th>
             <th>{t('admin.persons.table.email', 'Email')}</th>
             <th>{t('admin.persons.table.registered', 'Registered')}</th>
-            <th>{t('admin.persons.table.role', 'Role')}</th>
-            <th>{t('admin.persons.table.actions', 'Actions')}</th>
+            <th className="admin-table__actions-col">{t('admin.persons.table.actions', 'Actions')}</th>
           </tr>
               </thead>
               <tbody>
               {paginatedPersons.map(person => (
             <tr 
               key={person.id}
-              className={selectedPersons.has(person.id) ? 'selected' : ''}
+              className={selectedPersons.has(person.id) ? 'admin-table__row--selected' : ''}
             >
-              <td className="select-column">
+              <td className="admin-table__checkbox-col">
                 <input
                   type="checkbox"
                   checked={selectedPersons.has(person.id)}
@@ -502,7 +454,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
               </td>
               <td>
                 <button
-                  className={`status-toggle ${person.isRegistered ? 'registered' : 'not-registered'} ${updatingRegistration === person.id ? 'updating' : ''}`}
+                  className={`admin-table__toggle-btn ${person.isRegistered ? 'admin-table__toggle-btn--on' : 'admin-table__toggle-btn--off'}`}
                   onClick={() => handleToggleRegistration(person.id, person.isRegistered)}
                   disabled={updatingRegistration === person.id}
                   title={t('admin.persons.actions.toggleRegistration', 'Click to toggle registration status')}
@@ -523,43 +475,14 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
                   )}
                 </button>
               </td>
-              <td className="role-cell">
-                <select
-                  className={`role-selector ${updatingRole === person.id ? 'updating' : ''}`}
-                  value={person.role}
-                  onChange={(e) => handleRoleChange(person.id, e.target.value as PersonRole)}
-                  disabled={updatingRole === person.id}
-                  title={t('admin.persons.actions.updateRole', 'Update Role')}
-                >
-                  <option value={PersonRole.User}>
-                    {t('admin.persons.roles.user', 'User')}
-                  </option>
-                  <option value={PersonRole.Admin}>
-                    {t('admin.persons.roles.admin', 'Admin')}
-                  </option>
-                  <option value={PersonRole.SuperAdmin}>
-                    {t('admin.persons.roles.superAdmin', 'Super Admin')}
-                  </option>
-                </select>
-                {updatingRole === person.id && (
-                  <span className="loading-spinner">⏳</span>
-                )}
-              </td>
-              <td>
-                <div className="action-buttons">
-                  <button
-                    className="edit-button"
-                    onClick={() => handleEdit(person.id)}
-                  >
-                    {t('admin.persons.actions.edit', 'Edit')}
-                  </button>
-                  <button
-                    className="delete-button"
-                    onClick={() => handleDelete(person.id)}
-                  >
-                    {t('admin.persons.actions.delete', 'Delete')}
-                  </button>
-                </div>
+              <td className="admin-table__actions-col">
+                <ActionsDropdown
+                  ariaLabel={t('admin.persons.actions.menu', 'Person actions menu')}
+                  actions={[
+                    { label: t('admin.persons.actions.edit', 'Edit'), onClick: () => handleEdit(person.id) },
+                    { label: t('admin.persons.actions.delete', 'Delete'), onClick: () => handleDelete(person.id), variant: 'danger' },
+                  ]}
+                />
               </td>
               </tr>
               ))}

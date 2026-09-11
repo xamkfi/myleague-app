@@ -13,14 +13,14 @@ public class FloorballStatisticsCache : BaseEntity
     public string CacheKey { get; private set; }
 
     /// <summary>
-    /// Gets the ID of the season this cache entry is associated with (optional)
+    /// Gets the ID of the competition this cache entry is associated with (optional)
     /// </summary>
-    public Guid? SeasonId { get; private set; }
+    public Guid? CompetitionId { get; private set; }
 
     /// <summary>
-    /// Gets the season this cache entry is associated with (optional)
+    /// Gets the competition this cache entry is associated with (optional)
     /// </summary>
-    public FloorballSeason? Season { get; private set; }
+    public FloorballCompetition? Competition { get; private set; }
 
     /// <summary>
     /// Gets the serialized JSON data containing the cached statistics
@@ -57,8 +57,8 @@ public class FloorballStatisticsCache : BaseEntity
     /// <param name="cacheKey">The unique cache key</param>
     /// <param name="jsonData">The serialized data to cache</param>
     /// <param name="expirationMinutes">Minutes until expiration (default: 60)</param>
-    /// <param name="seasonId">Optional season ID this cache is associated with</param>
-    public FloorballStatisticsCache(string cacheKey, string jsonData, int expirationMinutes = 60, Guid? seasonId = null)
+    /// <param name="competitionId">Optional competition ID this cache is associated with</param>
+    public FloorballStatisticsCache(string cacheKey, string jsonData, int expirationMinutes = 60, Guid? competitionId = null)
     {
         if (string.IsNullOrWhiteSpace(cacheKey))
             throw new ArgumentException("Cache key cannot be null or empty.", nameof(cacheKey));
@@ -71,7 +71,7 @@ public class FloorballStatisticsCache : BaseEntity
 
         CacheKey = cacheKey;
         JsonData = jsonData;
-        SeasonId = seasonId;
+        CompetitionId = competitionId;
         LastUpdated = DateTime.UtcNow;
         ExpiresAt = DateTime.UtcNow.AddMinutes(expirationMinutes);
     }
@@ -117,76 +117,76 @@ public class FloorballStatisticsCache : BaseEntity
     /// <summary>
     /// Creates a cache key for top scorers
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="topN">Number of top scorers</param>
     /// <returns>The cache key</returns>
-    public static string CreateTopScorersKey(Guid seasonId, int topN = 10)
+    public static string CreateTopScorersKey(Guid competitionId, int topN = 10)
     {
-        return $"TopScorers_{seasonId}_{topN}";
+        return $"TopScorers_{competitionId}_{topN}";
     }
 
     /// <summary>
     /// Creates a cache key for top assists
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="topN">Number of top assists</param>
     /// <returns>The cache key</returns>
-    public static string CreateTopAssistsKey(Guid seasonId, int topN = 10)
+    public static string CreateTopAssistsKey(Guid competitionId, int topN = 10)
     {
-        return $"TopAssists_{seasonId}_{topN}";
+        return $"TopAssists_{competitionId}_{topN}";
     }
 
     /// <summary>
     /// Creates a cache key for top goalies
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="topN">Number of top goalies</param>
     /// <returns>The cache key</returns>
-    public static string CreateTopGoaliesKey(Guid seasonId, int topN = 10)
+    public static string CreateTopGoaliesKey(Guid competitionId, int topN = 10)
     {
-        return $"TopGoalies_{seasonId}_{topN}";
+        return $"TopGoalies_{competitionId}_{topN}";
     }
 
     /// <summary>
     /// Creates a cache key for team standings
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <returns>The cache key</returns>
-    public static string CreateStandingsKey(Guid seasonId)
+    public static string CreateStandingsKey(Guid competitionId)
     {
-        return $"Standings_{seasonId}";
+        return $"Standings_{competitionId}";
     }
 
     /// <summary>
-    /// Creates a cache key for season statistics
+    /// Creates a cache key for competition statistics
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <returns>The cache key</returns>
-    public static string CreateSeasonStatsKey(Guid seasonId)
+    public static string CreateSeasonStatsKey(Guid competitionId)
     {
-        return $"SeasonStats_{seasonId}";
+        return $"SeasonStats_{competitionId}";
     }
 
     /// <summary>
     /// Creates a cache key for team statistics
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="teamId">The team ID</param>
     /// <returns>The cache key</returns>
-    public static string CreateTeamStatsKey(Guid seasonId, Guid teamId)
+    public static string CreateTeamStatsKey(Guid competitionId, Guid teamId)
     {
-        return $"TeamStats_{seasonId}_{teamId}";
+        return $"TeamStats_{competitionId}_{teamId}";
     }
 
     /// <summary>
     /// Creates a cache key for player statistics
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
+    /// <param name="competitionId">The competition ID</param>
     /// <param name="playerId">The player ID</param>
     /// <returns>The cache key</returns>
-    public static string CreatePlayerStatsKey(Guid seasonId, Guid playerId)
+    public static string CreatePlayerStatsKey(Guid competitionId, Guid playerId)
     {
-        return $"PlayerStats_{seasonId}_{playerId}";
+        return $"PlayerStats_{competitionId}_{playerId}";
     }
 
     /// <summary>

@@ -12,6 +12,7 @@ namespace MyLeague.Infrastructure.HealthChecks
     {
         private readonly CommonDbContext _commonDbContext;
         private readonly FloorballDbContext _floorballDbContext;
+        private readonly HockeyDbContext _hockeyDbContext;
         private readonly ILogger<DatabaseHealthCheck> _logger;
 
         /// <summary>
@@ -19,14 +20,17 @@ namespace MyLeague.Infrastructure.HealthChecks
         /// </summary>
         /// <param name="commonDbContext">The common database context</param>
         /// <param name="floorballDbContext">The floorball database context</param>
+        /// <param name="hockeyDbContext">The hockey database context</param>
         /// <param name="logger">The logger instance</param>
         public DatabaseHealthCheck(
             CommonDbContext commonDbContext,
             FloorballDbContext floorballDbContext,
+            HockeyDbContext hockeyDbContext,
             ILogger<DatabaseHealthCheck> logger)
         {
             _commonDbContext = commonDbContext ?? throw new ArgumentNullException(nameof(commonDbContext));
             _floorballDbContext = floorballDbContext ?? throw new ArgumentNullException(nameof(floorballDbContext));
+            _hockeyDbContext = hockeyDbContext ?? throw new ArgumentNullException(nameof(hockeyDbContext));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -60,9 +64,18 @@ namespace MyLeague.Infrastructure.HealthChecks
                     return HealthCheckResult.Unhealthy("Floorball database is not accessible");
                 }
 
+                // Check Hockey database connectivity
+                bool hockeyDbCanConnect = await _hockeyDbContext.Database.CanConnectAsync(cancellationToken);
+                if (!hockeyDbCanConnect)
+                {
+                    _logger.LogWarning("Hockey database connection failed");
+                    return HealthCheckResult.Unhealthy("Hockey database is not accessible");
+                }
+
                 // Perform basic query operations to ensure databases are functional
                 int commonClubCount = 0;
                 int floorballPlayerCount = 0;
+                int hockeyTeamCount = 0;
                 var warnings = new List<string>();
 
                 try
@@ -87,12 +100,24 @@ namespace MyLeague.Infrastructure.HealthChecks
                     warnings.Add("Floorball database tables may not exist yet");
                 }
 
+                try
+                {
+                    hockeyTeamCount = await _hockeyDbContext.HockeyTeams.CountAsync(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to count teams in hockey database - this may be normal if migrations haven't run yet");
+                    warnings.Add("Hockey database tables may not exist yet");
+                }
+
                 var data = new Dictionary<string, object>
                 {
                     { "CommonDatabase", "Connected" },
                     { "FloorballDatabase", "Connected" },
+                    { "HockeyDatabase", "Connected" },
                     { "ClubCount", commonClubCount },
                     { "PlayerCount", floorballPlayerCount },
+                    { "HockeyTeamCount", hockeyTeamCount },
                     { "CheckedAt", DateTime.UtcNow }
                 };
 

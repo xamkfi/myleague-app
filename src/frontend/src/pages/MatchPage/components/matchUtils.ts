@@ -31,9 +31,13 @@ export function formatTime(timeInSeconds: number): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
+/**
+ * Resolves a team's display name by ID. Falls back to "TBD" when the slot is unassigned on the
+ * match (placeholder fixtures), and to "Unknown Team" when the ID matches neither participant.
+ */
 export function getTeamName(teamId: string, match: FloorballMatchDto): string {
-  if (teamId === match.homeTeamId) return match.homeTeamName;
-  if (teamId === match.awayTeamId) return match.awayTeamName;
+  if (teamId === match.homeTeamId) return match.homeTeamName ?? 'TBD';
+  if (teamId === match.awayTeamId) return match.awayTeamName ?? 'TBD';
   return 'Unknown Team';
 }
 

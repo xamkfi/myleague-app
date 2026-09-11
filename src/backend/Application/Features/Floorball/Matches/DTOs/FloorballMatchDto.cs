@@ -1,0 +1,84 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Domain.Entities.Common;
+using Domain.Entities.Floorball;
+using Domain.Enums.Floorball;
+
+namespace Application.Features.Floorball.Matches.DTOs
+{
+    /// <summary>
+    /// Data Transfer Object for period score
+    /// </summary>
+    /// <param name="HomeScore">The home team's score for this period</param>
+    /// <param name="AwayScore">The away team's score for this period</param>
+    /// <param name="IsCompleted">Whether the period has been completed</param>
+    public record PeriodScoreDto(int HomeScore, int AwayScore, bool IsCompleted);
+
+    /// <summary>
+    /// Single entry in a team's active field player lineup, including the per-match role
+    /// (Forward / Center / Defender). Goalies are tracked separately on the match DTO.
+    /// </summary>
+    /// <param name="PlayerId">The active player's ID.</param>
+    /// <param name="Position">The per-match field role.</param>
+    public record FloorballActiveLineupPlayerDto(Guid PlayerId, FloorballPosition Position);
+
+    /// <summary>
+    /// Data Transfer Object for FloorballMatch entity
+    /// </summary>
+    /// <param name="Id">The unique identifier of the match</param>
+    /// <param name="CompetitionId">The ID of the competition this match belongs to</param>
+    /// <param name="HomeTeamId">The ID of the home team, or <c>null</c> when the participant is not yet known.</param>
+    /// <param name="HomeTeamName">The name of the home team, or <c>null</c> when not yet assigned.</param>
+    /// <param name="AwayTeamId">The ID of the away team, or <c>null</c> when the participant is not yet known.</param>
+    /// <param name="AwayTeamName">The name of the away team, or <c>null</c> when not yet assigned.</param>
+    /// <param name="ScheduledDateTime">The scheduled date and time of the match</param>
+    /// <param name="Venue">The venue where the match will be played</param>
+    /// <param name="Status">The current status of the match</param>
+    /// <param name="HomeScore">The home team's score</param>
+    /// <param name="AwayScore">The away team's score</param>
+    /// <param name="WentToOvertime">Whether the match went to overtime</param>
+    /// <param name="WentToShootout">Whether the match went to shootout</param>
+    /// <param name="PeriodScores">The scores for each period</param>
+    /// <param name="Officials">The IDs of the match officials (referees)</param>
+    /// <param name="GoalEvents">The goals scored in the match</param>
+    /// <param name="PenaltyEvents">The penalties given in the match</param>
+    /// <param name="MatchRules">The match rules configuration snapshot</param>
+    /// <param name="TournamentGroupId">Group ID for tournament group-stage matches; null for league or playoff matches</param>
+    /// <param name="TournamentStage">Stage label for tournament matches (e.g. "GroupStage", "Quarterfinal"); null for league matches</param>
+    /// <param name="CompetitionType">Explicit competition discriminator (Season or Tournament). Lets the
+    /// frontend route matches without falling back to heuristics on tournament-only fields. Defaults
+    /// to "Season" for backward compatibility when the mapper can't resolve the navigation.</param>
+    public record FloorballMatchDto(
+        Guid Id,
+        Guid CompetitionId,
+        string CompetitionName,
+        Guid? HomeTeamId,
+        string? HomeTeamName,
+        Uri? HomeTeamLogo,
+        Guid? AwayTeamId,
+        string? AwayTeamName,
+        Uri? AwayTeamLogo,
+        DateTime ScheduledDateTime,
+        string? Venue,
+        FloorballMatchStatus Status,
+        int HomeScore,
+        int AwayScore,
+        bool WentToOvertime,
+        bool WentToShootout,
+        Guid? HomeActiveGoalieId,
+        Guid? AwayActiveGoalieId,
+        IReadOnlyDictionary<int, PeriodScoreDto> PeriodScores,
+        IReadOnlyCollection<Guid> Officials,
+        IReadOnlyCollection<FloorballGoalEventDto> GoalEvents,
+        IReadOnlyCollection<FloorballPenaltyEventDto> PenaltyEvents,
+        IReadOnlyCollection<FloorballSaveEventDto> SaveEvents,
+        FloorballMatchRulesDto MatchRules,
+        IReadOnlyCollection<FloorballActiveLineupPlayerDto> HomeActivePlayers,
+        IReadOnlyCollection<FloorballActiveLineupPlayerDto> AwayActivePlayers,
+        Guid? TournamentGroupId = null,
+        string? TournamentStage = null,
+        FloorballCompetitionType CompetitionType = FloorballCompetitionType.Season);
+}

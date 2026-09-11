@@ -1,0 +1,18 @@
+# CI-only Compose overlay. Always pass this with docker-compose.yml so GitHub
+# Actions does not merge docker-compose.override.yml (local volume mounts and
+# a second pnpm install that keeps the frontend smoke from becoming ready).
+services:
+  webapi:
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Database=myleague;Username=postgres;Password=postgres
+      Jwt__SecretKey: ci-test-secret-key-at-least-32-characters-long!!
+      Jwt__Issuer: MyLeague
+      Jwt__Audience: MyLeague
+
+  frontend:
+    environment:
+      - DOCKER=true

@@ -1,0 +1,22 @@
+.stat-abbr {
+  cursor: help;
+  border-bottom: 1px dotted currentColor;
+}
+
+.stat-abbr-tip {
+  position: fixed;
+  z-index: 1200;
+  transform: translate(-50%, calc(-100% - 8px));
+  padding: 0.3rem 0.55rem;
+  border-radius: 4px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.28);
+}

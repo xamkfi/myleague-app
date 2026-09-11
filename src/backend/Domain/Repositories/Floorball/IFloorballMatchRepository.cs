@@ -27,7 +27,7 @@ public interface IFloorballMatchRepository
     /// </summary>
     /// <param name="page">Page number (1-based)</param>
     /// <param name="pageSize">Number of items per page</param>
-    /// <param name="seasonId">Optional season ID filter</param>
+    /// <param name="competitionId">Optional competition ID filter</param>
     /// <param name="teamId">Optional team ID filter (home or away)</param>
     /// <param name="startDate">Optional start date filter</param>
     /// <param name="endDate">Optional end date filter</param>
@@ -37,21 +37,24 @@ public interface IFloorballMatchRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated collection of floorball matches</returns>
     Task<PagedResult<FloorballMatch>> GetPagedAsync(
-        int page, 
-        int pageSize, 
-        Guid? seasonId = null,
+        int page,
+        int pageSize,
+        Guid? competitionId = null,
         Guid? teamId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
         FloorballMatchStatus? status = null,
         string sortOrder = "desc",
         string? searchQuery = null,
+        Guid? tournamentGroupId = null,
+        FloorballCompetitionType? competitionType = null,
+        Domain.Enums.Common.TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>
     /// Gets the total count of floorball matches with filtering
     /// </summary>
-    /// <param name="seasonId">Optional season ID filter</param>
+    /// <param name="competitionId">Optional competition ID filter</param>
     /// <param name="teamId">Optional team ID filter (home or away)</param>
     /// <param name="startDate">Optional start date filter</param>
     /// <param name="endDate">Optional end date filter</param>
@@ -59,7 +62,7 @@ public interface IFloorballMatchRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Total count of matching floorball matches</returns>
     Task<int> GetCountAsync(
-        Guid? seasonId = null,
+        Guid? competitionId = null,
         Guid? teamId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
@@ -67,11 +70,23 @@ public interface IFloorballMatchRepository
         CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// Gets matches for a specified season
+    /// Gets matches for a specified competition
     /// </summary>
-    /// <param name="seasonId">The season ID</param>
-    /// <returns>A collection of matches in the season</returns>
-    Task<IEnumerable<FloorballMatch>> GetBySeasonIdAsync(Guid seasonId);
+    /// <param name="competitionId">The competition ID</param>
+    /// <returns>A collection of matches in the competition</returns>
+    Task<IEnumerable<FloorballMatch>> GetByCompetitionIdAsync(Guid competitionId);
+
+    /// <summary>
+    /// Gets matches assigned to a specific tournament group, optionally filtered by status.
+    /// </summary>
+    /// <param name="tournamentGroupId">The tournament group ID</param>
+    /// <param name="status">Optional match status filter</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A collection of matches in the tournament group</returns>
+    Task<IEnumerable<FloorballMatch>> GetByTournamentGroupAsync(
+        Guid tournamentGroupId,
+        FloorballMatchStatus? status = null,
+        CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets matches for a specified team
@@ -79,6 +94,11 @@ public interface IFloorballMatchRepository
     /// <param name="teamId">The team ID</param>
     /// <returns>A collection of matches involving the team</returns>
     Task<IEnumerable<FloorballMatch>> GetByTeamIdAsync(Guid teamId);
+
+    /// <summary>
+    /// Returns true when the team appears as home or away in any match.
+    /// </summary>
+    Task<bool> HasAnyForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets upcoming matches for a specified team
@@ -149,7 +169,30 @@ public interface IFloorballMatchRepository
     /// </summary>
     /// <param name="id">The ID of the match to delete</param>
     Task DeleteAsync(Guid id);
-    
+
+    /// <summary>
+    /// Bulk-deletes every match (and its directly dependent rows) that belongs to the given
+    /// competition. Used by the tournament-delete handler when a Draft tournament is removed so
+    /// that the <c>FloorballMatch.TournamentGroupId</c> RESTRICT FK doesn't block the cascade
+    /// from <c>FloorballCompetition → FloorballTournamentGroup</c>.
+    ///
+    /// Implementation must:
+    ///   • Clean up <c>FloorballMatchTeamStatistics</c> rows manually (no DB-level FK because
+    ///     the Match navigation is <c>Ignored</c> in the EF configuration).
+    ///   • Break any <c>NextMatchId</c> self-references first so the bracket can collapse from
+    ///     either end without tripping the self-reference RESTRICT FK.
+    ///   • Issue a single bulk <c>DELETE</c> for the match rows themselves, letting the DB cascade
+    ///     events / period scores / officials via the configured Cascade FKs.
+    ///
+    /// Runs outside the change tracker (uses <c>ExecuteDeleteAsync</c>) and persists immediately —
+    /// callers do NOT need to follow up with <c>SaveChangesAsync</c> for this specific operation,
+    /// but should still call it for any other tracked changes.
+    /// </summary>
+    /// <param name="competitionId">Competition (tournament / season) id whose matches should be wiped.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Number of <c>FloorballMatch</c> rows deleted.</returns>
+    Task<int> DeleteAllByCompetitionIdAsync(Guid competitionId, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Checks if a floorball match exists
     /// </summary>
@@ -167,8 +210,8 @@ public interface IFloorballMatchRepository
     /// Gets last five game form
     /// </summary>
     /// <param name="teamId"></param>
-    /// <param name="seasonId"></param>
+    /// <param name="competitionId"></param>
     /// <param name="count"></param>
     /// <returns></returns>
-    Task<IEnumerable<FloorballMatch>> GetLastCompletedByTeamAsync(Guid teamId, Guid? seasonId = null, int count = 5);
+    Task<IEnumerable<FloorballMatch>> GetLastCompletedByTeamAsync(Guid teamId, Guid? competitionId = null, int count = 5);
 } 

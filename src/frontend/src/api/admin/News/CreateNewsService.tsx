@@ -1,3 +1,5 @@
+import { authFetch } from '../../utils/authFetch';
+import { API_URL } from '../../../constants/config';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -17,11 +19,9 @@ interface News{
   tags: string[] |null
 }
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
-
 export async function CreateNewsService(news: News){
     try {
-        const response = await fetch(`${API_URL}/News`, { 
+        const response = await authFetch(`${API_URL}/News`, { 
           method: "POST",
           headers: {
             "Content-Type": "application/json" // serialize object to JSON

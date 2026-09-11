@@ -1,0 +1,100 @@
+@use 'sass:map';
+@use '../../../../styles/variables' as *;
+
+.match-mgmt {
+  width: 100%;
+}
+
+// Header
+.match-mgmt__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: map.get($spacing, 'lg');
+  gap: map.get($spacing, 'base');
+
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    flex-direction: column;
+  }
+}
+
+.match-mgmt__title {
+  font-size: 2rem;
+  font-weight: map.get($font-weights, 'bold');
+  color: $color-text-primary;
+  margin: 0 0 map.get($spacing, 'xxs') 0;
+
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    font-size: 1.75rem;
+  }
+}
+
+.match-mgmt__subtitle {
+  font-size: map.get($font-sizes, 'base');
+  color: $color-text-muted;
+  margin: 0;
+}
+
+// Filters toolbar
+.match-mgmt__filters {
+  display: flex;
+  align-items: flex-end;
+  gap: map.get($spacing, 'base');
+  margin-bottom: map.get($spacing, 'lg');
+
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-field {
+    max-width: 320px;
+    flex: 1;
+
+    @media (max-width: map.get($breakpoints, 'tablet')) {
+      max-width: none;
+    }
+  }
+}
+
+.match-mgmt__season-filter {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'xxs');
+  min-width: 200px;
+
+  label {
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+    white-space: nowrap;
+  }
+}
+
+.match-mgmt__select {
+  padding: 8px 12px;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: $border-radius-default;
+  background: $color-white;
+  font-size: map.get($font-sizes, 'sm');
+  color: $color-text-primary;
+  cursor: pointer;
+  @include transition(border-color);
+
+  &:focus {
+    outline: none;
+    border-color: $color-blue-light;
+    box-shadow: 0 0 0 3px rgba($color-blue-light, 0.15);
+  }
+
+  &:hover {
+    border-color: $color-neutral-dark-grey;
+  }
+}
+
+// Table dimmed state during loading
+.match-mgmt__table--dimmed {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}

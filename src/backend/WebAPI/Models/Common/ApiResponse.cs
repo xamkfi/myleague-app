@@ -4,7 +4,7 @@ using Domain.Common;
 namespace WebAPI.Models.Common;
 
 /// <summary>
-/// Standard API response wrapper for all endpoints
+/// Standard API response wrapper for all endpoints.
 /// </summary>
 public record ApiResponse
 {

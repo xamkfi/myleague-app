@@ -14,11 +14,13 @@ This guide provides comprehensive instructions for developing new features in th
 - Experience with dependency injection patterns
 
 ### Key Principles to Follow
-1. **CQRS Separation** - Strict separation between commands and queries
-2. **Single Responsibility** - Each handler has one specific purpose
-3. **Validation First** - All input must be validated before processing
-4. **Result Pattern** - Consistent success/failure response structure
-5. **Async Operations** - All operations should be asynchronous
+1. **Feature-Based Structure** — All feature code lives under `Features/<Area>/<FeatureName>/`
+2. **CQRS Separation** — Strict separation between commands and queries (each in its own file/folder)
+3. **Single Responsibility** — Each handler has one specific purpose
+4. **Validation First** — All input must be validated before processing (FluentValidation)
+5. **Result Pattern** — Consistent success/failure response via `Result<T>` (access `.Data`, `.IsSuccess`, `.Error`)
+6. **Static Mappers** — Entity ↔ DTO mapping via static classes, not AutoMapper
+7. **Async Operations** — All operations should be asynchronous
 
 ## 🚀 Development Process
 
@@ -32,11 +34,11 @@ This guide provides comprehensive instructions for developing new features in th
 - [ ] Plan error handling scenarios
 
 #### 1.2 Application Design
-- [ ] Design command/query structure
-- [ ] Plan DTO mappings
+- [ ] Decide which feature area this belongs to (`Features/Common/...` or `Features/Floorball/...`)
+- [ ] Design command/query record structure
+- [ ] Plan DTO shape and static mapper methods
 - [ ] Design validation rules
-- [ ] Plan handler implementation
-- [ ] Consider cross-cutting concerns (caching, logging)
+- [ ] Plan handler implementation and required repositories
 
 #### 1.3 Implementation Planning
 - [ ] Plan service dependencies
@@ -48,126 +50,120 @@ This guide provides comprehensive instructions for developing new features in th
 
 #### 2.1 Commands (Write Operations)
 
-**For Creating New Entities:**
+Each command, its validator, and its handler live under the same feature folder. For example, creating a floorball team involves files under `Features/Floorball/Teams/`:
+
+**Command** (`Features/Floorball/Teams/Commands/CreateFloorballTeamCommand.cs`):
 ```csharp
-// Command Definition
-namespace Application.Commands.Floorball
-{
-    public record CreateFloorballTeamCommand(
-        string Name,
-        string Description,
-        Guid ClubId,
-        string Division
-    ) : IRequest<Result<FloorballTeamDto>>;
-}
+using Application.Common;
+using Application.Features.Floorball.Teams.DTOs;
+using Domain.Enums.Common;
+using MediatR;
 
-// Command Validator
-namespace Application.Validators.Commands.Floorball
+namespace Application.Features.Floorball.Teams.Commands;
+
+public record CreateFloorballTeamCommand(
+    string Name,
+    Guid? DivisionId,
+    Guid ClubId,
+    string HomeArena,
+    string PrimaryJerseyColor,
+    TeamCategory TeamCategory,
+    string? SecondaryJerseyColor,
+    string? ShortName) : IRequest<Result<FloorballTeamDto>>;
+```
+
+**Validator** (`Features/Floorball/Teams/Validators/CreateFloorballTeamCommandValidator.cs`):
+```csharp
+using Application.Features.Floorball.Teams.Commands;
+using FluentValidation;
+
+namespace Application.Features.Floorball.Teams.Validators;
+
+public class CreateFloorballTeamCommandValidator : AbstractValidator<CreateFloorballTeamCommand>
 {
-    public class CreateFloorballTeamCommandValidator : AbstractValidator<CreateFloorballTeamCommand>
+    public CreateFloorballTeamCommandValidator()
     {
-        public CreateFloorballTeamCommandValidator()
-        {
-            RuleFor(x => x.Name)
-                .NotEmpty()
-                .WithMessage("Team name is required")
-                .MaximumLength(100)
-                .WithMessage("Team name must not exceed 100 characters");
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Team name is required")
+            .MaximumLength(100).WithMessage("Team name cannot exceed 100 characters");
 
-            RuleFor(x => x.Description)
-                .MaximumLength(500)
-                .WithMessage("Description must not exceed 500 characters");
+        RuleFor(x => x.ClubId)
+            .NotEmpty().WithMessage("Club ID is required")
+            .NotEqual(Guid.Empty).WithMessage("Club ID cannot be empty");
 
-            RuleFor(x => x.ClubId)
-                .NotEmpty()
-                .WithMessage("Club ID is required");
+        RuleFor(x => x.HomeArena)
+            .NotEmpty().WithMessage("Home arena is required")
+            .MaximumLength(100).WithMessage("Home arena name cannot exceed 100 characters");
 
-            RuleFor(x => x.Division)
-                .NotEmpty()
-                .WithMessage("Division is required")
-                .Must(BeValidDivision)
-                .WithMessage("Invalid division specified");
-        }
+        RuleFor(x => x.PrimaryJerseyColor)
+            .NotEmpty().WithMessage("Primary jersey color is required")
+            .MaximumLength(50).WithMessage("Primary jersey color cannot exceed 50 characters");
 
-        private bool BeValidDivision(string division)
-        {
-            return Enum.TryParse<FloorballDivision>(division, true, out _);
-        }
+        RuleFor(x => x.TeamCategory)
+            .NotNull().WithMessage("Team category is required")
+            .IsInEnum().WithMessage("Invalid team category value");
     }
 }
+```
 
-// Command Handler
-namespace Application.Handlers.Floorball
+**Handler** (`Features/Floorball/Teams/Handlers/CreateFloorballTeamHandler.cs`):
+```csharp
+using Application.Features.Floorball.Teams.Commands;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Teams.Mappings;
+using Application.Common;
+using Domain.Entities.Floorball;
+using Domain.Entities.Common;
+using Domain.Repositories.Floorball;
+using Domain.Repositories.Common;
+using Microsoft.Extensions.Logging;
+using MediatR;
+
+namespace Application.Features.Floorball.Teams.Handlers;
+
+public class CreateFloorballTeamHandler : IRequestHandler<CreateFloorballTeamCommand, Result<FloorballTeamDto>>
 {
-    public class CreateFloorballTeamCommandHandler : IRequestHandler<CreateFloorballTeamCommand, Result<FloorballTeamDto>>
+    private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IClubRepository _clubRepository;
+    private readonly IFloorballUnitOfWork _unitOfWork;
+    private readonly ILogger<CreateFloorballTeamHandler> _logger;
+
+    public CreateFloorballTeamHandler(
+        IFloorballTeamRepository teamRepository,
+        IClubRepository clubRepository,
+        IFloorballUnitOfWork unitOfWork,
+        ILogger<CreateFloorballTeamHandler> logger)
     {
-        private readonly IFloorballTeamRepository _teamRepository;
-        private readonly IClubRepository _clubRepository;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-        private readonly ILogger<CreateFloorballTeamCommandHandler> _logger;
+        _teamRepository = teamRepository;
+        _clubRepository = clubRepository;
+        _unitOfWork = unitOfWork;
+        _logger = logger;
+    }
 
-        public CreateFloorballTeamCommandHandler(
-            IFloorballTeamRepository teamRepository,
-            IClubRepository clubRepository,
-            IUnitOfWork unitOfWork,
-            IMapper mapper,
-            ILogger<CreateFloorballTeamCommandHandler> logger)
+    public async Task<Result<FloorballTeamDto>> Handle(
+        CreateFloorballTeamCommand request, CancellationToken cancellationToken)
+    {
+        try
         {
-            _teamRepository = teamRepository;
-            _clubRepository = clubRepository;
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-            _logger = logger;
+            Club? club = await _clubRepository.GetByIdAsync(request.ClubId);
+            if (club == null)
+                return Result<FloorballTeamDto>.Failure("Club not found");
+
+            FloorballTeam team = FloorballTeamMapper.ToEntity(request, club);
+
+            _logger.LogInformation("Creating new floorball team: {TeamName}", request.Name);
+            await _teamRepository.AddAsync(team);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team, club);
+            _logger.LogInformation("Successfully created floorball team with ID: {TeamId}", team.Id);
+
+            return Result<FloorballTeamDto>.Success(teamDto);
         }
-
-        public async Task<Result<FloorballTeamDto>> Handle(CreateFloorballTeamCommand request, CancellationToken cancellationToken)
+        catch (Exception ex)
         {
-            try
-            {
-                _logger.LogInformation("Creating floorball team {TeamName} for club {ClubId}", 
-                    request.Name, request.ClubId);
-
-                // 1. Verify club exists
-                Club? club = await _clubRepository.GetByIdAsync(new ClubId(request.ClubId), cancellationToken);
-                if (club == null)
-                {
-                    return Result<FloorballTeamDto>.Failure("Club not found");
-                }
-
-                // 2. Check for duplicate team name within club
-                FloorballTeam? existingTeam = await _teamRepository.GetByNameAndClubAsync(request.Name, new ClubId(request.ClubId), cancellationToken);
-                if (existingTeam != null)
-                {
-                    return Result<FloorballTeamDto>.Failure("A team with this name already exists for this club");
-                }
-
-                // 3. Create domain entity
-                FloorballTeamId teamId = new FloorballTeamId(Guid.NewGuid());
-                FloorballDivision division = Enum.Parse<FloorballDivision>(request.Division, true);
-                
-                FloorballTeam team = new FloorballTeam(
-                    teamId,
-                    request.Name,
-                    request.Description,
-                    new ClubId(request.ClubId),
-                    division);
-
-                // 4. Persist entity
-                await _teamRepository.SaveAsync(team, cancellationToken);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-                // 5. Map to DTO and return
-                FloorballTeamDto teamDto = _mapper.Map<FloorballTeamDto>(team);
-                
-                _logger.LogInformation("Successfully created floorball team {TeamId}", teamId.Value);
-                return Result<FloorballTeamDto>.Success(teamDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating floorball team {TeamName}", request.Name);
-                return Result<FloorballTeamDto>.Failure("An error occurred while creating the team");
-            }
+            _logger.LogError(ex, "Error creating floorball team: {TeamName}", request.Name);
+            return Result<FloorballTeamDto>.Failure("An error occurred while creating the floorball team.");
         }
     }
 }
@@ -175,136 +171,105 @@ namespace Application.Handlers.Floorball
 
 #### 2.2 Queries (Read Operations)
 
+Queries follow the same feature structure. Files live under the feature's `Queries/` and `Handlers/` folders.
+
+**Query** (`Features/Floorball/Teams/Queries/GetAllFloorballTeamsQuery.cs`):
 ```csharp
-// Query Definition
-namespace Application.Queries.Floorball
-{
-    public record GetFloorballTeamByIdQuery(
-        Guid TeamId
-    ) : IRequest<Result<FloorballTeamDto>>;
+using Application.Common;
+using Application.Features.Floorball.Teams.DTOs;
+using Domain.Common;
+using MediatR;
 
-    public record GetFloorballTeamsQuery(
-        Guid? ClubId = null,
-        string? Division = null,
-        string? SearchTerm = null,
-        int Page = 1,
-        int PageSize = 50
-    ) : IRequest<Result<PagedResult<FloorballTeamDto>>>;
+namespace Application.Features.Floorball.Teams.Queries;
+
+public record GetAllFloorballTeamsQuery(
+    int Page = 1,
+    int PageSize = 0,
+    Guid? ClubId = null,
+    string? Division = null
+) : IRequest<Result<PagedResult<FloorballTeamDto>>>
+{
+    public const string ResourceKey = "FloorballTeams";
 }
+```
 
-// Query Validator
-namespace Application.Validators.Queries.Floorball
+**Query Validator** (`Features/Floorball/Teams/Validators/GetAllFloorballTeamsQueryValidator.cs`):
+```csharp
+using Application.Features.Floorball.Teams.Queries;
+using FluentValidation;
+
+namespace Application.Features.Floorball.Teams.Validators;
+
+public class GetAllFloorballTeamsQueryValidator : AbstractValidator<GetAllFloorballTeamsQuery>
 {
-    public class GetFloorballTeamsQueryValidator : AbstractValidator<GetFloorballTeamsQuery>
+    public GetAllFloorballTeamsQueryValidator()
     {
-        public GetFloorballTeamsQueryValidator()
-        {
-            RuleFor(x => x.Page)
-                .GreaterThan(0)
-                .WithMessage("Page must be greater than 0");
+        RuleFor(x => x.Page)
+            .GreaterThan(0).WithMessage("Page must be greater than 0");
 
-            RuleFor(x => x.PageSize)
-                .InclusiveBetween(1, 100)
-                .WithMessage("Page size must be between 1 and 100");
-
-            RuleFor(x => x.Division)
-                .Must(BeValidDivisionOrNull)
-                .WithMessage("Invalid division specified")
-                .When(x => !string.IsNullOrEmpty(x.Division));
-        }
-
-        private bool BeValidDivisionOrNull(string? division)
-        {
-            return string.IsNullOrEmpty(division) || Enum.TryParse<FloorballDivision>(division, true, out _);
-        }
+        RuleFor(x => x.PageSize)
+            .GreaterThanOrEqualTo(0).WithMessage("Page size must be 0 (default) or greater");
     }
 }
+```
 
-// Query Handler
-namespace Application.Handlers.Floorball
+**Query Handler** (`Features/Floorball/Teams/Handlers/GetAllFloorballTeamsHandler.cs`):
+```csharp
+using Application.Features.Floorball.Teams.Queries;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Teams.Mappings;
+using Application.Common;
+using Domain.Common;
+using Domain.Entities.Floorball;
+using Domain.Entities.Common;
+using Domain.Repositories.Floorball;
+using Domain.Repositories.Common;
+using Microsoft.Extensions.Logging;
+using MediatR;
+
+namespace Application.Features.Floorball.Teams.Handlers;
+
+public class GetAllFloorballTeamsHandler
+    : IRequestHandler<GetAllFloorballTeamsQuery, Result<PagedResult<FloorballTeamDto>>>
 {
-    public class GetFloorballTeamsQueryHandler : IRequestHandler<GetFloorballTeamsQuery, Result<PagedResult<FloorballTeamDto>>>
+    private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IClubRepository _clubRepository;
+    private readonly ILogger<GetAllFloorballTeamsHandler> _logger;
+
+    public GetAllFloorballTeamsHandler(
+        IFloorballTeamRepository teamRepository,
+        IClubRepository clubRepository,
+        ILogger<GetAllFloorballTeamsHandler> logger)
     {
-        private readonly IFloorballTeamRepository _teamRepository;
-        private readonly IMapper _mapper;
-        private readonly ILogger<GetFloorballTeamsQueryHandler> _logger;
-        private readonly IMemoryCache _cache;
+        _teamRepository = teamRepository;
+        _clubRepository = clubRepository;
+        _logger = logger;
+    }
 
-        public GetFloorballTeamsQueryHandler(
-            IFloorballTeamRepository teamRepository,
-            IMapper mapper,
-            ILogger<GetFloorballTeamsQueryHandler> logger,
-            IMemoryCache cache)
+    public async Task<Result<PagedResult<FloorballTeamDto>>> Handle(
+        GetAllFloorballTeamsQuery request, CancellationToken cancellationToken)
+    {
+        try
         {
-            _teamRepository = teamRepository;
-            _mapper = mapper;
-            _logger = logger;
-            _cache = cache;
+            // Retrieve teams from repository (with pagination)
+            IEnumerable<FloorballTeam> teams = await _teamRepository.GetAllAsync();
+
+            // Load related clubs
+            List<Guid> clubIds = teams.Select(t => t.ClubId).Distinct().ToList();
+            Dictionary<Guid, Club> clubs = /* load clubs by IDs */;
+
+            // Map using static mapper
+            IEnumerable<FloorballTeamDto> teamDtos = FloorballTeamMapper.ToDtos(teams, clubs);
+
+            PagedResult<FloorballTeamDto> result = new PagedResult<FloorballTeamDto>(
+                teamDtos, teamDtos.Count(), request.Page, request.PageSize);
+
+            return Result<PagedResult<FloorballTeamDto>>.Success(result);
         }
-
-        public async Task<Result<PagedResult<FloorballTeamDto>>> Handle(GetFloorballTeamsQuery request, CancellationToken cancellationToken)
+        catch (Exception ex)
         {
-            try
-            {
-                _logger.LogInformation("Retrieving floorball teams with filters: ClubId={ClubId}, Division={Division}, SearchTerm={SearchTerm}", 
-                    request.ClubId, request.Division, request.SearchTerm);
-
-                // Check cache first
-                string cacheKey = $"floorball_teams_{request.ClubId}_{request.Division}_{request.SearchTerm}_{request.Page}_{request.PageSize}";
-                if (_cache.TryGetValue(cacheKey, out PagedResult<FloorballTeamDto>? cachedResult))
-                {
-                    _logger.LogInformation("Returning cached result for floorball teams query");
-                    return Result<PagedResult<FloorballTeamDto>>.Success(cachedResult!);
-                }
-
-                // Parse division if provided
-                FloorballDivision? division = null;
-                if (!string.IsNullOrEmpty(request.Division))
-                {
-                    division = Enum.Parse<FloorballDivision>(request.Division, true);
-                }
-
-                // Retrieve from repository
-                IEnumerable<FloorballTeam> teams = await _teamRepository.GetPagedAsync(
-                    request.ClubId.HasValue ? new ClubId(request.ClubId.Value) : null,
-                    division,
-                    request.SearchTerm,
-                    request.Page,
-                    request.PageSize,
-                    cancellationToken);
-
-                int totalCount = await _teamRepository.CountAsync(
-                    request.ClubId.HasValue ? new ClubId(request.ClubId.Value) : null,
-                    division,
-                    request.SearchTerm,
-                    cancellationToken);
-
-                // Map to DTOs
-                IEnumerable<FloorballTeamDto> teamDtos = _mapper.Map<IEnumerable<FloorballTeamDto>>(teams);
-                
-                PagedResult<FloorballTeamDto> result = new PagedResult<FloorballTeamDto>(
-                    teamDtos,
-                    totalCount,
-                    request.Page,
-                    request.PageSize,
-                    (int)Math.Ceiling((double)totalCount / request.PageSize));
-
-                // Cache the result
-                MemoryCacheEntryOptions cacheOptions = new MemoryCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15),
-                    SlidingExpiration = TimeSpan.FromMinutes(5)
-                };
-                _cache.Set(cacheKey, result, cacheOptions);
-
-                _logger.LogInformation("Successfully retrieved {Count} floorball teams", teamDtos.Count());
-                return Result<PagedResult<FloorballTeamDto>>.Success(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving floorball teams");
-                return Result<PagedResult<FloorballTeamDto>>.Failure("An error occurred while retrieving teams");
-            }
+            _logger.LogError(ex, "Error retrieving floorball teams");
+            return Result<PagedResult<FloorballTeamDto>>.Failure("An error occurred while retrieving teams");
         }
     }
 }
@@ -312,242 +277,282 @@ namespace Application.Handlers.Floorball
 
 #### 2.3 Data Transfer Objects (DTOs)
 
+DTOs live inside each feature's `DTOs/` folder. Shared DTOs (e.g. `PagedResult`, `ClubDto`) live in `Features/Common/Shared/DTOs/`.
+
+**Feature DTO** (`Features/Floorball/Teams/DTOs/FloorballTeamDto.cs`):
 ```csharp
-namespace Application.DTOs.Floorball
-{
-    public record FloorballTeamDto(
-        Guid Id,
-        string Name,
-        string Description,
-        Guid ClubId,
-        string ClubName,
-        string Division,
-        int PlayerCount,
-        DateTime CreatedAt,
-        DateTime? UpdatedAt
-    );
+using Application.Features.Common.Clubs.DTOs;
 
-    public record FloorballTeamSummaryDto(
-        Guid Id,
-        string Name,
-        string ClubName,
-        string Division,
-        int PlayerCount
-    );
+namespace Application.Features.Floorball.Teams.DTOs;
 
-    public record CreateFloorballTeamRequest(
-        string Name,
-        string Description,
-        Guid ClubId,
-        string Division
-    );
+public record FloorballTeamDto(
+    Guid Id,
+    string Name,
+    string ShortName,
+    Guid? DivisionId,
+    ClubDto Club,
+    string HomeArena,
+    string PrimaryJerseyColor,
+    string SecondaryJerseyColor,
+    string? LogoUrl,
+    bool HasActiveMembers,
+    IReadOnlyCollection<FloorballTeamPlayerDto> Roster);
 
-    public record UpdateFloorballTeamRequest(
-        string Name,
-        string Description,
-        string Division
-    );
-}
+public record FloorballTeamSummaryDto(
+    Guid Id,
+    string Name,
+    Guid? DivisionId,
+    ClubDto Club,
+    string HomeArena,
+    string PrimaryJerseyColor,
+    string SecondaryJerseyColor,
+    string? LogoUrl,
+    bool HasActiveMembers,
+    TeamCategory TeamCategory);
 ```
 
-#### 2.4 Object Mapping Configuration
+#### 2.4 Static Mapper Classes
 
+The project uses **static mapper classes** (not AutoMapper) for entity ↔ DTO mapping. Each feature's `Mappings/` folder contains a mapper with `ToDto()`, `ToDtos()`, `ToEntity()`, and `UpdateFromCommand()` methods.
+
+**Mapper** (`Features/Floorball/Teams/Mappings/FloorballTeamMapper.cs`):
 ```csharp
-namespace Application.Mappings.Floorball
+using Application.Features.Floorball.Teams.Commands;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Common.Clubs.Mappings;
+using Domain.Entities.Common;
+using Domain.Entities.Floorball;
+
+namespace Application.Features.Floorball.Teams.Mappings;
+
+public static class FloorballTeamMapper
 {
-    public class FloorballTeamMappingProfile : Profile
+    public static FloorballTeamDto ToDto(FloorballTeam team, Club club,
+        Dictionary<Guid, Person>? playerPersons = null)
     {
-        public FloorballTeamMappingProfile()
-        {
-            CreateMap<FloorballTeam, FloorballTeamDto>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.Value))
-                .ForMember(dest => dest.ClubId, opt => opt.MapFrom(src => src.ClubId.Value))
-                .ForMember(dest => dest.ClubName, opt => opt.MapFrom(src => src.Club.Name))
-                .ForMember(dest => dest.Division, opt => opt.MapFrom(src => src.Division.ToString()))
-                .ForMember(dest => dest.PlayerCount, opt => opt.MapFrom(src => src.Players.Count));
-
-            CreateMap<FloorballTeam, FloorballTeamSummaryDto>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.Value))
-                .ForMember(dest => dest.ClubName, opt => opt.MapFrom(src => src.Club.Name))
-                .ForMember(dest => dest.Division, opt => opt.MapFrom(src => src.Division.ToString()))
-                .ForMember(dest => dest.PlayerCount, opt => opt.MapFrom(src => src.Players.Count));
-
-            CreateMap<CreateFloorballTeamRequest, CreateFloorballTeamCommand>();
-            CreateMap<UpdateFloorballTeamRequest, UpdateFloorballTeamCommand>();
-        }
+        return new FloorballTeamDto(
+            team.Id,
+            team.Name,
+            team.ShortName,
+            team.DivisionId,
+            ClubMapper.ToDto(club),
+            team.HomeArena,
+            team.PrimaryJerseyColor,
+            team.SecondaryJerseyColor,
+            team.GetEffectiveLogoUrl(club.LogoUrl)?.ToString(),
+            team.HasActiveMembers,
+            /* map roster */);
     }
+
+    public static IEnumerable<FloorballTeamDto> ToDtos(
+        IEnumerable<FloorballTeam> teams,
+        Dictionary<Guid, Club>? clubs = null,
+        Dictionary<Guid, Person>? playerPersons = null) { ... }
+
+    public static FloorballTeam ToEntity(CreateFloorballTeamCommand command, Club club)
+    {
+        return new FloorballTeam(
+            command.Name,
+            command.DivisionId,
+            club,
+            command.HomeArena,
+            command.PrimaryJerseyColor,
+            command.TeamCategory,
+            command.SecondaryJerseyColor,
+            command.ShortName);
+    }
+
+    public static void UpdateFromCommand(FloorballTeam team, UpdateFloorballTeamCommand command)
+    {
+        team.UpdateName(command.Name);
+        team.UpdateDivision(command.DivisionId);
+        team.UpdateHomeArena(command.HomeArena);
+        team.UpdateJerseyColors(command.PrimaryJerseyColor, command.SecondaryJerseyColor!);
+        team.UpdateShortName(command.ShortName);
+    }
+
+    public static FloorballTeamSummaryDto ToSummaryDto(FloorballTeam team, Club club) { ... }
 }
 ```
+
+**Key conventions:**
+- `ToDto(entity, ...) → DTO` for single entity mapping.
+- `ToDtos(entities, ...) → IEnumerable<DTO>` for collection mapping (accepts dictionaries of related entities).
+- `ToEntity(command, ...) → Entity` for creating new domain entities from commands.
+- `UpdateFromCommand(entity, command)` for updating existing entities from commands.
+- Related entities (Club, Person, etc.) are passed as parameters since navigation properties may not be loaded via EF.
 
 #### 2.5 Pipeline Behaviors
 
-**Caching Behavior:**
+The project registers two MediatR pipeline behaviors (in `Behaviors/`). They run in order for every request: **Logging → Validation**.
+
+**LoggingBehavior** (`Behaviors/LoggingBehavior.cs`) — logs every request with timing and structured context:
 ```csharp
-namespace Application.Behaviors
+using MediatR;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+
+namespace Application.Behaviors;
+
+public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
 {
-    public class CachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-        where TRequest : IRequest<TResponse>
-        where TResponse : class
+    private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
+
+    public LoggingBehavior(ILogger<LoggingBehavior<TRequest, TResponse>> logger) => _logger = logger;
+
+    public async Task<TResponse> Handle(
+        TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        private readonly IMemoryCache _cache;
-        private readonly ILogger<CachingBehavior<TRequest, TResponse>> _logger;
+        string requestName = typeof(TRequest).Name;
+        string requestId = Guid.NewGuid().ToString();
 
-        public CachingBehavior(IMemoryCache cache, ILogger<CachingBehavior<TRequest, TResponse>> logger)
+        _logger.LogInformation("Starting request {RequestName} with ID {RequestId}", requestName, requestId);
+
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        try
         {
-            _cache = cache;
-            _logger = logger;
-        }
-
-        public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
-        {
-            // Only cache queries, not commands
-            if (!IsQuery(request))
-            {
-                return await next();
-            }
-
-            string cacheKey = GenerateCacheKey(request);
-            
-            if (_cache.TryGetValue(cacheKey, out TResponse? cachedResponse))
-            {
-                _logger.LogInformation("Cache hit for {RequestType}", typeof(TRequest).Name);
-                return cachedResponse!;
-            }
-
-            _logger.LogInformation("Cache miss for {RequestType}", typeof(TRequest).Name);
             TResponse response = await next();
+            stopwatch.Stop();
 
-            MemoryCacheEntryOptions cacheOptions = new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15),
-                SlidingExpiration = TimeSpan.FromMinutes(5)
-            };
+            _logger.LogInformation("Completed {RequestName} ({RequestId}) in {ElapsedMs}ms",
+                requestName, requestId, stopwatch.ElapsedMilliseconds);
 
-            _cache.Set(cacheKey, response, cacheOptions);
+            if (stopwatch.ElapsedMilliseconds > 1000)
+                _logger.LogWarning("Slow request: {RequestName} took {ElapsedMs}ms",
+                    requestName, stopwatch.ElapsedMilliseconds);
+
             return response;
         }
-
-        private static bool IsQuery(TRequest request)
+        catch (Exception ex)
         {
-            return request.GetType().Name.EndsWith("Query");
-        }
-
-        private static string GenerateCacheKey(TRequest request)
-        {
-            string requestType = request.GetType().Name;
-            string requestData = JsonSerializer.Serialize(request);
-            return $"{requestType}_{requestData.GetHashCode()}";
+            stopwatch.Stop();
+            _logger.LogError(ex, "Request {RequestName} ({RequestId}) failed after {ElapsedMs}ms",
+                requestName, requestId, stopwatch.ElapsedMilliseconds);
+            throw;
         }
     }
 }
+```
 
-// Logging Behavior
-namespace Application.Behaviors
+**ValidationBehavior** (`Behaviors/ValidationBehaviors.cs`) — runs FluentValidation validators before the handler. Returns `Result<T>.ValidationFailure(...)` instead of throwing:
+```csharp
+using FluentValidation;
+using FluentValidation.Results;
+using MediatR;
+using Application.Common;
+
+namespace Application.Behaviors;
+
+public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : class, IRequest<TResponse>
 {
-    public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-        where TRequest : IRequest<TResponse>
+    private readonly IEnumerable<IValidator<TRequest>> _validators;
+
+    public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators) => _validators = validators;
+
+    public async Task<TResponse> Handle(
+        TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
+        cancellationToken.ThrowIfCancellationRequested();
 
-        public LoggingBehavior(ILogger<LoggingBehavior<TRequest, TResponse>> logger)
-        {
-            _logger = logger;
-        }
+        if (!_validators.Any())
+            return await next();
 
-        public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
-        {
-            string requestName = typeof(TRequest).Name;
-            Guid requestId = Guid.NewGuid();
+        ValidationContext<TRequest> context = new(request);
+        ValidationResult[] results = await Task.WhenAll(
+            _validators.Select(v => v.ValidateAsync(context, cancellationToken)));
 
-            _logger.LogInformation("Starting request {RequestName} with ID {RequestId}", requestName, requestId);
+        List<ValidationFailure> failures = results
+            .SelectMany(r => r.Errors)
+            .Where(f => f != null)
+            .ToList();
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            try
-            {
-                TResponse response = await next();
-                
-                stopwatch.Stop();
-                _logger.LogInformation("Completed request {RequestName} with ID {RequestId} in {ElapsedMs}ms", 
-                    requestName, requestId, stopwatch.ElapsedMilliseconds);
+        if (failures.Any())
+            return CreateValidationFailureResult(failures);
 
-                return response;
-            }
-            catch (Exception ex)
-            {
-                stopwatch.Stop();
-                _logger.LogError(ex, "Request {RequestName} with ID {RequestId} failed after {ElapsedMs}ms", 
-                    requestName, requestId, stopwatch.ElapsedMilliseconds);
-                throw;
-            }
-        }
+        return await next();
     }
+
+    // Returns Result<T>.ValidationFailure(...) when TResponse is Result<T>,
+    // or throws ValidationException as a fallback.
+    private static TResponse CreateValidationFailureResult(List<ValidationFailure> failures) { ... }
 }
 ```
 
 #### 2.6 Service Registration
 
+All MediatR handlers, validators, and behaviors are discovered via assembly scanning. Static mappers don't need registration.
+
+**DI** (`DependencyInjections/DependencyInjection.cs`):
 ```csharp
-namespace Application.DependencyInjections
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+using Application.Behaviors;
+using Application.Features.Common.MatchTimer.Services;
+using Application.Services.Common;
+using MediatR;
+using FluentValidation;
+
+namespace Application.DependencyInjections;
+
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
+        Assembly assembly = Assembly.GetExecutingAssembly();
+
+        services.AddMediatR(cfg =>
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
+            cfg.RegisterServicesFromAssembly(assembly);
 
-            // Register MediatR
-            services.AddMediatR(cfg =>
-            {
-                cfg.RegisterServicesFromAssembly(assembly);
-                
-                // Register behaviors in order
-                cfg.AddBehavior<LoggingBehavior<,>>();
-                cfg.AddBehavior<ValidationBehavior<,>>();
-                cfg.AddBehavior<CachingBehavior<,>>();
-            });
+            // Pipeline order: Logging → Validation
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        });
 
-            // Register FluentValidation
-            services.AddValidatorsFromAssembly(assembly);
+        services.AddValidatorsFromAssembly(assembly);
 
-            // Register AutoMapper
-            services.AddAutoMapper(assembly);
+        services.AddScoped<IPaginationService, PaginationService>();
+        services.AddScoped<IMatchTimerService, PersistentMatchTimerService>();
 
-            // Register memory cache for caching behavior
-            services.AddMemoryCache();
-
-            return services;
-        }
+        return services;
     }
 }
 ```
+
+> **Note:** The project does **not** use AutoMapper or IMemoryCache. Mapping is done via static mapper classes, and there is no caching pipeline behavior.
 
 ### Step 3: Testing
 
 #### 3.1 Command Handler Tests
 
+Since mapping is done via static methods, handlers only need repository and unit-of-work mocks (no `IMapper` mock):
+
 ```csharp
-public class CreateFloorballTeamCommandHandlerTests
+using Application.Features.Floorball.Teams.Commands;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Floorball.Teams.Handlers;
+
+public class CreateFloorballTeamHandlerTests
 {
     private readonly Mock<IFloorballTeamRepository> _teamRepositoryMock;
     private readonly Mock<IClubRepository> _clubRepositoryMock;
-    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IMapper> _mapperMock;
-    private readonly Mock<ILogger<CreateFloorballTeamCommandHandler>> _loggerMock;
-    private readonly CreateFloorballTeamCommandHandler _handler;
+    private readonly Mock<IFloorballUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<ILogger<CreateFloorballTeamHandler>> _loggerMock;
+    private readonly CreateFloorballTeamHandler _handler;
 
-    public CreateFloorballTeamCommandHandlerTests()
+    public CreateFloorballTeamHandlerTests()
     {
         _teamRepositoryMock = new Mock<IFloorballTeamRepository>();
         _clubRepositoryMock = new Mock<IClubRepository>();
-        _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _mapperMock = new Mock<IMapper>();
-        _loggerMock = new Mock<ILogger<CreateFloorballTeamCommandHandler>>();
+        _unitOfWorkMock = new Mock<IFloorballUnitOfWork>();
+        _loggerMock = new Mock<ILogger<CreateFloorballTeamHandler>>();
 
-        _handler = new CreateFloorballTeamCommandHandler(
+        _handler = new CreateFloorballTeamHandler(
             _teamRepositoryMock.Object,
             _clubRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _mapperMock.Object,
             _loggerMock.Object);
     }
 
@@ -556,41 +561,34 @@ public class CreateFloorballTeamCommandHandlerTests
     {
         // Arrange
         Guid clubId = Guid.NewGuid();
-        CreateFloorballTeamCommand command = new CreateFloorballTeamCommand("Test Team", "Description", clubId, "FirstDivision");
-        Club club = new Club(new ClubId(clubId), "Test Club", "Club Description", new Address("Street", "City", "12345", "Country"));
-        FloorballTeamDto teamDto = new FloorballTeamDto(Guid.NewGuid(), "Test Team", "Description", clubId, "Test Club", "FirstDivision", 0, DateTime.UtcNow, null);
+        Club club = new Club("Test Club", "Description");
+        CreateFloorballTeamCommand command = new("Test Team", null, clubId, "Arena",
+            "Blue", TeamCategory.Men, null, null);
 
         _clubRepositoryMock
-            .Setup(x => x.GetByIdAsync(It.IsAny<ClubId>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByIdAsync(clubId))
             .ReturnsAsync(club);
-
-        _teamRepositoryMock
-            .Setup(x => x.GetByNameAndClubAsync(It.IsAny<string>(), It.IsAny<ClubId>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((FloorballTeam?)null);
-
-        _mapperMock
-            .Setup(x => x.Map<FloorballTeamDto>(It.IsAny<FloorballTeam>()))
-            .Returns(teamDto);
 
         // Act
         Result<FloorballTeamDto> result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(teamDto);
-        
-        _teamRepositoryMock.Verify(x => x.SaveAsync(It.IsAny<FloorballTeam>(), It.IsAny<CancellationToken>()), Times.Once);
+        result.Data!.Name.Should().Be("Test Team");
+
+        _teamRepositoryMock.Verify(x => x.AddAsync(It.IsAny<FloorballTeam>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_WithNonExistentClub_ShouldReturnFailureResult()
+    public async Task Handle_WithNonExistentClub_ShouldReturnFailure()
     {
         // Arrange
-        CreateFloorballTeamCommand command = new CreateFloorballTeamCommand("Test Team", "Description", Guid.NewGuid(), "FirstDivision");
+        CreateFloorballTeamCommand command = new("Team", null, Guid.NewGuid(), "Arena",
+            "Blue", TeamCategory.Men, null, null);
 
         _clubRepositoryMock
-            .Setup(x => x.GetByIdAsync(It.IsAny<ClubId>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync((Club?)null);
 
         // Act
@@ -599,261 +597,104 @@ public class CreateFloorballTeamCommandHandlerTests
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be("Club not found");
-        
-        _teamRepositoryMock.Verify(x => x.SaveAsync(It.IsAny<FloorballTeam>(), It.IsAny<CancellationToken>()), Times.Never);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task Handle_WithDuplicateTeamName_ShouldReturnFailureResult()
-    {
-        // Arrange
-        Guid clubId = Guid.NewGuid();
-        CreateFloorballTeamCommand command = new CreateFloorballTeamCommand("Test Team", "Description", clubId, "FirstDivision");
-        Club club = new Club(new ClubId(clubId), "Test Club", "Club Description", new Address("Street", "City", "12345", "Country"));
-        FloorballTeam existingTeam = new FloorballTeam(new FloorballTeamId(Guid.NewGuid()), "Test Team", "Description", new ClubId(clubId), FloorballDivision.FirstDivision);
-
-        _clubRepositoryMock
-            .Setup(x => x.GetByIdAsync(It.IsAny<ClubId>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(club);
-
-        _teamRepositoryMock
-            .Setup(x => x.GetByNameAndClubAsync(It.IsAny<string>(), It.IsAny<ClubId>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existingTeam);
-
-        // Act
-        Result<FloorballTeamDto> result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be("A team with this name already exists for this club");
-        
-        _teamRepositoryMock.Verify(x => x.SaveAsync(It.IsAny<FloorballTeam>(), It.IsAny<CancellationToken>()), Times.Never);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _teamRepositoryMock.Verify(x => x.AddAsync(It.IsAny<FloorballTeam>()), Times.Never);
     }
 }
 ```
 
-#### 3.2 Query Handler Tests
+#### 3.2 Validator Tests
 
 ```csharp
-public class GetFloorballTeamsQueryHandlerTests
-{
-    private readonly Mock<IFloorballTeamRepository> _teamRepositoryMock;
-    private readonly Mock<IMapper> _mapperMock;
-    private readonly Mock<ILogger<GetFloorballTeamsQueryHandler>> _loggerMock;
-    private readonly Mock<IMemoryCache> _cacheMock;
-    private readonly GetFloorballTeamsQueryHandler _handler;
+using Application.Features.Floorball.Teams.Commands;
+using Application.Features.Floorball.Teams.Validators;
 
-    public GetFloorballTeamsQueryHandlerTests()
-    {
-        _teamRepositoryMock = new Mock<IFloorballTeamRepository>();
-        _mapperMock = new Mock<IMapper>();
-        _loggerMock = new Mock<ILogger<GetFloorballTeamsQueryHandler>>();
-        _cacheMock = new Mock<IMemoryCache>();
-
-        _handler = new GetFloorballTeamsQueryHandler(
-            _teamRepositoryMock.Object,
-            _mapperMock.Object,
-            _loggerMock.Object,
-            _cacheMock.Object);
-    }
-
-    [Fact]
-    public async Task Handle_WithValidQuery_ShouldReturnPagedResult()
-    {
-        // Arrange
-        GetFloorballTeamsQuery query = new GetFloorballTeamsQuery(Page: 1, PageSize: 10);
-        List<FloorballTeam> teams = new List<FloorballTeam>
-        {
-            new(new FloorballTeamId(Guid.NewGuid()), "Team 1", "Description", new ClubId(Guid.NewGuid()), FloorballDivision.FirstDivision),
-            new(new FloorballTeamId(Guid.NewGuid()), "Team 2", "Description", new ClubId(Guid.NewGuid()), FloorballDivision.SecondDivision)
-        };
-        IEnumerable<FloorballTeamDto> teamDtos = teams.Select(t => new FloorballTeamDto(t.Id.Value, t.Name, t.Description, t.ClubId.Value, "Club Name", t.Division.ToString(), 0, DateTime.UtcNow, null));
-
-        _cacheMock
-            .Setup(x => x.TryGetValue(It.IsAny<object>(), out It.Ref<object?>.IsAny))
-            .Returns(false);
-
-        _teamRepositoryMock
-            .Setup(x => x.GetPagedAsync(null, null, null, 1, 10, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(teams);
-
-        _teamRepositoryMock
-            .Setup(x => x.CountAsync(null, null, null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(2);
-
-        _mapperMock
-            .Setup(x => x.Map<IEnumerable<FloorballTeamDto>>(It.IsAny<IEnumerable<FloorballTeam>>()))
-            .Returns(teamDtos);
-
-        // Act
-        Result<PagedResult<FloorballTeamDto>> result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Items.Should().HaveCount(2);
-        result.Value.TotalCount.Should().Be(2);
-        result.Value.Page.Should().Be(1);
-        result.Value.PageSize.Should().Be(10);
-    }
-
-    [Fact]
-    public async Task Handle_WithCachedResult_ShouldReturnCachedData()
-    {
-        // Arrange
-        GetFloorballTeamsQuery query = new GetFloorballTeamsQuery(Page: 1, PageSize: 10);
-        PagedResult<FloorballTeamDto> cachedResult = new PagedResult<FloorballTeamDto>(
-            new List<FloorballTeamDto>(),
-            0, 1, 10, 0);
-
-        object? cachedValue = cachedResult;
-        _cacheMock
-            .Setup(x => x.TryGetValue(It.IsAny<object>(), out cachedValue))
-            .Returns(true);
-
-        // Act
-        Result<PagedResult<FloorballTeamDto>> result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(cachedResult);
-        
-        _teamRepositoryMock.Verify(x => x.GetPagedAsync(It.IsAny<ClubId?>(), It.IsAny<FloorballDivision?>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
-    }
-}
-```
-
-#### 3.3 Validator Tests
-
-```csharp
 public class CreateFloorballTeamCommandValidatorTests
 {
-    private readonly CreateFloorballTeamCommandValidator _validator;
-
-    public CreateFloorballTeamCommandValidatorTests()
-    {
-        _validator = new CreateFloorballTeamCommandValidator();
-    }
+    private readonly CreateFloorballTeamCommandValidator _validator = new();
 
     [Fact]
-    public void Validate_WithValidCommand_ShouldPassValidation()
+    public void Validate_WithValidCommand_ShouldPass()
     {
-        // Arrange
-        CreateFloorballTeamCommand command = new CreateFloorballTeamCommand("Test Team", "Description", Guid.NewGuid(), "FirstDivision");
+        CreateFloorballTeamCommand command = new("Test Team", null, Guid.NewGuid(), "Arena",
+            "Blue", TeamCategory.Men, null, null);
 
-        // Act
         ValidationResult result = _validator.Validate(command);
 
-        // Assert
         result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
     }
 
     [Theory]
     [InlineData("")]
     [InlineData(null)]
-    [InlineData("   ")]
-    public void Validate_WithInvalidName_ShouldFailValidation(string name)
+    public void Validate_WithInvalidName_ShouldFail(string? name)
     {
-        // Arrange
-        CreateFloorballTeamCommand command = new CreateFloorballTeamCommand(name, "Description", Guid.NewGuid(), "FirstDivision");
+        CreateFloorballTeamCommand command = new(name!, null, Guid.NewGuid(), "Arena",
+            "Blue", TeamCategory.Men, null, null);
 
-        // Act
         ValidationResult result = _validator.Validate(command);
 
-        // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(CreateFloorballTeamCommand.Name));
     }
 
     [Fact]
-    public void Validate_WithTooLongName_ShouldFailValidation()
+    public void Validate_WithEmptyClubId_ShouldFail()
     {
-        // Arrange
-        string longName = new string('A', 101);
-        CreateFloorballTeamCommand command = new CreateFloorballTeamCommand(longName, "Description", Guid.NewGuid(), "FirstDivision");
+        CreateFloorballTeamCommand command = new("Team", null, Guid.Empty, "Arena",
+            "Blue", TeamCategory.Men, null, null);
 
-        // Act
         ValidationResult result = _validator.Validate(command);
 
-        // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(CreateFloorballTeamCommand.Name));
-    }
-
-    [Fact]
-    public void Validate_WithInvalidDivision_ShouldFailValidation()
-    {
-        // Arrange
-        CreateFloorballTeamCommand command = new CreateFloorballTeamCommand("Test Team", "Description", Guid.NewGuid(), "InvalidDivision");
-
-        // Act
-        ValidationResult result = _validator.Validate(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(CreateFloorballTeamCommand.Division));
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(CreateFloorballTeamCommand.ClubId));
     }
 }
 ```
 
-#### 3.4 Integration Tests
+#### 3.3 Integration Tests
 
 ```csharp
+using Application.Features.Floorball.Teams.Commands;
+using Application.Features.Floorball.Teams.Queries;
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Common.Clubs.Commands;
+
 public class FloorballTeamIntegrationTests : IClassFixture<ApplicationTestFixture>, IDisposable
 {
-    private readonly ApplicationTestFixture _fixture;
     private readonly IServiceScope _scope;
     private readonly IMediator _mediator;
 
     public FloorballTeamIntegrationTests(ApplicationTestFixture fixture)
     {
-        _fixture = fixture;
-        _scope = _fixture.ServiceProvider.CreateScope();
+        _scope = fixture.ServiceProvider.CreateScope();
         _mediator = _scope.ServiceProvider.GetRequiredService<IMediator>();
     }
 
-    public void Dispose()
-    {
-        _scope.Dispose();
-    }
+    public void Dispose() => _scope.Dispose();
 
     [Fact]
-    public async Task CreateAndRetrieveFloorballTeam_ShouldWorkEndToEnd()
+    public async Task CreateAndRetrieve_ShouldWorkEndToEnd()
     {
-        // Arrange
-        CreateClubCommand createClubCommand = new CreateClubCommand("Test Club", "Description", new Address("Street", "City", "12345", "Country"));
-        Result<ClubDto> clubResult = await _mediator.Send(createClubCommand);
+        // Arrange — create a club first
+        CreateClubCommand clubCmd = new("Test Club", "Description");
+        Result<ClubDto> clubResult = await _mediator.Send(clubCmd);
         clubResult.IsSuccess.Should().BeTrue();
 
-        CreateFloorballTeamCommand createTeamCommand = new CreateFloorballTeamCommand("Test Team", "Team Description", clubResult.Value.Id, "FirstDivision");
+        CreateFloorballTeamCommand teamCmd = new("Test Team", null, clubResult.Data!.Id,
+            "Arena", "Blue", TeamCategory.Men, null, null);
 
-        // Act - Create team
-        Result<FloorballTeamDto> createResult = await _mediator.Send(createTeamCommand);
+        // Act
+        Result<FloorballTeamDto> createResult = await _mediator.Send(teamCmd);
 
-        // Assert - Create succeeded
+        // Assert
         createResult.IsSuccess.Should().BeTrue();
-        createResult.Value.Name.Should().Be("Test Team");
+        createResult.Data!.Name.Should().Be("Test Team");
 
-        // Act - Retrieve team
-        GetFloorballTeamByIdQuery getQuery = new GetFloorballTeamByIdQuery(createResult.Value.Id);
+        GetFloorballTeamByIdQuery getQuery = new(createResult.Data.Id);
         Result<FloorballTeamDto> getResult = await _mediator.Send(getQuery);
 
-        // Assert - Retrieve succeeded
         getResult.IsSuccess.Should().BeTrue();
-        getResult.Value.Should().BeEquivalentTo(createResult.Value);
-    }
-
-    [Fact]
-    public async Task CreateFloorballTeam_WithInvalidData_ShouldFailValidation()
-    {
-        // Arrange
-        CreateFloorballTeamCommand command = new CreateFloorballTeamCommand("", "Description", Guid.NewGuid(), "InvalidDivision");
-
-        // Act & Assert
-        ValidationException exception = await Assert.ThrowsAsync<ValidationException>(() => _mediator.Send(command));
-        exception.Errors.Should().NotBeEmpty();
+        getResult.Data!.Name.Should().Be("Test Team");
     }
 }
 ```
@@ -868,18 +709,18 @@ public class FloorballTeamIntegrationTests : IClassFixture<ApplicationTestFixtur
 - [ ] Error handling scenarios planned
 
 ### Implementation Phase
-- [ ] Command/Query classes implemented
-- [ ] Validators implemented with comprehensive rules
-- [ ] Handlers implemented with proper error handling
-- [ ] DTOs and mapping configurations created
-- [ ] Pipeline behaviors considered (caching, logging)
+- [ ] Feature folder created under `Features/<Area>/<FeatureName>/`
+- [ ] Command/Query record classes implemented in `Commands/` or `Queries/`
+- [ ] Validators implemented in `Validators/` with comprehensive rules
+- [ ] Handlers implemented in `Handlers/` with proper error handling
+- [ ] DTOs created in `DTOs/`
+- [ ] Static mapper class created in `Mappings/` with `ToDto()`, `ToEntity()`, etc.
 
 ### Testing Phase
 - [ ] Unit tests for handlers (success and failure cases)
 - [ ] Unit tests for validators (all validation rules)
 - [ ] Integration tests for end-to-end scenarios
 - [ ] Performance tests for query operations
-- [ ] Caching behavior validation
 
 ### Documentation Phase
 - [ ] API documentation updated
@@ -896,38 +737,49 @@ public class FloorballTeamIntegrationTests : IClassFixture<ApplicationTestFixtur
 
 ## 🔧 Common Patterns & Examples
 
-### Adding New Sport Features
-1. Create sport-specific command/query folders
-2. Implement sport-specific DTOs
-3. Create sport-specific validators
-4. Implement handlers following existing patterns
-5. Add mapping configurations
-6. Register new validators in DI
+### Adding a New Sport (e.g. Ice Hockey)
+1. Create the feature folder structure under `Features/`:
+   ```
+   Features/IceHockey/
+   ├── Teams/
+   │   ├── Commands/
+   │   ├── Queries/
+   │   ├── Handlers/
+   │   ├── DTOs/
+   │   ├── Mappings/
+   │   └── Validators/
+   ├── Players/
+   │   └── ...
+   ├── Matches/
+   │   └── ...
+   └── Constants/
+   ```
+2. Implement record-based **Commands** and **Queries** (`IRequest<Result<T>>`).
+3. Create **DTOs** in each feature's `DTOs/` folder.
+4. Implement **static mapper** classes in `Mappings/` with `ToDto()`, `ToEntity()`, `UpdateFromCommand()`.
+5. Write **FluentValidation validators** in `Validators/`.
+6. Implement **Handlers** in `Handlers/` — inject repositories and unit-of-work; use the static mapper.
+7. No registration needed — MediatR and FluentValidation auto-discover from the assembly.
+
+### Adding a New Common Feature
+Place it under `Features/Common/<FeatureName>/` (e.g. `Features/Common/Venues/`). Shared DTOs that multiple features reference go in `Features/Common/Shared/DTOs/`.
 
 ### Adding Cross-Cutting Behaviors
-1. Implement IPipelineBehavior<TRequest, TResponse>
-2. Register behavior in DI configuration
-3. Consider behavior order (validation typically first)
-4. Add comprehensive logging
-5. Handle exceptions appropriately
-
-### Adding Caching
-1. Identify cacheable queries
-2. Generate appropriate cache keys
-3. Set appropriate expiration policies
-4. Implement cache invalidation strategies
-5. Monitor cache hit rates
+1. Implement `IPipelineBehavior<TRequest, TResponse>` in `Behaviors/`.
+2. Register the behavior in `DependencyInjection.cs` via `cfg.AddBehavior(...)`.
+3. Pipeline order matters — current order is Logging → Validation.
 
 ## ⚠️ Common Pitfalls to Avoid
 
-1. **Mixing Commands and Queries** - Maintain strict CQRS separation
-2. **Heavy Command Handlers** - Keep handlers focused on orchestration
-3. **Missing Validation** - Always validate all inputs
-4. **Ignoring Async** - Use async/await throughout
-5. **Poor Error Handling** - Use Result pattern consistently
-6. **Over-Caching** - Cache only appropriate queries
-7. **Tight Coupling** - Keep handlers independent
-8. **Missing Logging** - Log important operations and errors
+1. **Placing files in the wrong namespace** — Commands, Queries, Handlers, DTOs, Mappings, and Validators must live under `Features/<Area>/<Feature>/<SubFolder>`.
+2. **Mixing Commands and Queries** — Maintain strict CQRS separation.
+3. **Heavy Command Handlers** — Keep handlers focused on orchestration; complex logic belongs in the domain.
+4. **Missing Validation** — Every command/query should have a FluentValidation validator.
+5. **Using AutoMapper or IMapper** — The project uses static mapper classes, not AutoMapper.
+6. **Ignoring Async** — Use async/await throughout.
+7. **Not using the Result pattern** — Return `Result<T>.Success()` / `Result<T>.Failure()` consistently; don't throw exceptions for business failures.
+8. **Accessing `.Data` without checking `.IsSuccess`** — Always check the result before using `.Data`.
+9. **Missing Logging** — Log important operations and errors in handlers.
 
 ## 📊 Performance Considerations
 

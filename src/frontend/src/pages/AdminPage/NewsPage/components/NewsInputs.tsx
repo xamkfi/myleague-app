@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
 import '../styles/NewsInputs.scss';
+import { NEWS_CATEGORY_OPTIONS, NEWS_SPORT_CATEGORY_OPTIONS } from '../Utils/NewsFilterContstants';
 
 export interface NewsInputsData {
   title: string;
@@ -20,36 +21,18 @@ interface NewsInputsProps {
   errors?: Partial<NewsInputsData>;
 }
 
-const CATEGORIES = [
-  'General',
-  'MatchReports',
-  'LeagueNews',
-  'PlayerUpdates',
-  'TeamNews',
-  'Announcements',
-  'Events',
-  'Transfers',
-  'Injuries',
-  'Awards',
-];
-
-const SPORT_CATEGORIES = [
-  'Floorball', 
-  'Icehockey',
-  'Football'
-];
-
 export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsProps) {
   const { t } = useTranslation();
   const [newTag, setNewTag] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   const updateField = <K extends keyof NewsInputsData>(field: K, value: NewsInputsData[K]) => {
     onChange({ ...data, [field]: value });
   };
 
   const addTag = () => {
-    if (newTag.trim() && !data.tags.includes(newTag.trim())) {
+    if (newTag.trim() && !data.tags.some((tag) => tag.toLowerCase() === newTag.trim().toLowerCase())) {
       updateField('tags', [...data.tags, newTag.trim()]);
       setNewTag('');
     }
@@ -68,34 +51,37 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert(t('admin.news.error.invalid_image', 'Please select a valid image file'));
-        return;
-      }
+    e.target.value = '';
+    if (!file) {
+      return;
+    }
 
-      // Validate file size (e.g., max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert(t('admin.news.error.image_too_large', 'Image file must be less than 5MB'));
-        return;
-      }
+    if (!file.type.startsWith('image/')) {
+      setUploadError(t('admin.news.errors.invalid_image'));
+      return;
+    }
 
-      try {
-        setUploadingImage(true);
-        
-        const response = await handleImageUploadService(file);
-        updateField('mainPicture', response);
-        setUploadingImage(false);
-      } catch (error) {
-        console.log(error);
-        setUploadingImage(false);
-      }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError(t('admin.news.errors.image_too_large'));
+      return;
+    }
+
+    try {
+      setUploadError('');
+      setUploadingImage(true);
+      const response = await handleImageUploadService(file);
+      updateField('mainPicture', response);
+    } catch (error) {
+      console.error(error);
+      setUploadError(t('admin.news.errors.upload_failed'));
+    } finally {
+      setUploadingImage(false);
     }
   };
 
   const removeImage = () => {
     updateField('mainPicture', '');
+    setUploadError('');
   };
 
   return (
@@ -260,6 +246,15 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
             </div>
           )}
           
+          {uploadError && (
+            <p className="news-inputs__error">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {uploadError}
+            </p>
+          )}
+
           {errors.mainPicture && (
             <p className="news-inputs__error">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,7 +301,7 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
               className={`news-inputs__select ${errors.category ? 'error' : ''}`}
             >
               <option value="">{t('admin.news.select_category', 'Select category')}</option>
-              {CATEGORIES.map(cat => (
+              {NEWS_CATEGORY_OPTIONS.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
@@ -331,7 +326,7 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
               className={`news-inputs__select ${errors.sportCategory ? 'error' : ''}`}
             >
               <option value="">{t('admin.news.select_sport', 'Select sport')}</option>
-              {SPORT_CATEGORIES.map(sport => (
+              {NEWS_SPORT_CATEGORY_OPTIONS.map(sport => (
                 <option key={sport} value={sport}>{sport}</option>
               ))}
             </select>

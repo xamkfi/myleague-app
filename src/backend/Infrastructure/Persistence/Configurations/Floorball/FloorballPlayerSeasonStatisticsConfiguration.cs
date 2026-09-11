@@ -30,9 +30,9 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .IsRequired()
                 .HasComment("ID of the team the player played for");
 
-            builder.Property(s => s.SeasonId)
+            builder.Property(s => s.CompetitionId)
                 .IsRequired()
-                .HasComment("ID of the season these statistics are for");
+                .HasComment("ID of the competition these statistics are for");
 
             // Configure basic statistics
             builder.Property(s => s.GamesPlayed)
@@ -132,21 +132,21 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.HasIndex(s => s.TeamId)
                 .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_TeamId");
 
-            builder.HasIndex(s => s.SeasonId)
+            builder.HasIndex(s => s.CompetitionId)
                 .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_SeasonId");
 
-            builder.HasIndex(s => new { s.PlayerId, s.TeamId, s.SeasonId })
+            builder.HasIndex(s => new { s.PlayerId, s.TeamId, s.CompetitionId })
                 .IsUnique()
                 .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_PlayerId_TeamId_SeasonId");
 
             // Index for leaderboard queries
-            builder.HasIndex(s => new { s.SeasonId, s.Goals })
+            builder.HasIndex(s => new { s.CompetitionId, s.Goals })
                 .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_SeasonId_Goals");
 
-            builder.HasIndex(s => new { s.SeasonId, s.Assists })
+            builder.HasIndex(s => new { s.CompetitionId, s.Assists })
                 .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_SeasonId_Assists");
 
-            builder.HasIndex(s => new { s.SeasonId, s.Points })
+            builder.HasIndex(s => new { s.CompetitionId, s.Points })
                 .HasDatabaseName("IX_FloorballPlayerSeasonStatistics_SeasonId_Points");
 
             // Configure base entity properties

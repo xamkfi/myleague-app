@@ -1,400 +1,618 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState, useMemo, type ReactElement } from "react";
+import { useParams, Link } from "react-router-dom";
 import { FloorballPosition } from "../../types/floorball/floorballTypes";
-import { floorballPlayerService } from "../../api/floorball/floorballPlayerService";
-import { floorballStatisticsService, type FloorballPlayerSeasonStatisticsDto } from "../../api/floorball/floorballStatistics";
-import { floorballSeasonService } from "../../api/floorball/floorballSeasonService";
+import {
+  floorballPlayerService,
+  type FloorballPlayerWithMatchesDto,
+  type FloorballPlayerMatchDto,
+} from "../../api/floorball/floorballPlayerService";
+import {
+  floorballStatisticsService,
+  type FloorballPlayerProfileDto,
+  type FloorballPlayerSeasonStatisticsDto,
+  type FloorballGoalieSeasonStatisticsDto,
+} from "../../api/floorball/floorballStatistics";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
+import { TeamLink, MatchLink } from "../../components/SportLinks";
+import { getLeaguePath } from "../../utils/sportRoutes";
+import { useTranslation } from "react-i18next";
 import './FloorballTeamPlayerUserPage.scss';
 
-interface TeamCareerStats {
-  teamId: string;
-  teamName: string;
-  seasonName: string;
-  stats: FloorballPlayerSeasonStatisticsDto;
-}
+const getPositionText = (position: FloorballPosition | string, t: (key: string) => string): string => {
+  switch (position) {
+    case FloorballPosition.Goalkeeper:
+    case 'Goalkeeper':
+      return t('playerPage.positions.goalkeeper');
+    case FloorballPosition.Defender:
+    case 'Defender':
+      return t('playerPage.positions.defender');
+    case FloorballPosition.Forward:
+    case 'Forward':
+      return t('playerPage.positions.forward');
+    default:
+      return t('playerPage.positions.player');
+  }
+};
 
-interface MatchPlayerStats {
-  id: string;
-  matchId: string;
-  playerId: string;
-  teamId: string;
-  matchDate: string;
-  opponent: string;
-  competition: string;
-  minutesPlayed: number;
+const formatDate = (dateStr: string, locale: string): string => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString(locale, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+  });
+};
+
+interface SeasonTotals {
+  gamesPlayed: number;
   goals: number;
   assists: number;
-  yellowCards: number;
-  redCards: number;
-  result: 'W' | 'L' | 'D';
-  homeScore: number;
-  awayScore: number;
+  points: number;
+  penaltyMinutes: number;
+  plusMinusRating: number;
+  powerPlayGoals: number;
+  powerPlayAssists: number;
+  shortHandedGoals: number;
+  shortHandedAssists: number;
 }
 
-interface PlayerWithMatches {
-  id: string;
-  playerName: string;
-  position: FloorballPosition;
-  jerseyNumber?: number;
-  teamName: string;
-  teamId: string;
-  isActive: boolean;
-  careerStats: TeamCareerStats[];
-  recentMatches: MatchPlayerStats[];
+const calculateSeasonTotals = (stats: FloorballPlayerSeasonStatisticsDto[]): SeasonTotals => {
+  return stats.reduce(
+    (total, s) => ({
+      gamesPlayed: total.gamesPlayed + s.gamesPlayed,
+      goals: total.goals + s.goals,
+      assists: total.assists + s.assists,
+      points: total.points + s.points,
+      penaltyMinutes: total.penaltyMinutes + s.penaltyMinutes,
+      plusMinusRating: total.plusMinusRating + s.plusMinusRating,
+      powerPlayGoals: total.powerPlayGoals + s.powerPlayGoals,
+      powerPlayAssists: total.powerPlayAssists + s.powerPlayAssists,
+      shortHandedGoals: total.shortHandedGoals + s.shortHandedGoals,
+      shortHandedAssists: total.shortHandedAssists + s.shortHandedAssists,
+    }),
+    {
+      gamesPlayed: 0, goals: 0, assists: 0, points: 0, penaltyMinutes: 0,
+      plusMinusRating: 0, powerPlayGoals: 0, powerPlayAssists: 0,
+      shortHandedGoals: 0, shortHandedAssists: 0,
+    }
+  );
+};
+
+interface MatchTotals {
+  goals: number;
+  assists: number;
+  penaltyMinutes: number;
 }
 
-const FloorballTeamPlayerUserPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const [player, setPlayer] = useState<PlayerWithMatches | null>(null);
+const calculateMatchTotals = (matches: FloorballPlayerMatchDto[]): MatchTotals => {
+  return matches.reduce(
+    (total, m) => ({
+      goals: total.goals + (m.playerStats?.goals ?? 0),
+      assists: total.assists + (m.playerStats?.assists ?? 0),
+      penaltyMinutes: total.penaltyMinutes + (m.playerStats?.penaltyMinutes ?? 0),
+    }),
+    { goals: 0, assists: 0, penaltyMinutes: 0 }
+  );
+};
+
+interface GoalieTotals {
+  gamesPlayed: number;
+  wins: number;
+  losses: number;
+  ties: number;
+  saves: number;
+  shotsAgainst: number;
+  goalsAgainst: number;
+  shutouts: number;
+  minutesPlayed: number;
+}
+
+const calculateGoalieTotals = (stats: FloorballGoalieSeasonStatisticsDto[]): GoalieTotals => {
+  return stats.reduce(
+    (total, s) => ({
+      gamesPlayed: total.gamesPlayed + s.gamesPlayed,
+      wins: total.wins + s.wins,
+      losses: total.losses + s.losses,
+      ties: total.ties + s.ties,
+      saves: total.saves + s.saves,
+      shotsAgainst: total.shotsAgainst + s.shotsAgainst,
+      goalsAgainst: total.goalsAgainst + s.goalsAgainst,
+      shutouts: total.shutouts + s.shutouts,
+      minutesPlayed: total.minutesPlayed + s.minutesPlayed,
+    }),
+    {
+      gamesPlayed: 0, wins: 0, losses: 0, ties: 0, saves: 0,
+      shotsAgainst: 0, goalsAgainst: 0, shutouts: 0, minutesPlayed: 0,
+    }
+  );
+};
+
+const calculateOverallSavePercentage = (totals: GoalieTotals): number => {
+  return totals.shotsAgainst > 0 ? (totals.saves / totals.shotsAgainst) * 100 : 0;
+};
+
+const MATCHES_PER_PAGE = 20;
+
+export interface FloorballPlayerProfileProps {
+  playerId: string;
+  embedded?: boolean;
+}
+
+export function FloorballPlayerProfile({ playerId, embedded = false }: FloorballPlayerProfileProps) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fi-FI';
+  const id = playerId;
+  const [profile, setProfile] = useState<FloorballPlayerProfileDto | null>(null);
+  const [matchData, setMatchData] = useState<FloorballPlayerWithMatchesDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Helper function to calculate total career stats
-  const calculateTotalStats = (careerStats: TeamCareerStats[]): FloorballPlayerSeasonStatisticsDto => {
-    return careerStats.reduce(
-      (total, teamStats) => ({
-        ...total,
-        gamesPlayed: total.gamesPlayed + teamStats.stats.gamesPlayed,
-        goals: total.goals + teamStats.stats.goals,
-        assists: total.assists + teamStats.stats.assists,
-        points: total.points + teamStats.stats.points,
-        penaltyMinutes: total.penaltyMinutes + teamStats.stats.penaltyMinutes,
-        plusMinusRating: total.plusMinusRating + teamStats.stats.plusMinusRating,
-        shotsOnGoal: total.shotsOnGoal + teamStats.stats.shotsOnGoal,
-        shotPercentage: total.shotPercentage + teamStats.stats.shotPercentage,
-        powerPlayGoals: total.powerPlayGoals + teamStats.stats.powerPlayGoals,
-        powerPlayAssists: total.powerPlayAssists + teamStats.stats.powerPlayAssists,
-        shortHandedGoals: total.shortHandedGoals + teamStats.stats.shortHandedGoals,
-        shortHandedAssists: total.shortHandedAssists + teamStats.stats.shortHandedAssists,
-        gameWinningGoals: total.gameWinningGoals + teamStats.stats.gameWinningGoals,
-        overtimeGoals: total.overtimeGoals + teamStats.stats.overtimeGoals,
-        faceoffWins: total.faceoffWins + teamStats.stats.faceoffWins,
-        faceoffAttempts: total.faceoffAttempts + teamStats.stats.faceoffAttempts,
-        faceoffPercentage: total.faceoffPercentage + teamStats.stats.faceoffPercentage,
-      }),
-      {
-        id: "",
-        playerId: "",
-        teamId: "",
-        seasonId: "",
-        playerName: "",
-        teamName: "",
-        teamLogo: null,
-        seasonName: "",
-        gamesPlayed: 0,
-        goals: 0,
-        assists: 0,
-        points: 0,
-        penaltyMinutes: 0,
-        plusMinusRating: 0,
-        shotsOnGoal: 0,
-        shotPercentage: 0,
-        powerPlayGoals: 0,
-        powerPlayAssists: 0,
-        shortHandedGoals: 0,
-        shortHandedAssists: 0,
-        gameWinningGoals: 0,
-        overtimeGoals: 0,
-        faceoffWins: 0,
-        faceoffAttempts: 0,
-        faceoffPercentage: 0
-      }
-    );
-  };
+  const [matchPage, setMatchPage] = useState(1);
 
   useEffect(() => {
     const loadPlayerData = async () => {
       if (!id) return;
-      
+
       try {
         setLoading(true);
         setError(null);
-        
-        // First, get the player information
-        const playerResponse = await floorballPlayerService.getById(id);
-        const playerData = playerResponse;
-        
-        // For now, we'll need to get team information differently since player doesn't have teamId
-        // This is a limitation of the current API structure
-        // We'll use the teamId from the statistics data instead
-        
-        // Get the current season - we'll need to get this from all active seasons
-        const activeSeasonsResponse = await floorballSeasonService.getActive();
-        const activeSeasons = activeSeasonsResponse.data || [];
-        
-        // For now, use the first active season as fallback
-        // In a real implementation, you'd need to determine which season/division the player belongs to
-        const currentSeasonData = activeSeasons.length > 0 ? activeSeasons[0] : null;
-        
-        if (!currentSeasonData) {
-          throw new Error('No active season found');
-        }
-        
-        // Fetch player statistics for the current season
-        const playerStats = await floorballStatisticsService.getPlayerStatistics(
-          currentSeasonData.id, 
-          id
-        );
-        
-        // Create career stats array (for now, just current season)
-        const careerStats: TeamCareerStats[] = [{
-          teamId: playerStats.teamId,
-          teamName: playerStats.teamName,
-          seasonName: playerStats.seasonName,
-          stats: playerStats
-        }];
-        
-        // For now, use empty array for recent matches since we don't have match-specific player stats API
-        const recentMatches: MatchPlayerStats[] = [];
-        
-        const transformedData: PlayerWithMatches = {
-          id: playerData.id,
-          playerName: playerStats.playerName,
-          position: playerData.position,
-          jerseyNumber: undefined, // Not available in current API
-          teamName: playerStats.teamName,
-          teamId: playerStats.teamId,
-          isActive: playerData.isActive,
-          careerStats,
-          recentMatches
-        };
-        
-        setPlayer(transformedData);
+
+        const [profileResult, matchesResult] = await Promise.all([
+          floorballStatisticsService.getPlayerProfile(id),
+          floorballPlayerService.getPlayerMatches(id, 50),
+        ]);
+
+        setProfile(profileResult);
+        setMatchData(matchesResult);
       } catch (err) {
         console.error('Error loading player data:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred while loading player data');
+        setError(err instanceof Error ? err.message : t('playerPage.loadError'));
       } finally {
         setLoading(false);
       }
     };
 
     loadPlayerData();
-  }, [id]);
+  }, [id, t]);
 
-  const getPositionText = (position: FloorballPosition) => {
-    switch (position) {
-      case FloorballPosition.Goalkeeper:
-        return 'Maalivahti';
-      case FloorballPosition.Defender:
-        return 'Puolustaja';
-      case FloorballPosition.Forward:
-        return 'Hyökkääjä';
-      default:
-        return 'Pelaaja';
+  const seasonStats = useMemo(() => profile?.seasonStatistics ?? [], [profile]);
+  const goalieStats = useMemo(() => profile?.seasonStatisticsForGoalie ?? [], [profile]);
+  const matches = useMemo(() => matchData?.recentMatches ?? [], [matchData]);
+  const totals = useMemo(() => calculateSeasonTotals(seasonStats), [seasonStats]);
+  const goalieTotals = useMemo(() => calculateGoalieTotals(goalieStats), [goalieStats]);
+  const matchTotals = useMemo(() => calculateMatchTotals(matches), [matches]);
+  const totalMatchPages = Math.max(1, Math.ceil(matches.length / MATCHES_PER_PAGE));
+  const paginatedMatches = useMemo(
+    () => matches.slice((matchPage - 1) * MATCHES_PER_PAGE, matchPage * MATCHES_PER_PAGE),
+    [matches, matchPage]
+  );
+
+  const wrap = (inner: ReactElement, title: string): ReactElement => {
+    if (embedded) {
+      return inner;
     }
+    return <PageTemplate title={title}>{inner}</PageTemplate>;
   };
 
-  if (loading) return <PageTemplate title="Pelaaja"><div>Ladataan...</div></PageTemplate>;
-  if (error) return <PageTemplate title="Pelaaja"><div>Virhe: {error}</div></PageTemplate>;
-  if (!player) return <PageTemplate title="Pelaaja"><div>Pelaajaa ei löytynyt</div></PageTemplate>;
+  if (loading) return wrap(<div className="player-loading">{t('common.loading')}</div>, t('playerPage.title'));
+  if (error) return wrap(<div className="player-error">{error}</div>, t('playerPage.title'));
+  if (!profile) return wrap(<div className="player-error">{t('playerPage.notFound')}</div>, t('playerPage.title'));
 
-  const totalStats = calculateTotalStats(player.careerStats);
+  const { player } = profile;
+  const playerName = player.person.fullName;
+  const isCreator = playerName === 'Tuomas Reijonen';
+  const teamName = matchData?.teamName ?? player.team?.name ?? '';
+  const position = matchData?.position ?? player.position;
+  const jerseyNumber = matchData?.jerseyNumber;
 
-  return (
-    <PageTemplate title={player.playerName}>
-      <div>
-        {/* Player Header Section */}
+  return wrap(
+      <div className="player-page">
+        {/* Player Header */}
         <div className="player-container">
           <div className="player-info-layout">
             <div className="player-info-box">
-              <div className="player-avatar-large">
-                {player.careerStats[0]?.stats.teamLogo && (
+              <div className={`player-avatar-large${isCreator ? ' player-avatar--creator' : ''}`}>
+                {isCreator ? (
+                  <img
+                    className="creator-avatar-img"
+                    src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExanpjZzBqNm1xYnp1d3Y5c2V5OWxoeTg2ZjV5dHpldHQ4anI0dDd5MSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/sPE5g5cHJ3dNm/giphy.gif"
+                    alt="Creator avatar"
+                  />
+                ) : seasonStats[0]?.teamLogo ? (
                   <img
                     className="team-logo-img"
-                    src={player.careerStats[0].stats.teamLogo}
-                    alt={player.teamName}
+                    src={seasonStats[0].teamLogo}
+                    alt={teamName}
                   />
-                )}
+                ) : null}
               </div>
               <div className="player-details">
-                <div className="player-name">{player.playerName}</div>
+                <div className={`player-name${isCreator ? ' player-name--creator' : ''}`}>
+                  {playerName}
+                  {isCreator && (
+                    <span className="creator-title" title="System Creator">Macho King</span>
+                  )}
+                </div>
                 <div className="player-details-row">
-                  <span className="player-team">{player.teamName !== 'Ei joukkuetta' ? player.teamName : 'Joukkuetieto ei saatavilla'}</span>
-                  <span className="player-position">{getPositionText(player.position)}</span>
-                  <span className="player-jersey">{player.jerseyNumber ? `#${player.jerseyNumber}` : ''}</span>
+                  {teamName && (
+                    <TeamLink
+                      sport="floorball"
+                      teamId={matchData?.teamId ?? player.team?.id}
+                      teamName={teamName}
+                      className="player-team"
+                    />
+                  )}
+                  <span className="player-position">{getPositionText(position, t)}</span>
+                  {jerseyNumber != null && <span className="player-jersey">#{jerseyNumber}</span>}
                 </div>
               </div>
             </div>
-            
+
             <div className="player-stats-box">
               <div className="stat-item">
-                <span className="stat-label">Age:</span>
-                <span className="stat-value">22 (26/01/2003)</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Status:</span>
+                <span className="stat-label">{t('playerPage.status')}:</span>
                 <span className={`stat-value ${player.isActive ? 'active' : 'inactive'}`}>
-                  {player.isActive ? 'active' : 'inactive'}
+                  {player.isActive ? t('playerPage.active') : t('playerPage.inactive')}
                 </span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Joined:</span>
-                <span className="stat-value">07/07/2020</span>
+                <span className="stat-label">{t('playerPage.position')}:</span>
+                <span className="stat-value">{getPositionText(position, t)}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Career Statistics Section */}
+        {/* Career Summary Boxes */}
         <div className="player-container">
           <div className="career-stats-section">
-            <h3>Urastatistiikka</h3>
-            
-            {/* Show aggregated totals */}
+            <h3>{t('playerPage.careerStats')}</h3>
             <div className="stats-grid">
               <div className="stats-box">
-                <div className="stats-value">{totalStats.gamesPlayed}</div>
-                <div className="stats-label">Ottelut</div>
+                <div className="stats-value">{totals.gamesPlayed}</div>
+                <div className="stats-label">{t('playerPage.games')}</div>
               </div>
               <div className="stats-box">
-                <div className="stats-value">{totalStats.goals}</div>
-                <div className="stats-label">Maalit</div>
+                <div className="stats-value">{totals.goals}</div>
+                <div className="stats-label">{t('playerPage.goals')}</div>
               </div>
               <div className="stats-box">
-                <div className="stats-value">{totalStats.assists}</div>
-                <div className="stats-label">Syötöt</div>
+                <div className="stats-value">{totals.assists}</div>
+                <div className="stats-label">{t('playerPage.assists')}</div>
               </div>
               <div className="stats-box">
-                <div className="stats-value">{totalStats.points}</div>
-                <div className="stats-label">Pisteet</div>
+                <div className="stats-value">{totals.points}</div>
+                <div className="stats-label">{t('playerPage.points')}</div>
               </div>
               <div className="stats-box">
-                <div className="stats-value">{totalStats.penaltyMinutes}</div>
-                <div className="stats-label">Jäähy min</div>
+                <div className="stats-value">{totals.penaltyMinutes}</div>
+                <div className="stats-label">{t('playerPage.penaltyMinutes')}</div>
               </div>
             </div>
-
-            {/* Show team-specific breakdown if player has played for multiple teams */}
-            {player.careerStats.length > 1 && (
-              <div className="team-stats-breakdown">
-                <h4>Joukkuekohtaiset tilastot</h4>
-                {player.careerStats.map(teamStats => (
-                  <div key={teamStats.teamId} className="team-stats">
-                    <h5>{teamStats.teamName !== 'Ei joukkuetta' ? teamStats.teamName : 'Joukkuetieto ei saatavilla'}</h5>
-                    <div className="team-stats-grid">
-                      <span>{teamStats.stats.gamesPlayed} ottelua</span>
-                      <span>{teamStats.stats.goals} maalia</span>
-                      <span>{teamStats.stats.assists} syöttöä</span>
-                      <span>{teamStats.stats.points} pistettä</span>
-                      <span>{teamStats.stats.penaltyMinutes} jäähy min</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {/*Tilastot haetaan joukkueiden roster-tiedoista. Ottelukohtaiset pelaajatilastot eivät ole saatavilla nykyisen rajapinnan kautta.*/}
           </div>
         </div>
 
-        {/* Latest Matches Section */}
+        {/* Goalie Career Summary - shown only if player has goalie stats */}
+        {goalieStats.length > 0 && (
+          <div className="player-container">
+            <div className="career-stats-section">
+              <h3>{t('playerPage.goalieCareer')}</h3>
+              <div className="stats-grid">
+                <div className="stats-box">
+                  <div className="stats-value">{goalieTotals.gamesPlayed}</div>
+                  <div className="stats-label">{t('playerPage.games')}</div>
+                </div>
+                <div className="stats-box">
+                  <div className="stats-value">{goalieTotals.wins}</div>
+                  <div className="stats-label">{t('playerPage.wins')}</div>
+                </div>
+                <div className="stats-box">
+                  <div className="stats-value">{goalieTotals.losses}</div>
+                  <div className="stats-label">{t('playerPage.losses')}</div>
+                </div>
+                <div className="stats-box">
+                  <div className="stats-value">{calculateOverallSavePercentage(goalieTotals).toFixed(1)}%</div>
+                  <div className="stats-label">{t('playerPage.savePercentage')}</div>
+                </div>
+                <div className="stats-box">
+                  <div className="stats-value">{goalieTotals.shutouts}</div>
+                  <div className="stats-label">{t('playerPage.shutouts')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Otteluhistoria (Match History) */}
         <div className="player-container">
-          <div className="latest-matches-section">
-            <h3>LATEST MATCHES</h3>
-            {player.recentMatches.length > 0 ? (
-              <div className="matches-table-container">
-                <div className="matches-table-header">
-                  <div className="header-item">DATE</div>
-                  <div className="header-item">COMPETITION</div>
-                  <div className="header-item">TEAMS</div>
-                  <div className="header-item">MIN</div>
-                  <div className="header-item">G</div>
-                  <div className="header-item">A</div>
-                  <div className="header-item">YC</div>
-                  <div className="header-item">RC</div>
-                  <div className="header-item">RESULT</div>
+          <div className="section-block">
+            <h3>{t('playerPage.matchHistory')}</h3>
+            {matches.length > 0 ? (
+              <>
+                <div className="stats-table-scroll">
+                  <table className="stats-table">
+                    <thead>
+                      <tr>
+                        <th className="col-date">{t('playerPage.date')}</th>
+                        <th className="col-league">{t('playerPage.competition')}</th>
+                        <th className="col-team">{t('playerPage.home')}</th>
+                        <th className="col-score">{t('playerPage.score')}</th>
+                        <th className="col-team">{t('playerPage.away')}</th>
+                        <th className="col-num" title={t('playerPage.goals')}>M</th>
+                        <th className="col-num" title={t('playerPage.assists')}>S</th>
+                        <th className="col-num" title={t('playerPage.points')}>P</th>
+                        <th className="col-num" title={t('playerPage.penaltyMinutes')}>JM</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedMatches.map((match) => (
+                        <tr key={match.id}>
+                          <td className="col-date">{formatDate(match.scheduledDateTime, locale)}</td>
+                          <td className="col-league">
+                            <Link to={getLeaguePath('floorball', match.competitionId)} className="team-link">{match.competitionName}</Link>
+                          </td>
+                          <td className="col-team">
+                            <TeamLink sport="floorball" teamName={match.homeTeamName} className="team-link" />
+                          </td>
+                          <td className="col-score">
+                            <MatchLink sport="floorball" matchId={match.id} className="team-link">
+                              {match.homeScore} - {match.awayScore}
+                            </MatchLink>
+                          </td>
+                          <td className="col-team">
+                            <TeamLink sport="floorball" teamName={match.awayTeamName} className="team-link" />
+                          </td>
+                          <td className="col-num">{match.playerStats?.goals ?? 0}</td>
+                          <td className="col-num">{match.playerStats?.assists ?? 0}</td>
+                          <td className="col-num">{(match.playerStats?.goals ?? 0) + (match.playerStats?.assists ?? 0)}</td>
+                          <td className="col-num">{match.playerStats?.penaltyMinutes ?? 0}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="totals-row">
+                        <td colSpan={5}>{t('playerPage.matchesTotal')}: {matches.length}</td>
+                        <td className="col-num">{matchTotals.goals}</td>
+                        <td className="col-num">{matchTotals.assists}</td>
+                        <td className="col-num">{matchTotals.goals + matchTotals.assists}</td>
+                        <td className="col-num">{matchTotals.penaltyMinutes}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
                 </div>
-                <div className="matches-table-body">
-                  {player.recentMatches.map(match => (
-                    <div key={match.id} className="match-row">
-                      <div className="match-cell">{match.matchDate}</div>
-                      <div className="match-cell">{match.competition}</div>
-                      <div className="match-cell teams-cell">
-                        <div className="match-row-home-team">
-                          <span className="team-name">FC Alapiha {match.homeScore}</span>
-                        </div>
-                        <div className="vs-separator">-</div>
-                        <div className="match-row-away-team">
-                          <span className="team-name">{match.opponent} {match.awayScore}</span>
-                        </div>
-                      </div>
-                      <div className="match-cell">{match.minutesPlayed}</div>
-                      <div className="match-cell">{match.goals}</div>
-                      <div className="match-cell">{match.assists}</div>
-                      <div className="match-cell">{match.yellowCards}</div>
-                      <div className="match-cell">{match.redCards}</div>
-                      <div className="match-cell">
-                        <div className={`result-indicator ${match.result.toLowerCase()}`}>
-                          {match.result}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {totalMatchPages > 1 && (
+                  <div className="pagination">
+                    <button
+                      className="pagination-btn"
+                      disabled={matchPage === 1}
+                      onClick={() => setMatchPage(1)}
+                      title={t('playerPage.pagination.first')}
+                    >
+                      &laquo;
+                    </button>
+                    <button
+                      className="pagination-btn"
+                      disabled={matchPage === 1}
+                      onClick={() => setMatchPage((p) => p - 1)}
+                      title={t('playerPage.pagination.previous')}
+                    >
+                      &lsaquo;
+                    </button>
+                    <span className="pagination-info">
+                      {t('playerPage.pagination.pageOf', { current: matchPage, total: totalMatchPages })}
+                    </span>
+                    <button
+                      className="pagination-btn"
+                      disabled={matchPage === totalMatchPages}
+                      onClick={() => setMatchPage((p) => p + 1)}
+                      title={t('playerPage.pagination.next')}
+                    >
+                      &rsaquo;
+                    </button>
+                    <button
+                      className="pagination-btn"
+                      disabled={matchPage === totalMatchPages}
+                      onClick={() => setMatchPage(totalMatchPages)}
+                      title={t('playerPage.pagination.last')}
+                    >
+                      &raquo;
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="no-data-message">{t('playerPage.noMatches')}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Henkilökohtaiset tilastot (Personal Season Statistics) */}
+        <div className="player-container">
+          <div className="section-block">
+            <h3>{t('playerPage.seasonStats')}</h3>
+            {seasonStats.length > 0 ? (
+              <div className="stats-table-scroll">
+                <table className="stats-table">
+                  <thead>
+                    <tr>
+                      <th className="col-season">{t('playerPage.season')}</th>
+                      <th className="col-team">{t('playerPage.team')}</th>
+                      <th className="col-num" title={t('playerPage.games')}>O</th>
+                      <th className="col-num" title={t('playerPage.goals')}>M</th>
+                      <th className="col-num" title={t('playerPage.assists')}>S</th>
+                      <th className="col-num" title={t('playerPage.points')}>P</th>
+                      <th className="col-num" title={t('playerPage.penaltyMinutes')}>JM</th>
+                      <th className="col-num" title={t('playerPage.plusMinus')}>+/-</th>
+                      <th className="col-num" title={t('playerPage.powerPlayGoals')}>YVM</th>
+                      <th className="col-num" title={t('playerPage.powerPlayAssists')}>YVS</th>
+                      <th className="col-num" title={t('playerPage.shortHandedGoals')}>AVM</th>
+                      <th className="col-num" title={t('playerPage.shortHandedAssists')}>AVS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {seasonStats.map((stat) => (
+                      <tr key={stat.id}>
+                        <td className="col-season">{stat.seasonName}</td>
+                        <td className="col-team">
+                          <div className="team-cell">
+                            {stat.teamLogo && (
+                              <img src={stat.teamLogo} alt={stat.teamName} className="team-logo-small" />
+                            )}
+                            <TeamLink sport="floorball" teamId={stat.teamId} teamName={stat.teamName} className="team-link" />
+                          </div>
+                        </td>
+                        <td className="col-num">{stat.gamesPlayed}</td>
+                        <td className="col-num">{stat.goals}</td>
+                        <td className="col-num">{stat.assists}</td>
+                        <td className="col-num">{stat.points}</td>
+                        <td className="col-num">{stat.penaltyMinutes}</td>
+                        <td className="col-num">{stat.plusMinusRating}</td>
+                        <td className="col-num">{stat.powerPlayGoals}</td>
+                        <td className="col-num">{stat.powerPlayAssists}</td>
+                        <td className="col-num">{stat.shortHandedGoals}</td>
+                        <td className="col-num">{stat.shortHandedAssists}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="totals-row">
+                      <td>{t('playerPage.careerTotal')}</td>
+                      <td></td>
+                      <td className="col-num">{totals.gamesPlayed}</td>
+                      <td className="col-num">{totals.goals}</td>
+                      <td className="col-num">{totals.assists}</td>
+                      <td className="col-num">{totals.points}</td>
+                      <td className="col-num">{totals.penaltyMinutes}</td>
+                      <td className="col-num">{totals.plusMinusRating}</td>
+                      <td className="col-num">{totals.powerPlayGoals}</td>
+                      <td className="col-num">{totals.powerPlayAssists}</td>
+                      <td className="col-num">{totals.shortHandedGoals}</td>
+                      <td className="col-num">{totals.shortHandedAssists}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
             ) : (
-              <div className="no-matches-message">
-                <p>No recent matches available for this player.</p>
-              </div>
+              <p className="no-data-message">{t('playerPage.noSeasonStats')}</p>
             )}
           </div>
         </div>
 
-        {/* Career Section */}
-        <div className="player-container">
-          <div className="career-section">
-            <h3>CAREER</h3>
-            <div className="career-table-container">
-              <div className="career-table-header">
-                <div className="header-item">SEASON</div>
-                <div className="header-item">TEAM</div>
-                <div className="header-item">COMPETITION</div>
-                <div className="header-item">GP</div>
-                <div className="header-item">G</div>
-                <div className="header-item">A</div>
-                <div className="header-item">YC</div>
-                <div className="header-item">RC</div>
-              </div>
-              <div className="career-table-body">
-                {player.careerStats.map(teamStats => (
-                  <div key={teamStats.teamId} className="career-row">
-                    <div className="career-cell">{teamStats.seasonName}</div>
-                    <div className="career-cell">
-                      <div className="match-row-home-team">
-                        {teamStats.stats.teamLogo && (
-                          <img
-                            src={teamStats.stats.teamLogo}
-                            alt={`${teamStats.teamName} logo`}
-                          />
-                        )}
-                        <span className="team-name">{teamStats.teamName}</span>
-                      </div>
-                    </div>
-                    <div className="career-cell">Rautaliiga</div>
-                    <div className="career-cell">{teamStats.stats.gamesPlayed}</div>
-                    <div className="career-cell">{teamStats.stats.goals}</div>
-                    <div className="career-cell">{teamStats.stats.assists}</div>
-                    <div className="career-cell">{teamStats.stats.penaltyMinutes}</div>
-                    <div className="career-cell">0</div>
-                  </div>
-                ))}
-                <div className="career-row total-row">
-                  <div className="career-cell">TOTAL</div>
-                  <div className="career-cell">-</div>
-                  <div className="career-cell">-</div>
-                  <div className="career-cell">{totalStats.gamesPlayed}</div>
-                  <div className="career-cell">{totalStats.goals}</div>
-                  <div className="career-cell">{totalStats.assists}</div>
-                  <div className="career-cell">{totalStats.penaltyMinutes}</div>
-                  <div className="career-cell">0</div>
-                </div>
+        {/* Maalivahtitilastot kausittain (Goalie Season Statistics) */}
+        {goalieStats.length > 0 && (
+          <div className="player-container">
+            <div className="section-block">
+              <h3>{t('playerPage.goalieSeasonStats')}</h3>
+              <div className="stats-table-scroll">
+                <table className="stats-table">
+                  <thead>
+                    <tr>
+                      <th className="col-season">{t('playerPage.season')}</th>
+                      <th className="col-team">{t('playerPage.team')}</th>
+                      <th className="col-num" title={t('playerPage.games')}>O</th>
+                      <th className="col-num" title={t('playerPage.wins')}>V</th>
+                      <th className="col-num" title={t('playerPage.losses')}>H</th>
+                      <th className="col-num" title={t('playerPage.ties')}>T</th>
+                      <th className="col-num" title={t('playerPage.saves')}>TO</th>
+                      <th className="col-num" title={t('playerPage.shotsAgainst')}>LA</th>
+                      <th className="col-num" title={t('playerPage.savePercentage')}>TO%</th>
+                      <th className="col-num" title={t('playerPage.goalsAgainst')}>PM</th>
+                      <th className="col-num" title={t('playerPage.shutouts')}>NP</th>
+                      <th className="col-num" title={t('playerPage.minutes')}>MIN</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {goalieStats.map((stat) => (
+                      <tr key={stat.id}>
+                        <td className="col-season">{stat.seasonName}</td>
+                        <td className="col-team">
+                          <div className="team-cell">
+                            <TeamLink sport="floorball" teamId={stat.teamId} teamName={stat.teamName} className="team-link" />
+                          </div>
+                        </td>
+                        <td className="col-num">{stat.gamesPlayed}</td>
+                        <td className="col-num">{stat.wins}</td>
+                        <td className="col-num">{stat.losses}</td>
+                        <td className="col-num">{stat.ties}</td>
+                        <td className="col-num">{stat.saves}</td>
+                        <td className="col-num">{stat.shotsAgainst}</td>
+                        <td className="col-num">{stat.savePercentage.toFixed(1)}%</td>
+                        <td className="col-num">{stat.goalsAgainst}</td>
+                        <td className="col-num">{stat.shutouts}</td>
+                        <td className="col-num">{stat.minutesPlayed}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="totals-row">
+                      <td>{t('playerPage.careerTotal')}</td>
+                      <td></td>
+                      <td className="col-num">{goalieTotals.gamesPlayed}</td>
+                      <td className="col-num">{goalieTotals.wins}</td>
+                      <td className="col-num">{goalieTotals.losses}</td>
+                      <td className="col-num">{goalieTotals.ties}</td>
+                      <td className="col-num">{goalieTotals.saves}</td>
+                      <td className="col-num">{goalieTotals.shotsAgainst}</td>
+                      <td className="col-num">{calculateOverallSavePercentage(goalieTotals).toFixed(1)}%</td>
+                      <td className="col-num">{goalieTotals.goalsAgainst}</td>
+                      <td className="col-num">{goalieTotals.shutouts}</td>
+                      <td className="col-num">{goalieTotals.minutesPlayed}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </PageTemplate>
-  );
-};
+        )}
 
-export default FloorballTeamPlayerUserPage;
+        {/* Pelaajaura (Career Timeline) */}
+        <div className="player-container">
+          <div className="section-block">
+            <h3>{t('playerPage.career')}</h3>
+            {seasonStats.length > 0 ? (
+              <div className="stats-table-scroll">
+                <table className="stats-table career-timeline-table">
+                  <thead>
+                    <tr>
+                      <th className="col-season">{t('playerPage.season')}</th>
+                      <th className="col-team">{t('playerPage.team')}</th>
+                      <th className="col-position">{t('playerPage.position')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {seasonStats.map((stat) => (
+                      <tr key={stat.id}>
+                        <td className="col-season">
+                          <Link to={getLeaguePath('floorball', stat.competitionId)} className="team-link">{stat.seasonName}</Link>
+                        </td>
+                        <td className="col-team">
+                          <div className="team-cell">
+                            {stat.teamLogo && (
+                              <img src={stat.teamLogo} alt={stat.teamName} className="team-logo-small" />
+                            )}
+                            <TeamLink sport="floorball" teamId={stat.teamId} teamName={stat.teamName} className="team-link" />
+                          </div>
+                        </td>
+                        <td className="col-position">{getPositionText(position, t)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="no-data-message">{t('playerPage.noCareer')}</p>
+            )}
+          </div>
+        </div>
+      </div>,
+    playerName,
+  );
+}
+
+export default function FloorballTeamPlayerUserPage() {
+  const { id } = useParams<{ id: string }>();
+  if (!id) {
+    return null;
+  }
+  return <FloorballPlayerProfile playerId={id} />;
+}

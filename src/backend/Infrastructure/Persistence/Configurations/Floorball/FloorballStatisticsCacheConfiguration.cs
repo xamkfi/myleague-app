@@ -28,11 +28,11 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .HasComment("Unique cache key identifier");
 
             // Configure foreign key
-            builder.Property(s => s.SeasonId)
-                .HasComment("Optional season ID this cache is associated with");
+            builder.Property(s => s.CompetitionId)
+                .HasComment("Optional competition ID this cache is associated with");
 
             // Ignore navigation property to prevent cross-context issues
-            builder.Ignore(s => s.Season);
+            builder.Ignore(s => s.Competition);
 
             // Configure JSON data
             builder.Property(s => s.JsonData)
@@ -54,13 +54,13 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .IsUnique()
                 .HasDatabaseName("IX_FloorballStatisticsCache_CacheKey");
 
-            builder.HasIndex(s => s.SeasonId)
+            builder.HasIndex(s => s.CompetitionId)
                 .HasDatabaseName("IX_FloorballStatisticsCache_SeasonId");
 
             builder.HasIndex(s => s.ExpiresAt)
                 .HasDatabaseName("IX_FloorballStatisticsCache_ExpiresAt");
 
-            builder.HasIndex(s => new { s.SeasonId, s.ExpiresAt })
+            builder.HasIndex(s => new { s.CompetitionId, s.ExpiresAt })
                 .HasDatabaseName("IX_FloorballStatisticsCache_SeasonId_ExpiresAt");
 
             // Configure base entity properties

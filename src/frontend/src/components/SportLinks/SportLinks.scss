@@ -1,0 +1,10 @@
+.sport-link {
+  color: inherit;
+  text-decoration: none;
+  font: inherit;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}

@@ -1,6 +1,7 @@
 using Domain.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
+using Domain.ValueObjects.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -42,8 +43,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         /// <returns>A collection of persons found with the specified IDs</returns>
         public async Task<IEnumerable<Person>> GetByIdsAsync(IEnumerable<Guid> ids)
         {
+            List<Guid>? idList = ids?.ToList();
+            if (idList == null || idList.Count == 0)
+            {
+                return new List<Person>();
+            }
+
             return await _entities
-                .Where(p => ids.Contains(p.Id))
+                .Where(p => idList.Contains(p.Id))
                 .ToListAsync();
         }
 
@@ -287,6 +294,24 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
             return PagedResult.Create(items, totalCount, page, pageSize);
         }
 
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<Guid>> GetIdsByNameContainsAsync(string searchTerm, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return Array.Empty<Guid>();
+            }
+
+            string lowercasedTerm = searchTerm.Trim().ToLower();
+
+            return await _entities
+                .Where(p =>
+                    (p.FirstName.ToLower() + " " + p.LastName.ToLower()).Contains(lowercasedTerm) ||
+                    (p.LastName.ToLower() + " " + p.FirstName.ToLower()).Contains(lowercasedTerm))
+                .Select(p => p.Id)
+                .ToListAsync(cancellationToken);
+        }
+
         /// <summary>
         /// Checks if a person exists
         /// </summary>
@@ -310,8 +335,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
 
         public Task<Person?> GetByEmailAsync(string email)
         {
+            string? normalized = EmailAddress.NormalizeOptional(email);
+            if (normalized is null)
+            {
+                return Task.FromResult<Person?>(null);
+            }
+
             return _entities
-                .FirstOrDefaultAsync(p => p.ContactInfo != null && p.ContactInfo.Email == email);
+                .FirstOrDefaultAsync(p =>
+                    p.ContactInfo != null
+                    && p.ContactInfo.Email != null
+                    && p.ContactInfo.Email.ToLower() == normalized);
         }
     }
 } 

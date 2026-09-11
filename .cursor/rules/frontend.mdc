@@ -1,0 +1,34 @@
+---
+description: React, TypeScript, i18n, and API client conventions
+globs: src/frontend/**/*.{ts,tsx,scss}
+alwaysApply: false
+---
+
+# Frontend
+
+React 18 function components with **explicit props types**. Do not use `React.FC`. No `any`. Colocate a page with its `components/` folder and `*.scss`.
+
+| Kind | Convention | Example |
+|------|------------|---------|
+| Pages / components | PascalCase | `ClubsPage.tsx` |
+| Hooks | `use` + camelCase | `useFetch.ts` |
+| API modules | camelCase `*Service` | `clubService.ts` |
+| CSS | BEM-ish kebab | `.clubs-page__hero` |
+| Types | PascalCase | `FloorballMatchDto` |
+
+## Data and auth
+
+- HTTP: `authFetch` from `src/frontend/src/api/utils/authFetch.ts` (JWT inject + single 401 refresh)
+- Parse failures with `parseErrorResponse`
+- Types live in `src/frontend/src/types/` or next to the service
+- Public UI: floorball + football only. Hockey stays listed, not routed, unless asked
+
+## i18n and routing
+
+Finnish is default. Add keys to both `src/frontend/src/i18n/locales/fi/translation.json` and `en/translation.json`. Use `useTranslation()` — no user-facing English/Finnish literals in JSX.
+
+Register screens in `src/frontend/src/router/routes.tsx` with `lazyWithRetry(() => import('...'))`. Wrap admin/club-admin routes in `ProtectedRoute`.
+
+## UI
+
+Reuse `PageTemplate`, `LoadingSpinner`, and existing admin tables/modals. Tailwind 4 (Vite plugin, no `tailwind.config.js`) plus SCSS. `pnpm` only (`pnpm lint`, `pnpm build`).

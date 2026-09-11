@@ -7,18 +7,6 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "https://localhost:65532;http://localhost:65533"
-    },
-    "Docker Compose": {
-        "commandName": "DockerCompose",
-        "launchBrowser": true,
-        "launchUrl": "http://localhost:8080/scalar/v1;http://localhost:8080/health-ui",
-        "environmentVariables": {
-            "ASPNETCORE_ENVIRONMENT": "Development"
-        },
-        "publishAllPorts": false,
-        "useSSL": false,
-        "composeLaunchServiceName": "webapi",
-        "DockerComposeAction": "UpBuild"
     }
   }
 }

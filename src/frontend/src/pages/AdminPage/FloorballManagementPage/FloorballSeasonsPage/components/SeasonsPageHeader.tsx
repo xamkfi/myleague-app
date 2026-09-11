@@ -4,9 +4,14 @@ import './SeasonsPageHeader.scss';
 interface SeasonsPageHeaderProps {
   seasonsCount: number;
   onCreateSeason: () => void;
+  onManageMatches: () => void;
 }
 
-export const SeasonsPageHeader = ({ seasonsCount, onCreateSeason }: SeasonsPageHeaderProps) => {
+export const SeasonsPageHeader = ({
+  seasonsCount,
+  onCreateSeason,
+  onManageMatches,
+}: SeasonsPageHeaderProps) => {
   const { t } = useTranslation();
 
   return (
@@ -15,7 +20,15 @@ export const SeasonsPageHeader = ({ seasonsCount, onCreateSeason }: SeasonsPageH
         <span>{t('floorball.seasons.totalCount', `${seasonsCount} seasons`, { count: seasonsCount })}</span>
       </div>
       <div className="seasons-actions">
-        <button 
+        <button
+          type="button"
+          className="manage-matches-button"
+          onClick={onManageMatches}
+        >
+          {t('floorball.management.actions.seasonMatches', 'Manage Season Matches')}
+        </button>
+        <button
+          type="button"
           className="create-season-button"
           onClick={onCreateSeason}
         >

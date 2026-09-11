@@ -1,0 +1,160 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.news-hero-carousel {
+  position: relative;
+  width: 100%;
+
+  // Slide with fade transition
+  &__slide {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+
+    &--fading {
+      opacity: 0;
+    }
+  }
+
+  // Navigation arrows
+  &__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 44px;
+    height: 44px;
+    border-radius: map.get($border-radius, 'full');
+    border: none;
+    background: rgba(0, 0, 0, 0.35);
+    color: $color-white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background $transition-default, opacity $transition-default;
+    opacity: 0;
+    backdrop-filter: blur(4px);
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    &--prev {
+      left: map.get($spacing, 'md');
+    }
+
+    &--next {
+      right: map.get($spacing, 'md');
+    }
+  }
+
+  // Show arrows on carousel hover
+  &:hover &__arrow {
+    opacity: 1;
+  }
+
+  // Dot indicators
+  &__dots {
+    position: absolute;
+    bottom: map.get($spacing, 'sm');
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'xl');
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(4px);
+  }
+
+  &__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: map.get($border-radius, 'full');
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: background $transition-default, border-color $transition-default, transform $transition-default;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.5);
+      transform: scale(1.15);
+    }
+
+    &--active {
+      background: $color-white;
+      border-color: $color-white;
+      transform: scale(1.15);
+    }
+  }
+}
+
+// Tablet responsive
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .news-hero-carousel {
+    &__arrow {
+      width: 36px;
+      height: 36px;
+      opacity: 1; // Always visible on touch devices
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      &--prev {
+        left: map.get($spacing, 'sm');
+      }
+
+      &--next {
+        right: map.get($spacing, 'sm');
+      }
+    }
+
+    &__dots {
+      bottom: map.get($spacing, 'xs');
+    }
+
+    &__dot {
+      width: 8px;
+      height: 8px;
+    }
+  }
+}
+
+// Mobile responsive
+@media (max-width: map.get($breakpoints, 'mobile')) {
+  .news-hero-carousel {
+    &__arrow {
+      width: 32px;
+      height: 32px;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      &--prev {
+        left: map.get($spacing, 'xs');
+      }
+
+      &--next {
+        right: map.get($spacing, 'xs');
+      }
+    }
+
+    &__dots {
+      bottom: map.get($spacing, 'xxs');
+      gap: map.get($spacing, 'xxs');
+      padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+    }
+
+    &__dot {
+      width: 7px;
+      height: 7px;
+      border-width: 1.5px;
+    }
+  }
+}

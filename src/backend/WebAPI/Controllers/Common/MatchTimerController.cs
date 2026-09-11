@@ -1,6 +1,8 @@
+using Domain.Constants;
 using System;
 using System.Threading.Tasks;
-using Application.Services.Common;
+using Application.Features.Common.MatchTimer.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -11,10 +13,9 @@ namespace WebAPI.Controllers.Common
     /// <summary>
     /// Controller for managing match timers with RESTful routes
     /// </summary>
-    [ApiController]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [Route("api/matches/{matchId:guid}/timer")]
-    [Produces("application/json")]
-    public class MatchTimerController : ControllerBase
+    public class MatchTimerController : BaseApiController
     {
         private readonly IMatchTimerService _timerService;
         private readonly ILogger<MatchTimerController> _logger;

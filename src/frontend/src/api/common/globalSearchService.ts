@@ -1,6 +1,5 @@
 import type { ApiResponse } from '../../types/common/apiResponseType';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { API_URL } from '../../constants/config';
 
 export interface GlobalSearchPerson {
   personId: string;
@@ -10,12 +9,14 @@ export interface GlobalSearchPerson {
   teamName?: string | null;
   clubId?: string | null;
   clubName?: string | null;
+  sport?: string | null;
 }
 export interface GlobalSearchTeam {
   teamId: string;
   teamName: string;
   clubId?: string | null;
   clubName?: string | null;
+  sport?: string | null;
 }
 export interface GlobalSearchResult {
   person: GlobalSearchPerson[];

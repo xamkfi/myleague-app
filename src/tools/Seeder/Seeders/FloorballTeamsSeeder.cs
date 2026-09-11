@@ -1,7 +1,11 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Application.DTOs.Floorball;
-using Application.DTOs.Common;
+using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.Persons.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
 using WebAPI.Models.Floorball;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
@@ -72,14 +76,9 @@ public static class FloorballTeamsSeeder
             if (season == null) continue;
 
             HashSet<Guid> seasonDivisionIds = new HashSet<Guid>();
-            Guid primaryDivisionId = ResolveDivisionId(seasonSeed.DivisionName, divisions);
-            seasonDivisionIds.Add(primaryDivisionId);
-            if (seasonSeed.AdditionalDivisionNames != null)
+            foreach (string divisionName in seasonSeed.DivisionNames)
             {
-                foreach (string dn in seasonSeed.AdditionalDivisionNames)
-                {
-                    seasonDivisionIds.Add(ResolveDivisionId(dn, divisions));
-                }
+                seasonDivisionIds.Add(ResolveDivisionId(divisionName, divisions));
             }
 
             foreach (FloorballTeamSeed teamSeed in teamSeeds)
@@ -99,8 +98,9 @@ public static class FloorballTeamsSeeder
 
     public static async Task AddPlayersAsync(HttpClient http, JsonSerializerOptions jsonOptions, Guid teamId, List<TeamPlayerByEmailSeed> players, Dictionary<string, Guid> emailToPlayerId)
 	{
-        // Build a set of existing jersey numbers to avoid duplicates when seeding
+        // Build sets of existing roster: jersey numbers and player IDs (for idempotent re-runs)
         HashSet<int> existingJerseyNumbers = new HashSet<int>();
+        HashSet<Guid> existingPlayerIds = new HashSet<Guid>();
         HttpResponseMessage teamResp = await http.GetAsync("api/floorballteam/" + teamId);
         if (teamResp.IsSuccessStatusCode)
         {
@@ -110,22 +110,14 @@ public static class FloorballTeamsSeeder
                 foreach (FloorballTeamPlayerDto rosterPlayer in teamApi.Data.Roster)
                 {
                     if (rosterPlayer.JerseyNumber.HasValue)
-                    {
                         existingJerseyNumbers.Add(rosterPlayer.JerseyNumber.Value);
-                    }
+                    existingPlayerIds.Add(rosterPlayer.PlayerId);
                 }
             }
         }
 
         foreach (TeamPlayerByEmailSeed player in players)
 		{
-            // Skip adding if jersey number already exists on the team
-            if (existingJerseyNumbers.Contains(player.JerseyNumber))
-            {
-                Console.WriteLine("Jersey number already in use (" + player.JerseyNumber + ") for team " + teamId + ", skipping " + player.PersonEmail);
-                continue;
-            }
-
             if (!emailToPlayerId.TryGetValue(player.PersonEmail, out Guid playerId))
             {
                 // Fallback: resolve person by email -> ensure player exists -> cache id
@@ -174,6 +166,19 @@ public static class FloorballTeamsSeeder
                     playerId = createApi.Data.Id;
                     emailToPlayerId[player.PersonEmail] = playerId;
                 }
+            }
+
+            // Skip if player is already on the team (idempotent re-run)
+            if (existingPlayerIds.Contains(playerId))
+            {
+                continue;
+            }
+
+            // Skip if jersey number already exists on the team (different player)
+            if (existingJerseyNumbers.Contains(player.JerseyNumber))
+            {
+                Console.WriteLine("Jersey number already in use (" + player.JerseyNumber + ") for team " + teamId + ", skipping " + player.PersonEmail);
+                continue;
             }
 
             int positionValue = (int)player.Position;

@@ -1,0 +1,207 @@
+@use "sass:map";
+@use '@variables' as *;
+
+// Import component-specific styles
+@use './components/SeasonsPageHeader.scss';
+@use './components/SeasonsFilters.scss';
+@use './components/ErrorMessage.scss';
+@use './components/LoadingState.scss';
+
+// Main container styles
+.football-seasons-container {
+  padding: map.get($spacing, 'lg');
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// Table container styles - base table styles live in AdminTable.scss
+.seasons-table-container {
+  margin-bottom: map.get($spacing, 'lg');
+}
+
+// ── Delete Confirmation Modal ──
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: map.get($spacing, 'base');
+
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    background: $color-white;
+    border-radius: $border-radius-default;
+    box-shadow: $box-shadow-drop-1;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: map.get($spacing, 'md');
+      border-bottom: 1px solid $color-border;
+
+      h3 {
+        margin: 0;
+        color: $color-text-primary;
+        font-size: map.get($font-sizes, 'lg');
+      }
+
+      .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: map.get($font-sizes, 'lg');
+        color: $color-text-muted;
+        cursor: pointer;
+        padding: 0;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: map.get($border-radius, 'sm');
+        @include transition(all);
+
+        &:hover {
+          background: $color-neutral-light-grey;
+          color: $color-text-primary;
+        }
+      }
+    }
+
+    .modal-body {
+      padding: map.get($spacing, 'md');
+
+      .warning-icon {
+        text-align: center;
+        margin-bottom: map.get($spacing, 'base');
+
+        i {
+          font-size: map.get($font-sizes, 'xl');
+          color: $color-yellow-primary;
+        }
+      }
+
+      .season-details {
+        background: $color-neutral-light-grey;
+        padding: map.get($spacing, 'base');
+        border-radius: map.get($border-radius, 'sm');
+        margin: map.get($spacing, 'base') 0;
+
+        strong {
+          display: block;
+          font-size: map.get($font-sizes, 'md');
+          color: $color-text-primary;
+          margin-bottom: map.get($spacing, 'xs');
+        }
+
+        .season-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: map.get($spacing, 'xs');
+          font-size: map.get($font-sizes, 'sm');
+          color: $color-text-muted;
+
+          .divisions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: map.get($spacing, 'xxs');
+          }
+
+          .division {
+            background: $color-blue-light;
+            color: $color-white;
+            padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+            border-radius: map.get($border-radius, 'sm');
+            font-size: map.get($font-sizes, 'xs');
+          }
+
+          .teams-warning {
+            color: $color-yellow-muted;
+            font-weight: map.get($font-weights, 'medium');
+          }
+        }
+      }
+
+      .warning-text {
+        color: $color-red-primary;
+        font-weight: map.get($font-weights, 'medium');
+        text-align: center;
+        margin-top: map.get($spacing, 'base');
+      }
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: map.get($spacing, 'base');
+      padding: map.get($spacing, 'md');
+      border-top: 1px solid $color-border;
+
+      .btn {
+        min-width: 100px;
+        padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+        border-radius: map.get($border-radius, 'sm');
+        border: none;
+        cursor: pointer;
+        font-size: map.get($font-sizes, 'base');
+        font-weight: map.get($font-weights, 'medium');
+        @include transition(all);
+
+        &.btn-secondary {
+          background: $color-button-secondary;
+          color: $color-white;
+
+          &:hover {
+            background: $color-primary-dark;
+          }
+        }
+
+        &.btn-danger {
+          background: $color-red-primary;
+          color: $color-white;
+
+          &:hover {
+            background: $color-red-muted;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .football-seasons-container {
+    padding: map.get($spacing, 'base');
+  }
+
+  .modal-overlay {
+    padding: map.get($spacing, 'xs');
+
+    .modal-content {
+      max-width: none;
+      width: 100%;
+    }
+  }
+}
+
+// Animation keyframes
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.fa-spinner {
+  animation: spin 1s linear infinite;
+}

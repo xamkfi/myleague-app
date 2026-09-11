@@ -1,0 +1,56 @@
+@use 'sass:color';
+
+$qualifying-green: #16a34a;
+$qualifying-bg: rgba(34, 197, 94, 0.12);
+$qualifying-bg-hover: rgba(34, 197, 94, 0.22);
+$qualifying-border: rgba(22, 163, 74, 0.45);
+
+.standing-container .standing-table tbody tr.qualifying-row {
+  background-color: $qualifying-bg;
+  position: relative;
+
+  &:hover {
+    background-color: $qualifying-bg-hover;
+  }
+
+  td {
+    color: color.scale($qualifying-green, $lightness: -25%);
+    font-weight: 600;
+
+    &.team-col .team-name {
+      color: color.scale($qualifying-green, $lightness: -30%);
+    }
+
+    &.points-col {
+      color: $qualifying-green;
+    }
+  }
+
+  .qualifying-marker {
+    display: inline-block;
+    width: 4px;
+    height: 18px;
+    margin-right: 8px;
+    border-radius: 2px;
+    background-color: $qualifying-green;
+    vertical-align: middle;
+  }
+}
+
+.standing-container .qualifying-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem 1rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+
+  &__swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background-color: $qualifying-bg;
+    border: 1px solid $qualifying-border;
+  }
+}

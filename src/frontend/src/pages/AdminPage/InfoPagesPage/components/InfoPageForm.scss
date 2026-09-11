@@ -1,0 +1,79 @@
+.info-page-form {
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    &__header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    &__back-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border: 1px solid #d0d5dd;
+        border-radius: 999px;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    &__mode-badge {
+        display: inline-block;
+        margin-bottom: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #475467;
+    }
+
+    &__header-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    &__preview-link {
+        color: #0b5cab;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    &__card {
+        padding: 1.5rem;
+        border: 1px solid #eaecf0;
+        border-radius: 16px;
+        background: #fff;
+    }
+
+    &__field + &__field {
+        margin-top: 1.5rem;
+    }
+
+    &__label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #344054;
+    }
+
+    &__title-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #d0d5dd;
+        border-radius: 12px;
+        font-size: 1rem;
+    }
+}

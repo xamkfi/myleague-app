@@ -104,6 +104,15 @@ public interface IPersonRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A paged result containing persons matching the search term.</returns>
     Task<PagedResult<Person>> SearchByNameAsync(string searchTerm, int page, int pageSize, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns person IDs whose first or last name contains the search term.
+    /// Used by sport-specific player queries that cannot join Person.
+    /// </summary>
+    /// <param name="searchTerm">The search term</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Matching person IDs</returns>
+    Task<IReadOnlyList<Guid>> GetIdsByNameContainsAsync(string searchTerm, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Checks if a person exists

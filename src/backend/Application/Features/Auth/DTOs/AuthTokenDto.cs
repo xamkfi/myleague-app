@@ -1,0 +1,10 @@
+namespace Application.Features.Auth.DTOs;
+
+/// <summary>
+/// DTO containing authentication tokens returned after successful login verification or token refresh
+/// </summary>
+public record AuthTokenDto(
+    string AccessToken,
+    string RefreshToken,
+    DateTime ExpiresAt,
+    int SessionExpiryWarningMinutes);

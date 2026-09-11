@@ -1,6 +1,5 @@
-using Microsoft.OpenApi.Models;
-using System.Reflection;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.OpenApi;
 
 namespace WebAPI.DependencyInjections;
 
@@ -41,10 +40,11 @@ public static class ServiceCollectionExtensions
                 return Task.CompletedTask;
             });
 
-            // Add security scheme for future JWT implementation
+            // Add JWT Bearer security scheme definition
             options.AddDocumentTransformer((document, context, cancellationToken) =>
             {
                 document.Components ??= new OpenApiComponents();
+                document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
                 document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -54,6 +54,34 @@ public static class ServiceCollectionExtensions
                     Scheme = "bearer",
                     BearerFormat = "JWT"
                 };
+                return Task.CompletedTask;
+            });
+
+            // Mark operations that require authentication based on [Authorize] attributes
+            options.AddOperationTransformer((operation, context, cancellationToken) =>
+            {
+                IList<object> metadata = context.Description.ActionDescriptor.EndpointMetadata;
+
+                bool hasAuthorize = metadata.OfType<AuthorizeAttribute>().Any();
+                bool hasAllowAnonymous = metadata.OfType<AllowAnonymousAttribute>().Any();
+
+                if (hasAuthorize && !hasAllowAnonymous)
+                {
+                    // Add security requirement referencing the Bearer scheme
+                    operation.Security ??= [];
+                    operation.Security.Add(new OpenApiSecurityRequirement
+                    {
+                        [new OpenApiSecuritySchemeReference("Bearer")] = []
+                    });
+
+                    // Add 401 Unauthorized response
+                    operation.Responses ??= [];
+                    operation.Responses.TryAdd("401", new OpenApiResponse
+                    {
+                        Description = "Unauthorized — authentication required"
+                    });
+                }
+
                 return Task.CompletedTask;
             });
         });
@@ -71,45 +99,18 @@ public static class ServiceCollectionExtensions
             options.AddPolicy("AllowAll", policy =>
             {
                 policy.WithOrigins(
+                        // Local development
                         "http://localhost:3000",
                         "http://localhost:5173",
                         "http://localhost:4200",
-                        "http://127.0.0.1:5173")
+                        "http://127.0.0.1:5173",
+                        // Azure Static Web Apps (development azure static web app)
+                        "https://calm-tree-06b4ac003.2.azurestaticapps.net")
                       .AllowAnyMethod()
                       .AllowAnyHeader()
                       .AllowCredentials(); // Required for SignalR
             });
-
-            // You can add more specific policies here for production
-            options.AddPolicy("Production", policy =>
-            {
-                policy.WithOrigins("https://yourdomain.com")
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials();
-            });
         });
-
-        return services;
-    }
-
-    /// <summary>
-    /// Add Health Check UI configuration
-    /// </summary>
-    public static IServiceCollection AddHealthCheckUIConfiguration(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddHealthChecksUI(options =>
-        {
-            options.SetEvaluationTimeInSeconds(30); // Check every 30 seconds
-            options.MaximumHistoryEntriesPerEndpoint(50);
-            options.SetApiMaxActiveRequests(1);
-            options.SetMinimumSecondsBetweenFailureNotifications(60);
-
-            // Add health check endpoint from configuration
-            string healthCheckEndpoint = configuration.GetValue<string>("HealthChecks:UI:Endpoint") ?? "http://localhost:8080/health";
-            options.AddHealthCheckEndpoint("MyLeague API", healthCheckEndpoint);
-        })
-        .AddInMemoryStorage();
 
         return services;
     }

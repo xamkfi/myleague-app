@@ -1,0 +1,48 @@
+.session-expiry-warning {
+  position: fixed;
+  z-index: 1100;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1.25rem;
+  max-width: min(40rem, calc(100vw - 2rem));
+  padding: 0.9rem 1.1rem;
+  background: #1d2939;
+  color: #fff;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(16, 24, 40, 0.28);
+
+  p {
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  &__content {
+    flex: 1 1 14rem;
+  }
+
+  &__error {
+    margin-top: 0.4rem;
+    color: #fda29b;
+    font-size: 0.9rem;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__dismiss {
+    border: 0;
+    background: transparent;
+    color: #eaecf0;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.15rem 0.4rem;
+  }
+}

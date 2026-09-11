@@ -1,142 +1,435 @@
+import type { ComponentType } from 'react';
 import type { RouteObject } from 'react-router-dom';
-import HomePage from '../pages/HomePage/HomePage';
-import NewsPage from '../pages/NewsPage/NewsPage';
-import RulesPage from '../pages/RulesPage/RulesPage';
-import MAHLPage from '../pages/MAHLPage/MAHLPage';
-import AgeGroupsPage from '../pages/AgeGroupsPage/AgeGroupsPage';
-import RegisterPage from '../pages/RegisterPage/RegisterPage';
-import TournamentsPage from '../pages/TournamentsPage/TournamentsPage';
-import SportsPage from '../pages/SportsPage/SportsPage';
-import ClubPage from '../pages/ClubPage/ClubPage';
-import PlayerPage from '../pages/PlayerPage/PlayerPage';
-import AdminPage from '../pages/AdminPage/AdminPage';
-import PersonsPage from '../pages/AdminPage/PersonsPage/PersonsPage';
-import PersonForm from '../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm';
-import PersonUserPage from '../pages/PersonUserPage/PersonUserPage';
-import SingleNewsPage from '../pages/SingleNewsPage/SingleNewsPage';
-import NewsCreateEditPage from '../pages/AdminPage/NewsPage/NewsCreateEditPage';
-import DivisionsPage from '../pages/AdminPage/DivisionsPage/DivisionsPage';
-import DivisionFormPage from '../pages/AdminPage/DivisionsPage/DivisionFormPage';
-import FloorballManagementPage from '../pages/AdminPage/FloorballManagementPage/FloorballManagementPage';
-import FloorballTeamsPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage';
-import CreateTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/CreateTeamPage';
-import EditTeamPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditTeamPage';
-import EditRosterPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditRosterPage';
-import AddPlayerToRosterPage from '../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/AddPlayerToRosterPage';
-import FloorballPlayersPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage';
-import CreatePlayerPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePlayerPage/CreatePlayerPage';
-import CreatePersonPage from '../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePersonPage/CreatePersonPage';
-import FloorballRefereesPage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/FloorballRefereesPage';
-import CreateRefereePage from '../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/CreateRefereePage/CreateRefereePage';
-import FloorballSeasonsPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage';
-import CreateSeasonPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/CreateSeasonPage/CreateSeasonPage';
-import EditSeasonPage from '../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/EditSeasonPage/EditSeasonPage';
-import MatchOverviewPage from '../pages/AdminPage/FloorballManagementPage/MatchOverviewPage/MatchOverviewPage';
-import CreateMatchPage from '../pages/AdminPage/FloorballManagementPage/CreateMatchPage/CreateMatchPage';
-import EditMatchPage from '../pages/AdminPage/FloorballManagementPage/EditMatchPage/EditMatchPage';
-import CompletedMatchesPage from '../pages/AdminPage/FloorballManagementPage/CompletedMatchesPage/CompletedMatchesPage';
-import ScheduledMatchesPage from '../pages/AdminPage/FloorballManagementPage/ScheduledMatchesPage/ScheduledMatchesPage';
-import InProgressMatchesPage from '../pages/AdminPage/FloorballManagementPage/InProgressMatchesPage/InProgressMatchesPage';
-import CancelledMatchesPage from '../pages/AdminPage/FloorballManagementPage/CancelledMatchesPage/CancelledMatchesPage';
-import ManageMatchPage from '../pages/AdminPage/FloorballManagementPage/ManageMatchPage/ManageMatchPage';
-import FloorballTeamPage from '../pages/FloorballTeamPage/FloorballTeamPage';
-import NewsManagementPage from '../pages/AdminPage/NewsPage/NewsManagementPage';
-import FloorballTeamPlayerUserPage from '../pages/FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage';
-import MatchPage from '../pages/MatchPage/MatchPage';
-import LeaguePage from '../pages/LeaguePage/LeaguePage';
-import ClubsManagementPage from '../pages/AdminPage/ClubPage/ClubsManagementPage';
-import CreateClubPage from '../pages/AdminPage/ClubPage/CreateClubPage';
-import EditClubPage from '../pages/AdminPage/ClubPage/EditClubPage';
-import ClubDetailsPage from '../pages/AdminPage/ClubPage/ClubDetailsPage';
+import { Navigate } from 'react-router-dom';
+import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
+import RouteErrorBoundary from '../components/RouteErrorBoundary/RouteErrorBoundary';
+import SuspenseWrapper from './SuspenseWrapper';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
+import RedirectToPlayer from '../pages/PlayerPage/RedirectToPlayer';
+
+// Public pages
+const HomePage = lazyWithRetry(() => import('../pages/HomePage/HomePage'));
+const NewsPage = lazyWithRetry(() => import('../pages/NewsPage/NewsPage'));
+const RulesPage = lazyWithRetry(() => import('../pages/RulesPage/RulesPage'));
+const MahlInfoPage = lazyWithRetry(() => import('../pages/MahlInfoPage/MahlInfoPage'));
+const AgeGroupsPage = lazyWithRetry(() => import('../pages/AgeGroupsPage/AgeGroupsPage'));
+const RegisterPage = lazyWithRetry(() => import('../pages/RegisterPage/RegisterPage'));
+const TournamentsPage = lazyWithRetry(() => import('../pages/TournamentsPage/TournamentsPage'));
+const TournamentPage = lazyWithRetry(() => import('../pages/TournamentPage/TournamentPage'));
+const SportsPage = lazyWithRetry(() => import('../pages/SportsPage/SportsPage'));
+const ClubPage = lazyWithRetry(() => import('../pages/ClubPage/ClubPage'));
+const PlayerPage = lazyWithRetry(() => import('../pages/PlayerPage/PlayerPage'));
+const SingleNewsPage = lazyWithRetry(() =>
+  import('../pages/SingleNewsPage/SingleNewsPage').then((m) => ({ default: m.default as ComponentType<unknown> }))
+);
+const FloorballTeamPage = lazyWithRetry(() => import('../pages/FloorballTeamPage/FloorballTeamPage'));
+const MatchPage = lazyWithRetry(() => import('../pages/MatchPage/MatchPage'));
+const LeaguePage = lazyWithRetry(() => import('../pages/LeaguePage/LeaguePage'));
+const FloorballPage = lazyWithRetry(() => import('../pages/FloorballPage/FloorballPage'));
+const ClubsPage = lazyWithRetry(() => import('../pages/ClubsPage/ClubsPage'));
+const EventCalendarPage = lazyWithRetry(() => import('../pages/EventCalendarPage/EventCalendarPage'));
+
+// Admin pages
+const LoginPage = lazyWithRetry(() => import('../pages/AdminPage/LoginPage/LoginPage'));
+const VerifyEmailPage = lazyWithRetry(() => import('../pages/AdminPage/VerifyEmailPage/VerifyEmailPage'));
+const AdminPage = lazyWithRetry(() => import('../pages/AdminPage/AdminPage'));
+const UsersPage = lazyWithRetry(() => import('../pages/AdminPage/UsersPage/UsersPage'));
+const PersonsPage = lazyWithRetry(() => import('../pages/AdminPage/PersonsPage/PersonsPage'));
+const InfoPagesManagementPage = lazyWithRetry(
+  () => import('../pages/AdminPage/InfoPagesPage/InfoPagesManagementPage')
+);
+const RulesManagementPage = lazyWithRetry(
+  () => import('../pages/AdminPage/RulesPage/RulesManagementPage')
+);
+const FooterContactsManagementPage = lazyWithRetry(
+  () => import('../pages/AdminPage/FooterContactsPage/FooterContactsManagementPage')
+);
+const SettingsPage = lazyWithRetry(() => import('../pages/AdminPage/SettingsPage/SettingsPage'));
+const PersonForm = lazyWithRetry(() =>
+  import('../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm').then((m) => ({ default: m.default as ComponentType<unknown> }))
+);
+const NewsCreateEditPage = lazyWithRetry(() => import('../pages/AdminPage/NewsPage/NewsCreateEditPage'));
+const NewsManagementPage = lazyWithRetry(() => import('../pages/AdminPage/NewsPage/NewsManagementPage'));
+const DivisionsPage = lazyWithRetry(() => import('../pages/AdminPage/DivisionsPage/DivisionsPage'));
+const DivisionFormPage = lazyWithRetry(() => import('../pages/AdminPage/DivisionsPage/DivisionFormPage'));
+const ClubsManagementPage = lazyWithRetry(() => import('../pages/AdminPage/ClubPage/ClubsManagementPage'));
+const CreateClubPage = lazyWithRetry(() => import('../pages/AdminPage/ClubPage/CreateClubPage'));
+const EditClubPage = lazyWithRetry(() => import('../pages/AdminPage/ClubPage/EditClubPage'));
+const ClubDetailsPage = lazyWithRetry(() => import('../pages/AdminPage/ClubPage/ClubDetailsPage'));
+
+// Floorball management pages
+const FloorballManagementPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballManagementPage'));
+const FloorballTeamsPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/FloorballTeamsPage'));
+const CreateTeamPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/CreateTeamPage'));
+const EditTeamPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditTeamPage'));
+const EditRosterPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/EditRosterPage'));
+const AddPlayerToRosterPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTeamsPage/AddPlayerToRosterPage'));
+const FloorballPlayersPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/FloorballPlayersPage'));
+const CreatePlayerPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePlayerPage/CreatePlayerPage'));
+const CreatePersonPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballPlayersPage/CreatePersonPage/CreatePersonPage'));
+const FloorballRefereesPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/FloorballRefereesPage'));
+const CreateRefereePage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/CreateRefereePage/CreateRefereePage'));
+const EditRefereePage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballRefereesPage/EditRefereePage/EditRefereePage'));
+const FloorballSeasonsPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/FloorballSeasonsPage'));
+const CreateSeasonPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/CreateSeasonPage/CreateSeasonPage'));
+const EditSeasonPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballSeasonsPage/EditSeasonPage/EditSeasonPage'));
+const FloorballTournamentsPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTournamentsPage/FloorballTournamentsPage'));
+const CreateTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTournamentsPage/CreateTournamentPage/CreateTournamentPage'));
+const EditTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/FloorballTournamentsPage/EditTournamentPage/EditTournamentPage'));
+const MatchManagementPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/MatchManagementPage/MatchManagementPage'));
+const CreateMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/CreateMatchPage/CreateMatchPage'));
+const EditMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/EditMatchPage/EditMatchPage'));
+const ManageMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FloorballManagementPage/ManageMatchPage/ManageMatchPage'));
+
+// Football management pages
+const FootballManagementPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballManagementPage'));
+const FootballTeamsPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballTeamsPage/FootballTeamsPage'));
+const FootballCreateTeamPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballTeamsPage/CreateTeamPage'));
+const FootballEditTeamPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballTeamsPage/EditTeamPage'));
+const FootballEditRosterPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballTeamsPage/EditRosterPage'));
+const FootballAddPlayerToRosterPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballTeamsPage/AddPlayerToRosterPage'));
+const FootballPlayersPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballPlayersPage/FootballPlayersPage'));
+const FootballCreatePlayerPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballPlayersPage/CreatePlayerPage/CreatePlayerPage'));
+const FootballCreatePersonPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballPlayersPage/CreatePersonPage/CreatePersonPage'));
+const FootballRefereesPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballRefereesPage/FootballRefereesPage'));
+const FootballCreateRefereePage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballRefereesPage/CreateRefereePage/CreateRefereePage'));
+const FootballEditRefereePage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballRefereesPage/EditRefereePage/EditRefereePage'));
+const FootballSeasonsPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballSeasonsPage/FootballSeasonsPage'));
+const FootballCreateSeasonPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballSeasonsPage/CreateSeasonPage/CreateSeasonPage'));
+const FootballEditSeasonPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballSeasonsPage/EditSeasonPage/EditSeasonPage'));
+const FootballTournamentsPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballTournamentsPage/FootballTournamentsPage'));
+const FootballCreateTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballTournamentsPage/CreateTournamentPage/CreateTournamentPage'));
+const FootballEditTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/FootballTournamentsPage/EditTournamentPage/EditTournamentPage'));
+const FootballMatchManagementPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/MatchManagementPage/MatchManagementPage'));
+const FootballCreateMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/CreateMatchPage/CreateMatchPage'));
+const FootballEditMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/EditMatchPage/EditMatchPage'));
+const FootballManageMatchPage = lazyWithRetry(() => import('../pages/AdminPage/FootballManagementPage/ManageMatchPage/ManageMatchPage'));
+
+// Club admin pages
+const ClubAdminPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminPage'));
+const ClubAdminClubInfoPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminClubInfoPage/ClubAdminClubInfoPage'));
+const ClubAdminRosterPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminRosterPage/ClubAdminRosterPage'));
+const ClubAdminMatchRosterPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminMatchRosterPage/ClubAdminMatchRosterPage'));
+
+// Public football pages
+const FootballPage = lazyWithRetry(() => import('../pages/FootballPage/FootballPage'));
+const FootballLeaguePage = lazyWithRetry(() => import('../pages/FootballLeaguePage/FootballLeaguePage'));
+const FootballTournamentsListPage = lazyWithRetry(() => import('../pages/FootballTournamentsListPage/FootballTournamentsListPage'));
+const FootballTournamentPage = lazyWithRetry(() => import('../pages/FootballTournamentPage/FootballTournamentPage'));
+const FootballMatchPage = lazyWithRetry(() => import('../pages/FootballMatchPage/FootballMatchPage'));
+const FootballTeamPage = lazyWithRetry(() => import('../pages/FootballTeamPage/FootballTeamPage'));
+
+const HockeyPage = lazyWithRetry(() => import('../pages/HockeyPage/HockeyPage'));
+const HockeyLeaguePage = lazyWithRetry(() => import('../pages/HockeyLeaguePage/HockeyLeaguePage'));
+const HockeyTournamentsPage = lazyWithRetry(() => import('../pages/HockeyTournamentsPage/HockeyTournamentsPage'));
+const HockeyTournamentPage = lazyWithRetry(() => import('../pages/HockeyTournamentPage/HockeyTournamentPage'));
+const HockeyMatchPage = lazyWithRetry(() => import('../pages/HockeyMatchPage/HockeyMatchPage'));
+const HockeyTeamPage = lazyWithRetry(() => import('../pages/HockeyTeamPage/HockeyTeamPage'));
+const HockeyManagementPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyManagementPage'));
+const HockeyTeamsPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/HockeyTeamsPage'));
+const CreateHockeyTeamPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/CreateTeamPage'));
+const EditHockeyTeamPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/EditTeamPage'));
+const EditHockeyRosterPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/EditRosterPage'));
+const EditHockeyLinesPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/EditLinesPage'));
+const AddHockeyPlayerToRosterPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/AddPlayerToRosterPage'));
+const HockeyPlayersPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyPlayersPage/HockeyPlayersPage'));
+const CreateHockeyPlayerPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyPlayersPage/CreatePlayerPage'));
+const CreateHockeyPersonPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyPlayersPage/CreatePersonPage/CreatePersonPage'));
+const HockeyOfficialsPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyOfficialsPage/HockeyOfficialsPage'));
+const CreateHockeyOfficialPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyOfficialsPage/CreateOfficialPage'));
+const EditHockeyOfficialPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyOfficialsPage/EditOfficialPage'));
+const HockeySeasonsPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeySeasonsPage/HockeySeasonsPage'));
+const CreateHockeySeasonPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeySeasonsPage/CreateSeasonPage'));
+const EditHockeySeasonPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeySeasonsPage/EditSeasonPage'));
+const HockeyTournamentsAdminPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTournamentsPage/HockeyTournamentsPage'));
+const CreateHockeyTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTournamentsPage/CreateTournamentPage'));
+const EditHockeyTournamentPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTournamentsPage/EditTournamentPage'));
+const HockeyMatchManagementPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/MatchManagementPage/MatchManagementPage'));
+const CreateHockeyMatchPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/CreateMatchPage/CreateMatchPage'));
+const EditHockeyMatchPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/EditMatchPage/EditMatchPage'));
+const ManageHockeyMatchPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/ManageMatchPage/ManageMatchPage'));
 
 export const routes: RouteObject[] = [
   {
+    errorElement: <RouteErrorBoundary />,
+    children: [
+  {
     path: '/',
-    element: <HomePage />
+    element: <SuspenseWrapper><HomePage /></SuspenseWrapper>
   },
+  // Admin login (public)
+  {
+    path: '/admin/login',
+    element: <SuspenseWrapper><LoginPage /></SuspenseWrapper>
+  },
+  // Admin email verification (public – linked from invitation email)
+  {
+    path: '/admin/verify-email',
+    element: <SuspenseWrapper><VerifyEmailPage /></SuspenseWrapper>
+  },
+  // Club admin login (public)
+  {
+    path: '/club-admin/login',
+    element: <SuspenseWrapper><LoginPage variant="clubAdmin" /></SuspenseWrapper>
+  },
+  // Club admin email verification (public – linked from invitation email)
+  {
+    path: '/club-admin/verify-email',
+    element: <SuspenseWrapper><VerifyEmailPage variant="clubAdmin" /></SuspenseWrapper>
+  },
+  // Protected club admin routes (site admins may also access them)
+  {
+    path: '/club-admin',
+    children: [
+      {
+        index: true,
+        element: (
+          <ProtectedRoute allowedRoles={['ClubAdmin', 'SystemAdmin']} loginPath="/club-admin/login">
+            <SuspenseWrapper><ClubAdminPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'clubs/:clubId/info',
+        element: (
+          <ProtectedRoute allowedRoles={['ClubAdmin', 'SystemAdmin']} loginPath="/club-admin/login">
+            <SuspenseWrapper><ClubAdminClubInfoPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'teams/:sport/:teamId/roster',
+        element: (
+          <ProtectedRoute allowedRoles={['ClubAdmin', 'SystemAdmin']} loginPath="/club-admin/login">
+            <SuspenseWrapper><ClubAdminRosterPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'teams/:sport/:teamId/matches/:matchId/roster',
+        element: (
+          <ProtectedRoute allowedRoles={['ClubAdmin', 'SystemAdmin']} loginPath="/club-admin/login">
+            <SuspenseWrapper><ClubAdminMatchRosterPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      }
+    ]
+  },
+  // Protected admin routes
   {
     path: '/admin/clubs',
     children: [
       {
         index: true,
-        element: <ClubsManagementPage />
+        element: <ProtectedRoute><SuspenseWrapper><ClubsManagementPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: 'create',
-        element: <CreateClubPage />
+        element: <ProtectedRoute><SuspenseWrapper><CreateClubPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: ':id',
-        element: <ClubDetailsPage />
+        element: <ProtectedRoute><SuspenseWrapper><ClubDetailsPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: ':id/edit',
-        element: <EditClubPage />
+        element: <ProtectedRoute><SuspenseWrapper><EditClubPage /></SuspenseWrapper></ProtectedRoute>
+      }
+
+    ]
+  },
+  
+      {
+        path: '/admin/site-content/info-pages',
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper>
+              <InfoPagesManagementPage />
+            </SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: '/admin/site-content/rules',
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper>
+              <RulesManagementPage />
+            </SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: '/admin/site-content/footer-contacts',
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper>
+              <FooterContactsManagementPage />
+            </SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: '/admin/site-content/footer',
+        element: <Navigate to="/admin/site-content/footer-contacts" replace />
+      },
+      {
+        path: '/admin/rules',
+        element: <Navigate to="/admin/site-content/rules" replace />
+      },
+  {
+    path: '/admin/users',
+    children: [
+      {
+        index: true,
+        element: <ProtectedRoute><SuspenseWrapper><UsersPage /></SuspenseWrapper></ProtectedRoute>
       }
     ]
   },
   {
+    path: '/admin/settings',
+    element: (
+      <ProtectedRoute>
+        <SuspenseWrapper>
+          <SettingsPage />
+        </SuspenseWrapper>
+      </ProtectedRoute>
+    )
+  },
+  {
     path: '/uutiset',
-    element: <NewsPage />
+    element: <SuspenseWrapper><NewsPage /></SuspenseWrapper>
+  },
+  {
+    path: '/tapahtumakalenteri',
+    element: <SuspenseWrapper><EventCalendarPage /></SuspenseWrapper>
   },
   {
     path: '/uutiset/:id',
-    element: <SingleNewsPage />
+    element: <SuspenseWrapper><SingleNewsPage /></SuspenseWrapper>
   },
   {
     path: '/saannot',
-    element: <RulesPage />
+    element: <SuspenseWrapper><RulesPage /></SuspenseWrapper>
   },
   {
     path: '/mahl',
-    element: <MAHLPage />
+    element: <SuspenseWrapper><MahlInfoPage slug="mahl-summary" /></SuspenseWrapper>
+  },
+  {
+    path: '/mahl/seuran-talous',
+    element: <SuspenseWrapper><MahlInfoPage slug="mahl-finance" /></SuspenseWrapper>
+  },
+  {
+    path: '/mahl/kumppanuudet',
+    element: <SuspenseWrapper><MahlInfoPage slug="mahl-partners" /></SuspenseWrapper>
+  },
+  {
+    path: '/mahl/vastuullisuus',
+    element: <SuspenseWrapper><MahlInfoPage slug="mahl-responsibility" /></SuspenseWrapper>
   },
   {
     path: '/ikaryhmat',
-    element: <AgeGroupsPage />
+    element: <SuspenseWrapper><AgeGroupsPage /></SuspenseWrapper>
   },
   {
     path: '/ilmoittaudu',
-    element: <RegisterPage />
+    element: <SuspenseWrapper><RegisterPage /></SuspenseWrapper>
   },
   {
     path: '/turnaukset',
-    element: <TournamentsPage />
+    element: <SuspenseWrapper><TournamentsPage /></SuspenseWrapper>
+  },
+  {
+    path: '/tournaments',
+    element: <SuspenseWrapper><TournamentsPage /></SuspenseWrapper>
+  },
+  {
+    path: '/tournaments/:id',
+    element: <SuspenseWrapper><TournamentPage /></SuspenseWrapper>
+  },
+  {
+    path: '/turnaukset/:id',
+    element: <SuspenseWrapper><TournamentPage /></SuspenseWrapper>
   },
   {
     path: '/lajit',
-    element: <SportsPage />
+    element: <SuspenseWrapper><SportsPage /></SuspenseWrapper>
+  },
+  {
+    path: '/sports',
+    element: <SuspenseWrapper><SportsPage /></SuspenseWrapper>
+  },
+  {
+    path: '/sports/floorball',
+    element: <SuspenseWrapper><FloorballPage /></SuspenseWrapper>
+  },
+  {
+    path: '/sports/football',
+    element: <SuspenseWrapper><FootballPage /></SuspenseWrapper>
+  },
+  {
+    path: '/sports/icehockey',
+    element: <SuspenseWrapper><HockeyPage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockey/league/:id',
+    element: <SuspenseWrapper><HockeyLeaguePage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockey/tournaments',
+    element: <SuspenseWrapper><HockeyTournamentsPage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockey/tournaments/:id',
+    element: <SuspenseWrapper><HockeyTournamentPage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockey/match/:id',
+    element: <SuspenseWrapper><HockeyMatchPage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockey/team/:slug',
+    element: <SuspenseWrapper><HockeyTeamPage /></SuspenseWrapper>
+  },
+  {
+    path: '/hockeyplayer/:id',
+    element: <RedirectToPlayer sport="hockey" />
+  },
+  {
+    path: '/clubs',
+    element: <SuspenseWrapper><ClubsPage /></SuspenseWrapper>
   },
   {
     path: '/club/:slug',
-    element: <ClubPage />
+    element: <SuspenseWrapper><ClubPage /></SuspenseWrapper>
   },
   {
     path: '/team/:slug',
-    element: <FloorballTeamPage />
+    element: <SuspenseWrapper><FloorballTeamPage /></SuspenseWrapper>
   },
   {
     path: '/pelaaja/:id',
-    element: <PlayerPage />
+    element: <RedirectToPlayer />
   },
   {
     path: '/admin',
-    element: <AdminPage />
+    element: <ProtectedRoute><SuspenseWrapper><AdminPage /></SuspenseWrapper></ProtectedRoute>
   },
   {
     path: '/admin/persons',
     children: [
       {
         index: true,
-        element: <PersonsPage />
+        element: <ProtectedRoute><SuspenseWrapper><PersonsPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: 'new',
-        element: <PersonForm />
+        element: <ProtectedRoute><SuspenseWrapper><PersonForm /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: ':id/edit',
-        element: <PersonForm />
+        element: <ProtectedRoute><SuspenseWrapper><PersonForm /></SuspenseWrapper></ProtectedRoute>
       }
     ]
   },
@@ -145,15 +438,15 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <DivisionsPage />,
+        element: <ProtectedRoute><SuspenseWrapper><DivisionsPage /></SuspenseWrapper></ProtectedRoute>,
       },
       {
         path: 'create',
-        element: <DivisionFormPage />,
+        element: <ProtectedRoute><SuspenseWrapper><DivisionFormPage /></SuspenseWrapper></ProtectedRoute>,
       },
       {
         path: ':divisionId/edit',
-        element: <DivisionFormPage />,
+        element: <ProtectedRoute><SuspenseWrapper><DivisionFormPage /></SuspenseWrapper></ProtectedRoute>,
       },
     ],
   },
@@ -162,30 +455,30 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <FloorballManagementPage/>
+        element: <ProtectedRoute><SuspenseWrapper><FloorballManagementPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: 'teams',
         children: [
           {
             index: true,
-            element: <FloorballTeamsPage/>
+            element: <ProtectedRoute><SuspenseWrapper><FloorballTeamsPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: 'new',
-            element: <CreateTeamPage/>
+            element: <ProtectedRoute><SuspenseWrapper><CreateTeamPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: ':id/edit',
-            element: <EditTeamPage/>
+            element: <ProtectedRoute><SuspenseWrapper><EditTeamPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: ':id/roster',
-            element: <EditRosterPage/>
+            element: <ProtectedRoute><SuspenseWrapper><EditRosterPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: ':id/roster/add',
-            element: <AddPlayerToRosterPage/>
+            element: <ProtectedRoute><SuspenseWrapper><AddPlayerToRosterPage /></SuspenseWrapper></ProtectedRoute>
           }
         ]
       },
@@ -194,15 +487,15 @@ export const routes: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <FloorballPlayersPage />
+            element: <ProtectedRoute><SuspenseWrapper><FloorballPlayersPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: 'create',
-            element: <CreatePlayerPage />
+            element: <ProtectedRoute><SuspenseWrapper><CreatePlayerPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: 'create-person',
-            element: <CreatePersonPage />
+            element: <ProtectedRoute><SuspenseWrapper><CreatePersonPage /></SuspenseWrapper></ProtectedRoute>
           }
         ]
       },
@@ -211,11 +504,15 @@ export const routes: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <FloorballRefereesPage />
+            element: <ProtectedRoute><SuspenseWrapper><FloorballRefereesPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: 'create',
-            element: <CreateRefereePage />
+            element: <ProtectedRoute><SuspenseWrapper><CreateRefereePage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':refereeId/edit',
+            element: <ProtectedRoute><SuspenseWrapper><EditRefereePage /></SuspenseWrapper></ProtectedRoute>
           }
         ]
       },
@@ -224,64 +521,328 @@ export const routes: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <FloorballSeasonsPage />
+            element: <ProtectedRoute><SuspenseWrapper><FloorballSeasonsPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
             path: 'create',
-            element: <CreateSeasonPage />
+            element: <ProtectedRoute><SuspenseWrapper><CreateSeasonPage /></SuspenseWrapper></ProtectedRoute>
           },
           {
-            path: ':seasonId/edit',
-            element: <EditSeasonPage />
+            path: 'matches',
+            element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage mode="season" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'matches/create',
+            element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':competitionId/edit',
+            element: <ProtectedRoute><SuspenseWrapper><EditSeasonPage /></SuspenseWrapper></ProtectedRoute>
+          }
+        ]
+      },
+      {
+        path: 'tournaments',
+        children: [
+          {
+            index: true,
+            element: <ProtectedRoute><SuspenseWrapper><FloorballTournamentsPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'create',
+            element: <ProtectedRoute><SuspenseWrapper><CreateTournamentPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'matches',
+            element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage mode="tournament" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'matches/create',
+            element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage mode="tournament" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':competitionId/edit',
+            element: <ProtectedRoute><SuspenseWrapper><EditTournamentPage /></SuspenseWrapper></ProtectedRoute>
           }
         ]
       },
       {
         path: 'matches',
         children: [
-          { index: true, element: <MatchOverviewPage /> },
-          { path: 'create', element: <CreateMatchPage /> },
-          { path: ':matchId/edit', element: <EditMatchPage /> },
-          { path: 'completed', element: <CompletedMatchesPage /> },
-          { path: 'scheduled', element: <ScheduledMatchesPage /> },
-          { path: 'in-progress', element: <InProgressMatchesPage /> },
-          { path: 'cancelled', element: <CancelledMatchesPage /> },
-          { path: 'manage/:matchId', element: <ManageMatchPage /> }
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><MatchManagementPage /></SuspenseWrapper></ProtectedRoute> },
+          // Legacy route — defaults to season-based creation for back-compat.
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':matchId/edit', element: <ProtectedRoute><SuspenseWrapper><EditMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'manage/:matchId', element: <ProtectedRoute><SuspenseWrapper><ManageMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'completed', element: <Navigate to="/admin/floorball/matches?tab=completed" replace /> },
+          { path: 'scheduled', element: <Navigate to="/admin/floorball/matches?tab=scheduled" replace /> },
+          { path: 'in-progress', element: <Navigate to="/admin/floorball/matches?tab=ongoing" replace /> },
+          { path: 'cancelled', element: <Navigate to="/admin/floorball/matches?tab=cancelled" replace /> },
+        ]
+      }
+    ]
+  },
+  {
+    path: '/admin/football',
+    children: [
+      {
+        index: true,
+        element: <ProtectedRoute><SuspenseWrapper><FootballManagementPage /></SuspenseWrapper></ProtectedRoute>
+      },
+      {
+        path: 'teams',
+        children: [
+          {
+            index: true,
+            element: <ProtectedRoute><SuspenseWrapper><FootballTeamsPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'new',
+            element: <ProtectedRoute><SuspenseWrapper><FootballCreateTeamPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':id/edit',
+            element: <ProtectedRoute><SuspenseWrapper><FootballEditTeamPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':id/roster',
+            element: <ProtectedRoute><SuspenseWrapper><FootballEditRosterPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':id/roster/add',
+            element: <ProtectedRoute><SuspenseWrapper><FootballAddPlayerToRosterPage /></SuspenseWrapper></ProtectedRoute>
+          }
+        ]
+      },
+      {
+        path: 'players',
+        children: [
+          {
+            index: true,
+            element: <ProtectedRoute><SuspenseWrapper><FootballPlayersPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'create',
+            element: <ProtectedRoute><SuspenseWrapper><FootballCreatePlayerPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'create-person',
+            element: <ProtectedRoute><SuspenseWrapper><FootballCreatePersonPage /></SuspenseWrapper></ProtectedRoute>
+          }
+        ]
+      },
+      {
+        path: 'referees',
+        children: [
+          {
+            index: true,
+            element: <ProtectedRoute><SuspenseWrapper><FootballRefereesPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'create',
+            element: <ProtectedRoute><SuspenseWrapper><FootballCreateRefereePage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':refereeId/edit',
+            element: <ProtectedRoute><SuspenseWrapper><FootballEditRefereePage /></SuspenseWrapper></ProtectedRoute>
+          }
+        ]
+      },
+      {
+        path: 'seasons',
+        children: [
+          {
+            index: true,
+            element: <ProtectedRoute><SuspenseWrapper><FootballSeasonsPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'create',
+            element: <ProtectedRoute><SuspenseWrapper><FootballCreateSeasonPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'matches',
+            element: <ProtectedRoute><SuspenseWrapper><FootballMatchManagementPage mode="season" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'matches/create',
+            element: <ProtectedRoute><SuspenseWrapper><FootballCreateMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':competitionId/edit',
+            element: <ProtectedRoute><SuspenseWrapper><FootballEditSeasonPage /></SuspenseWrapper></ProtectedRoute>
+          }
+        ]
+      },
+      {
+        path: 'tournaments',
+        children: [
+          {
+            index: true,
+            element: <ProtectedRoute><SuspenseWrapper><FootballTournamentsPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'create',
+            element: <ProtectedRoute><SuspenseWrapper><FootballCreateTournamentPage /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'matches',
+            element: <ProtectedRoute><SuspenseWrapper><FootballMatchManagementPage mode="tournament" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: 'matches/create',
+            element: <ProtectedRoute><SuspenseWrapper><FootballCreateMatchPage mode="tournament" /></SuspenseWrapper></ProtectedRoute>
+          },
+          {
+            path: ':competitionId/edit',
+            element: <ProtectedRoute><SuspenseWrapper><FootballEditTournamentPage /></SuspenseWrapper></ProtectedRoute>
+          }
+        ]
+      },
+      {
+        path: 'matches',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><FootballMatchManagementPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><FootballCreateMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':matchId/edit', element: <ProtectedRoute><SuspenseWrapper><FootballEditMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'manage/:matchId', element: <ProtectedRoute><SuspenseWrapper><FootballManageMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'completed', element: <Navigate to="/admin/football/matches?tab=completed" replace /> },
+          { path: 'scheduled', element: <Navigate to="/admin/football/matches?tab=scheduled" replace /> },
+          { path: 'in-progress', element: <Navigate to="/admin/football/matches?tab=ongoing" replace /> },
+          { path: 'cancelled', element: <Navigate to="/admin/football/matches?tab=cancelled" replace /> },
+        ]
+      }
+    ]
+  },
+  {
+    path: '/admin/hockey',
+    children: [
+      {
+        index: true,
+        element: <ProtectedRoute><SuspenseWrapper><HockeyManagementPage /></SuspenseWrapper></ProtectedRoute>
+      },
+      {
+        path: 'teams',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeyTeamsPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'new', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyTeamPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':id/edit', element: <ProtectedRoute><SuspenseWrapper><EditHockeyTeamPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':id/roster', element: <ProtectedRoute><SuspenseWrapper><EditHockeyRosterPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':id/lines', element: <ProtectedRoute><SuspenseWrapper><EditHockeyLinesPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':id/roster/add', element: <ProtectedRoute><SuspenseWrapper><AddHockeyPlayerToRosterPage /></SuspenseWrapper></ProtectedRoute> }
+        ]
+      },
+      {
+        path: 'players',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeyPlayersPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyPlayerPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create-person', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyPersonPage /></SuspenseWrapper></ProtectedRoute> }
+        ]
+      },
+      {
+        path: 'officials',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeyOfficialsPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyOfficialPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':officialId/edit', element: <ProtectedRoute><SuspenseWrapper><EditHockeyOfficialPage /></SuspenseWrapper></ProtectedRoute> }
+        ]
+      },
+      {
+        path: 'seasons',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeySeasonsPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeySeasonPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'matches', element: <ProtectedRoute><SuspenseWrapper><HockeyMatchManagementPage mode="season" /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'matches/create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':competitionId/edit', element: <ProtectedRoute><SuspenseWrapper><EditHockeySeasonPage /></SuspenseWrapper></ProtectedRoute> }
+        ]
+      },
+      {
+        path: 'tournaments',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeyTournamentsAdminPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyTournamentPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'matches', element: <ProtectedRoute><SuspenseWrapper><HockeyMatchManagementPage mode="tournament" /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'matches/create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyMatchPage mode="tournament" /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':competitionId/edit', element: <ProtectedRoute><SuspenseWrapper><EditHockeyTournamentPage /></SuspenseWrapper></ProtectedRoute> }
+        ]
+      },
+      {
+        path: 'matches',
+        children: [
+          { index: true, element: <ProtectedRoute><SuspenseWrapper><HockeyMatchManagementPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'create', element: <ProtectedRoute><SuspenseWrapper><CreateHockeyMatchPage mode="season" /></SuspenseWrapper></ProtectedRoute> },
+          { path: ':matchId/edit', element: <ProtectedRoute><SuspenseWrapper><EditHockeyMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'manage/:matchId', element: <ProtectedRoute><SuspenseWrapper><ManageHockeyMatchPage /></SuspenseWrapper></ProtectedRoute> },
+          { path: 'completed', element: <Navigate to="/admin/hockey/matches?tab=completed" replace /> },
+          { path: 'scheduled', element: <Navigate to="/admin/hockey/matches?tab=scheduled" replace /> },
+          { path: 'in-progress', element: <Navigate to="/admin/hockey/matches?tab=ongoing" replace /> },
+          { path: 'cancelled', element: <Navigate to="/admin/hockey/matches?tab=cancelled" replace /> }
         ]
       }
     ]
   },
   {
     path: '/person/:id',
-    element: <PersonUserPage />
+    element: <RedirectToPlayer />
+  },
+  {
+    path: '/player/:id',
+    element: <SuspenseWrapper><PlayerPage /></SuspenseWrapper>
   },
   {
     path: '/floorballplayer/:id',
-    element: <FloorballTeamPlayerUserPage />
+    element: <RedirectToPlayer sport="floorball" />
   },
   {
     path: '/admin/news',
     children: [
       {
         index: true,
-        element: <NewsManagementPage />
+        element: <ProtectedRoute><SuspenseWrapper><NewsManagementPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: 'create',
-        element: <NewsCreateEditPage />
+        element: <ProtectedRoute><SuspenseWrapper><NewsCreateEditPage /></SuspenseWrapper></ProtectedRoute>
       },
       {
         path: 'edit/:id',
-        element: <NewsCreateEditPage />
+        element: <ProtectedRoute><SuspenseWrapper><NewsCreateEditPage /></SuspenseWrapper></ProtectedRoute>
       }
     ]
   },
   {
     path: '/match/:id',
-    element: <MatchPage/>
+    element: <SuspenseWrapper><MatchPage /></SuspenseWrapper>
   },
   {
     path: '/league/:id',
-    element: <LeaguePage/>
+    element: <SuspenseWrapper><LeaguePage /></SuspenseWrapper>
+  },
+  {
+    path: '/football/league/:id',
+    element: <SuspenseWrapper><FootballLeaguePage /></SuspenseWrapper>
+  },
+  {
+    path: '/football/tournaments',
+    element: <SuspenseWrapper><FootballTournamentsListPage /></SuspenseWrapper>
+  },
+  {
+    path: '/football/tournaments/:id',
+    element: <SuspenseWrapper><FootballTournamentPage /></SuspenseWrapper>
+  },
+  {
+    path: '/football/match/:id',
+    element: <SuspenseWrapper><FootballMatchPage /></SuspenseWrapper>
+  },
+  {
+    path: '/football/team/:slug',
+    element: <SuspenseWrapper><FootballTeamPage /></SuspenseWrapper>
+  },
+  {
+    path: '/football/player/:id',
+    element: <RedirectToPlayer sport="football" />
   }
-]; 
+    ]
+  }
+];

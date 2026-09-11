@@ -28,6 +28,7 @@ export const useSeasonsManagement = () => {
   // Filter states
   const [showActiveOnly, setShowActiveOnly] = useState(false);
   const [divisionFilter, setDivisionFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
   const parseApiError = useCallback((error: unknown): string => {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -59,7 +60,7 @@ export const useSeasonsManagement = () => {
       return t('floorball.seasons.errors.cannotActivateCompleted', 'Cannot activate a completed season.');
     }
     
-    if (errorMessage.includes('Cannot update a completed season')) {
+    if (errorMessage.includes('Cannot update a completed')) {
       return t('floorball.seasons.errors.cannotUpdateCompleted', 'Cannot update a completed season.');
     }
     
@@ -214,6 +215,11 @@ export const useSeasonsManagement = () => {
       return false;
     }
     
+    // Filter by team category (multi-select; empty selection = show all)
+    if (categoryFilter.length > 0 && !categoryFilter.includes(season.teamCategory ?? '')) {
+      return false;
+    }
+
     // Filter by division
     if (divisionFilter !== 'all') {
       // Check if any of the season's divisions match the filter
@@ -257,6 +263,7 @@ export const useSeasonsManagement = () => {
     // Filter states
     showActiveOnly,
     divisionFilter,
+    categoryFilter,
     
     // Modal states
     showCreateModal,
@@ -266,6 +273,7 @@ export const useSeasonsManagement = () => {
     // Actions
     setShowCreateModal,
     setDivisionFilter,
+    setCategoryFilter,
     handleShowActiveOnlyChange,
     handleCreateSeason,
     handleEditSeason,

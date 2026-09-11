@@ -40,26 +40,36 @@
   .timer-controls {
     display: flex;
     gap: 4px;
-    flex-wrap: nowrap; /* keep controls on one row */
+    /* Allow the row to wrap onto multiple lines on narrow viewports. The previous
+     * `nowrap` value was deliberate (keeps the chip row visually identical at default
+     * widths), but it made the controls overflow the timer card whenever the manage
+     * match layout switched to its narrow / sidebar-collapsed-with-narrow-window mode.
+     * Wrapping is preferred over horizontal overflow because every button is a real
+     * click target — if they slid behind the card edge users couldn't reach the
+     * +1 min / End period buttons. `min-width: 0` on the parent flex item ensures the
+     * controls receive their fair share of space rather than being forced wider than
+     * the card. */
+    flex-wrap: wrap;
+    max-width: 100%;
     justify-content: center;
     align-items: center;
 
     .timer-button {
       height: 32px;
-      padding: 8px 16px;
+      padding: 6px 10px;
       border-radius: 16px;
       border: 1px solid $color-neutral-medium-grey;
       background: $color-neutral-light-grey;
       color: $color-neutral-dark-grey;
       font-family: $font-family-body;
       font-weight: map.get($font-weights, 'semibold');
-      font-size: 12px;
+      font-size: 11px;
       line-height: 16px;
       letter-spacing: 0;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 4px;
       white-space: nowrap;
       cursor: pointer;
       box-shadow: none;
@@ -82,17 +92,17 @@
 
   // End/Start period button styles (increase specificity to beat .timer-controls .timer-button)
   .timer-controls .timer-button.end-period-inline {
-    min-width: 95px;
-    width: 95px;
+    min-width: 80px;
+    width: 80px;
     height: 32px;
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: 16px;
     border: 1px solid $color-red-muted;
     background: $color-red-muted;
     color: $color-neutral-white;
     font-family: $font-family-body;
     font-weight: map.get($font-weights, 'semibold');
-    font-size: 12px;
+    font-size: 11px;
     line-height: 16px;
     display: inline-flex;
     align-items: center;
@@ -105,30 +115,39 @@
   .timer-controls .timer-button.end-period-inline::after { content: none; }
 
   
-  .timer-button.set-time { min-width: 48px; width: 48px; padding: 8px; }
-  .timer-button.minute-back { min-width: 88px; width: 88px; }
-  .timer-button.seconds-back { min-width: 69px; width: 69px; }
+  .timer-button.set-time { min-width: 36px; width: 36px; padding: 6px; }
+  .timer-button.minute-back { min-width: 60px; width: 60px; }
+  .timer-button.seconds-back { min-width: 50px; width: 50px; }
+  .timer-button.one-second-back { min-width: 42px; width: 42px; }
   .timer-button.start,
-  .timer-button.pause { min-width: 44px; width: 44px; padding: 8px; }
-  .timer-button.seconds-forward { min-width: 69px; width: 69px; }
-  .timer-button.minute-forward { min-width: 88px; width: 88px; }
-  .timer-button.reset { min-width: 46px; width: 46px; background: #FFEFB8; border-color: $color-neutral-medium-grey; color: $color-neutral-dark-grey; }
+  .timer-button.pause { min-width: 36px; width: 36px; padding: 6px; }
+  .timer-button.one-second-forward { min-width: 42px; width: 42px; }
+  .timer-button.seconds-forward { min-width: 50px; width: 50px; }
+  .timer-button.minute-forward { min-width: 60px; width: 60px; }
+  .timer-button.reset { min-width: 36px; width: 36px; background: #FFEFB8; border-color: $color-neutral-medium-grey; color: $color-neutral-dark-grey; }
 
   /* Placeholder icons using text glyphs */
-  .timer-button.minute-back::before { content: '«'; font-size: 12px; line-height: 16px; }
-  .timer-button.seconds-back::before { content: '‹'; font-size: 12px; line-height: 16px; }
-  .timer-button.seconds-forward::before { content: '›'; font-size: 12px; line-height: 16px; }
-  .timer-button.minute-forward::before { content: '»'; font-size: 12px; line-height: 16px; }
+  .timer-button.minute-back::before { content: '«'; font-size: 11px; line-height: 16px; }
+  .timer-button.seconds-back::before { content: '‹'; font-size: 11px; line-height: 16px; }
+  .timer-button.one-second-back::before { content: '‹'; font-size: 11px; line-height: 16px; }
+  .timer-button.one-second-forward::after { content: '›'; font-size: 11px; line-height: 16px; }
+  .timer-button.seconds-forward::after { content: '›'; font-size: 11px; line-height: 16px; }
+  .timer-button.minute-forward::after { content: '»'; font-size: 11px; line-height: 16px; }
 
   /* placeholder icons for start/pause */
   .timer-button.start, .timer-button.pause { font-size: 0; }
-  .timer-button.start::before { content: '▶'; font-size: 12px; line-height: 16px; }
-  .timer-button.pause::before { content: '⏸'; font-size: 12px; line-height: 16px; }
+  .timer-button.start::before { content: '▶'; font-size: 11px; line-height: 16px; }
+  .timer-button.pause::before { content: '⏸'; font-size: 11px; line-height: 16px; }
 
   /* Edit icon sizing */
   .timer-button.set-time img { width: 16px; height: 16px; }
 
   .timer-adjustments {
+    /* Required so the adjustment group can shrink within a wrapped `.timer-controls`
+     * row instead of forcing the parent to stay wide enough to fit all 8 inner
+     * buttons inline. */
+    min-width: 0;
+    max-width: 100%;
 
     .adjustment-group {
       display: flex;
@@ -140,8 +159,11 @@
 
       .adjustment-buttons {
         display: flex;
-        gap: 8px;
-        flex-wrap: nowrap;
+        gap: 4px;
+        /* Inner buttons now also wrap so very narrow viewports don't overflow the
+         * timer card — pairs the `flex-wrap: wrap` we added to the outer
+         * `.timer-controls` and keeps every adjustment button reachable. */
+        flex-wrap: wrap;
         justify-content: center;
         align-items: center;
       }

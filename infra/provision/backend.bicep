@@ -1,0 +1,274 @@
+// ============================================================================
+// MyLeague Backend Infrastructure - Main Deployment
+// ============================================================================
+// This template deploys:
+// - App Service Plan (Basic B1 Linux)
+// - App Service for .NET 10 API
+// - PostgreSQL Flexible Server (Burstable B1ms)
+// - Storage Account for image uploads
+// - Azure Communication Services (Email with Azure-managed domain)
+// - Log Analytics workspace + Application Insights (workspace-based)
+// ============================================================================
+
+targetScope = 'resourceGroup'
+
+// ============================================================================
+// Parameters
+// ============================================================================
+
+@description('The environment name (dev, staging, prod)')
+@allowed([
+  'dev'
+  'staging'
+  'prod'
+])
+param environmentName string = 'dev'
+
+@description('The Azure region for all resources')
+param location string = resourceGroup().location
+
+@description('The base name for all resources')
+param baseName string = 'myleague'
+
+@description('The PostgreSQL administrator username')
+param postgresAdminUser string = 'myleagueadmin'
+
+@description('The PostgreSQL administrator password')
+@secure()
+param postgresAdminPassword string
+
+@description('The SKU for the App Service Plan')
+@allowed([
+  'F1'
+  'B1'
+])
+param appServicePlanSku string = 'B1'
+
+@description('The SKU for the PostgreSQL server')
+@allowed([
+  'Standard_B1ms'
+  'Standard_B2s'
+])
+param postgresSku string = 'Standard_B1ms'
+
+@description('Allowed CORS origins for the API')
+param allowedOrigins array = []
+
+@description('The SKU for the Storage Account')
+@allowed([
+  'Standard_LRS'
+  'Standard_GRS'
+  'Standard_ZRS'
+])
+param storageSku string = 'Standard_LRS'
+
+@description('The JWT secret key for signing tokens (must be at least 32 characters)')
+@secure()
+param jwtSecretKey string
+
+@description('The admin email for database seeding (optional)')
+param seedAdminEmail string = ''
+
+@description('The base URL of the frontend application (e.g. https://calm-tree-06b4ac003.2.azurestaticapps.net)')
+param frontendBaseUrl string = ''
+
+@description('The admin email that receives monitoring alerts. Leave empty to skip deploying alerts.')
+param alertEmail string = ''
+
+@description('Deploy an external availability (uptime) test. Recommended for prod only.')
+param enableAvailabilityTest bool = false
+
+@description('Monthly cost budget for this resource group in USD (email notifications at 80% and 100%)')
+param monthlyBudgetAmount int = 35
+
+@description('PostgreSQL backup retention in days (7-35)')
+@minValue(7)
+@maxValue(35)
+param postgresBackupRetentionDays int = 7
+
+@description('Daily ingestion cap in GB for the Log Analytics workspace backing Application Insights')
+param appInsightsDailyCapGb int = 1
+
+// ============================================================================
+// Variables
+// ============================================================================
+
+var resourcePrefix = '${baseName}-${environmentName}'
+var appServicePlanName = '${resourcePrefix}-plan'
+var appServiceName = '${resourcePrefix}-api'
+var postgresServerName = '${resourcePrefix}-postgres'
+// Storage account names must be 3-24 lowercase alphanumeric only
+var storageAccountName = toLower(replace('${baseName}${environmentName}storage', '-', ''))
+
+var communicationServiceName = '${resourcePrefix}-comm'
+var emailServiceName = '${resourcePrefix}-email'
+
+var appInsightsName = '${resourcePrefix}-ai'
+var logAnalyticsWorkspaceName = '${resourcePrefix}-logs'
+
+var tags = {
+  Environment: environmentName
+  Application: baseName
+  ManagedBy: 'Bicep'
+}
+
+var aspnetEnvironment = environmentName == 'prod' ? 'Production' : (environmentName == 'staging' ? 'Staging' : 'Development')
+
+// ============================================================================
+// Modules
+// ============================================================================
+
+// App Service Plan
+module appServicePlan 'modules/app-service-plan.bicep' = {
+  name: 'appServicePlan'
+  params: {
+    name: appServicePlanName
+    location: location
+    skuName: appServicePlanSku
+    tags: tags
+  }
+}
+
+// PostgreSQL Flexible Server
+module postgres 'modules/postgresql.bicep' = {
+  name: 'postgresql'
+  params: {
+    name: postgresServerName
+    location: location
+    administratorLogin: postgresAdminUser
+    administratorPassword: postgresAdminPassword
+    databaseName: 'myleague'
+    skuName: postgresSku
+    skuTier: 'Burstable'
+    storageSizeGB: 32
+    postgresVersion: '16'
+    backupRetentionDays: postgresBackupRetentionDays
+    tags: tags
+  }
+}
+
+// Storage Account for image uploads
+module storageAccount 'modules/storage-account.bicep' = {
+  name: 'storageAccount'
+  params: {
+    name: storageAccountName
+    location: location
+    containerName: 'images'
+    skuName: storageSku
+    tags: tags
+  }
+}
+
+// Azure Communication Services (Email)
+module communicationServices 'modules/communication-services.bicep' = {
+  name: 'communicationServices'
+  params: {
+    name: communicationServiceName
+    emailServiceName: emailServiceName
+    tags: tags
+  }
+}
+
+// Application Insights (workspace-based) for application telemetry & error tracking
+module applicationInsights 'modules/application-insights.bicep' = {
+  name: 'applicationInsights'
+  params: {
+    name: appInsightsName
+    workspaceName: logAnalyticsWorkspaceName
+    location: location
+    retentionInDays: 30
+    dailyQuotaGb: appInsightsDailyCapGb
+    tags: tags
+  }
+}
+
+// App Service (API)
+module appService 'modules/app-service.bicep' = {
+  name: 'appService'
+  params: {
+    name: appServiceName
+    location: location
+    appServicePlanId: appServicePlan.outputs.id
+    postgresConnectionString: postgres.outputs.connectionString
+    environmentName: aspnetEnvironment
+    allowedOrigins: allowedOrigins
+    storageConnectionString: storageAccount.outputs.connectionString
+    storageContainerName: storageAccount.outputs.containerName
+    jwtSecretKey: jwtSecretKey
+    acsConnectionString: communicationServices.outputs.connectionString
+    acsSenderAddress: communicationServices.outputs.senderAddress
+    seedAdminEmail: seedAdminEmail
+    frontendBaseUrl: frontendBaseUrl
+    appInsightsConnectionString: applicationInsights.outputs.connectionString
+    tags: tags
+  }
+}
+
+// Monitoring & alerting (action group, metric alerts, availability test,
+// smart detection, cost budget). Only deployed when an alert email is set.
+module monitoring 'modules/monitoring-alerts.bicep' = if (alertEmail != '') {
+  name: 'monitoringAlerts'
+  params: {
+    namePrefix: resourcePrefix
+    location: location
+    alertEmail: alertEmail
+    appServiceId: appService.outputs.id
+    appServicePlanId: appServicePlan.outputs.id
+    postgresServerId: postgres.outputs.id
+    appInsightsId: applicationInsights.outputs.id
+    appInsightsName: applicationInsights.outputs.name
+    apiHostname: appService.outputs.hostname
+    enableAvailabilityTest: enableAvailabilityTest
+    monthlyBudgetAmount: monthlyBudgetAmount
+    tags: tags
+  }
+}
+
+// ============================================================================
+// Outputs
+// ============================================================================
+
+@description('The URL of the deployed API')
+output apiUrl string = appService.outputs.url
+
+@description('The hostname of the deployed API')
+output apiHostname string = appService.outputs.hostname
+
+@description('The name of the App Service')
+output appServiceName string = appService.outputs.name
+
+@description('The name of the App Service Plan')
+output appServicePlanName string = appServicePlan.outputs.name
+
+@description('The FQDN of the PostgreSQL server')
+output postgresServerFqdn string = postgres.outputs.fqdn
+
+@description('The name of the PostgreSQL server')
+output postgresServerName string = postgres.outputs.name
+
+@description('The name of the database')
+output databaseName string = postgres.outputs.databaseName
+
+@description('The name of the Storage Account')
+output storageAccountName string = storageAccount.outputs.name
+
+@description('The blob endpoint of the Storage Account')
+output storageBlobEndpoint string = storageAccount.outputs.blobEndpoint
+
+@description('The name of the blob container for images')
+output storageContainerName string = storageAccount.outputs.containerName
+
+@description('The name of the Communication Service')
+output communicationServiceName string = communicationServices.outputs.name
+
+@description('The name of the Email Service')
+output emailServiceName string = communicationServices.outputs.emailServiceName
+
+@description('The sender email address for the Communication Service')
+output acsSenderAddress string = communicationServices.outputs.senderAddress
+
+@description('The name of the Application Insights component')
+output appInsightsName string = applicationInsights.outputs.name
+
+@description('The name of the Log Analytics workspace backing Application Insights')
+output logAnalyticsWorkspaceName string = applicationInsights.outputs.workspaceName

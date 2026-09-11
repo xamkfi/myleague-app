@@ -1,10 +1,15 @@
+import { authFetch } from '../../utils/authFetch';
+import { API_URL } from '../../../constants/config';
+
 interface FloorballMatch {
   id: string;
-  seasonId: string;
+  competitionId: string;
   homeTeamId: string;
   homeTeamName: string;
+  homeTeamLogo: string | null;
   awayTeamId: string;
   awayTeamName: string;
+  awayTeamLogo: string | null;
   scheduledDateTime: string;
   venue?: string;
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
@@ -45,7 +50,7 @@ interface PaginatedApiResponse<T> {
 interface GetMatchesRequest {
   page?: number;
   pageSize?: number;
-  seasonId?: string;
+  competitionId?: string;
   teamId?: string;
   startDate?: string;
   endDate?: string;
@@ -53,23 +58,21 @@ interface GetMatchesRequest {
   sortOrder?: string;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
-
 export const getMatchesService = {
   getAll: async (params?: GetMatchesRequest): Promise<PaginatedApiResponse<FloorballMatch>> => {
     const searchParams = new URLSearchParams();
     
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
-    if (params?.seasonId) searchParams.append('seasonId', params.seasonId);
+    if (params?.competitionId) searchParams.append('competitionId', params.competitionId);
     if (params?.teamId) searchParams.append('teamId', params.teamId);
     if (params?.startDate) searchParams.append('startDate', params.startDate);
     if (params?.endDate) searchParams.append('endDate', params.endDate);
     if (params?.status !== undefined) searchParams.append('status', params.status.toString());
     if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
 
-    const url = `${API_URL}/FloorballMatch${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-    const response = await fetch(url);
+    const url = `${API_URL}/floorball-matches${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const response = await authFetch(url);
     
     if (!response.ok) {
       throw new Error('Failed to fetch matches');
@@ -84,7 +87,7 @@ export const getMatchesService = {
   },
 
   getById: async (id: string): Promise<FloorballMatch> => {
-    const response = await fetch(`${API_URL}/FloorballMatch/${id}`);
+    const response = await authFetch(`${API_URL}/floorball-matches/by-id/${id}`);
     if (!response.ok) {
       throw new Error('Failed to fetch match');
     }
@@ -96,7 +99,7 @@ export const getMatchesService = {
   },
 
   create: async (data: Omit<FloorballMatch, 'id'>): Promise<FloorballMatch> => {
-    const response = await fetch(`${API_URL}/FloorballMatch`, {
+    const response = await authFetch(`${API_URL}/floorball-matches`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -114,12 +117,13 @@ export const getMatchesService = {
   },
 
   update: async (id: string, data: Partial<FloorballMatch>): Promise<FloorballMatch> => {
-    const response = await fetch(`${API_URL}/FloorballMatch/${id}`, {
+    // Backend's UpdateFloorballMatchCommand expects the match id in the body, not in the URL.
+    const response = await authFetch(`${API_URL}/floorball-matches`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, id }),
     });
     if (!response.ok) {
       throw new Error('Failed to update match');
@@ -132,7 +136,7 @@ export const getMatchesService = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/FloorballMatch/${id}`, {
+    const response = await authFetch(`${API_URL}/floorball-matches/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {

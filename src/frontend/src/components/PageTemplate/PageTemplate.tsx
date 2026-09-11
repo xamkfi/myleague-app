@@ -8,9 +8,10 @@ import './PageTemplate.scss';
 interface PageTemplateProps {
   title: string;
   children?: ReactNode;
+  fullBleed?: boolean;
 }
 
-function PageTemplate({ title, children }: PageTemplateProps) {
+function PageTemplate({ title, children, fullBleed = false }: PageTemplateProps) {
   useEffect(() => {
     document.title = `${title} - MAHL`;
     return () => {
@@ -19,11 +20,27 @@ function PageTemplate({ title, children }: PageTemplateProps) {
   }, [title]);
 
   return (
-    <div className="page-container">
+    <div
+      className={
+        fullBleed
+          ? "page-container page-container--full-bleed"
+          : "page-container"
+      }
+    >
       <ScrollToTop />
       <Navbar />
-      <div className="page-content" style={{ paddingLeft: '0px', paddingRight: '0px' }}>
-        <div className="page-body">
+      <div
+        className={
+          fullBleed
+            ? "page-content page-content--full-bleed"
+            : "page-content"
+        }
+      >
+        <div
+          className={
+            fullBleed ? "page-body page-body--full-bleed" : "page-body"
+          }
+        >
           {children || (
             <p className="placeholder-text">This page is under construction.</p>
           )}

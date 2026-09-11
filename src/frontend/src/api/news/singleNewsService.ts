@@ -1,3 +1,5 @@
+import { API_URL } from '../../constants/config';
+
 export interface NewsArticleDto {
   id: string;
   title: string;
@@ -19,8 +21,6 @@ interface ApiResponse<T> {
   message: string;
   errors: string[];
 }
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export async function singleNewsService(id: string){
 

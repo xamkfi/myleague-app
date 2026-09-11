@@ -1,0 +1,191 @@
+using Application.Common;
+using Application.Configuration;
+using Application.Features.Auth.Commands;
+using Application.Features.Auth.DTOs;
+using Application.Features.Common.Users.DTOs;
+using Application.Features.Common.Users.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using WebAPI.Controllers.Common;
+using WebAPI.Models.Auth;
+using WebAPI.Models.Common;
+
+namespace WebAPI.Controllers.Auth;
+
+/// <summary>
+/// Controller for passwordless email authentication
+/// </summary>
+[Route("api/[controller]")]
+public class AuthController : BaseApiController
+{
+    private readonly IMediator _mediator;
+    private readonly ILogger<AuthController> _logger;
+    private readonly LoginCodeConfiguration _loginCodeConfig;
+
+    /// <summary>
+    /// Initializes a new instance of the AuthController class
+    /// </summary>
+    /// <param name="mediator">The mediator</param>
+    /// <param name="logger">The logger</param>
+    /// <param name="loginCodeConfig">The login code configuration (controls auto-fill behavior)</param>
+    public AuthController(
+        IMediator mediator,
+        ILogger<AuthController> logger,
+        IOptions<LoginCodeConfiguration> loginCodeConfig)
+    {
+        _mediator = mediator;
+        _logger = logger;
+        _loginCodeConfig = loginCodeConfig.Value;
+    }
+
+    /// <summary>
+    /// Request a login code to be sent to the specified email
+    /// </summary>
+    /// <param name="request">The login request containing the email</param>
+    /// <returns>Success response (always returns 200 to prevent email enumeration)</returns>
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse>> Login([FromBody] LoginRequest request)
+    {
+        _logger.LogInformation("Login code requested for email: {Email}", SanitizeForLog(request.Email));
+
+        RequestLoginCodeCommand command = new(request.Email);
+        Result<string?> result = await _mediator.Send(command);
+
+        if (result.IsSuccess)
+        {
+            // When the auto-fill flag is enabled, include the generated code in the response so the
+            // login page can pre-fill it. This is controlled by LoginCode:AutoFillLoginCode (env:
+            // LoginCode__AutoFillLoginCode) and must remain false in public production environments.
+            if (_loginCodeConfig.AutoFillLoginCode && result.Data != null)
+            {
+                _logger.LogWarning(
+                    "AutoFillLoginCode is enabled - returning login code to client for {Email}. Disable this in production.",
+                    SanitizeForLog(request.Email));
+
+                return Ok(ApiResponse<object>.SuccessResponse(
+                    new { autoFillCode = result.Data, DevCode = result.Data },
+                    "If an account exists with this email, a login code has been sent."));
+            }
+
+            return Ok(ApiResponse.SuccessResponse("If an account exists with this email, a login code has been sent."));
+        }
+
+        string errorMessage = result.Error ?? result.GetErrorsString();
+        return BadRequest(ApiResponse.ErrorResponse(errorMessage));
+    }
+
+    /// <summary>
+    /// Verify a login code and receive authentication tokens
+    /// </summary>
+    /// <param name="request">The verify request containing email and code</param>
+    /// <returns>Authentication tokens if the code is valid</returns>
+    [HttpPost("verify")]
+    [ProducesResponseType(typeof(ApiResponse<AuthTokenDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<AuthTokenDto>>> Verify([FromBody] VerifyCodeRequest request)
+    {
+        _logger.LogInformation("Login code verification for email: {Email}", SanitizeForLog(request.Email));
+
+        VerifyLoginCodeCommand command = new(request.Email, request.Code);
+        Result<AuthTokenDto> result = await _mediator.Send(command);
+
+        if (result.IsSuccess && result.Data != null)
+        {
+            return Ok(ApiResponse<AuthTokenDto>.SuccessResponse(result.Data, "Login successful."));
+        }
+
+        string errorMessage = result.Error ?? result.GetErrorsString();
+        return Unauthorized(ApiResponse<AuthTokenDto>.ErrorResponse(errorMessage));
+    }
+
+    /// <summary>
+    /// Refresh authentication tokens using a valid refresh token
+    /// </summary>
+    /// <param name="request">The refresh request containing the refresh token</param>
+    /// <returns>New authentication tokens</returns>
+    [HttpPost("refresh")]
+    [ProducesResponseType(typeof(ApiResponse<AuthTokenDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<AuthTokenDto>>> Refresh([FromBody] RefreshTokenRequest request)
+    {
+        RefreshTokenCommand command = new(request.RefreshToken);
+        Result<AuthTokenDto> result = await _mediator.Send(command);
+
+        if (result.IsSuccess && result.Data != null)
+        {
+            return Ok(ApiResponse<AuthTokenDto>.SuccessResponse(result.Data, "Tokens refreshed successfully."));
+        }
+
+        string errorMessage = result.Error ?? result.GetErrorsString();
+        return Unauthorized(ApiResponse<AuthTokenDto>.ErrorResponse(errorMessage));
+    }
+
+    /// <summary>
+    /// Logout by revoking the refresh token
+    /// </summary>
+    /// <param name="request">The logout request containing the refresh token to revoke</param>
+    /// <returns>Success response</returns>
+    [HttpPost("logout")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse>> Logout([FromBody] LogoutRequest request)
+    {
+        Result<bool> result = await _mediator.Send(new RevokeTokenCommand(request.RefreshToken));
+
+        return HandleVoidResult(result, "Logged out successfully.", "Failed to log out");
+    }
+
+    /// <summary>
+    /// Verify a new admin's email address using the token from the invitation email.
+    /// This endpoint is public – no authentication required.
+    /// On success the account is activated and a welcome email with login instructions is sent.
+    /// </summary>
+    /// <param name="request">The request containing the verification token</param>
+    /// <returns>Success or error response</returns>
+    [AllowAnonymous]
+    [HttpPost("verify-admin-email")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse>> VerifyAdminEmail([FromBody] VerifyAdminEmailRequest request)
+    {
+        _logger.LogInformation("Admin email verification attempted");
+
+        Result<bool> result = await _mediator.Send(new VerifyAdminEmailCommand(request.Token));
+
+        return HandleVoidResult(result, "Email verified successfully. Your account is now active.", "Email verification failed");
+    }
+
+    /// <summary>
+    /// Get the current authenticated user's information
+    /// </summary>
+    /// <returns>The current user's information</returns>
+    [Authorize]
+    [HttpGet("me")]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<UserDto>>> Me()
+    {
+        string? userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+        {
+            return Unauthorized(ApiResponse<UserDto>.ErrorResponse("Invalid token."));
+        }
+
+        Result<UserDto> result = await _mediator.Send(new GetUserByIdQuery(userId));
+
+        if (result.IsSuccess && result.Data is not null)
+        {
+            return Ok(ApiResponse<UserDto>.SuccessResponse(result.Data, "User retrieved successfully."));
+        }
+
+        string errorMessage = result.Error ?? result.GetErrorsString();
+        return Unauthorized(ApiResponse<UserDto>.ErrorResponse(errorMessage));
+    }
+}

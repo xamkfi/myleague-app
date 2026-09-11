@@ -1,0 +1,223 @@
+.rules-management-page__create-layer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: calc(100vh - 260px);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.rules-management-page__create-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.rules-management-page__create-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  h3 {
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: #111827;
+    margin: 0.4rem 0 0;
+  }
+}
+
+.rules-management-page__create-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rules-management-page__mode-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  background: #dbeafe;
+  color: #1e40af;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.rules-management-page__back-button {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  img {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.rules-management-page__create-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.rules-management-page__create-card {
+  background-color: white;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+}
+
+.rules-management-page__create-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.rules-management-page__create-field--order {
+  margin-bottom: 0;
+}
+
+.rules-management-page__order-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: white;
+  color: #111827;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.rules-management-page__create-field {
+  margin-bottom: 1.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.rules-management-page__create-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.rules-management-page__quill-wrapper {
+  width: 100%;
+
+  .ql-toolbar {
+    border-radius: 0.5rem 0.5rem 0 0;
+    border-color: #d1d5db;
+    background: #ffffff;
+  }
+
+  .ql-container {
+    min-height: 260px;
+    border-radius: 0 0 0.5rem 0.5rem;
+    border-color: #d1d5db;
+    font-size: 1rem;
+  }
+
+  .ql-editor {
+    min-height: 220px;
+    line-height: 1.65;
+  }
+}
+
+.rules-management-page__create-footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  background: white;
+  z-index: 10;
+}
+
+.rules-management-page__cancel-button,
+.rules-management-page__preview-button {
+  border-radius: 999px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.rules-management-page__cancel-button {
+  border: 1.5px solid #b42318;
+  color: #b42318;
+  background: transparent;
+
+  &:hover:not(:disabled) {
+    background: #fde2e2;
+  }
+}
+
+.rules-management-page__preview-button {
+  border: 1px solid #86efac;
+  color: #166534;
+  background: #bbf7d0;
+
+  &:hover:not(:disabled) {
+    background: #86efac;
+  }
+}
+
+@media (max-width: 768px) {
+  .rules-management-page__create-layer {
+    padding: 1rem;
+  }
+
+  .rules-management-page__create-row {
+    grid-template-columns: 1fr;
+  }
+
+  .rules-management-page__create-field--order {
+    margin-bottom: 1.25rem;
+  }
+
+  .rules-management-page__create-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rules-management-page__create-header-actions,
+  .rules-management-page__create-footer {
+    flex-direction: column;
+    align-items: stretch;
+
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Models.Common
@@ -55,6 +57,12 @@ namespace WebAPI.Models.Common
         /// Gets the optional sport category of the news article
         /// </summary>
         public string? SportCategory { get; init; }
+
+        /// <summary>
+        /// Gets the optional audience / age-group category (Adult, Youth, Women).
+        /// Null means the article is shown for all audiences.
+        /// </summary>
+        public string? TeamCategory { get; init; }
 
         /// <summary>
         /// Gets the optional list of tags associated with the news article
@@ -111,6 +119,12 @@ namespace WebAPI.Models.Common
         /// Gets the optional sport category of the news article
         /// </summary>
         public string? SportCategory { get; init; }
+
+        /// <summary>
+        /// Gets the optional audience / age-group category (Adult, Youth, Women).
+        /// Null means the article is shown for all audiences.
+        /// </summary>
+        public string? TeamCategory { get; init; }
 
         /// <summary>
         /// Gets the optional list of tags associated with the news article
@@ -195,6 +209,20 @@ namespace WebAPI.Models.Common
         /// Gets the optional author filter
         /// </summary>
         public string? Author { get; init; }
+
+        /// <summary>
+        /// Gets the optional audience / age-group category filter (Adult, Youth, Women).
+        /// Accepts one or more values (e.g. ?teamCategory=Adult&amp;teamCategory=Women). When set,
+        /// returns articles for those categories plus articles with no category (all audiences).
+        /// </summary>
+        [FromQuery(Name = "teamCategory")]
+        public List<string>? TeamCategories { get; init; }
+
+        /// <summary>
+        /// Gets the optional tag filter. When set, returns articles that include this tag.
+        /// </summary>
+        [StringLength(50, ErrorMessage = "Tag filter cannot exceed 50 characters")]
+        public string? Tag { get; init; }
 
         /// <summary>
         /// Gets whether to include archived articles

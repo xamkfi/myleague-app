@@ -2,13 +2,26 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle/LanguageToggle';
-import type { Club } from '../../api/common/clubService';
-import { getClubs } from '../../api/common/clubService';
-import { createClubSlug } from '../../utils/slugUtils';
 import './Navbar.scss';
 import SearchBar from '../SearchBar';
+import { MAHL_INFO_PAGES } from '../../constants/mahlInfoPages';
+import AudienceSwitcher from '../AudienceSwitcher/AudienceSwitcher';
+import SportIcon, { type SportIconSport } from '../SportIcon/SportIcon';
+import mahlLogo from '../../assets/logos/Mahl_primary_V3.svg';
 
-// Custom hook for mobile detection
+interface NavbarSportLink {
+  id: SportIconSport;
+  path: string;
+  translationKey: string;
+  disabled?: boolean;
+}
+
+const SPORTS_CONFIG: NavbarSportLink[] = [
+  { id: 'floorball', path: '/sports/floorball', translationKey: 'sports.floorball' },
+  { id: 'football', path: '/sports/football', translationKey: 'sports.football' },
+  { id: 'icehockey', path: '/sports/icehockey', translationKey: 'sports.iceHockey' },
+];
+
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -25,27 +38,22 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-
 function Navbar() {
   const { t } = useTranslation();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [clubs, setClubs] = useState<Club[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const dropdownRef = useRef<HTMLLIElement>(null);
+  const sportsDropdownRef = useRef<HTMLLIElement>(null);
+  const mahlDropdownRef = useRef<HTMLLIElement>(null);
   const isMobile = useIsMobile();
-  
-  // Add hamburger menu toggle
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Close mobile menu when clicking outside
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // Close mobile menu when window is resized to desktop
   useEffect(() => {
     if (!isMobile && isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
@@ -53,24 +61,13 @@ function Navbar() {
   }, [isMobile, isMobileMenuOpen]);
 
   useEffect(() => {
-    const fetchClubs = async () => {
-      try {
-        setLoading(true);
-        const clubsData = await getClubs();
-        setClubs(clubsData);
-      } catch (error) {
-        console.error('Failed to fetch clubs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchClubs();
-  }, []);
-
-  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+
+      const isInsideSports = sportsDropdownRef.current?.contains(target);
+      const isInsideMahl = mahlDropdownRef.current?.contains(target);
+
+      if (!isInsideSports && !isInsideMahl) {
         setActiveDropdown(null);
       }
     }
@@ -88,13 +85,13 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <Link to="/" onClick={closeMobileMenu}>
-          <h1>MAHL</h1>
+        <Link to="/" onClick={closeMobileMenu} className="navbar-brand-logo-link">
+          <img src={mahlLogo} alt="MAHL" className="navbar-brand-logo" />
         </Link>
+        <AudienceSwitcher />
       </div>
-      
-      {/* Mobile hamburger button */}
-      <button 
+
+      <button
         className="navbar-mobile-toggle"
         onClick={toggleMobileMenu}
         aria-label="Toggle mobile menu"
@@ -104,123 +101,168 @@ function Navbar() {
         <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
         <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
       </button>
-      
-      {/* Desktop search bar */}
+
       <div className="navbar-search desktop-only">
-        <SearchBar />
+        {!isMobile && <SearchBar />}
       </div>
-      
-      {/* Desktop menu */}
+
       <div className="navbar-menu desktop-only">
         <ul className="navbar-items">
           <li className="navbar-item">
             <Link to="/uutiset">{t('nav.news')}</Link>
           </li>
           <li className="navbar-item">
-            <Link to="/saannot">{t('nav.rules')}</Link>
+            <Link to="/tapahtumakalenteri">{t('nav.eventCalendar')}</Link>
           </li>
-          <li className="navbar-item dropdown">
-            <Link to="/mahl">{t('nav.mahl')}</Link>
-            <span className="dropdown-icon">▼</span>
+          <li
+            ref={mahlDropdownRef}
+            className={`navbar-item dropdown ${activeDropdown === 'mahl' ? 'active' : ''}`}
+          >
+            <div className="dropdown-trigger" onClick={() => handleDropdownClick('mahl')}>
+              <span className="dropdown-label">{t('nav.mahl')}</span>
+              <span className="dropdown-icon">▼</span>
+            </div>
+            {activeDropdown === 'mahl' && (
+              <ul className="dropdown-menu">
+                {MAHL_INFO_PAGES.map((page) => (
+                  <li key={page.path}>
+                    <Link to={page.path} onClick={() => setActiveDropdown(null)}>
+                      {t(page.labelKey, page.defaultLabel)}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <Link to="/saannot" onClick={() => setActiveDropdown(null)}>{t('nav.rules')}</Link>
+                </li>
+              </ul>
+            )}
           </li>
           <li className="navbar-item dropdown">
             <Link to="/ikaryhmat">{t('nav.ageGroups')}</Link>
             <span className="dropdown-icon">▼</span>
           </li>
-          <li className="navbar-item">
-            <Link to="/ilmoittaudu">{t('nav.register')}</Link>
-          </li>
           <li className="navbar-item dropdown">
             <Link to="/turnaukset">{t('nav.tournaments')}</Link>
             <span className="dropdown-icon">▼</span>
           </li>
-          <li className="navbar-item dropdown">
-            <Link to="/lajit">{t('nav.sports')}</Link>
-            <span className="dropdown-icon">▼</span>
-          </li>
-          <li 
-            ref={dropdownRef}
-            className={`navbar-item dropdown ${activeDropdown === 'clubs' ? 'active' : ''}`}
-            onClick={() => handleDropdownClick('clubs')}
+          <li
+            ref={sportsDropdownRef}
+            className={`navbar-item dropdown ${activeDropdown === 'sports' ? 'active' : ''}`}
           >
-            <span className="dropdown-label">{t('nav.clubs')}</span>
-            <span className="dropdown-icon">▼</span>
-            {activeDropdown === 'clubs' && (
+            <div className="dropdown-trigger" onClick={() => handleDropdownClick('sports')}>
+              <span className="dropdown-label">{t('nav.sports')}</span>
+              <span className="dropdown-icon">▼</span>
+            </div>
+            {activeDropdown === 'sports' && (
               <ul className="dropdown-menu">
-                {loading ? (
-                  <li className="loading">Loading clubs...</li>
-                ) : (
-                  clubs.map((club) => (
-                    <li key={club.id}>
-                      <Link to={`/club/${createClubSlug(club)}`}>
-                        {club.name}
+                <li>
+                  <Link to="/sports" onClick={() => setActiveDropdown(null)}>{t('sports.allSports')}</Link>
+                </li>
+                {SPORTS_CONFIG.map((sport: NavbarSportLink) => (
+                  <li key={sport.id}>
+                    {sport.disabled ? (
+                      <span className="disabled-link navbar-sport-link">
+                        <SportIcon sport={sport.id} size="sm" decorative />
+                        {t(sport.translationKey)}
+                      </span>
+                    ) : (
+                      <Link
+                        to={sport.path}
+                        onClick={() => setActiveDropdown(null)}
+                        className="navbar-sport-link"
+                      >
+                        <SportIcon sport={sport.id} size="sm" decorative />
+                        {t(sport.translationKey)}
                       </Link>
-                    </li>
-                  ))
-                )}
+                    )}
+                  </li>
+                ))}
               </ul>
             )}
           </li>
+          <li className="navbar-item">
+            <Link to="/clubs">{t('nav.clubs')}</Link>
+          </li>
         </ul>
       </div>
-      
-      {/* Desktop language toggle */}
+
       <div className="navbar-end desktop-only">
         <div className="navbar-language">
           <LanguageToggle />
         </div>
       </div>
-      
-      {/* Mobile menu overlay */}
+
       <div className={`navbar-mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="mobile-menu-content">
-          {/* Mobile search bar */}
-          <div className="mobile-search">
-            <SearchBar />
+          <div className="mobile-audience">
+            <span className="mobile-audience-label">{t('audience.switcherLabel')}</span>
+            <AudienceSwitcher variant="block" />
           </div>
-          
-          {/* Mobile menu items */}
+
+          <div className="mobile-search">
+            {isMobile && <SearchBar />}
+          </div>
+
           <ul className="mobile-navbar-items">
             <li className="mobile-navbar-item">
               <Link to="/uutiset" onClick={closeMobileMenu}>{t('nav.news')}</Link>
             </li>
             <li className="mobile-navbar-item">
-              <Link to="/saannot" onClick={closeMobileMenu}>{t('nav.rules')}</Link>
+              <Link to="/tapahtumakalenteri" onClick={closeMobileMenu}>{t('nav.eventCalendar')}</Link>
             </li>
             <li className="mobile-navbar-item">
-              <Link to="/mahl" onClick={closeMobileMenu}>{t('nav.mahl')}</Link>
+              <span className="mobile-dropdown-label">{t('nav.mahl')}</span>
+              <ul className="mobile-sports-list">
+                {MAHL_INFO_PAGES.map((page) => (
+                  <li key={page.path}>
+                    <Link to={page.path} onClick={closeMobileMenu}>
+                      {t(page.labelKey, page.defaultLabel)}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <Link to="/saannot" onClick={closeMobileMenu}>{t('nav.rules')}</Link>
+                </li>
+              </ul>
             </li>
             <li className="mobile-navbar-item">
               <Link to="/ikaryhmat" onClick={closeMobileMenu}>{t('nav.ageGroups')}</Link>
             </li>
             <li className="mobile-navbar-item">
-              <Link to="/ilmoittaudu" onClick={closeMobileMenu}>{t('nav.register')}</Link>
-            </li>
-            <li className="mobile-navbar-item">
               <Link to="/turnaukset" onClick={closeMobileMenu}>{t('nav.tournaments')}</Link>
             </li>
             <li className="mobile-navbar-item">
-              <Link to="/lajit" onClick={closeMobileMenu}>{t('nav.sports')}</Link>
+              <span className="mobile-dropdown-label">{t('nav.sports')}</span>
+              <ul className="mobile-sports-list">
+                <li>
+                  <Link to="/sports" onClick={closeMobileMenu}>{t('sports.allSports')}</Link>
+                </li>
+                {SPORTS_CONFIG.map((sport: NavbarSportLink) => (
+                  <li key={sport.id}>
+                    {sport.disabled ? (
+                      <span className="disabled-link navbar-sport-link">
+                        <SportIcon sport={sport.id} size="sm" inverted decorative />
+                        {t(sport.translationKey)}
+                      </span>
+                    ) : (
+                      <Link
+                        to={sport.path}
+                        onClick={closeMobileMenu}
+                        className="navbar-sport-link"
+                      >
+                        <SportIcon sport={sport.id} size="sm" inverted decorative />
+                        {t(sport.translationKey)}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
             </li>
             <li className="mobile-navbar-item">
-              <span className="mobile-dropdown-label">{t('nav.clubs')}</span>
-              {loading ? (
-                <div className="mobile-loading">Loading clubs...</div>
-              ) : (
-                <ul className="mobile-clubs-list">
-                  {clubs.map((club) => (
-                    <li key={club.id}>
-                      <Link to={`/club/${createClubSlug(club)}`} onClick={closeMobileMenu}>
-                        {club.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <Link to="/clubs" onClick={closeMobileMenu}>{t('nav.clubs')}</Link>
             </li>
           </ul>
-          
-          {/* Mobile language toggle */}
+
           <div className="mobile-language">
             <LanguageToggle />
           </div>
@@ -230,4 +272,4 @@ function Navbar() {
   );
 }
 
-export default Navbar; 
+export default Navbar;

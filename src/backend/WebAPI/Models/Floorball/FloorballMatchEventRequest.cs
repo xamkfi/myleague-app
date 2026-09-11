@@ -26,16 +26,22 @@ namespace WebAPI.Models.Floorball
         public Guid PlayerId { get; set; }
 
         /// <summary>
-        /// Period number when the event occurred
+        /// Period number when the event occurred. Only a non-negative floor is enforced
+        /// here; the actual upper bound (regulation + overtime + shootout) is configured
+        /// per match in the domain layer.
         /// </summary>
         [Required(ErrorMessage = "Period number is required")]
-        [Range(1, 4, ErrorMessage = "Period number must be between 1 and 4")]
+        [Range(1, int.MaxValue, ErrorMessage = "Period number must be 1 or greater")]
         public int PeriodNumber { get; set; }
 
         /// <summary>
-        /// Time in seconds when the event occurred
+        /// Time in seconds when the event occurred. With the continuous match clock the
+        /// timestamp can exceed a single period's duration (e.g. period 2 begins at
+        /// 900s for a 15-minute period), so no upper limit is enforced – the scorekeeper
+        /// is trusted to enter the value shown on the live clock.
         /// </summary>
         [Required(ErrorMessage = "Time in seconds is required")]
+        [Range(0, int.MaxValue, ErrorMessage = "Time must be non-negative")]
         public int TimeInSeconds { get; set; }
 
         /// <summary>
@@ -82,6 +88,20 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "Penalty type is required")]
         public string PenaltyType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Optional free-text description of the penalty (e.g. "hooking", "slashing"). The
+        /// scorekeeper enters this in the Record Penalty modal. Persisted on the event so it
+        /// can be shown beneath the penalty line in both the admin live history and the public
+        /// match events list. May be empty when the operator did not provide a reason.
+        /// </summary>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// When <c>true</c>, skips the per-(match, player) double-click window. Intended for
+        /// historical import / admin backfill, not the live scorekeeper UI.
+        /// </summary>
+        public bool SkipRateLimit { get; set; }
     }
 
     /// <summary>
@@ -113,7 +133,16 @@ namespace WebAPI.Models.Floorball
     /// </summary>
     public class RecordSaveEventRequest : FloorballMatchEventBaseRequest
     {
-        // No additional fields required; goalie is provided via PlayerId
+        /// <summary>
+        /// Number of save events to record at the supplied (period, time) coordinate. Defaults to
+        /// `1`, which preserves the legacy single-save semantics including the controller-side
+        /// rate limit. Values greater than 1 indicate a bulk backfill (e.g. the scorekeeper
+        /// missed individual saves during play and is recording an aggregate count after the
+        /// fact); the controller skips the rate limit in that case and the handler records the
+        /// requested count inside a single transaction.
+        /// </summary>
+        [Range(1, 99, ErrorMessage = "Count must be between 1 and 99")]
+        public int Count { get; set; } = 1;
     }
 
 
@@ -127,6 +156,89 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required(ErrorMessage = "Match ID is required")]
         public Guid MatchId { get; set; }
+    }
+
+    /// <summary>
+    /// Batch import of historical floorball match events. Not rate-limited; intended for
+    /// the JoomLeague importer and admin backfill, not live scorekeeping.
+    /// </summary>
+    public class ImportFloorballMatchEventsRequest
+    {
+        /// <summary>
+        /// Goals and penalties to record, in clock order.
+        /// </summary>
+        [Required]
+        [MinLength(1)]
+        [MaxLength(200)]
+        public List<ImportFloorballMatchEventRequest> Events { get; set; } = [];
+    }
+
+    /// <summary>
+    /// One event in an <see cref="ImportFloorballMatchEventsRequest"/> batch.
+    /// <c>EventType</c> is <c>Goal</c> or <c>Penalty</c>.
+    /// </summary>
+    public class ImportFloorballMatchEventRequest
+    {
+        /// <summary>
+        /// Event kind: <c>Goal</c> or <c>Penalty</c>.
+        /// </summary>
+        [Required]
+        public string EventType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Team associated with the event.
+        /// </summary>
+        [Required]
+        public Guid TeamId { get; set; }
+
+        /// <summary>
+        /// Player who scored or received the penalty.
+        /// </summary>
+        public Guid? PlayerId { get; set; }
+
+        /// <summary>
+        /// Primary assister for a goal, when recorded.
+        /// </summary>
+        public Guid? AssistingPlayerId { get; set; }
+
+        /// <summary>
+        /// Secondary assister for a goal, when recorded.
+        /// </summary>
+        public Guid? SecondaryAssistingPlayerId { get; set; }
+
+        /// <summary>
+        /// Period in which the event occurred.
+        /// </summary>
+        [Range(1, int.MaxValue)]
+        public int PeriodNumber { get; set; }
+
+        /// <summary>
+        /// Elapsed match clock time, in seconds.
+        /// </summary>
+        [Range(0, int.MaxValue)]
+        public int TimeInSeconds { get; set; }
+
+        /// <summary>
+        /// Optional floorball goal type for a goal event.
+        /// </summary>
+        public int? GoalType { get; set; }
+
+        /// <summary>
+        /// Optional free-text description of the event.
+        /// </summary>
+        [StringLength(500)]
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Penalty length in minutes. Required when <see cref="EventType"/> is <c>Penalty</c>.
+        /// </summary>
+        [Range(2, 20)]
+        public int? PenaltyMinutes { get; set; }
+
+        /// <summary>
+        /// Penalty classification (for example Minor). Used when <see cref="EventType"/> is <c>Penalty</c>.
+        /// </summary>
+        public string? PenaltyType { get; set; }
     }
 
 } 

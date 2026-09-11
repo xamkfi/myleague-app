@@ -2,11 +2,15 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Application.Common;
-using Application.DTOs.Floorball;
-using Application.Queries.Floorball.Statistics;
+using Application.Features.Floorball.Matches.DTOs;
+using Application.Features.Floorball.Players.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
+using Application.Features.Floorball.Statistics.Queries;
+using Application.Features.Floorball.Teams.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
 
 namespace WebAPI.Controllers.Floorball
@@ -14,10 +18,8 @@ namespace WebAPI.Controllers.Floorball
     /// <summary>
     /// Controller for managing floorball statistics
     /// </summary>
-    [ApiController]
     [Route("api/floorball/statistics")]
-    [Produces("application/json")]
-    public class FloorballStatisticsController : ControllerBase
+    public class FloorballStatisticsController : BaseApiController
     {
         private readonly IMediator _mediator;
         private readonly ILogger<FloorballStatisticsController> _logger;
@@ -36,63 +38,103 @@ namespace WebAPI.Controllers.Floorball
         /// <summary>
         /// Gets team statistics for a specific season
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
+        /// <param name="competitionId">The season ID</param>
         /// <param name="teamId">The team ID</param>
         /// <returns>Team season statistics</returns>
-        [HttpGet("team/{seasonId:guid}/{teamId:guid}")]
+        [HttpGet("team/{competitionId:guid}/{teamId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<FloorballTeamSeasonStatisticsDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballTeamSeasonStatisticsDto>>> GetTeamStatistics(Guid seasonId, Guid teamId)
+        public async Task<ActionResult<ApiResponse<FloorballTeamSeasonStatisticsDto>>> GetTeamStatistics(Guid competitionId, Guid teamId)
         {
-            _logger.LogInformation("Getting team statistics for Team: {TeamId} in Season: {SeasonId}", teamId, seasonId);
+            _logger.LogInformation("Getting team statistics for Team: {TeamId} in Season: {CompetitionId}", teamId, competitionId);
 
-            GetTeamSeasonStatisticsQuery query = new GetTeamSeasonStatisticsQuery(seasonId, teamId);
+            GetTeamSeasonStatisticsQuery query = new GetTeamSeasonStatisticsQuery(competitionId, teamId);
             Result<FloorballTeamSeasonStatisticsDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballTeamSeasonStatisticsDto>.SuccessResponse(result.Data, "Team statistics retrieved successfully"));
-            }
+            return HandleResult(result, "Team statistics retrieved successfully", "Failed to retrieve team statistics");
+        }
 
-            string errorMessage = result.Error ?? "Failed to retrieve team statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballTeamSeasonStatisticsDto>.ErrorResponse(errorMessage));
-            }
+        /// <summary>
+        /// Gets a team's combined statistics aggregated across every competition (regular seasons
+        /// + tournaments) the team has played in. Used by the team page so the Statistics tab
+        /// surfaces tournament games and points alongside the regular-season totals.
+        /// </summary>
+        /// <param name="teamId">The team ID</param>
+        /// <returns>Aggregated team statistics across all competitions</returns>
+        [HttpGet("team-aggregate/{teamId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballTeamSeasonStatisticsDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<FloorballTeamSeasonStatisticsDto>>> GetAggregatedTeamStatistics(Guid teamId)
+        {
+            _logger.LogInformation("Getting aggregated team statistics for Team: {TeamId}", teamId);
 
-            return StatusCode(500, ApiResponse<FloorballTeamSeasonStatisticsDto>.ErrorResponse(errorMessage));
+            GetAggregatedTeamStatisticsQuery query = new GetAggregatedTeamStatisticsQuery(teamId);
+            Result<FloorballTeamSeasonStatisticsDto> result = await _mediator.Send(query);
+
+            return HandleResult(result, "Aggregated team statistics retrieved successfully", "Failed to retrieve aggregated team statistics");
+        }
+
+        /// <summary>
+        /// Gets per-player statistics for a team aggregated across every competition (regular
+        /// seasons + tournaments) the team has played in. Each player appears once with their
+        /// totals summed; used by the team page's player stats table.
+        /// </summary>
+        /// <param name="teamId">The team ID</param>
+        /// <returns>Aggregated per-player statistics</returns>
+        [HttpGet("team-players-aggregate/{teamId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>>> GetAggregatedTeamPlayerStatistics(Guid teamId)
+        {
+            _logger.LogInformation("Getting aggregated player statistics for Team: {TeamId}", teamId);
+
+            GetAggregatedTeamPlayerStatisticsQuery query = new GetAggregatedTeamPlayerStatisticsQuery(teamId);
+            Result<List<FloorballPlayerSeasonStatisticsDto>> result = await _mediator.Send(query);
+
+            return HandleResult(result, "Aggregated team player statistics retrieved successfully", "Failed to retrieve aggregated team player statistics");
+        }
+
+        /// <summary>
+        /// Gets all player statistics for a specific team in a season
+        /// </summary>
+        /// <param name="competitionId">The season ID</param>
+        /// <param name="teamId">The team ID</param>
+        /// <returns>List of player season statistics for the team</returns>
+        [HttpGet("team-players/{competitionId:guid}/{teamId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>>> GetTeamPlayerStatistics(Guid competitionId, Guid teamId)
+        {
+            _logger.LogInformation("Getting player statistics for Team: {TeamId} in Season: {CompetitionId}", teamId, competitionId);
+
+            GetTeamPlayerStatisticsQuery query = new GetTeamPlayerStatisticsQuery(competitionId, teamId);
+            Result<List<FloorballPlayerSeasonStatisticsDto>> result = await _mediator.Send(query);
+
+            return HandleResult(result, "Team player statistics retrieved successfully", "Failed to retrieve team player statistics");
         }
 
         /// <summary>
         /// Gets player statistics for a specific season
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
+        /// <param name="competitionId">The season ID</param>
         /// <param name="playerId">The player ID</param>
         /// <returns>Player season statistics</returns>
-        [HttpGet("player/{seasonId:guid}/{playerId:guid}")]
+        [HttpGet("player/{competitionId:guid}/{playerId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<FloorballPlayerSeasonStatisticsDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballPlayerSeasonStatisticsDto>>> GetPlayerStatistics(Guid seasonId, Guid playerId)
+        public async Task<ActionResult<ApiResponse<FloorballPlayerSeasonStatisticsDto>>> GetPlayerStatistics(Guid competitionId, Guid playerId)
         {
-            _logger.LogInformation("Getting player statistics for Player: {PlayerId} in Season: {SeasonId}", playerId, seasonId);
+            _logger.LogInformation("Getting player statistics for Player: {PlayerId} in Season: {CompetitionId}", playerId, competitionId);
 
-            GetPlayerSeasonStatisticsQuery query = new GetPlayerSeasonStatisticsQuery(seasonId, playerId);
+            GetPlayerSeasonStatisticsQuery query = new GetPlayerSeasonStatisticsQuery(competitionId, playerId);
             Result<FloorballPlayerSeasonStatisticsDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballPlayerSeasonStatisticsDto>.SuccessResponse(result.Data, "Player statistics retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve player statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballPlayerSeasonStatisticsDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballPlayerSeasonStatisticsDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Player statistics retrieved successfully", "Failed to retrieve player statistics");
         }
 
         /// <summary>
@@ -110,18 +152,7 @@ namespace WebAPI.Controllers.Floorball
 
             Result<FloorballPlayerProfileDto> result = await _mediator.Send(query);
 
-            if(result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballPlayerProfileDto>.SuccessResponse(result.Data, "Player profile retrieved succesfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve player profile";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballPlayerProfileDto>>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<List<FloorballPlayerProfileDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Player profile retrieved succesfully", "Failed to retrieve player profile");
         }
 
         /// <summary>
@@ -140,109 +171,84 @@ namespace WebAPI.Controllers.Floorball
             GetMatchStatisticsQuery query = new GetMatchStatisticsQuery(matchId);
             Result<List<FloorballMatchTeamStatisticsDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballMatchTeamStatisticsDto>>.SuccessResponse(result.Data, "Match statistics retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve match statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballMatchTeamStatisticsDto>>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<List<FloorballMatchTeamStatisticsDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Match statistics retrieved successfully", "Failed to retrieve match statistics");
         }
 
         /// <summary>
         /// Gets top scorers for a specific season
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
+        /// <param name="competitionId">The season ID</param>
         /// <param name="topN">Number of top scorers to retrieve (default: 10)</param>
         /// <returns>List of top scorers</returns>
-        [HttpGet("topscorers/{seasonId:guid}")]
+        [HttpGet("topscorers/{competitionId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>>> GetTopScorers(Guid seasonId, [FromQuery] int topN = 10)
+        public async Task<ActionResult<ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>>> GetTopScorers(Guid competitionId, [FromQuery] int topN = 10)
         {
-            _logger.LogInformation("Getting top {TopN} scorers for Season: {SeasonId}", topN, seasonId);
+            _logger.LogInformation("Getting top {TopN} scorers for Season: {CompetitionId}", topN, competitionId);
 
-            GetTopScorersQuery query = new GetTopScorersQuery(seasonId, topN);
+            GetTopScorersQuery query = new GetTopScorersQuery(competitionId, topN);
             Result<List<FloorballPlayerSeasonStatisticsDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.SuccessResponse(result.Data, $"Top {topN} scorers retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve top scorers";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<List<FloorballPlayerSeasonStatisticsDto>>.ErrorResponse(errorMessage));
+            return HandleResult(result, $"Top {topN} scorers retrieved successfully", "Failed to retrieve top scorers");
         }
 
         /// <summary>
         /// Gets season statistics summary
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
+        /// <param name="competitionId">The season ID</param>
         /// <returns>Season statistics summary</returns>
-        [HttpGet("season/{seasonId:guid}")]
+        [HttpGet("season/{competitionId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonStatisticsSummaryDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballSeasonStatisticsSummaryDto>>> GetSeasonStatistics(Guid seasonId)
+        public async Task<ActionResult<ApiResponse<FloorballSeasonStatisticsSummaryDto>>> GetSeasonStatistics(Guid competitionId)
         {
-            _logger.LogInformation("Getting season statistics summary for Season: {SeasonId}", seasonId);
+            _logger.LogInformation("Getting season statistics summary for Season: {CompetitionId}", competitionId);
 
-            GetSeasonStatisticsSummaryQuery query = new GetSeasonStatisticsSummaryQuery(seasonId);
+            GetSeasonStatisticsSummaryQuery query = new GetSeasonStatisticsSummaryQuery(competitionId);
             Result<FloorballSeasonStatisticsSummaryDto> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<FloorballSeasonStatisticsSummaryDto>.SuccessResponse(result.Data, "Season statistics retrieved successfully"));
-            }
-
-            string errorMessage = result.Error ?? "Failed to retrieve season statistics";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<FloorballSeasonStatisticsSummaryDto>.ErrorResponse(errorMessage));
-            }
-
-            return StatusCode(500, ApiResponse<FloorballSeasonStatisticsSummaryDto>.ErrorResponse(errorMessage));
+            return HandleResult(result, "Season statistics retrieved successfully", "Failed to retrieve season statistics");
         }
 
         /// <summary>
         /// Gets team standings for a specific season
         /// </summary>
-        /// <param name="seasonId">The season ID</param>
+        /// <param name="competitionId">The season ID</param>
         /// <returns>Team standings ordered by points</returns>
-        [HttpGet("standings/{seasonId:guid}")]
+        [HttpGet("standings/{competitionId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTeamSeasonStatisticsDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballTeamSeasonStatisticsDto>>>> GetTeamStandings(Guid seasonId)
+        public async Task<ActionResult<ApiResponse<List<FloorballTeamSeasonStatisticsDto>>>> GetTeamStandings(Guid competitionId)
         {
-            _logger.LogInformation("Getting team standings for Season: {SeasonId}", seasonId);
+            _logger.LogInformation("Getting team standings for Season: {CompetitionId}", competitionId);
 
-            GetTeamStandingsQuery query = new GetTeamStandingsQuery(seasonId);
+            GetTeamStandingsQuery query = new GetTeamStandingsQuery(competitionId);
             Result<List<FloorballTeamSeasonStatisticsDto>> result = await _mediator.Send(query);
 
-            if (result.IsSuccess && result.Data != null)
-            {
-                return Ok(ApiResponse<List<FloorballTeamSeasonStatisticsDto>>.SuccessResponse(result.Data, "Team standings retrieved successfully"));
-            }
+            return HandleResult(result, "Team standings retrieved successfully", "Failed to retrieve team standings");
+        }
 
-            string errorMessage = result.Error ?? "Failed to retrieve team standings";
-            if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return NotFound(ApiResponse<List<FloorballTeamSeasonStatisticsDto>>.ErrorResponse(errorMessage));
-            }
+        /// <summary>
+        /// Gets standings for a single tournament group computed from completed group-stage matches.
+        /// </summary>
+        /// <param name="groupId">The tournament group ID</param>
+        /// <returns>Per-team standings rows ordered by Points → GoalDifference → GoalsFor</returns>
+        [HttpGet("standings/group/{groupId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<List<FloorballTournamentGroupStandingDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<FloorballTournamentGroupStandingDto>>>> GetTournamentGroupStandings(Guid groupId)
+        {
+            _logger.LogInformation("Getting tournament group standings for Group: {GroupId}", groupId);
 
-            return StatusCode(500, ApiResponse<List<FloorballTeamSeasonStatisticsDto>>.ErrorResponse(errorMessage));
+            GetTournamentGroupStandingsQuery query = new GetTournamentGroupStandingsQuery(groupId);
+            Result<List<FloorballTournamentGroupStandingDto>> result = await _mediator.Send(query);
+
+            return HandleResult(result, "Tournament group standings retrieved successfully", "Failed to retrieve tournament group standings");
         }
 
     }

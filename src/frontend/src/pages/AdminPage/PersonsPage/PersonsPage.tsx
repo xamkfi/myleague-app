@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
+import Button from '../../../components/Button/Button';
+import AddIcon from '../../../assets/basicIcons/add.svg';
 import PersonList from './components/PersonList/PersonList';
 import './PersonsPage.scss';
 
@@ -24,12 +26,13 @@ const PersonsPage = () => {
 
           <div className="persons-header">
             <h2>{t('admin.persons.subtitle', 'Manage Persons')}</h2>
-            <button 
-              className="persons-add-button"
+            <Button
+              iconLeft={AddIcon}
+              rounded="pill"
               onClick={handleAddPerson}
             >
               {t('admin.persons.actions.add', 'Add New Person')}
-            </button>
+            </Button>
           </div>
           <div className="persons-content">
             <PersonList 

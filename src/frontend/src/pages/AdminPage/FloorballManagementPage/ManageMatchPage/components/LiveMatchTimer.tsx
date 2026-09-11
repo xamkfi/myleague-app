@@ -21,6 +21,15 @@ interface LiveMatchTimerProps {
   getPeriodControlButtonText: () => string;
   keybindsEnabled: boolean;
   isStartMatchDisabled: boolean;
+  overtimePeriodNumber: number;
+  shootoutPeriodNumber: number;
+  /**
+   * Optional human-readable reason that the Start Match button is disabled. Used as the
+   * button label fallback and as its `title` attribute so the operator always sees *why*
+   * the action is unavailable. When omitted we fall back to the legacy "Select goalies to
+   * start" copy for backwards compatibility.
+   */
+  startDisabledReason?: string;
 }
 
 const LiveMatchTimer = ({
@@ -37,10 +46,14 @@ const LiveMatchTimer = ({
   getPeriodControlButtonText,
   keybindsEnabled,
   isStartMatchDisabled,
+  overtimePeriodNumber,
+  shootoutPeriodNumber,
+  startDisabledReason,
 }: LiveMatchTimerProps) => {
   const {
     currentPeriod,
     elapsedTimeSeconds,
+    currentPeriodStartSeconds,
     registerCallback,
     handleTimerUpdate,
   } = useMatchTimerContext();
@@ -51,27 +64,40 @@ const LiveMatchTimer = ({
     return 'upcoming';
   };
 
-  const periodLabels: Record<number, string> = {
-    1: 'Period 1',
-    2: 'Period 2',
-    3: 'Overtime',
-    4: 'Shootout',
-  };
+  const rules = currentMatch.matchRules;
+  const numberOfPeriods = rules?.numberOfPeriods ?? 2;
+  const periodDurationSeconds = (rules?.periodDurationMinutes ?? 15) * 60;
 
-  // Turn digits red at 15:00 (900s) and after, except during shootout
-  const isInShootout = currentPeriod === 4;
-  const shouldPeriodEnd = elapsedTimeSeconds >= 900 && !isInShootout;
+  // Build dynamic period labels
+  const periodLabels: Record<number, string> = {};
+  for (let i = 1; i <= numberOfPeriods; i++) {
+    periodLabels[i] = `Period ${i}`;
+  }
+  periodLabels[overtimePeriodNumber] = 'Overtime';
+  periodLabels[shootoutPeriodNumber] = 'Shootout';
+
+  // The clock display is continuous across periods, so the "should this period end now"
+  // alert has to compare the in-period elapsed time (total elapsed minus the current
+  // period's recorded start) against the configured period duration. Without this, the
+  // digits would turn red as soon as elapsed >= 15min in period 2 even though only a few
+  // seconds had been played in that period.
+  const isInShootout = currentPeriod === shootoutPeriodNumber;
+  const inPeriodElapsedSeconds: number = Math.max(0, elapsedTimeSeconds - currentPeriodStartSeconds);
+  const shouldPeriodEnd = inPeriodElapsedSeconds >= periodDurationSeconds && !isInShootout;
   
   // Timer controls enabled only if current period has started and not ended, and not in shootout
-  const controlsEnabled = startedPeriods.has(currentPeriod) && !endedPeriods.has(currentPeriod) && currentPeriod !== 4;
+  const controlsEnabled = startedPeriods.has(currentPeriod) && !endedPeriods.has(currentPeriod) && currentPeriod !== shootoutPeriodNumber;
 
   // Determine which periods to show
-  const periodsToShow = [1, 2];
+  const periodsToShow: number[] = [];
+  for (let i = 1; i <= numberOfPeriods; i++) {
+    periodsToShow.push(i);
+  }
   if (currentMatch.wentToOvertime) {
-    periodsToShow.push(3);
+    periodsToShow.push(overtimePeriodNumber);
   }
   if (currentMatch.wentToShootout) {
-    periodsToShow.push(4);
+    periodsToShow.push(shootoutPeriodNumber);
   }
 
   // Register timer callbacks when they're provided
@@ -104,8 +130,8 @@ const LiveMatchTimer = ({
         <div className="clock-inner">
           <div className="period-row">
           {periodsToShow.map((p) => (
-            <div key={p} className={`period-chip ${getChipStatus(p)} ${p > 2 ? 'period-chip--extra' : ''}`}>
-                {`${periodLabels[p]}: ${getChipStatus(p)}`}
+            <div key={p} className={`period-chip ${getChipStatus(p)} ${p > numberOfPeriods ? 'period-chip--extra' : ''}`}>
+                {`${periodLabels[p] ?? `Period ${p}`}: ${getChipStatus(p)}`}
               </div>
             ))}
           </div>
@@ -116,8 +142,11 @@ const LiveMatchTimer = ({
                   onClick={onStartMatch}
                   disabled={loading || isStartMatchDisabled}
                   className="start-match-btn"
+                  title={isStartMatchDisabled ? (startDisabledReason ?? 'Select goalies to start') : undefined}
                 >
-                  {isStartMatchDisabled ? 'Select goalies to start' : 'Start Match'}
+                  {isStartMatchDisabled
+                    ? (startDisabledReason ?? 'Select goalies to start')
+                    : 'Start Match'}
                 </button>
               </div>
           ) : currentMatch.status === 'Completed' ? (
@@ -142,6 +171,7 @@ const LiveMatchTimer = ({
                 onGetStopFunction={handleGetStopFunction}
                     controlsEnabled={controlsEnabled}
                     keybindsEnabled={keybindsEnabled}
+                    periodStartSeconds={currentPeriodStartSeconds}
                     onPeriodControlClick={onPeriodControlClick}
                     canEndPeriod={canEndPeriod}
                     getPeriodControlButtonText={getPeriodControlButtonText}
@@ -156,4 +186,4 @@ const LiveMatchTimer = ({
   );
 };
 
-export default LiveMatchTimer; 
+export default LiveMatchTimer;

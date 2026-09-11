@@ -1,5 +1,6 @@
 using Domain.Enums;
 using Domain.Enums.Floorball;
+using Domain.ValueObjects.Floorball;
 using System.Collections.Generic;
 
 namespace Domain.Entities.Floorball;
@@ -10,34 +11,37 @@ namespace Domain.Entities.Floorball;
 public class FloorballMatch : BaseEntity
 {
     /// <summary>
-    /// Gets the season this match belongs to
+    /// Gets the competition this match belongs to
     /// </summary>
-    public FloorballSeason Season { get; private set; }
+    public FloorballCompetition Competition { get; private set; }
 
     /// <summary>
-    /// Gets or sets the ID of the season
+    /// Gets the ID of the competition
     /// </summary>
-    public Guid SeasonId { get; private set; }
+    public Guid CompetitionId { get; private set; }
 
     /// <summary>
-    /// Gets the home team
+    /// Gets the home team. May be <c>null</c> when the match has been scheduled before the
+    /// participants are known (e.g. season fixture published in advance, or playoff slot whose
+    /// feeder has not yet completed).
     /// </summary>
-    public FloorballTeam HomeTeam { get; private set; }
-    
-    /// <summary>
-    /// Gets the ID of the home team
-    /// </summary>
-    public Guid HomeTeamId { get; private set; }
+    public FloorballTeam? HomeTeam { get; private set; }
 
     /// <summary>
-    /// Gets the away team
+    /// Gets the ID of the home team, or <c>null</c> when the participant has not yet been
+    /// assigned. See <see cref="HomeTeam"/>.
     /// </summary>
-    public FloorballTeam AwayTeam { get; private set; }
-    
+    public Guid? HomeTeamId { get; private set; }
+
     /// <summary>
-    /// Gets the ID of the away team
+    /// Gets the away team. May be <c>null</c>; see <see cref="HomeTeam"/>.
     /// </summary>
-    public Guid AwayTeamId { get; private set; }
+    public FloorballTeam? AwayTeam { get; private set; }
+
+    /// <summary>
+    /// Gets the ID of the away team, or <c>null</c> when not yet assigned. See <see cref="AwayTeam"/>.
+    /// </summary>
+    public Guid? AwayTeamId { get; private set; }
 
     /// <summary>
     /// Gets the scheduled date and time of the match
@@ -73,6 +77,11 @@ public class FloorballMatch : BaseEntity
     /// Gets whether the match went to shootout
     /// </summary>
     public bool WentToShootout { get; private set; }
+
+    /// <summary>
+    /// Gets the match rules configuration snapshot, copied from the season at match creation time.
+    /// </summary>
+    public FloorballMatchRules MatchRules { get; private set; }
     
     /// <summary>
     /// Gets all match events (goals, penalties, etc.)
@@ -109,6 +118,38 @@ public class FloorballMatch : BaseEntity
     public Guid? AwayActiveGoalieId { get; private set; }
     
     /// <summary>
+    /// Gets the tournament stage for this match (null for regular season matches)
+    /// </summary>
+    public FloorballTournamentStage? TournamentStage { get; private set; }
+
+    /// <summary>
+    /// Gets the tournament group ID for group-stage matches (null for non-tournament or playoff matches)
+    /// </summary>
+    public Guid? TournamentGroupId { get; private set; }
+
+    /// <summary>
+    /// Gets the playoff round for playoff matches (null for non-playoff matches)
+    /// </summary>
+    public FloorballPlayoffRound? PlayoffRound { get; private set; }
+
+    /// <summary>
+    /// Gets the display order of this match within its playoff round (0-based, deterministic).
+    /// E.g. QF1 = 0, QF2 = 1, ... Used to render the bracket in a stable order.
+    /// </summary>
+    public int? PlayoffMatchOrder { get; private set; }
+
+    /// <summary>
+    /// Gets the next match (the match that the winner of this match advances into).
+    /// Null for the final and the optional 3rd place match.
+    /// </summary>
+    public Guid? NextMatchId { get; private set; }
+
+    /// <summary>
+    /// Gets the slot in <see cref="NextMatchId"/> the winner of this match should be placed into.
+    /// </summary>
+    public FloorballPlayoffSlot? NextMatchSlot { get; private set; }
+
+    /// <summary>
     /// Gets the match officials (referees)
     /// </summary>
     public IReadOnlyCollection<FloorballReferee> Officials => _officials.AsReadOnly();
@@ -121,6 +162,25 @@ public class FloorballMatch : BaseEntity
     private readonly List<FloorballPeriodScore> _periodScores = new();
 
     /// <summary>
+    /// Gets the active field player lineup entries for both teams. Goalies are stored separately
+    /// on <see cref="HomeActiveGoalieId"/> and <see cref="AwayActiveGoalieId"/>.
+    /// </summary>
+    public IReadOnlyCollection<FloorballMatchActivePlayer> ActivePlayers => _activePlayers.AsReadOnly();
+    private readonly List<FloorballMatchActivePlayer> _activePlayers = new();
+
+    /// <summary>
+    /// Gets the active field player IDs for the home team.
+    /// </summary>
+    public IReadOnlyCollection<Guid> HomeActivePlayerIds =>
+        _activePlayers.Where(p => p.TeamId == HomeTeamId).Select(p => p.PlayerId).ToList().AsReadOnly();
+
+    /// <summary>
+    /// Gets the active field player IDs for the away team.
+    /// </summary>
+    public IReadOnlyCollection<Guid> AwayActivePlayerIds =>
+        _activePlayers.Where(p => p.TeamId == AwayTeamId).Select(p => p.PlayerId).ToList().AsReadOnly();
+
+    /// <summary>
     /// Private constructor for EF Core
     /// </summary>
     private FloorballMatch()
@@ -131,101 +191,91 @@ public class FloorballMatch : BaseEntity
         AwayScore = 0;
         WentToOvertime = false;
         WentToShootout = false;
+        MatchRules = FloorballMatchRules.Default();
         HomeActiveGoalieId = null;
         AwayActiveGoalieId = null;
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
-        Season = null!; // EF Core will set this
-        HomeTeam = null!;
-        AwayTeam = null!;
+        _activePlayers = new List<FloorballMatchActivePlayer>();
+        Competition = null!; // EF Core will set this
+        HomeTeam = null;
+        AwayTeam = null;
+        HomeTeamId = null;
+        AwayTeamId = null;
         Venue = string.Empty;
     }
 
     /// <summary>
-    /// Initializes a new instance of the FloorballMatch class
+    /// Initializes a new instance of the FloorballMatch class. Home and/or away team may be
+    /// <c>null</c> when the match is scheduled before its participants are known. Teams can later
+    /// be filled in via <see cref="AssignTeam"/> (or automatically by the playoff propagation
+    /// pipeline). <see cref="Start"/> refuses to start a match while either side is unassigned.
     /// </summary>
-    /// <param name="season">The season this match belongs to</param>
-    /// <param name="homeTeam">The home team</param>
-    /// <param name="awayTeam">The away team</param>
+    /// <param name="competition">The competition this match belongs to</param>
+    /// <param name="homeTeam">The home team, or <c>null</c> when not yet known</param>
+    /// <param name="awayTeam">The away team, or <c>null</c> when not yet known</param>
     /// <param name="scheduledDateTime">The scheduled date and time of the match</param>
     /// <param name="venue">The venue where the match will be played</param>
-    /// <exception cref="ArgumentNullException">Thrown when a required parameter is null</exception>
-    /// <exception cref="ArgumentException">Thrown when teams are the same or venue is invalid</exception>
     public FloorballMatch(
-        FloorballSeason season,
-        FloorballTeam homeTeam,
-        FloorballTeam awayTeam,
+        FloorballCompetition competition,
+        FloorballTeam? homeTeam,
+        FloorballTeam? awayTeam,
         DateTime scheduledDateTime,
         string? venue)
+        : this(Guid.NewGuid(), competition, homeTeam, awayTeam, scheduledDateTime, venue)
     {
-        ArgumentNullException.ThrowIfNull(season);
-        ArgumentNullException.ThrowIfNull(homeTeam);
-        ArgumentNullException.ThrowIfNull(awayTeam);
-
-        if (homeTeam == awayTeam)
-            throw new ArgumentException("Home team and away team cannot be the same team.");
-
-        Id = Guid.NewGuid();
-        Season = season;
-        SeasonId = season.Id;
-        HomeTeam = homeTeam;
-        HomeTeamId = homeTeam.Id;
-        AwayTeam = awayTeam;
-        AwayTeamId = awayTeam.Id;
-        ScheduledDateTime = scheduledDateTime;
-        Venue = venue;
-        Status = FloorballMatchStatus.Scheduled;
-        HomeScore = 0;
-        AwayScore = 0;
-        WentToOvertime = false;
-        WentToShootout = false;
-        HomeActiveGoalieId = null;
-        AwayActiveGoalieId = null;
-        _events = new List<FloorballMatchEvent>();
-        _officials = new List<FloorballReferee>();
-        _periodScores = new List<FloorballPeriodScore>();
-        for (int i = 1; i <= 2; i++)
-        {
-            _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeam.Id, awayTeam.Id));
-        }
     }
 
     /// <summary>
     /// Initializes a new instance of the FloorballMatch class with a predefined identifier.
-    /// This overload is intended for projections so that the read-model row uses exactly
-    /// the same Guid as EventSourcedFloorballMatch aggregateId.
+    /// Home and away team may be <c>null</c>; see the primary constructor for details.
     /// </summary>
     /// <param name="id">The identifier that should be used for the match.</param>
-    /// <param name="season">The season this match belongs to</param>
-    /// <param name="homeTeam">The home team</param>
-    /// <param name="awayTeam">The away team</param>
+    /// <param name="competition">The competition this match belongs to</param>
+    /// <param name="homeTeam">The home team, or <c>null</c> when not yet known</param>
+    /// <param name="awayTeam">The away team, or <c>null</c> when not yet known</param>
     /// <param name="scheduledDateTime">The scheduled date and time of the match</param>
     /// <param name="venue">The venue where the match will be played</param>
-    /// <exception cref="ArgumentNullException">Thrown when a required parameter is null</exception>
-    /// <exception cref="ArgumentException">Thrown when teams are the same or venue is invalid</exception>
     public FloorballMatch(
         Guid id,
-        FloorballSeason season,
-        FloorballTeam homeTeam,
-        FloorballTeam awayTeam,
+        FloorballCompetition competition,
+        FloorballTeam? homeTeam,
+        FloorballTeam? awayTeam,
         DateTime scheduledDateTime,
         string? venue)
+        : this(id, competition, homeTeam, awayTeam, scheduledDateTime, venue, matchRulesOverride: null)
     {
-        ArgumentNullException.ThrowIfNull(season);
-        ArgumentNullException.ThrowIfNull(homeTeam);
-        ArgumentNullException.ThrowIfNull(awayTeam);
+    }
 
-        if (homeTeam == awayTeam)
+    /// <summary>
+    /// Internal constructor that accepts an explicit match-rules override. Used by playoff bracket
+    /// generation where the competition exposes group-stage rules but we need to copy the playoff
+    /// match rules instead.
+    /// </summary>
+    private FloorballMatch(
+        Guid id,
+        FloorballCompetition competition,
+        FloorballTeam? homeTeam,
+        FloorballTeam? awayTeam,
+        DateTime scheduledDateTime,
+        string? venue,
+        FloorballMatchRules? matchRulesOverride)
+    {
+        ArgumentNullException.ThrowIfNull(competition);
+
+        // Two participants must be distinct when both are known. Two unassigned slots are fine —
+        // they will be filled in independently later.
+        if (homeTeam != null && awayTeam != null && homeTeam == awayTeam)
             throw new ArgumentException("Home team and away team cannot be the same team.");
 
         Id = id;
-        Season = season;
-        SeasonId = season.Id;
+        Competition = competition;
+        CompetitionId = competition.Id;
         HomeTeam = homeTeam;
-        HomeTeamId = homeTeam.Id;
+        HomeTeamId = homeTeam?.Id;
         AwayTeam = awayTeam;
-        AwayTeamId = awayTeam.Id;
+        AwayTeamId = awayTeam?.Id;
         ScheduledDateTime = scheduledDateTime;
         Venue = venue;
         Status = FloorballMatchStatus.Scheduled;
@@ -233,55 +283,73 @@ public class FloorballMatch : BaseEntity
         AwayScore = 0;
         WentToOvertime = false;
         WentToShootout = false;
+        FloorballMatchRules effectiveRules = matchRulesOverride ?? new FloorballMatchRules(
+            competition.MatchRules.NumberOfPeriods,
+            competition.MatchRules.PeriodDurationMinutes,
+            competition.MatchRules.AllowOvertime,
+            competition.MatchRules.OvertimeDurationMinutes,
+            competition.MatchRules.AllowShootout);
+        MatchRules = effectiveRules;
         HomeActiveGoalieId = null;
         AwayActiveGoalieId = null;
         _events = new List<FloorballMatchEvent>();
         _officials = new List<FloorballReferee>();
         _periodScores = new List<FloorballPeriodScore>();
-        for (int i = 1; i <= 3; i++)
+        _activePlayers = new List<FloorballMatchActivePlayer>();
+        // Period scores are denormalized snapshots; when teams are unknown we stamp Guid.Empty
+        // and the period score's team IDs get backfilled by AssignTeam when the participant is
+        // eventually set.
+        Guid homeIdForPeriods = homeTeam?.Id ?? Guid.Empty;
+        Guid awayIdForPeriods = awayTeam?.Id ?? Guid.Empty;
+        for (int i = 1; i <= MatchRules.NumberOfPeriods; i++)
         {
-            _periodScores.Add(new FloorballPeriodScore(Id, i, homeTeam.Id, awayTeam.Id));
+            _periodScores.Add(new FloorballPeriodScore(Id, i, homeIdForPeriods, awayIdForPeriods));
         }
     }
 
     /// <summary>
-    /// Sets the season for this match
+    /// Creates a playoff bracket match. The match rules override defaults to the playoff rules
+    /// from the tournament rather than the competition's group-stage rules. Bracket metadata
+    /// (round, ordering, forward references) is set after construction via <see cref="SetPlayoffInfo"/>.
     /// </summary>
-    /// <param name="season">The season to set</param>
-    /// <exception cref="ArgumentNullException">Thrown when the season is null</exception>
-    public void SetSeason(FloorballSeason season)
+    public static FloorballMatch CreatePlayoffMatch(
+        Guid id,
+        FloorballCompetition competition,
+        FloorballTeam? homeTeam,
+        FloorballTeam? awayTeam,
+        DateTime scheduledDateTime,
+        string? venue,
+        FloorballMatchRules playoffMatchRules)
     {
-        ArgumentNullException.ThrowIfNull(season);
-        Season = season;
-        SeasonId = season.Id;
+        ArgumentNullException.ThrowIfNull(playoffMatchRules);
+        return new FloorballMatch(id, competition, homeTeam, awayTeam, scheduledDateTime, venue, playoffMatchRules);
     }
 
     /// <summary>
-    /// Changes the season for this match
+    /// Changes the competition for this match
     /// </summary>
-    /// <param name="season">The new season</param>
-    /// <exception cref="ArgumentNullException">Thrown when season is null</exception>
-    public void ChangeSeason(FloorballSeason season)
+    /// <param name="competition">The new competition</param>
+    public void ChangeCompetition(FloorballCompetition competition)
     {
-        ArgumentNullException.ThrowIfNull(season);
-        Season = season;
-        SeasonId = season.Id;
+        ArgumentNullException.ThrowIfNull(competition);
+        Competition = competition;
+        CompetitionId = competition.Id;
     }
 
     /// <summary>
-    /// Changes the teams for this match
+    /// Changes the teams for this match. Either side may be <c>null</c> to clear that slot back
+    /// to "to be determined". Prefer <see cref="AssignTeam"/> for single-slot updates; this method
+    /// exists for bulk replacement scenarios (e.g. legacy admin tools).
     /// </summary>
-    /// <param name="homeTeam">The new home team</param>
-    /// <param name="awayTeam">The new away team</param>
-    /// <exception cref="ArgumentNullException">Thrown when homeTeam or awayTeam is null</exception>
-    public void ChangeTeams(FloorballTeam homeTeam, FloorballTeam awayTeam)
+    /// <param name="homeTeam">The new home team, or <c>null</c></param>
+    /// <param name="awayTeam">The new away team, or <c>null</c></param>
+    public void ChangeTeams(FloorballTeam? homeTeam, FloorballTeam? awayTeam)
     {
-        ArgumentNullException.ThrowIfNull(homeTeam);
-        ArgumentNullException.ThrowIfNull(awayTeam);
-        HomeTeam = homeTeam;
-        HomeTeamId = homeTeam.Id;
-        AwayTeam = awayTeam;
-        AwayTeamId = awayTeam.Id;
+        if (homeTeam != null && awayTeam != null && homeTeam == awayTeam)
+            throw new ArgumentException("Home team and away team cannot be the same team.");
+
+        AssignTeam(FloorballPlayoffSlot.Home, homeTeam);
+        AssignTeam(FloorballPlayoffSlot.Away, awayTeam);
     }
 
     /// <summary>
@@ -306,9 +374,6 @@ public class FloorballMatch : BaseEntity
         if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
             throw new InvalidOperationException($"Cannot reschedule a match with status {Status}.");
 
-        DateTime oldDateTime = ScheduledDateTime;
-        string oldVenue = Venue ?? string.Empty;
-        
         ScheduledDateTime = newDateTime;
         
         if (!string.IsNullOrWhiteSpace(newVenue))
@@ -327,19 +392,24 @@ public class FloorballMatch : BaseEntity
         if (Status != FloorballMatchStatus.Scheduled)
             throw new InvalidOperationException($"Cannot postpone a match with status {Status}.");
 
-        FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.Postponed;
-        
     }
 
     /// <summary>
-    /// Starts the match
+    /// Starts the match. The status guard runs first so the caller gets a clear "wrong state"
+    /// message before any other prerequisite check. Order of the prerequisite checks is significant:
+    /// teams come first because every other downstream check (goalies on a team, lineups) is
+    /// meaningless until both participants are known.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the match status doesn't allow starting</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the match cannot be started.</exception>
     public void Start()
     {
         if (Status != FloorballMatchStatus.Scheduled)
             throw new InvalidOperationException($"Cannot start a match with status {Status}.");
+
+        if (HomeTeamId is null || AwayTeamId is null)
+            throw new InvalidOperationException(
+                "Ottelua ei voi aloittaa: molempien joukkueiden tulee olla valittuina.");
 
         if (_officials.Count == 0)
             throw new InvalidOperationException("Cannot start a match without officials.");
@@ -373,43 +443,32 @@ public class FloorballMatch : BaseEntity
         string? description = null,
         int? goalType = null)
     {
-        if (Status != FloorballMatchStatus.InProgress)
-            throw new InvalidOperationException($"Cannot record a goal when match status is {Status}.");
+        EnsureInProgress("record a goal");
 
         ArgumentNullException.ThrowIfNull(scoringTeam);
         ArgumentNullException.ThrowIfNull(scoringPlayer);
 
-        if (periodNumber < 1 || periodNumber > 5) // Regular periods (1-3), Overtime (4), Shootout (5)
-            throw new ArgumentOutOfRangeException(nameof(periodNumber), "Period number must be between 1 and 5.");
+        if (periodNumber < 1 || periodNumber > ShootoutPeriodNumber)
+            throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {ShootoutPeriodNumber}.");
 
         if (timeInSeconds < 0)
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be non-negative.");
 
-        // Check if the scoring team is part of this match
         if (scoringTeam.Id != HomeTeamId && scoringTeam.Id != AwayTeamId)
             throw new ArgumentException("Scoring team is not participating in this match.", nameof(scoringTeam));
 
-        // Check if the scoring player is on the scoring team's roster
-        bool playerOnTeam = scoringTeam.Roster.Any(tp => tp.PlayerId == scoringPlayer.Id);
-        if (!playerOnTeam)
-            throw new ArgumentException("Scoring player is not on the scoring team's roster.", nameof(scoringPlayer));
+        ValidatePlayerOnRoster(scoringTeam, scoringPlayer.Id, "Scoring player");
 
-        // Check if the assisting player is on the scoring team's roster
         if (assistingPlayer != null)
-        {
-            bool assistingPlayerOnTeam = scoringTeam.Roster.Any(tp => tp.PlayerId == assistingPlayer.Id);
-            if (!assistingPlayerOnTeam)
-                throw new ArgumentException("Assisting player is not on the scoring team's roster.", nameof(assistingPlayer));
-        }
-        // Check if the assisting player is on the scoring team's roster
-        if (secondaryAssistingPlayer != null)
-        {
-            bool secondaryAssistingPlayerOnTeam = scoringTeam.Roster.Any(tp => tp.PlayerId == secondaryAssistingPlayer.Id);
-            if (!secondaryAssistingPlayerOnTeam)
-                throw new ArgumentException("Secondary Assisting player is not on the scoring team's roster.", nameof(assistingPlayer));
-        }
+            ValidatePlayerOnRoster(scoringTeam, assistingPlayer.Id, "Assisting player");
 
-        // Record the goal event
+        if (secondaryAssistingPlayer != null)
+            ValidatePlayerOnRoster(scoringTeam, secondaryAssistingPlayer.Id, "Secondary assisting player");
+
+        FloorballGoalType? mappedGoalType = goalType.HasValue
+            ? (FloorballGoalType)goalType.Value
+            : null;
+
         FloorballGoal goalEvent = new FloorballGoal(
             matchId: Id,
             scoringTeam.Id,
@@ -418,45 +477,15 @@ public class FloorballMatch : BaseEntity
             secondaryAssistingPlayer?.Id,
             periodNumber,
             timeInSeconds,
-            null,
+            mappedGoalType,
             description);
 
-
         _events.Add(goalEvent);
-
-        // Update the score
-        if (scoringTeam.Id == HomeTeamId)
-        {
-            HomeScore++;
-            // Update the period score for the current period
-            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
-            if (periodScore != null)
-            {
-                periodScore.IncrementHomeScore();
-            }
-        }
-        else
-        {
-            AwayScore++;
-            // Update the period score for the current period
-            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
-            if (periodScore != null)
-            {
-                periodScore.IncrementAwayScore();
-            }
-        }
-
+        AdjustScore(scoringTeam.Id, periodNumber, increment: true);
 
         return goalEvent;
     }
 
-    public void UpdateScore(Guid scoringTeamId)
-    {
-        if (scoringTeamId == HomeTeamId)
-            HomeScore++;
-        else
-            AwayScore++;
-    }
     /// <summary>
     /// Records a penalty
     /// </summary>
@@ -476,16 +505,18 @@ public class FloorballMatch : BaseEntity
         int timeInSeconds,
         string description = "")
     {
-        if (Status != FloorballMatchStatus.InProgress)
-            throw new InvalidOperationException($"Cannot record a penalty for a match with status {Status}.");
+        EnsureInProgress("record a penalty");
+        ArgumentNullException.ThrowIfNull(team);
+
         if (periodNumber < 1 || periodNumber > _periodScores.Count)
             throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {_periodScores.Count}.");
-        if (timeInSeconds < 0 || timeInSeconds > 1200)
-            throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be between 0 and 1200 seconds.");
+        // Only enforce a non-negative floor on the timestamp: the match clock runs
+        // continuously across periods so any per-period upper bound would be wrong
+        // (e.g. a penalty in period 2 of a 15-minute match has time >= 900s).
+        if (timeInSeconds < 0)
+            throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be non-negative.");
         if (minutes <= 0)
             throw new ArgumentOutOfRangeException(nameof(minutes), "Penalty minutes must be positive.");
-        if(team == null)
-            throw new ArgumentNullException(nameof(team), "Team cannot be null.");
 
         FloorballPenalty penaltyEvent = new FloorballPenalty(
             Id,
@@ -497,7 +528,6 @@ public class FloorballMatch : BaseEntity
             timeInSeconds,
             description ?? string.Empty);
         _events.Add(penaltyEvent);
-        
 
         return penaltyEvent;
     }
@@ -520,21 +550,19 @@ public class FloorballMatch : BaseEntity
         bool wasInOvertime = false,
         bool wasInShootout = false)
     {
-        if (Status != FloorballMatchStatus.InProgress)
-            throw new InvalidOperationException($"Cannot record a save when match status is {Status}.");
+        EnsureInProgress("record a save");
 
         ArgumentNullException.ThrowIfNull(team);
         ArgumentNullException.ThrowIfNull(goalie);
 
-        if (periodNumber < 1 || periodNumber > 5)
-            throw new ArgumentOutOfRangeException(nameof(periodNumber), "Period number must be between 1 and 5.");
+        if (periodNumber < 1 || periodNumber > ShootoutPeriodNumber)
+            throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {ShootoutPeriodNumber}.");
         if (timeInSeconds < 0)
             throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be non-negative.");
         if (team.Id != HomeTeamId && team.Id != AwayTeamId)
             throw new ArgumentException("Team is not participating in this match.", nameof(team));
-        bool goalieOnTeam = team.Roster.Any(tp => tp.PlayerId == goalie.Id);
-        if (!goalieOnTeam)
-            throw new ArgumentException("Goalie is not on the team's roster.", nameof(goalie));
+
+        ValidatePlayerOnRoster(team, goalie.Id, "Goalie");
 
         FloorballSave saveEvent = new FloorballSave(
             Guid.NewGuid(),
@@ -546,7 +574,6 @@ public class FloorballMatch : BaseEntity
             wasInOvertime,
             wasInShootout);
         _events.Add(saveEvent);
-
 
         return saveEvent;
     }
@@ -569,9 +596,6 @@ public class FloorballMatch : BaseEntity
             return;
 
         _officials.Add(referee);
-
-
-
     }
 
     /// <summary>
@@ -612,18 +636,32 @@ public class FloorballMatch : BaseEntity
     }
 
     /// <summary>
+    /// Gets the period number used for overtime (regular periods + 1).
+    /// </summary>
+    public int OvertimePeriodNumber => MatchRules.NumberOfPeriods + 1;
+
+    /// <summary>
+    /// Gets the period number used for shootout (regular periods + 2).
+    /// </summary>
+    public int ShootoutPeriodNumber => MatchRules.NumberOfPeriods + 2;
+
+    /// <summary>
     /// Records that the match went to overtime
     /// </summary>
     public void RecordOvertime()
     {
+        if (!MatchRules.AllowOvertime)
+            throw new InvalidOperationException("Overtime is not allowed by the match rules.");
+
         WentToOvertime = true;
 
-        // Create a periodscore for non-regular period (Overtime)
-        if (_periodScores.All(ps => ps.PeriodNumber != 3))
+        int overtimePeriod = OvertimePeriodNumber;
+        // Reaching overtime implies the match is already InProgress, which means Start() succeeded
+        // and both team IDs are populated. The null-forgiving operator is therefore safe here.
+        if (_periodScores.All(ps => ps.PeriodNumber != overtimePeriod))
         {
-            _periodScores.Add(new FloorballPeriodScore(Id, 3, HomeTeamId, AwayTeamId));
+            _periodScores.Add(new FloorballPeriodScore(Id, overtimePeriod, HomeTeamId ?? Guid.Empty, AwayTeamId ?? Guid.Empty));
         }
-
     }
 
     /// <summary>
@@ -631,14 +669,16 @@ public class FloorballMatch : BaseEntity
     /// </summary>
     public void RecordShootout()
     {
+        if (!MatchRules.AllowShootout)
+            throw new InvalidOperationException("Shootout is not allowed by the match rules.");
+
         WentToShootout = true;
 
-        // Create a periodscore for non-regular period (Shootout)
-        if (_periodScores.All(ps => ps.PeriodNumber != 4))
+        int shootoutPeriod = ShootoutPeriodNumber;
+        if (_periodScores.All(ps => ps.PeriodNumber != shootoutPeriod))
         {
-            _periodScores.Add(new FloorballPeriodScore(Id, 4, HomeTeamId, AwayTeamId));
+            _periodScores.Add(new FloorballPeriodScore(Id, shootoutPeriod, HomeTeamId ?? Guid.Empty, AwayTeamId ?? Guid.Empty));
         }
-
     }
 
     /// <summary>
@@ -649,10 +689,15 @@ public class FloorballMatch : BaseEntity
     {
         if (Status != FloorballMatchStatus.InProgress)
             throw new InvalidOperationException($"Cannot complete a match with status {Status}.");
-        
-        FloorballMatchStatus oldStatus = Status;
+
+        // Playoff matches must have a winner: overtime/shootout codepaths increment scores on the
+        // OT/SO period scores and feed back into HomeScore/AwayScore, so an equal final score here
+        // means the tie was never resolved. Bracket advancement relies on a unique winner.
+        if (PlayoffRound != null && HomeScore == AwayScore)
+            throw new InvalidOperationException("Playoff matches cannot end in a draw. Record overtime or shootout result first.");
+
         Status = FloorballMatchStatus.Completed;
-        
+
         // Record that the match has been officiated by all referees
         foreach (FloorballReferee referee in _officials)
         {
@@ -669,9 +714,35 @@ public class FloorballMatch : BaseEntity
         if (Status == FloorballMatchStatus.Completed)
             throw new InvalidOperationException("Cannot cancel a completed match.");
             
-        FloorballMatchStatus oldStatus = Status;
         Status = FloorballMatchStatus.Cancelled;
-        
+    }
+
+    /// <summary>
+    /// Reactivates a cancelled match back to Scheduled status
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not cancelled</exception>
+    public void Reactivate()
+    {
+        if (Status != FloorballMatchStatus.Cancelled)
+            throw new InvalidOperationException("Can only reactivate a cancelled match.");
+
+        Status = FloorballMatchStatus.Scheduled;
+    }
+
+    /// <summary>
+    /// Reopens a previously completed match back into the InProgress state so the operator can
+    /// continue recording events or correct mistakes (e.g. when the match was finished by
+    /// accident). The caller is responsible for reverting any per-match aggregates that were
+    /// applied at completion time (team/player/goalie season statistics, playoff propagation,
+    /// tournament championship) — see <c>ReopenFloorballMatchHandler</c>.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not completed.</exception>
+    public void ReopenFromCompleted()
+    {
+        if (Status != FloorballMatchStatus.Completed)
+            throw new InvalidOperationException($"Can only reopen a completed match. Current status: {Status}.");
+
+        Status = FloorballMatchStatus.InProgress;
     }
 
     /// <summary>
@@ -693,29 +764,7 @@ public class FloorballMatch : BaseEntity
 
         // Remove the goal event
         _events.Remove(goalEvent);
-
-        // Update the score
-        if (goalEvent.TeamId == HomeTeamId)
-        {
-            HomeScore--;
-            // Update the period score for the goal's period
-            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == goalEvent.PeriodNumber);
-            if (periodScore != null)
-            {
-                periodScore.DecrementHomeScore();
-            }
-        }
-        else
-        {
-            AwayScore--;
-            // Update the period score for the goal's period
-            FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == goalEvent.PeriodNumber);
-            if (periodScore != null)
-            {
-                periodScore.DecrementAwayScore();
-            }
-        }
-
+        AdjustScore(goalEvent.TeamId, goalEvent.PeriodNumber, increment: false);
 
         return goalEvent;
     }
@@ -770,9 +819,8 @@ public class FloorballMatch : BaseEntity
 
     public void EndPeriod(int periodNumber)
     {
-        if (Status != FloorballMatchStatus.InProgress)
-            throw new InvalidOperationException("Match must be in progress.");
-        if (periodNumber < 1 || periodNumber > 5)
+        EnsureInProgress("end a period");
+        if (periodNumber < 1 || periodNumber > ShootoutPeriodNumber)
             throw new ArgumentOutOfRangeException(nameof(periodNumber));
 
         FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
@@ -784,45 +832,34 @@ public class FloorballMatch : BaseEntity
     }
 
     /// <summary>
-    /// Sets the active goalie for the home team
+    /// Sets the active goalie for a team participating in this match.
     /// </summary>
+    /// <param name="teamId">The ID of the team (must be home or away)</param>
     /// <param name="goalieId">The ID of the goalie to set as active</param>
-    /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
-    /// <exception cref="ArgumentException">Thrown when the goalie is not on the home team</exception>
-    public void SetHomeActiveGoalie(Guid goalieId)
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in progress or scheduled</exception>
+    /// <exception cref="ArgumentException">Thrown when the team is not part of this match or the goalie is not on the team</exception>
+    public void SetActiveGoalie(Guid teamId, Guid goalieId)
     {
         if (Status != FloorballMatchStatus.InProgress && Status != FloorballMatchStatus.Scheduled)
             throw new InvalidOperationException("Cannot change goalie when match is not in progress or scheduled.");
 
-        // Validate that the goalie is on the home team
-        bool goalieOnTeam = HomeTeam.Roster.Any(tp => tp.PlayerId == goalieId);
-        if (!goalieOnTeam)
-            throw new ArgumentException("Goalie is not on the home team.", nameof(goalieId));
-
-        Guid? previousGoalieId = HomeActiveGoalieId;
-        HomeActiveGoalieId = goalieId;
-
-    }
-
-    /// <summary>
-    /// Sets the active goalie for the away team
-    /// </summary>
-    /// <param name="goalieId">The ID of the goalie to set as active</param>
-    /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
-    /// <exception cref="ArgumentException">Thrown when the goalie is not on the away team</exception>
-    public void SetAwayActiveGoalie(Guid goalieId)
-    {
-        if (Status != FloorballMatchStatus.InProgress && Status != FloorballMatchStatus.Scheduled)
-            throw new InvalidOperationException("Cannot change goalie when match is not in progress or scheduled.");
-
-        // Validate that the goalie is on the away team
-        bool goalieOnTeam = AwayTeam.Roster.Any(tp => tp.PlayerId == goalieId);
-        if (!goalieOnTeam)
-            throw new ArgumentException("Goalie is not on the away team.", nameof(goalieId));
-
-        Guid? previousGoalieId = AwayActiveGoalieId;
-        AwayActiveGoalieId = goalieId;
-
+        // Match the team by ID only after confirming the slot is actually assigned. Otherwise a
+        // teamless match would let a caller pass an arbitrary teamId and trigger a confusing
+        // "not participating" message — being explicit about the missing slot is clearer.
+        if (HomeTeamId.HasValue && teamId == HomeTeamId.Value)
+        {
+            ValidatePlayerOnRoster(HomeTeam!, goalieId, "Goalie");
+            HomeActiveGoalieId = goalieId;
+        }
+        else if (AwayTeamId.HasValue && teamId == AwayTeamId.Value)
+        {
+            ValidatePlayerOnRoster(AwayTeam!, goalieId, "Goalie");
+            AwayActiveGoalieId = goalieId;
+        }
+        else
+        {
+            throw new ArgumentException("Team is not participating in this match.", nameof(teamId));
+        }
     }
 
     /// <summary>
@@ -832,11 +869,219 @@ public class FloorballMatch : BaseEntity
     /// <returns>The active goalie ID, or null if no goalie is set</returns>
     public Guid? GetActiveGoalieId(Guid teamId)
     {
-        if (teamId == HomeTeamId)
+        if (HomeTeamId.HasValue && teamId == HomeTeamId.Value)
             return HomeActiveGoalieId;
-        else if (teamId == AwayTeamId)
+        else if (AwayTeamId.HasValue && teamId == AwayTeamId.Value)
             return AwayActiveGoalieId;
         else
             throw new ArgumentException("Team is not participating in this match.", nameof(teamId));
     }
-} 
+
+    /// <summary>
+    /// Replaces the active field player lineup for a single team and optionally updates the active
+    /// goalie in the same operation. Each selection carries the per-match role (Forward, Center
+    /// or Defender) so the same player can be deployed differently across matches without
+    /// mutating their player profile. Players are validated against the team's full roster but
+    /// are not required to be marked active in their player profile (that flag governs season
+    /// eligibility, not per-match availability). The goalie, when supplied, is also validated
+    /// against the roster.
+    /// </summary>
+    /// <param name="teamId">Team to update (must be home or away).</param>
+    /// <param name="selections">Player selections (player ID + per-match role). Pass an empty collection to clear the lineup.</param>
+    /// <param name="goalieId">Optional goalie player ID. Pass <c>null</c> to leave the current goalie untouched.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match status disallows lineup changes.</exception>
+    /// <exception cref="ArgumentException">Thrown when the team is not part of this match, or any provided player is invalid.</exception>
+    public void SetActiveRoster(Guid teamId, IEnumerable<ActivePlayerSelection> selections, Guid? goalieId)
+    {
+        ArgumentNullException.ThrowIfNull(selections);
+
+        if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.InProgress)
+            throw new InvalidOperationException($"Cannot change active roster when match status is {Status}.");
+
+        FloorballTeam team;
+        if (HomeTeamId.HasValue && teamId == HomeTeamId.Value)
+            team = HomeTeam!;
+        else if (AwayTeamId.HasValue && teamId == AwayTeamId.Value)
+            team = AwayTeam!;
+        else
+            throw new ArgumentException("Team is not participating in this match.", nameof(teamId));
+
+        // De-duplicate by player ID — if the same player appears twice with different roles,
+        // the first entry wins (callers should not send duplicates, but we tolerate it).
+        List<ActivePlayerSelection> distinctSelections = selections
+            .GroupBy(s => s.PlayerId)
+            .Select(g => g.First())
+            .ToList();
+
+        if (distinctSelections.Any(s => s.PlayerId == Guid.Empty))
+            throw new ArgumentException("Player IDs cannot contain Guid.Empty.", nameof(selections));
+
+        foreach (ActivePlayerSelection selection in distinctSelections)
+        {
+            ValidatePlayerOnRoster(team, selection.PlayerId, "Active player");
+        }
+
+        if (goalieId.HasValue && distinctSelections.Any(s => s.PlayerId == goalieId.Value))
+            throw new ArgumentException("A player cannot be both an active field player and the active goalie.", nameof(selections));
+
+        _activePlayers.RemoveAll(p => p.TeamId == teamId);
+        foreach (ActivePlayerSelection selection in distinctSelections)
+        {
+            _activePlayers.Add(new FloorballMatchActivePlayer(Id, teamId, selection.PlayerId, selection.Position));
+        }
+
+        if (goalieId.HasValue)
+        {
+            SetActiveGoalie(teamId, goalieId.Value);
+        }
+    }
+
+    /// <summary>
+    /// Sets tournament-specific metadata on this match
+    /// </summary>
+    public void SetTournamentInfo(FloorballTournamentStage stage, Guid? groupId = null)
+    {
+        TournamentStage = stage;
+        TournamentGroupId = groupId;
+    }
+
+    /// <summary>
+    /// Sets playoff bracket metadata on this match. Called by the bracket generator when the
+    /// playoff stage is started so the read-side can render rounds, ordering and forward references.
+    /// </summary>
+    public void SetPlayoffInfo(
+        FloorballPlayoffRound round,
+        int matchOrder,
+        Guid? nextMatchId,
+        FloorballPlayoffSlot? nextMatchSlot)
+    {
+        if (matchOrder < 0)
+            throw new ArgumentOutOfRangeException(nameof(matchOrder), "Playoff match order must be non-negative.");
+        if (nextMatchId.HasValue != nextMatchSlot.HasValue)
+            throw new ArgumentException("NextMatchId and NextMatchSlot must be provided together.");
+
+        PlayoffRound = round;
+        PlayoffMatchOrder = matchOrder;
+        NextMatchId = nextMatchId;
+        NextMatchSlot = nextMatchSlot;
+        TournamentStage = MapRoundToStage(round);
+    }
+
+    /// <summary>
+    /// Assigns or clears a single team slot on this match. Used both by the playoff propagation
+    /// pipeline when a feeder completes (<see cref="AssignPlayoffTeam"/> wraps this) and by the
+    /// manual "assign teams to a scheduled match" admin command. Passing <c>null</c> clears the
+    /// slot back to "to be determined", which is useful when the wrong team has been propagated
+    /// and the admin needs to wait for a corrected feeder result.
+    /// </summary>
+    /// <param name="slot">The slot to update (Home or Away).</param>
+    /// <param name="team">The new team for the slot, or <c>null</c> to clear it.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match status disallows team changes.</exception>
+    /// <exception cref="ArgumentException">Thrown when the new team equals the team already in the opposite slot.</exception>
+    public void AssignTeam(FloorballPlayoffSlot slot, FloorballTeam? team)
+    {
+        if (Status != FloorballMatchStatus.Scheduled && Status != FloorballMatchStatus.Postponed)
+            throw new InvalidOperationException($"Cannot assign a team when match status is {Status}.");
+
+        // Reject same-team conflicts against whichever team is currently in the opposite slot.
+        if (team != null)
+        {
+            Guid? otherTeamId = slot == FloorballPlayoffSlot.Home ? AwayTeamId : HomeTeamId;
+            if (otherTeamId.HasValue && otherTeamId.Value == team.Id)
+                throw new ArgumentException("Home team and away team cannot be the same team.");
+        }
+
+        if (slot == FloorballPlayoffSlot.Home)
+        {
+            HomeTeam = team;
+            HomeTeamId = team?.Id;
+        }
+        else
+        {
+            AwayTeam = team;
+            AwayTeamId = team?.Id;
+        }
+
+        // Backfill the denormalized team IDs on each existing period score so per-period
+        // statistics queries can still attribute scores to the correct team once the slot is set.
+        Guid stampedId = team?.Id ?? Guid.Empty;
+        foreach (FloorballPeriodScore ps in _periodScores)
+        {
+            ps.UpdateTeamId(slot, stampedId);
+        }
+    }
+
+    /// <summary>
+    /// Replaces a team slot on this playoff match. Thin wrapper around <see cref="AssignTeam"/>
+    /// retained for call-site clarity in the playoff propagation handler; new callers should
+    /// prefer <see cref="AssignTeam"/> directly.
+    /// </summary>
+    public void AssignPlayoffTeam(FloorballPlayoffSlot slot, FloorballTeam team)
+    {
+        ArgumentNullException.ThrowIfNull(team);
+        AssignTeam(slot, team);
+    }
+
+    private static FloorballTournamentStage MapRoundToStage(FloorballPlayoffRound round) =>
+        round switch
+        {
+            FloorballPlayoffRound.QuarterFinal => FloorballTournamentStage.Quarterfinal,
+            FloorballPlayoffRound.SemiFinal => FloorballTournamentStage.Semifinal,
+            FloorballPlayoffRound.ThirdPlaceMatch => FloorballTournamentStage.ThirdPlace,
+            FloorballPlayoffRound.Final => FloorballTournamentStage.Final,
+            _ => FloorballTournamentStage.None
+        };
+
+    // ── Private helpers ──────────────────────────────────────────────────
+
+    /// <summary>
+    /// Guards that the match is currently in progress.
+    /// </summary>
+    private void EnsureInProgress(string action)
+    {
+        if (Status != FloorballMatchStatus.InProgress)
+            throw new InvalidOperationException($"Cannot {action} when match status is {Status}.");
+    }
+
+    /// <summary>
+    /// Validates that a player is on the given team's roster.
+    /// </summary>
+    private static void ValidatePlayerOnRoster(FloorballTeam team, Guid playerId, string roleName)
+    {
+        if (!team.Roster.Any(tp => tp.PlayerId == playerId))
+            throw new ArgumentException($"{roleName} is not on the team's roster.");
+    }
+
+    /// <summary>
+    /// Adjusts match and period scores when a goal is added or removed.
+    /// </summary>
+    /// <param name="teamId">Scoring team id</param>
+    /// <param name="periodNumber">Period the goal belongs to</param>
+    /// <param name="increment">True to add, false to subtract</param>
+    private void AdjustScore(Guid teamId, int periodNumber, bool increment)
+    {
+        bool isHome = teamId == HomeTeamId;
+
+        if (isHome)
+        {
+            if (increment) HomeScore++; else HomeScore--;
+        }
+        else
+        {
+            if (increment) AwayScore++; else AwayScore--;
+        }
+
+        FloorballPeriodScore? periodScore = _periodScores.FirstOrDefault(ps => ps.PeriodNumber == periodNumber);
+        if (periodScore != null)
+        {
+            if (isHome)
+            {
+                if (increment) periodScore.IncrementHomeScore(); else periodScore.DecrementHomeScore();
+            }
+            else
+            {
+                if (increment) periodScore.IncrementAwayScore(); else periodScore.DecrementAwayScore();
+            }
+        }
+    }
+}

@@ -1,54 +1,84 @@
-import HeroSection from '../../components/HeroSection/HeroSection';
-import MatchSidebar from '../../components/MatchSidebar/MatchSidebar';
+import { useState, useEffect } from 'react';
+import HomeNewsSection from '../../components/HomeNewsSection/HomeNewsSection';
+import NewsHeroCarousel from '../../components/NewsHeroCarousel/NewsHeroCarousel';
+import MatchesPanel from '../../components/MatchesPanel/MatchesPanel';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import { newsService, type NewsArticleDto, type PaginatedNewsResponse } from '../../api/news/newsService';
+import { useAudience } from '../../context/AudienceContext';
 import './HomePage.scss';
 
-const mockStandings = {
-  rows: [
-    { position: 1, team: 'JOUKKUE 1', points: 37 },
-    { position: 2, team: 'JOUKKUE 2', points: 32 },
-    { position: 3, team: 'JOUKKUE 3', points: 30 }
-  ]
-};
-
-const mockTeamStats = [
-  { teamName: 'Joukkue 1', playerName: '', value: 4 },
-  { teamName: 'Joukkue 2', playerName: '', value: 3 },
-  { teamName: 'Joukkue 1', playerName: '', value: 4 },
-  { teamName: 'Joukkue 2', playerName: '', value: 3 },
-  { teamName: 'Joukkue 1', playerName: '', value: 4 },
-  { teamName: 'Joukkue 2', playerName: '', value: 3 }
-];
-
 function HomePage() {
-  const handleExploreEvents = () => {
-    console.log('Explore events button clicked');
-  };
+  const { audience } = useAudience();
+  const [heroNews, setHeroNews] = useState<NewsArticleDto[]>([]);
+  const [isLoadingHeroNews, setIsLoadingHeroNews] = useState(true);
+
+  useEffect(() => {
+    const fetchHeroNews = async () => {
+      try {
+        setIsLoadingHeroNews(true);
+        const response = await newsService({
+          page: 1,
+          pageSize: 5,
+          includeArchived: false,
+          teamCategory: audience.teamCategory,
+        });
+
+        if (response && typeof response === 'object' && 'pagination' in response) {
+          const paginatedResponse = response as PaginatedNewsResponse;
+          setHeroNews(paginatedResponse.data);
+        } else {
+          const oldResponse = response as NewsArticleDto[];
+          setHeroNews(oldResponse.slice(0, 5));
+        }
+      } catch (error) {
+        console.error('Failed to fetch hero news:', error);
+      } finally {
+        setIsLoadingHeroNews(false);
+      }
+    };
+
+    fetchHeroNews();
+  }, [audience.teamCategory]);
 
   return (
-    <PageTemplate title="Home" >
-      <div className="home-page">
-        <div className="main-content">
-          <div className="hero-container">
-            <HeroSection
-              onButtonClick={handleExploreEvents}
-            />
-          </div>
-          <div className="sidebar-container">
-            <MatchSidebar
-              match={{
-                date: '12/6/2025',
-                homeTeam: { name: 'Team 1' },
-                awayTeam: { name: 'Team 2' }
-              }}
-              standings={mockStandings}
-              teamStats={mockTeamStats}
-            />
+    <div className="home-page-wrapper">
+      <PageTemplate title="Home">
+        <div className="home-page">
+          {/* Main News Hero Carousel */}
+          {!isLoadingHeroNews && heroNews.length > 0 && (
+            <div className="hero-news-container">
+              <NewsHeroCarousel newsArticles={heroNews} />
+            </div>
+          )}
+
+          {/* Loading skeleton for hero news */}
+          {isLoadingHeroNews && (
+            <div className="hero-news-container hero-news-container--loading">
+              <div className="main-news-skeleton">
+                <div className="skeleton-image" />
+                <div className="skeleton-content">
+                  <div className="skeleton-category" />
+                  <div className="skeleton-title" />
+                  <div className="skeleton-summary" />
+                  <div className="skeleton-button" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Content Section: News List + Sidebar */}
+          <div className="main-content">
+            <div className="news-section-container">
+              <HomeNewsSection />
+            </div>
+            <div className="sidebar-container">
+              <MatchesPanel />
+            </div>
           </div>
         </div>
-      </div>
-    </PageTemplate>
+      </PageTemplate>
+    </div>
   );
 }
 
-export default HomePage; 
+export default HomePage;

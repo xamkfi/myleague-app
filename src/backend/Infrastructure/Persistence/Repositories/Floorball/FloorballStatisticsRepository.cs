@@ -1,4 +1,5 @@
 using Domain.Common;
+using Domain.Entities;
 using Domain.Entities.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.EntityFrameworkCore;
@@ -26,27 +27,27 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     #region Team Season Statistics
 
     /// <inheritdoc />
-    public async Task<FloorballTeamSeasonStatistics?> GetTeamSeasonStatisticsAsync(Guid teamId, Guid seasonId, CancellationToken cancellationToken = default)
+    public async Task<FloorballTeamSeasonStatistics?> GetTeamSeasonStatisticsAsync(Guid teamId, Guid competitionId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballTeamSeasonStatistics.Include(x => x.Team).Include(x => x.Season)
-            .FirstOrDefaultAsync(s => s.TeamId == teamId && s.SeasonId == seasonId, cancellationToken);
+        return await _context.FloorballTeamSeasonStatistics.Include(x => x.Team).Include(x => x.Competition)
+            .FirstOrDefaultAsync(s => s.TeamId == teamId && s.CompetitionId == competitionId, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<FloorballTeamSeasonStatistics>> GetTeamStatisticsBySeasonAsync(Guid seasonId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<FloorballTeamSeasonStatistics>> GetTeamStatisticsByCompetitionAsync(Guid competitionId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballTeamSeasonStatistics.Include(x => x.Season).Include(x => x.Team)
-            .Where(s => s.SeasonId == seasonId)
+        return await _context.FloorballTeamSeasonStatistics.Include(x => x.Competition).Include(x => x.Team)
+            .Where(s => s.CompetitionId == competitionId)
             .ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<List<FloorballTeamSeasonStatistics>> GetTeamStandingsAsync(Guid seasonId, CancellationToken cancellationToken = default)
+    public async Task<List<FloorballTeamSeasonStatistics>> GetTeamStandingsAsync(Guid competitionId, CancellationToken cancellationToken = default)
     {
         return await _context.FloorballTeamSeasonStatistics
             .Include(x => x.Team)
-            .Include(x => x.Season)
-            .Where(s => s.SeasonId == seasonId)
+            .Include(x => x.Competition)
+            .Where(s => s.CompetitionId == competitionId)
             .OrderByDescending(s => s.Points)
             .ThenByDescending(s => s.GoalDifference)
             .ThenByDescending(s => s.GoalsFor)
@@ -55,20 +56,52 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
+    public async Task<List<FloorballTeamSeasonStatistics>> GetTeamSeasonStatisticsForTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+    {
+        return await _context.FloorballTeamSeasonStatistics
+            .Include(x => x.Team)
+            .Include(x => x.Competition)
+            .Where(s => s.TeamId == teamId)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task SaveTeamSeasonStatisticsAsync(FloorballTeamSeasonStatistics statistics, CancellationToken cancellationToken = default)
     {
-        FloorballTeamSeasonStatistics? existing = await GetTeamSeasonStatisticsAsync(statistics.TeamId, statistics.SeasonId, cancellationToken);
+        FloorballTeamSeasonStatistics? existing = await GetTeamSeasonStatisticsAsync(statistics.TeamId, statistics.CompetitionId, cancellationToken);
 
         if (existing == null)
         {
             await _context.FloorballTeamSeasonStatistics.AddAsync(statistics, cancellationToken);
+            return;
         }
-        else
+
+        if (ReferenceEquals(existing, statistics))
         {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
-            _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
         }
-        // SaveChanges is deferred to the UnitOfWork
+
+        if (existing.Id != statistics.Id)
+        {
+            // Incoming was new()'d after Get missed the row; a concurrent request inserted first.
+            // Treat incoming counters as this-request deltas instead of overwriting the PK.
+            for (int i = 0; i < statistics.GoalsFor; i++)
+            {
+                existing.IncrementGoalsFor();
+            }
+
+            for (int i = 0; i < statistics.GoalsAgainst; i++)
+            {
+                existing.IncrementGoalsAgainst();
+            }
+
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
+        }
+
+        ApplyNonKeyValues(existing, statistics);
     }
 
     #endregion
@@ -76,25 +109,52 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     #region Player Season Statistics
 
     /// <inheritdoc />
-    public async Task<FloorballPlayerSeasonStatistics?> GetPlayerSeasonStatisticsAsync(Guid playerId, Guid teamId, Guid seasonId, CancellationToken cancellationToken = default)
+    public async Task<FloorballPlayerSeasonStatistics?> GetPlayerSeasonStatisticsAsync(Guid playerId, Guid teamId, Guid competitionId, CancellationToken cancellationToken = default)
     {
         return await _context.FloorballPlayerSeasonStatistics
-            .FirstOrDefaultAsync(s => s.PlayerId == playerId && s.TeamId == teamId && s.SeasonId == seasonId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.PlayerId == playerId && s.TeamId == teamId && s.CompetitionId == competitionId, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<FloorballPlayerSeasonStatistics>> GetPlayerStatisticsBySeasonAsync(Guid seasonId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<FloorballPlayerSeasonStatistics>> GetPlayerStatisticsByCompetitionAsync(Guid competitionId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Season)
-            .Where(s => s.SeasonId == seasonId)
+        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Competition)
+            .Where(s => s.CompetitionId == competitionId)
             .ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<List<FloorballPlayerSeasonStatistics>> GetTopScorersAsync(Guid seasonId, int topN, CancellationToken cancellationToken = default)
+    public async Task<List<FloorballPlayerSeasonStatistics>> GetPlayerStatisticsByTeamAndCompetitionAsync(Guid teamId, Guid competitionId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Season)
-            .Where(s => s.SeasonId == seasonId)
+        return await _context.FloorballPlayerSeasonStatistics
+            .Include(x => x.Player)
+            .Include(x => x.Team)
+            .Include(x => x.Competition)
+            .Where(s => s.TeamId == teamId && s.CompetitionId == competitionId)
+            .OrderByDescending(s => s.Points)
+            .ThenByDescending(s => s.Goals)
+            .ThenByDescending(s => s.Assists)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<List<FloorballPlayerSeasonStatistics>> GetPlayerStatisticsForTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+    {
+        return await _context.FloorballPlayerSeasonStatistics
+            .Include(x => x.Player)
+            .Include(x => x.Team)
+            .Include(x => x.Competition)
+            .Where(s => s.TeamId == teamId)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<List<FloorballPlayerSeasonStatistics>> GetTopScorersAsync(Guid competitionId, int topN, CancellationToken cancellationToken = default)
+    {
+        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Competition)
+            .Where(s => s.CompetitionId == competitionId)
             .OrderByDescending(s => s.Goals)
             .ThenByDescending(s => s.Points)
             .ThenByDescending(s => s.Assists)
@@ -104,10 +164,10 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
-    public async Task<List<FloorballPlayerSeasonStatistics>> GetTopAssistsAsync(Guid seasonId, int topN, CancellationToken cancellationToken = default)
+    public async Task<List<FloorballPlayerSeasonStatistics>> GetTopAssistsAsync(Guid competitionId, int topN, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Season)
-            .Where(s => s.SeasonId == seasonId)
+        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Competition)
+            .Where(s => s.CompetitionId == competitionId)
             .OrderByDescending(s => s.Assists)
             .ThenByDescending(s => s.Points)
             .ThenByDescending(s => s.Goals)
@@ -119,7 +179,7 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task<List<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Season).Include(x => x.Team)
+        return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Competition).Include(x => x.Team)
             .Where(s => s.PlayerId == playerId)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -128,18 +188,42 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SavePlayerSeasonStatisticsAsync(FloorballPlayerSeasonStatistics statistics, CancellationToken cancellationToken = default)
     {
-        FloorballPlayerSeasonStatistics? existing = await GetPlayerSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.SeasonId, cancellationToken);
+        FloorballPlayerSeasonStatistics? existing = await GetPlayerSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.CompetitionId, cancellationToken);
 
         if (existing == null)
         {
             await _context.FloorballPlayerSeasonStatistics.AddAsync(statistics, cancellationToken);
+            return;
         }
-        else
+
+        if (ReferenceEquals(existing, statistics))
         {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
-            _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
         }
-        // SaveChanges is deferred to the UnitOfWork
+
+        if (existing.Id != statistics.Id)
+        {
+            for (int i = 0; i < statistics.Goals; i++)
+            {
+                existing.RecordGoal();
+            }
+
+            for (int i = 0; i < statistics.Assists; i++)
+            {
+                existing.RecordAssist();
+            }
+
+            if (statistics.PenaltyMinutes > 0)
+            {
+                existing.RecordPenaltyMinutes(statistics.PenaltyMinutes);
+            }
+
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
+        }
+
+        ApplyNonKeyValues(existing, statistics);
     }
 
     #endregion
@@ -147,25 +231,28 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     #region Goalie Season Statistics
 
     /// <inheritdoc />
-    public async Task<FloorballGoalieSeasonStatistics?> GetGoalieSeasonStatisticsAsync(Guid playerId, Guid teamId, Guid seasonId, CancellationToken cancellationToken = default)
+    public async Task<FloorballGoalieSeasonStatistics?> GetGoalieSeasonStatisticsAsync(Guid playerId, Guid teamId, Guid competitionId, CancellationToken cancellationToken = default)
     {
         return await _context.FloorballGoalieSeasonStatistics
-            .FirstOrDefaultAsync(s => s.PlayerId == playerId && s.TeamId == teamId && s.SeasonId == seasonId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.PlayerId == playerId && s.TeamId == teamId && s.CompetitionId == competitionId, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<FloorballGoalieSeasonStatistics>> GetGoalieStatisticsBySeasonAsync(Guid seasonId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<FloorballGoalieSeasonStatistics>> GetGoalieStatisticsByCompetitionAsync(Guid competitionId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballGoalieSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Season)
-            .Where(s => s.SeasonId == seasonId)
+        return await _context.FloorballGoalieSeasonStatistics.Include(x => x.Player).Include(x => x.Team).Include(x => x.Competition)
+            .Where(s => s.CompetitionId == competitionId)
             .ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<List<FloorballGoalieSeasonStatistics>> GetTopGoaliesAsync(Guid seasonId, int topN, int minimumGames, CancellationToken cancellationToken = default)
+    public async Task<List<FloorballGoalieSeasonStatistics>> GetTopGoaliesAsync(Guid competitionId, int topN, int minimumGames, CancellationToken cancellationToken = default)
     {
         return await _context.FloorballGoalieSeasonStatistics
-            .Where(s => s.SeasonId == seasonId && s.GamesPlayed >= minimumGames)
+            .Include(x => x.Player)
+            .Include(x => x.Team)
+            .Include(x => x.Competition)
+            .Where(s => s.CompetitionId == competitionId && s.GamesPlayed >= minimumGames)
             .OrderByDescending(s => s.SavePercentage)
             .ThenBy(s => s.GoalsAgainstAverage)
             .ThenByDescending(s => s.Wins)
@@ -177,7 +264,7 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task<List<FloorballGoalieSeasonStatistics>> GetGoalieCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
     {
-        return await _context.FloorballGoalieSeasonStatistics.Include(x => x.Team).Include(x => x.Season).Include(x => x.Player)
+        return await _context.FloorballGoalieSeasonStatistics.Include(x => x.Team).Include(x => x.Competition).Include(x => x.Player)
             .Where(s => s.PlayerId == playerId)
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -186,18 +273,32 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SaveGoalieSeasonStatisticsAsync(FloorballGoalieSeasonStatistics statistics, CancellationToken cancellationToken = default)
     {
-        FloorballGoalieSeasonStatistics? existing = await GetGoalieSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.SeasonId, cancellationToken);
+        FloorballGoalieSeasonStatistics? existing = await GetGoalieSeasonStatisticsAsync(statistics.PlayerId, statistics.TeamId, statistics.CompetitionId, cancellationToken);
 
         if (existing == null)
         {
             await _context.FloorballGoalieSeasonStatistics.AddAsync(statistics, cancellationToken);
+            return;
         }
-        else
+
+        if (ReferenceEquals(existing, statistics))
         {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
-            _context.Entry(existing).Property(e => e.UpdatedAt).CurrentValue = DateTime.UtcNow;
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
         }
-        // SaveChanges is deferred to the UnitOfWork
+
+        if (existing.Id != statistics.Id)
+        {
+            if (statistics.Saves != 0 || statistics.ShotsAgainst != 0 || statistics.GoalsAgainst != 0)
+            {
+                existing.RecordSaves(statistics.Saves, statistics.ShotsAgainst, statistics.GoalsAgainst);
+            }
+
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
+        }
+
+        ApplyNonKeyValues(existing, statistics);
     }
 
     #endregion
@@ -227,12 +328,32 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         if (existing == null)
         {
             await _context.FloorballMatchTeamStatistics.AddAsync(statistics, cancellationToken);
+            return;
         }
-        else
+
+        if (ReferenceEquals(existing, statistics))
         {
-            _context.Entry(existing).CurrentValues.SetValues(statistics);
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
         }
-        // SaveChanges is deferred to the UnitOfWork
+
+        if (existing.Id != statistics.Id)
+        {
+            if (statistics.ShotsOnGoal > 0 || statistics.ShotsTotal > 0)
+            {
+                existing.UpdateShotStatistics(statistics.ShotsOnGoal, statistics.ShotsTotal);
+            }
+
+            if (statistics.PenaltyMinutes > 0)
+            {
+                existing.UpdatePenaltyMinutes(statistics.PenaltyMinutes);
+            }
+
+            existing.SetUpdatedAt(DateTime.UtcNow);
+            return;
+        }
+
+        ApplyNonKeyValues(existing, statistics);
     }
 
     #endregion
@@ -281,15 +402,15 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
-    public async Task RemoveSeasonCacheAsync(Guid seasonId, CancellationToken cancellationToken = default)
+    public async Task RemoveCompetitionCacheAsync(Guid competitionId, CancellationToken cancellationToken = default)
     {
-        List<FloorballStatisticsCache> seasonCacheEntries = await _context.FloorballStatisticsCache
-            .Where(c => c.SeasonId == seasonId)
+        List<FloorballStatisticsCache> competitionCacheEntries = await _context.FloorballStatisticsCache
+            .Where(c => c.CompetitionId == competitionId)
             .ToListAsync(cancellationToken);
         
-        if (seasonCacheEntries.Any())
+        if (competitionCacheEntries.Any())
         {
-            _context.FloorballStatisticsCache.RemoveRange(seasonCacheEntries);
+            _context.FloorballStatisticsCache.RemoveRange(competitionCacheEntries);
             await _context.SaveChangesAsync(cancellationToken);
         }
     }
@@ -301,19 +422,37 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SaveTeamSeasonStatisticsBatchAsync(IEnumerable<FloorballTeamSeasonStatistics> statistics, CancellationToken cancellationToken = default)
     {
-        var statsToProcess = statistics.ToList();
+        List<FloorballTeamSeasonStatistics> statsToProcess = statistics.ToList();
         
-        foreach (FloorballTeamSeasonStatistics? stat in statsToProcess)
+        foreach (FloorballTeamSeasonStatistics stat in statsToProcess)
         {
-            FloorballTeamSeasonStatistics? existing = await GetTeamSeasonStatisticsAsync(stat.TeamId, stat.SeasonId, cancellationToken);
+            FloorballTeamSeasonStatistics? existing = await GetTeamSeasonStatisticsAsync(stat.TeamId, stat.CompetitionId, cancellationToken);
             
             if (existing == null)
             {
                 await _context.FloorballTeamSeasonStatistics.AddAsync(stat, cancellationToken);
             }
+            else if (ReferenceEquals(existing, stat))
+            {
+                existing.SetUpdatedAt(DateTime.UtcNow);
+            }
+            else if (existing.Id != stat.Id)
+            {
+                for (int i = 0; i < stat.GoalsFor; i++)
+                {
+                    existing.IncrementGoalsFor();
+                }
+
+                for (int i = 0; i < stat.GoalsAgainst; i++)
+                {
+                    existing.IncrementGoalsAgainst();
+                }
+
+                existing.SetUpdatedAt(DateTime.UtcNow);
+            }
             else
             {
-                _context.Entry(existing).CurrentValues.SetValues(stat);
+                ApplyNonKeyValues(existing, stat);
             }
         }
         
@@ -323,19 +462,30 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SavePlayerSeasonStatisticsBatchAsync(IEnumerable<FloorballPlayerSeasonStatistics> statistics, CancellationToken cancellationToken = default)
     {
-        var statsToProcess = statistics.ToList();
+        List<FloorballPlayerSeasonStatistics> statsToProcess = statistics.ToList();
         
-        foreach (FloorballPlayerSeasonStatistics? stat in statsToProcess)
+        // Track keys added within this batch so duplicate roster entries don't cause duplicate inserts.
+        HashSet<(Guid, Guid, Guid)> addedInBatch = [];
+
+        foreach (FloorballPlayerSeasonStatistics stat in statsToProcess)
         {
-            FloorballPlayerSeasonStatistics? existing = await GetPlayerSeasonStatisticsAsync(stat.PlayerId, stat.TeamId, stat.SeasonId, cancellationToken);
+            if (!addedInBatch.Add((stat.PlayerId, stat.TeamId, stat.CompetitionId)))
+            {
+                continue;
+            }
+
+            FloorballPlayerSeasonStatistics? existing = await GetPlayerSeasonStatisticsAsync(stat.PlayerId, stat.TeamId, stat.CompetitionId, cancellationToken);
             
             if (existing == null)
             {
                 await _context.FloorballPlayerSeasonStatistics.AddAsync(stat, cancellationToken);
             }
-            else
+            else if (!ReferenceEquals(existing, stat))
             {
-                _context.Entry(existing).CurrentValues.SetValues(stat);
+                // The incoming row is a freshly initialized (zeroed) statistics entry created by
+                // AddTeamToSeason; overwriting the tracked row would both clear accumulated stats
+                // and attempt to modify the primary key. Keep the existing row untouched.
+                continue;
             }
         }
         
@@ -345,48 +495,64 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     /// <inheritdoc />
     public async Task SaveGoalieSeasonStatisticsBatchAsync(IEnumerable<FloorballGoalieSeasonStatistics> statistics, CancellationToken cancellationToken = default)
     {
-        var statsToProcess = statistics.ToList();
+        List<FloorballGoalieSeasonStatistics> statsToProcess = statistics.ToList();
         
-        foreach (FloorballGoalieSeasonStatistics? stat in statsToProcess)
+        HashSet<(Guid, Guid, Guid)> addedInBatch = [];
+
+        foreach (FloorballGoalieSeasonStatistics stat in statsToProcess)
         {
-            FloorballGoalieSeasonStatistics? existing = await GetGoalieSeasonStatisticsAsync(stat.PlayerId, stat.TeamId, stat.SeasonId, cancellationToken);
+            if (!addedInBatch.Add((stat.PlayerId, stat.TeamId, stat.CompetitionId)))
+            {
+                continue;
+            }
+
+            FloorballGoalieSeasonStatistics? existing = await GetGoalieSeasonStatisticsAsync(stat.PlayerId, stat.TeamId, stat.CompetitionId, cancellationToken);
             
             if (existing == null)
             {
                 await _context.FloorballGoalieSeasonStatistics.AddAsync(stat, cancellationToken);
             }
-            else
+            else if (!ReferenceEquals(existing, stat))
             {
-                _context.Entry(existing).CurrentValues.SetValues(stat);
+                // Keep the existing tracked row; overwriting it would modify the primary key.
+                continue;
             }
         }
         
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc />
-    public async Task ResetSeasonStatisticsAsync(Guid seasonId, CancellationToken cancellationToken = default)
+    private void ApplyNonKeyValues<T>(T existing, T incoming) where T : BaseEntity
     {
-        // Remove existing team statistics
+        EntityEntry<T> entry = _context.Entry(existing);
+        Guid id = existing.Id;
+        DateTime createdAt = existing.CreatedAt;
+        entry.CurrentValues.SetValues(incoming);
+        entry.CurrentValues["Id"] = id;
+        entry.Property(e => e.Id).IsModified = false;
+        entry.CurrentValues["CreatedAt"] = createdAt;
+        existing.SetUpdatedAt(DateTime.UtcNow);
+    }
+
+    /// <inheritdoc />
+    public async Task ResetCompetitionStatisticsAsync(Guid competitionId, CancellationToken cancellationToken = default)
+    {
         List<FloorballTeamSeasonStatistics> teamStats = await _context.FloorballTeamSeasonStatistics
-            .Where(s => s.SeasonId == seasonId)
+            .Where(s => s.CompetitionId == competitionId)
             .ToListAsync(cancellationToken);
         _context.FloorballTeamSeasonStatistics.RemoveRange(teamStats);
 
-        // Remove existing player statistics
         List<FloorballPlayerSeasonStatistics> playerStats = await _context.FloorballPlayerSeasonStatistics
-            .Where(s => s.SeasonId == seasonId)
+            .Where(s => s.CompetitionId == competitionId)
             .ToListAsync(cancellationToken);
         _context.FloorballPlayerSeasonStatistics.RemoveRange(playerStats);
 
-        // Remove existing goalie statistics
         List<FloorballGoalieSeasonStatistics> goalieStats = await _context.FloorballGoalieSeasonStatistics
-            .Where(s => s.SeasonId == seasonId)
+            .Where(s => s.CompetitionId == competitionId)
             .ToListAsync(cancellationToken);
         _context.FloorballGoalieSeasonStatistics.RemoveRange(goalieStats);
         
-        // Remove season cache
-        await RemoveSeasonCacheAsync(seasonId, cancellationToken);
+        await RemoveCompetitionCacheAsync(competitionId, cancellationToken);
         
         await _context.SaveChangesAsync(cancellationToken);
     }

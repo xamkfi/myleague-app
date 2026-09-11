@@ -1,0 +1,98 @@
+@use 'sass:map';
+@use '@variables' as *;
+@use '../../styles/common' as *;
+
+.match-page-wrapper .page-body {
+  padding: 0 !important;
+}
+
+.match-page {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.match-page-shell__state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 1.125rem;
+  color: $color-neutral-dark-grey;
+}
+
+.match-page-shell__error {
+  color: $color-red-primary;
+}
+
+.navigation-tabs {
+  background-color: $color-neutral-white;
+  border-bottom: 2px solid $color-neutral-light-grey;
+  display: flex;
+  justify-content: center;
+  padding: 0 1.25rem;
+  gap: 0.25rem;
+}
+
+.nav-tab {
+  background: none;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $color-neutral-dark-grey;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.75px;
+
+  &:hover {
+    color: $color-blue-secondary;
+  }
+
+  &.active {
+    color: $color-blue-secondary;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: $color-blue-secondary;
+      border-radius: 3px 3px 0 0;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .match-page {
+    padding-top: map.get($spacing, 'sm');
+    padding-bottom: map.get($spacing, 'sm');
+  }
+
+  .navigation-tabs {
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 0 map.get($spacing, 'sm');
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+
+    .nav-tab {
+      padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+      font-size: 0.75rem;
+      white-space: nowrap;
+      min-width: 80px;
+      text-align: center;
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .navigation-tabs .nav-tab {
+    padding: map.get($spacing, 'xs');
+    font-size: 0.6rem;
+    min-width: 60px;
+  }
+}

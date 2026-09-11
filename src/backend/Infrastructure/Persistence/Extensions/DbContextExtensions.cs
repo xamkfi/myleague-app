@@ -38,6 +38,10 @@ namespace MyLeague.Infrastructure.Persistence.Extensions
                 // Use the internal method that bypasses event dispatching to prevent recursion
                 result = await floorballDbContext.SaveChangesWithoutEventsAsync(cancellationToken);
             }
+            else if (dbContext is FootballDbContext footballDbContext)
+            {
+                result = await footballDbContext.SaveChangesWithoutEventsAsync(cancellationToken);
+            }
             else
             {
                 // For other DbContext types, call the base SaveChangesAsync directly

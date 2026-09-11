@@ -4,8 +4,8 @@ import type {
   FloorballPosition,
 } from '../../types/floorball/floorballTypes';
 import type { Address, ContactInfo } from '../../types/admin/personTypes';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { authFetch } from '../utils/authFetch';
+import { API_URL } from '../../constants/config';
 
 export interface PersonDto {
   id: string;
@@ -40,6 +40,7 @@ export interface GetFloorballPlayersRequest {
   position?: FloorballPosition;
   teamId?: string;
   searchTerm?: string;
+  signal?: AbortSignal;
 }
 
 export interface UpdateFloorballPlayerRequest {
@@ -48,6 +49,63 @@ export interface UpdateFloorballPlayerRequest {
 
 export interface CreateFloorballPlayerRequest {
   personId: string;
+}
+
+export interface FloorballPlayerMatchStatsDto {
+  goals: number;
+  assists: number;
+  penaltyMinutes: number;
+  playedMinutes: number;
+}
+
+export interface FloorballPlayerMatchDto {
+  id: string;
+  competitionId: string;
+  /**
+   * Display name of the competition (season or tournament).
+   * Backend renamed from "seasonName" to "competitionName" when seasons were
+   * generalized to FloorballCompetition (TPH base for seasons + tournaments).
+   */
+  competitionName: string;
+  homeTeamId: string;
+  homeTeamName: string;
+  awayTeamId: string;
+  awayTeamName: string;
+  scheduledDateTime: string;
+  venue: string | null;
+  status: string;
+  homeScore: number;
+  awayScore: number;
+  wentToOvertime: boolean;
+  wentToShootout: boolean;
+  periodScores: Record<string, { homeScore: number; awayScore: number }>;
+  playerStats: FloorballPlayerMatchStatsDto | null;
+}
+
+export interface FloorballPlayerStatsDto {
+  gamesPlayed: number;
+  goals: number;
+  assists: number;
+  points: number;
+  penaltyMinutes: number;
+}
+
+export interface FloorballPlayerTeamCareerStatsDto {
+  teamId: string;
+  teamName: string;
+  stats: FloorballPlayerStatsDto;
+}
+
+export interface FloorballPlayerWithMatchesDto {
+  id: string;
+  playerName: string;
+  position: FloorballPosition;
+  jerseyNumber: number | null;
+  teamName: string;
+  teamId: string;
+  isActive: boolean;
+  careerStats: FloorballPlayerTeamCareerStatsDto[];
+  recentMatches: FloorballPlayerMatchDto[];
 }
 
 export const floorballPlayerService = {
@@ -72,11 +130,10 @@ export const floorballPlayerService = {
       if (params?.searchTerm) searchParams.append('searchTerm', params.searchTerm);
 
       const url = `${API_URL}/FloorballPlayer?${searchParams.toString()}`;
-      const response = await fetch(url);
+      const response = await authFetch(url, { signal: params?.signal });
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error Response:', errorText);
         throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to fetch floorball players'}`);
       }
       
@@ -88,7 +145,9 @@ export const floorballPlayerService = {
       
       return apiResponse;
     } catch (error) {
-      console.error('Error in floorballPlayerService.getAll:', error);
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error;
+      }
       throw error;
     }
   },
@@ -97,20 +156,11 @@ export const floorballPlayerService = {
    * Get players by team ID
    */
   getByTeamId: async (teamId: string): Promise<FloorballPlayerDto[]> => {
-    try {
-      console.log('Fetching players for team ID:', teamId);
-      
-      const response = await floorballPlayerService.getAll({
-        teamId,
-        pageSize: 50 // Use max allowed page size to get as many players as possible
-      });
-      
-      console.log('Players fetched for team:', response.data?.length || 0);
-      return response.data || [];
-    } catch (error) {
-      console.error('Error in floorballPlayerService.getByTeamId:', error);
-      throw error;
-    }
+    const response = await floorballPlayerService.getAll({
+      teamId,
+      pageSize: 50,
+    });
+    return response.data || [];
   },
 
   /**
@@ -121,7 +171,7 @@ export const floorballPlayerService = {
       const url = `${API_URL}/FloorballPlayer/${id}`;
       console.log('Fetching player from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -150,7 +200,7 @@ export const floorballPlayerService = {
       console.log('Updating player with ID:', id);
       console.log('Update data:', data);
       
-      const response = await fetch(`${API_URL}/FloorballPlayer/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballPlayer/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -188,7 +238,7 @@ export const floorballPlayerService = {
     try {
       console.log('Creating player for person ID:', data.personId);
       
-      const response = await fetch(`${API_URL}/FloorballPlayer`, {
+      const response = await authFetch(`${API_URL}/FloorballPlayer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -220,13 +270,39 @@ export const floorballPlayerService = {
   },
 
   /**
+   * Get a floorball player's match history with performance statistics
+   */
+  getPlayerMatches: async (id: string, limit: number = 50): Promise<FloorballPlayerWithMatchesDto> => {
+    try {
+      const url = `${API_URL}/FloorballPlayer/${id}/matches?limit=${limit}`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to fetch player matches'}`);
+      }
+
+      const apiResponse: ApiResponse<FloorballPlayerWithMatchesDto> = await response.json();
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch player matches');
+      }
+
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error in floorballPlayerService.getPlayerMatches:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Delete a floorball player
    */
   delete: async (id: string): Promise<void> => {
     try {
       console.log('Deleting player with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballPlayer/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballPlayer/${id}`, {
         method: 'DELETE',
       });
       

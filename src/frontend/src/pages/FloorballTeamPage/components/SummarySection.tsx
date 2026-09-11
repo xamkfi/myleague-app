@@ -34,11 +34,6 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
       }
    }, []);
 
-   const handleMatchClick = (matchId: string) => {
-      // TODO: Navigate to match page
-      console.log('Navigate to match:', matchId);
-   }
-
    useEffect(() => {
       fetchSeasons();
       if (todaysMatches === null) {
@@ -58,7 +53,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                   
                   {/* Group today's matches by season */}
                   {seasons?.map((season) => {
-                     const todaysSeasonMatches = todaysMatches.filter(match => match.seasonId === season.id);
+                     const todaysSeasonMatches = todaysMatches.filter(match => match.competitionId === season.id);
                      
                      // Only render season if it has today's matches
                      if (todaysSeasonMatches.length === 0) return null;
@@ -75,19 +70,20 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               {season.name}
                            </div>
                            <div className="summary-season-container">
-                              {todaysSeasonMatches.map((match) => (
+                             {todaysSeasonMatches.map((match) => (
                                  <MatchRow
                                     key={match.id}
                                     id={match.id}
                                     scheduledDateTime={match.scheduledDateTime}
-                                    homeTeamName={match.homeTeamName}
-                                    awayTeamName={match.awayTeamName}
-                                    homeTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/myry21_1683621904.jpg"
-                                    awayTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/knp_21_1715843664.jpg"
+                                    homeTeamName={match.homeTeamName ?? 'TBD'}
+                                    awayTeamName={match.awayTeamName ?? 'TBD'}
+                                    homeTeamLogo={match.homeTeamLogo || undefined}
+                                    awayTeamLogo={match.awayTeamLogo || undefined}
                                     homeScore={match.homeScore}
                                     awayScore={match.awayScore}
                                     periodCount={3}
-                                    onClick={() => handleMatchClick(match.id)}
+                                    periodScores={match.periodScores}
+                                    status={match.status}
                                  />
                               ))}
                            </div>
@@ -103,7 +99,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
 
             {/* Seasons */}
             {seasons?.map((season) => {
-               const seasonMatches = matches.filter(match => match.seasonId === season.id);
+               const seasonMatches = matches.filter(match => match.competitionId === season.id);
                
                // Filter out matches that are already shown in today's matches
                const todaysMatchIds = todaysMatches?.map(match => match.id) || [];
@@ -130,14 +126,15 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               key={match.id}
                               id={match.id}
                               scheduledDateTime={match.scheduledDateTime}
-                              homeTeamName={match.homeTeamName}
-                              awayTeamName={match.awayTeamName}
-                              homeTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/myry21_1683621904.jpg"
-                              awayTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/knp_21_1715843664.jpg"
+                              homeTeamName={match.homeTeamName ?? 'TBD'}
+                              awayTeamName={match.awayTeamName ?? 'TBD'}
+                              homeTeamLogo={match.homeTeamLogo || undefined}
+                              awayTeamLogo={match.awayTeamLogo || undefined}
                               homeScore={match.homeScore}
                               awayScore={match.awayScore}
                               periodCount={3}
-                              onClick={() => handleMatchClick(match.id)}
+                              periodScores={match.periodScores}
+                              status={match.status}
                            />
                         ))}
                      </div>
@@ -164,14 +161,15 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                               key={match.id}
                               id={match.id}
                               scheduledDateTime={match.scheduledDateTime}
-                              homeTeamName={match.homeTeamName}
-                              awayTeamName={match.awayTeamName}
-                              homeTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/myry21_1683621904.jpg"
-                              awayTeamLogo="http://www.mahl.fi/media/com_joomleague/clubs/small/knp_21_1715843664.jpg"
+                              homeTeamName={match.homeTeamName ?? 'TBD'}
+                              awayTeamName={match.awayTeamName ?? 'TBD'}
+                              homeTeamLogo={match.homeTeamLogo || undefined}
+                              awayTeamLogo={match.awayTeamLogo || undefined}
                               homeScore={match.homeScore}
                               awayScore={match.awayScore}
                               periodCount={3}
-                              onClick={() => handleMatchClick(match.id)}
+                              periodScores={match.periodScores}
+                              status={match.status}
                            />
                         ))}
                   </div>

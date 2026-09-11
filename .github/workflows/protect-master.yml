@@ -1,0 +1,33 @@
+name: Protect master
+
+# Enforces the release path: only the development branch may open a PR into
+# master. Direct pushes to master cannot be blocked from a workflow — that
+# requires GitHub branch protection (see infra/README.md).
+on:
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: protect-master-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  source-branch:
+    name: PR must come from development
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check source branch
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          echo "PR source branch: $HEAD_REF"
+          echo "PR target branch: ${{ github.base_ref }}"
+          if [ "$HEAD_REF" != "development" ]; then
+            echo "::error::PRs into master are only allowed from the development branch. This PR is from '$HEAD_REF'."
+            exit 1
+          fi
+          echo "Source branch is development — OK."

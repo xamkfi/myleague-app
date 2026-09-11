@@ -1,0 +1,205 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import './LiveMatchTimer.scss';
+import { MatchTimer, useMatchTimerContext } from '../../../../../components/MatchTimer';
+import type { HockeyMatchDto } from '../../../../../types/hockey/hockeyTypes';
+import { isHockeyMatchFinished } from '../../../../../types/hockey/hockeyTypes';
+import { DEFAULT_HOCKEY_MATCH_RULES } from '../hooks/useHockeyPeriodManagement';
+
+// Create a memoized Timer component to prevent unnecessary re-renders
+const MemoizedTimer = React.memo(MatchTimer);
+
+interface LiveMatchTimerProps {
+  currentMatch: HockeyMatchDto;
+  isOpen: boolean;
+  loading: boolean;
+  startedPeriods: Set<number>;
+  endedPeriods: Set<number>;
+  nextPeriodToStart: number;
+  periodLoading: Record<number, boolean>;
+  onStartMatch: () => Promise<void>;
+  onPeriodControlClick: () => void;
+  canEndPeriod: () => boolean;
+  getPeriodControlButtonText: () => string;
+  keybindsEnabled: boolean;
+  isStartMatchDisabled: boolean;
+  overtimePeriodNumber: number;
+  shootoutPeriodNumber: number;
+  /**
+   * Optional human-readable reason that the Start Match button is disabled. Used as the
+   * button label fallback and as its `title` attribute so the operator always sees *why*
+   * the action is unavailable. When omitted we fall back to the legacy "Select goalies to
+   * start" copy for backwards compatibility.
+   */
+  startDisabledReason?: string;
+}
+
+const LiveMatchTimer = ({
+  currentMatch,
+  isOpen,
+  loading,
+  startedPeriods,
+  endedPeriods,
+  nextPeriodToStart,
+  periodLoading,
+  onStartMatch,
+  onPeriodControlClick,
+  canEndPeriod,
+  getPeriodControlButtonText,
+  keybindsEnabled,
+  isStartMatchDisabled,
+  overtimePeriodNumber,
+  shootoutPeriodNumber,
+  startDisabledReason,
+}: LiveMatchTimerProps) => {
+  const { t } = useTranslation();
+  const {
+    currentPeriod,
+    elapsedTimeSeconds,
+    currentPeriodStartSeconds,
+    registerCallback,
+    handleTimerUpdate,
+  } = useMatchTimerContext();
+
+  const getChipStatus = (p: number) => {
+    if (endedPeriods.has(p)) return 'completed';
+    if (startedPeriods.has(p)) return 'started';
+    return 'upcoming';
+  };
+
+  const numberOfPeriods = DEFAULT_HOCKEY_MATCH_RULES.numberOfPeriods;
+  const periodDurationSeconds = DEFAULT_HOCKEY_MATCH_RULES.periodDurationMinutes * 60;
+  const overtimeDurationSeconds = DEFAULT_HOCKEY_MATCH_RULES.overtimeDurationMinutes * 60;
+
+  // Build dynamic period labels
+  const periodLabels: Record<number, string> = {};
+  for (let i = 1; i <= numberOfPeriods; i++) {
+    periodLabels[i] = t('hockey.matches.periodN', 'Period {{number}}', { number: i });
+  }
+  periodLabels[overtimePeriodNumber] = t('hockey.matches.overtime', 'Overtime');
+  periodLabels[shootoutPeriodNumber] = t('hockey.matches.shootout', 'Shootout');
+
+  // The clock display is continuous across periods, so the "should this period end now"
+  // alert has to compare the in-period elapsed time (total elapsed minus the current
+  // period's recorded start) against the configured period duration. Without this, the
+  // digits would turn red as soon as elapsed >= 15min in period 2 even though only a few
+  // seconds had been played in that period.
+  const isInShootout = currentPeriod === shootoutPeriodNumber;
+  const isInOvertime = currentPeriod === overtimePeriodNumber;
+  const clockPeriodLabel = isInShootout
+    ? t('hockey.matches.shootoutShort', 'SO')
+    : isInOvertime
+      ? t('hockey.matches.overtimeShort', 'OT')
+      : t('hockey.matches.periodShort', 'P{{number}}', { number: currentPeriod });
+  const inPeriodElapsedSeconds: number = Math.max(0, elapsedTimeSeconds - currentPeriodStartSeconds);
+  const currentPeriodDurationSeconds = isInOvertime ? overtimeDurationSeconds : periodDurationSeconds;
+  const shouldPeriodEnd = inPeriodElapsedSeconds >= currentPeriodDurationSeconds && !isInShootout;
+  
+  // Timer controls enabled only if current period has started and not ended, and not in shootout
+  const controlsEnabled = startedPeriods.has(currentPeriod) && !endedPeriods.has(currentPeriod) && currentPeriod !== shootoutPeriodNumber;
+
+  // Determine which periods to show
+  const periodsToShow: number[] = [];
+  for (let i = 1; i <= numberOfPeriods; i++) {
+    periodsToShow.push(i);
+  }
+  if (currentMatch.wentToOvertime) {
+    periodsToShow.push(overtimePeriodNumber);
+  }
+  if (currentMatch.wentToShootout) {
+    periodsToShow.push(shootoutPeriodNumber);
+  }
+
+  // Register timer callbacks when they're provided
+  const handleGetCurrentTime = (getTime: () => string) => {
+    registerCallback('getCurrentTime', getTime);
+  };
+
+  const handleGetCurrentElapsedSeconds = (getSeconds: () => number) => {
+    registerCallback('getCurrentElapsedSeconds', getSeconds);
+  };
+
+  const handleGetToggleFunction = (toggleFn: () => Promise<void>) => {
+    registerCallback('toggle', toggleFn);
+  };
+
+  const handleGetResetFunction = (resetFn: () => void) => {
+    registerCallback('reset', resetFn);
+  };
+
+  const handleGetStartFunction = (startFn: () => Promise<void>) => {
+    registerCallback('start', startFn);
+  };
+
+  const handleGetStopFunction = (stopFn: () => void) => {
+    registerCallback('stop', stopFn);
+  };
+
+  return (
+      <div className="clock-card">
+        <div className="clock-inner">
+          <div className="period-row">
+          {periodsToShow.map((p) => (
+            <div key={p} className={`period-chip ${getChipStatus(p)} ${p > numberOfPeriods ? 'period-chip--extra' : ''}`}>
+                {`${periodLabels[p] ?? `Period ${p}`}: ${getChipStatus(p)}`}
+              </div>
+            ))}
+          </div>
+          <div className="clock-time">
+            {currentMatch.status === 'Scheduled' ? (
+              <div className="start-match-container">
+                <button
+                  onClick={onStartMatch}
+                  disabled={loading || isStartMatchDisabled}
+                  className="start-match-btn"
+                  title={isStartMatchDisabled ? (startDisabledReason ?? t('hockey.matches.selectGoalies', 'Select goalies to start')) : undefined}
+                >
+                  {isStartMatchDisabled
+                    ? (startDisabledReason ?? t('hockey.matches.selectGoalies', 'Select goalies to start'))
+                    : t('hockey.matches.startMatch', 'Start Match')}
+                </button>
+              </div>
+          ) : isHockeyMatchFinished(currentMatch.status) ? (
+            <div className="start-match-container">
+              <div className="match-completed-message">
+                🏁 {t('hockey.matches.matchCompleted', 'Match Completed')}
+              </div>
+            </div>
+            ) : (
+                <div className={`clock-digits${shouldPeriodEnd ? ' timer-digits--critical' : ''}`}>
+                  <div className="clock-readout">
+                    <span className="clock-period-badge" aria-label={periodLabels[currentPeriod]}>
+                      {clockPeriodLabel}
+                    </span>
+                    <MemoizedTimer
+                      key={`timer-${currentMatch.id}`}
+                      matchId={currentMatch.id}
+                      periodNumber={currentPeriod}
+                      isActive={isOpen}
+                      onTimerUpdate={handleTimerUpdate}
+                      onGetCurrentTime={handleGetCurrentTime}
+                      onGetCurrentElapsedSeconds={handleGetCurrentElapsedSeconds}
+                      onGetToggleFunction={handleGetToggleFunction}
+                      onGetResetFunction={handleGetResetFunction}
+                      onGetStartFunction={handleGetStartFunction}
+                      onGetStopFunction={handleGetStopFunction}
+                      controlsEnabled={controlsEnabled}
+                      keybindsEnabled={keybindsEnabled}
+                      periodStartSeconds={currentPeriodStartSeconds}
+                      clockDisplayMode="period"
+                      onPeriodControlClick={onPeriodControlClick}
+                      canEndPeriod={canEndPeriod}
+                      getPeriodControlButtonText={getPeriodControlButtonText}
+                      periodLoading={periodLoading}
+                      nextPeriodToStart={nextPeriodToStart}
+                    />
+                  </div>
+                </div>
+            )}
+          </div>
+        </div>
+      </div>
+  );
+};
+
+export default LiveMatchTimer;

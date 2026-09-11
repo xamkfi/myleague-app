@@ -1,45 +1,18 @@
 import type { 
   ApiResponse,
-  FloorballTeam
+  PaginatedApiResponse,
+  FloorballTeam,
+  FloorballMatchRules
 } from '../../types/floorball/floorballTypes';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-/**
- * Helper function to parse error responses properly
- */
-const parseErrorResponse = async (response: Response, defaultMessage: string): Promise<string> => {
-  try {
-    const responseText = await response.text();
-    console.error('API Error Response (raw):', responseText);
-    
-    if (responseText) {
-      try {
-        const errorResponse = JSON.parse(responseText);
-        console.error('API Error Response (parsed):', errorResponse);
-        
-        if (errorResponse.errors && Array.isArray(errorResponse.errors)) {
-          return errorResponse.errors.join(', ');
-        } else if (errorResponse.message) {
-          return errorResponse.message;
-        } else {
-          return responseText;
-        }
-      } catch {
-        // If JSON parsing fails, use the raw text
-        return responseText;
-      }
-    }
-  } catch (readError) {
-    console.error('Error reading response:', readError);
-  }
-  
-  return `HTTP ${response.status}: ${defaultMessage}`;
-};
+import type { SeasonContentBlockItem, SeasonContentBlocksDto } from '../../types/common/seasonContent';
+import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
+import { API_URL } from '../../constants/config';
 
 export interface FloorballSeasonDivisionDto {
   divisionId: string;
   teamCount: number;
+  teamIds: string[];
 }
 
 export interface FloorballSeasonDto {
@@ -52,19 +25,57 @@ export interface FloorballSeasonDto {
   seasonDivisions: FloorballSeasonDivisionDto[];
   teams: FloorballTeam[];
   matches: unknown[];
-} 
+  matchRules: FloorballMatchRules;
+  teamCategory?: string;
+}
+
+export interface FloorballSeasonSummaryDto {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  isCompleted: boolean;
+  seasonYear: string;
+  teamCategory?: string;
+}
+
+export interface FloorballSeasonYearDto {
+  year: string;
+  seasonCount: number;
+  hasActiveSeason: boolean;
+}
+
+export interface GetFloorballSeasonsPagedParams {
+  page?: number;
+  pageSize?: number;
+  seasonYear?: string;
+  teamCategory?: string;
+}
 
 export interface CreateFloorballSeasonRequest {
   name: string;
   startDate: string;
   endDate: string;
   divisionIds: string[];
+  numberOfPeriods: number;
+  periodDurationMinutes: number;
+  allowOvertime: boolean;
+  overtimeDurationMinutes: number;
+  allowShootout: boolean;
+  teamCategory?: string;
 }
 
 export interface UpdateFloorballSeasonRequest {
   name: string;
   startDate: string;
   endDate: string;
+  numberOfPeriods: number;
+  periodDurationMinutes: number;
+  allowOvertime: boolean;
+  overtimeDurationMinutes: number;
+  allowShootout: boolean;
+  teamCategory?: string;
 }
 
 export const floorballSeasonService = {
@@ -74,12 +85,9 @@ export const floorballSeasonService = {
   getAll: async (): Promise<ApiResponse<FloorballSeasonDto[]>> => {
     try {
       const url = `${API_URL}/FloorballSeason`;
-      console.log('Fetching seasons from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch floorball seasons');
@@ -87,10 +95,9 @@ export const floorballSeasonService = {
       }
       
       const apiResponse: ApiResponse<FloorballSeasonDto[]> = await response.json();
-      console.log('API Response:', apiResponse);
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch floorball seasons');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch floorball seasons'));
       }
       
       return apiResponse;
@@ -101,14 +108,61 @@ export const floorballSeasonService = {
   },
 
   /**
+   * Get distinct season years for public navigation
+   */
+  getYears: async (): Promise<FloorballSeasonYearDto[]> => {
+    const response = await authFetch(`${API_URL}/FloorballSeason/years`);
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to fetch floorball season years');
+      throw new Error(errorMessage);
+    }
+
+    const apiResponse: ApiResponse<FloorballSeasonYearDto[]> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch floorball season years'));
+    }
+
+    return apiResponse.data ?? [];
+  },
+
+  /**
+   * Get paginated slim season list (optional season-year filter)
+   */
+  getPaged: async (
+    params: GetFloorballSeasonsPagedParams = {}
+  ): Promise<PaginatedApiResponse<FloorballSeasonSummaryDto>> => {
+    const searchParams = new URLSearchParams();
+    searchParams.set('page', String(params.page ?? 1));
+    searchParams.set('pageSize', String(params.pageSize ?? 6));
+    if (params.seasonYear) {
+      searchParams.set('seasonYear', params.seasonYear);
+    }
+    if (params.teamCategory) {
+      searchParams.set('teamCategory', params.teamCategory);
+    }
+
+    const response = await authFetch(`${API_URL}/FloorballSeason/paged?${searchParams.toString()}`);
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to fetch floorball seasons');
+      throw new Error(errorMessage);
+    }
+
+    const apiResponse: PaginatedApiResponse<FloorballSeasonSummaryDto> = await response.json();
+    if (!apiResponse.success) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch floorball seasons'));
+    }
+
+    return apiResponse;
+  },
+
+  /**
    * Get active floorball seasons
    */
   getActive: async (): Promise<ApiResponse<FloorballSeasonDto[]>> => {
     try {
       const url = `${API_URL}/FloorballSeason/active`;
-      console.log('Fetching active seasons from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch active floorball seasons');
@@ -118,7 +172,7 @@ export const floorballSeasonService = {
       const apiResponse: ApiResponse<FloorballSeasonDto[]> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch active floorball seasons');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch active floorball seasons'));
       }
       
       return apiResponse;
@@ -134,9 +188,8 @@ export const floorballSeasonService = {
   getById: async (id: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
       const url = `${API_URL}/FloorballSeason/${id}`;
-      console.log('Fetching season from URL:', url);
       
-      const response = await fetch(url);
+      const response = await authFetch(url);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch floorball season');
@@ -146,7 +199,7 @@ export const floorballSeasonService = {
       const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to fetch floorball season');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch floorball season'));
       }
       
       return apiResponse;
@@ -161,9 +214,8 @@ export const floorballSeasonService = {
    */
   create: async (data: CreateFloorballSeasonRequest): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Creating season:', data);
       
-      const response = await fetch(`${API_URL}/FloorballSeason`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -171,8 +223,6 @@ export const floorballSeasonService = {
         body: JSON.stringify(data),
       });
       
-      console.log('Create response status:', response.status);
-      console.log('Create response ok:', response.ok);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to create floorball season');
@@ -180,10 +230,9 @@ export const floorballSeasonService = {
       }
       
       const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
-      console.log('Create API Response:', apiResponse);
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to create floorball season');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to create floorball season'));
       }
       
       return apiResponse;
@@ -197,38 +246,26 @@ export const floorballSeasonService = {
    * Update a floorball season
    */
   update: async (id: string, data: UpdateFloorballSeasonRequest): Promise<ApiResponse<FloorballSeasonDto>> => {
-    try {
-      console.log('Updating season with ID:', id);
-      console.log('Update data:', data);
-      
-      const response = await fetch(`${API_URL}/FloorballSeason/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      
-      console.log('Update response status:', response.status);
-      console.log('Update response ok:', response.ok);
-      
-      if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to update floorball season');
-        throw new Error(errorMessage);
-      }
-      
-      const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
-      console.log('Update API Response:', apiResponse);
-      
-      if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to update floorball season');
-      }
-      
-      return apiResponse;
-    } catch (error) {
-      console.error('Error in floorballSeasonService.update:', error);
-      throw error;
+    const response = await authFetch(`${API_URL}/FloorballSeason/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(response, 'Failed to update floorball season');
+      throw new Error(errorMessage);
     }
+
+    const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
+
+    if (!apiResponse.success) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to update floorball season'));
+    }
+
+    return apiResponse;
   },
 
   /**
@@ -236,14 +273,11 @@ export const floorballSeasonService = {
    */
   delete: async (id: string): Promise<void> => {
     try {
-      console.log('Deleting season with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${id}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${id}`, {
         method: 'DELETE',
       });
       
-      console.log('Delete response status:', response.status);
-      console.log('Delete response ok:', response.ok);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to delete floorball season');
@@ -251,10 +285,9 @@ export const floorballSeasonService = {
       }
       
       const apiResponse: ApiResponse<void> = await response.json();
-      console.log('Delete API Response:', apiResponse);
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete floorball season');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to delete floorball season'));
       }
     } catch (error) {
       console.error('Error in floorballSeasonService.delete:', error);
@@ -267,9 +300,8 @@ export const floorballSeasonService = {
    */
   activate: async (id: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Activating season with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${id}/activate`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${id}/activate`, {
         method: 'PUT',
       });
       
@@ -281,7 +313,7 @@ export const floorballSeasonService = {
       const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to activate floorball season');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to activate floorball season'));
       }
       
       return apiResponse;
@@ -296,9 +328,8 @@ export const floorballSeasonService = {
    */
   deactivate: async (id: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Deactivating season with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${id}/deactivate`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${id}/deactivate`, {
         method: 'PUT',
       });
       
@@ -310,7 +341,7 @@ export const floorballSeasonService = {
       const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to deactivate floorball season');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to deactivate floorball season'));
       }
       
       return apiResponse;
@@ -325,9 +356,8 @@ export const floorballSeasonService = {
    */
   complete: async (id: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Completing season with ID:', id);
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${id}/complete`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${id}/complete`, {
         method: 'PUT',
       });
       
@@ -339,7 +369,7 @@ export const floorballSeasonService = {
       const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to complete floorball season');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to complete floorball season'));
       }
       
       return apiResponse;
@@ -352,11 +382,10 @@ export const floorballSeasonService = {
   /**
    * Add a team to a floorball season
    */
-  addTeamToSeason: async (seasonId: string, teamId: string): Promise<ApiResponse<FloorballSeasonDto>> => {
+  addTeamToSeason: async (competitionId: string, teamId: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Adding team to season:', { seasonId, teamId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/teams/${teamId}`, {
         method: 'POST',
       });
       
@@ -368,7 +397,7 @@ export const floorballSeasonService = {
       const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to add team to season');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to add team to season'));
       }
       
       return apiResponse;
@@ -381,11 +410,10 @@ export const floorballSeasonService = {
   /**
    * Remove a team from a floorball season
    */
-  removeTeamFromSeason: async (seasonId: string, teamId: string): Promise<ApiResponse<FloorballSeasonDto>> => {
+  removeTeamFromSeason: async (competitionId: string, teamId: string): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      console.log('Removing team from season:', { seasonId, teamId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/teams/${teamId}`, {
         method: 'DELETE',
       });
       
@@ -397,7 +425,7 @@ export const floorballSeasonService = {
       const apiResponse: ApiResponse<FloorballSeasonDto> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to remove team from season');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to remove team from season'));
       }
       
       return apiResponse;
@@ -410,11 +438,10 @@ export const floorballSeasonService = {
   /**
    * Add a division to a floorball season
    */
-  addDivisionToSeason: async (seasonId: string, divisionId: string): Promise<ApiResponse<void>> => {
+  addDivisionToSeason: async (competitionId: string, divisionId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Adding division to season:', { seasonId, divisionId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}`, {
         method: 'POST',
       });
       
@@ -426,7 +453,7 @@ export const floorballSeasonService = {
       const apiResponse: ApiResponse<void> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to add division to season');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to add division to season'));
       }
       
       return apiResponse;
@@ -439,11 +466,10 @@ export const floorballSeasonService = {
   /**
    * Remove a division from a floorball season
    */
-  removeDivisionFromSeason: async (seasonId: string, divisionId: string): Promise<ApiResponse<void>> => {
+  removeDivisionFromSeason: async (competitionId: string, divisionId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Removing division from season:', { seasonId, divisionId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}`, {
         method: 'DELETE',
       });
       
@@ -455,7 +481,7 @@ export const floorballSeasonService = {
       const apiResponse: ApiResponse<void> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to remove division from season');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to remove division from season'));
       }
       
       return apiResponse;
@@ -468,11 +494,10 @@ export const floorballSeasonService = {
   /**
    * Add a team to a specific division of a floorball season
    */
-  addTeamToSeasonDivision: async (seasonId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
+  addTeamToSeasonDivision: async (competitionId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Adding team to season division:', { seasonId, divisionId, teamId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}/teams/${teamId}`, {
         method: 'POST',
       });
       
@@ -484,7 +509,7 @@ export const floorballSeasonService = {
       const apiResponse: ApiResponse<void> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to add team to season division');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to add team to season division'));
       }
       
       return apiResponse;
@@ -497,11 +522,10 @@ export const floorballSeasonService = {
   /**
    * Remove a team from a specific division of a floorball season
    */
-  removeTeamFromSeasonDivision: async (seasonId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
+  removeTeamFromSeasonDivision: async (competitionId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
     try {
-      console.log('Removing team from season division:', { seasonId, divisionId, teamId });
       
-      const response = await fetch(`${API_URL}/FloorballSeason/${seasonId}/divisions/${divisionId}/teams/${teamId}`, {
+      const response = await authFetch(`${API_URL}/FloorballSeason/${competitionId}/divisions/${divisionId}/teams/${teamId}`, {
         method: 'DELETE',
       });
       
@@ -513,7 +537,7 @@ export const floorballSeasonService = {
       const apiResponse: ApiResponse<void> = await response.json();
       
       if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to remove team from season division');
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to remove team from season division'));
       }
       
       return apiResponse;
@@ -521,5 +545,55 @@ export const floorballSeasonService = {
       console.error('Error in floorballSeasonService.removeTeamFromSeasonDivision:', error);
       throw error;
     }
-  }
+  },
+
+  getContentBlocks: async (seasonId: string): Promise<SeasonContentBlocksDto> => {
+    const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/content-blocks`);
+    if (!response.ok) {
+      throw new Error(await parseErrorResponse(response, 'Failed to fetch season content blocks'));
+    }
+    const apiResponse: ApiResponse<SeasonContentBlocksDto> = await response.json();
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch season content blocks'));
+    }
+    return apiResponse.data;
+  },
+
+  getFeaturedContentBlocks: async (seasonYear?: string): Promise<SeasonContentBlocksDto> => {
+    const searchParams = new URLSearchParams();
+    if (seasonYear) {
+      searchParams.set('seasonYear', seasonYear);
+    }
+    const query = searchParams.toString();
+    const response = await authFetch(
+      `${API_URL}/FloorballSeason/content-blocks${query ? `?${query}` : ''}`,
+    );
+    if (!response.ok) {
+      throw new Error(await parseErrorResponse(response, 'Failed to fetch season content blocks'));
+    }
+    const apiResponse: ApiResponse<SeasonContentBlocksDto> = await response.json();
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch season content blocks'));
+    }
+    return apiResponse.data;
+  },
+
+  replaceContentBlocks: async (
+    seasonId: string,
+    items: SeasonContentBlockItem[],
+  ): Promise<SeasonContentBlocksDto> => {
+    const response = await authFetch(`${API_URL}/FloorballSeason/${seasonId}/content-blocks`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items }),
+    });
+    if (!response.ok) {
+      throw new Error(await parseErrorResponse(response, 'Failed to update season content blocks'));
+    }
+    const apiResponse: ApiResponse<SeasonContentBlocksDto> = await response.json();
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to update season content blocks'));
+    }
+    return apiResponse.data;
+  },
 }; 

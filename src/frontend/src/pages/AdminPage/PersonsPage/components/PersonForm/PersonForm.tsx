@@ -2,17 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { PersonFormData, EnhancedPersonFormData, Person } from '../../../../../types/admin/personTypes';
-import { PersonRole } from '../../../../../types/admin/personTypes';
+import {
+  PersonRole,
+  EMPTY_PERSON_FORM_ADDRESS,
+  EMPTY_PERSON_FORM_CONTACT_INFO,
+  toPersonFormAddress,
+  toPersonFormContactInfo,
+} from '../../../../../types/admin/personTypes';
 import { personApi } from '../../../../../api/admin/personApi';
 import { floorballPlayerService } from '../../../../../api/floorball/floorballPlayerService';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
 import { floorballTeamSearchService } from '../../../../../api/floorball/floorballTeamSearchService';
+import { footballPlayerService } from '../../../../../api/football/footballPlayerService';
+import { footballTeamService } from '../../../../../api/football/footballTeamService';
+import { footballTeamSearchService } from '../../../../../api/football/footballTeamSearchService';
+import { hockeyPlayerService } from '../../../../../api/hockey/hockeyPlayerService';
+import { hockeyTeamService } from '../../../../../api/hockey/hockeyTeamService';
+import { hockeyTeamSearchService } from '../../../../../api/hockey/hockeySearchService';
 import { FloorballPosition } from '../../../../../types/floorball/floorballTypes';
+import { FootballPosition } from '../../../../../types/football/footballTypes';
+import { HOCKEY_POSITIONS, type HockeyPosition } from '../../../../../types/hockey/hockeyTypes';
 import SearchableInfiniteDropdown from '../../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
 import PageTemplate from '../../../../../components/PageTemplate/AdminPageTemplate';
 import './PersonForm.scss';
 import { ACTIVE_SPORTS, type SportType } from '../../../../../types/common/sports';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import JerseyNumberSelect, { useTakenJerseyNumbers } from '../../../../../components/JerseyNumberSelect';
 
 interface PersonFormProps {
   mode?: 'standalone' | 'embedded';
@@ -64,18 +79,8 @@ const PersonForm = ({
       birthDate: '',
       isRegistered: false,
       role: PersonRole.User,
-      address: {
-        street1: '',
-        street2: null,
-        city: '',
-        postalCode: '',
-        country: ''
-      },
-      contactInfo: {
-        email: '',
-        phone: '',
-        alternativePhone: null
-      },
+      address: { ...EMPTY_PERSON_FORM_ADDRESS },
+      contactInfo: { ...EMPTY_PERSON_FORM_CONTACT_INFO },
       teamId: undefined,
       position: undefined,
       jerseyNumber: undefined
@@ -85,8 +90,8 @@ const PersonForm = ({
       return {
         ...defaultData,
         ...initialData,
-        address: { ...defaultData.address, ...initialData.address },
-        contactInfo: { ...defaultData.contactInfo, ...initialData.contactInfo }
+        address: toPersonFormAddress(initialData.address ?? defaultData.address),
+        contactInfo: toPersonFormContactInfo(initialData.contactInfo ?? defaultData.contactInfo),
       };
     }
     
@@ -95,15 +100,14 @@ const PersonForm = ({
   
   const [formData, setFormData] = useState<EnhancedPersonFormData>(getInitialFormData());
   const [selectedSport, setSelectedSport] = useState<SportType | ''>('');
+  const { takenNumbers: takenJerseyNumbers } = useTakenJerseyNumbers(selectedSport, formData.teamId);
 
-  const formatBirthDateForDisplay = (dateString: string | null | undefined): string => {
+  const formatBirthDateForInput = (dateString: string | null | undefined): string => {
     if (!dateString) return '';
     const parsed = new Date(dateString);
     if (Number.isNaN(parsed.getTime())) return '';
-    const day = parsed.getDate().toString().padStart(2, '0');
-    const month = (parsed.getMonth() + 1).toString().padStart(2, '0');
-    const year = parsed.getFullYear();
-    return `${day}-${month}-${year}`;
+    // Native date input expects yyyy-mm-dd
+    return parsed.toISOString().slice(0, 10);
   };
 
   useEffect(() => {
@@ -114,8 +118,8 @@ const PersonForm = ({
         setLoading(true);
         const person = await personApi.getById(id!);
         
-        // Convert stored date to dd-mm-yyyy for the text input; allow empty
-        const formattedDate = formatBirthDateForDisplay(person.birthDate);
+        // Convert stored date to yyyy-mm-dd for the native date input; allow empty
+        const formattedDate = formatBirthDateForInput(person.birthDate);
         
         setFormData({
           firstName: person.firstName,
@@ -123,18 +127,8 @@ const PersonForm = ({
           birthDate: formattedDate,
           isRegistered: person.isRegistered,
           role: person.role,
-          address: person.address || {
-            street1: '',
-            street2: null,
-            city: '',
-            postalCode: '',
-            country: ''
-          },
-          contactInfo: person.contactInfo || {
-            email: '',
-            phone: '',
-            alternativePhone: null
-          },
+          address: toPersonFormAddress(person.address),
+          contactInfo: toPersonFormContactInfo(person.contactInfo),
           teamId: undefined,
           position: undefined,
           jerseyNumber: undefined
@@ -151,39 +145,15 @@ const PersonForm = ({
     fetchPerson();
   }, [id, isEditMode, t]);
 
-  const parseBirthDate = (value: string | null): Date | null => {
-    const trimmed = value?.trim();
-    if (!trimmed) return null;
-    const parts = trimmed.split('-').map(Number);
-    if (parts.length !== 3 || parts.some(Number.isNaN)) {
-      return null;
-    }
-
-    // Prefer dd-mm-yyyy; fallback to yyyy-mm-dd if user types ISO
-    const isIsoFirst = parts[0] > 999;
-    const [year, month, day] = isIsoFirst ? parts : [parts[2], parts[1], parts[0]];
-    const parsed = new Date(year, month - 1, day);
-
-    if (
-      parsed.getFullYear() !== year ||
-      parsed.getMonth() !== month - 1 ||
-      parsed.getDate() !== day
-    ) {
-      return null;
-    }
-
-    parsed.setHours(0, 0, 0, 0);
-    return parsed;
-  };
-
   const validateBirthDate = (date: string | null): string | null => {
     // Birth date is optional, so empty string is valid
     if (!date || date.trim() === '') {
       return null;
     }
 
-    const birthDate = parseBirthDate(date);
-    if (!birthDate) {
+    // Native date input provides yyyy-mm-dd format
+    const birthDate = new Date(date);
+    if (Number.isNaN(birthDate.getTime())) {
       return t('admin.persons.validation.invalidDate');
     }
 
@@ -293,10 +263,11 @@ const PersonForm = ({
   const handleTeamChange = (teamId: string) => {
     setFormData(prev => ({
       ...prev,
-      teamId: teamId || undefined
+      teamId: teamId || undefined,
+      jerseyNumber: undefined,
     }));
     // Clear field error when team selection changes
-    setFieldErrors(prev => ({ ...prev, teamId: '', position: '' }));
+    setFieldErrors(prev => ({ ...prev, teamId: '', position: '', jerseyNumber: '' }));
   };
 
   const validateForm = (): boolean => {
@@ -375,7 +346,11 @@ const PersonForm = ({
       // Validate jersey number uniqueness within selected team before creating person
       if (formData.teamId && formData.jerseyNumber !== undefined) {
         try {
-          const team = await floorballTeamService.getById(formData.teamId);
+          const team = selectedSport === 'Football'
+            ? await footballTeamService.getById(formData.teamId)
+            : selectedSport === 'Icehockey'
+              ? await hockeyTeamService.getById(formData.teamId)
+              : await floorballTeamService.getById(formData.teamId);
           const numberTaken = team?.roster?.some(player => player.jerseyNumber === formData.jerseyNumber);
           if (numberTaken) {
             const takenMsg = t('admin.persons.validation.jerseyNumberTaken') || 'Jersey number already in use for this team';
@@ -391,8 +366,9 @@ const PersonForm = ({
       }
 
       // Prepare person data (excluding team assignment fields)
+      // Native date input already provides yyyy-mm-dd format
       const normalizedBirthDate = formData.birthDate && formData.birthDate.trim() !== ''
-        ? parseBirthDate(formData.birthDate)?.toISOString().slice(0, 10) || null
+        ? formData.birthDate
         : null;
 
       const personData: PersonFormData = {
@@ -402,7 +378,10 @@ const PersonForm = ({
         isRegistered: formData.isRegistered,
         role: formData.role,
         address: formData.address,
-        contactInfo: formData.contactInfo
+        contactInfo: {
+          ...formData.contactInfo,
+          email: formData.contactInfo.email.trim().toLowerCase(),
+        },
       };
 
       let createdPerson;
@@ -412,21 +391,41 @@ const PersonForm = ({
         createdPerson = await personApi.create(personData);
       }
 
-      // Step 2: If team is selected, create FloorballPlayer and add to team
+      // Step 2: If team is selected, create player and add to team
       if (formData.teamId && formData.position && !isEditMode) {
         try {
-          // Create FloorballPlayer
-          const createdPlayer = await floorballPlayerService.create({
-            personId: createdPerson.id
-          });
-
-          // Add player to team with position and optional jersey number
-          await floorballTeamService.addPlayerToTeam(
-            formData.teamId,
-            createdPlayer.id,
-            formData.position as FloorballPosition,
-            formData.jerseyNumber
-          );
+          if (selectedSport === 'Football') {
+            const createdPlayer = await footballPlayerService.create({
+              personId: createdPerson.id
+            });
+            await footballTeamService.addPlayerToTeam(
+              formData.teamId,
+              createdPlayer.id,
+              formData.position as FootballPosition,
+              formData.jerseyNumber
+            );
+          } else if (selectedSport === 'Icehockey') {
+            const createdPlayer = await hockeyPlayerService.create({
+              personId: createdPerson.id,
+              primaryPosition: formData.position as HockeyPosition
+            });
+            await hockeyTeamService.addPlayer(
+              formData.teamId,
+              createdPlayer.id,
+              formData.position as HockeyPosition,
+              formData.jerseyNumber
+            );
+          } else {
+            const createdPlayer = await floorballPlayerService.create({
+              personId: createdPerson.id
+            });
+            await floorballTeamService.addPlayerToTeam(
+              formData.teamId,
+              createdPlayer.id,
+              formData.position as FloorballPosition,
+              formData.jerseyNumber
+            );
+          }
 
           // Success message could be enhanced here to show team assignment
           console.log(`Person created and added to team with position ${formData.position}`);
@@ -473,13 +472,28 @@ const PersonForm = ({
     };
   };
 
-  const searchTeamsBySport = async (query: string, page: number) => {
+  const searchTeamsBySport = async (
+    query: string,
+    page: number,
+  ): Promise<{
+    data: Array<{ id: string; name: string; [key: string]: unknown }>;
+    pagination: { hasNextPage: boolean; totalCount: number };
+  }> => {
     if (!selectedSport) {
       return { data: [], pagination: { hasNextPage: false, totalCount: 0 } };
     }
-    // TODO: Add other sports here
     if (selectedSport === 'Floorball') {
       return floorballTeamSearchService.searchTeams(query, page);
+    }
+    if (selectedSport === 'Football') {
+      return footballTeamSearchService.searchTeams(query, page);
+    }
+    if (selectedSport === 'Icehockey') {
+      const result = await hockeyTeamSearchService.searchTeams(query, page);
+      return {
+        data: result.data.map((team) => ({ id: team.id, name: team.name })),
+        pagination: result.pagination,
+      };
     }
     return { data: [], pagination: { hasNextPage: false, totalCount: 0 } };
   };
@@ -581,14 +595,12 @@ const PersonForm = ({
               {t('admin.persons.form.birthDate')}
             </label>
             <input
-              type="text"
+              type="date"
               id="birthDate"
               name="birthDate"
               value={formData.birthDate || ''}
               onChange={handleInputChange}
-              placeholder="dd-mm-yyyy"
-              inputMode="numeric"
-              pattern="\d{2}-\d{2}-\d{4}"
+              max={new Date().toISOString().slice(0, 10)}
               className={fieldErrors.birthDate ? 'person-error' : ''}
             />
             {fieldErrors.birthDate && (
@@ -781,7 +793,13 @@ const PersonForm = ({
                   className={fieldErrors.position ? 'person-error' : ''}
                 >
                   <option value="">{t('admin.persons.form.selectPosition')}</option>
-                  {Object.values(FloorballPosition).map(pos => (
+                  {Object.values(
+                    selectedSport === 'Football'
+                      ? FootballPosition
+                      : selectedSport === 'Icehockey'
+                        ? HOCKEY_POSITIONS
+                        : FloorballPosition
+                  ).map(pos => (
                     <option key={pos} value={pos}>
                       {t(`admin.persons.form.positions.${pos.toLowerCase()}`)}
                     </option>
@@ -796,15 +814,18 @@ const PersonForm = ({
                 <label htmlFor="jerseyNumber">
                   {t('admin.persons.form.jerseyNumber')}
                 </label>
-                <input
-                  type="number"
+                <JerseyNumberSelect
                   id="jerseyNumber"
                   name="jerseyNumber"
-                  value={formData.jerseyNumber || ''}
-                  onChange={handleInputChange}
-                  min="1"
-                  max="99"
+                  value={formData.jerseyNumber}
+                  takenNumbers={takenJerseyNumbers}
                   className={fieldErrors.jerseyNumber ? 'person-error' : ''}
+                  onChange={(next) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      jerseyNumber: next ?? undefined,
+                    }));
+                  }}
                 />
                 {fieldErrors.jerseyNumber && (
                   <div className="field-error">{fieldErrors.jerseyNumber}</div>

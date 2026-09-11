@@ -10,14 +10,19 @@ namespace WebAPI.Models.Floorball;
 public record GetFloorballMatchesRequest : PagedRequestBase
 {
     /// <summary>
-    /// Gets the season ID filter
+    /// Gets the competition ID filter (season or tournament)
     /// </summary>
-    public Guid? SeasonId { get; init; }
+    public Guid? CompetitionId { get; init; }
 
     /// <summary>
     /// Gets the team ID filter (matches where this team played)
     /// </summary>
     public Guid? TeamId { get; init; }
+
+    /// <summary>
+    /// Gets the tournament group ID filter (matches in this tournament group only)
+    /// </summary>
+    public Guid? TournamentGroupId { get; init; }
 
     /// <summary>
     /// Gets the start date filter (matches on or after this date)
@@ -43,6 +48,17 @@ public record GetFloorballMatchesRequest : PagedRequestBase
     /// Gets the search query to filter matches by team names (case-insensitive, partial match)
     /// </summary>
     public string? SearchQuery { get; init; }
+
+    /// <summary>
+    /// Gets the competition type filter (Season or Tournament). When null, matches from both types are returned.
+    /// </summary>
+    public FloorballCompetitionType? CompetitionType { get; init; }
+
+    /// <summary>
+    /// Optional audience / age-group category filter (Adult, Youth, Women).
+    /// Filters matches by the competition's TeamCategory.
+    /// </summary>
+    public Domain.Enums.Common.TeamCategory? TeamCategory { get; init; }
 }
 
 /// <summary>
@@ -67,21 +83,21 @@ public record GetTeamMatchesRequest : PagedRequestBase
 public record CreateFloorballMatchRequest
 {
     /// <summary>
-    /// Gets the season ID
+    /// Gets the competition ID (season or tournament)
     /// </summary>
-    [Required(ErrorMessage = "Season ID is required")]
-    public Guid? SeasonId { get; init; }
+    [Required(ErrorMessage = "Competition ID is required")]
+    public Guid? CompetitionId { get; init; }
 
     /// <summary>
-    /// Gets the home team ID
+    /// Gets the home team ID. Optional: leave null to schedule a fixture before the participant is
+    /// known (e.g. future league round, playoff slot waiting on a feeder). Use the
+    /// <c>PUT /api/floorball-matches/{id}/teams</c> endpoint to fill it in later.
     /// </summary>
-    [Required(ErrorMessage = "Home team ID is required")]
     public Guid? HomeTeamId { get; init; }
 
     /// <summary>
-    /// Gets the away team ID
+    /// Gets the away team ID. Optional; see <see cref="HomeTeamId"/>.
     /// </summary>
-    [Required(ErrorMessage = "Away team ID is required")]
     public Guid? AwayTeamId { get; init; }
 
     /// <summary>
@@ -100,6 +116,18 @@ public record CreateFloorballMatchRequest
     /// </summary>
     [StringLength(200, ErrorMessage = "Venue cannot exceed 200 characters")]
     public string? Venue { get; init; }
+
+    /// <summary>
+    /// Optional tournament group ID for tournament group-stage matches.
+    /// Ignored for league matches.
+    /// </summary>
+    public Guid? TournamentGroupId { get; init; }
+
+    /// <summary>
+    /// Optional tournament stage label (e.g. "GroupStage", "Quarterfinal") for tournament matches.
+    /// Ignored for league matches.
+    /// </summary>
+    public string? TournamentStage { get; init; }
 }
 
 /// <summary>
@@ -124,6 +152,24 @@ public record UpdateFloorballMatchRequest
     /// </summary>
     [StringLength(200, ErrorMessage = "Venue cannot exceed 200 characters")]
     public string? Venue { get; init; }
+}
+
+/// <summary>
+/// Request model for the "assign teams to a scheduled match" endpoint. Either side may be
+/// <c>null</c> to clear that slot back to "to be determined". When both are present they must
+/// reference different teams.
+/// </summary>
+public record AssignMatchTeamsRequest
+{
+    /// <summary>
+    /// New home team for the match, or <c>null</c> to clear the slot.
+    /// </summary>
+    public Guid? HomeTeamId { get; init; }
+
+    /// <summary>
+    /// New away team for the match, or <c>null</c> to clear the slot.
+    /// </summary>
+    public Guid? AwayTeamId { get; init; }
 }
 
 /// <summary>
@@ -181,4 +227,10 @@ public record RecordGoalRequest
     /// Gets the goal type (optional)
     /// </summary>
     public int? GoalType { get; init; }
+
+    /// <summary>
+    /// When <c>true</c>, skips the per-(match, scorer) double-click window. Intended for
+    /// historical import / admin backfill, not the live scorekeeper UI.
+    /// </summary>
+    public bool SkipRateLimit { get; init; }
 }

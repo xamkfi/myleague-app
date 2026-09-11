@@ -16,7 +16,8 @@ public static class Program
             .AddEnvironmentVariables()
             .Build();
 
-        string baseUrl = configuration["BaseUrl"] ?? "http://localhost:8080";
+        string defaultUrl = configuration["BaseUrl"] ?? "http://localhost:8080";
+        string baseUrl = PromptForBaseUrl(defaultUrl);
 
         // Initialize HttpClient
         HttpClient http = new HttpClient();
@@ -24,9 +25,6 @@ public static class Program
         http.DefaultRequestHeaders.Accept.Clear();
         http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-        Console.WriteLine("==========================================================");
-        Console.WriteLine("Floorball Player Importer");
-        Console.WriteLine("==========================================================");
         Console.WriteLine($"Target API: {http.BaseAddress}");
         Console.WriteLine();
 
@@ -148,6 +146,33 @@ public static class Program
             http.Dispose();
             return 1;
         }
+    }
+
+    private static string PromptForBaseUrl(string defaultUrl)
+    {
+        Console.WriteLine("==========================================================");
+        Console.WriteLine("Floorball Player Importer - API URL Configuration");
+        Console.WriteLine("==========================================================");
+        Console.WriteLine($"Default API URL: {defaultUrl}");
+        Console.Write("Enter API URL (press Enter to use default): ");
+
+        string? input = Console.ReadLine()?.Trim();
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            Console.WriteLine($"Using default: {defaultUrl}");
+            return defaultUrl;
+        }
+
+        // Ensure URL has a scheme
+        if (!input.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+            !input.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            input = "http://" + input;
+        }
+
+        Console.WriteLine($"Using custom URL: {input}");
+        return input;
     }
 
     private static string FindDataFilesFolder()
