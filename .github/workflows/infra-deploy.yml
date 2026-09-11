@@ -58,7 +58,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build Bicep templates
         working-directory: ${{ env.PROVISION_DIR }}
@@ -87,7 +87,7 @@ jobs:
     needs: validate
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Azure login (OIDC)
         uses: azure/login@v2
@@ -158,7 +158,7 @@ jobs:
       TARGET_COMPONENT: ${{ needs.resolve-targets.outputs.component }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Azure login (OIDC)
         uses: azure/login@v2
