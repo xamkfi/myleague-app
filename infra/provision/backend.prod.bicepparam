@@ -26,8 +26,8 @@ param postgresAdminPassword = ''
 // PostgreSQL backups - longer retention for production
 param postgresBackupRetentionDays = 21
 
-// CORS - update with the actual Static Web App hostname after the frontend
-// is provisioned for the first time (SWA hostnames are auto-generated)
+// CORS - Release Production / infra-deploy override this with the live SWA URL.
+// After the first successful prod provision, commit that hostname here.
 param allowedOrigins = []
 
 // Secret - provided at deploy time (GitHub environment secret or CLI/script prompt)
@@ -36,7 +36,7 @@ param jwtSecretKey = ''
 // Seed - admin email for initial user (provided at deploy time)
 param seedAdminEmail = ''
 
-// Frontend base URL - update after the frontend SWA is provisioned
+// Frontend base URL - overridden at provision time from the SWA hostname
 param frontendBaseUrl = ''
 
 // ============================================================================

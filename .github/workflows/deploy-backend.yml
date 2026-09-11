@@ -20,8 +20,8 @@ on:
         type: string
 
   # Auto-deploy to staging after Backend CI succeeds on the development branch.
-  # Prod deploys are manual (workflow_dispatch) and gated by the 'prod'
-  # GitHub environment protection rules (required reviewers).
+  # Prod app deploys: prefer Release Production (master + one Approve).
+  # This workflow still accepts a prod dispatch from master only.
   workflow_run:
     workflows: ["Backend CI"]
     types:
@@ -58,6 +58,10 @@ jobs:
       - name: Set deployment targets
         run: |
           ENV="${{ github.event_name == 'workflow_run' && 'staging' || inputs.environment }}"
+          if [ "$ENV" = "prod" ] && [ "${{ github.ref }}" != "refs/heads/master" ]; then
+            echo "::error::Production deploys are only allowed from master (current ref: ${{ github.ref }})."
+            exit 1
+          fi
           echo "AZURE_WEBAPP_NAME=myleague-${ENV}-api" >> $GITHUB_ENV
           echo "AZURE_RESOURCE_GROUP=myleague-${ENV}-rg" >> $GITHUB_ENV
           echo "Deploying to: myleague-${ENV}-api (rg: myleague-${ENV}-rg)"

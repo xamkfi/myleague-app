@@ -60,6 +60,13 @@ param frontendBaseUrl string = ''
 @secure()
 param appInsightsConnectionString string = ''
 
+var loginCodeSettings = environmentName == 'Production' ? [
+  {
+    name: 'LoginCode__AutoFillLoginCode'
+    value: 'false'
+  }
+] : []
+
 resource appService 'Microsoft.Web/sites@2023-12-01' = {
   name: name
   location: location
@@ -79,7 +86,7 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
         allowedOrigins: allowedOrigins
         supportCredentials: true
       }
-      appSettings: [
+      appSettings: concat([
         {
           name: 'ASPNETCORE_ENVIRONMENT'
           value: environmentName
@@ -129,7 +136,7 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsightsConnectionString
         }
-      ]
+      ], loginCodeSettings)
       connectionStrings: [
         {
           name: 'DefaultConnection'
