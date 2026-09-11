@@ -273,6 +273,7 @@ az webapp deploy `
     --name $AppServiceName `
     --src-path $zipPath `
     --type zip `
+    --track-status false `
     --output none
 
 if ($LASTEXITCODE -ne 0) {
@@ -359,19 +360,25 @@ $appUrl = "https://$AppServiceName.azurewebsites.net"
 $healthUrl = "$appUrl/health/ready"
 
 Write-Host "  Waiting for app to start..." -ForegroundColor Gray
-Start-Sleep -Seconds 10
-
-try {
-    $healthResponse = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 30
-    if ($healthResponse.StatusCode -eq 200) {
-        Write-Success "Health check passed: $healthUrl"
+$healthPassed = $false
+for ($i = 1; $i -le 20; $i++) {
+    try {
+        $healthResponse = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 20
+        if ($healthResponse.StatusCode -eq 200) {
+            Write-Success "Health check passed: $healthUrl"
+            $healthPassed = $true
+            break
+        }
+        Write-WarningMsg "Attempt $i : HTTP $($healthResponse.StatusCode) - retrying in 15s..."
     }
-    else {
-        Write-WarningMsg "Health check returned status $($healthResponse.StatusCode)"
+    catch {
+        Write-WarningMsg "Attempt $i : $($_.Exception.Message) - retrying in 15s..."
     }
+    Start-Sleep -Seconds 15
 }
-catch {
-    Write-WarningMsg "Health check failed (app may still be starting): $healthUrl"
+
+if (-not $healthPassed) {
+    Write-WarningMsg "Health check failed after 20 attempts: $healthUrl"
     Write-Host "  Try again in a minute: curl $healthUrl" -ForegroundColor Gray
 }
 
