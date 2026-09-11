@@ -145,26 +145,39 @@ jobs:
 
       - name: Deploy to Azure Web App
         run: |
+          # --track-status defaults to true and polls the Linux Deployment
+          # Status API for up to 10 minutes. That API often stays on
+          # "Starting the site..." after the zip is applied and the app is
+          # already serving (FailedInstances: 1 even when /health/ready is 200).
           az webapp deploy \
             --resource-group "$RESOURCE_GROUP" \
             --name "$AZURE_WEBAPP_NAME" \
             --src-path "${{ env.WORKING_DIRECTORY }}/app.zip" \
-            --type zip
+            --type zip \
+            --track-status false
 
       - name: Health check
         run: |
-          URL="https://${AZURE_WEBAPP_NAME}.azurewebsites.net/health/ready"
-          echo "Checking $URL"
-          for i in $(seq 1 10); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
+          BASE="https://${AZURE_WEBAPP_NAME}.azurewebsites.net"
+          READY="$BASE/health/ready"
+          echo "Checking $READY"
+          for i in $(seq 1 20); do
+            BODY_FILE=$(mktemp)
+            STATUS=$(curl -sS -o "$BODY_FILE" -w "%{http_code}" --max-time 20 "$READY" || true)
             if [ "$STATUS" = "200" ]; then
               echo "Health check passed (HTTP $STATUS)"
               exit 0
             fi
-            echo "Attempt $i: HTTP $STATUS - retrying in 15s..."
+            echo "Attempt $i: HTTP $STATUS $(tr -d '\r\n' < "$BODY_FILE") - retrying in 15s..."
             sleep 15
           done
-          echo "Health check failed after 10 attempts"
+          echo "Health check failed after 20 attempts"
+          echo "GET $BASE/health/live"
+          curl -sS --max-time 20 "$BASE/health/live" || true
+          echo ""
+          echo "GET $BASE/health"
+          curl -sS --max-time 20 "$BASE/health" || true
+          echo ""
           exit 1
 
       - name: Setup pnpm
