@@ -22,7 +22,8 @@ on:
           - both
 
   # Staging only: apply Bicep when infra lands on development, then deploy apps.
-  # Prod stays workflow_dispatch and is gated by the prod environment reviewers.
+  # Prod infra dispatch is an escape hatch from master; the happy path is
+  # Release Production (master merge + one prod environment approval).
   push:
     branches: [development]
     paths:
@@ -114,7 +115,7 @@ jobs:
 
   # --------------------------------------------------------------------------
   # Resolve env/component: push to development always provisions staging (both).
-  # Prod is dispatch-only so the prod environment reviewers still confirm.
+  # Prod is dispatch-only from master (reviewers still confirm).
   # --------------------------------------------------------------------------
   resolve-targets:
     name: Resolve provision targets
@@ -131,6 +132,10 @@ jobs:
         id: resolve
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.environment }}" = "prod" ] && [ "${{ github.ref }}" != "refs/heads/master" ]; then
+              echo "::error::Production infrastructure can only be provisioned from master (current ref: ${{ github.ref }})."
+              exit 1
+            fi
             echo "environment=${{ inputs.environment }}" >> "$GITHUB_OUTPUT"
             echo "component=${{ inputs.component }}" >> "$GITHUB_OUTPUT"
           else
@@ -139,7 +144,7 @@ jobs:
           fi
 
   # --------------------------------------------------------------------------
-  # Provision: staging auto on infra pushes; prod only via dispatch + reviewers
+  # Provision: staging auto on infra pushes; prod only via master dispatch + reviewers
   # --------------------------------------------------------------------------
   provision:
     name: Provision ${{ needs.resolve-targets.outputs.environment }} (${{ needs.resolve-targets.outputs.component }})
@@ -173,38 +178,6 @@ jobs:
             echo "Resource group $RG already exists"
           fi
 
-      - name: What-if (backend)
-        if: env.TARGET_COMPONENT == 'backend' || env.TARGET_COMPONENT == 'both'
-        working-directory: ${{ env.PROVISION_DIR }}
-        run: |
-          az deployment group what-if \
-            --resource-group "$RESOURCE_GROUP" \
-            --template-file backend.bicep \
-            --parameters backend.${TARGET_ENV}.bicepparam \
-            --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
-            --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
-            --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
-            --parameters alertEmail="${{ vars.ALERT_EMAIL }}"
-
-      - name: Deploy backend infrastructure
-        if: env.TARGET_COMPONENT == 'backend' || env.TARGET_COMPONENT == 'both'
-        working-directory: ${{ env.PROVISION_DIR }}
-        run: |
-          az deployment group create \
-            --resource-group "$RESOURCE_GROUP" \
-            --name "infra-backend-$(date +%Y%m%d-%H%M%S)" \
-            --template-file backend.bicep \
-            --parameters backend.${TARGET_ENV}.bicepparam \
-            --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
-            --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
-            --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
-            --parameters alertEmail="${{ vars.ALERT_EMAIL }}" \
-            --query "properties.outputs" -o json > backend-outputs.json
-          echo "### Backend outputs" >> $GITHUB_STEP_SUMMARY
-          echo '```json' >> $GITHUB_STEP_SUMMARY
-          cat backend-outputs.json >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-
       - name: Deploy frontend infrastructure
         if: env.TARGET_COMPONENT == 'frontend' || env.TARGET_COMPONENT == 'both'
         working-directory: ${{ env.PROVISION_DIR }}
@@ -215,13 +188,87 @@ jobs:
             --template-file frontend.bicep \
             --parameters frontend.${TARGET_ENV}.bicepparam \
             --query "properties.outputs.frontendUrl.value" -o tsv > frontend-url.txt
+          FRONTEND_URL=$(tr -d '\r' < frontend-url.txt)
+          echo "FRONTEND_URL=$FRONTEND_URL" >> $GITHUB_ENV
           echo "### Frontend URL" >> $GITHUB_STEP_SUMMARY
-          cat frontend-url.txt >> $GITHUB_STEP_SUMMARY
+          echo "$FRONTEND_URL" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "If this is the first provision, add this URL to allowedOrigins and frontendBaseUrl in backend.${TARGET_ENV}.bicepparam and re-run the backend provision." >> $GITHUB_STEP_SUMMARY
+          echo "Backend provision uses this URL for CORS and frontendBaseUrl. Commit it to backend.${TARGET_ENV}.bicepparam after the first run if you want it in git." >> $GITHUB_STEP_SUMMARY
+
+      - name: Resolve frontend URL
+        if: env.TARGET_COMPONENT == 'backend' || env.TARGET_COMPONENT == 'both'
+        run: |
+          if [ -n "${FRONTEND_URL:-}" ]; then
+            echo "Using frontend URL from this run: $FRONTEND_URL"
+            exit 0
+          fi
+          SWA_NAME="${BASE_NAME}-${TARGET_ENV}-web"
+          HOSTNAME=$(az staticwebapp show \
+            --name "$SWA_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query "defaultHostname" -o tsv 2>/dev/null || true)
+          if [ -n "$HOSTNAME" ]; then
+            FRONTEND_URL="https://${HOSTNAME}"
+            echo "FRONTEND_URL=$FRONTEND_URL" >> $GITHUB_ENV
+            echo "Using existing Static Web App URL: $FRONTEND_URL"
+          else
+            echo "No Static Web App URL available - backend will use bicepparam defaults"
+          fi
+
+      - name: What-if (backend)
+        if: env.TARGET_COMPONENT == 'backend' || env.TARGET_COMPONENT == 'both'
+        working-directory: ${{ env.PROVISION_DIR }}
+        run: |
+          EXTRA_ARGS=()
+          if [ -n "${FRONTEND_URL:-}" ]; then
+            EXTRA_ARGS+=(--parameters "frontendBaseUrl=${FRONTEND_URL}")
+            if [ "$TARGET_ENV" = "prod" ]; then
+              EXTRA_ARGS+=(--parameters "allowedOrigins=[\"${FRONTEND_URL}\"]")
+            else
+              EXTRA_ARGS+=(--parameters "allowedOrigins=[\"http://localhost:5173\",\"${FRONTEND_URL}\"]")
+            fi
+          fi
+          az deployment group what-if \
+            --resource-group "$RESOURCE_GROUP" \
+            --template-file backend.bicep \
+            --parameters backend.${TARGET_ENV}.bicepparam \
+            --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
+            --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
+            --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
+            --parameters alertEmail="${{ vars.ALERT_EMAIL }}" \
+            "${EXTRA_ARGS[@]}"
+
+      - name: Deploy backend infrastructure
+        if: env.TARGET_COMPONENT == 'backend' || env.TARGET_COMPONENT == 'both'
+        working-directory: ${{ env.PROVISION_DIR }}
+        run: |
+          EXTRA_ARGS=()
+          if [ -n "${FRONTEND_URL:-}" ]; then
+            EXTRA_ARGS+=(--parameters "frontendBaseUrl=${FRONTEND_URL}")
+            if [ "$TARGET_ENV" = "prod" ]; then
+              EXTRA_ARGS+=(--parameters "allowedOrigins=[\"${FRONTEND_URL}\"]")
+            else
+              EXTRA_ARGS+=(--parameters "allowedOrigins=[\"http://localhost:5173\",\"${FRONTEND_URL}\"]")
+            fi
+          fi
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "infra-backend-$(date +%Y%m%d-%H%M%S)" \
+            --template-file backend.bicep \
+            --parameters backend.${TARGET_ENV}.bicepparam \
+            --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
+            --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
+            --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
+            --parameters alertEmail="${{ vars.ALERT_EMAIL }}" \
+            "${EXTRA_ARGS[@]}" \
+            --query "properties.outputs" -o json > backend-outputs.json
+          echo "### Backend outputs" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          cat backend-outputs.json >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   # Staging only: after a successful provision, ship the current apps so CORS /
-  # stack changes are live. Prod app deploys stay manual (environment reviewers).
+  # stack changes are live. Prod apps go through Release Production.
   deploy-staging-backend:
     name: Deploy staging backend
     needs: [resolve-targets, provision]

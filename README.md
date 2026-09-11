@@ -305,18 +305,19 @@ Production JWT defaults: 15 minute access token, 7 day refresh token. Developmen
 
 ## Azure and CI/CD
 
-Staging deploys automatically from `development`. Production deploys are manual and gated by reviewers.
+Staging deploys automatically from `development`. Production is released from `master` after one GitHub `prod` environment approval.
 
 | Workflow | Role |
 |----------|------|
 | `backend-ci.yaml` / `frontend-ci.yaml` | Build, test, lint on `master` and `development` |
 | `protect-master.yml` | PRs to `master` must come from `development` |
-| `infra-deploy.yml` | Bicep provision (OIDC) |
-| `deploy-backend.yml` / `deploy-frontend.yml` | App deploy + smoke tests |
+| `infra-deploy.yml` | Bicep provision (OIDC); staging auto, prod dispatch from `master` only |
+| `deploy-backend.yml` / `deploy-frontend.yml` | Staging app deploy + smoke tests; prod dispatch from `master` only |
+| `release-production.yml` | Prod infra + API + SPA + smoke tests after one Approve |
 
 Full environment map, costs, OIDC setup, and alerts: [`infra/README.md`](infra/README.md).
 
-Release path: feature branch → PR into `development` → PR from `development` into `master`.
+Release path: feature branch → PR into `development` (staging auto) → PR from `development` into `master` → Approve the `prod` environment deployment.
 
 ## Internationalization
 

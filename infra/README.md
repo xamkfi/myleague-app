@@ -8,7 +8,7 @@ Bicep templates and deploy scripts for MyLeague staging and production. Local Do
 |-------------|-------|---------|--------------|
 | **Local dev** | `docker-compose up` at repo root | Day-to-day development (Postgres, Seq, API, frontend) | $0 |
 | **Staging** | Azure (`myleague-staging-rg`) | Pre-release testing, auto-deployed from the `development` branch | ~$26 |
-| **Prod** | Azure (`myleague-prod-rg`) | Production, manual deploys gated by approval | ~$27 |
+| **Prod** | Azure (`myleague-prod-rg`) | Production, released from `master` after one GitHub `prod` approval | ~$27 |
 
 There is deliberately no cloud dev environment - local docker-compose covers it.
 
@@ -27,11 +27,9 @@ az webapp start --name myleague-staging-api --resource-group myleague-staging-rg
 infra/
 ├── provision/                        # Infrastructure provisioning (Bicep + scripts)
 │   ├── backend.bicep                 # Backend infrastructure template
-│   ├── backend.bicepparam            # Shared / default backend params
 │   ├── backend.staging.bicepparam    # Backend parameters (staging)
 │   ├── backend.prod.bicepparam       # Backend parameters (prod)
 │   ├── frontend.bicep                # Frontend infrastructure template (SWA)
-│   ├── frontend.bicepparam
 │   ├── frontend.staging.bicepparam
 │   ├── frontend.prod.bicepparam
 │   ├── app-insights-only.bicep       # Standalone App Insights (optional)
@@ -97,13 +95,18 @@ Alert costs: metric alert rules ~$0.10/month each, availability test pennies at 
 |----------|---------|--------------|
 | `backend-ci.yaml` / `frontend-ci.yaml` | Push and PRs to `master` and `development` | Build, lint/tests, Docker startup checks |
 | `protect-master.yml` | PRs targeting `master` | Fails unless the source branch is `development` |
-| `infra-deploy.yml` | PRs touching `infra/**` validate + staging what-if. Push of `infra/**` to `development` provisions **staging** (no approval) and then deploys FE/BE. **Prod** is manual dispatch only (prod environment reviewers). |
-| `deploy-backend.yml` | Auto to **staging** after Backend CI on `development`, and after a successful staging provision; manual for staging/prod | Builds and zip-deploys the API, health-checks it, then runs smoke tests |
-| `deploy-frontend.yml` | Auto to **staging** after Frontend CI on `development`, and after a successful staging provision; manual for staging/prod | Builds the SPA with the right `VITE_API_URL`, deploys to SWA, then smoke tests it |
+| `infra-deploy.yml` | PRs touching `infra/**` validate + staging what-if. Push of `infra/**` to `development` provisions **staging** (no approval) and then deploys FE/BE. **Prod** infra dispatch is a master-only escape hatch. |
+| `deploy-backend.yml` | Auto to **staging** after Backend CI on `development`, and after a successful staging provision; manual for staging, or prod from `master` only | Builds and zip-deploys the API, health-checks it, then runs smoke tests |
+| `deploy-frontend.yml` | Auto to **staging** after Frontend CI on `development`, and after a successful staging provision; manual for staging, or prod from `master` only | Builds the SPA with the right `VITE_API_URL`, deploys to SWA, then smoke tests it |
+| `release-production.yml` | Push to `master`, or `workflow_dispatch` from `master` | One `prod` environment approval, then provisions FE then BE (CORS from the live SWA URL), deploys API + SPA, and runs smoke tests |
+
+**Release path:** feature → PR into `development` (staging auto, no approval) → verify staging → PR `development` into `master` → **Review deployments** on the `prod` GitHub environment → Approve once.
+
+`workflow_dispatch` on `release-production.yml` (branch: `master`) replays the same production release without another merge.
 
 After every backend deploy, a smoke-test job hits the live environment with public read-only requests: liveness/readiness (includes DB health), `GET /api/News`, `GET /api/Clubs`, `GET /api/Divisions` (valid JSON expected), an admin endpoint without a token (must return 401 - proves auth is enforced), and an unknown route (must return 404). The frontend deploy verifies the SPA loads (HTTP 200 with the React root element) both on `/` and on a deep link like `/clubs` (SPA fallback). Any failed check fails the workflow, so a broken staging or prod deploy is visible immediately - and on prod the deploy job's approval gate means the smoke failure emails/notifies right after an intentional release.
 
-All workflows authenticate with **OIDC** (federated credentials) - no publish profiles or long-lived secrets. Keep **required reviewers on the `prod` GitHub environment only** — the `staging` environment must not require approval, or the auto provision/deploy path will wait for a person.
+All workflows authenticate with **OIDC** (federated credentials) - no publish profiles or long-lived secrets. Keep **required reviewers on the `prod` GitHub environment only** — the `staging` environment must not require approval, or the auto provision/deploy path will wait for a person. Production jobs refuse any ref other than `master`.
 
 ### One-time OIDC setup
 
@@ -179,13 +182,18 @@ Workflows cannot stop a direct `git push` to `master`. Set this in the repo: **S
    - `Build and Test` from Backend CI and Frontend CI (names as shown in Actions)
 5. **Do not allow bypassing the above settings** (uncheck admin bypass if you want even admins to go through a PR)
 
-Release path after that: feature branch → PR into `development` → PR from `development` into `master`. Feature-to-master PRs fail the `protect-master` check.
+Release path after that: feature branch → PR into `development` (staging auto) → PR from `development` into `master` → Approve `Release Production`. Feature-to-master PRs fail the `protect-master` check.
 
 ### First-time provisioning order
 
-1. Merge the SWA hostname into `backend.staging.bicepparam` (`allowedOrigins` + `frontendBaseUrl`)
+1. Merge the SWA hostname into `backend.staging.bicepparam` (`allowedOrigins` + `frontendBaseUrl`) if it is not already there
 2. Push/merge to `development` (or dispatch `infra-deploy.yml` for **staging** / **both**) — staging is provisioned automatically, then FE/BE deploy
-3. **Prod** is never auto-provisioned: dispatch `infra-deploy.yml` for **prod** (reviewers confirm), then dispatch `deploy-backend.yml` / `deploy-frontend.yml` for **prod** (reviewers confirm again)
+3. Confirm staging (UI + smoke tests in the deploy workflows)
+4. Open a PR from `development` into `master`. Merge starts `release-production.yml`, which waits on the `prod` environment
+5. **Approve** the production deployment in GitHub (Actions → the run → Review deployments). One approval provisions `myleague-prod-rg`, deploys API + SWA, and runs smoke tests
+6. After the first successful prod release, commit the SWA hostname into `backend.prod.bicepparam` (`allowedOrigins` + `frontendBaseUrl`). The workflow already overrides those parameters from the live SWA, so CORS works before that commit
+
+Do not put required reviewers on the `staging` GitHub environment.
 
 ## Manual Provisioning (fallback)
 
@@ -216,7 +224,7 @@ The provisioning templates configure the following on the App Service:
 | `AzureCommunicationServices__ConnectionString` | Auto from ACS module | ACS connection string |
 | `AzureCommunicationServices__SenderAddress` | Auto from ACS domain | Email sender (DoNotReply@...) |
 | `Seed__AdminEmail` | Variable at deploy time | Initial admin user email |
-| `LoginCode__AutoFillLoginCode` | Manual (default `false`) | When `true`, the `/api/Auth/login` response includes the generated code (skips email). Convenient for internal test environments. **Must stay `false` in any publicly reachable production environment** - it exposes the login code to anyone who can call the endpoint with a known email. |
+| `LoginCode__AutoFillLoginCode` | Bicep sets `false` in Production; otherwise manual | When `true`, the `/api/Auth/login` response includes the generated code (skips email). Convenient for staging. **Must stay `false` in any publicly reachable production environment** — Bicep enforces that on the prod App Service. |
 
 ### Toggling the login-code auto-fill flag in Azure
 
