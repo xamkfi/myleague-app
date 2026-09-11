@@ -151,6 +151,7 @@
     },
     "filters": {
       "showFilters": "Suodattimet",
+      "sport": "Laji",
       "status": "Tila",
       "season": "Kausi",
       "allSeasons": "Kaikki kaudet",

@@ -1,33 +1,45 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CalendarFilters as FiltersType } from '../../../types/calendar';
-import { CALENDAR_STATUSES } from '../../../types/calendar';
+import type { CalendarFilters as FiltersType, CalendarSeasonOption, CalendarSport } from '../../../types/calendar';
+import { CALENDAR_SPORTS, CALENDAR_STATUSES, calendarSportLabelKey } from '../../../types/calendar';
+import { seasonsMatchingSportFilter } from '../utils/applyCalendarFilters';
 import './CalendarFilters.scss';
-
-interface SeasonOption {
-  id: string;
-  name: string;
-}
 
 interface CalendarFiltersProps {
   filters: FiltersType;
   onFiltersChange: (filters: FiltersType) => void;
-  seasons: SeasonOption[];
+  seasons: CalendarSeasonOption[];
 }
 
 export default function CalendarFilters({ filters, onFiltersChange, seasons }: CalendarFiltersProps) {
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const visibleSeasons = seasonsMatchingSportFilter(seasons, filters.sports);
+
   const activeCount = [
+    filters.sports.length > 0,
     filters.statuses.length > 0,
     filters.competitionId !== null,
     filters.teamSearch.length > 0,
   ].filter(Boolean).length;
 
+  const toggleSport = (sport: CalendarSport) => {
+    const nextSports = filters.sports.includes(sport)
+      ? filters.sports.filter((item) => item !== sport)
+      : [...filters.sports, sport];
+    const nextVisibleSeasons = seasonsMatchingSportFilter(seasons, nextSports);
+    const competitionStillVisible = nextVisibleSeasons.some((season) => season.id === filters.competitionId);
+    onFiltersChange({
+      ...filters,
+      sports: nextSports,
+      competitionId: competitionStillVisible ? filters.competitionId : null,
+    });
+  };
+
   const toggleStatus = (status: string) => {
     const next = filters.statuses.includes(status)
-      ? filters.statuses.filter((s) => s !== status)
+      ? filters.statuses.filter((item) => item !== status)
       : [...filters.statuses, status];
     onFiltersChange({ ...filters, statuses: next });
   };
@@ -43,6 +55,7 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
   const clearFilters = () => {
     onFiltersChange({
       ...filters,
+      sports: [],
       statuses: [],
       competitionId: null,
       teamSearch: '',
@@ -76,6 +89,26 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
       <div className={`calendar-filters__body ${mobileOpen ? 'calendar-filters__body--open' : ''}`}>
         <div className="calendar-filters__section">
           <label className="calendar-filters__label">
+            {t('eventCalendarPage.filters.sport')}
+          </label>
+          <div className="calendar-filters__chips">
+            {CALENDAR_SPORTS.map((sport) => (
+              <button
+                key={sport}
+                type="button"
+                className={`calendar-filters__chip ${
+                  filters.sports.includes(sport) ? 'calendar-filters__chip--active' : ''
+                }`}
+                onClick={() => toggleSport(sport)}
+              >
+                {t(calendarSportLabelKey(sport))}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="calendar-filters__section">
+          <label className="calendar-filters__label">
             {t('eventCalendarPage.filters.status')}
           </label>
           <div className="calendar-filters__chips">
@@ -95,7 +128,7 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
           </div>
         </div>
 
-        {seasons.length > 0 && (
+        {visibleSeasons.length > 0 && (
           <div className="calendar-filters__section">
             <label className="calendar-filters__label" htmlFor="calendar-season-filter">
               {t('eventCalendarPage.filters.season')}
@@ -107,8 +140,8 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
               onChange={handleSeasonChange}
             >
               <option value="">{t('eventCalendarPage.filters.allSeasons')}</option>
-              {seasons.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
+              {visibleSeasons.map((season) => (
+                <option key={season.id} value={season.id}>{season.name}</option>
               ))}
             </select>
           </div>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { CalendarEvent } from '../../../types/calendar';
+import { calendarSportLabelKey } from '../../../types/calendar';
 import './EventCard.scss';
 
 interface EventCardProps {
@@ -23,6 +24,7 @@ export default function EventCard({ event }: EventCardProps) {
       <div className="event-card__info">
         <span className="event-card__title">{event.title}</span>
         <div className="event-card__meta">
+          <span className="event-card__sport">{t(calendarSportLabelKey(event.sport))}</span>
           {event.venue && <span className="event-card__venue">{event.venue}</span>}
           {event.subtitle && <span className="event-card__subtitle">{event.subtitle}</span>}
         </div>
