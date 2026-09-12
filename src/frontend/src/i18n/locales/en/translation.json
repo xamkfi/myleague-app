@@ -64,6 +64,7 @@
     },
     "filters": {
       "showFilters": "Filters",
+      "sport": "Sport",
       "status": "Status",
       "season": "Season",
       "allSeasons": "All seasons",
