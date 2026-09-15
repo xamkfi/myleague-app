@@ -225,6 +225,35 @@ public class HockeyEntityImporter
         Console.WriteLine($"  Teams: {created} created, {reused} already existed.");
     }
 
+    public Task ApplyActiveMembershipsAsync(FloorballImportSet set)
+    {
+        Console.WriteLine("--- Active club memberships ---");
+        Dictionary<Guid, HockeyTeamDto?> teamCache = [];
+        return ActiveRosterApplicator.ApplyAsync(set, _idMap, async (teamId, entry, playerId, isActive) =>
+        {
+            if (!teamCache.TryGetValue(teamId, out HockeyTeamDto? team))
+            {
+                team = await _api.GetTeamByIdAsync(teamId);
+                teamCache[teamId] = team;
+            }
+
+            HockeyTeamPlayerDto? row = team?.Roster.FirstOrDefault(r => r.PlayerId == playerId);
+            HockeyPosition position = entry.HockeyPosition;
+            if (row != null && Enum.TryParse(row.Position, true, out HockeyPosition parsedPosition))
+                position = parsedPosition;
+            int jersey = row?.JerseyNumber is > 0 and < 100
+                ? row.JerseyNumber.Value
+                : entry.TeamPlayer.JerseyNumber is > 0 and < 100
+                    ? entry.TeamPlayer.JerseyNumber.Value
+                    : 1;
+            HockeyCaptainRole captain = HockeyCaptainRole.None;
+            if (row != null && Enum.TryParse(row.CaptainRole, true, out HockeyCaptainRole parsedCaptain))
+                captain = parsedCaptain;
+            HockeyRosterStatus status = isActive ? HockeyRosterStatus.Active : HockeyRosterStatus.Inactive;
+            return await _api.UpdateTeamPlayerAsync(teamId, playerId, position, jersey, status, captain);
+        });
+    }
+
     private static string MakeShortName(OldTeam team)
     {
         string source = !string.IsNullOrWhiteSpace(team.ShortName) ? team.ShortName : team.Name;

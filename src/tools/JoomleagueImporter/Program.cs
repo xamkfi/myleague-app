@@ -133,6 +133,8 @@ public static class Program
         Console.WriteLine();
         Console.WriteLine($"Totals: {set.UniqueTeams.Count} unique teams, {set.UniquePersons.Count} unique persons, " +
                           $"{set.TotalMatches} matches, {set.TotalEvents} events.");
+        Console.WriteLine($"Match appearances: {set.MatchesWithAppearances}/{set.TotalMatches} matches have " +
+                          "jos_joomleague_match_player rows (others use events only).");
         if (set.SkippedEmptyRosterTeams > 0)
             Console.WriteLine($"Skipped {set.SkippedEmptyRosterTeams} team(s) with 0 importable roster players.\n");
         else
@@ -250,6 +252,7 @@ public static class Program
         await entities.ImportClubsAsync(set, db);
         await entities.ImportPersonsAndPlayersAsync(set);
         await entities.ImportTeamsAsync(set, db, division);
+        await entities.ApplyActiveMembershipsAsync(set);
         Guid refereeId = await entities.GetOrCreateImportRefereeAsync();
 
         FloorballMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
@@ -287,6 +290,7 @@ public static class Program
         await entities.ImportClubsAsync(set, db);
         await entities.ImportPersonsAndPlayersAsync(set);
         await entities.ImportTeamsAsync(set, db, division);
+        await entities.ApplyActiveMembershipsAsync(set);
         Guid refereeId = await entities.GetOrCreateImportRefereeAsync();
 
         FootballMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
@@ -325,6 +329,7 @@ public static class Program
         await entities.ImportClubsAsync(set, db);
         await entities.ImportPersonsAndPlayersAsync(set);
         await entities.ImportTeamsAsync(set, db, division);
+        await entities.ApplyActiveMembershipsAsync(set);
         Guid officialId = await entities.GetOrCreateImportOfficialAsync();
 
         HockeyMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);

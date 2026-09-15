@@ -185,7 +185,7 @@ public class HockeyStatisticsController : BaseApiController
     }
 
     /// <summary>
-    /// Gets player competition statistics (list or single when playerId+teamId provided).
+    /// Gets player competition statistics (list, or filtered by playerId and optional teamId).
     /// </summary>
     [HttpGet("players/{competitionId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<List<HockeyPlayerCompetitionStatisticsDto>>), StatusCodes.Status200OK)]
@@ -212,7 +212,7 @@ public class HockeyStatisticsController : BaseApiController
     }
 
     /// <summary>
-    /// Gets goalie competition statistics (list or single when playerId+teamId provided).
+    /// Gets goalie competition statistics (list, or filtered by playerId and optional teamId).
     /// </summary>
     [HttpGet("goalies/{competitionId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<List<HockeyGoalieCompetitionStatisticsDto>>), StatusCodes.Status200OK)]

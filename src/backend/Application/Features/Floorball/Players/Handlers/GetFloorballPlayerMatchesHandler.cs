@@ -17,6 +17,7 @@ using Domain.Entities.Common;
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
 using Domain.Enums.Floorball;
+using Application.Features.Floorball.Matches.Handlers;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -99,19 +100,18 @@ namespace Application.Features.Floorball.Players.Handlers
                     return Result<FloorballPlayerWithMatchesDto>.Success(emptyResult);
                 }
 
-                // Get the most recent team (assuming the player's current team)
-                FloorballTeam currentTeam = playerTeams.OrderByDescending(t => t.CreatedAt).First();
+                FloorballTeam currentTeam = SelectCurrentTeam(playerTeams, player.Id);
                 FloorballTeamPlayer? teamPlayer = currentTeam.Roster.FirstOrDefault(r => r.PlayerId == player.Id);
 
-                // Get all matches for all teams the player has been part of
                 List<FloorballMatch> allMatches = new List<FloorballMatch>();
                 foreach (FloorballTeam team in playerTeams)
                 {
                     IEnumerable<FloorballMatch> teamMatches = await _matchRepository.GetByTeamIdAsync(team.Id);
-                    allMatches.AddRange(teamMatches.Where(m => m.Status == FloorballMatchStatus.Completed));
+                    allMatches.AddRange(teamMatches.Where(m =>
+                        m.Status == FloorballMatchStatus.Completed &&
+                        PlayerAppearedInMatch(m, player.Id)));
                 }
 
-                // Sort matches by date (most recent first) and take the requested limit
                 List<FloorballMatch> recentMatches = allMatches
                     .OrderByDescending(m => m.ScheduledDateTime)
                     .Take(request.Limit)
@@ -217,6 +217,20 @@ namespace Application.Features.Floorball.Players.Handlers
                 _logger.LogError(ex, "Error occurred while retrieving match history for player: {PlayerId}", request.PlayerId);
                 return Result<FloorballPlayerWithMatchesDto>.Failure($"Error retrieving player match history: {ex.Message}");
             }
+        }
+
+        private static FloorballTeam SelectCurrentTeam(IReadOnlyList<FloorballTeam> playerTeams, Guid playerId)
+        {
+            return playerTeams
+                .OrderByDescending(t => t.Roster.Any(r => r.PlayerId == playerId && r.IsActive))
+                .ThenByDescending(t => t.CreatedAt)
+                .First();
+        }
+
+        private static bool PlayerAppearedInMatch(FloorballMatch match, Guid playerId)
+        {
+            return CompleteFloorballMatchHandler.CollectMatchParticipants(match)
+                .Any(participant => participant.PlayerId == playerId);
         }
 
         /// <summary>

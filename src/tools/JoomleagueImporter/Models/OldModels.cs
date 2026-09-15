@@ -65,6 +65,15 @@ public class OldTeamPlayer
     public int PersonId { get; init; }
     public int? ProjectPositionId { get; init; }
     public int? JerseyNumber { get; init; }
+    public bool IsActive { get; init; } = true;
+}
+
+public class OldMatchPlayer
+{
+    public int Id { get; init; }
+    public int MatchId { get; init; }
+    public int TeamPlayerId { get; init; }
+    public int? ProjectPositionId { get; init; }
 }
 
 public class OldRound
