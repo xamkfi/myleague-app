@@ -14,20 +14,9 @@ import {
   getClubAdminDisplayName,
   type ClubAdminSelection,
 } from './ClubAdminsPicker';
+import ClubTeamCard, { type ClubTeamCardData } from './ClubTeamCard';
 import { resolveClubAdminUserIds } from './resolveClubAdminUserIds';
 import './ClubDetailsPage.scss';
-
-type TeamSport = 'floorball' | 'football' | 'hockey';
-
-interface TeamCardData {
-  id: string;
-  sport: TeamSport;
-  name: string;
-  divisionId?: string | null;
-  homeArena: string;
-  rosterCount: number;
-  logoUrl?: string;
-}
 
 interface TeamPage<T> {
   data?: T[];
@@ -82,7 +71,8 @@ function ClubDetailsPage() {
   const { divisions } = useDivisions();
 
   const [club, setClub] = useState<Club | null>(null);
-  const [teams, setTeams] = useState<TeamCardData[]>([]);
+  const [teams, setTeams] = useState<ClubTeamCardData[]>([]);
+  const [expandedTeamKeys, setExpandedTeamKeys] = useState<Set<string>>(new Set());
   const [admins, setAdmins] = useState<ClubAdminSelection[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingAdmins, setSavingAdmins] = useState(false);
@@ -183,14 +173,16 @@ function ClubDetailsPage() {
   const getDivisionName = (divisionId?: string | null) =>
     divisionId ? divisionNameById.get(divisionId) ?? '' : '';
 
-  const getTeamEditPath = (team: TeamCardData) => {
-    if (team.sport === 'football') {
-      return `/admin/football/teams/${team.id}/edit`;
-    }
-    if (team.sport === 'hockey') {
-      return `/admin/hockey/teams/${team.id}/edit`;
-    }
-    return `/admin/floorball/teams/${team.id}/edit`;
+  const toggleTeam = (teamKey: string) => {
+    setExpandedTeamKeys((previous) => {
+      const next = new Set(previous);
+      if (next.has(teamKey)) {
+        next.delete(teamKey);
+      } else {
+        next.add(teamKey);
+      }
+      return next;
+    });
   };
 
   return (
@@ -324,41 +316,17 @@ function ClubDetailsPage() {
               {teams.length === 0 ? (
                 <p className="empty">{t('clubs.details.noTeams', 'No teams yet')}</p>
               ) : (
-                <div className="club-teams-grid">
+                <div className="club-teams-list">
                   {teams.map((team) => {
-                    const divisionName = getDivisionName(team.divisionId);
+                    const teamKey = `${team.sport}-${team.id}`;
                     return (
-                      <button
-                        key={`${team.sport}-${team.id}`}
-                        type="button"
-                        className="team-card"
-                        onClick={() => navigate(getTeamEditPath(team))}
-                      >
-                        <div className="team-card__top">
-                          <div className="team-card__logo">
-                            {team.logoUrl ? (
-                              <img src={team.logoUrl} alt="" />
-                            ) : (
-                              <span aria-hidden="true">{team.name.charAt(0)}</span>
-                            )}
-                          </div>
-                          <div className="team-name">{team.name}</div>
-                        </div>
-                        <div className="team-meta">
-                          <span className={`chip chip--${team.sport}`}>
-                            {team.sport === 'football'
-                              ? t('clubAdmin.sportFootball', 'Football')
-                              : team.sport === 'hockey'
-                                ? t('clubAdmin.sportHockey', 'Ice hockey')
-                                : t('clubAdmin.sportFloorball', 'Floorball')}
-                          </span>
-                          {divisionName && <span className="chip">{divisionName}</span>}
-                          <span className="chip">
-                            {t('clubs.details.members', 'Members')}: {team.rosterCount}
-                          </span>
-                        </div>
-                        {team.homeArena && <div className="team-sub">{team.homeArena}</div>}
-                      </button>
+                      <ClubTeamCard
+                        key={teamKey}
+                        team={team}
+                        divisionName={getDivisionName(team.divisionId)}
+                        isExpanded={expandedTeamKeys.has(teamKey)}
+                        onToggle={() => toggleTeam(teamKey)}
+                      />
                     );
                   })}
                 </div>

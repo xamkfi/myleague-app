@@ -768,7 +768,9 @@
       "city": "Kaupunki",
       "country": "Maa",
       "foundingDate": "Perustettu",
-      "actions": "Toiminnot"
+      "actions": "Toiminnot",
+      "actionsMenu": "Seuran toiminnot",
+      "openClub": "Avaa seura"
     },
     "form": {
       "name": "Seuran Nimi",
@@ -796,10 +798,16 @@
     },
     "details": {
       "title": "Seuran Tiedot",
+      "backToClubs": "Takaisin seuroihin",
       "foundingDate": "Perustettu",
       "teams": "Joukkueet",
       "noTeams": "Ei joukkueita vielä",
-      "members": "Jäseniä"
+      "members": "Jäseniä",
+      "competitions": "Kaudet",
+      "noCompetitions": "Ei kausia",
+      "editTeam": "Muokkaa joukkuetta",
+      "season": "Kausi",
+      "tournament": "Turnaus"
     },
     "deleteClubButton": "Poista seura",
     "confirmDeleteTitle": "Poista seura?",
@@ -1918,6 +1926,17 @@
     "stats": {
       "yellowCards": "Keltaiset kortit",
       "redCards": "Punaiset kortit"
+    },
+    "teams": {
+      "rosterCompetition": "Kilpailu",
+      "allCompetitions": "Kaikki kilpailut"
+    },
+    "seasons": {
+      "createFromClub": "Luo uusi joukkue",
+      "createFromClubHint": "Luo seuralle uusi joukkue tyhjällä kokoonpanolla, tai lisää olemassa oleva joukkue kopioidaksesi viimeisimmän kokoonpanon.",
+      "selectClub": "Valitse seura",
+      "newTeamName": "Uuden joukkueen nimi",
+      "teamCreatedFromClub": "Uusi joukkue luotiin tyhjällä kokoonpanolla."
     }
   },
   "sports": {
@@ -2019,6 +2038,8 @@
       "noAvailablePlayers": "Ei vapaita pelaajia",
       "editRoster": "Muokkaa kokoonpanoa",
       "manageTeamRoster": "HALLINNOI JOUKKUEEN KOKOONPANOA",
+      "rosterCompetition": "Kilpailu",
+      "allCompetitions": "Kaikki kilpailut",
       "searchPlayers": "Hae pelaajia...",
       "players": "pelaajaa",
       "lines": "Kentälliset",
@@ -2101,6 +2122,11 @@
       "teamsInDivision": "Joukkueet: {{division}}",
       "noTeamsInDivision": "Tässä divisioonassa ei ole vielä joukkueita. Lisää niitä alla olevasta taulukosta.",
       "addTeams": "Lisää joukkueita",
+      "createFromClub": "Luo uusi joukkue",
+      "createFromClubHint": "Luo seuralle uusi joukkue tyhjällä kokoonpanolla, tai lisää olemassa oleva joukkue kopioidaksesi viimeisimmän kokoonpanon.",
+      "selectClub": "Valitse seura",
+      "newTeamName": "Uuden joukkueen nimi",
+      "teamCreatedFromClub": "Uusi joukkue luotiin tyhjällä kokoonpanolla.",
       "searchTeams": "Hae joukkueita nimellä...",
       "allCategories": "Kaikki kategoriat",
       "selectedCount": "{{count}} joukkuetta valittu",

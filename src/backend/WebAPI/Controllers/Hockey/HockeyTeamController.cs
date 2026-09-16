@@ -86,10 +86,12 @@ public class HockeyTeamController : BaseApiController
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTeamDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> GetTeamById(Guid id,
+    public async Task<ActionResult<ApiResponse<HockeyTeamDto>>> GetTeamById(
+        Guid id,
+        [FromQuery] Guid? competitionId = null,
         CancellationToken cancellationToken = default)
     {
-        Result<HockeyTeamDto> result = await _mediator.Send(new GetHockeyTeamByIdQuery(id), cancellationToken);
+        Result<HockeyTeamDto> result = await _mediator.Send(new GetHockeyTeamByIdQuery(id, competitionId), cancellationToken);
         return HandleResult(result, "Hockey team retrieved successfully", "Hockey team not found");
     }
 

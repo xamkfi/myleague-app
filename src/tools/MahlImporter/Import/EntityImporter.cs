@@ -237,20 +237,6 @@ public class EntityImporter
                 map[st.Name] = team;
             }
 
-            int added = 0;
-            foreach (ScrapedPlayer sp in st.Players)
-            {
-                string fullName = $"{sp.FirstName} {sp.LastName}";
-                if (!playerMap.TryGetValue(fullName, out (Guid PersonId, Guid PlayerId) ids))
-                {
-                    continue;
-                }
-
-                int position = sp.IsGoalkeeper ? 4 : 1; // 4=Goalkeeper, 1=Forward
-                bool ok = await _api.AddPlayerToTeamAsync(team.Id, ids.PlayerId, position, sp.JerseyNumber > 0 ? sp.JerseyNumber : null);
-                if (ok) added++;
-            }
-            Console.WriteLine($"    Added {added}/{st.Players.Count} players to '{st.Name}'");
             if (!string.IsNullOrEmpty(st.LogoUrl) && NeedsLogoUpload(team.LogoUrl))
             {
                 string? hostedUrl = await _api.UploadClubImageAsync(st.LogoUrl);
@@ -269,6 +255,35 @@ public class EntityImporter
         }
 
         return map;
+    }
+
+    public async Task ImportRostersAsync(
+        List<ScrapedTeam> scrapedTeams,
+        Dictionary<string, FloorballTeamDto> teamMap,
+        Dictionary<string, (Guid PersonId, Guid PlayerId)> playerMap,
+        Guid competitionId)
+    {
+        Console.WriteLine("--- Importing Season Rosters ---");
+        foreach (ScrapedTeam st in scrapedTeams)
+        {
+            if (!teamMap.TryGetValue(st.Name, out FloorballTeamDto? team))
+                continue;
+
+            int added = 0;
+            foreach (ScrapedPlayer sp in st.Players)
+            {
+                string fullName = $"{sp.FirstName} {sp.LastName}";
+                if (!playerMap.TryGetValue(fullName, out (Guid PersonId, Guid PlayerId) ids))
+                    continue;
+
+                int position = sp.IsGoalkeeper ? 4 : 1;
+                bool ok = await _api.AddPlayerToTeamAsync(
+                    team.Id, ids.PlayerId, position, sp.JerseyNumber > 0 ? sp.JerseyNumber : null, competitionId);
+                if (ok) added++;
+            }
+
+            Console.WriteLine($"    Added {added}/{st.Players.Count} players to '{st.Name}'");
+        }
     }
 
     /// <summary>

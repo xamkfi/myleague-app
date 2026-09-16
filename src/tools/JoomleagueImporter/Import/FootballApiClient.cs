@@ -51,11 +51,18 @@ public class FootballApiClient : ImportApiClient
         return await ReadDataOrNull<FootballTeamDto>(resp, $"Create football team '{name}'");
     }
 
-    public Task<bool> AddPlayerToTeamAsync(Guid teamId, Guid playerId, int position, int? jerseyNumber) =>
-        AddPlayerToTeamByQueryAsync(
-            $"api/FootballTeam/{teamId}/players/{playerId}?position={position}",
-            jerseyNumber,
-            "Add football player to team");
+    public Task<bool> AddPlayerToTeamAsync(
+        Guid teamId,
+        Guid playerId,
+        int position,
+        int? jerseyNumber,
+        Guid? competitionId = null)
+    {
+        string url = $"api/FootballTeam/{teamId}/players/{playerId}?position={position}";
+        if (competitionId.HasValue)
+            url += $"&competitionId={competitionId.Value}";
+        return AddPlayerToTeamByQueryAsync(url, jerseyNumber, "Add football player to team");
+    }
 
     public async Task<FootballTeamDto?> GetTeamByIdAsync(Guid teamId)
     {
@@ -154,10 +161,15 @@ public class FootballApiClient : ImportApiClient
         return await OkOrAlready(resp, "AddTeamToFootballSeason");
     }
 
-    public async Task<bool> AddTeamToSeasonDivisionAsync(Guid seasonId, Guid divisionId, Guid teamId)
+    public async Task<bool> AddTeamToSeasonDivisionAsync(
+        Guid seasonId,
+        Guid divisionId,
+        Guid teamId,
+        Domain.Enums.Common.RosterEnrollmentMode rosterMode = Domain.Enums.Common.RosterEnrollmentMode.Empty)
     {
         HttpResponseMessage resp = await Http.PostAsync(
-            $"api/FootballSeason/{seasonId}/divisions/{divisionId}/teams/{teamId}", null);
+            $"api/FootballSeason/{seasonId}/divisions/{divisionId}/teams/{teamId}?rosterMode={(int)rosterMode}",
+            null);
         return await OkOrAlready(resp, "AddTeamToFootballSeasonDivision");
     }
 

@@ -17,6 +17,35 @@ import SummarySection from './components/SummarySection';
 import Statistics from './components/Statistics';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 
+function pickSeasonForDivision(seasons: FloorballSeasonDto[], divisionId: string): FloorballSeasonDto | null {
+  const matching = seasons.filter((season) =>
+    season.seasonDivisions?.some((seasonDivision) => seasonDivision.divisionId === divisionId),
+  );
+  const active = matching.find((season) => season.isActive);
+  if (active) {
+    return active;
+  }
+
+  return matching
+    .slice()
+    .sort((left, right) => new Date(right.startDate).getTime() - new Date(left.startDate).getTime())[0] ?? null;
+}
+
+async function getCurrentSeason(divisionId: string): Promise<FloorballSeasonDto | null> {
+  try {
+    const [activeSeasonsResponse, allSeasonsResponse] = await Promise.all([
+      floorballSeasonService.getActive(),
+      floorballSeasonService.getAll(),
+    ]);
+
+    return pickSeasonForDivision(activeSeasonsResponse.data ?? [], divisionId)
+      ?? pickSeasonForDivision(allSeasonsResponse.data ?? [], divisionId);
+  } catch (error) {
+    console.error('Error fetching current season:', error);
+    return null;
+  }
+}
+
 function FloorballTeamPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -41,24 +70,6 @@ function FloorballTeamPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Function to get current season for the team's division
-  const getCurrentSeason = async (divisionId: string): Promise<FloorballSeasonDto | null> => {
-    try {
-      const activeSeasonsResponse = await floorballSeasonService.getActive();
-      const activeSeasons = activeSeasonsResponse.data || [];
-      
-      // Find the active season for this division
-      const seasonForDivision = activeSeasons.find(season => 
-        season.seasonDivisions?.some(sd => sd.divisionId === divisionId) && season.isActive
-      );
-      
-      return seasonForDivision || null;
-    } catch (error) {
-      console.error('Error fetching current season:', error);
-      return null;
-    }
-  };
-
   useEffect(() => {
     const fetchTeamData = async () => {
       if (!slug) {
@@ -79,14 +90,18 @@ function FloorballTeamPage() {
 
         if (foundTeam) {
           const teamResponse = await floorballTeamService.getById(foundTeam.id);
-          setTeam(teamResponse);
 
-          // Fetch current season for this team's division
           if (teamResponse.divisionId) {
             const currentSeasonData = await getCurrentSeason(teamResponse.divisionId);
             setCurrentSeason(currentSeasonData);
+            setTeam(
+              currentSeasonData
+                ? await floorballTeamService.getById(foundTeam.id, currentSeasonData.id)
+                : teamResponse,
+            );
           } else {
             setCurrentSeason(null);
+            setTeam(teamResponse);
           }
         } else {
           setError('Team not found');

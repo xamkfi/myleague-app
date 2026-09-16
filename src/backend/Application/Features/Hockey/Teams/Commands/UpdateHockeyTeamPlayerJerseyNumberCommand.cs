@@ -14,4 +14,5 @@ namespace Application.Features.Hockey.Teams.Commands;
 public record UpdateHockeyTeamPlayerJerseyNumberCommand(
     Guid TeamId,
     Guid PlayerId,
-    int? JerseyNumber) : IRequest<Result<HockeyTeamPlayerDto>>;
+    int? JerseyNumber,
+    Guid? CompetitionId = null) : IRequest<Result<HockeyTeamPlayerDto>>;

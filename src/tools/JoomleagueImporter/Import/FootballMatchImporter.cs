@@ -116,8 +116,11 @@ public class FootballMatchImporter
         public int TimeSeconds { get; init; }
     }
 
+    private Guid _currentCompetitionId;
+
     public async Task ImportProjectMatchesAsync(ProjectImport pi, FootballSeasonDto season, Guid refereeId)
     {
+        _currentCompetitionId = season.Id;
         int periodSeconds = Math.Max(1, season.MatchRules.HalfDurationMinutes) * 60;
         int regularPeriods = Math.Max(1, season.MatchRules.NumberOfHalves);
         int playersOnField = Math.Max(1, season.MatchRules.PlayersOnField);
@@ -277,8 +280,8 @@ public class FootballMatchImporter
             return true;
         }
 
-        await EnsureLineupOnRosterAsync(home.TeamId, homeLineup);
-        await EnsureLineupOnRosterAsync(away.TeamId, awayLineup);
+        await EnsureLineupOnRosterAsync(home.TeamId, homeLineup, season.Id);
+        await EnsureLineupOnRosterAsync(away.TeamId, awayLineup, season.Id);
         await _api.SetLineupAsync(created.Id, home.TeamId, homeLineup);
         await _api.SetLineupAsync(created.Id, away.TeamId, awayLineup);
 
@@ -354,8 +357,8 @@ public class FootballMatchImporter
                 _log.LogError("RepairFootballMatch", new { match.Id, newMatchId }, "Could not build lineup; cannot start match.");
                 return false;
             }
-            await EnsureLineupOnRosterAsync(home.TeamId, homeLineup);
-            await EnsureLineupOnRosterAsync(away.TeamId, awayLineup);
+            await EnsureLineupOnRosterAsync(home.TeamId, homeLineup, dto.CompetitionId);
+            await EnsureLineupOnRosterAsync(away.TeamId, awayLineup, dto.CompetitionId);
             await _api.SetLineupAsync(newMatchId, home.TeamId, homeLineup);
             await _api.SetLineupAsync(newMatchId, away.TeamId, awayLineup);
             if (!await _api.StartMatchAsync(newMatchId))
@@ -413,7 +416,8 @@ public class FootballMatchImporter
         if (selected.Count < playersOnField)
         {
             int needed = playersOnField - selected.Count;
-            List<Guid> pads = await _entities.EnsureUnknownPlayersAsync(side.OldTeam, side.TeamId, needed);
+            List<Guid> pads = await _entities.EnsureUnknownPlayersAsync(
+                side.OldTeam, side.TeamId, needed, _currentCompetitionId);
             foreach (Guid padId in pads)
             {
                 if (selected.Any(c => c.PlayerId == padId))
@@ -491,10 +495,11 @@ public class FootballMatchImporter
     /// </summary>
     private async Task EnsureLineupOnRosterAsync(
         Guid teamId,
-        List<(Guid PlayerId, FootballPosition Position, bool IsOnField)> lineup)
+        List<(Guid PlayerId, FootballPosition Position, bool IsOnField)> lineup,
+        Guid competitionId)
     {
         foreach ((Guid playerId, FootballPosition position, bool _) in lineup)
-            await _api.AddPlayerToTeamAsync(teamId, playerId, (int)position, jerseyNumber: null);
+            await _api.AddPlayerToTeamAsync(teamId, playerId, (int)position, jerseyNumber: null, competitionId);
     }
 
     private async Task<(List<GoalRec> Goals, List<CardRec> Cards, int IgnoredEvents)> BuildEventsAsync(
@@ -709,7 +714,7 @@ public class FootballMatchImporter
     {
         if (!_fillUnknownGoals)
             return null;
-        Guid? unknown = await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId);
+        Guid? unknown = await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId, _currentCompetitionId);
         if (unknown != null && side.Roster.All(c => c.PlayerId != unknown.Value))
             side.Roster.Add(new LineupCandidate { PlayerId = unknown.Value, Position = FootballPosition.Forward });
         return unknown;

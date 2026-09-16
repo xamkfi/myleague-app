@@ -45,8 +45,11 @@ export const hockeyTeamService = {
       ),
     ),
 
-  getById: (id: string): Promise<HockeyTeamDto> =>
-    hockeyRequest<HockeyTeamDto>(`/HockeyTeam/${id}`, 'Failed to fetch hockey team'),
+  getById: (id: string, competitionId?: string | null): Promise<HockeyTeamDto> =>
+    hockeyRequest<HockeyTeamDto>(
+      `/HockeyTeam/${id}${competitionId ? `?competitionId=${encodeURIComponent(competitionId)}` : ''}`,
+      'Failed to fetch hockey team',
+    ),
 
   getByClubId: async (clubId: string, teamCategory?: string): Promise<HockeyTeamDto[]> =>
     uniqueById(

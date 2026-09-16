@@ -74,24 +74,17 @@ public class UpdateTeamPlayerHandler : IRequestHandler<UpdateTeamPlayerCommand, 
             }
 
             // Check if player exists in the team roster
-            FootballTeamPlayer? teamPlayer = team.Roster.FirstOrDefault(p => p.PlayerId == request.PlayerId);
+            FootballTeamPlayer? teamPlayer = team.Roster.FirstOrDefault(p =>
+                p.PlayerId == request.PlayerId && p.CompetitionId == request.CompetitionId);
             if (teamPlayer == null)
             {
                 _logger.LogWarning("Player {PlayerId} not found in team {TeamId} roster", request.PlayerId, request.TeamId);
                 return Result<FootballTeamPlayerDto>.Failure($"Player with ID {request.PlayerId} is not in the team roster.");
             }
 
-            // Check if player with given jersey number exists
-            if (team.Roster.Any(p => p.JerseyNumber == request.JerseyNumber && p.PlayerId != request.PlayerId))
-            {
-                _logger.LogWarning("Jersey number {number} is already in use", teamPlayer.JerseyNumber);
-                return Result<FootballTeamPlayerDto>.Failure($"This team already uses jersey number '{request.JerseyNumber}'");
-            }    
-
             _logger.LogInformation("Updating player {PlayerId} in team {TeamId}", request.PlayerId, request.TeamId);
             
-            // Update the team player information
-            team.UpdateTeamPlayer(request.PlayerId, request.Position, request.JerseyNumber, request.IsActive);
+            team.UpdateTeamPlayer(request.PlayerId, request.Position, request.JerseyNumber, request.IsActive, request.CompetitionId);
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -112,7 +105,8 @@ public class UpdateTeamPlayerHandler : IRequestHandler<UpdateTeamPlayerCommand, 
             }
 
             // Get the updated team player from the roster
-            FootballTeamPlayer updatedTeamPlayer = team.Roster.First(p => p.PlayerId == request.PlayerId);
+            FootballTeamPlayer updatedTeamPlayer = team.Roster.First(p =>
+                p.PlayerId == request.PlayerId && p.CompetitionId == request.CompetitionId);
             
             // Create the DTO manually since there's no dedicated mapper
             FootballTeamPlayerDto teamPlayerDto = new FootballTeamPlayerDto(

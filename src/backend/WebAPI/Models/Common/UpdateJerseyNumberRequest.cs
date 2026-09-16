@@ -12,4 +12,7 @@ public class UpdateJerseyNumberRequest
     /// </summary>
     [Range(1, 99)]
     public int? JerseyNumber { get; set; }
+
+    /// <summary>Optional competition roster scope (season or tournament).</summary>
+    public Guid? CompetitionId { get; set; }
 }

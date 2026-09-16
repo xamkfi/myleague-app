@@ -27,9 +27,9 @@ public static class ClubsSeeder
 				City = club.City,
 				Country = club.Country,
 				FoundingDate = club.FoundingDate,
-				WebsiteUrl = club.WebsiteUrl ?? string.Empty,
-				LogoUrl = club.LogoUrl ?? string.Empty,
-				ContactEmail = club.ContactEmail ?? string.Empty
+				WebsiteUrl = string.IsNullOrWhiteSpace(club.WebsiteUrl) ? null : club.WebsiteUrl,
+				LogoUrl = string.IsNullOrWhiteSpace(club.LogoUrl) ? null : club.LogoUrl,
+				ContactEmail = string.IsNullOrWhiteSpace(club.ContactEmail) ? null : club.ContactEmail
 			};
 
 			HttpResponseMessage response = await http.PostAsJsonAsync("api/clubs", request);

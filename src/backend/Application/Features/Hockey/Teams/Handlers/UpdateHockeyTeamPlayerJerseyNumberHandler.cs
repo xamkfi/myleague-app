@@ -42,7 +42,8 @@ public class UpdateHockeyTeamPlayerJerseyNumberHandler
                 return Result<HockeyTeamPlayerDto>.NotFound("HockeyTeam", request.TeamId);
             }
 
-            HockeyTeamPlayer? teamPlayer = team.Roster.FirstOrDefault(p => p.PlayerId == request.PlayerId && p.IsActive);
+            HockeyTeamPlayer? teamPlayer = team.Roster.FirstOrDefault(p =>
+                p.PlayerId == request.PlayerId && p.IsActive && p.CompetitionId == request.CompetitionId);
             if (teamPlayer is null)
             {
                 return Result<HockeyTeamPlayerDto>.Failure(

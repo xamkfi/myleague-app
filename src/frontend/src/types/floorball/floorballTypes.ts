@@ -76,6 +76,7 @@ export interface FloorballTeamPlayer {
   penaltyMinutes: number;
   yellowCards: number;
   redCards: number;
+  competitionId?: string | null;
 }
 
 export interface FloorballReferee {
@@ -166,12 +167,14 @@ export interface FloorballTeamPlayerDto {
   goals: number;
   assists: number;
   penaltyMinutes: number;
+  competitionId?: string | null;
 }
 
 export interface UpdateFloorballTeamPlayerRequest {
   position: FloorballPosition;
   jerseyNumber?: number;
   isActive: boolean;
+  competitionId?: string | null;
 }
 
 export interface AddPlayerToTeamRequest {

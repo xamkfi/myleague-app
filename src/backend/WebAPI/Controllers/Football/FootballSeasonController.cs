@@ -347,9 +347,13 @@ public class FootballSeasonController : BaseApiController
     [HttpPost("{competitionId:guid}/divisions/{divisionId:guid}/teams/{teamId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse>> AddTeamToSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
+    public async Task<ActionResult<ApiResponse>> AddTeamToSeasonDivision(
+        Guid competitionId,
+        Guid divisionId,
+        Guid teamId,
+        [FromQuery] Domain.Enums.Common.RosterEnrollmentMode rosterMode = Domain.Enums.Common.RosterEnrollmentMode.CopyLatest)
     {
-        Result result = await _mediator.Send(new AddTeamToSeasonDivisionCommand(competitionId, divisionId, teamId));
+        Result result = await _mediator.Send(new AddTeamToSeasonDivisionCommand(competitionId, divisionId, teamId, rosterMode));
         return HandleVoidResult(result, "Team added to season division successfully", "Failed to add team to season division");
     }
 

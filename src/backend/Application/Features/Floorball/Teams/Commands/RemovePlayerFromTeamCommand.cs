@@ -22,5 +22,6 @@ namespace Application.Features.Floorball.Teams.Commands
     /// <param name="PlayerId"></param>
     public record RemovePlayerFromTeamCommand(
         Guid TeamId,
-        Guid PlayerId) : IRequest<Result<FloorballTeamDto>>;
+        Guid PlayerId,
+        Guid? CompetitionId = null) : IRequest<Result<FloorballTeamDto>>;
 }

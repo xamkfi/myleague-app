@@ -53,7 +53,7 @@ public class HockeyCompetitionController : BaseApiController
         CancellationToken cancellationToken = default)
     {
         Result<HockeyCompetitionTeamDto> result = await _mediator.Send(
-            new AddTeamToHockeyCompetitionCommand(competitionId, request.TeamId, request.Seed), cancellationToken);
+            new AddTeamToHockeyCompetitionCommand(competitionId, request.TeamId, request.Seed, request.RosterMode), cancellationToken);
 
         return HandleResult(result, "Team added to hockey competition successfully", "Failed to add team to hockey competition");
     }

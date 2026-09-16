@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import SearchField from '../../../../components/SearchField';
@@ -24,6 +24,8 @@ function EditHockeyRosterPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id: teamId } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const selectedCompetitionId = searchParams.get('competitionId') ?? '';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentTeam, setCurrentTeam] = useState<HockeyTeamDto | null>(null);
@@ -38,7 +40,7 @@ function EditHockeyRosterPage() {
     }
     try {
       setLoading(true);
-      const team = await hockeyTeamService.getById(teamId);
+      const team = await hockeyTeamService.getById(teamId, selectedCompetitionId || null);
       setCurrentTeam(team);
       const nameEntries = await Promise.all(
         team.roster.map(async (row) => {
@@ -58,7 +60,7 @@ function EditHockeyRosterPage() {
     } finally {
       setLoading(false);
     }
-  }, [teamId]);
+  }, [teamId, selectedCompetitionId]);
 
   useEffect(() => {
     void loadTeamData();

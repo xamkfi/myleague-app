@@ -52,6 +52,7 @@ public class AddTeamToHockeyCompetitionHandler
             }
 
             HockeyCompetitionTeam competitionTeam = competition.AddTeam(request.TeamId, request.Seed);
+            Application.Features.Common.Shared.RosterEnrollment.Apply(team, request.CompetitionId, request.RosterMode);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(

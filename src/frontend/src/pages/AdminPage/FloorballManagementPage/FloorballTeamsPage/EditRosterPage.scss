@@ -29,6 +29,19 @@
       color: $color-blue-deep;
     }
 
+    .roster-competition-picker {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.9rem;
+
+      select {
+        min-width: 16rem;
+        padding: 0.35rem 0.5rem;
+      }
+    }
+
     .roster-count {
       font-size: 0.95rem;
       color: $color-neutral-dark-grey;

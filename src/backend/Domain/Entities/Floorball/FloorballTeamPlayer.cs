@@ -20,6 +20,12 @@ public class FloorballTeamPlayer : BaseEntity
     public Guid PlayerId { get; private set; }
 
     /// <summary>
+    /// Gets the competition this roster row belongs to.
+    /// <c>null</c> is the team's base roster; a value is a season or tournament roster.
+    /// </summary>
+    public Guid? CompetitionId { get; private set; }
+
+    /// <summary>
     /// Gets the player's position in the team
     /// </summary>
     public FloorballPosition Position { get; private set; }
@@ -115,10 +121,12 @@ public class FloorballTeamPlayer : BaseEntity
         Guid playerId,
         FloorballPosition position,
         int? jerseyNumber,
-        int? requestedJerseyNumber)
+        int? requestedJerseyNumber,
+        Guid? competitionId = null)
     {
         TeamId = teamId;
         PlayerId = playerId;
+        CompetitionId = competitionId;
         Position = position;
         JerseyNumber = jerseyNumber;
         // Only persist the requested number when it differs from the assigned one — equal values
@@ -263,8 +271,7 @@ public class FloorballTeamPlayer : BaseEntity
         if (ReferenceEquals(this, other))
             return true;
 
-        // For entities, equality is based on identity (TeamId + PlayerId combination)
-        return TeamId == other.TeamId && PlayerId == other.PlayerId;
+        return TeamId == other.TeamId && PlayerId == other.PlayerId && CompetitionId == other.CompetitionId;
     }
 
     /// <summary>
@@ -273,7 +280,7 @@ public class FloorballTeamPlayer : BaseEntity
     /// <returns>A hash code for the current object</returns>
     public override int GetHashCode()
     {
-        return HashCode.Combine(TeamId, PlayerId);
+        return HashCode.Combine(TeamId, PlayerId, CompetitionId);
     }
 
     /// <summary>

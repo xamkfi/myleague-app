@@ -91,10 +91,11 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
             }
 
             _logger.LogInformation("Adding player {PlayerId} to team {TeamId}", request.PlayerId, request.TeamId);
-            team.AddPlayer(player, request.Position, request.JerseyNumber, request.RequestedJerseyNumber);
-            
-            // Save changes explicitly to trigger domain events
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            if (!team.HasActiveRosterMembership(request.PlayerId, request.CompetitionId))
+            {
+                team.AddPlayer(player, request.Position, request.JerseyNumber, request.RequestedJerseyNumber, request.CompetitionId);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
 
             // Load the club for the team
             Club? club = await _clubRepository.GetByIdAsync(team.ClubId);

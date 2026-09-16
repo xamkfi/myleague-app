@@ -61,16 +61,15 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
 
             _logger.LogInformation("Adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
             season.AddTeam(team);
+            Application.Features.Common.Shared.RosterEnrollment.Apply(team, request.CompetitionId, request.RosterMode);
 
-            // Late joiners to an already-active season need team standings rows (Activate only
-            // seeds teams present at activation time).
             if (season.IsActive)
             {
                 FootballTeamSeasonStatistics teamStatistics = new(team.Id, request.CompetitionId);
                 await _footballStatisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
             }
 
-            foreach (FootballTeamPlayer player in team.Roster)
+            foreach (FootballTeamPlayer player in team.GetActiveRoster(request.CompetitionId))
             {
                 FootballPlayerSeasonStatistics playerSeasonStatistics = new(
                     player.PlayerId,

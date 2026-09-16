@@ -133,7 +133,11 @@ public static class HockeyTeamsSeeder
                 HockeyCompetitionTeamDto? competitionTeam = season.Teams.FirstOrDefault(t => t.TeamId == team.Id && t.IsActive);
                 if (competitionTeam == null)
                 {
-                    AddTeamToHockeyCompetitionRequest addTeamReq = new AddTeamToHockeyCompetitionRequest { TeamId = team.Id };
+                    AddTeamToHockeyCompetitionRequest addTeamReq = new AddTeamToHockeyCompetitionRequest
+                    {
+                        TeamId = team.Id,
+                        RosterMode = Domain.Enums.Common.RosterEnrollmentMode.Empty
+                    };
                     HttpResponseMessage addTeamResp = await http.PostAsJsonAsync("api/HockeySeason/" + season.Id + "/teams", addTeamReq);
                     if (!addTeamResp.IsSuccessStatusCode)
                     {
@@ -188,17 +192,47 @@ public static class HockeyTeamsSeeder
         }
     }
 
+    public static Guid? ResolveSeasonId(
+        List<HockeySeasonDto> seasons,
+        List<HockeySeasonSeed> seasonSeeds,
+        HockeyTeamSeed teamSeed)
+    {
+        foreach (HockeySeasonSeed seasonSeed in seasonSeeds)
+        {
+            if (!seasonSeed.DivisionNames.Any(name =>
+                    string.Equals(name, teamSeed.DivisionName, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            HockeySeasonDto? season = seasons.FirstOrDefault(s =>
+                string.Equals(s.Name, seasonSeed.Name, StringComparison.OrdinalIgnoreCase));
+            if (season != null)
+            {
+                return season.Id;
+            }
+        }
+
+        return null;
+    }
+
     public static async Task AddPlayersAsync(
         HttpClient http,
         JsonSerializerOptions jsonOptions,
         Guid teamId,
         List<HockeyTeamPlayerByEmailSeed> players,
-        Dictionary<string, Guid> emailToPlayerId)
+        Dictionary<string, Guid> emailToPlayerId,
+        Guid? competitionId = null)
     {
         HashSet<int> existingJerseyNumbers = new HashSet<int>();
         HashSet<Guid> existingPlayerIds = new HashSet<Guid>();
 
-        HttpResponseMessage teamResp = await http.GetAsync("api/HockeyTeam/" + teamId);
+        string teamUrl = "api/HockeyTeam/" + teamId;
+        if (competitionId.HasValue)
+        {
+            teamUrl += "?competitionId=" + competitionId.Value;
+        }
+        HttpResponseMessage teamResp = await http.GetAsync(teamUrl);
         if (teamResp.IsSuccessStatusCode)
         {
             ApiResponse<HockeyTeamDto>? teamApi = await teamResp.Content.ReadFromJsonAsync<ApiResponse<HockeyTeamDto>>(jsonOptions);
@@ -238,7 +272,8 @@ public static class HockeyTeamsSeeder
                 PlayerId = playerId,
                 Position = player.Position,
                 JerseyNumber = player.JerseyNumber,
-                RosterStatus = HockeyRosterStatus.Active
+                RosterStatus = HockeyRosterStatus.Active,
+                CompetitionId = competitionId
             };
 
             HttpResponseMessage response = await http.PostAsJsonAsync("api/HockeyTeam/" + teamId + "/players", request);

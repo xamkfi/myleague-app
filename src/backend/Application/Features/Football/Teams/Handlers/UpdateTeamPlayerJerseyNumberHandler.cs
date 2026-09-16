@@ -52,29 +52,25 @@ public class UpdateTeamPlayerJerseyNumberHandler : IRequestHandler<UpdateTeamPla
                 return Result<FootballTeamPlayerDto>.Failure($"Team with ID {request.TeamId} not found.");
             }
 
-            FootballTeamPlayer? teamPlayer = team.Roster.FirstOrDefault(p => p.PlayerId == request.PlayerId);
+            FootballTeamPlayer? teamPlayer = team.Roster.FirstOrDefault(p =>
+                p.PlayerId == request.PlayerId && p.CompetitionId == request.CompetitionId);
             if (teamPlayer == null)
             {
                 return Result<FootballTeamPlayerDto>.Failure($"Player with ID {request.PlayerId} is not in the team roster.");
-            }
-
-            if (request.JerseyNumber.HasValue &&
-                team.Roster.Any(p => p.JerseyNumber == request.JerseyNumber && p.PlayerId != request.PlayerId))
-            {
-                return Result<FootballTeamPlayerDto>.Failure($"This team already uses jersey number '{request.JerseyNumber}'");
             }
 
             _logger.LogInformation(
                 "Updating jersey number for player {PlayerId} in team {TeamId} to {JerseyNumber}",
                 request.PlayerId, request.TeamId, request.JerseyNumber);
 
-            team.UpdateTeamPlayer(request.PlayerId, teamPlayer.Position, request.JerseyNumber, teamPlayer.IsActive);
+            team.UpdateTeamPlayer(request.PlayerId, teamPlayer.Position, request.JerseyNumber, teamPlayer.IsActive, request.CompetitionId);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FootballPlayer? player = await _playerRepository.GetByIdAsync(request.PlayerId);
             Person? person = player != null ? await _personRepository.GetByIdAsync(player.PersonId) : null;
 
-            FootballTeamPlayer updatedTeamPlayer = team.Roster.First(p => p.PlayerId == request.PlayerId);
+            FootballTeamPlayer updatedTeamPlayer = team.Roster.First(p =>
+                p.PlayerId == request.PlayerId && p.CompetitionId == request.CompetitionId);
             FootballTeamPlayerDto teamPlayerDto = new FootballTeamPlayerDto(
                 updatedTeamPlayer.TeamId,
                 updatedTeamPlayer.PlayerId,

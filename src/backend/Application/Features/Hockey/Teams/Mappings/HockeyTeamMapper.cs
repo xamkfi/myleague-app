@@ -11,8 +11,17 @@ public static class HockeyTeamMapper
     /// <summary>
     /// Maps a hockey team to a DTO.
     /// </summary>
-    public static HockeyTeamDto ToDto(HockeyTeam team)
+    public static HockeyTeamDto ToDto(HockeyTeam team) => ToDto(team, null);
+
+    /// <summary>
+    /// Maps a hockey team to a DTO, optionally scoped to one competition roster.
+    /// </summary>
+    public static HockeyTeamDto ToDto(HockeyTeam team, Guid? competitionId)
     {
+        IEnumerable<HockeyTeamPlayer> roster = competitionId.HasValue
+            ? team.Roster.Where(p => p.CompetitionId == competitionId)
+            : team.Roster;
+
         return new HockeyTeamDto(
             team.Id,
             team.Name,
@@ -25,7 +34,7 @@ public static class HockeyTeamMapper
             team.SecondaryJerseyColor,
             team.LogoUrl?.ToString(),
             team.IsActive,
-            team.Roster.Select(ToTeamPlayerDto).ToList(),
+            roster.Select(ToTeamPlayerDto).ToList(),
             team.Lines.Select(ToLineDto).ToList(),
             team.StaffMembers.Select(ToStaffDto).ToList());
     }

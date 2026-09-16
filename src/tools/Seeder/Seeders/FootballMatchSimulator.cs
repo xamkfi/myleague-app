@@ -49,8 +49,8 @@ public static class FootballMatchSimulator
         Guid homeTeamId = match.HomeTeamId.Value;
         Guid awayTeamId = match.AwayTeamId.Value;
 
-        FootballTeamDto? homeTeam = await GetTeamWithRosterAsync(http, jsonOptions, homeTeamId, rosterCache);
-        FootballTeamDto? awayTeam = await GetTeamWithRosterAsync(http, jsonOptions, awayTeamId, rosterCache);
+        FootballTeamDto? homeTeam = await GetTeamWithRosterAsync(http, jsonOptions, homeTeamId, match.CompetitionId, rosterCache);
+        FootballTeamDto? awayTeam = await GetTeamWithRosterAsync(http, jsonOptions, awayTeamId, match.CompetitionId, rosterCache);
         if (homeTeam == null || awayTeam == null)
         {
             Console.WriteLine($"  Skipping simulation for {homeTeamName} vs {awayTeamName}: missing team rosters.");
@@ -126,6 +126,7 @@ public static class FootballMatchSimulator
         HttpClient http,
         JsonSerializerOptions jsonOptions,
         Guid teamId,
+        Guid competitionId,
         Dictionary<Guid, FootballTeamDto> cache)
     {
         if (cache.TryGetValue(teamId, out FootballTeamDto? cached))
@@ -133,7 +134,7 @@ public static class FootballMatchSimulator
             return cached;
         }
 
-        HttpResponseMessage resp = await http.GetAsync($"api/FootballTeam/{teamId}");
+        HttpResponseMessage resp = await http.GetAsync($"api/FootballTeam/{teamId}?competitionId={competitionId}");
         if (!resp.IsSuccessStatusCode)
         {
             return null;

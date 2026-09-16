@@ -141,19 +141,9 @@ public class HockeyEntityImporter
         foreach (HockeyTeamDto t in await _api.GetTeamsAsync())
             byName.TryAdd(t.Name, t);
 
-        (Dictionary<int, Dictionary<int, RosterEntry>> rosterByTeam, Dictionary<int, TeamCategory> categoryByTeam) =
-            TeamRosterUnion.Build(set);
-
         List<OldTeam> pending = [];
         foreach (OldTeam oldTeam in set.UniqueTeams.Values)
         {
-            if (!rosterByTeam.TryGetValue(oldTeam.Id, out Dictionary<int, RosterEntry>? unionRoster) ||
-                unionRoster.Count == 0)
-            {
-                Console.WriteLine($"  SKIP {oldTeam.Name}: 0 roster players");
-                continue;
-            }
-
             if (_idMap.HasTeam(oldTeam.Id))
                 continue;
             pending.Add(oldTeam);
@@ -163,8 +153,7 @@ public class HockeyEntityImporter
         Console.WriteLine($"  Importing {pending.Count} teams (concurrency {MatchImportParallel.TeamDegree})...");
         await MatchImportParallel.ForEachTeamAsync(pending, async oldTeam =>
         {
-            Dictionary<int, RosterEntry> unionRoster = rosterByTeam[oldTeam.Id];
-            TeamCategory teamCategory = categoryByTeam.GetValueOrDefault(oldTeam.Id, TeamCategory.Adult);
+            TeamCategory teamCategory = TeamCategoryResolver.InferFromName(oldTeam.Name);
 
             if (!byName.TryGetValue(oldTeam.Name, out HockeyTeamDto? team))
             {
@@ -193,32 +182,7 @@ public class HockeyEntityImporter
             }
 
             _idMap.MapTeam(oldTeam.Id, team.Id);
-
-            team = await _api.GetTeamByIdAsync(team.Id) ?? team;
-            HashSet<int> usedJerseys = UsedJerseys(team);
-
-            int added = 0;
-            foreach (RosterEntry re in unionRoster.Values)
-            {
-                if (!_idMap.TryGetPerson(re.Person.Id, out IdMapStore.PersonMapping? mapping) || mapping == null)
-                    continue;
-
-                int? preferred = re.TeamPlayer.JerseyNumber is > 0 and < 100 ? re.TeamPlayer.JerseyNumber : null;
-                int jersey = NextJersey(usedJerseys, preferred);
-                bool ok = await _api.AddPlayerToTeamAsync(team.Id, mapping.PlayerId, re.HockeyPosition, jersey);
-                if (!ok)
-                {
-                    usedJerseys.Remove(jersey);
-                    jersey = NextJersey(usedJerseys, null);
-                    ok = await _api.AddPlayerToTeamAsync(team.Id, mapping.PlayerId, re.HockeyPosition, jersey);
-                }
-                if (ok) added++;
-                else usedJerseys.Remove(jersey);
-            }
-
-            int filled = await EnsureJerseyNumbersAsync(team.Id);
-            Console.WriteLine($"  {oldTeam.Name}: roster {added}/{unionRoster.Count}" +
-                              (filled > 0 ? $", filled {filled} jersey numbers" : ""));
+            Console.WriteLine($"  {oldTeam.Name}: team ready (roster imported per season)");
         });
 
         _idMap.Save(force: true);
@@ -227,31 +191,10 @@ public class HockeyEntityImporter
 
     public Task ApplyActiveMembershipsAsync(FloorballImportSet set)
     {
+        _ = set;
         Console.WriteLine("--- Active club memberships ---");
-        Dictionary<Guid, HockeyTeamDto?> teamCache = [];
-        return ActiveRosterApplicator.ApplyAsync(set, _idMap, async (teamId, entry, playerId, isActive) =>
-        {
-            if (!teamCache.TryGetValue(teamId, out HockeyTeamDto? team))
-            {
-                team = await _api.GetTeamByIdAsync(teamId);
-                teamCache[teamId] = team;
-            }
-
-            HockeyTeamPlayerDto? row = team?.Roster.FirstOrDefault(r => r.PlayerId == playerId);
-            HockeyPosition position = entry.HockeyPosition;
-            if (row != null && Enum.TryParse(row.Position, true, out HockeyPosition parsedPosition))
-                position = parsedPosition;
-            int jersey = row?.JerseyNumber is > 0 and < 100
-                ? row.JerseyNumber.Value
-                : entry.TeamPlayer.JerseyNumber is > 0 and < 100
-                    ? entry.TeamPlayer.JerseyNumber.Value
-                    : 1;
-            HockeyCaptainRole captain = HockeyCaptainRole.None;
-            if (row != null && Enum.TryParse(row.CaptainRole, true, out HockeyCaptainRole parsedCaptain))
-                captain = parsedCaptain;
-            HockeyRosterStatus status = isActive ? HockeyRosterStatus.Active : HockeyRosterStatus.Inactive;
-            return await _api.UpdateTeamPlayerAsync(teamId, playerId, position, jersey, status, captain);
-        });
+        Console.WriteLine("  Skipped: competition-scoped rosters keep each season independent.");
+        return Task.CompletedTask;
     }
 
     private static string MakeShortName(OldTeam team)
@@ -342,15 +285,23 @@ public class HockeyEntityImporter
         return official.Id;
     }
 
-    public async Task<Guid?> GetOrCreateUnknownPlayerAsync(OldTeam oldTeam, Guid newTeamId)
+    public async Task<Guid?> GetOrCreateUnknownPlayerAsync(
+        OldTeam oldTeam,
+        Guid newTeamId,
+        Guid? competitionId = null)
     {
-        List<Guid> players = await EnsureUnknownPlayersAsync(oldTeam, newTeamId, 1, HockeyPosition.Center);
+        List<Guid> players = await EnsureUnknownPlayersAsync(
+            oldTeam, newTeamId, 1, HockeyPosition.Center, competitionId);
         return players.Count > 0 ? players[0] : null;
     }
 
-    public async Task<Guid?> GetOrCreateUnknownGoalieAsync(OldTeam oldTeam, Guid newTeamId)
+    public async Task<Guid?> GetOrCreateUnknownGoalieAsync(
+        OldTeam oldTeam,
+        Guid newTeamId,
+        Guid? competitionId = null)
     {
-        List<Guid> players = await EnsureUnknownPlayersAsync(oldTeam, newTeamId, 1, HockeyPosition.Goalie);
+        List<Guid> players = await EnsureUnknownPlayersAsync(
+            oldTeam, newTeamId, 1, HockeyPosition.Goalie, competitionId);
         return players.Count > 0 ? players[0] : null;
     }
 
@@ -361,7 +312,8 @@ public class HockeyEntityImporter
         OldTeam oldTeam,
         Guid newTeamId,
         int count,
-        HockeyPosition position = HockeyPosition.Center)
+        HockeyPosition position = HockeyPosition.Center,
+        Guid? competitionId = null)
     {
         List<Guid> result = [];
         if (count <= 0)
@@ -371,7 +323,7 @@ public class HockeyEntityImporter
             ? $"MV ({oldTeam.Name})"
             : $"({oldTeam.Name})";
         Guid? first = await CreateUnknownPlayerInternalAsync(
-            oldTeam, newTeamId, lastName, position, cachePrimary: true);
+            oldTeam, newTeamId, lastName, position, cachePrimary: true, competitionId);
         if (first == null)
             return result;
         result.Add(first.Value);
@@ -394,7 +346,7 @@ public class HockeyEntityImporter
             }
 
             Guid? extra = await CreateUnknownPlayerInternalAsync(
-                oldTeam, newTeamId, $"({oldTeam.Name} {nextSlot})", position, cachePrimary: false);
+                oldTeam, newTeamId, $"({oldTeam.Name} {nextSlot})", position, cachePrimary: false, competitionId);
             if (extra == null)
                 break;
             extras.Add(extra.Value);
@@ -411,11 +363,15 @@ public class HockeyEntityImporter
         Guid newTeamId,
         string lastName,
         HockeyPosition position,
-        bool cachePrimary)
+        bool cachePrimary,
+        Guid? competitionId = null)
     {
         if (cachePrimary && position != HockeyPosition.Goalie &&
             _idMap.UnknownPlayers.TryGetValue(oldTeam.Id, out Guid cached))
+        {
+            await _api.AddPlayerToTeamAsync(newTeamId, cached, position, jerseyNumber: null, competitionId);
             return cached;
+        }
 
         const string firstName = "Tuntematon";
 
@@ -445,9 +401,9 @@ public class HockeyEntityImporter
             return null;
         }
 
-        HockeyTeamDto? team = await _api.GetTeamByIdAsync(newTeamId);
+        HockeyTeamDto? team = await _api.GetTeamByIdAsync(newTeamId, competitionId);
         int jersey = NextJersey(UsedJerseys(team), null);
-        bool added = await _api.AddPlayerToTeamAsync(newTeamId, player.Id, position, jersey);
+        bool added = await _api.AddPlayerToTeamAsync(newTeamId, player.Id, position, jersey, competitionId);
         if (!added)
         {
             _log.LogError("CreateUnknownHockeyPlayer", new { oldTeam.Id, oldTeam.Name, lastName }, "Adding player to team roster failed.");
@@ -562,11 +518,43 @@ public class HockeyEntityImporter
 
             if (competitionTeam != null && competitionDivisionId.HasValue)
                 await _api.AddTeamToSeasonDivisionAsync(season.Id, competitionDivisionId.Value, competitionTeam.Id);
+
+            await ImportProjectRosterAsync(pti, teamId, season.Id);
         }
 
         await _api.PublishSeasonAsync(season.Id);
         await _api.OpenSeasonRegistrationAsync(season.Id);
         await _api.ActivateSeasonAsync(season.Id);
         Console.WriteLine($"  Teams in season: {teamsAdded}/{pi.Teams.Count}");
+    }
+
+    private async Task ImportProjectRosterAsync(ProjectTeamImport pti, Guid teamId, Guid competitionId)
+    {
+        HockeyTeamDto? team = await _api.GetTeamByIdAsync(teamId, competitionId);
+        HashSet<int> usedJerseys = UsedJerseys(team);
+
+        int added = 0;
+        foreach (RosterEntry re in pti.Roster)
+        {
+            if (!_idMap.TryGetPerson(re.Person.Id, out IdMapStore.PersonMapping? mapping) || mapping == null)
+                continue;
+
+            int? preferred = re.TeamPlayer.JerseyNumber is > 0 and < 100 ? re.TeamPlayer.JerseyNumber : null;
+            int jersey = NextJersey(usedJerseys, preferred);
+            bool ok = await _api.AddPlayerToTeamAsync(teamId, mapping.PlayerId, re.HockeyPosition, jersey, competitionId);
+            if (!ok)
+            {
+                usedJerseys.Remove(jersey);
+                jersey = NextJersey(usedJerseys, null);
+                ok = await _api.AddPlayerToTeamAsync(teamId, mapping.PlayerId, re.HockeyPosition, jersey, competitionId);
+            }
+
+            if (ok)
+                added++;
+            else
+                usedJerseys.Remove(jersey);
+        }
+
+        Console.WriteLine($"    Roster {pti.Team.Name}: {added}/{pti.Roster.Count}");
     }
 }

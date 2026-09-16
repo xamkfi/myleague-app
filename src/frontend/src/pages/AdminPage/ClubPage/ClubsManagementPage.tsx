@@ -257,6 +257,7 @@ function ClubsManagementPage() {
                     <ActionsDropdown
                       ariaLabel={t('clubs.table.actionsMenu', 'Club actions menu')}
                       actions={[
+                        { label: t('clubs.table.openClub', 'Open club'), onClick: () => navigate(`/admin/clubs/${club.id}`) },
                         { label: t('common.edit', 'Edit'), onClick: () => navigate(`/admin/clubs/${club.id}/edit`) },
                       ]}
                     />

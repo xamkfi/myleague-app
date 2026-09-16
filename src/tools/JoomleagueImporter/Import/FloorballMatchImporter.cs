@@ -77,8 +77,11 @@ public class FloorballMatchImporter
         public int TimeSeconds { get; init; }
     }
 
+    private Guid _currentCompetitionId;
+
     public async Task ImportProjectMatchesAsync(ProjectImport pi, FloorballSeasonDto season, Guid refereeId)
     {
+        _currentCompetitionId = season.Id;
         OldProject project = pi.Project;
         int periodSeconds = project.PeriodDurationMinutes * 60;
         int regularPeriods = project.NumberOfPeriods;
@@ -555,7 +558,7 @@ public class FloorballMatchImporter
         if (appearedGoalie.HasValue)
             return appearedGoalie.Value;
 
-        return await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId) ?? Guid.Empty;
+        return await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId, _currentCompetitionId) ?? Guid.Empty;
     }
 
     private async Task ApplyAppearancesAsync(
@@ -574,17 +577,33 @@ public class FloorballMatchImporter
         foreach (Guid playerId in appeared.Where(id => id != goalieId))
             fieldPlayers.Add((playerId, FloorballPosition.Forward));
 
-        await _api.AddPlayerToTeamAsync(side.TeamId, goalieId, position: 4, jerseyNumber: null);
-        foreach ((Guid playerId, FloorballPosition _) in fieldPlayers)
-            await _api.AddPlayerToTeamAsync(side.TeamId, playerId, position: 1, jerseyNumber: null);
+        await EnsureAppearancePlayersOnRosterAsync(side, goalieId, fieldPlayers);
 
         if (fieldPlayers.Count == 0)
         {
-            await _api.SetGoalieAsync(matchId, side.TeamId, goalieId);
+            if (!await _api.SetGoalieAsync(matchId, side.TeamId, goalieId))
+            {
+                await EnsureAppearancePlayersOnRosterAsync(side, goalieId, fieldPlayers);
+                await _api.SetGoalieAsync(matchId, side.TeamId, goalieId);
+            }
             return;
         }
 
-        await _api.SetActiveRosterAsync(matchId, side.TeamId, fieldPlayers, goalieId);
+        if (!await _api.SetActiveRosterAsync(matchId, side.TeamId, fieldPlayers, goalieId))
+        {
+            await EnsureAppearancePlayersOnRosterAsync(side, goalieId, fieldPlayers);
+            await _api.SetActiveRosterAsync(matchId, side.TeamId, fieldPlayers, goalieId);
+        }
+    }
+
+    private async Task EnsureAppearancePlayersOnRosterAsync(
+        SideInfo side,
+        Guid goalieId,
+        IReadOnlyList<(Guid PlayerId, FloorballPosition Position)> fieldPlayers)
+    {
+        await _api.AddPlayerToTeamAsync(side.TeamId, goalieId, position: 4, jerseyNumber: null, _currentCompetitionId);
+        foreach ((Guid playerId, FloorballPosition _) in fieldPlayers)
+            await _api.AddPlayerToTeamAsync(side.TeamId, playerId, position: 1, jerseyNumber: null, _currentCompetitionId);
     }
 
     private static IEnumerable<Guid> EventPlayerIds(List<GoalRec> goals, List<PenaltyRec> penalties, int projectTeamId)
@@ -614,7 +633,7 @@ public class FloorballMatchImporter
     {
         if (!_fillUnknownGoals)
             return null;
-        return await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId);
+        return await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId, _currentCompetitionId);
     }
 
     private static int PeriodOf(int timeSeconds, int periodSeconds, int regularPeriods)

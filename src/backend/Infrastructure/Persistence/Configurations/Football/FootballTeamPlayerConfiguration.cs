@@ -11,6 +11,7 @@ public class FootballTeamPlayerConfiguration : BaseEntityConfiguration<FootballT
         builder.ToTable("FootballTeamPlayers");
         builder.Property(p => p.TeamId).IsRequired();
         builder.Property(p => p.PlayerId).IsRequired();
+        builder.Property(p => p.CompetitionId);
         builder.Property(p => p.Position).IsRequired().HasConversion<string>();
         builder.Property(p => p.JerseyNumber);
         builder.Property(p => p.RequestedJerseyNumber);
@@ -35,10 +36,21 @@ public class FootballTeamPlayerConfiguration : BaseEntityConfiguration<FootballT
             .IsRequired();
 
         builder.HasIndex(p => p.PlayerId).HasDatabaseName("IX_FootballTeamPlayer_PlayerId");
-        builder.HasIndex(p => new { p.TeamId, p.PlayerId }).IsUnique().HasDatabaseName("IX_FootballTeamPlayer_TeamId_PlayerId");
+        builder.HasIndex(p => new { p.TeamId, p.PlayerId, p.CompetitionId })
+            .IsUnique()
+            .HasFilter("\"CompetitionId\" IS NOT NULL")
+            .HasDatabaseName("IX_FootballTeamPlayer_TeamId_PlayerId_CompetitionId");
+        builder.HasIndex(p => new { p.TeamId, p.PlayerId })
+            .IsUnique()
+            .HasFilter("\"CompetitionId\" IS NULL")
+            .HasDatabaseName("IX_FootballTeamPlayer_TeamId_PlayerId_Base");
+        builder.HasIndex(p => new { p.TeamId, p.CompetitionId, p.JerseyNumber })
+            .IsUnique()
+            .HasFilter("\"JerseyNumber\" IS NOT NULL AND \"CompetitionId\" IS NOT NULL")
+            .HasDatabaseName("IX_FootballTeamPlayer_Team_Competition_Jersey");
         builder.HasIndex(p => new { p.TeamId, p.JerseyNumber })
             .IsUnique()
-            .HasFilter("\"JerseyNumber\" IS NOT NULL")
-            .HasDatabaseName("IX_FootballTeamPlayer_TeamId_JerseyNumber");
+            .HasFilter("\"JerseyNumber\" IS NOT NULL AND \"CompetitionId\" IS NULL")
+            .HasDatabaseName("IX_FootballTeamPlayer_Team_Base_Jersey");
     }
 }

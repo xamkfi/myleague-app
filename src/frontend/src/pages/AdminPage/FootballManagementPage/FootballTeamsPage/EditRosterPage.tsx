@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { footballTeamService } from '../../../../api/football/footballTeamService';
+import { footballSeasonService } from '../../../../api/football/footballSeasonService';
+import { footballTournamentService } from '../../../../api/football/footballTournamentService';
 import { 
   FootballPosition,
   type FootballTeam,
@@ -20,6 +22,8 @@ const EditRosterPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id: teamId } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCompetitionId = searchParams.get('competitionId') ?? '';
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,13 +31,14 @@ const EditRosterPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [updatingPlayer, setUpdatingPlayer] = useState<string | null>(null);
+  const [competitions, setCompetitions] = useState<Array<{ id: string; name: string }>>([]);
 
   const loadTeamData = useCallback(async () => {
     if (!teamId) return;
     
     try {
       setLoading(true);
-      const team = await footballTeamService.getById(teamId);
+      const team = await footballTeamService.getById(teamId, selectedCompetitionId || null);
       setCurrentTeam(team);
       setError(null);
     } catch (err) {
@@ -42,11 +47,43 @@ const EditRosterPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [teamId]);
+  }, [teamId, selectedCompetitionId]);
 
   useEffect(() => {
     loadTeamData();
   }, [loadTeamData]);
+
+  useEffect(() => {
+    if (!teamId) return;
+
+    const loadCompetitions = async () => {
+      try {
+        const [seasonsResponse, tournamentsResponse] = await Promise.all([
+          footballSeasonService.getAll(),
+          footballTournamentService.getAll(),
+        ]);
+
+        const seasonOptions = (seasonsResponse.data ?? [])
+          .filter((season) =>
+            season.seasonDivisions?.some((division) => division.teamIds?.includes(teamId))
+            || season.teams?.some((team) => team.id === teamId),
+          )
+          .map((season) => ({ id: season.id, name: season.name }));
+
+        const tournamentOptions = (tournamentsResponse.data ?? [])
+          .filter((tournament) =>
+            tournament.groups?.some((group) => group.teams?.some((team) => team.teamId === teamId)),
+          )
+          .map((tournament) => ({ id: tournament.id, name: tournament.name }));
+
+        setCompetitions([...seasonOptions, ...tournamentOptions]);
+      } catch (err) {
+        console.error('Error loading roster competitions:', err);
+      }
+    };
+
+    void loadCompetitions();
+  }, [teamId]);
 
   // Filter roster by search term
   const filteredRoster = currentTeam?.roster?.filter(player =>
@@ -62,7 +99,7 @@ const EditRosterPage = () => {
 
     try {
       setError(null);
-      await footballTeamService.removePlayerFromTeam(teamId, playerId);
+      await footballTeamService.removePlayerFromTeam(teamId, playerId, selectedCompetitionId || null);
       await loadTeamData();
     } catch (err) {
       console.error('Error removing player:', err);
@@ -80,7 +117,8 @@ const EditRosterPage = () => {
       const updateData: UpdateFootballTeamPlayerRequest = {
         position: player.position,
         jerseyNumber: player.jerseyNumber,
-        isActive: !player.isActive
+        isActive: !player.isActive,
+        competitionId: selectedCompetitionId || player.competitionId || null,
       };
       await footballTeamService.updateTeamPlayer(teamId, player.playerId, updateData);
       await loadTeamData();
@@ -101,7 +139,8 @@ const EditRosterPage = () => {
       const updateData: UpdateFootballTeamPlayerRequest = {
         position: newPosition,
         jerseyNumber: player.jerseyNumber,
-        isActive: player.isActive
+        isActive: player.isActive,
+        competitionId: selectedCompetitionId || player.competitionId || null,
       };
       await footballTeamService.updateTeamPlayer(teamId, player.playerId, updateData);
       await loadTeamData();
@@ -123,7 +162,8 @@ const EditRosterPage = () => {
       const updateData: UpdateFootballTeamPlayerRequest = {
         position: player.position,
         jerseyNumber: newJerseyNumber,
-        isActive: player.isActive
+        isActive: player.isActive,
+        competitionId: selectedCompetitionId || player.competitionId || null,
       };
       await footballTeamService.updateTeamPlayer(teamId, player.playerId, updateData);
       await loadTeamData();
@@ -151,7 +191,18 @@ const EditRosterPage = () => {
 
   // Handle adding new player (navigate to add player page)
   const handleAddPlayer = () => {
-    navigate(`/admin/football/teams/${teamId}/roster/add`);
+    const query = selectedCompetitionId ? `?competitionId=${encodeURIComponent(selectedCompetitionId)}` : '';
+    navigate(`/admin/football/teams/${teamId}/roster/add${query}`);
+  };
+
+  const handleCompetitionChange = (nextCompetitionId: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (nextCompetitionId) {
+      nextParams.set('competitionId', nextCompetitionId);
+    } else {
+      nextParams.delete('competitionId');
+    }
+    setSearchParams(nextParams);
   };
 
   // Handle dropdown toggle
@@ -201,6 +252,20 @@ const EditRosterPage = () => {
         <div className="team-info-header">
           <span className="team-name">{currentTeam.name}</span>
           <span className="roster-count">{rosterCount} {t('football.teams.players', 'players')}</span>
+          <label className="roster-competition-picker">
+            <span>{t('football.teams.rosterCompetition', 'Competition')}</span>
+            <select
+              value={selectedCompetitionId}
+              onChange={(event) => handleCompetitionChange(event.target.value)}
+            >
+              <option value="">{t('football.teams.allCompetitions', 'All competitions')}</option>
+              {competitions.map((competition) => (
+                <option key={competition.id} value={competition.id}>
+                  {competition.name}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         <div className="edit-roster-header">
