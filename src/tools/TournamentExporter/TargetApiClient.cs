@@ -146,11 +146,18 @@ internal sealed class TargetApiClient : IDisposable
         return created.Id;
     }
 
-    public async Task<bool> AddPlayerToTeamAsync(Guid teamId, Guid playerId, string position, int? jerseyNumber)
+    public async Task<bool> AddPlayerToTeamAsync(
+        Guid teamId,
+        Guid playerId,
+        string position,
+        int? jerseyNumber,
+        Guid? competitionId = null)
     {
         string url = $"api/floorballteam/{teamId}/players/{playerId}?position={Uri.EscapeDataString(position)}";
         if (jerseyNumber.HasValue)
             url += $"&jerseyNumber={jerseyNumber.Value}";
+        if (competitionId.HasValue)
+            url += $"&competitionId={competitionId.Value}";
 
         HttpResponseMessage resp = await _http.PostAsync(url, null);
         if (resp.IsSuccessStatusCode)
@@ -220,7 +227,7 @@ internal sealed class TargetApiClient : IDisposable
     {
         HttpResponseMessage resp = await _http.PostAsJsonAsync(
             $"api/floorballtournament/{tournamentId}/groups/{groupId}/teams",
-            new { teamId });
+            new { teamId, rosterMode = 1 });
         return await ReadRequiredAsync<TournamentDetail>(resp, "Add team to group");
     }
 

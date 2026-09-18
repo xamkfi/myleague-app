@@ -210,7 +210,7 @@ public class ImportApiClient : IDisposable
             return true;
 
         string body = await resp.Content.ReadAsStringAsync();
-        if (body.Contains("is already in the roster", StringComparison.OrdinalIgnoreCase))
+        if (IsIdempotentRosterAddResponse(body))
             return true;
 
         if (jerseyNumber.HasValue &&
@@ -366,6 +366,14 @@ public class ImportApiClient : IDisposable
             return true;
         Console.WriteLine($"  WARN: {operation} failed: {Truncate(body)}");
         return false;
+    }
+
+    protected static bool IsIdempotentRosterAddResponse(string body)
+    {
+        return body.Contains("is already in the roster", StringComparison.OrdinalIgnoreCase)
+            || body.Contains("23505", StringComparison.Ordinal)
+            || body.Contains("duplicate key", StringComparison.OrdinalIgnoreCase)
+            || body.Contains("concurrent request already created", StringComparison.OrdinalIgnoreCase);
     }
 
     protected static string Truncate(string s) => s.Length <= 300 ? s : s[..300] + "...";

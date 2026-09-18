@@ -19,5 +19,6 @@ namespace Application.Features.Football.Teams.Commands
     /// <param name="PlayerId"></param>
     public record RemovePlayerFromTeamCommand(
         Guid TeamId,
-        Guid PlayerId) : IRequest<Result<FootballTeamDto>>;
+        Guid PlayerId,
+        Guid? CompetitionId = null) : IRequest<Result<FootballTeamDto>>;
 }

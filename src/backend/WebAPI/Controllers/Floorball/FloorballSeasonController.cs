@@ -457,10 +457,14 @@ namespace WebAPI.Controllers.Floorball
         [Authorize(Roles = AuthRoles.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ApiResponse>> AddTeamToSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
+        public async Task<ActionResult<ApiResponse>> AddTeamToSeasonDivision(
+            Guid competitionId,
+            Guid divisionId,
+            Guid teamId,
+            [FromQuery] Domain.Enums.Common.RosterEnrollmentMode rosterMode = Domain.Enums.Common.RosterEnrollmentMode.CopyLatest)
         {
             _logger.LogInformation("Adding team {teamId} to season {id} division {divisionId}", teamId, competitionId, divisionId);
-            AddTeamToSeasonDivisionCommand command = new AddTeamToSeasonDivisionCommand(competitionId, divisionId, teamId);
+            AddTeamToSeasonDivisionCommand command = new AddTeamToSeasonDivisionCommand(competitionId, divisionId, teamId, rosterMode);
             Result result = await _mediator.Send(command);
 
             return HandleVoidResult(result, "Team added to season division successfully", "Failed to add team to season division");

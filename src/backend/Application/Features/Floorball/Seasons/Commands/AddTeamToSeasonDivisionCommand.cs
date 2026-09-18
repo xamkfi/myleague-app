@@ -10,7 +10,8 @@ namespace Application.Features.Floorball.Seasons.Commands
     public record AddTeamToSeasonDivisionCommand(
         Guid CompetitionId,
         Guid DivisionId,
-        Guid TeamId) : IRequest<Result>;
+        Guid TeamId,
+        Domain.Enums.Common.RosterEnrollmentMode RosterMode = Domain.Enums.Common.RosterEnrollmentMode.CopyLatest) : IRequest<Result>;
 }
 
 

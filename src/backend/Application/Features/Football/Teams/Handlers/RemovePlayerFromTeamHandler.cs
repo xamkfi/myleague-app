@@ -71,7 +71,7 @@ public class RemovePlayerFromTeamHandler : IRequestHandler<RemovePlayerFromTeamC
             }
 
             _logger.LogInformation("Removing player {PlayerId} from team {TeamId}", request.PlayerId, request.TeamId);
-            team.RemovePlayer(request.PlayerId);
+            team.RemovePlayer(request.PlayerId, request.CompetitionId);
             
             // Save changes explicitly to trigger domain events
             await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -17,7 +17,7 @@ An entry in the public site footer. `Section` is Contact, SeasonalSports, or Oth
 A singleton row of site-owned configuration. The first slice is authentication timings: access-token minutes, refresh-token days, login-code minutes and max attempts, and how many minutes before access-token expiry the session reminder appears. Secrets stay in application configuration.
 
 ### FloorballTeam
-A floorball team belonging to a Club, competing in a specific Division. Has a roster of players.
+A floorball team belonging to a Club, competing in a specific Division. The team is long-lived; roster membership is scoped by competition (`CompetitionId` null = base roster, otherwise a season or tournament).
 
 ### FloorballSeason
 A specific season of floorball competition, defined by start and end dates. Contains multiple matches.
@@ -52,7 +52,7 @@ Represents a player's position preferences in floorball. Contains primary and se
 Represents the score of a floorball match with home and away scores.
 
 ### FloorballTeamPlayer
-Represents a player's assignment to a specific team, including jersey number and team-specific statistics.
+Represents a player's assignment to a specific team in one roster scope (`CompetitionId`), including jersey number and team-specific statistics.
 
 ## Enums
 

@@ -45,8 +45,13 @@ export const footballTeamService = {
   /**
    * Get a Football team by ID
    */
-  getById: async (id: string): Promise<FootballTeam> => {
-    const response = await authFetch(`${API_URL}/FootballTeam/${id}`);
+  getById: async (id: string, competitionId?: string | null): Promise<FootballTeam> => {
+    const searchParams = new URLSearchParams();
+    if (competitionId) {
+      searchParams.append('competitionId', competitionId);
+    }
+    const query = searchParams.toString();
+    const response = await authFetch(`${API_URL}/FootballTeam/${id}${query ? `?${query}` : ''}`);
     if (!response.ok) {
       throw new Error('Failed to fetch Football team');
     }
@@ -166,7 +171,8 @@ export const footballTeamService = {
      * picks the next free number on a conflict). The backend stores it so the roster
      * UI can highlight the row for admin review.
      */
-    requestedJerseyNumber?: number
+    requestedJerseyNumber?: number,
+    competitionId?: string | null
   ): Promise<FootballTeam> => {
     const searchParams = new URLSearchParams();
     searchParams.append('position', position);
@@ -175,6 +181,9 @@ export const footballTeamService = {
     }
     if (requestedJerseyNumber !== undefined && requestedJerseyNumber !== jerseyNumber) {
       searchParams.append('requestedJerseyNumber', requestedJerseyNumber.toString());
+    }
+    if (competitionId) {
+      searchParams.append('competitionId', competitionId);
     }
 
     const response = await authFetch(`${API_URL}/FootballTeam/${teamId}/players/${playerId}?${searchParams.toString()}`, {
@@ -228,8 +237,9 @@ export const footballTeamService = {
   /**
    * Remove a player from a team
    */
-  removePlayerFromTeam: async (teamId: string, playerId: string): Promise<FootballTeam> => {
-    const response = await authFetch(`${API_URL}/FootballTeam/${teamId}/players/${playerId}`, {
+  removePlayerFromTeam: async (teamId: string, playerId: string, competitionId?: string | null): Promise<FootballTeam> => {
+    const query = competitionId ? `?competitionId=${encodeURIComponent(competitionId)}` : '';
+    const response = await authFetch(`${API_URL}/FootballTeam/${teamId}/players/${playerId}${query}`, {
       method: 'DELETE',
     });
     

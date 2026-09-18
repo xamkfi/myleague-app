@@ -543,10 +543,17 @@ export const footballSeasonService = {
   /**
    * Add a team to a specific division of a Football season
    */
-  addTeamToSeasonDivision: async (competitionId: string, divisionId: string, teamId: string): Promise<ApiResponse<void>> => {
+  addTeamToSeasonDivision: async (
+    competitionId: string,
+    divisionId: string,
+    teamId: string,
+    rosterMode: 'CopyLatest' | 'Empty' = 'CopyLatest',
+  ): Promise<ApiResponse<void>> => {
     try {
-      
-      const response = await authFetch(`${API_URL}/FootballSeason/${competitionId}/divisions/${divisionId}/teams/${teamId}`, {
+      const rosterModeValue = rosterMode === 'Empty' ? '1' : '0';
+      const response = await authFetch(
+        `${API_URL}/FootballSeason/${competitionId}/divisions/${divisionId}/teams/${teamId}?rosterMode=${rosterModeValue}`,
+        {
         method: 'POST',
       });
       

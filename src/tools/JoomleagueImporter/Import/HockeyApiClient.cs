@@ -39,9 +39,12 @@ public class HockeyApiClient : ImportApiClient
     public async Task<List<HockeyTeamDto>> GetTeamsAsync() =>
         await GetUnpaginatedListAsync<HockeyTeamDto>("api/HockeyTeam");
 
-    public async Task<HockeyTeamDto?> GetTeamByIdAsync(Guid teamId)
+    public async Task<HockeyTeamDto?> GetTeamByIdAsync(Guid teamId, Guid? competitionId = null)
     {
-        HttpResponseMessage resp = await Http.GetAsync($"api/HockeyTeam/{teamId}");
+        string url = $"api/HockeyTeam/{teamId}";
+        if (competitionId.HasValue)
+            url += $"?competitionId={competitionId.Value}";
+        HttpResponseMessage resp = await Http.GetAsync(url);
         return await ReadDataOrNull<HockeyTeamDto>(resp, $"Get hockey team {teamId}");
     }
 
@@ -68,7 +71,8 @@ public class HockeyApiClient : ImportApiClient
         Guid teamId,
         Guid playerId,
         HockeyPosition position,
-        int? jerseyNumber)
+        int? jerseyNumber,
+        Guid? competitionId = null)
     {
         object request = new
         {
@@ -76,13 +80,14 @@ public class HockeyApiClient : ImportApiClient
             position = position.ToString(),
             jerseyNumber,
             rosterStatus = HockeyRosterStatus.Active.ToString(),
+            competitionId,
         };
         HttpResponseMessage resp = await Http.PostAsJsonAsync($"api/HockeyTeam/{teamId}/players", request);
         if (resp.IsSuccessStatusCode)
             return true;
 
         string body = await resp.Content.ReadAsStringAsync();
-        if (body.Contains("already", StringComparison.OrdinalIgnoreCase))
+        if (IsIdempotentRosterAddResponse(body) || body.Contains("already", StringComparison.OrdinalIgnoreCase))
             return true;
 
         Console.WriteLine($"  WARN: Add hockey player to team failed: {Truncate(body)}");
@@ -155,7 +160,9 @@ public class HockeyApiClient : ImportApiClient
 
     public async Task<HockeyCompetitionTeamDto?> AddTeamToSeasonAsync(Guid seasonId, Guid teamId)
     {
-        HttpResponseMessage resp = await Http.PostAsJsonAsync($"api/HockeySeason/{seasonId}/teams", new { teamId });
+        HttpResponseMessage resp = await Http.PostAsJsonAsync(
+            $"api/HockeySeason/{seasonId}/teams",
+            new { teamId, rosterMode = Domain.Enums.Common.RosterEnrollmentMode.Empty });
         if (resp.IsSuccessStatusCode)
             return await ReadDataOrNull<HockeyCompetitionTeamDto>(resp, "AddTeamToHockeySeason");
 

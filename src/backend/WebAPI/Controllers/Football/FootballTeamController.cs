@@ -68,11 +68,13 @@ namespace WebAPI.Controllers.Football
         [ProducesResponseType(typeof(ApiResponse<FootballTeamDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FootballTeamDto>>> GetTeamById(Guid id)
+        public async Task<ActionResult<ApiResponse<FootballTeamDto>>> GetTeamById(
+            Guid id,
+            [FromQuery] Guid? competitionId = null)
         {
             _logger.LogInformation("Getting football team with ID: {id}", id);
 
-            Result<FootballTeamDto> result = await _mediator.Send(new GetFootballTeamByIdQuery(id));
+            Result<FootballTeamDto> result = await _mediator.Send(new GetFootballTeamByIdQuery(id, competitionId));
 
             return HandleResult(result, "Football team retrieved successfully", "Failed to retrieve football team");
         }
@@ -287,7 +289,8 @@ namespace WebAPI.Controllers.Football
             Guid playerId,
             [FromQuery] FootballPosition position,
             [FromQuery] int? jerseyNumber = null,
-            [FromQuery] int? requestedJerseyNumber = null)
+            [FromQuery] int? requestedJerseyNumber = null,
+            [FromQuery] Guid? competitionId = null)
         {
             _logger.LogInformation(
                 "Adding player {playerId} to team {teamId} with position {position}",
@@ -300,7 +303,8 @@ namespace WebAPI.Controllers.Football
                 playerId,
                 position,
                 jerseyNumber,
-                requestedJerseyNumber));
+                requestedJerseyNumber,
+                competitionId));
 
             return HandleResult(result, "Player added to team successfully", "Failed to add player to team");
         }
@@ -316,11 +320,14 @@ namespace WebAPI.Controllers.Football
         [ProducesResponseType(typeof(ApiResponse<FootballTeamDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FootballTeamDto>>> RemovePlayerFromTeam(Guid teamId, Guid playerId)
+        public async Task<ActionResult<ApiResponse<FootballTeamDto>>> RemovePlayerFromTeam(
+            Guid teamId,
+            Guid playerId,
+            [FromQuery] Guid? competitionId = null)
         {
             _logger.LogInformation("Removing player {playerId} from team {teamId}", playerId, teamId);
 
-            Result<FootballTeamDto> result = await _mediator.Send(new RemovePlayerFromTeamCommand(teamId, playerId));
+            Result<FootballTeamDto> result = await _mediator.Send(new RemovePlayerFromTeamCommand(teamId, playerId, competitionId));
 
             return HandleResult(result, "Player removed from team successfully", "Failed to remove player from team");
         }
@@ -355,7 +362,8 @@ namespace WebAPI.Controllers.Football
                 playerId,
                 request.Position,
                 request.JerseyNumber,
-                request.IsActive));
+                request.IsActive,
+                request.CompetitionId));
 
             return HandleResult(result, "Team player updated successfully", "Failed to update team player");
         }

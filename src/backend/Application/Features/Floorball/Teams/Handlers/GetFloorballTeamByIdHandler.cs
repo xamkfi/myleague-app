@@ -105,7 +105,7 @@ public class GetFloorballTeamByIdHandler : IRequestHandler<GetFloorballTeamByIdQ
                 }
             }
 
-            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team, club, playerPersons);
+            FloorballTeamDto teamDto = FloorballTeamMapper.ToDto(team, club, playerPersons, request.CompetitionId);
             _logger.LogInformation("Successfully retrieved floorball team: {TeamId}", team.Id);
 
             return Result<FloorballTeamDto>.Success(teamDto);

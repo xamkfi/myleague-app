@@ -31,5 +31,6 @@ namespace Application.Features.Football.Teams.Commands
         /// roster UI can highlight it for admin review. <c>null</c> (or equal to
         /// <paramref name="JerseyNumber"/>) means no substitution occurred.
         /// </summary>
-        int? RequestedJerseyNumber = null) : IRequest<Result<FootballTeamDto>>;
+        int? RequestedJerseyNumber = null,
+        Guid? CompetitionId = null) : IRequest<Result<FootballTeamDto>>;
 }

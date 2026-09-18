@@ -85,25 +85,20 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddTeamToSeasonCommand, Re
 
             _logger.LogInformation("Adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
             
-            // Use the domain method to add the team (includes business logic validation)
             season.AddTeam(team);
+            Application.Features.Common.Shared.RosterEnrollment.Apply(team, request.CompetitionId, request.RosterMode);
 
-            // Late joiners to an already-active season need team standings rows (Activate only
-            // seeds teams present at activation time).
             if (season.IsActive)
             {
                 FloorballTeamSeasonStatistics teamStatistics = new FloorballTeamSeasonStatistics(team.Id, request.CompetitionId);
                 await _floorballStatisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
             }
 
-            //Initialize the player season statistics for the added team players
-            List<FloorballPlayerSeasonStatistics> players = new List<FloorballPlayerSeasonStatistics>();
-            foreach (FloorballTeamPlayer player in team.Roster)
-            {
-                FloorballPlayerSeasonStatistics playerSeasonStatistics = new FloorballPlayerSeasonStatistics(player.PlayerId, request.TeamId, request.CompetitionId);
-                players.Add(playerSeasonStatistics);
-            }
-            await _floorballStatisticsRepository.SavePlayerSeasonStatisticsBatchAsync(players, cancellationToken);
+            List<FloorballPlayerSeasonStatistics> players = team.GetActiveRoster(request.CompetitionId)
+                .Select(player => new FloorballPlayerSeasonStatistics(player.PlayerId, request.TeamId, request.CompetitionId))
+                .ToList();
+            if (players.Count > 0)
+                await _floorballStatisticsRepository.SavePlayerSeasonStatisticsBatchAsync(players, cancellationToken);
 
             // Save changes explicitly to trigger domain events
             await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);

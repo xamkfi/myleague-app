@@ -99,7 +99,7 @@ public class GetFootballTeamByIdHandler : IRequestHandler<GetFootballTeamByIdQue
                 }
             }
 
-            FootballTeamDto teamDto = FootballTeamMapper.ToDto(team, club, playerPersons);
+            FootballTeamDto teamDto = FootballTeamMapper.ToDto(team, club, playerPersons, request.CompetitionId);
             _logger.LogInformation("Successfully retrieved football team: {TeamId}", team.Id);
 
             return Result<FootballTeamDto>.Success(teamDto);

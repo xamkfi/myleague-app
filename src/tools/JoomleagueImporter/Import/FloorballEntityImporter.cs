@@ -7,6 +7,7 @@ using Application.Features.Floorball.Referees.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Teams.DTOs;
 using Domain.Enums.Common;
+using Domain.Enums.Floorball;
 using JoomleagueImporter.Models;
 
 namespace JoomleagueImporter.Import;
@@ -139,19 +140,9 @@ public class FloorballEntityImporter
         foreach (FloorballTeamDto t in await _api.GetTeamsAsync())
             byName.TryAdd(t.Name, t);
 
-        (Dictionary<int, Dictionary<int, RosterEntry>> rosterByTeam, Dictionary<int, TeamCategory> categoryByTeam) =
-            TeamRosterUnion.Build(set);
-
         List<OldTeam> pending = [];
         foreach (OldTeam oldTeam in set.UniqueTeams.Values)
         {
-            if (!rosterByTeam.TryGetValue(oldTeam.Id, out Dictionary<int, RosterEntry>? unionRoster) ||
-                unionRoster.Count == 0)
-            {
-                Console.WriteLine($"  SKIP {oldTeam.Name}: 0 roster players");
-                continue;
-            }
-
             if (_idMap.HasTeam(oldTeam.Id))
                 continue;
             pending.Add(oldTeam);
@@ -161,8 +152,7 @@ public class FloorballEntityImporter
         Console.WriteLine($"  Importing {pending.Count} teams (concurrency {MatchImportParallel.TeamDegree})...");
         await MatchImportParallel.ForEachTeamAsync(pending, async oldTeam =>
         {
-            Dictionary<int, RosterEntry> unionRoster = rosterByTeam[oldTeam.Id];
-            TeamCategory teamCategory = categoryByTeam.GetValueOrDefault(oldTeam.Id, TeamCategory.Adult);
+            TeamCategory teamCategory = TeamCategoryResolver.InferFromName(oldTeam.Name);
 
             if (!byName.TryGetValue(oldTeam.Name, out FloorballTeamDto? team))
             {
@@ -191,24 +181,19 @@ public class FloorballEntityImporter
             }
 
             _idMap.MapTeam(oldTeam.Id, team.Id);
-
-            int added = 0;
-            foreach (RosterEntry re in unionRoster.Values)
-            {
-                if (!_idMap.TryGetPerson(re.Person.Id, out IdMapStore.PersonMapping? mapping) || mapping == null)
-                    continue;
-
-                int position = re.IsGoalkeeper ? PositionGoalkeeper : PositionForward;
-                int? jersey = re.TeamPlayer.JerseyNumber is > 0 and < 100 ? re.TeamPlayer.JerseyNumber : null;
-                if (await _api.AddPlayerToTeamAsync(team.Id, mapping.PlayerId, position, jersey))
-                    added++;
-            }
-
-            Console.WriteLine($"  {oldTeam.Name}: roster {added}/{unionRoster.Count}");
+            Console.WriteLine($"  {oldTeam.Name}: team ready (roster imported per season)");
         });
 
         _idMap.Save(force: true);
         Console.WriteLine($"  Teams: {created} created, {reused} already existed.");
+    }
+
+    public Task ApplyActiveMembershipsAsync(FloorballImportSet set)
+    {
+        _ = set;
+        Console.WriteLine("--- Active club memberships ---");
+        Console.WriteLine("  Skipped: competition-scoped rosters keep each season independent.");
+        return Task.CompletedTask;
     }
 
     private static string MakeShortName(OldTeam team)
@@ -253,7 +238,7 @@ public class FloorballEntityImporter
     /// Gets (creating lazily) a per-team "Tuntematon" player used to attribute goals whose
     /// scorer is not present in the old data, so that final scores stay correct.
     /// </summary>
-    public async Task<Guid?> GetOrCreateUnknownPlayerAsync(OldTeam oldTeam, Guid newTeamId)
+    public async Task<Guid?> GetOrCreateUnknownPlayerAsync(OldTeam oldTeam, Guid newTeamId, Guid? competitionId = null)
     {
         await _unknownPlayerLock.WaitAsync();
         try
@@ -295,7 +280,7 @@ public class FloorballEntityImporter
             return null;
         }
 
-        bool added = await _api.AddPlayerToTeamAsync(newTeamId, player.Id, PositionForward, null);
+        bool added = await _api.AddPlayerToTeamAsync(newTeamId, player.Id, PositionForward, null, competitionId);
         if (!added)
         {
             _log.LogError("CreateUnknownPlayer", new { oldTeam.Id, oldTeam.Name }, "Adding player to team roster failed.");
@@ -421,9 +406,28 @@ public class FloorballEntityImporter
             if (!handled.Add(teamId))
                 continue; // two old project teams can map to the same new team
             bool ok = await _api.AddTeamToSeasonAsync(season.Id, teamId);
-            await _api.AddTeamToSeasonDivisionAsync(season.Id, division.Id, teamId);
+            await _api.AddTeamToSeasonDivisionAsync(
+                season.Id, division.Id, teamId, Domain.Enums.Common.RosterEnrollmentMode.Empty);
+            await ImportProjectRosterAsync(pti, teamId, season.Id);
             if (ok) teamsAdded++;
         }
         Console.WriteLine($"  Teams in season: {teamsAdded}/{pi.Teams.Count}");
+    }
+
+    private async Task ImportProjectRosterAsync(ProjectTeamImport pti, Guid teamId, Guid competitionId)
+    {
+        int added = 0;
+        foreach (RosterEntry re in pti.Roster)
+        {
+            if (!_idMap.TryGetPerson(re.Person.Id, out IdMapStore.PersonMapping? mapping) || mapping == null)
+                continue;
+
+            int position = re.IsGoalkeeper ? PositionGoalkeeper : PositionForward;
+            int? jersey = re.TeamPlayer.JerseyNumber is > 0 and < 100 ? re.TeamPlayer.JerseyNumber : null;
+            if (await _api.AddPlayerToTeamAsync(teamId, mapping.PlayerId, position, jersey, competitionId))
+                added++;
+        }
+
+        Console.WriteLine($"    Roster {pti.Team.Name}: {added}/{pti.Roster.Count}");
     }
 }

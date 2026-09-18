@@ -256,88 +256,149 @@ public class FloorballTeam : BaseEntity
         FloorballPlayer player,
         FloorballPosition position,
         int? jerseyNumber = null,
-        int? requestedJerseyNumber = null)
+        int? requestedJerseyNumber = null,
+        Guid? competitionId = null)
     {
         ArgumentNullException.ThrowIfNull(player);
-        if (_roster.Count > 0 && _roster.Any(p => p.PlayerId == player.Id))
+        if (HasActiveRosterMembership(player.Id, competitionId))
             throw new InvalidOperationException($"Player with ID {player.Id} is already in the roster.");
-        if (jerseyNumber.HasValue && _roster.Count > 0 && _roster.Any(p => p.JerseyNumber == jerseyNumber))
+        if (jerseyNumber.HasValue && IsJerseyNumberTaken(jerseyNumber.Value, competitionId))
             throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
-        var teamPlayer = new FloorballTeamPlayer(Id, player.Id, position, jerseyNumber, requestedJerseyNumber);
+        FloorballTeamPlayer teamPlayer = new FloorballTeamPlayer(
+            Id, player.Id, position, jerseyNumber, requestedJerseyNumber, competitionId);
         _roster.Add(teamPlayer);
-
     }
 
     /// <summary>
-    /// Removes a player from the team's roster
+    /// Removes a player from one roster scope. When <paramref name="competitionId"/> is omitted
+    /// and the player has several scoped rows, all of them are removed.
     /// </summary>
-    /// <param name="playerId">The ID of the player to remove</param>
-    /// <exception cref="InvalidOperationException">Thrown when the player is not found</exception>
-    public void RemovePlayer(Guid playerId)
+    public void RemovePlayer(Guid playerId, Guid? competitionId = null)
     {
-        FloorballTeamPlayer? teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
-        if (teamPlayer == null)
-            throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
+        if (competitionId.HasValue)
+        {
+            FloorballTeamPlayer teamPlayer = GetRosterEntry(playerId, competitionId);
+            _roster.Remove(teamPlayer);
+            return;
+        }
 
-        _roster.Remove(teamPlayer);
-        
+        List<FloorballTeamPlayer> rows = _roster.Where(p => p.PlayerId == playerId).ToList();
+        if (rows.Count == 0)
+            throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
+        foreach (FloorballTeamPlayer row in rows)
+            _roster.Remove(row);
     }
 
-    /// <summary>
-    /// Updates a player's position in the team
-    /// </summary>
-    /// <param name="playerId">The ID of the player</param>
-    /// <param name="newPosition">The new position</param>
-    /// <exception cref="InvalidOperationException">Thrown when the player is not found</exception>
-    public void UpdatePlayerPosition(Guid playerId, FloorballPosition newPosition)
+    public void UpdatePlayerPosition(Guid playerId, FloorballPosition newPosition, Guid? competitionId = null)
     {
-        FloorballTeamPlayer? teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
-        if (teamPlayer == null)
-            throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
-
-        teamPlayer.UpdatePosition(newPosition);
+        GetRosterEntry(playerId, competitionId).UpdatePosition(newPosition);
     }
-    
-    /// <summary>
-    /// Updates a player's jersey number
-    /// </summary>
-    /// <param name="playerId">The ID of the player</param>
-    /// <param name="jerseyNumber">The new jersey number</param>
-    /// <exception cref="InvalidOperationException">Thrown when the player is not found or the jersey number is already taken</exception>
-    public void UpdatePlayerJerseyNumber(Guid playerId, int? jerseyNumber)
-    {
-        FloorballTeamPlayer? teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
-        if (teamPlayer == null)
-            throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
 
-        if (jerseyNumber.HasValue && _roster.Any(p => p.JerseyNumber == jerseyNumber && p.PlayerId != playerId))
+    public void UpdatePlayerJerseyNumber(Guid playerId, int? jerseyNumber, Guid? competitionId = null)
+    {
+        FloorballTeamPlayer teamPlayer = GetRosterEntry(playerId, competitionId);
+        if (jerseyNumber.HasValue && IsJerseyNumberTaken(jerseyNumber.Value, teamPlayer.CompetitionId, teamPlayer.Id))
             throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
-
         teamPlayer.UpdateJerseyNumber(jerseyNumber);
     }
 
-    /// <summary>
-    /// Updates a player's information in the team (position, jersey number, and active status)
-    /// </summary>
-    /// <param name="playerId">The ID of the player</param>
-    /// <param name="position">The new position</param>
-    /// <param name="jerseyNumber">The new jersey number</param>
-    /// <param name="isActive">The new active status</param>
-    /// <exception cref="InvalidOperationException">Thrown when the player is not found or the jersey number is already taken</exception>
-    public void UpdateTeamPlayer(Guid playerId, FloorballPosition position, int? jerseyNumber, bool isActive)
+    public void UpdateTeamPlayer(
+        Guid playerId,
+        FloorballPosition position,
+        int? jerseyNumber,
+        bool isActive,
+        Guid? competitionId = null)
     {
-        FloorballTeamPlayer? teamPlayer = _roster.FirstOrDefault(p => p.PlayerId == playerId);
-        if (teamPlayer == null)
-            throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
-
-        // Check if jersey number is already taken by another player
-        if (jerseyNumber.HasValue && _roster.Any(p => p.JerseyNumber == jerseyNumber && p.PlayerId != playerId))
+        FloorballTeamPlayer teamPlayer = GetRosterEntry(playerId, competitionId);
+        if (jerseyNumber.HasValue && IsJerseyNumberTaken(jerseyNumber.Value, teamPlayer.CompetitionId, teamPlayer.Id))
             throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
 
-        // Update all properties
         teamPlayer.UpdatePosition(position);
         teamPlayer.UpdateJerseyNumber(jerseyNumber);
         teamPlayer.SetActiveStatus(isActive);
-        
+    }
+
+    public IReadOnlyCollection<FloorballTeamPlayer> GetActiveRoster(Guid? competitionId) =>
+        _roster.Where(p => p.IsActive && p.CompetitionId == competitionId).ToList().AsReadOnly();
+
+    public bool HasActiveRosterMembership(Guid playerId, Guid? competitionId) =>
+        _roster.Any(p => p.IsActive && p.PlayerId == playerId && p.CompetitionId == competitionId);
+
+    public bool IsPlayerOnRoster(Guid playerId, Guid? competitionId)
+    {
+        if (HasActiveRosterMembership(playerId, competitionId))
+            return true;
+        if (competitionId.HasValue && !_roster.Any(p => p.IsActive && p.CompetitionId == competitionId))
+            return HasActiveRosterMembership(playerId, null);
+        return false;
+    }
+
+    /// <summary>
+    /// Latest competition that already has roster rows, excluding <paramref name="excludeCompetitionId"/>.
+    /// Returns <c>null</c> when only a base roster (or nothing) exists.
+    /// </summary>
+    public Guid? FindLatestRosterCompetitionId(Guid? excludeCompetitionId = null)
+    {
+        FloorballTeamPlayer? latest = _roster
+            .Where(p => p.IsActive && p.CompetitionId.HasValue && p.CompetitionId != excludeCompetitionId)
+            .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
+            .FirstOrDefault();
+        return latest?.CompetitionId;
+    }
+
+    /// <summary>
+    /// Copies active players from one roster scope into another. Conflicting jersey numbers
+    /// are dropped so the copy can complete.
+    /// </summary>
+    public int CopyRosterToCompetition(Guid? sourceCompetitionId, Guid targetCompetitionId)
+    {
+        if (targetCompetitionId == Guid.Empty)
+            throw new ArgumentException("Target competition id cannot be empty.", nameof(targetCompetitionId));
+        if (sourceCompetitionId == targetCompetitionId)
+            return 0;
+
+        int copied = 0;
+        foreach (FloorballTeamPlayer row in GetActiveRoster(sourceCompetitionId))
+        {
+            if (HasActiveRosterMembership(row.PlayerId, targetCompetitionId))
+                continue;
+
+            int? jersey = row.JerseyNumber;
+            if (jersey.HasValue && IsJerseyNumberTaken(jersey.Value, targetCompetitionId))
+                jersey = null;
+
+            _roster.Add(new FloorballTeamPlayer(
+                Id, row.PlayerId, row.Position, jersey, row.RequestedJerseyNumber, targetCompetitionId));
+            copied++;
+        }
+
+        return copied;
+    }
+
+    private bool IsJerseyNumberTaken(int jerseyNumber, Guid? competitionId, Guid? excludeRosterRowId = null) =>
+        _roster.Any(p =>
+            p.IsActive &&
+            p.CompetitionId == competitionId &&
+            p.JerseyNumber == jerseyNumber &&
+            p.Id != excludeRosterRowId);
+
+    private FloorballTeamPlayer GetRosterEntry(Guid playerId, Guid? competitionId)
+    {
+        IEnumerable<FloorballTeamPlayer> matches = _roster.Where(p => p.PlayerId == playerId);
+        FloorballTeamPlayer? teamPlayer = competitionId.HasValue
+            ? matches.FirstOrDefault(p => p.CompetitionId == competitionId)
+            : matches.Count() == 1
+                ? matches.First()
+                : matches.FirstOrDefault(p => p.CompetitionId == null);
+
+        if (teamPlayer == null)
+        {
+            if (!competitionId.HasValue && matches.Count() > 1)
+                throw new InvalidOperationException("Player is on multiple competition rosters; specify a competition.");
+            throw new InvalidOperationException($"Player with ID {playerId} is not in the roster.");
+        }
+
+        return teamPlayer;
     }
 } 

@@ -177,5 +177,9 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [Required]
         public Guid TeamId { get; set; }
+
+        /// <summary>Copy the latest roster into this tournament, or start empty.</summary>
+        public Domain.Enums.Common.RosterEnrollmentMode RosterMode { get; set; } =
+            Domain.Enums.Common.RosterEnrollmentMode.CopyLatest;
     }
 }

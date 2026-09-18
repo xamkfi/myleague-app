@@ -135,19 +135,9 @@ public class FootballEntityImporter
         foreach (Application.Features.Football.Teams.DTOs.FootballTeamSummaryDto t in await _api.GetTeamsAsync())
             byName.TryAdd(t.Name, t);
 
-        (Dictionary<int, Dictionary<int, RosterEntry>> rosterByTeam, Dictionary<int, TeamCategory> categoryByTeam) =
-            TeamRosterUnion.Build(set);
-
         List<OldTeam> pending = [];
         foreach (OldTeam oldTeam in set.UniqueTeams.Values)
         {
-            if (!rosterByTeam.TryGetValue(oldTeam.Id, out Dictionary<int, RosterEntry>? unionRoster) ||
-                unionRoster.Count == 0)
-            {
-                Console.WriteLine($"  SKIP {oldTeam.Name}: 0 roster players");
-                continue;
-            }
-
             if (_idMap.HasTeam(oldTeam.Id))
                 continue;
             pending.Add(oldTeam);
@@ -157,8 +147,7 @@ public class FootballEntityImporter
         Console.WriteLine($"  Importing {pending.Count} teams (concurrency {MatchImportParallel.TeamDegree})...");
         await MatchImportParallel.ForEachTeamAsync(pending, async oldTeam =>
         {
-            Dictionary<int, RosterEntry> unionRoster = rosterByTeam[oldTeam.Id];
-            TeamCategory teamCategory = categoryByTeam.GetValueOrDefault(oldTeam.Id, TeamCategory.Adult);
+            TeamCategory teamCategory = TeamCategoryResolver.InferFromName(oldTeam.Name);
 
             if (!byName.TryGetValue(oldTeam.Name, out Application.Features.Football.Teams.DTOs.FootballTeamSummaryDto? team))
             {
@@ -199,26 +188,19 @@ public class FootballEntityImporter
             }
 
             _idMap.MapTeam(oldTeam.Id, team.Id);
-
-            int added = 0;
-            foreach (RosterEntry re in unionRoster.Values)
-            {
-                if (!_idMap.TryGetPerson(re.Person.Id, out IdMapStore.PersonMapping? mapping) || mapping == null)
-                    continue;
-
-                int position = (int)re.FootballPosition;
-                if (position == (int)FootballPosition.None)
-                    position = (int)FootballPosition.Forward;
-                int? jersey = re.TeamPlayer.JerseyNumber is > 0 and < 100 ? re.TeamPlayer.JerseyNumber : null;
-                if (await _api.AddPlayerToTeamAsync(team.Id, mapping.PlayerId, position, jersey))
-                    added++;
-            }
-
-            Console.WriteLine($"  {oldTeam.Name}: roster {added}/{unionRoster.Count}");
+            Console.WriteLine($"  {oldTeam.Name}: team ready (roster imported per season)");
         });
 
         _idMap.Save(force: true);
         Console.WriteLine($"  Teams: {created} created, {reused} already existed.");
+    }
+
+    public Task ApplyActiveMembershipsAsync(FloorballImportSet set)
+    {
+        _ = set;
+        Console.WriteLine("--- Active club memberships ---");
+        Console.WriteLine("  Skipped: competition-scoped rosters keep each season independent.");
+        return Task.CompletedTask;
     }
 
     private static string MakeShortName(OldTeam team)
@@ -259,9 +241,9 @@ public class FootballEntityImporter
     /// Gets (creating lazily) a per-team "Tuntematon" player used to attribute goals whose
     /// scorer is not present in the old data, so that final scores stay correct.
     /// </summary>
-    public async Task<Guid?> GetOrCreateUnknownPlayerAsync(OldTeam oldTeam, Guid newTeamId)
+    public async Task<Guid?> GetOrCreateUnknownPlayerAsync(OldTeam oldTeam, Guid newTeamId, Guid? competitionId = null)
     {
-        List<Guid> players = await EnsureUnknownPlayersAsync(oldTeam, newTeamId, 1);
+        List<Guid> players = await EnsureUnknownPlayersAsync(oldTeam, newTeamId, 1, competitionId);
         return players.Count > 0 ? players[0] : null;
     }
 
@@ -269,13 +251,17 @@ public class FootballEntityImporter
     /// Ensures at least <paramref name="count"/> unique unknown players exist on the team roster.
     /// Slot 1 is the shared unknown scorer; further slots are extra lineup pads.
     /// </summary>
-    public async Task<List<Guid>> EnsureUnknownPlayersAsync(OldTeam oldTeam, Guid newTeamId, int count)
+    public async Task<List<Guid>> EnsureUnknownPlayersAsync(
+        OldTeam oldTeam,
+        Guid newTeamId,
+        int count,
+        Guid? competitionId = null)
     {
         List<Guid> result = [];
         if (count <= 0)
             return result;
 
-        Guid? first = await CreateUnknownPlayerInternalAsync(oldTeam, newTeamId, $"({oldTeam.Name})", cachePrimary: true);
+        Guid? first = await CreateUnknownPlayerInternalAsync(oldTeam, newTeamId, $"({oldTeam.Name})", cachePrimary: true, competitionId);
         if (first == null)
             return result;
         result.Add(first.Value);
@@ -292,14 +278,14 @@ public class FootballEntityImporter
             int extraIndex = nextSlot - 2;
             if (extraIndex < extras.Count)
             {
-                await _api.AddPlayerToTeamAsync(newTeamId, extras[extraIndex], (int)FootballPosition.Forward, null);
+                await _api.AddPlayerToTeamAsync(newTeamId, extras[extraIndex], (int)FootballPosition.Forward, null, competitionId);
                 result.Add(extras[extraIndex]);
                 nextSlot++;
                 continue;
             }
 
             Guid? extra = await CreateUnknownPlayerInternalAsync(
-                oldTeam, newTeamId, $"({oldTeam.Name} {nextSlot})", cachePrimary: false);
+                oldTeam, newTeamId, $"({oldTeam.Name} {nextSlot})", cachePrimary: false, competitionId);
             if (extra == null)
                 break;
             extras.Add(extra.Value);
@@ -315,11 +301,12 @@ public class FootballEntityImporter
         OldTeam oldTeam,
         Guid newTeamId,
         string lastName,
-        bool cachePrimary)
+        bool cachePrimary,
+        Guid? competitionId = null)
     {
         if (cachePrimary && _idMap.UnknownPlayers.TryGetValue(oldTeam.Id, out Guid cached))
         {
-            await _api.AddPlayerToTeamAsync(newTeamId, cached, (int)FootballPosition.Forward, null);
+            await _api.AddPlayerToTeamAsync(newTeamId, cached, (int)FootballPosition.Forward, null, competitionId);
             return cached;
         }
 
@@ -356,7 +343,7 @@ public class FootballEntityImporter
         }
 
         bool added = await _api.AddPlayerToTeamAsync(
-            newTeamId, player.Id, (int)FootballPosition.Forward, null);
+            newTeamId, player.Id, (int)FootballPosition.Forward, null, competitionId);
         if (!added)
         {
             _log.LogError("CreateUnknownFootballPlayer", new { oldTeam.Id, oldTeam.Name, lastName }, "Adding player to team roster failed.");
@@ -474,9 +461,30 @@ public class FootballEntityImporter
             if (!handled.Add(teamId))
                 continue;
             bool ok = await _api.AddTeamToSeasonAsync(season.Id, teamId);
-            await _api.AddTeamToSeasonDivisionAsync(season.Id, division.Id, teamId);
+            await _api.AddTeamToSeasonDivisionAsync(
+                season.Id, division.Id, teamId, Domain.Enums.Common.RosterEnrollmentMode.Empty);
+            await ImportProjectRosterAsync(pti, teamId, season.Id);
             if (ok) teamsAdded++;
         }
         Console.WriteLine($"  Teams in season: {teamsAdded}/{pi.Teams.Count}");
+    }
+
+    private async Task ImportProjectRosterAsync(ProjectTeamImport pti, Guid teamId, Guid competitionId)
+    {
+        int added = 0;
+        foreach (RosterEntry re in pti.Roster)
+        {
+            if (!_idMap.TryGetPerson(re.Person.Id, out IdMapStore.PersonMapping? mapping) || mapping == null)
+                continue;
+
+            int position = (int)re.FootballPosition;
+            if (position == (int)FootballPosition.None)
+                position = (int)FootballPosition.Forward;
+            int? jersey = re.TeamPlayer.JerseyNumber is > 0 and < 100 ? re.TeamPlayer.JerseyNumber : null;
+            if (await _api.AddPlayerToTeamAsync(teamId, mapping.PlayerId, position, jersey, competitionId))
+                added++;
+        }
+
+        Console.WriteLine($"    Roster {pti.Team.Name}: {added}/{pti.Roster.Count}");
     }
 }

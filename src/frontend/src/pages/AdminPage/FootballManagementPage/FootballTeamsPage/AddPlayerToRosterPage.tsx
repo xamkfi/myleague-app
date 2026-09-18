@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { footballTeamService } from '../../../../api/football/footballTeamService';
@@ -17,6 +17,8 @@ const AddPlayerToRosterPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id: teamId } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const competitionId = searchParams.get('competitionId');
   
   const [loading, setLoading] = useState(true);
   const [loadingPlayers, setLoadingPlayers] = useState(true);
@@ -37,7 +39,7 @@ const AddPlayerToRosterPage = () => {
     
     try {
       setLoading(true);
-      const team = await footballTeamService.getById(teamId);
+      const team = await footballTeamService.getById(teamId, competitionId);
       setCurrentTeam(team);
       setError(null);
     } catch (err) {
@@ -46,7 +48,7 @@ const AddPlayerToRosterPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [teamId]);
+  }, [teamId, competitionId]);
 
   useEffect(() => {
     loadTeamData();
@@ -155,7 +157,9 @@ const AddPlayerToRosterPage = () => {
             teamId,
             playerId,
             FootballPosition.None,
-            undefined
+            undefined,
+            undefined,
+            competitionId
           );
         } catch (err) {
           console.error(`Failed to add player ${playerId}:`, err);

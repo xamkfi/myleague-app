@@ -291,7 +291,7 @@ public class HockeySeasonController : BaseApiController
         _logger.LogInformation("Adding team {TeamId} to hockey season {CompetitionId}", request.TeamId, competitionId);
 
         Result<HockeyCompetitionTeamDto> result = await _mediator.Send(
-            new AddTeamToHockeyCompetitionCommand(competitionId, request.TeamId, request.Seed), cancellationToken);
+            new AddTeamToHockeyCompetitionCommand(competitionId, request.TeamId, request.Seed, request.RosterMode), cancellationToken);
 
         return HandleResult(result, "Team added to hockey competition successfully", "Failed to add team to hockey competition");
     }

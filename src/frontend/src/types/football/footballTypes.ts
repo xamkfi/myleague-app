@@ -80,6 +80,7 @@ export interface FootballTeamPlayer {
   assists: number;
   yellowCards: number;
   redCards: number;
+  competitionId?: string | null;
 }
 
 export interface FootballReferee {
@@ -165,12 +166,14 @@ export interface FootballTeamPlayerDto {
   assists: number;
   yellowCards: number;
   redCards: number;
+  competitionId?: string | null;
 }
 
 export interface UpdateFootballTeamPlayerRequest {
   position: FootballPosition;
   jerseyNumber?: number;
   isActive: boolean;
+  competitionId?: string | null;
 }
 
 export interface AddPlayerToTeamRequest {

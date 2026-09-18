@@ -117,6 +117,45 @@ public class HockeyTeam : BaseEntity
         return teamPlayer;
     }
 
+    public IReadOnlyCollection<HockeyTeamPlayer> GetActiveRoster(Guid? competitionId) =>
+        _roster.Where(p => p.IsActive && p.CompetitionId == competitionId).ToList().AsReadOnly();
+
+    public Guid? FindLatestRosterCompetitionId(Guid? excludeCompetitionId = null)
+    {
+        HockeyTeamPlayer? latest = _roster
+            .Where(p => p.IsActive && p.CompetitionId.HasValue && p.CompetitionId != excludeCompetitionId)
+            .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
+            .FirstOrDefault();
+        return latest?.CompetitionId;
+    }
+
+    public int CopyRosterToCompetition(Guid? sourceCompetitionId, Guid targetCompetitionId)
+    {
+        if (targetCompetitionId == Guid.Empty)
+            throw new ArgumentException("Target competition id cannot be empty.", nameof(targetCompetitionId));
+        if (sourceCompetitionId == targetCompetitionId)
+            return 0;
+
+        int copied = 0;
+        foreach (HockeyTeamPlayer row in GetActiveRoster(sourceCompetitionId))
+        {
+            if (HasActiveRosterMembership(row.PlayerId, targetCompetitionId))
+                continue;
+
+            int? jersey = row.JerseyNumber;
+            if (jersey.HasValue && IsJerseyNumberTaken(jersey.Value, targetCompetitionId))
+                jersey = null;
+
+            _roster.Add(new HockeyTeamPlayer(
+                Id, row.PlayerId, row.Position, targetCompetitionId, jersey, row.RequestedJerseyNumber,
+                row.CaptainRole, row.RosterStatus));
+            copied++;
+        }
+
+        return copied;
+    }
+
     public void RemovePlayer(Guid playerId, Guid? competitionId = null)
     {
         HockeyTeamPlayer teamPlayer = GetActiveTeamPlayer(playerId, competitionId)

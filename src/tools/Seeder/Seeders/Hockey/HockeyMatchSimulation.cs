@@ -38,7 +38,7 @@ public static class HockeyMatchSimulation
                 continue;
             }
 
-            HockeyTeamDto? team = await GetTeamAsync(http, jsonOptions, side.TeamId, rosterCache);
+            HockeyTeamDto? team = await GetTeamAsync(http, jsonOptions, side.TeamId, match.CompetitionId, rosterCache);
             if (team?.Roster == null || team.Roster.Count == 0)
             {
                 throw new InvalidOperationException(
@@ -261,7 +261,7 @@ public static class HockeyMatchSimulation
                 return;
             }
 
-            HockeyTeamDto? team = await GetTeamAsync(http, jsonOptions, home.TeamId, rosterCache);
+            HockeyTeamDto? team = await GetTeamAsync(http, jsonOptions, home.TeamId, match.CompetitionId, rosterCache);
             HockeyLineDto? line1 = team?.Lines.FirstOrDefault(l =>
                 string.Equals(l.Name, "Line 1", StringComparison.OrdinalIgnoreCase) && l.IsActive);
             if (line1 == null || line1.Players.Count == 0)
@@ -484,6 +484,7 @@ public static class HockeyMatchSimulation
         HttpClient http,
         JsonSerializerOptions jsonOptions,
         Guid teamId,
+        Guid? competitionId,
         Dictionary<Guid, HockeyTeamDto> cache)
     {
         if (cache.TryGetValue(teamId, out HockeyTeamDto? cached))
@@ -491,7 +492,12 @@ public static class HockeyMatchSimulation
             return cached;
         }
 
-        HttpResponseMessage resp = await http.GetAsync("api/HockeyTeam/" + teamId);
+        string url = "api/HockeyTeam/" + teamId;
+        if (competitionId.HasValue)
+        {
+            url += "?competitionId=" + competitionId.Value;
+        }
+        HttpResponseMessage resp = await http.GetAsync(url);
         if (!resp.IsSuccessStatusCode)
         {
             return null;

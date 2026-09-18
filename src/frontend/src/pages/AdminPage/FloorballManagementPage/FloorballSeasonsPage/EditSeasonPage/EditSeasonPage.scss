@@ -475,6 +475,31 @@
   }
 }
 
+.tm-create-from-club {
+  margin-bottom: map.get($spacing, 'base');
+  padding: map.get($spacing, 'sm');
+  border: 1px solid $color-border;
+  border-radius: map.get($border-radius, 'sm');
+
+  p {
+    margin: 0 0 map.get($spacing, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+  }
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'sm');
+
+    select,
+    input {
+      min-width: 12rem;
+      padding: map.get($spacing, 'sm');
+    }
+  }
+}
+
 // ── Filters row ──
 .tm-filters {
   display: flex; gap: map.get($spacing, 'sm'); margin-bottom: map.get($spacing, 'base');

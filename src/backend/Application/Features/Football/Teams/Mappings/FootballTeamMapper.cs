@@ -31,7 +31,11 @@ public static class FootballTeamMapper
     /// <param name="playerPersons">Dictionary of player persons keyed by player ID</param>
     /// <returns>The mapped DTO</returns>
     /// <exception cref="ArgumentNullException">Thrown when team is null</exception>
-    public static FootballTeamDto ToDto(FootballTeam team, Club? club, Dictionary<Guid, Person>? playerPersons)
+    public static FootballTeamDto ToDto(
+        FootballTeam team,
+        Club? club,
+        Dictionary<Guid, Person>? playerPersons,
+        Guid? competitionId = null)
     {
         if (team == null)
             throw new ArgumentNullException(nameof(team));
@@ -44,6 +48,9 @@ public static class FootballTeamMapper
             throw new ArgumentNullException(nameof(playerPersons));
 
         string? effectiveLogoUrl = team.GetEffectiveLogoUrl(club.LogoUrl)?.ToString();
+        IEnumerable<FootballTeamPlayer> rosterRows = competitionId.HasValue
+            ? team.Roster.Where(p => p.CompetitionId == competitionId)
+            : team.Roster;
 
         return new FootballTeamDto(
             team.Id,
@@ -56,7 +63,7 @@ public static class FootballTeamMapper
             team.SecondaryJerseyColor,
             effectiveLogoUrl,
             team.HasActiveMembers,
-            team.Roster.Select(p => 
+            rosterRows.Select(p => 
             {
                 string playerName = "Unknown Player";
                 int? age = null;
@@ -87,7 +94,8 @@ public static class FootballTeamMapper
                     Age: age,
                     // Only surface when there's actually a mismatch — the UI uses this to drive
                     // the "needs admin review" highlight on the roster page.
-                    RequestedJerseyNumber: p.HasJerseyNumberSubstituted ? p.RequestedJerseyNumber : null
+                    RequestedJerseyNumber: p.HasJerseyNumberSubstituted ? p.RequestedJerseyNumber : null,
+                    CompetitionId: p.CompetitionId
                 );
             }).ToList().AsReadOnly(),
             team.TeamCategory
@@ -105,7 +113,11 @@ public static class FootballTeamMapper
     /// <param name="playerPersons">Dictionary of player persons keyed by player ID</param>
     /// <returns>The mapped DTOs</returns>
     /// <exception cref="ArgumentNullException">Thrown when teams is null</exception>
-    public static IEnumerable<FootballTeamDto> ToDtos(IEnumerable<FootballTeam> teams, Dictionary<Guid, Club>? clubs = null, Dictionary<Guid, Person>? playerPersons = null)
+    public static IEnumerable<FootballTeamDto> ToDtos(
+        IEnumerable<FootballTeam> teams,
+        Dictionary<Guid, Club>? clubs = null,
+        Dictionary<Guid, Person>? playerPersons = null,
+        Guid? competitionId = null)
     {
         if (teams == null)
             throw new ArgumentNullException(nameof(teams));
@@ -114,7 +126,7 @@ public static class FootballTeamMapper
         {
             Club? club = null;
             clubs?.TryGetValue(team.ClubId, out club);
-            return ToDto(team, club, playerPersons);
+            return ToDto(team, club, playerPersons, competitionId);
         });
     }
 

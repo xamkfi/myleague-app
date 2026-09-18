@@ -19,5 +19,5 @@ namespace Application.Features.Floorball.Teams.Queries
     /// Query for retrieving a floorball team by id
     /// </summary>
     /// <param name="Id"></param>
-    public record GetFloorballTeamByIdQuery(Guid Id) : IRequest<Result<FloorballTeamDto>>;
+    public record GetFloorballTeamByIdQuery(Guid Id, Guid? CompetitionId = null) : IRequest<Result<FloorballTeamDto>>;
 }

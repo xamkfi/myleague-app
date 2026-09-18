@@ -177,7 +177,7 @@ public class ClubAdminController : BaseApiController
             playerId, teamId, request.JerseyNumber);
 
         Result<FloorballTeamPlayerDto> result = await _mediator.Send(
-            new FloorballJerseyNumberCommand(teamId, playerId, request.JerseyNumber));
+            new FloorballJerseyNumberCommand(teamId, playerId, request.JerseyNumber, request.CompetitionId));
 
         return HandleResult(result, "Jersey number updated successfully", "Failed to update jersey number");
     }
@@ -205,7 +205,7 @@ public class ClubAdminController : BaseApiController
             playerId, teamId, request.JerseyNumber);
 
         Result<FootballTeamPlayerDto> result = await _mediator.Send(
-            new FootballJerseyNumberCommand(teamId, playerId, request.JerseyNumber));
+            new FootballJerseyNumberCommand(teamId, playerId, request.JerseyNumber, request.CompetitionId));
 
         return HandleResult(result, "Jersey number updated successfully", "Failed to update jersey number");
     }
@@ -402,7 +402,7 @@ public class ClubAdminController : BaseApiController
             playerId, teamId, request.JerseyNumber);
 
         Result<HockeyTeamPlayerDto> result = await _mediator.Send(
-            new HockeyJerseyNumberCommand(teamId, playerId, request.JerseyNumber));
+            new HockeyJerseyNumberCommand(teamId, playerId, request.JerseyNumber, request.CompetitionId));
 
         return HandleResult(result, "Jersey number updated successfully", "Failed to update jersey number");
     }

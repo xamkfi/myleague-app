@@ -381,3 +381,6 @@ src/tools/JoomleagueImporter/id-map-smoke-hockey-batch.json
 src/tools/JoomleagueImporter/id-map-smoke-hockey.json
 src/tools/JoomleagueImporter/id-map-staging-smoke-floorball.json
 src/tools/JoomleagueImporter/id-map-staging-smoke-football.json
+src/tools/JoomleagueImporter/id-map-local-floorball.json
+src/tools/JoomleagueImporter/id-map-local-football.json
+src/tools/JoomleagueImporter/id-map-local-hockey.json

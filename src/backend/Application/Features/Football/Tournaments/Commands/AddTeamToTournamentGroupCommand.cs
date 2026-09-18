@@ -10,4 +10,5 @@ namespace Application.Features.Football.Tournaments.Commands;
 public record AddTeamToTournamentGroupCommand(
     Guid CompetitionId,
     Guid GroupId,
-    Guid TeamId) : IRequest<Result<FootballTournamentDto>>;
+    Guid TeamId,
+    Domain.Enums.Common.RosterEnrollmentMode RosterMode = Domain.Enums.Common.RosterEnrollmentMode.CopyLatest) : IRequest<Result<FootballTournamentDto>>;

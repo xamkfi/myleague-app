@@ -5,36 +5,78 @@
   width: 100%;
 }
 
+// Sport selector shown above the player profile when the person has several
+// sport profiles. Styled as a segmented control: one pill-shaped container,
+// the active segment filled with the brand colour.
 .player-sport-tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: map.get($spacing, 'xs');
   width: 100%;
   max-width: $max-width-page;
   margin: map.get($spacing, 'md') auto 0;
   padding: 0 map.get($spacing, 'base');
 
+  &__group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xxs');
+    padding: map.get($spacing, 'xxs');
+    background: $color-white;
+    border: 1px solid rgba($color-blue-deep, 0.15);
+    border-radius: map.get($border-radius, 'xl');
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
   .tab-button {
-    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'md');
     background: transparent;
-    border: 2px solid rgba($color-blue-deep, 0.3);
+    border: none;
     color: $color-blue-deep;
-    border-radius: map.get($border-radius, 'lg');
+    border-radius: map.get($border-radius, 'xl');
     cursor: pointer;
+    font-family: $font-family-body;
     font-weight: map.get($font-weights, 'medium');
     font-size: map.get($font-sizes, 'sm');
-    transition: all 0.3s ease;
+    line-height: 1;
+    transition: background-color $transition-default, color $transition-default;
+
+    .sport-icon {
+      transition: filter $transition-default;
+    }
 
     &:hover {
       background: rgba($color-blue-deep, 0.08);
-      border-color: rgba($color-blue-deep, 0.5);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-blue-secondary;
+      outline-offset: 2px;
     }
 
     &.active {
       background: $color-blue-deep;
       color: $color-white;
-      border-color: $color-blue-deep;
       font-weight: map.get($font-weights, 'bold');
+      box-shadow: 0 2px 6px rgba($color-blue-deep, 0.35);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .player-sport-tabs {
+    padding: 0 map.get($spacing, 'sm');
+
+    &__group {
+      width: 100%;
+      justify-content: stretch;
+    }
+
+    .tab-button {
+      flex: 1;
+      justify-content: center;
+      padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
     }
   }
 }

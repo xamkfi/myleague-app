@@ -768,7 +768,9 @@
       "city": "City",
       "country": "Country",
       "foundingDate": "Founding Date",
-      "actions": "Actions"
+      "actions": "Actions",
+      "actionsMenu": "Club actions menu",
+      "openClub": "Open club"
     },
     "form": {
       "name": "Club Name",
@@ -796,10 +798,16 @@
     },
     "details": {
       "title": "Club Details",
+      "backToClubs": "Back to clubs",
       "foundingDate": "Founding Date",
       "teams": "Teams",
       "noTeams": "No teams yet",
-      "members": "Members"
+      "members": "Members",
+      "competitions": "Seasons",
+      "noCompetitions": "No seasons",
+      "editTeam": "Edit team",
+      "season": "Season",
+      "tournament": "Tournament"
     },
     "deleteClubButton": "Delete club",
     "confirmDeleteTitle": "Delete club?",
@@ -1910,6 +1918,17 @@
     "stats": {
       "yellowCards": "Yellow cards",
       "redCards": "Red cards"
+    },
+    "teams": {
+      "rosterCompetition": "Competition",
+      "allCompetitions": "All competitions"
+    },
+    "seasons": {
+      "createFromClub": "Create new team",
+      "createFromClubHint": "Create a new club team with an empty roster, or add an existing team to copy its latest roster.",
+      "selectClub": "Select club",
+      "newTeamName": "New team name",
+      "teamCreatedFromClub": "New team created with an empty roster."
     }
   },
   "sports": {
@@ -2011,6 +2030,8 @@
       "noAvailablePlayers": "No available players found",
       "editRoster": "Edit Roster",
       "manageTeamRoster": "MANAGE TEAM ROSTER",
+      "rosterCompetition": "Competition",
+      "allCompetitions": "All competitions",
       "searchPlayers": "Search players...",
       "players": "players",
       "lines": "Lines",
@@ -2093,6 +2114,11 @@
       "teamsInDivision": "Teams in {{division}}",
       "noTeamsInDivision": "No teams in this division yet. Use the table below to add teams.",
       "addTeams": "Add Teams",
+      "createFromClub": "Create new team",
+      "createFromClubHint": "Create a new club team with an empty roster, or add an existing team to copy its latest roster.",
+      "selectClub": "Select club",
+      "newTeamName": "New team name",
+      "teamCreatedFromClub": "New team created with an empty roster.",
       "searchTeams": "Search teams by name...",
       "allCategories": "All Categories",
       "selectedCount": "{{count}} team(s) selected",

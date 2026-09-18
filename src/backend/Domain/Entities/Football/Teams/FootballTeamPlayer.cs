@@ -9,6 +9,7 @@ public class FootballTeamPlayer : BaseEntity
 {
     public Guid TeamId { get; private set; }
     public Guid PlayerId { get; private set; }
+    public Guid? CompetitionId { get; private set; }
     public FootballPosition Position { get; private set; }
     public bool IsActive { get; private set; }
     public int? JerseyNumber { get; private set; }
@@ -36,10 +37,12 @@ public class FootballTeamPlayer : BaseEntity
         Guid playerId,
         FootballPosition position,
         int? jerseyNumber,
-        int? requestedJerseyNumber)
+        int? requestedJerseyNumber,
+        Guid? competitionId = null)
     {
         TeamId = teamId;
         PlayerId = playerId;
+        CompetitionId = competitionId;
         Position = position;
         JerseyNumber = jerseyNumber;
         RequestedJerseyNumber = requestedJerseyNumber.HasValue && requestedJerseyNumber != jerseyNumber
@@ -85,10 +88,10 @@ public class FootballTeamPlayer : BaseEntity
             return false;
         if (ReferenceEquals(this, other))
             return true;
-        return TeamId == other.TeamId && PlayerId == other.PlayerId;
+        return TeamId == other.TeamId && PlayerId == other.PlayerId && CompetitionId == other.CompetitionId;
     }
 
-    public override int GetHashCode() => HashCode.Combine(TeamId, PlayerId);
+    public override int GetHashCode() => HashCode.Combine(TeamId, PlayerId, CompetitionId);
 
     public static bool operator ==(FootballTeamPlayer? left, FootballTeamPlayer? right)
     {

@@ -25,6 +25,8 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             
             builder.Property(p => p.PlayerId)
                 .IsRequired();
+
+            builder.Property(p => p.CompetitionId);
             
             builder.Property(p => p.Position)
                 .IsRequired()
@@ -70,14 +72,25 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.HasIndex(p => p.PlayerId)
                 .HasDatabaseName("IX_FloorballTeamPlayer_PlayerId");
 
+            builder.HasIndex(p => new { p.TeamId, p.PlayerId, p.CompetitionId })
+                .IsUnique()
+                .HasFilter("\"CompetitionId\" IS NOT NULL")
+                .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_PlayerId_CompetitionId");
+
             builder.HasIndex(p => new { p.TeamId, p.PlayerId })
                 .IsUnique()
-                .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_PlayerId");
+                .HasFilter("\"CompetitionId\" IS NULL")
+                .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_PlayerId_Base");
+
+            builder.HasIndex(p => new { p.TeamId, p.CompetitionId, p.JerseyNumber })
+                .IsUnique()
+                .HasFilter("\"JerseyNumber\" IS NOT NULL AND \"CompetitionId\" IS NOT NULL")
+                .HasDatabaseName("IX_FloorballTeamPlayer_Team_Competition_Jersey");
 
             builder.HasIndex(p => new { p.TeamId, p.JerseyNumber })
                 .IsUnique()
-                .HasFilter("\"JerseyNumber\" IS NOT NULL")
-                .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_JerseyNumber");
+                .HasFilter("\"JerseyNumber\" IS NOT NULL AND \"CompetitionId\" IS NULL")
+                .HasDatabaseName("IX_FloorballTeamPlayer_Team_Base_Jersey");
         }
     }
 } 

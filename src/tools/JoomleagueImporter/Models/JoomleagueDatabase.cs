@@ -35,6 +35,7 @@ public class JoomleagueDatabase
     public Dictionary<int, OldRound> Rounds { get; } = [];
     public Dictionary<int, OldMatch> Matches { get; } = [];
     public List<OldMatchEvent> MatchEvents { get; } = [];
+    public List<OldMatchPlayer> MatchPlayers { get; } = [];
     public Dictionary<int, string> Playgrounds { get; } = [];
 
     /// <summary>project_position ids whose position is a goalkeeper position.</summary>
@@ -63,6 +64,7 @@ public class JoomleagueDatabase
         "jos_joomleague_round",
         "jos_joomleague_match",
         "jos_joomleague_match_event",
+        "jos_joomleague_match_player",
         "jos_joomleague_playground",
         "jos_joomleague_project_position",
         "jos_joomleague_position",
@@ -177,6 +179,7 @@ public class JoomleagueDatabase
                 personId = teamPlayers.ColumnIndex("person_id"),
                 posId = teamPlayers.ColumnIndex("project_position_id"),
                 jersey = teamPlayers.ColumnIndex("jerseynumber");
+            bool hasActive = teamPlayers.TryColumnIndex("active", out int activeCol);
             foreach (string?[] r in teamPlayers.Rows)
             {
                 OldTeamPlayer tp = new()
@@ -186,6 +189,7 @@ public class JoomleagueDatabase
                     PersonId = Int(r[personId]),
                     ProjectPositionId = IntOrNull(r[posId]),
                     JerseyNumber = IntOrNull(r[jersey]),
+                    IsActive = !hasActive || Int(r[activeCol], 1) != 0,
                 };
                 db.TeamPlayers[tp.Id] = tp;
             }
@@ -245,6 +249,25 @@ public class JoomleagueDatabase
                     Count = Math.Max(1, FloatToIntOrNull(r[sum]) ?? 1),
                 };
                 db.MatchEvents.Add(ev);
+            }
+        }
+
+        ParsedTable matchPlayers = tables["jos_joomleague_match_player"];
+        if (matchPlayers.Columns.Count > 0)
+        {
+            int id = matchPlayers.ColumnIndex("id"),
+                matchId = matchPlayers.ColumnIndex("match_id"),
+                tpId = matchPlayers.ColumnIndex("teamplayer_id");
+            bool hasPosition = matchPlayers.TryColumnIndex("project_position_id", out int posCol);
+            foreach (string?[] r in matchPlayers.Rows)
+            {
+                db.MatchPlayers.Add(new OldMatchPlayer
+                {
+                    Id = Int(r[id]),
+                    MatchId = Int(r[matchId]),
+                    TeamPlayerId = Int(r[tpId]),
+                    ProjectPositionId = hasPosition ? IntOrNull(r[posCol]) : null,
+                });
             }
         }
 
@@ -351,6 +374,9 @@ public class JoomleagueDatabase
         Dictionary<int, List<OldMatchEvent>> eventsByMatch = MatchEvents
             .GroupBy(e => e.MatchId)
             .ToDictionary(g => g.Key, g => g.ToList());
+        Dictionary<int, List<OldMatchPlayer>> playersByMatch = MatchPlayers
+            .GroupBy(p => p.MatchId)
+            .ToDictionary(g => g.Key, g => g.ToList());
         Dictionary<int, List<OldMatch>> matchesByRound = Matches.Values
             .GroupBy(m => m.RoundId)
             .ToDictionary(g => g.Key, g => g.ToList());
@@ -413,6 +439,7 @@ public class JoomleagueDatabase
                     {
                         Match = match,
                         Events = eventsByMatch.GetValueOrDefault(match.Id) ?? [],
+                        Players = playersByMatch.GetValueOrDefault(match.Id) ?? [],
                     });
                 }
             }
@@ -602,6 +629,7 @@ public class FloorballImportSet
 
     public int TotalMatches => Projects.Sum(p => p.Matches.Count);
     public int TotalEvents => Projects.Sum(p => p.Matches.Sum(m => m.Events.Count));
+    public int MatchesWithAppearances => Projects.Sum(p => p.Matches.Count(m => m.Players.Count > 0));
 }
 
 public class ProjectImport
@@ -634,4 +662,5 @@ public class MatchImport
 {
     public required OldMatch Match { get; init; }
     public required List<OldMatchEvent> Events { get; init; }
+    public List<OldMatchPlayer> Players { get; init; } = [];
 }

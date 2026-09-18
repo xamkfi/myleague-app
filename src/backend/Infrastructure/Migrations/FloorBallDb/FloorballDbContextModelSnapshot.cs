@@ -18,7 +18,7 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("floorball")
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -925,7 +925,6 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
             modelBuilder.Entity("Domain.Entities.Floorball.FloorballSeasonContentBlock", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("ContentHtml")
@@ -1114,6 +1113,9 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.Property<int>("Assists")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("CompetitionId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasComment("UTC timestamp when the entity was created");
@@ -1168,12 +1170,23 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.HasIndex("TeamId", "JerseyNumber")
                         .IsUnique()
-                        .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_JerseyNumber")
-                        .HasFilter("\"JerseyNumber\" IS NOT NULL");
+                        .HasDatabaseName("IX_FloorballTeamPlayer_Team_Base_Jersey")
+                        .HasFilter("\"JerseyNumber\" IS NOT NULL AND \"CompetitionId\" IS NULL");
 
                     b.HasIndex("TeamId", "PlayerId")
                         .IsUnique()
-                        .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_PlayerId");
+                        .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_PlayerId_Base")
+                        .HasFilter("\"CompetitionId\" IS NULL");
+
+                    b.HasIndex("TeamId", "CompetitionId", "JerseyNumber")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballTeamPlayer_Team_Competition_Jersey")
+                        .HasFilter("\"JerseyNumber\" IS NOT NULL AND \"CompetitionId\" IS NOT NULL");
+
+                    b.HasIndex("TeamId", "PlayerId", "CompetitionId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FloorballTeamPlayer_TeamId_PlayerId_CompetitionId")
+                        .HasFilter("\"CompetitionId\" IS NOT NULL");
 
                     b.ToTable("FloorballTeamPlayers", "floorball");
                 });
