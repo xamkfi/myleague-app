@@ -122,6 +122,11 @@ public class GetHockeyPlayerCompetitionStatisticsHandler
                     request.TournamentGroupId,
                     request.PlayoffSeriesId);
 
+            if (request.PlayerId is Guid filterPlayerId)
+            {
+                rows = rows.Where(row => row.PlayerId == filterPlayerId).ToList();
+            }
+
             return Result<List<HockeyPlayerCompetitionStatisticsDto>>.Success(
                 rows.Select(HockeyStatisticsMapper.ToDto).ToList());
         }
@@ -192,6 +197,11 @@ public class GetHockeyGoalieCompetitionStatisticsHandler
                     request.CompetitionDivisionId,
                     request.TournamentGroupId,
                     request.PlayoffSeriesId);
+
+            if (request.PlayerId is Guid filterPlayerId)
+            {
+                rows = rows.Where(row => row.PlayerId == filterPlayerId).ToList();
+            }
 
             return Result<List<HockeyGoalieCompetitionStatisticsDto>>.Success(
                 rows.Select(HockeyStatisticsMapper.ToDto).ToList());

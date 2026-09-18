@@ -1046,10 +1046,10 @@ public class FloorballMatch : BaseEntity
     /// <summary>
     /// Validates that a player is on the given team's roster.
     /// </summary>
-    private static void ValidatePlayerOnRoster(FloorballTeam team, Guid playerId, string roleName)
+    private void ValidatePlayerOnRoster(FloorballTeam team, Guid playerId, string roleName)
     {
-        if (!team.Roster.Any(tp => tp.PlayerId == playerId))
-            throw new ArgumentException($"{roleName} is not on the team's roster.");
+        if (!team.IsPlayerOnRoster(playerId, CompetitionId))
+            throw new ArgumentException($"{roleName} is not on the team's roster for this competition.");
     }
 
     /// <summary>

@@ -36,6 +36,18 @@
       background-color: #f3f4f6;
       border-radius: 12px;
     }
+
+    .roster-competition-picker {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      font-size: 0.9rem;
+
+      select {
+        min-width: 16rem;
+      }
+    }
   }
 
   .edit-roster-loading {

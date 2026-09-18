@@ -92,6 +92,7 @@ public static class Program
         Dictionary<string, FloorballTeamDto> teamMap = await entityImporter.ImportTeamsAsync(season.Teams, clubMap, division, playerMap);
         Guid refereeId = await entityImporter.GetOrCreateImportRefereeAsync(playerMap);
         FloorballSeasonDto newSeason = await entityImporter.ImportSeasonAsync(season.Name, division, teamMap, season.Matches);
+        await entityImporter.ImportRostersAsync(season.Teams, teamMap, playerMap, newSeason.Id);
 
         // ── Phase 3: Import matches ──────────────────────────────────
         Console.WriteLine("\n=== Phase 3: Importing Matches ===");

@@ -89,19 +89,55 @@ public static class FloorballTeamsSeeder
                 FloorballTeamDto? team = teams.FirstOrDefault(t => string.Equals(t.Name, teamSeed.Name, StringComparison.OrdinalIgnoreCase));
                 if (team == null) continue;
 
-                HttpResponseMessage resp = await http.PostAsync("api/floorballseason/" + season.Id + "/divisions/" + teamDivisionId + "/teams/" + team.Id, null);
+                HttpResponseMessage resp = await http.PostAsync(
+                    "api/floorballseason/" + season.Id + "/divisions/" + teamDivisionId + "/teams/" + team.Id + "?rosterMode=1",
+                    null);
                 await SeederHttp.EnsureSuccess(resp, "Assign Team to Season Division");
                 Console.WriteLine("Assigned team " + team.Name + " to season " + season.Name + " division " + teamSeed.DivisionName);
             }
         }
     }
 
-    public static async Task AddPlayersAsync(HttpClient http, JsonSerializerOptions jsonOptions, Guid teamId, List<TeamPlayerByEmailSeed> players, Dictionary<string, Guid> emailToPlayerId)
+    public static Guid? ResolveSeasonId(
+        List<FloorballSeasonDto> seasons,
+        List<FloorballSeasonSeed> seasonSeeds,
+        FloorballTeamSeed teamSeed)
+    {
+        foreach (FloorballSeasonSeed seasonSeed in seasonSeeds)
+        {
+            if (!seasonSeed.DivisionNames.Any(name =>
+                    string.Equals(name, teamSeed.DivisionName, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            FloorballSeasonDto? season = seasons.FirstOrDefault(s =>
+                string.Equals(s.Name, seasonSeed.Name, StringComparison.OrdinalIgnoreCase));
+            if (season != null)
+            {
+                return season.Id;
+            }
+        }
+
+        return null;
+    }
+
+    public static async Task AddPlayersAsync(
+        HttpClient http,
+        JsonSerializerOptions jsonOptions,
+        Guid teamId,
+        List<TeamPlayerByEmailSeed> players,
+        Dictionary<string, Guid> emailToPlayerId,
+        Guid? competitionId = null)
 	{
-        // Build sets of existing roster: jersey numbers and player IDs (for idempotent re-runs)
         HashSet<int> existingJerseyNumbers = new HashSet<int>();
         HashSet<Guid> existingPlayerIds = new HashSet<Guid>();
-        HttpResponseMessage teamResp = await http.GetAsync("api/floorballteam/" + teamId);
+        string teamUrl = "api/floorballteam/" + teamId;
+        if (competitionId.HasValue)
+        {
+            teamUrl += "?competitionId=" + competitionId.Value;
+        }
+        HttpResponseMessage teamResp = await http.GetAsync(teamUrl);
         if (teamResp.IsSuccessStatusCode)
         {
             ApiResponse<FloorballTeamDto>? teamApi = await teamResp.Content.ReadFromJsonAsync<ApiResponse<FloorballTeamDto>>(jsonOptions);
@@ -182,7 +218,12 @@ public static class FloorballTeamsSeeder
             }
 
             int positionValue = (int)player.Position;
-            HttpResponseMessage response = await http.PostAsync($"api/floorballteam/{teamId}/players/{playerId}?position={positionValue}&jerseyNumber={player.JerseyNumber}", null);
+            string addUrl = $"api/floorballteam/{teamId}/players/{playerId}?position={positionValue}&jerseyNumber={player.JerseyNumber}";
+            if (competitionId.HasValue)
+            {
+                addUrl += "&competitionId=" + competitionId.Value;
+            }
+            HttpResponseMessage response = await http.PostAsync(addUrl, null);
             await SeederHttp.EnsureSuccessWithBody(response, "Add Player To Team");
 
             // Track newly used jersey numbers to prevent duplicates within this batch

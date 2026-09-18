@@ -12,6 +12,7 @@ import { floorballSeasonService } from '../../../../../api/floorball/floorballSe
 import { unwrapApiErrorMessage } from '../../../../../api/utils/ParseErrorResponse';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
 import { type FloorballTeam, TeamCategory } from '../../../../../types/floorball/floorballTypes';
+import { clubService, type Club } from '../../../../../api/common/clubService';
 import { useDivisions } from '../../../../../hooks/useDivisions';
 import './EditSeasonPage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
@@ -73,6 +74,10 @@ const EditSeasonPage = () => {
   const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(new Set());
   const [teamOperationLoading, setTeamOperationLoading] = useState(false);
   const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDraft[]>([]);
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [newTeamClubId, setNewTeamClubId] = useState('');
+  const [newTeamName, setNewTeamName] = useState('');
+  const [creatingTeam, setCreatingTeam] = useState(false);
 
   // ── Load season ──
   const loadSeason = useCallback(async () => {
@@ -161,6 +166,18 @@ const EditSeasonPage = () => {
   useEffect(() => {
     loadAvailableTeams();
   }, [loadAvailableTeams]);
+
+  useEffect(() => {
+    const loadClubs = async () => {
+      try {
+        const clubList = await clubService.getAll();
+        setClubs(clubList);
+      } catch (err) {
+        console.error('Error loading clubs:', err);
+      }
+    };
+    void loadClubs();
+  }, []);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -350,6 +367,34 @@ const EditSeasonPage = () => {
       setError(t('floorball.seasons.someTeamsFailed', '{{success}} added, {{fail}} failed.', { success: successCount, fail: failCount }));
     }
     setTeamOperationLoading(false);
+  };
+
+  const handleCreateTeamFromClub = async () => {
+    if (!competitionId || !selectedDivisionId || !newTeamClubId || !newTeamName.trim()) return;
+    setCreatingTeam(true);
+    setError(null);
+    try {
+      const created = await floorballTeamService.create({
+        name: newTeamName.trim(),
+        clubId: newTeamClubId,
+        divisionId: selectedDivisionId,
+        category: (season?.teamCategory as TeamCategory | undefined) ?? TeamCategory.Adult,
+      });
+      await floorballSeasonService.addTeamToSeasonDivision(
+        competitionId,
+        selectedDivisionId,
+        created.id,
+        'Empty',
+      );
+      setNewTeamName('');
+      await loadSeason();
+      await loadAvailableTeams();
+      showSuccess(t('floorball.seasons.teamCreatedFromClub', 'New team created with an empty roster.'));
+    } catch (err) {
+      setError(parseApiError(err));
+    } finally {
+      setCreatingTeam(false);
+    }
   };
 
   const handleAddSingleTeam = async (teamId: string) => {
@@ -679,6 +724,37 @@ const EditSeasonPage = () => {
                             <i className="fas fa-plus-circle"></i>
                             {t('floorball.seasons.addTeams', 'Add Teams')}
                           </h4>
+                        </div>
+
+                        <div className="tm-create-from-club">
+                          <p>{t('floorball.seasons.createFromClubHint', 'Create a new team for this season with an empty roster, or add an existing team to copy its latest roster.')}</p>
+                          <div className="tm-create-from-club__row">
+                            <select
+                              value={newTeamClubId}
+                              onChange={(event) => setNewTeamClubId(event.target.value)}
+                            >
+                              <option value="">{t('floorball.seasons.selectClub', 'Select club')}</option>
+                              {clubs.map((club) => (
+                                <option key={club.id} value={club.id}>{club.name}</option>
+                              ))}
+                            </select>
+                            <input
+                              type="text"
+                              value={newTeamName}
+                              onChange={(event) => setNewTeamName(event.target.value)}
+                              placeholder={t('floorball.seasons.newTeamName', 'New team name')}
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => void handleCreateTeamFromClub()}
+                              disabled={creatingTeam || !newTeamClubId || !newTeamName.trim()}
+                            >
+                              {creatingTeam
+                                ? t('common.creating', 'Creating...')
+                                : t('floorball.seasons.createFromClub', 'Create new team')}
+                            </button>
+                          </div>
                         </div>
 
                         {/* Filters row */}

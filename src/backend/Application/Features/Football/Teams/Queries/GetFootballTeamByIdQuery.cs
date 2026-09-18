@@ -16,5 +16,5 @@ namespace Application.Features.Football.Teams.Queries
     /// Query for retrieving a football team by id
     /// </summary>
     /// <param name="Id"></param>
-    public record GetFootballTeamByIdQuery(Guid Id) : IRequest<Result<FootballTeamDto>>;
+    public record GetFootballTeamByIdQuery(Guid Id, Guid? CompetitionId = null) : IRequest<Result<FootballTeamDto>>;
 }

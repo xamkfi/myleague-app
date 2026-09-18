@@ -64,6 +64,7 @@ public class AddTeamToTournamentGroupHandler : IRequestHandler<AddTeamToTourname
             }
 
             _logger.LogInformation("Adding team {TeamId} to group {GroupId} in tournament: {TournamentId}", request.TeamId, request.GroupId, request.CompetitionId);
+            Application.Features.Common.Shared.RosterEnrollment.Apply(team, request.CompetitionId, request.RosterMode);
 
             // Run domain rule via the (untracked) aggregate. AddTeam is idempotent: if the team is
             // already in the group it does nothing. Use a count-delta check to detect whether a new

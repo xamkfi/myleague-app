@@ -203,11 +203,18 @@ public class ApiClient : IDisposable
         return resp.IsSuccessStatusCode;
     }
 
-    public async Task<bool> AddPlayerToTeamAsync(Guid teamId, Guid playerId, int position, int? jerseyNumber)
+    public async Task<bool> AddPlayerToTeamAsync(
+        Guid teamId,
+        Guid playerId,
+        int position,
+        int? jerseyNumber,
+        Guid? competitionId = null)
     {
         string url = $"api/floorballteam/{teamId}/players/{playerId}?position={position}";
         if (jerseyNumber.HasValue)
             url += $"&jerseyNumber={jerseyNumber.Value}";
+        if (competitionId.HasValue)
+            url += $"&competitionId={competitionId.Value}";
 
         HttpResponseMessage resp = await _http.PostAsync(url, null);
         if (!resp.IsSuccessStatusCode)
@@ -287,7 +294,9 @@ public class ApiClient : IDisposable
 
     public async Task<bool> AddTeamToSeasonDivisionAsync(Guid seasonId, Guid divisionId, Guid teamId)
     {
-        HttpResponseMessage resp = await _http.PostAsync($"api/floorballseason/{seasonId}/divisions/{divisionId}/teams/{teamId}", null);
+        HttpResponseMessage resp = await _http.PostAsync(
+            $"api/floorballseason/{seasonId}/divisions/{divisionId}/teams/{teamId}?rosterMode=1",
+            null);
         if (!resp.IsSuccessStatusCode)
         {
             string body = await resp.Content.ReadAsStringAsync();

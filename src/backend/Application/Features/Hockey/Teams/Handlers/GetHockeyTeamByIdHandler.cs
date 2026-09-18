@@ -35,7 +35,7 @@ public class GetHockeyTeamByIdHandler : IRequestHandler<GetHockeyTeamByIdQuery, 
                 return Result<HockeyTeamDto>.NotFound("HockeyTeam", request.Id);
             }
 
-            return Result<HockeyTeamDto>.Success(HockeyTeamMapper.ToDto(team));
+            return Result<HockeyTeamDto>.Success(HockeyTeamMapper.ToDto(team, request.CompetitionId));
         }
         catch (Exception ex)
         {

@@ -26,5 +26,6 @@ namespace Application.Features.Football.Teams.Commands
         Guid PlayerId,
         FootballPosition Position,
         int? JerseyNumber,
-        bool IsActive) : IRequest<Result<FootballTeamPlayerDto>>;
+        bool IsActive,
+        Guid? CompetitionId = null) : IRequest<Result<FootballTeamPlayerDto>>;
 } 

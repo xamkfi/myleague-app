@@ -12,5 +12,6 @@ namespace Application.Features.Floorball.Seasons.Commands
     /// <param name="TeamId">The ID of the team to add to the season</param>
     public record AddTeamToSeasonCommand(
         Guid CompetitionId,
-        Guid TeamId) : IRequest<Result<FloorballSeasonDto>>;
+        Guid TeamId,
+        Domain.Enums.Common.RosterEnrollmentMode RosterMode = Domain.Enums.Common.RosterEnrollmentMode.CopyLatest) : IRequest<Result<FloorballSeasonDto>>;
 } 

@@ -401,7 +401,7 @@ public class FootballTournamentController : BaseApiController
     {
         _logger.LogInformation("Adding team {teamId} to group {groupId} in tournament {competitionId}", request.TeamId, groupId, competitionId);
 
-        AddTeamToTournamentGroupCommand command = new AddTeamToTournamentGroupCommand(competitionId, groupId, request.TeamId);
+        AddTeamToTournamentGroupCommand command = new AddTeamToTournamentGroupCommand(competitionId, groupId, request.TeamId, request.RosterMode);
         Result<FootballTournamentDto> result = await _mediator.Send(command);
 
         return HandleResult(result, "Team added to tournament group successfully", "Failed to add team to tournament group");

@@ -275,6 +275,7 @@ public static class FloorballTournamentMatchesSeeder
         HttpClient http,
         JsonSerializerOptions jsonOptions,
         Guid teamId,
+        Guid competitionId,
         Dictionary<Guid, FloorballTeamDto> cache)
     {
         if (cache.TryGetValue(teamId, out FloorballTeamDto? cached))
@@ -282,7 +283,7 @@ public static class FloorballTournamentMatchesSeeder
             return cached;
         }
 
-        HttpResponseMessage resp = await http.GetAsync($"api/floorballteam/{teamId}");
+        HttpResponseMessage resp = await http.GetAsync($"api/floorballteam/{teamId}?competitionId={competitionId}");
         if (!resp.IsSuccessStatusCode)
         {
             return null;
@@ -315,8 +316,8 @@ public static class FloorballTournamentMatchesSeeder
         Guid homeTeamId = match.HomeTeamId.Value;
         Guid awayTeamId = match.AwayTeamId.Value;
 
-        FloorballTeamDto? homeTeam = await GetTeamWithRosterAsync(http, jsonOptions, homeTeamId, rosterCache);
-        FloorballTeamDto? awayTeam = await GetTeamWithRosterAsync(http, jsonOptions, awayTeamId, rosterCache);
+        FloorballTeamDto? homeTeam = await GetTeamWithRosterAsync(http, jsonOptions, homeTeamId, match.CompetitionId, rosterCache);
+        FloorballTeamDto? awayTeam = await GetTeamWithRosterAsync(http, jsonOptions, awayTeamId, match.CompetitionId, rosterCache);
         if (homeTeam == null || awayTeam == null)
         {
             Console.WriteLine($"  Skipping simulation for {plan.HomeTeamName} vs {plan.AwayTeamName}: missing team rosters.");

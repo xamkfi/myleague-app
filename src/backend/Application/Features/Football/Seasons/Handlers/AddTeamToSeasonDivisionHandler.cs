@@ -1,5 +1,9 @@
 using Application.Common;
+using Application.Features.Common.Shared;
 using Application.Features.Football.Seasons.Commands;
+using Domain.Entities.Football.Competitions;
+using Domain.Entities.Football.Statistics;
+using Domain.Entities.Football.Teams;
 using Domain.Repositories.Football;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -11,17 +15,23 @@ public class AddTeamToSeasonDivisionHandler : IRequestHandler<AddTeamToSeasonDiv
     private readonly IFootballCompetitionRepository _seasonRepository;
     private readonly IFootballTeamRepository _teamRepository;
     private readonly IFootballCompetitionDivisionRepository _seasonDivisionRepository;
+    private readonly IFootballStatisticsRepository _statisticsRepository;
+    private readonly IFootballUnitOfWork _unitOfWork;
     private readonly ILogger<AddTeamToSeasonDivisionHandler> _logger;
 
     public AddTeamToSeasonDivisionHandler(
         IFootballCompetitionRepository seasonRepository,
         IFootballTeamRepository teamRepository,
         IFootballCompetitionDivisionRepository seasonDivisionRepository,
+        IFootballStatisticsRepository statisticsRepository,
+        IFootballUnitOfWork unitOfWork,
         ILogger<AddTeamToSeasonDivisionHandler> logger)
     {
         _seasonRepository = seasonRepository;
         _teamRepository = teamRepository;
         _seasonDivisionRepository = seasonDivisionRepository;
+        _statisticsRepository = statisticsRepository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -29,36 +39,43 @@ public class AddTeamToSeasonDivisionHandler : IRequestHandler<AddTeamToSeasonDiv
     {
         try
         {
-            if (!await _seasonRepository.ExistsAsync(request.CompetitionId))
-            {
+            FootballCompetition? season = await _seasonRepository.GetByIdAsync(request.CompetitionId);
+            if (season == null)
                 return Result.NotFound("FootballSeason", request.CompetitionId);
-            }
 
-            if (!await _teamRepository.ExistsAsync(request.TeamId))
-            {
+            FootballTeam? team = await _teamRepository.GetByIdAsync(request.TeamId);
+            if (team == null)
                 return Result.NotFound("FootballTeam", request.TeamId);
-            }
 
             _logger.LogInformation(
-                "Adding team {TeamId} to season {SeasonId} division {DivisionId}",
-                request.TeamId,
-                request.CompetitionId,
-                request.DivisionId);
+                "Adding team {TeamId} to season {SeasonId} division {DivisionId} ({RosterMode})",
+                request.TeamId, request.CompetitionId, request.DivisionId, request.RosterMode);
+
+            season.AddTeam(team);
+            RosterEnrollment.Apply(team, request.CompetitionId, request.RosterMode);
+
+            if (season.IsActive)
+            {
+                FootballTeamSeasonStatistics teamStatistics = new(team.Id, request.CompetitionId);
+                await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
+            }
+
+            foreach (FootballTeamPlayer player in team.GetActiveRoster(request.CompetitionId))
+            {
+                FootballPlayerSeasonStatistics playerSeasonStatistics = new(
+                    player.PlayerId, request.TeamId, request.CompetitionId);
+                await _statisticsRepository.SavePlayerSeasonStatisticsAsync(playerSeasonStatistics, cancellationToken);
+            }
+
             await _seasonDivisionRepository.AddTeamToCompetitionDivisionAsync(
-                request.CompetitionId,
-                request.DivisionId,
-                request.TeamId);
+                request.CompetitionId, request.DivisionId, request.TeamId);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(
-                ex,
-                "Error adding team {TeamId} to season {SeasonId} division {DivisionId}",
-                request.TeamId,
-                request.CompetitionId,
-                request.DivisionId);
-            return Result.Failure("Failed to add team to season division.");
+            _logger.LogWarning(ex, "Business rule violation adding team {TeamId} to season division", request.TeamId);
+            return Result.Failure(ex.Message);
         }
     }
 }

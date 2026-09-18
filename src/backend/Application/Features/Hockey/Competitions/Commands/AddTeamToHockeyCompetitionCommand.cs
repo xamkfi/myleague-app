@@ -13,4 +13,5 @@ namespace Application.Features.Hockey.Competitions.Commands;
 public record AddTeamToHockeyCompetitionCommand(
     Guid CompetitionId,
     Guid TeamId,
-    int? Seed = null) : IRequest<Result<HockeyCompetitionTeamDto>>;
+    int? Seed = null,
+    Domain.Enums.Common.RosterEnrollmentMode RosterMode = Domain.Enums.Common.RosterEnrollmentMode.CopyLatest) : IRequest<Result<HockeyCompetitionTeamDto>>;

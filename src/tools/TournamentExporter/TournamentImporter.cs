@@ -102,7 +102,6 @@ internal static class TournamentImporter
                 Console.WriteLine($"  Created team: {team.Name} [{teamCategory}]");
             }
 
-            await ImportPlayersAsync(api, team, teamIds[team.Name]);
         }
 
         TournamentDetail tournament = await api.CreateTournamentWithScheduleAsync(
@@ -126,6 +125,12 @@ internal static class TournamentImporter
                 tournament = await api.AddTeamToGroupAsync(tournament.Id, created.Id, teamId);
                 Console.WriteLine($"    Assigned {teamName} → {group.Name}");
             }
+        }
+
+        foreach (ExportTeam team in payload.Teams)
+        {
+            if (teamIds.TryGetValue(team.Name, out Guid importedTeamId))
+                await ImportPlayersAsync(api, team, importedTeamId, tournament.Id);
         }
 
         Dictionary<string, Dictionary<string, Guid>> rosterByTeam = [];
@@ -176,7 +181,8 @@ internal static class TournamentImporter
                 awayId,
                 refereeId,
                 rosterByTeam,
-                payload.Tournament);
+                payload.Tournament,
+                tournament.Id);
             if (replayed)
                 matchesWithEvents++;
         }
@@ -184,7 +190,7 @@ internal static class TournamentImporter
         Console.WriteLine($"  Created {matchesCreated} matches ({matchesWithEvents} with events).");
     }
 
-    private static async Task ImportPlayersAsync(TargetApiClient api, ExportTeam team, Guid teamId)
+    private static async Task ImportPlayersAsync(TargetApiClient api, ExportTeam team, Guid teamId, Guid competitionId)
     {
         if (team.Players is null || team.Players.Count == 0)
             return;
@@ -217,7 +223,7 @@ internal static class TournamentImporter
                 playerId = await api.CreatePlayerAsync(person.Id);
 
             string position = string.IsNullOrWhiteSpace(player.Position) ? "Forward" : player.Position;
-            bool ok = await api.AddPlayerToTeamAsync(teamId, playerId.Value, position, player.JerseyNumber);
+            bool ok = await api.AddPlayerToTeamAsync(teamId, playerId.Value, position, player.JerseyNumber, competitionId);
             if (ok)
             {
                 rosterNames.Add(fullName);
@@ -240,7 +246,8 @@ internal static class TournamentImporter
         Guid awayTeamId,
         Guid refereeId,
         Dictionary<string, Dictionary<string, Guid>> rosterByTeam,
-        ExportTournament tournament)
+        ExportTournament tournament,
+        Guid competitionId)
     {
         int goalCount = match.Goals?.Count ?? 0;
         int penaltyCount = match.Penalties?.Count ?? 0;
@@ -261,8 +268,8 @@ internal static class TournamentImporter
 
         await api.AddOfficialAsync(matchId, refereeId);
 
-        Guid? homeGoalie = await ResolveGoalieAsync(api, match.HomeTeamName, match.HomeGoalieName, homeTeamId, rosterByTeam);
-        Guid? awayGoalie = await ResolveGoalieAsync(api, match.AwayTeamName, match.AwayGoalieName, awayTeamId, rosterByTeam);
+        Guid? homeGoalie = await ResolveGoalieAsync(api, match.HomeTeamName, match.HomeGoalieName, homeTeamId, rosterByTeam, competitionId);
+        Guid? awayGoalie = await ResolveGoalieAsync(api, match.AwayTeamName, match.AwayGoalieName, awayTeamId, rosterByTeam, competitionId);
         if (homeGoalie is null || awayGoalie is null)
         {
             Console.WriteLine($"  WARN: skip events for {match.HomeTeamName} vs {match.AwayTeamName} — missing goalie");
@@ -319,11 +326,11 @@ internal static class TournamentImporter
 
                 if (ev.Kind == ReplayKind.Goal)
                 {
-                    Guid? scorer = await EnsurePlayerAsync(api, ev.TeamName, ev.PlayerName, teamId.Value, rosterByTeam, "Forward");
+                    Guid? scorer = await EnsurePlayerAsync(api, ev.TeamName, ev.PlayerName, teamId.Value, rosterByTeam, "Forward", competitionId);
                     if (scorer is null)
                         continue;
-                    Guid? assister = await EnsurePlayerAsync(api, ev.TeamName, ev.AssisterName, teamId.Value, rosterByTeam, "Forward");
-                    Guid? second = await EnsurePlayerAsync(api, ev.TeamName, ev.SecondaryAssisterName, teamId.Value, rosterByTeam, "Forward");
+                    Guid? assister = await EnsurePlayerAsync(api, ev.TeamName, ev.AssisterName, teamId.Value, rosterByTeam, "Forward", competitionId);
+                    Guid? second = await EnsurePlayerAsync(api, ev.TeamName, ev.SecondaryAssisterName, teamId.Value, rosterByTeam, "Forward", competitionId);
                     if (assister == scorer)
                         assister = null;
                     if (second == scorer || second == assister)
@@ -333,7 +340,7 @@ internal static class TournamentImporter
                 }
                 else if (ev.Kind == ReplayKind.Penalty)
                 {
-                    Guid? player = await EnsurePlayerAsync(api, ev.TeamName, ev.PlayerName, teamId.Value, rosterByTeam, "Forward");
+                    Guid? player = await EnsurePlayerAsync(api, ev.TeamName, ev.PlayerName, teamId.Value, rosterByTeam, "Forward", competitionId);
                     if (player is null)
                         continue;
                     int minutes = Math.Clamp(ev.Minutes, 2, 20);
@@ -352,7 +359,7 @@ internal static class TournamentImporter
                 }
                 else
                 {
-                    Guid? goalie = await EnsurePlayerAsync(api, ev.TeamName, ev.PlayerName, teamId.Value, rosterByTeam, "Goalkeeper")
+                    Guid? goalie = await EnsurePlayerAsync(api, ev.TeamName, ev.PlayerName, teamId.Value, rosterByTeam, "Goalkeeper", competitionId)
                         ?? (string.Equals(ev.TeamName, match.HomeTeamName, StringComparison.OrdinalIgnoreCase) ? homeGoalie : awayGoalie);
                     if (goalie is null)
                         continue;
@@ -453,9 +460,10 @@ internal static class TournamentImporter
         string teamName,
         string? goalieName,
         Guid teamId,
-        Dictionary<string, Dictionary<string, Guid>> rosterByTeam)
+        Dictionary<string, Dictionary<string, Guid>> rosterByTeam,
+        Guid competitionId)
     {
-        Guid? named = await EnsurePlayerAsync(api, teamName, goalieName, teamId, rosterByTeam, "Goalkeeper");
+        Guid? named = await EnsurePlayerAsync(api, teamName, goalieName, teamId, rosterByTeam, "Goalkeeper", competitionId);
         if (named is not null)
             return named;
 
@@ -475,7 +483,8 @@ internal static class TournamentImporter
         string? fullName,
         Guid teamId,
         Dictionary<string, Dictionary<string, Guid>> rosterByTeam,
-        string position)
+        string position,
+        Guid competitionId)
     {
         string? usable = ExportBuilder.UsablePlayerName(fullName);
         if (usable is null)
@@ -501,7 +510,7 @@ internal static class TournamentImporter
         Guid? playerId = await api.FindPlayerByPersonAsync(person.Id, trimmed);
         playerId ??= await api.CreatePlayerAsync(person.Id);
 
-        await api.AddPlayerToTeamAsync(teamId, playerId.Value, position, null);
+        await api.AddPlayerToTeamAsync(teamId, playerId.Value, position, null, competitionId);
         roster[trimmed] = playerId.Value;
         return playerId.Value;
     }

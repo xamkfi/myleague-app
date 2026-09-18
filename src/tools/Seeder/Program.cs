@@ -439,7 +439,8 @@ public static class Program
 				FloorballTeamDto? team = result.Teams.FirstOrDefault(t => string.Equals(t.Name, teamSeed.Name, StringComparison.OrdinalIgnoreCase));
 				if (team != null)
 				{
-					await FloorballTeamsSeeder.AddPlayersAsync(http, jsonOptions, team.Id, teamSeed.Players, emailToPlayerId);
+					Guid? competitionId = FloorballTeamsSeeder.ResolveSeasonId(result.Seasons, config.FloorballSeasons, teamSeed);
+					await FloorballTeamsSeeder.AddPlayersAsync(http, jsonOptions, team.Id, teamSeed.Players, emailToPlayerId, competitionId);
 				}
 			}
 		}
@@ -547,7 +548,11 @@ public static class Program
 				FootballTeamDto? team = result.Teams.FirstOrDefault(t => string.Equals(t.Name, teamSeed.Name, StringComparison.OrdinalIgnoreCase));
 				if (team != null)
 				{
-					await FootballTeamsSeeder.AddPlayersAsync(http, jsonOptions, team.Id, teamSeed.Players, emailToPlayerId);
+					Guid? competitionId = FootballTeamsSeeder.ResolveSeasonId(
+						result.Seasons,
+						config.FootballSeasons,
+						teamSeed);
+					await FootballTeamsSeeder.AddPlayersAsync(http, jsonOptions, team.Id, teamSeed.Players, emailToPlayerId, competitionId);
 				}
 			}
 		}
@@ -690,7 +695,8 @@ public static class Program
 				HockeyTeamDto? team = result.Teams.FirstOrDefault(t => string.Equals(t.Name, teamSeed.Name, StringComparison.OrdinalIgnoreCase));
 				if (team != null)
 				{
-					await HockeyTeamsSeeder.AddPlayersAsync(http, jsonOptions, team.Id, teamSeed.Players, hockeyEmailToPlayerId);
+					Guid? competitionId = HockeyTeamsSeeder.ResolveSeasonId(result.Seasons, config.HockeySeasons, teamSeed);
+					await HockeyTeamsSeeder.AddPlayersAsync(http, jsonOptions, team.Id, teamSeed.Players, hockeyEmailToPlayerId, competitionId);
 				}
 			}
 

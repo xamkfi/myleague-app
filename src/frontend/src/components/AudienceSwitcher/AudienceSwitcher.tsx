@@ -61,8 +61,8 @@ function AudienceSwitcher({ variant = 'brand' }: AudienceSwitcherProps) {
         <svg
           className="audience-switcher__caret"
           viewBox="0 0 12 8"
-          width="10"
-          height="7"
+          width="12"
+          height="8"
           aria-hidden="true"
           focusable="false"
         >

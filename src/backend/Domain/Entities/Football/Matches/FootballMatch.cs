@@ -644,10 +644,10 @@ public class FootballMatch : BaseEntity
             throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {MatchRules.MaxPeriodNumber}.");
     }
 
-    private static void ValidatePlayerOnRoster(FootballTeam team, Guid playerId, string roleName)
+    private void ValidatePlayerOnRoster(FootballTeam team, Guid playerId, string roleName)
     {
-        if (!team.Roster.Any(tp => tp.PlayerId == playerId))
-            throw new ArgumentException($"{roleName} is not on the team's roster.");
+        if (!team.IsPlayerOnRoster(playerId, CompetitionId))
+            throw new ArgumentException($"{roleName} is not on the team's roster for this competition.");
     }
 
     private FootballTeam ResolveParticipatingTeam(Guid teamId)

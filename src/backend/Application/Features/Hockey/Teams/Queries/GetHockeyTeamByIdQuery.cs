@@ -8,4 +8,4 @@ namespace Application.Features.Hockey.Teams.Queries;
 /// Query for retrieving a hockey team by id.
 /// </summary>
 /// <param name="Id">Team id</param>
-public record GetHockeyTeamByIdQuery(Guid Id) : IRequest<Result<HockeyTeamDto>>;
+public record GetHockeyTeamByIdQuery(Guid Id, Guid? CompetitionId = null) : IRequest<Result<HockeyTeamDto>>;

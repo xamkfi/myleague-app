@@ -39,5 +39,6 @@ namespace Application.Features.Football.Teams.DTOs
         /// is a substitute (i.e. the requested one was taken on the team). <c>null</c> means
         /// the assigned number matches the requested one and no admin review is needed.
         /// </summary>
-        int? RequestedJerseyNumber = null);
+        int? RequestedJerseyNumber = null,
+        Guid? CompetitionId = null);
 } 

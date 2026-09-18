@@ -137,7 +137,9 @@ namespace WebAPI.Models.Floorball
         /// Whether the player is active
         /// </summary>
         [Required(ErrorMessage = "Active status is required")]
-        public bool IsActive { get; set; }        
-        
+        public bool IsActive { get; set; }
+
+        /// <summary>Optional competition roster scope (season or tournament).</summary>
+        public Guid? CompetitionId { get; set; }
     }
 } 

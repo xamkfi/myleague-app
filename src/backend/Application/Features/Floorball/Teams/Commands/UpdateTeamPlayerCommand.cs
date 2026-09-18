@@ -29,5 +29,6 @@ namespace Application.Features.Floorball.Teams.Commands
         Guid PlayerId,
         FloorballPosition Position,
         int? JerseyNumber,
-        bool IsActive) : IRequest<Result<FloorballTeamPlayerDto>>;
+        bool IsActive,
+        Guid? CompetitionId = null) : IRequest<Result<FloorballTeamPlayerDto>>;
 } 

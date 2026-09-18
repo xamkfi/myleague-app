@@ -483,6 +483,10 @@ public class AddTeamToHockeyCompetitionRequest
     /// Optional seeding value.
     /// </summary>
     public int? Seed { get; set; }
+
+    /// <summary>Copy the latest roster into this competition, or start empty.</summary>
+    public Domain.Enums.Common.RosterEnrollmentMode RosterMode { get; set; } =
+        Domain.Enums.Common.RosterEnrollmentMode.CopyLatest;
 }
 
 /// <summary>
