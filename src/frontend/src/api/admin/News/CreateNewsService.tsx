@@ -1,4 +1,5 @@
 import { authFetch } from '../../utils/authFetch';
+import { parseErrorResponse } from '../../utils/ParseErrorResponse';
 import { API_URL } from '../../../constants/config';
 
 interface ApiResponse<T> {
@@ -30,9 +31,7 @@ export async function CreateNewsService(news: News){
         });
     
         if (!response.ok) {
-            const errorText = await response.text();
-            console.log("Upload error response:", errorText);
-            throw new Error("Image upload failed");
+            throw new Error(await parseErrorResponse(response, 'Failed to publish news article.'));
         }
         const data: ApiResponse<string> = await response.json();
         return data.data;

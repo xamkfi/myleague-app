@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
 import '../styles/NewsInputs.scss';
 import { NEWS_CATEGORY_OPTIONS, NEWS_SPORT_CATEGORY_OPTIONS } from '../Utils/NewsFilterContstants';
+import { newsCategoryLabel, newsSportLabel } from '../Utils/newsTaxonomyLabels';
 
 export interface NewsInputsData {
   title: string;
@@ -18,7 +19,7 @@ export interface NewsInputsData {
 interface NewsInputsProps {
   data: NewsInputsData;
   onChange: (data: NewsInputsData) => void;
-  errors?: Partial<NewsInputsData>;
+  errors?: Partial<Record<keyof NewsInputsData, string>>;
 }
 
 export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsProps) {
@@ -42,9 +43,9 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
     updateField('tags', data.tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
+  const handleTagKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
       addTag();
     }
   };
@@ -301,8 +302,8 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
               className={`news-inputs__select ${errors.category ? 'error' : ''}`}
             >
               <option value="">{t('admin.news.select_category', 'Select category')}</option>
-              {NEWS_CATEGORY_OPTIONS.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+              {NEWS_CATEGORY_OPTIONS.map((cat) => (
+                <option key={cat} value={cat}>{newsCategoryLabel(t, cat)}</option>
               ))}
             </select>
             {errors.category && (
@@ -326,8 +327,8 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
               className={`news-inputs__select ${errors.sportCategory ? 'error' : ''}`}
             >
               <option value="">{t('admin.news.select_sport', 'Select sport')}</option>
-              {NEWS_SPORT_CATEGORY_OPTIONS.map(sport => (
-                <option key={sport} value={sport}>{sport}</option>
+              {NEWS_SPORT_CATEGORY_OPTIONS.map((sport) => (
+                <option key={sport} value={sport}>{newsSportLabel(t, sport)}</option>
               ))}
             </select>
             {errors.sportCategory && (
@@ -352,7 +353,7 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
                 type="text"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleTagKeyDown}
                 className="news-inputs__tags__input"
                 placeholder={t('admin.news.add_tag_placeholder', 'Type tag and press Enter...')}
               />

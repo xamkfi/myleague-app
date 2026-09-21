@@ -694,6 +694,9 @@
       "preview_description": "This is how your article will appear to readers",
       "edit_description": "Edit existing news article",
       "create_description": "Create a new news article",
+      "required_hint": "Title and article content are required. Preview keeps your draft on this page.",
+      "confirmPublishTitle": "Publish article",
+      "confirmUpdateTitle": "Update article",
       "main_picture_preview": "Main picture preview",
       "news_image": "News image",
       "noData": "No news articles found",
@@ -713,7 +716,18 @@
       "actions": {
         "edit": "Edit",
         "delete": "Delete",
+        "archive": "Archive",
+        "unarchive": "Unarchive",
+        "menu": "News actions menu",
         "toggleArchive": "Click to toggle archive status"
+      },
+      "filter": {
+        "category": "Category",
+        "allCategories": "All categories",
+        "sport": "Sport",
+        "allSports": "All sports",
+        "search": "Search",
+        "searchPlaceholder": "Search news articles..."
       },
       "status": {
         "archived": "Yes",
@@ -732,6 +746,7 @@
         "updateArchiveFailed": "Failed to update archive status",
         "publish_error": "Failed to publish news article. Please try again.",
         "update_error": "Failed to update news article. Please try again.",
+        "loadFailed": "Failed to load news article for editing",
         "title_required": "Title is required",
         "title_too_short": "Title must be at least 5 characters long",
         "title_too_long": "Title cannot exceed 200 characters",
@@ -1995,13 +2010,17 @@
     },
     "teams": {
       "rosterCompetition": "Competition",
-      "allCompetitions": "All competitions"
+      "allCompetitions": "All competitions",
+      "createPlayerHint": "Only existing players can be added. If you just created a person, convert them first.",
+      "createPlayerFromPerson": "Create player from person"
     },
     "seasons": {
       "createFromClub": "Create new team",
       "createFromClubHint": "Create a new club team with an empty roster, or add an existing team to copy its latest roster.",
       "selectClub": "Select club",
       "newTeamName": "New team name",
+      "newTeamShortName": "Short name (optional)",
+      "newTeamHomeArena": "Home arena (optional)",
       "teamCreatedFromClub": "New team created with an empty roster.",
       "import": {
         "button": "Import from JSON",
@@ -2082,7 +2101,12 @@
     "intro": "Select an audience category to browse related content.",
     "selected": "Selected",
     "select": "Select",
-    "switcherLabel": "Audience switcher"
+    "switcherLabel": "Audience switcher",
+    "descriptions": {
+      "adult": "Adult leagues, cups, and club activity.",
+      "youth": "Youth series and junior programmes.",
+      "women": "Women’s leagues, cups, and club activity."
+    }
   },
   "hockey": {
     "management": {
@@ -2149,6 +2173,8 @@
       },
       "addPlayer": "Add player",
       "addPlayerToTeam": "Add Player to Team",
+      "createPlayerHint": "Only existing players can be added. If you just created a person, convert them first.",
+      "createPlayerFromPerson": "Create player from person",
       "searchAvailablePlayers": "Search available players...",
       "selectedPlayers": "{{count}} selected",
       "addSelectedToTeam": "Add Selected to Team ({{count}})",
@@ -2245,6 +2271,8 @@
       "createFromClubHint": "Create a new club team with an empty roster, or add an existing team to copy its latest roster.",
       "selectClub": "Select club",
       "newTeamName": "New team name",
+      "newTeamShortName": "Short name (optional)",
+      "newTeamHomeArena": "Home arena (optional)",
       "teamCreatedFromClub": "New team created with an empty roster.",
       "searchTeams": "Search teams by name...",
       "allCategories": "All Categories",
@@ -3270,6 +3298,31 @@
     "loadClubError": "Failed to load the club",
     "clubInfoSaved": "Club information has been saved.",
     "clubInfoTitle": "Club information"
+  },
+  "tournaments": {
+    "statusUpcoming": "Upcoming",
+    "statusOngoing": "Ongoing",
+    "statusPast": "Finished",
+    "cardDefaultDescription": "Browse groups, results, and statistics for this tournament.",
+    "dates": "Dates",
+    "venue": "Venue",
+    "teams": "Teams",
+    "groups": "Groups",
+    "tabSummary": "Summary",
+    "tabGroups": "Groups",
+    "tabFixtures": "Fixtures",
+    "tabResults": "Results",
+    "tabStatistics": "Statistics",
+    "loading": "Loading tournaments...",
+    "retry": "Try again",
+    "intro": "Browse upcoming, ongoing, and finished tournaments. Open a tournament to see groups, fixtures, and statistics.",
+    "noTournaments": "No tournaments at the moment."
+  },
+  "notFoundPage": {
+    "title": "Page not found",
+    "heading": "This page does not exist",
+    "description": "The address may be outdated or mistyped. Return to the home page to continue.",
+    "home": "Back to home"
   },
   "auth": {
     "loginTitle": "Admin Login",
