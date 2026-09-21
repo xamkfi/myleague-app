@@ -137,7 +137,7 @@ public class HockeyTeamRepository : IHockeyTeamRepository
                 && (membership.CompetitionId == null
                     || competition == null
                     || competition.Status != HockeyCompetitionStatus.Completed)
-            orderby team.Name, competition.Name
+            orderby team.Name, competition != null ? competition.Name : null
             select new PlayerLicenceRow(
                 team.Id,
                 team.Name,
