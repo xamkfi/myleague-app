@@ -93,9 +93,14 @@ const MATCHES_PER_PAGE = 20;
 export interface FootballPlayerProfileProps {
   playerId: string;
   embedded?: boolean;
+  licenceSummary?: ReactElement;
 }
 
-export function FootballPlayerProfile({ playerId, embedded = false }: FootballPlayerProfileProps) {
+export function FootballPlayerProfile({
+  playerId,
+  embedded = false,
+  licenceSummary,
+}: FootballPlayerProfileProps) {
   const { t } = useTranslation();
   const id = playerId;
   const [profile, setProfile] = useState<FootballPlayerProfileDto | null>(null);
@@ -191,16 +196,20 @@ export function FootballPlayerProfile({ playerId, embedded = false }: FootballPl
             </div>
 
             <div className="player-stats-box">
-              <div className="stat-item">
-                <span className="stat-label">{t('football.player.status', 'Status')}:</span>
-                <span className={`stat-value ${player.isActive ? 'active' : 'inactive'}`}>
-                  {player.isActive ? t('football.player.active', 'Active') : t('football.player.inactive', 'Inactive')}
-                </span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">{t('football.player.position', 'Position')}:</span>
-                <span className="stat-value">{getPositionText(position, t)}</span>
-              </div>
+              {licenceSummary ?? (
+                <>
+                  <div className="stat-item">
+                    <span className="stat-label">{t('football.player.status', 'Status')}:</span>
+                    <span className={`stat-value ${player.isActive ? 'active' : 'inactive'}`}>
+                      {player.isActive ? t('football.player.active', 'Active') : t('football.player.inactive', 'Inactive')}
+                    </span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">{t('football.player.position', 'Position')}:</span>
+                    <span className="stat-value">{getPositionText(position, t)}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

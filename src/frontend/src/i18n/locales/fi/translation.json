@@ -1934,11 +1934,11 @@
     "noCareer": "Ei uratietoja saatavilla.",
     "sportsLabel": "Lajit",
     "noSports": "Pelaajalla ei ole lajiprofiileja.",
-    "licencesTitle": "Joukkuelisenssit",
+    "licencesTitle": "Voimassa olevat lisenssit",
     "licencePaid": "Maksettu",
     "licenceUnpaid": "Maksamatta",
     "licenceBaseRoster": "Perusjoukkue",
-    "noLicences": "Ei nykyisiä joukkuelisenssejä.",
+    "noLicences": "Ei voimassa olevaa lisenssiä.",
     "sports": {
       "floorball": "Salibandy",
       "football": "Jalkapallo",
@@ -3197,7 +3197,9 @@
     "contact": "Yhteystiedot",
     "activeRoster": "Aktiivinen kokoonpano",
     "noActiveMembers": "Ei aktiivisia jäseniä",
-    "viewTeam": "Näytä joukkue"
+    "viewTeam": "Näytä joukkue",
+    "showEarlierSeasons": "Aiemmat kaudet ({{count}})",
+    "hideEarlierSeasons": "Piilota aiemmat kaudet"
   },
   "clubAdmin": {
     "view": "Seuran ylläpito",

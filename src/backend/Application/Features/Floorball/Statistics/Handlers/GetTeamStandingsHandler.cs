@@ -58,8 +58,8 @@ public class GetTeamStandingsHandler : IRequestHandler<GetTeamStandingsQuery, Re
 
             if (standings.Count == 0)
             {
-                _logger.LogWarning("Team standings not found for Season: {SeasonId}", request.CompetitionId);
-                return Result<List<FloorballTeamSeasonStatisticsDto>>.NotFound("Team standings", request.CompetitionId.ToString());
+                _logger.LogInformation("No team standings yet for Season: {SeasonId}", request.CompetitionId);
+                return Result<List<FloorballTeamSeasonStatisticsDto>>.Success([]);
             }
 
             List<FloorballTeamSeasonStatisticsDto> standingsDtos = standings

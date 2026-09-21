@@ -175,29 +175,57 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
 
         public async Task<Dictionary<Guid, FootballTeam>> GetTeamsByPlayerIdsAsync(IEnumerable<Guid> playerIds, CancellationToken cancellationToken = default)
         {
-            if (!playerIds.Any())
+            List<Guid> ids = playerIds.Distinct().ToList();
+            if (ids.Count == 0)
             {
                 return new Dictionary<Guid, FootballTeam>();
             }
 
-            // Find all teams that contain any of the players
-            List<FootballTeam> teamsWithPlayers = await _entities
-                .Include(t => t.Roster)
-                .Where(t => t.Roster.Any(p => playerIds.Contains(p.PlayerId)))
-                .ToListAsync(cancellationToken);
-
-            Dictionary<Guid, FootballTeam> playerTeamMap = new Dictionary<Guid, FootballTeam>();
-
-            // Map each player to their team
-            foreach (FootballTeam team in teamsWithPlayers)
-            {
-                foreach (FootballTeamPlayer player in team.Roster)
+            var memberships = await (
+                from membership in _dbContext.FootballTeamPlayers
+                where ids.Contains(membership.PlayerId)
+                join competition in _dbContext.FootballCompetitions
+                    on membership.CompetitionId equals competition.Id into competitions
+                from competition in competitions.DefaultIfEmpty()
+                select new
                 {
-                    // If the player is in our list of searched players and not already mapped, add them
-                    if (playerIds.Contains(player.PlayerId) && !playerTeamMap.ContainsKey(player.PlayerId))
-                    {
-                        playerTeamMap[player.PlayerId] = team;
-                    }
+                    membership.PlayerId,
+                    membership.TeamId,
+                    membership.IsActive,
+                    membership.UpdatedAt,
+                    EndDate = competition == null ? (DateTime?)null : competition.EndDate,
+                    StartDate = competition == null ? (DateTime?)null : competition.StartDate,
+                    CompetitionIsCurrent = competition != null && competition.IsActive && !competition.IsCompleted
+                }).ToListAsync(cancellationToken);
+
+            Dictionary<Guid, Guid> playerToTeam = new();
+            foreach (var group in memberships.GroupBy(row => row.PlayerId))
+            {
+                Guid? teamId = CurrentRosterTeamPicker.PickTeamId(group.Select(row => new RosterMembershipCandidate(
+                    row.TeamId,
+                    row.EndDate,
+                    row.StartDate,
+                    row.CompetitionIsCurrent,
+                    row.IsActive,
+                    row.UpdatedAt ?? DateTime.MinValue)));
+                if (teamId.HasValue)
+                {
+                    playerToTeam[group.Key] = teamId.Value;
+                }
+            }
+
+            List<Guid> teamIds = playerToTeam.Values.Distinct().ToList();
+            List<FootballTeam> teams = await _entities
+                .Where(team => teamIds.Contains(team.Id))
+                .ToListAsync(cancellationToken);
+            Dictionary<Guid, FootballTeam> teamsById = teams.ToDictionary(team => team.Id);
+
+            Dictionary<Guid, FootballTeam> playerTeamMap = new();
+            foreach (KeyValuePair<Guid, Guid> pair in playerToTeam)
+            {
+                if (teamsById.TryGetValue(pair.Value, out FootballTeam? team))
+                {
+                    playerTeamMap[pair.Key] = team;
                 }
             }
 
@@ -406,9 +434,10 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                 join competition in _dbContext.FootballCompetitions on membership.CompetitionId equals competition.Id into competitions
                 from competition in competitions.DefaultIfEmpty()
                 where membership.PlayerId == playerId
-                    && (membership.CompetitionId == null
-                        || competition == null
-                        || !competition.IsCompleted)
+                    && membership.IsActive
+                    && competition != null
+                    && competition.IsActive
+                    && !competition.IsCompleted
                 orderby team.Name, competition != null ? competition.Name : null
                 select new PlayerLicenceRow(
                     team.Id,

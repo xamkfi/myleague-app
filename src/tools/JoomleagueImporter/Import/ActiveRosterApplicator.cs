@@ -1,58 +1,219 @@
+using Application.Features.Floorball.Teams.DTOs;
+using Application.Features.Football.Teams.DTOs;
+using Application.Features.Hockey.Teams.DTOs;
+using Domain.Enums.Hockey.Teams;
 using JoomleagueImporter.Models;
 
 namespace JoomleagueImporter.Import;
 
 /// <summary>
-/// After every team roster has been imported, keeps only the latest club/team
-/// membership active for each person.
+/// After every season is imported, keeps only each person's latest competition membership active.
+/// Older seasons stay on the roster as history.
 /// </summary>
 internal static class ActiveRosterApplicator
 {
-    public static async Task ApplyAsync(
-        FloorballImportSet set,
-        IdMapStore idMap,
-        Func<Guid, RosterEntry, Guid, bool, Task<bool>> setActiveOnTeam)
+    public static async Task ApplyFloorballAsync(FloorballImportSet set, IdMapStore idMap, FloorballApiClient api)
     {
-        Dictionary<int, int> latestTeamByPerson = PlayerLatestTeamResolver.LatestOldTeamIdByPerson(set);
-        (Dictionary<int, Dictionary<int, RosterEntry>> rosterByTeam, _) = TeamRosterUnion.Build(set);
-
+        (Dictionary<int, LatestMembership> latest, Dictionary<Guid, int> personByPlayer, HashSet<Guid> unknown) =
+            Context(set, idMap);
+        int activated = 0;
         int deactivated = 0;
         int failed = 0;
-        foreach (OldTeam oldTeam in set.UniqueTeams.Values
-            .Where(team => idMap.TryGetTeam(team.Id, out _) && rosterByTeam.ContainsKey(team.Id)))
+
+        foreach (ProjectImport project in set.Projects)
         {
-            if (!idMap.TryGetTeam(oldTeam.Id, out Guid teamId))
-                continue;
-            if (!rosterByTeam.TryGetValue(oldTeam.Id, out Dictionary<int, RosterEntry>? roster))
+            if (!idMap.TryGetSeason(project.Project.Id, out Guid competitionId))
                 continue;
 
-            foreach (RosterEntry entry in roster.Values.Where(rosterEntry =>
-                HasPersonMapping(idMap, rosterEntry) && !IsLatestTeam(latestTeamByPerson, rosterEntry, oldTeam.Id)))
+            foreach (ProjectTeamImport pti in project.Teams.Values)
             {
-                if (!idMap.TryGetPerson(entry.Person.Id, out IdMapStore.PersonMapping? mapping) || mapping == null)
+                if (!idMap.TryGetTeam(pti.Team.Id, out Guid teamId))
                     continue;
 
-                if (await setActiveOnTeam(teamId, entry, mapping.PlayerId, false))
-                    deactivated++;
-                else
-                    failed++;
+                FloorballTeamDto? team = await api.GetTeamByIdAsync(teamId, competitionId);
+                if (team == null)
+                    continue;
+
+                HashSet<int> used = UsedJerseys(team.Roster.Select(row => row.JerseyNumber));
+                foreach (FloorballTeamPlayerDto row in team.Roster)
+                {
+                    if (!ShouldChange(row.PlayerId, row.IsActive, project, pti, personByPlayer, latest, unknown, out bool shouldBeActive))
+                        continue;
+
+                    int jersey = ExistingOrNext(row.JerseyNumber, used);
+                    bool ok = await api.UpdateTeamPlayerAsync(
+                        teamId, row.PlayerId, row.Position, jersey, shouldBeActive, competitionId);
+                    Count(ok, shouldBeActive, ref activated, ref deactivated, ref failed);
+                }
             }
         }
 
-        Console.WriteLine($"  Active club: deactivated {deactivated} stale memberships" +
-                          (failed > 0 ? $", {failed} failed" : "") + ".");
+        Print(activated, deactivated, failed);
     }
 
-    private static bool HasPersonMapping(IdMapStore idMap, RosterEntry entry)
+    public static async Task ApplyFootballAsync(FloorballImportSet set, IdMapStore idMap, FootballApiClient api)
     {
-        return idMap.TryGetPerson(entry.Person.Id, out IdMapStore.PersonMapping? mapping) && mapping != null;
+        (Dictionary<int, LatestMembership> latest, Dictionary<Guid, int> personByPlayer, HashSet<Guid> unknown) =
+            Context(set, idMap);
+        int activated = 0;
+        int deactivated = 0;
+        int failed = 0;
+
+        foreach (ProjectImport project in set.Projects)
+        {
+            if (!idMap.TryGetSeason(project.Project.Id, out Guid competitionId))
+                continue;
+
+            foreach (ProjectTeamImport pti in project.Teams.Values)
+            {
+                if (!idMap.TryGetTeam(pti.Team.Id, out Guid teamId))
+                    continue;
+
+                FootballTeamDto? team = await api.GetTeamByIdAsync(teamId, competitionId);
+                if (team == null)
+                    continue;
+
+                HashSet<int> used = UsedJerseys(team.Roster.Select(row => row.JerseyNumber));
+                foreach (FootballTeamPlayerDto row in team.Roster)
+                {
+                    if (!ShouldChange(row.PlayerId, row.IsActive, project, pti, personByPlayer, latest, unknown, out bool shouldBeActive))
+                        continue;
+
+                    int jersey = ExistingOrNext(row.JerseyNumber, used);
+                    bool ok = await api.UpdateTeamPlayerAsync(
+                        teamId, row.PlayerId, row.Position, jersey, shouldBeActive, competitionId);
+                    Count(ok, shouldBeActive, ref activated, ref deactivated, ref failed);
+                }
+            }
+        }
+
+        Print(activated, deactivated, failed);
     }
 
-    private static bool IsLatestTeam(
-        Dictionary<int, int> latestTeamByPerson,
-        RosterEntry entry,
-        int oldTeamId)
+    public static async Task ApplyHockeyAsync(FloorballImportSet set, IdMapStore idMap, HockeyApiClient api)
     {
-        return latestTeamByPerson.TryGetValue(entry.Person.Id, out int latestTeamId) && latestTeamId == oldTeamId;
+        (Dictionary<int, LatestMembership> latest, Dictionary<Guid, int> personByPlayer, HashSet<Guid> unknown) =
+            Context(set, idMap);
+        int activated = 0;
+        int deactivated = 0;
+        int failed = 0;
+
+        foreach (ProjectImport project in set.Projects)
+        {
+            if (!idMap.TryGetSeason(project.Project.Id, out Guid competitionId))
+                continue;
+
+            foreach (ProjectTeamImport pti in project.Teams.Values)
+            {
+                if (!idMap.TryGetTeam(pti.Team.Id, out Guid teamId))
+                    continue;
+
+                HockeyTeamDto? team = await api.GetTeamByIdAsync(teamId, competitionId);
+                if (team == null)
+                    continue;
+
+                HashSet<int> used = UsedJerseys(team.Roster.Select(row => row.JerseyNumber));
+                foreach (HockeyTeamPlayerDto row in team.Roster)
+                {
+                    if (!ShouldChange(row.PlayerId, row.IsActive, project, pti, personByPlayer, latest, unknown, out bool shouldBeActive))
+                        continue;
+
+                    if (!Enum.TryParse(row.Position, ignoreCase: true, out HockeyPosition position))
+                        position = HockeyPosition.Center;
+                    if (!Enum.TryParse(row.CaptainRole, ignoreCase: true, out HockeyCaptainRole captain))
+                        captain = HockeyCaptainRole.None;
+                    int jersey = ExistingOrNext(row.JerseyNumber, used);
+                    bool ok = await api.UpdateTeamPlayerAsync(
+                        teamId,
+                        row.PlayerId,
+                        position,
+                        jersey,
+                        shouldBeActive ? HockeyRosterStatus.Active : HockeyRosterStatus.Inactive,
+                        captain,
+                        competitionId);
+                    Count(ok, shouldBeActive, ref activated, ref deactivated, ref failed);
+                }
+            }
+        }
+
+        Print(activated, deactivated, failed);
+    }
+
+    private static bool ShouldChange(
+        Guid playerId,
+        bool isActive,
+        ProjectImport project,
+        ProjectTeamImport team,
+        Dictionary<Guid, int> personByPlayer,
+        Dictionary<int, LatestMembership> latest,
+        HashSet<Guid> unknown,
+        out bool shouldBeActive)
+    {
+        shouldBeActive = false;
+        if (unknown.Contains(playerId) || !personByPlayer.TryGetValue(playerId, out int personId))
+            return false;
+        if (!latest.TryGetValue(personId, out LatestMembership membership))
+            return false;
+
+        shouldBeActive = membership.ProjectId == project.Project.Id && membership.TeamId == team.Team.Id;
+        return isActive != shouldBeActive;
+    }
+
+    private static (Dictionary<int, LatestMembership> Latest, Dictionary<Guid, int> PersonByPlayer, HashSet<Guid> Unknown)
+        Context(FloorballImportSet set, IdMapStore idMap)
+    {
+        Dictionary<Guid, int> personByPlayer = [];
+        foreach (KeyValuePair<int, IdMapStore.PersonMapping> pair in idMap.Persons)
+        {
+            if (pair.Value.PlayerId != Guid.Empty)
+                personByPlayer[pair.Value.PlayerId] = pair.Key;
+        }
+
+        HashSet<Guid> unknown = [.. idMap.UnknownPlayers.Values];
+        foreach (List<Guid> extras in idMap.ExtraUnknownPlayers.Values)
+        {
+            foreach (Guid playerId in extras)
+                unknown.Add(playerId);
+        }
+
+        return (PlayerLatestTeamResolver.LatestMembershipByPerson(set), personByPlayer, unknown);
+    }
+
+    private static void Count(bool ok, bool activatedRow, ref int activated, ref int deactivated, ref int failed)
+    {
+        if (!ok)
+        {
+            failed++;
+            return;
+        }
+
+        if (activatedRow)
+            activated++;
+        else
+            deactivated++;
+    }
+
+    private static void Print(int activated, int deactivated, int failed)
+    {
+        Console.WriteLine(
+            $"  Current club: activated {activated}, deactivated {deactivated} older memberships" +
+            (failed > 0 ? $", {failed} failed" : "") + ".");
+    }
+
+    private static HashSet<int> UsedJerseys(IEnumerable<int?> numbers) =>
+        numbers.Where(number => number is > 0 and < 100).Select(number => number!.Value).ToHashSet();
+
+    private static int ExistingOrNext(int? preferred, HashSet<int> used)
+    {
+        if (preferred is > 0 and < 100)
+            return preferred.Value;
+
+        for (int number = 1; number <= 99; number++)
+        {
+            if (used.Add(number))
+                return number;
+        }
+
+        return 99;
     }
 }

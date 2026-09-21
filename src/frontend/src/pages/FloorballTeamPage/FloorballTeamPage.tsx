@@ -379,35 +379,18 @@ function FloorballTeamPage() {
             <div className="header-content">
               <div className="team-branding">
                 <div className="floorball-page-team-logo">
-                  {team.logoUrl ? (
-                    <img 
-                      // TODO: Use real logo when possible
-                      src={"http://www.mahl.fi/media/com_joomleague/clubs/small/myry21_1683621904.jpg"} 
+                  {team.logoUrl || team.club.logoUrl ? (
+                    <img
+                      src={team.logoUrl || team.club.logoUrl}
                       alt={`${team.name} logo`}
                       onError={(e) => {
-                        // If team logo fails to load, fallback to club logo
                         const target = e.target as HTMLImageElement;
-                        if (team.club.logoUrl && target.src !== team.club.logoUrl) {
+                        if (team.logoUrl && team.club.logoUrl && target.src !== team.club.logoUrl) {
                           target.src = team.club.logoUrl;
-                        } else {
-                          // If both fail, hide the img and show placeholder
-                          target.style.display = 'none';
-                          const placeholder = target.nextElementSibling as HTMLElement;
-                          if (placeholder) {
-                            placeholder.style.display = 'flex';
-                          }
+                          return;
                         }
-                      }}
-                    />
-                  ) : team.club.logoUrl ? (
-                    <img 
-                      src={team.club.logoUrl} 
-                      alt={`${team.club.name} logo`}
-                      onError={(e) => {
-                        // If club logo fails to load, hide and show placeholder
-                        const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
-                        const placeholder = target.nextElementSibling as HTMLElement;
+                        const placeholder = target.nextElementSibling as HTMLElement | null;
                         if (placeholder) {
                           placeholder.style.display = 'flex';
                         }
