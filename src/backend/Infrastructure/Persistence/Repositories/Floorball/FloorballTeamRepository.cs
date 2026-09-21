@@ -483,7 +483,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                     && (membership.CompetitionId == null
                         || competition == null
                         || !competition.IsCompleted)
-                orderby team.Name, competition.Name
+                orderby team.Name, (competition != null ? competition.Name : null)
                 select new PlayerLicenceRow(
                     team.Id,
                     team.Name,
