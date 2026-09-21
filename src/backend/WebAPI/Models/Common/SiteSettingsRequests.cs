@@ -27,4 +27,12 @@ public class UpdateSiteSettingsRequest
     /// <summary>Minutes before access-token expiry to show the stay-logged-in reminder.</summary>
     [Range(SiteSettings.SessionExpiryWarningMinutesMin, SiteSettings.SessionExpiryWarningMinutesMax)]
     public int SessionExpiryWarningMinutes { get; set; }
+
+    /// <summary>Month of the yearly player-licence cutoff (1–12). Default is May.</summary>
+    [Range(SiteSettings.PlayerLicenceResetMonthMin, SiteSettings.PlayerLicenceResetMonthMax)]
+    public int PlayerLicenceResetMonth { get; set; } = SiteSettings.PlayerLicenceResetMonthDefault;
+
+    /// <summary>Day of the yearly player-licence cutoff. Default is 1.</summary>
+    [Range(SiteSettings.PlayerLicenceResetDayMin, SiteSettings.PlayerLicenceResetDayMax)]
+    public int PlayerLicenceResetDay { get; set; } = SiteSettings.PlayerLicenceResetDayDefault;
 }

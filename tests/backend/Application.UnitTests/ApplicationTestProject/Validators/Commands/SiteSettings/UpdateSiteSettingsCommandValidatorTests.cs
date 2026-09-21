@@ -42,4 +42,24 @@ public class UpdateSiteSettingsCommandValidatorTests
 
         _validator.Validate(command).IsValid.Should().BeFalse();
     }
+
+    [Fact]
+    public void Validate_ValidLicenceDate_IsValid()
+    {
+        UpdateSiteSettingsCommand command = new(15, 7, 10, 5, 5, 2, 29);
+
+        _validator.Validate(command).IsValid.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(13, 1)]
+    [InlineData(4, 31)]
+    [InlineData(2, 30)]
+    public void Validate_InvalidLicenceDate_IsInvalid(int month, int day)
+    {
+        UpdateSiteSettingsCommand command = new(15, 7, 10, 5, 5, month, day);
+
+        _validator.Validate(command).IsValid.Should().BeFalse();
+    }
 }

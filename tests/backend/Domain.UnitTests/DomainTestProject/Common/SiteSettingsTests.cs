@@ -70,4 +70,45 @@ public class SiteSettingsTests
 
         act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("accessTokenExpirationMinutes");
     }
+
+    [Fact]
+    public void Constructor_ValidLicenceDate_SetsMonthAndDay()
+    {
+        SiteSettings settings = new(Guid.NewGuid(), 15, 7, 10, 5, 5, 6, 15);
+
+        settings.PlayerLicenceResetMonth.Should().Be(6);
+        settings.PlayerLicenceResetDay.Should().Be(15);
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(13, 1)]
+    [InlineData(4, 31)]
+    [InlineData(2, 30)]
+    public void Constructor_InvalidLicenceDate_Throws(int month, int day)
+    {
+        Action act = () => new SiteSettings(Guid.NewGuid(), 15, 7, 10, 5, 5, month, day);
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void Constructor_February29_IsAllowed()
+    {
+        SiteSettings settings = new(Guid.NewGuid(), 15, 7, 10, 5, 5, 2, 29);
+
+        settings.PlayerLicenceResetMonth.Should().Be(2);
+        settings.PlayerLicenceResetDay.Should().Be(29);
+    }
+
+    [Fact]
+    public void MarkPlayerLicenceReset_ValidYear_SetsLastYear()
+    {
+        SiteSettings settings = new(Guid.NewGuid(), 15, 7, 10, 5, 5);
+
+        settings.MarkPlayerLicenceReset(2026);
+
+        settings.LastPlayerLicenceResetYear.Should().Be(2026);
+        settings.UpdatedAt.Should().NotBeNull();
+    }
 }

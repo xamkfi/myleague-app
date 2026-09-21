@@ -2,7 +2,11 @@ import { API_URL } from '../../constants/config';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import type { ApiResponse } from '../../types/common/apiResponseType';
-import type { SiteSettings, SiteSettingsRequest } from '../../types/admin/siteSettingsTypes';
+import type {
+  PlayerLicenceResetResult,
+  SiteSettings,
+  SiteSettingsRequest,
+} from '../../types/admin/siteSettingsTypes';
 
 function getBaseUrl(): string {
   return `${API_URL}/site-settings`;
@@ -42,5 +46,15 @@ export const siteSettingsService = {
     });
 
     return readResponse<SiteSettings>(response, 'Failed to save site settings');
+  },
+
+  async resetPlayerLicences(): Promise<PlayerLicenceResetResult> {
+    const response = await authFetch(`${getBaseUrl()}/player-licence-reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+
+    return readResponse<PlayerLicenceResetResult>(response, 'Failed to reset player licences');
   },
 };

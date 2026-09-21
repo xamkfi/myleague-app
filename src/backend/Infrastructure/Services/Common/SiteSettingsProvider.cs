@@ -54,7 +54,10 @@ public class SiteSettingsProvider : ISiteSettingsProvider
             _loginCodeConfig.ExpirationMinutes,
             _loginCodeConfig.MaxAttempts,
             SiteSettings.SessionExpiryWarningMinutesDefault,
-            IsPersisted: false);
+            IsPersisted: false,
+            SiteSettings.PlayerLicenceResetMonthDefault,
+            SiteSettings.PlayerLicenceResetDayDefault,
+            LastPlayerLicenceResetYear: null);
     }
 
     private static EffectiveAuthSettings FromEntity(SiteSettings row)
@@ -65,6 +68,9 @@ public class SiteSettingsProvider : ISiteSettingsProvider
             row.LoginCodeExpirationMinutes,
             row.LoginCodeMaxAttempts,
             row.SessionExpiryWarningMinutes,
-            IsPersisted: true);
+            IsPersisted: true,
+            row.PlayerLicenceResetMonth,
+            row.PlayerLicenceResetDay,
+            row.LastPlayerLicenceResetYear);
     }
 }

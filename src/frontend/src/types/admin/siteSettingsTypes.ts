@@ -5,6 +5,9 @@ export interface SiteSettings {
   loginCodeMaxAttempts: number;
   sessionExpiryWarningMinutes: number;
   isPersisted: boolean;
+  playerLicenceResetMonth: number;
+  playerLicenceResetDay: number;
+  lastPlayerLicenceResetYear: number | null;
 }
 
 export interface SiteSettingsRequest {
@@ -13,4 +16,14 @@ export interface SiteSettingsRequest {
   loginCodeExpirationMinutes: number;
   loginCodeMaxAttempts: number;
   sessionExpiryWarningMinutes: number;
+  playerLicenceResetMonth: number;
+  playerLicenceResetDay: number;
+}
+
+export interface PlayerLicenceResetResult {
+  ran: boolean;
+  cutoffYear: number;
+  floorballDeactivated: number;
+  footballDeactivated: number;
+  hockeyDeactivated: number;
 }

@@ -45,4 +45,10 @@ public interface IFootballTeamRepository
     Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default);
 
     Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default);
+
+    Task<int> DeactivateOpenPlayerLicencesAsync(CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<PlayerLicenceRow>> GetOpenPlayerLicencesAsync(
+        Guid playerId,
+        CancellationToken cancellationToken = default);
 }

@@ -22,5 +22,15 @@ public class UpdateSiteSettingsCommandValidator : AbstractValidator<UpdateSiteSe
 
         RuleFor(x => x.SessionExpiryWarningMinutes)
             .InclusiveBetween(SiteSettingsEntity.SessionExpiryWarningMinutesMin, SiteSettingsEntity.SessionExpiryWarningMinutesMax);
+
+        RuleFor(x => x.PlayerLicenceResetMonth)
+            .InclusiveBetween(SiteSettingsEntity.PlayerLicenceResetMonthMin, SiteSettingsEntity.PlayerLicenceResetMonthMax);
+
+        RuleFor(x => x)
+            .Must(command => SiteSettingsEntity.IsValidLicenceResetDate(
+                command.PlayerLicenceResetMonth,
+                command.PlayerLicenceResetDay))
+            .WithName(nameof(UpdateSiteSettingsCommand.PlayerLicenceResetDay))
+            .WithMessage("Player licence reset day must be a real day for the selected month (29 February is allowed).");
     }
 }

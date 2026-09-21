@@ -299,7 +299,10 @@
   },
   "admin": {
     "title": "Hallintapaneeli",
-    "database": "Tietokanta",
+    "nav": {
+      "league": "Liigan tiedot",
+      "administration": "Ylläpito"
+    },
     "sportsTitle": "Urheilulajit",
     "view": "Admin näkymä",
     "navbar": {
@@ -328,7 +331,6 @@
       "manageRules": "Hallitse sääntöjä"
     },
     "settings": {
-      "navSection": "Asetukset",
       "nav": "Sivuston asetukset",
       "pageTitle": "Sivuston asetukset",
       "description": "Tunnisteiden ja kirjautumiskoodin kestot koskevat vain uusia istuntoja. Salaisuudet pysyvät palvelimen asetuksissa.",
@@ -347,7 +349,16 @@
       "save": "Tallenna asetukset",
       "saveSuccess": "Asetukset tallennettu.",
       "saveFailed": "Asetusten tallennus epäonnistui.",
-      "loadFailed": "Asetusten lataus epäonnistui."
+      "loadFailed": "Asetusten lataus epäonnistui.",
+      "licenceTitle": "Pelaajalisenssit",
+      "licenceHint": "Tänä päivänä joka vuosi maksamattomat joukkuelisenssit merkitään ei-aktiivisiksi. Oletus on 1.5.",
+      "licenceDay": "Päivä",
+      "licenceMonth": "Kuukausi",
+      "licenceLastReset": "Viimeisin lisenssinollausvuosi: {{year}}.",
+      "licenceResetNow": "Nollaa pelaajalisenssit nyt",
+      "licenceResetConfirm": "Merkitäänkö maksamattomat joukkuelisenssit ei-aktiivisiksi nyt? Pelaajat pysyvät ei-aktiivisina, kunnes merkitset kunkin joukkuelisenssin maksetuksi.",
+      "licenceResetSuccess": "Lisenssit nollattu: {{floorball}} salibandy, {{football}} jalkapallo, {{hockey}} jääkiekko.",
+      "licenceResetFailed": "Pelaajalisenssien nollaus epäonnistui."
     },
     "siteContent": {
       "title": "Sivuston sisällöt",
@@ -1922,6 +1933,11 @@
     "noCareer": "Ei uratietoja saatavilla.",
     "sportsLabel": "Lajit",
     "noSports": "Pelaajalla ei ole lajiprofiileja.",
+    "licencesTitle": "Joukkuelisenssit",
+    "licencePaid": "Maksettu",
+    "licenceUnpaid": "Maksamatta",
+    "licenceBaseRoster": "Perusjoukkue",
+    "noLicences": "Ei nykyisiä joukkuelisenssejä.",
     "sports": {
       "floorball": "Salibandy",
       "football": "Jalkapallo",
@@ -1940,6 +1956,11 @@
       "last": "Viimeinen sivu",
       "pageOf": "Sivu {{current}} / {{total}}"
     }
+  },
+  "playerLicence": {
+    "column": "Lisenssi",
+    "markPaid": "Merkitse lisenssi maksetuksi",
+    "markUnpaid": "Merkitse lisenssi maksamattomaksi"
   },
   "football": {
     "positions": {
