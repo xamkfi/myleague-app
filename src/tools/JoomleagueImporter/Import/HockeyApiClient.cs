@@ -4,6 +4,7 @@ using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Officials.DTOs;
 using Application.Features.Hockey.Players.DTOs;
 using Application.Features.Hockey.Seasons.DTOs;
+using Application.Features.Hockey.Statistics.DTOs;
 using Application.Features.Hockey.Teams.DTOs;
 using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
@@ -100,7 +101,8 @@ public class HockeyApiClient : ImportApiClient
         HockeyPosition position,
         int jerseyNumber,
         HockeyRosterStatus rosterStatus,
-        HockeyCaptainRole captainRole)
+        HockeyCaptainRole captainRole,
+        Guid? competitionId = null)
     {
         HttpResponseMessage resp = await Http.PutAsJsonAsync($"api/HockeyTeam/{teamId}/players/{playerId}", new
         {
@@ -108,9 +110,24 @@ public class HockeyApiClient : ImportApiClient
             jerseyNumber,
             rosterStatus = rosterStatus.ToString(),
             captainRole = captainRole.ToString(),
+            competitionId,
         });
         return await OkOrWarn(resp, $"Update hockey team player {playerId} jersey {jerseyNumber}");
     }
+
+    public async Task<bool> CompleteSeasonAsync(Guid seasonId)
+    {
+        HttpResponseMessage resp = await Http.PostAsync($"api/HockeySeason/{seasonId}/complete", null);
+        return await OkOrAlready(resp, "CompleteHockeySeason");
+    }
+
+    public Task<List<HockeyTeamCompetitionStatisticsDto>> GetStandingsAsync(Guid competitionId) =>
+        GetUnpaginatedListAsync<HockeyTeamCompetitionStatisticsDto>(
+            $"api/HockeyStatistics/standings/{competitionId}");
+
+    public Task<List<HockeyPlayerCompetitionStatisticsDto>> GetPlayerStatisticsAsync(Guid competitionId) =>
+        GetUnpaginatedListAsync<HockeyPlayerCompetitionStatisticsDto>(
+            $"api/HockeyStatistics/players/{competitionId}");
 
     public async Task<List<HockeyOfficialDto>> GetOfficialsAsync() =>
         await GetUnpaginatedListAsync<HockeyOfficialDto>("api/HockeyOfficial");
