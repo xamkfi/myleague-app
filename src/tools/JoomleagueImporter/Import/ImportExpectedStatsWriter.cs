@@ -14,14 +14,14 @@ public static class ImportExpectedStatsWriter
 
     public static string ResolveReportsDirectory()
     {
-        return Path.GetFullPath(Path.Combine("..", "..", "..", "reports"), AppContext.BaseDirectory);
+        return Path.GetFullPath(Path.Join("..", "..", "..", "reports"), AppContext.BaseDirectory);
     }
 
     public static string ExpectedPath(string sport) =>
-        Path.Combine(ResolveReportsDirectory(), $"expected-{NormalizeSport(sport)}.json");
+        Path.Combine(ResolveReportsDirectory(), Path.GetFileName($"expected-{NormalizeSport(sport)}.json"));
 
     public static string ComparePath(string sport) =>
-        Path.Combine(ResolveReportsDirectory(), $"compare-{NormalizeSport(sport)}.json");
+        Path.Combine(ResolveReportsDirectory(), Path.GetFileName($"compare-{NormalizeSport(sport)}.json"));
 
     public static string WriteExpected(ImportExpectedReport report)
     {

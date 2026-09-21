@@ -128,16 +128,17 @@ internal static class HistoricalRosterApplicator
 
     private static HashSet<Guid> MappedPlayerIds(ProjectImport project, IdMapStore idMap)
     {
-        HashSet<Guid> ids = [];
-        foreach (RosterEntry entry in project.Teams.Values
+        return project.Teams.Values
             .SelectMany(pti => pti.Roster)
-            .Where(entry => idMap.TryGetPerson(entry.Person.Id, out _)))
-        {
-            if (idMap.TryGetPerson(entry.Person.Id, out IdMapStore.PersonMapping? mapping) && mapping != null)
-                ids.Add(mapping.PlayerId);
-        }
-
-        return ids;
+            .Select(entry =>
+            {
+                bool found = idMap.TryGetPerson(entry.Person.Id, out IdMapStore.PersonMapping? mapping)
+                    && mapping != null;
+                return (found, playerId: mapping?.PlayerId ?? Guid.Empty);
+            })
+            .Where(item => item.found)
+            .Select(item => item.playerId)
+            .ToHashSet();
     }
 
     private static HashSet<int> UsedJerseys(IEnumerable<int?> numbers) =>

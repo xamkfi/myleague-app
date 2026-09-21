@@ -30,17 +30,29 @@ public static class ImportExpectedStatsCalculator
             if (idMap.TryGetSeason(season.OldProjectId, out Guid seasonId))
                 season.NewSeasonId = seasonId;
 
-            foreach (ExpectedTeamStats team in season.Teams.Where(t => idMap.TryGetTeam(t.OldTeamId, out _)))
+            foreach ((ExpectedTeamStats team, Guid teamId) mappedTeam in season.Teams
+                .Select(team =>
+                {
+                    bool found = idMap.TryGetTeam(team.OldTeamId, out Guid teamId);
+                    return (team, found, teamId);
+                })
+                .Where(item => item.found)
+                .Select(item => (item.team, item.teamId)))
             {
-                if (idMap.TryGetTeam(team.OldTeamId, out Guid teamId))
-                    team.NewTeamId = teamId;
+                mappedTeam.team.NewTeamId = mappedTeam.teamId;
             }
 
-            foreach (ExpectedPlayerStats player in season.Players.Where(p =>
-                idMap.TryGetPerson(p.OldPersonId, out IdMapStore.PersonMapping? mapping) && mapping != null))
+            foreach ((ExpectedPlayerStats player, Guid playerId) mappedPlayer in season.Players
+                .Select(player =>
+                {
+                    bool found = idMap.TryGetPerson(player.OldPersonId, out IdMapStore.PersonMapping? mapping)
+                        && mapping != null;
+                    return (player, found, playerId: mapping?.PlayerId ?? Guid.Empty);
+                })
+                .Where(item => item.found)
+                .Select(item => (item.player, item.playerId)))
             {
-                if (idMap.TryGetPerson(player.OldPersonId, out IdMapStore.PersonMapping? mapping) && mapping != null)
-                    player.NewPlayerId = mapping.PlayerId;
+                mappedPlayer.player.NewPlayerId = mappedPlayer.playerId;
             }
         }
     }
@@ -109,15 +121,18 @@ public static class ImportExpectedStatsCalculator
                 player.GamesPlayed++;
             }
 
-            foreach (OldMatchEvent ev in matchImport.Events.Where(e =>
-                personByTeamPlayer.ContainsKey(e.TeamPlayerId) && project.Teams.ContainsKey(e.ProjectTeamId)))
+            foreach ((OldMatchEvent ev, int personId, ProjectTeamImport pti) mappedEvent in matchImport.Events
+                .Select(ev =>
+                {
+                    bool hasPerson = personByTeamPlayer.TryGetValue(ev.TeamPlayerId, out int personId);
+                    bool hasTeam = project.Teams.TryGetValue(ev.ProjectTeamId, out ProjectTeamImport? pti);
+                    return (ev, hasPerson, personId, hasTeam, pti);
+                })
+                .Where(item => item.hasPerson && item.hasTeam && item.pti != null)
+                .Select(item => (item.ev, item.personId, pti: item.pti!)))
             {
-                if (!personByTeamPlayer.TryGetValue(ev.TeamPlayerId, out int personId))
-                    continue;
-                if (!project.Teams.TryGetValue(ev.ProjectTeamId, out ProjectTeamImport? pti))
-                    continue;
-
-                ExpectedPlayerStats player = GetOrAddPlayer(players, (personId, pti.Team.Id), project);
+                ExpectedPlayerStats player = GetOrAddPlayer(players, (mappedEvent.personId, mappedEvent.pti.Team.Id), project);
+                OldMatchEvent ev = mappedEvent.ev;
                 if (JoomleagueDatabase.GoalEventTypes.Contains(ev.EventTypeId))
                     player.Goals += Math.Max(1, ev.Count);
                 else if (JoomleagueDatabase.AssistEventTypes.Contains(ev.EventTypeId))
@@ -198,19 +213,30 @@ public static class ImportExpectedStatsCalculator
             return;
 
         HashSet<int> sideTeamPlayers = pti.Roster.Select(r => r.TeamPlayer.Id).ToHashSet();
-        if (matchImport.Players.Count > 0)
-        {
-            foreach (OldMatchPlayer appearance in matchImport.Players.Where(a => sideTeamPlayers.Contains(a.TeamPlayerId)))
+        foreach (int personId in matchImport.Players
+            .Where(appearance => sideTeamPlayers.Contains(appearance.TeamPlayerId))
+            .Select(appearance =>
             {
-                if (personByTeamPlayer.TryGetValue(appearance.TeamPlayerId, out int personId))
-                    result.Add((personId, pti.Team.Id));
-            }
+                bool found = personByTeamPlayer.TryGetValue(appearance.TeamPlayerId, out int personId);
+                return (found, personId);
+            })
+            .Where(item => item.found)
+            .Select(item => item.personId))
+        {
+            result.Add((personId, pti.Team.Id));
         }
 
-        foreach (OldMatchEvent ev in matchImport.Events.Where(e => e.ProjectTeamId == projectTeamId))
+        foreach (int personId in matchImport.Events
+            .Where(ev => ev.ProjectTeamId == projectTeamId)
+            .Select(ev =>
+            {
+                bool found = personByTeamPlayer.TryGetValue(ev.TeamPlayerId, out int personId);
+                return (found, personId);
+            })
+            .Where(item => item.found)
+            .Select(item => item.personId))
         {
-            if (personByTeamPlayer.TryGetValue(ev.TeamPlayerId, out int personId))
-                result.Add((personId, pti.Team.Id));
+            result.Add((personId, pti.Team.Id));
         }
     }
 
