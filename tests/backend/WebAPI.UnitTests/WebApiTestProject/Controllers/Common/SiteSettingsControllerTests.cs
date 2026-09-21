@@ -1,4 +1,6 @@
 using Application.Common;
+using Application.Features.Common.PlayerLicences.Commands;
+using Application.Features.Common.PlayerLicences.DTOs;
 using Application.Features.Common.SiteSettings.Commands;
 using Application.Features.Common.SiteSettings.DTOs;
 using Application.Features.Common.SiteSettings.Queries;
@@ -71,7 +73,38 @@ public class SiteSettingsControllerTests
                     && c.RefreshTokenExpirationDays == 14
                     && c.LoginCodeExpirationMinutes == 8
                     && c.LoginCodeMaxAttempts == 6
-                    && c.SessionExpiryWarningMinutes == 4),
+                    && c.SessionExpiryWarningMinutes == 4
+                    && c.PlayerLicenceResetMonth == 5
+                    && c.PlayerLicenceResetDay == 1),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ResetPlayerLicences_WhenSuccessful_SendsForceCommand()
+    {
+        Mock<IMediator> mediator = new();
+        SiteSettingsController controller = new(
+            mediator.Object,
+            Mock.Of<ILogger<SiteSettingsController>>());
+
+        PlayerLicenceResetResultDto dto = new(true, 2026, 3, 2, 1);
+        mediator
+            .Setup(m => m.Send(It.IsAny<ResetExpiredPlayerLicencesCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<PlayerLicenceResetResultDto>.Success(dto));
+
+        ActionResult<ApiResponse<PlayerLicenceResetResultDto>> actionResult =
+            await controller.ResetPlayerLicences();
+
+        OkObjectResult ok = actionResult.Result.Should().BeOfType<OkObjectResult>().Subject;
+        ApiResponse<PlayerLicenceResetResultDto> body =
+            ok.Value.Should().BeOfType<ApiResponse<PlayerLicenceResetResultDto>>().Subject;
+        body.Success.Should().BeTrue();
+        body.Data!.Ran.Should().BeTrue();
+
+        mediator.Verify(
+            m => m.Send(
+                It.Is<ResetExpiredPlayerLicencesCommand>(c => c.Force),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }

@@ -8,6 +8,7 @@ import { FootballPlayerProfile } from '../FootballPlayerPage/FootballPlayerPage'
 import { HockeyPlayerProfile } from '../HockeyPlayerPage/HockeyPlayerPage';
 import {
   personPlayerSportsService,
+  type PersonPlayerLicence,
   type PersonPlayerSports,
   type PersonSportKind,
 } from '../../api/common/personPlayerSportsService';
@@ -116,9 +117,40 @@ function PlayerPage() {
     );
   }
 
+  const licences: PersonPlayerLicence[] = data.licences ?? [];
+
   return (
     <PageTemplate title={title}>
       <div className="player-page player-page--shell">
+        <section className="player-licences" aria-labelledby="player-licences-heading">
+          <h2 id="player-licences-heading" className="player-licences__title">
+            {t('playerPage.licencesTitle')}
+          </h2>
+          {licences.length === 0 ? (
+            <p className="player-licences__empty">{t('playerPage.noLicences')}</p>
+          ) : (
+            <ul className="player-licences__list">
+              {licences.map((licence) => (
+                <li
+                  key={`${licence.sport}-${licence.teamId}-${licence.competitionId ?? 'base'}`}
+                  className="player-licences__item"
+                >
+                  <span className="player-licences__sport">{t(`playerPage.sports.${licence.sport}`)}</span>
+                  <span className="player-licences__team">{licence.teamName}</span>
+                  <span className="player-licences__competition">
+                    {licence.competitionName ?? t('playerPage.licenceBaseRoster')}
+                  </span>
+                  <span
+                    className={`player-licences__status player-licences__status--${licence.isActive ? 'paid' : 'unpaid'}`}
+                  >
+                    {licence.isActive ? t('playerPage.licencePaid') : t('playerPage.licenceUnpaid')}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
         {availableSports.length > 1 && activeSport && (
           <div className="player-sport-tabs" role="tablist" aria-label={t('playerPage.sportsLabel')}>
             <div className="player-sport-tabs__group">

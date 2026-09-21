@@ -177,4 +177,16 @@ public interface IFloorballTeamRepository
     /// Returns true when any team uses the division.
     /// </summary>
     Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets <c>IsActive = false</c> on open roster rows (base roster or a competition that is not completed).
+    /// </summary>
+    Task<int> DeactivateOpenPlayerLicencesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Current (open) roster memberships for a player, used as paid-licence rows.
+    /// </summary>
+    Task<IReadOnlyList<PlayerLicenceRow>> GetOpenPlayerLicencesAsync(
+        Guid playerId,
+        CancellationToken cancellationToken = default);
 } 

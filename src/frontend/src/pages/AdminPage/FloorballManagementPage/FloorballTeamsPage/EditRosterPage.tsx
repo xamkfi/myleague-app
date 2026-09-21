@@ -295,7 +295,7 @@ const EditRosterPage = () => {
                 <th className="name-column">{t('floorball.players.name', 'NAME')}</th>
                 <th className="jersey-column">{t('floorball.players.jersey', 'JERSEY')}</th>
                 <th className="position-column">{t('floorball.players.position', 'POSITION')}</th>
-                <th className="status-column">{t('floorball.players.status', 'STATUS')}</th>
+                <th className="status-column">{t('playerLicence.column', 'Licence')}</th>
                 <th className="actions-column">{t('common.actions', 'ACTIONS')}</th>
               </tr>
             </thead>
@@ -399,9 +399,9 @@ const EditRosterPage = () => {
                               className="dropdown-item status-item"
                               onClick={() => handleToggleActive(player)}
                             >
-                              {player.isActive 
-                                ? t('floorball.players.setInactive', 'Set Inactive')
-                                : t('floorball.players.setActive', 'Set Active')
+                              {player.isActive
+                                ? t('playerLicence.markUnpaid', 'Mark licence unpaid')
+                                : t('playerLicence.markPaid', 'Mark licence paid')
                               }
                             </button>
                             <button

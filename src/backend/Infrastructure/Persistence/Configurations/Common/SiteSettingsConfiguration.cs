@@ -26,5 +26,15 @@ public class SiteSettingsConfiguration : IEntityTypeConfiguration<SiteSettings>
 
         builder.Property(x => x.SessionExpiryWarningMinutes)
             .IsRequired();
+
+        builder.Property(x => x.PlayerLicenceResetMonth)
+            .IsRequired()
+            .HasDefaultValue(5);
+
+        builder.Property(x => x.PlayerLicenceResetDay)
+            .IsRequired()
+            .HasDefaultValue(1);
+
+        builder.Property(x => x.LastPlayerLicenceResetYear);
     }
 }

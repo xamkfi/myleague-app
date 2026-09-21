@@ -1,6 +1,8 @@
 using Domain.Common;
 using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Common;
+using Domain.Enums.Hockey.Competitions;
+using Domain.Enums.Hockey.Teams;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -102,6 +104,49 @@ public class HockeyTeamRepository : IHockeyTeamRepository
     public async Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.HockeyTeams.AnyAsync(t => t.DivisionId == divisionId, cancellationToken);
+    }
+
+    public async Task<int> DeactivateOpenPlayerLicencesAsync(CancellationToken cancellationToken = default)
+    {
+        DateTime now = DateTime.UtcNow;
+        return await _dbContext.HockeyTeamPlayers
+            .Where(row => row.LeftAt == null && row.RosterStatus == HockeyRosterStatus.Active)
+            .Where(row =>
+                row.CompetitionId == null
+                || !_dbContext.HockeyCompetitions.Any(competition =>
+                    competition.Id == row.CompetitionId
+                    && competition.Status == HockeyCompetitionStatus.Completed))
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(row => row.RosterStatus, HockeyRosterStatus.Inactive)
+                    .SetProperty(row => row.UpdatedAt, now),
+                cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<PlayerLicenceRow>> GetOpenPlayerLicencesAsync(
+        Guid playerId,
+        CancellationToken cancellationToken = default)
+    {
+        List<PlayerLicenceRow> rows = await (
+            from membership in _dbContext.HockeyTeamPlayers
+            join team in _dbContext.HockeyTeams on membership.TeamId equals team.Id
+            join competition in _dbContext.HockeyCompetitions on membership.CompetitionId equals competition.Id into competitions
+            from competition in competitions.DefaultIfEmpty()
+            where membership.PlayerId == playerId
+                && membership.LeftAt == null
+                && (membership.CompetitionId == null
+                    || competition == null
+                    || competition.Status != HockeyCompetitionStatus.Completed)
+            orderby team.Name, competition.Name
+            select new PlayerLicenceRow(
+                team.Id,
+                team.Name,
+                membership.CompetitionId,
+                competition != null ? competition.Name : null,
+                membership.RosterStatus == HockeyRosterStatus.Active)
+        ).ToListAsync(cancellationToken);
+
+        return rows;
     }
 
     private IQueryable<HockeyTeam> TeamQuery()

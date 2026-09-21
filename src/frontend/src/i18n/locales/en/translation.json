@@ -299,7 +299,10 @@
   },
   "admin": {
     "title": "Admin Dashboard",
-    "database": "Database",
+    "nav": {
+      "league": "League data",
+      "administration": "Administration"
+    },
     "sportsTitle": "Sports",
     "view": "Admin view",
     "navbar": {
@@ -328,7 +331,6 @@
       "manageRules": "Manage rules"
     },
     "settings": {
-      "navSection": "Settings",
       "nav": "Site settings",
       "pageTitle": "Site settings",
       "description": "Token and login-code lifetimes apply to newly issued sessions only. Secrets stay in server configuration.",
@@ -347,7 +349,16 @@
       "save": "Save settings",
       "saveSuccess": "Settings saved.",
       "saveFailed": "Failed to save settings.",
-      "loadFailed": "Failed to load settings."
+      "loadFailed": "Failed to load settings.",
+      "licenceTitle": "Player licences",
+      "licenceHint": "On this date each year, unpaid team licences become inactive. Default is 1 May.",
+      "licenceDay": "Day",
+      "licenceMonth": "Month",
+      "licenceLastReset": "Last licence reset year: {{year}}.",
+      "licenceResetNow": "Reset player licences now",
+      "licenceResetConfirm": "Deactivate unpaid team licences now? Players stay inactive until you mark each team licence paid again.",
+      "licenceResetSuccess": "Licences reset: {{floorball}} floorball, {{football}} football, {{hockey}} hockey.",
+      "licenceResetFailed": "Failed to reset player licences."
     },
     "siteContent": {
       "title": "Site content",
@@ -1861,6 +1872,11 @@
     "noCareer": "No career data available.",
     "sportsLabel": "Sports",
     "noSports": "This player has no sport profiles.",
+    "licencesTitle": "Team licences",
+    "licencePaid": "Paid",
+    "licenceUnpaid": "Unpaid",
+    "licenceBaseRoster": "Base roster",
+    "noLicences": "No current team licences.",
     "sports": {
       "floorball": "Floorball",
       "football": "Football",
@@ -1879,6 +1895,11 @@
       "last": "Last page",
       "pageOf": "Page {{current}} / {{total}}"
     }
+  },
+  "playerLicence": {
+    "column": "Licence",
+    "markPaid": "Mark licence paid",
+    "markUnpaid": "Mark licence unpaid"
   },
   "football": {
     "positions": {
@@ -2294,6 +2315,8 @@
       "personCreated": "Person created",
       "setActive": "Set Active",
       "setInactive": "Set Inactive",
+      "markLicencePaid": "Mark licence paid",
+      "markLicenceUnpaid": "Mark licence unpaid",
       "confirmDelete": {
         "title": "Confirm Deletion",
         "message": "Remove {{name}} from the team?"

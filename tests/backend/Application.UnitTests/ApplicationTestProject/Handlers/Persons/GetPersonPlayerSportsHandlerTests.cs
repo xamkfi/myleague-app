@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.Common.Persons.DTOs;
 using Application.Features.Common.Persons.Handlers;
 using Application.Features.Common.Persons.Queries;
+using Domain.Common;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 using Domain.Entities.Football.Teams;
@@ -26,15 +27,31 @@ public class GetPersonPlayerSportsHandlerTests
     private readonly Mock<IFloorballPlayerRepository> _floorballPlayerRepository = new();
     private readonly Mock<IFootballPlayerRepository> _footballPlayerRepository = new();
     private readonly Mock<IHockeyPlayerRepository> _hockeyPlayerRepository = new();
+    private readonly Mock<IFloorballTeamRepository> _floorballTeamRepository = new();
+    private readonly Mock<IFootballTeamRepository> _footballTeamRepository = new();
+    private readonly Mock<IHockeyTeamRepository> _hockeyTeamRepository = new();
     private readonly GetPersonPlayerSportsHandler _handler;
 
     public GetPersonPlayerSportsHandlerTests()
     {
+        _floorballTeamRepository
+            .Setup(x => x.GetOpenPlayerLicencesAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<PlayerLicenceRow>());
+        _footballTeamRepository
+            .Setup(x => x.GetOpenPlayerLicencesAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<PlayerLicenceRow>());
+        _hockeyTeamRepository
+            .Setup(x => x.GetOpenPlayerLicencesAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<PlayerLicenceRow>());
+
         _handler = new GetPersonPlayerSportsHandler(
             _personRepository.Object,
             _floorballPlayerRepository.Object,
             _footballPlayerRepository.Object,
             _hockeyPlayerRepository.Object,
+            _floorballTeamRepository.Object,
+            _footballTeamRepository.Object,
+            _hockeyTeamRepository.Object,
             Mock.Of<ILogger<GetPersonPlayerSportsHandler>>());
     }
 
@@ -86,6 +103,38 @@ public class GetPersonPlayerSportsHandlerTests
         result.Data!.Sports.Should().HaveCount(1);
         result.Data.Sports[0].Sport.Should().Be("floorball");
         result.Data.Sports[0].PlayerId.Should().Be(floorballPlayer.Id);
+        result.Data.Licences.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Handle_PersonWithLicence_ReturnsLicenceRow()
+    {
+        Person person = new Person("Liisa", "Salibandy");
+        FloorballPlayer floorballPlayer = new FloorballPlayer(person.Id, new Position(FloorballPosition.Defender));
+        Guid teamId = Guid.NewGuid();
+        Guid competitionId = Guid.NewGuid();
+
+        _personRepository.Setup(x => x.GetByIdAsync(person.Id)).ReturnsAsync(person);
+        _floorballPlayerRepository.Setup(x => x.GetByPersonIdAsync(person.Id)).ReturnsAsync(floorballPlayer);
+        _footballPlayerRepository.Setup(x => x.GetByPersonIdAsync(person.Id)).ReturnsAsync((FootballPlayer?)null);
+        _hockeyPlayerRepository.Setup(x => x.GetByPersonIdAsync(person.Id)).ReturnsAsync((HockeyPlayer?)null);
+        _floorballTeamRepository
+            .Setup(x => x.GetOpenPlayerLicencesAsync(floorballPlayer.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[]
+            {
+                new PlayerLicenceRow(teamId, "Happee", competitionId, "SM-sarja 2026", true)
+            });
+
+        Result<PersonPlayerSportsDto> result = await _handler.Handle(
+            new GetPersonPlayerSportsQuery(person.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Licences.Should().ContainSingle();
+        result.Data.Licences[0].Sport.Should().Be("floorball");
+        result.Data.Licences[0].TeamName.Should().Be("Happee");
+        result.Data.Licences[0].CompetitionName.Should().Be("SM-sarja 2026");
+        result.Data.Licences[0].IsActive.Should().BeTrue();
     }
 
     [Fact]

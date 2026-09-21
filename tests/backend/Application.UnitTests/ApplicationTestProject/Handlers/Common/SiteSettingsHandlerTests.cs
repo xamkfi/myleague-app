@@ -69,6 +69,8 @@ public class SiteSettingsHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Data!.IsPersisted.Should().BeTrue();
         result.Data.AccessTokenExpirationMinutes.Should().Be(20);
+        result.Data.PlayerLicenceResetMonth.Should().Be(5);
+        result.Data.PlayerLicenceResetDay.Should().Be(1);
         _repo.Verify(r => r.AddAsync(It.IsAny<SiteSettingsEntity>(), It.IsAny<CancellationToken>()), Times.Once);
         _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         _provider.Verify(p => p.Invalidate(), Times.Once);

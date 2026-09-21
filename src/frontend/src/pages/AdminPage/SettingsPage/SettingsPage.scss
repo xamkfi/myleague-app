@@ -64,5 +64,21 @@
 
   &__actions {
     margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  &__licence {
+    margin: 0;
+    padding: 1rem 0 0;
+    border: none;
+    border-top: 1px solid #e4e7ec;
+  }
+
+  &__licence-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 }

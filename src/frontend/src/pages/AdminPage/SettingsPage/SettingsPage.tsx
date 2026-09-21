@@ -16,11 +16,19 @@ const FIELD_BOUNDS = {
 
 type SettingsField = keyof typeof FIELD_BOUNDS;
 
+function daysInMonth(month: number): number {
+  if (month === 2) {
+    return 29;
+  }
+  return new Date(2024, month, 0).getDate();
+}
+
 function SettingsPage() {
   const { t } = useTranslation();
   const [form, setForm] = useState<SiteSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -76,6 +84,27 @@ function SettingsPage() {
     });
   };
 
+  const handleLicenceDateChange = (field: 'playerLicenceResetMonth' | 'playerLicenceResetDay', value: string): void => {
+    if (!form) {
+      return;
+    }
+    const parsed = Number.parseInt(value, 10);
+    const next = Number.isNaN(parsed) ? 0 : parsed;
+    if (field === 'playerLicenceResetMonth') {
+      const maxDay = daysInMonth(next);
+      setForm({
+        ...form,
+        playerLicenceResetMonth: next,
+        playerLicenceResetDay: Math.min(form.playerLicenceResetDay, maxDay),
+      });
+      return;
+    }
+    setForm({
+      ...form,
+      playerLicenceResetDay: next,
+    });
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
     if (!form) {
@@ -91,6 +120,8 @@ function SettingsPage() {
         loginCodeExpirationMinutes: form.loginCodeExpirationMinutes,
         loginCodeMaxAttempts: form.loginCodeMaxAttempts,
         sessionExpiryWarningMinutes: form.sessionExpiryWarningMinutes,
+        playerLicenceResetMonth: form.playerLicenceResetMonth,
+        playerLicenceResetDay: form.playerLicenceResetDay,
       });
       setForm(saved);
       setSuccessMessage(t('admin.settings.saveSuccess', 'Settings saved.'));
@@ -102,6 +133,43 @@ function SettingsPage() {
       );
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleResetLicences = async (): Promise<void> => {
+    const confirmed = window.confirm(
+      t(
+        'admin.settings.licenceResetConfirm',
+        'Deactivate unpaid team licences now? Players stay inactive until you mark each team licence paid again.',
+      ),
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setIsResetting(true);
+      setErrorMessage(null);
+      const result = await siteSettingsService.resetPlayerLicences();
+      const refreshed = await siteSettingsService.get();
+      setForm(refreshed);
+      setSuccessMessage(
+        t('admin.settings.licenceResetSuccess', {
+          floorball: result.floorballDeactivated,
+          football: result.footballDeactivated,
+          hockey: result.hockeyDeactivated,
+          defaultValue:
+            'Licences reset: {{floorball}} floorball, {{football}} football, {{hockey}} hockey.',
+        }),
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : t('admin.settings.licenceResetFailed', 'Failed to reset player licences.'),
+      );
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -132,6 +200,8 @@ function SettingsPage() {
       hintKey: 'admin.settings.sessionWarningMinutesHint',
     },
   ];
+
+  const licenceDayMax = form ? daysInMonth(form.playerLicenceResetMonth) : 31;
 
   return (
     <PageTemplate title={t('admin.settings.pageTitle', 'Site settings')}>
@@ -187,9 +257,60 @@ function SettingsPage() {
               );
             })}
 
+            <fieldset className="settings-page__licence">
+              <legend>{t('admin.settings.licenceTitle', 'Player licences')}</legend>
+              <p className="settings-page__hint">
+                {t(
+                  'admin.settings.licenceHint',
+                  'On this date each year, unpaid team licences become inactive. Default is 1 May.',
+                )}
+              </p>
+              <div className="settings-page__licence-row">
+                <label className="settings-page__field">
+                  <span>{t('admin.settings.licenceDay', 'Day')}</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={licenceDayMax}
+                    value={form.playerLicenceResetDay}
+                    onChange={(event) => handleLicenceDateChange('playerLicenceResetDay', event.target.value)}
+                    required
+                  />
+                </label>
+                <label className="settings-page__field">
+                  <span>{t('admin.settings.licenceMonth', 'Month')}</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={12}
+                    value={form.playerLicenceResetMonth}
+                    onChange={(event) => handleLicenceDateChange('playerLicenceResetMonth', event.target.value)}
+                    required
+                  />
+                </label>
+              </div>
+              {form.lastPlayerLicenceResetYear != null && (
+                <p className="settings-page__hint">
+                  {t('admin.settings.licenceLastReset', {
+                    year: form.lastPlayerLicenceResetYear,
+                    defaultValue: 'Last licence reset year: {{year}}.',
+                  })}
+                </p>
+              )}
+            </fieldset>
+
             <div className="settings-page__actions">
-              <Button type="submit" isLoading={isSaving} disabled={isSaving}>
+              <Button type="submit" isLoading={isSaving} disabled={isSaving || isResetting}>
                 {t('admin.settings.save', 'Save settings')}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                isLoading={isResetting}
+                disabled={isSaving || isResetting}
+                onClick={() => { void handleResetLicences(); }}
+              >
+                {t('admin.settings.licenceResetNow', 'Reset player licences now')}
               </Button>
             </div>
           </form>

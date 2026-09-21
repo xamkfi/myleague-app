@@ -100,9 +100,6 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
 
       <div className="admin-navbar-content">
         <div className="admin-navbar-section">
-          {!collapsed && (
-            <h3 className="admin-navbar-section-title">{t('admin.database', 'Database')}</h3>
-          )}
           <ul className="admin-navbar-menu">
             <li className={`admin-navbar-item ${isActive('/admin') ? 'active' : ''}`}>
               <Link to="/admin" title={collapsed ? t('admin.actions.home', 'Home') : undefined}>
@@ -110,16 +107,18 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                 {!collapsed && <span>{t('admin.actions.home', 'Home')}</span>}
               </Link>
             </li>
-            <li className={`admin-navbar-item ${isActive('/admin/persons') ? 'active' : ''}`}>
-              <Link to="/admin/persons" title={collapsed ? t('admin.actions.persons', 'Persons') : undefined}>
-                <img src={PersonsIcon} alt="Persons" className="icon" />
-                {!collapsed && <span>{t('admin.actions.persons', 'Persons')}</span>}
-              </Link>
-            </li>
-            <li className={`admin-navbar-item ${isActive('/admin/news') ? 'active' : ''}`}>
-              <Link to="/admin/news" title={collapsed ? t('admin.actions.news', 'News') : undefined}>
-                <img src={NewsIcon} alt="News" className="icon" />
-                {!collapsed && <span>{t('admin.actions.news', 'News')}</span>}
+          </ul>
+        </div>
+
+        <div className="admin-navbar-section">
+          {!collapsed && (
+            <h3 className="admin-navbar-section-title">{t('admin.nav.league', 'League data')}</h3>
+          )}
+          <ul className="admin-navbar-menu">
+            <li className={`admin-navbar-item ${isActive('/admin/clubs') ? 'active' : ''}`}>
+              <Link to="/admin/clubs" title={collapsed ? t('admin.actions.clubs', 'Clubs') : undefined}>
+                <img src={ClubsIcon} alt="Clubs" className="icon" />
+                {!collapsed && <span>{t('admin.actions.clubs', 'Clubs')}</span>}
               </Link>
             </li>
             <li className={`admin-navbar-item ${isActive('/admin/divisions') ? 'active' : ''}`}>
@@ -128,84 +127,11 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                 {!collapsed && <span>{t('admin.actions.divisions', 'Divisions')}</span>}
               </Link>
             </li>
-            <li className={`admin-navbar-item ${isActive('/admin/clubs') ? 'active' : ''}`}>
-              <Link to="/admin/clubs" title={collapsed ? t('admin.actions.clubs', 'Clubs') : undefined}>
-                <img src={ClubsIcon} alt="Clubs" className="icon" />
-                {!collapsed && <span>{t('admin.actions.clubs', 'Clubs')}</span>}
+            <li className={`admin-navbar-item ${isActive('/admin/persons') ? 'active' : ''}`}>
+              <Link to="/admin/persons" title={collapsed ? t('admin.actions.persons', 'Persons') : undefined}>
+                <img src={PersonsIcon} alt="Persons" className="icon" />
+                {!collapsed && <span>{t('admin.actions.persons', 'Persons')}</span>}
               </Link>
-            </li>
-            <li className={`admin-navbar-item ${isActive('/admin/users') ? 'active' : ''}`}>
-              <Link to="/admin/users" title={collapsed ? t('admin.actions.users', 'System Users') : undefined}>
-                <img src={PersonsIcon} alt="Users" className="icon" />
-                {!collapsed && <span>{t('admin.actions.users', 'System Users')}</span>}
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        <div className="admin-navbar-section">
-          {!collapsed && (
-            <h3 className="admin-navbar-section-title">{t('admin.settings.navSection', 'Settings')}</h3>
-          )}
-          <ul className="admin-navbar-menu">
-            <li className={`admin-navbar-item ${isActive('/admin/settings') ? 'active' : ''}`}>
-              <Link to="/admin/settings" title={collapsed ? t('admin.settings.nav', 'Settings') : undefined}>
-                <img src={LeaguesIcon} alt="Settings" className="icon" />
-                {!collapsed && <span>{t('admin.settings.nav', 'Settings')}</span>}
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        <div className="admin-navbar-section">
-          {!collapsed && (
-            <h3 className="admin-navbar-section-title">{t('admin.siteContent.title', 'Sivuston sisällöt')}</h3>
-          )}
-          <ul className="admin-navbar-menu">
-            <li className={`admin-navbar-item ${isSiteContentActive() ? 'active' : ''}`}>
-              {collapsed ? (
-                <Link to="/admin/site-content/rules" title={t('admin.siteContent.rules', 'Säännöt')}>
-                  <img src={RulesIcon} alt="Rules" className="icon" />
-                </Link>
-              ) : (
-                <div className="admin-navbar-dropdown-trigger">
-                  <Link
-                    to="/admin/site-content/rules"
-                    className="admin-navbar-dropdown-trigger-content"
-                  >
-                    <img src={RulesIcon} alt="Rules" className="icon" />
-                    <span>{t('admin.siteContent.titleShort', 'Sisällöt')}</span>
-                  </Link>
-                  <span
-                    className={`admin-navbar-dropdown-arrow ${siteContentDropdownOpen ? 'open' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSiteContentDropdownOpen(!siteContentDropdownOpen);
-                    }}
-                  >
-                    ▼
-                  </span>
-                </div>
-              )}
-              {!collapsed && siteContentDropdownOpen && (
-                <ul className="admin-navbar-submenu">
-                  <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/info-pages') ? 'active' : ''}`}>
-                    <Link to="/admin/site-content/info-pages">
-                      {t('admin.siteContent.infoPages.nav', 'MAHL-infosivut')}
-                    </Link>
-                  </li>
-                  <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/rules') ? 'active' : ''}`}>
-                    <Link to="/admin/site-content/rules">
-                      {t('admin.siteContent.rules', 'Säännöt')}
-                    </Link>
-                  </li>
-                  <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/footer-contacts') ? 'active' : ''}`}>
-                    <Link to="/admin/site-content/footer-contacts">
-                      {t('admin.siteContent.footerContacts.nav', 'Alatunnisteen sisältö')}
-                    </Link>
-                  </li>
-                </ul>
-              )}
             </li>
           </ul>
         </div>
@@ -520,6 +446,85 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                   </li>
                 </ul>
               )}
+            </li>
+          </ul>
+        </div>
+
+        <div className="admin-navbar-section">
+          {!collapsed && (
+            <h3 className="admin-navbar-section-title">{t('admin.siteContent.title', 'Sivuston sisällöt')}</h3>
+          )}
+          <ul className="admin-navbar-menu">
+            <li className={`admin-navbar-item ${isActive('/admin/news') ? 'active' : ''}`}>
+              <Link to="/admin/news" title={collapsed ? t('admin.actions.news', 'News') : undefined}>
+                <img src={NewsIcon} alt="News" className="icon" />
+                {!collapsed && <span>{t('admin.actions.news', 'News')}</span>}
+              </Link>
+            </li>
+            <li className={`admin-navbar-item ${isSiteContentActive() ? 'active' : ''}`}>
+              {collapsed ? (
+                <Link to="/admin/site-content/rules" title={t('admin.siteContent.rules', 'Säännöt')}>
+                  <img src={RulesIcon} alt="Rules" className="icon" />
+                </Link>
+              ) : (
+                <div className="admin-navbar-dropdown-trigger">
+                  <Link
+                    to="/admin/site-content/rules"
+                    className="admin-navbar-dropdown-trigger-content"
+                  >
+                    <img src={RulesIcon} alt="Rules" className="icon" />
+                    <span>{t('admin.siteContent.titleShort', 'Sisällöt')}</span>
+                  </Link>
+                  <span
+                    className={`admin-navbar-dropdown-arrow ${siteContentDropdownOpen ? 'open' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSiteContentDropdownOpen(!siteContentDropdownOpen);
+                    }}
+                  >
+                    ▼
+                  </span>
+                </div>
+              )}
+              {!collapsed && siteContentDropdownOpen && (
+                <ul className="admin-navbar-submenu">
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/info-pages') ? 'active' : ''}`}>
+                    <Link to="/admin/site-content/info-pages">
+                      {t('admin.siteContent.infoPages.nav', 'MAHL-infosivut')}
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/rules') ? 'active' : ''}`}>
+                    <Link to="/admin/site-content/rules">
+                      {t('admin.siteContent.rules', 'Säännöt')}
+                    </Link>
+                  </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/footer-contacts') ? 'active' : ''}`}>
+                    <Link to="/admin/site-content/footer-contacts">
+                      {t('admin.siteContent.footerContacts.nav', 'Alatunnisteen sisältö')}
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+          </ul>
+        </div>
+
+        <div className="admin-navbar-section">
+          {!collapsed && (
+            <h3 className="admin-navbar-section-title">{t('admin.nav.administration', 'Administration')}</h3>
+          )}
+          <ul className="admin-navbar-menu">
+            <li className={`admin-navbar-item ${isActive('/admin/users') ? 'active' : ''}`}>
+              <Link to="/admin/users" title={collapsed ? t('admin.actions.users', 'System Users') : undefined}>
+                <img src={PersonsIcon} alt="Users" className="icon" />
+                {!collapsed && <span>{t('admin.actions.users', 'System Users')}</span>}
+              </Link>
+            </li>
+            <li className={`admin-navbar-item ${isActive('/admin/settings') ? 'active' : ''}`}>
+              <Link to="/admin/settings" title={collapsed ? t('admin.settings.nav', 'Settings') : undefined}>
+                <img src={LeaguesIcon} alt="Settings" className="icon" />
+                {!collapsed && <span>{t('admin.settings.nav', 'Settings')}</span>}
+              </Link>
             </li>
           </ul>
         </div>

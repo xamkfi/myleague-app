@@ -13,7 +13,9 @@ public record UpdateSiteSettingsCommand(
     int RefreshTokenExpirationDays,
     int LoginCodeExpirationMinutes,
     int LoginCodeMaxAttempts,
-    int SessionExpiryWarningMinutes
+    int SessionExpiryWarningMinutes,
+    int PlayerLicenceResetMonth = SiteSettingsEntity.PlayerLicenceResetMonthDefault,
+    int PlayerLicenceResetDay = SiteSettingsEntity.PlayerLicenceResetDayDefault
 ) : IRequest<Result<SiteSettingsDto>>;
 
 public class UpdateSiteSettingsCommandHandler

@@ -379,5 +379,46 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         {
             return await _entities.AnyAsync(t => t.DivisionId == divisionId, cancellationToken);
         }
+
+        public async Task<int> DeactivateOpenPlayerLicencesAsync(CancellationToken cancellationToken = default)
+        {
+            DateTime now = DateTime.UtcNow;
+            return await _dbContext.FootballTeamPlayers
+                .Where(row => row.IsActive)
+                .Where(row =>
+                    row.CompetitionId == null
+                    || !_dbContext.FootballCompetitions.Any(competition =>
+                        competition.Id == row.CompetitionId && competition.IsCompleted))
+                .ExecuteUpdateAsync(
+                    setters => setters
+                        .SetProperty(row => row.IsActive, false)
+                        .SetProperty(row => row.UpdatedAt, now),
+                    cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<PlayerLicenceRow>> GetOpenPlayerLicencesAsync(
+            Guid playerId,
+            CancellationToken cancellationToken = default)
+        {
+            List<PlayerLicenceRow> rows = await (
+                from membership in _dbContext.FootballTeamPlayers
+                join team in _dbContext.FootballTeams on membership.TeamId equals team.Id
+                join competition in _dbContext.FootballCompetitions on membership.CompetitionId equals competition.Id into competitions
+                from competition in competitions.DefaultIfEmpty()
+                where membership.PlayerId == playerId
+                    && (membership.CompetitionId == null
+                        || competition == null
+                        || !competition.IsCompleted)
+                orderby team.Name, competition.Name
+                select new PlayerLicenceRow(
+                    team.Id,
+                    team.Name,
+                    membership.CompetitionId,
+                    competition != null ? competition.Name : null,
+                    membership.IsActive)
+            ).ToListAsync(cancellationToken);
+
+            return rows;
+        }
     }
 }

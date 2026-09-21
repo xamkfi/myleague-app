@@ -4,6 +4,7 @@ namespace Domain.Entities.Common;
 
 /// <summary>
 /// Singleton site-wide settings. One row; auth timings apply to newly issued tokens and login codes.
+/// Player-licence cutoff is a recurring month/day in Europe/Helsinki.
 /// </summary>
 public class SiteSettings : BaseEntity
 {
@@ -27,6 +28,14 @@ public class SiteSettings : BaseEntity
     public const int SessionExpiryWarningMinutesMax = 30;
     public const int SessionExpiryWarningMinutesDefault = 5;
 
+    public const int PlayerLicenceResetMonthMin = 1;
+    public const int PlayerLicenceResetMonthMax = 12;
+    public const int PlayerLicenceResetMonthDefault = 5;
+
+    public const int PlayerLicenceResetDayMin = 1;
+    public const int PlayerLicenceResetDayMax = 31;
+    public const int PlayerLicenceResetDayDefault = 1;
+
     public int AccessTokenExpirationMinutes { get; private set; }
 
     public int RefreshTokenExpirationDays { get; private set; }
@@ -37,8 +46,16 @@ public class SiteSettings : BaseEntity
 
     public int SessionExpiryWarningMinutes { get; private set; }
 
+    public int PlayerLicenceResetMonth { get; private set; }
+
+    public int PlayerLicenceResetDay { get; private set; }
+
+    public int? LastPlayerLicenceResetYear { get; private set; }
+
     private SiteSettings()
     {
+        PlayerLicenceResetMonth = PlayerLicenceResetMonthDefault;
+        PlayerLicenceResetDay = PlayerLicenceResetDayDefault;
     }
 
     public SiteSettings(
@@ -47,7 +64,9 @@ public class SiteSettings : BaseEntity
         int refreshTokenExpirationDays,
         int loginCodeExpirationMinutes,
         int loginCodeMaxAttempts,
-        int sessionExpiryWarningMinutes)
+        int sessionExpiryWarningMinutes,
+        int playerLicenceResetMonth = PlayerLicenceResetMonthDefault,
+        int playerLicenceResetDay = PlayerLicenceResetDayDefault)
         : base(id)
     {
         Apply(
@@ -55,7 +74,22 @@ public class SiteSettings : BaseEntity
             refreshTokenExpirationDays,
             loginCodeExpirationMinutes,
             loginCodeMaxAttempts,
-            sessionExpiryWarningMinutes);
+            sessionExpiryWarningMinutes,
+            playerLicenceResetMonth,
+            playerLicenceResetDay);
+    }
+
+    public static SiteSettings CreateDefault(Guid id)
+    {
+        return new SiteSettings(
+            id,
+            AccessTokenExpirationMinutesDefault,
+            RefreshTokenExpirationDaysDefault,
+            LoginCodeExpirationMinutesDefault,
+            LoginCodeMaxAttemptsDefault,
+            SessionExpiryWarningMinutesDefault,
+            PlayerLicenceResetMonthDefault,
+            PlayerLicenceResetDayDefault);
     }
 
     public void Update(
@@ -63,15 +97,41 @@ public class SiteSettings : BaseEntity
         int refreshTokenExpirationDays,
         int loginCodeExpirationMinutes,
         int loginCodeMaxAttempts,
-        int sessionExpiryWarningMinutes)
+        int sessionExpiryWarningMinutes,
+        int playerLicenceResetMonth = PlayerLicenceResetMonthDefault,
+        int playerLicenceResetDay = PlayerLicenceResetDayDefault)
     {
         Apply(
             accessTokenExpirationMinutes,
             refreshTokenExpirationDays,
             loginCodeExpirationMinutes,
             loginCodeMaxAttempts,
-            sessionExpiryWarningMinutes);
+            sessionExpiryWarningMinutes,
+            playerLicenceResetMonth,
+            playerLicenceResetDay);
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void MarkPlayerLicenceReset(int year)
+    {
+        if (year < 2000 || year > 2100)
+        {
+            throw new ArgumentOutOfRangeException(nameof(year), year, "year must be between 2000 and 2100.");
+        }
+
+        LastPlayerLicenceResetYear = year;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public static bool IsValidLicenceResetDate(int month, int day)
+    {
+        if (month < PlayerLicenceResetMonthMin || month > PlayerLicenceResetMonthMax)
+        {
+            return false;
+        }
+
+        int maxDay = month == 2 ? 29 : DateTime.DaysInMonth(2024, month);
+        return day >= PlayerLicenceResetDayMin && day <= maxDay;
     }
 
     private void Apply(
@@ -79,7 +139,9 @@ public class SiteSettings : BaseEntity
         int refreshTokenExpirationDays,
         int loginCodeExpirationMinutes,
         int loginCodeMaxAttempts,
-        int sessionExpiryWarningMinutes)
+        int sessionExpiryWarningMinutes,
+        int playerLicenceResetMonth,
+        int playerLicenceResetDay)
     {
         AccessTokenExpirationMinutes = ValidateRange(
             accessTokenExpirationMinutes,
@@ -106,6 +168,17 @@ public class SiteSettings : BaseEntity
             SessionExpiryWarningMinutesMin,
             SessionExpiryWarningMinutesMax,
             nameof(sessionExpiryWarningMinutes));
+
+        if (!IsValidLicenceResetDate(playerLicenceResetMonth, playerLicenceResetDay))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(playerLicenceResetDay),
+                playerLicenceResetDay,
+                "playerLicenceResetMonth and playerLicenceResetDay must form a real calendar day (29 February is allowed).");
+        }
+
+        PlayerLicenceResetMonth = playerLicenceResetMonth;
+        PlayerLicenceResetDay = playerLicenceResetDay;
     }
 
     private static int ValidateRange(int value, int min, int max, string paramName)

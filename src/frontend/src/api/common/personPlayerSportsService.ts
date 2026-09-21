@@ -9,11 +9,21 @@ export interface PersonSportPlayer {
   playerId: string;
 }
 
+export interface PersonPlayerLicence {
+  sport: PersonSportKind;
+  teamId: string;
+  teamName: string;
+  competitionId: string | null;
+  competitionName: string | null;
+  isActive: boolean;
+}
+
 export interface PersonPlayerSports {
   personId: string;
   fullName: string;
   birthDate: string | null;
   sports: PersonSportPlayer[];
+  licences: PersonPlayerLicence[];
 }
 
 export const personPlayerSportsService = {
