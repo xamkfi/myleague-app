@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Application.Features.Football.Matches.DTOs;
 using Application.Features.Football.Seasons.DTOs;
 using Domain.Enums.Football;
@@ -31,6 +32,7 @@ public class FootballMatchImporter
     public int Skipped => _skipped;
     public int Failed => _failed;
     public int Repaired => _repaired;
+    public ConcurrentBag<int> FailedMatchIds { get; } = [];
 
     public FootballMatchImporter(
         FootballApiClient api,
@@ -50,6 +52,12 @@ public class FootballMatchImporter
         _fillUnknownGoals = fillUnknownGoals;
         _repairMatchIds = repairMatchIds ?? [];
         _repairAll = repairAll;
+    }
+
+    private void RecordFailed(int oldMatchId)
+    {
+        Interlocked.Increment(ref _failed);
+        FailedMatchIds.Add(oldMatchId);
     }
 
     public async Task CompleteUnfinishedMappedMatchesAsync()
@@ -204,18 +212,18 @@ public class FootballMatchImporter
                         item.Match, item.ExistingMatchId, item.Home, item.Away, playerByTeamPlayerId,
                         periodSeconds, regularPeriods, playersOnField, item.Prefix);
                     if (ok) Interlocked.Increment(ref _repaired);
-                    else Interlocked.Increment(ref _failed);
+                    else RecordFailed(item.Match.Match.Id);
                     return;
                 }
 
                 bool imported = await ImportSingleMatchAsync(
                     item.Match, season, refereeId, item.Home, item.Away, playerByTeamPlayerId,
                     periodSeconds, regularPeriods, playersOnField, item.Prefix);
-                if (!imported) Interlocked.Increment(ref _failed);
+                if (!imported) RecordFailed(item.Match.Match.Id);
             }
             catch (Exception ex)
             {
-                Interlocked.Increment(ref _failed);
+                RecordFailed(item.Match.Match.Id);
                 Console.WriteLine($"{item.Prefix} ERROR: {ex.Message}");
                 _log.LogError("ImportFootballMatch", new { item.Match.Match.Id }, ex.ToString());
             }

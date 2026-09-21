@@ -88,6 +88,42 @@ public class DeleteClubHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ClubHasFootballTeams_ReturnsFailure()
+    {
+        Guid clubId = Guid.NewGuid();
+        DeleteClubCommand command = new DeleteClubCommand(clubId);
+
+        _mockClubRepository.Setup(x => x.ExistsAsync(clubId))
+            .ReturnsAsync(true);
+        _mockFootballTeamRepository.Setup(x => x.HasAnyForClubAsync(clubId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        Result result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(DeletionReasons.ClubHasTeams);
+        _mockClubRepository.Verify(x => x.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_ClubHasHockeyTeams_ReturnsFailure()
+    {
+        Guid clubId = Guid.NewGuid();
+        DeleteClubCommand command = new DeleteClubCommand(clubId);
+
+        _mockClubRepository.Setup(x => x.ExistsAsync(clubId))
+            .ReturnsAsync(true);
+        _mockHockeyTeamRepository.Setup(x => x.HasAnyForClubAsync(clubId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        Result result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(DeletionReasons.ClubHasTeams);
+        _mockClubRepository.Verify(x => x.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+    }
+
+    [Fact]
     public async Task Handle_ClubNotFound_ReturnsNotFoundResult()
     {
         // Arrange

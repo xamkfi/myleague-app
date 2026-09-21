@@ -112,9 +112,9 @@ export default function Statistics({ teamStatistics, playerStatistics, roster = 
       })
     : null;
 
-  const activePlayers = roster.filter(p => p.isActive);
+  const rosterPlayers = roster;
 
-  const sortedRosterPlayers = [...activePlayers].sort((a, b) => {
+  const sortedRosterPlayers = [...rosterPlayers].sort((a, b) => {
     const dir = sortAsc ? 1 : -1;
     switch (sortField) {
       case 'pts': {

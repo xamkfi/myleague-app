@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import type { FloorballMatchDto, FloorballTeam } from '../../types/floorball/floorballTypes';
 import { floorballTeamNameSearchService } from '../../api/floorball/floorballTeamNameSearchService';
@@ -16,6 +16,7 @@ import RosterSection from './components/RosterSection';
 import SummarySection from './components/SummarySection';
 import Statistics from './components/Statistics';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
+import { isGuid } from '../../utils/sportRoutes';
 
 function pickSeasonForDivision(seasons: FloorballSeasonDto[], divisionId: string): FloorballSeasonDto | null {
   const matching = seasons.filter((season) =>
@@ -46,8 +47,28 @@ async function getCurrentSeason(divisionId: string): Promise<FloorballSeasonDto 
   }
 }
 
+async function resolveSeason(
+  divisionId: string,
+  requestedSeasonId: string | null,
+): Promise<FloorballSeasonDto | null> {
+  if (isGuid(requestedSeasonId)) {
+    try {
+      const requested = await floorballSeasonService.getById(requestedSeasonId);
+      if (requested.data) {
+        return requested.data;
+      }
+    } catch {
+      // Fall back to the current division season when the query id is stale.
+    }
+  }
+
+  return getCurrentSeason(divisionId);
+}
+
 function FloorballTeamPage() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const requestedSeasonId = searchParams.get('season');
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -92,7 +113,7 @@ function FloorballTeamPage() {
           const teamResponse = await floorballTeamService.getById(foundTeam.id);
 
           if (teamResponse.divisionId) {
-            const currentSeasonData = await getCurrentSeason(teamResponse.divisionId);
+            const currentSeasonData = await resolveSeason(teamResponse.divisionId, requestedSeasonId);
             setCurrentSeason(currentSeasonData);
             setTeam(
               currentSeasonData
@@ -114,7 +135,7 @@ function FloorballTeamPage() {
       }
     };
     fetchTeamData();
-  }, [slug]);
+  }, [slug, requestedSeasonId]);
 
   // Fetch matches with pagination when team changes or page changes
   useEffect(() => {

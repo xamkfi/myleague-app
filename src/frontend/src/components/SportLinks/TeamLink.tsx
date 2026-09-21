@@ -15,6 +15,7 @@ interface TeamLinkProps {
   teamId?: string;
   teams?: NamedTeam[];
   slug?: string;
+  seasonId?: string | null;
   className?: string;
   children?: ReactNode;
   onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
@@ -26,6 +27,7 @@ export default function TeamLink({
   teamId,
   teams,
   slug,
+  seasonId,
   className,
   children,
   onClick,
@@ -42,7 +44,7 @@ export default function TeamLink({
 
   return (
     <Link
-      to={getTeamPath(sport, resolvedSlug)}
+      to={getTeamPath(sport, resolvedSlug, seasonId)}
       className={['sport-link', className].filter(Boolean).join(' ')}
       onClick={(event) => {
         event.stopPropagation();

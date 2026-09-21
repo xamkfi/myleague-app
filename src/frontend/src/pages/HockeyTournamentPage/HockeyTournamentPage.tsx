@@ -85,7 +85,7 @@ function HockeyTournamentPage() {
             <section key={group.id} className="standing-container">
               <h2>{group.name}</h2>
               {standings.length > 0 ? (
-                <HockeyStandingsTable standings={standings} teamNames={teamNames} />
+                <HockeyStandingsTable standings={standings} teamNames={teamNames} competitionId={tournament?.id} />
               ) : (
                 <ul>
                   {group.teams.map((member) => {

@@ -85,11 +85,13 @@ export default function LeagueStanding({
     }
   }, [showGoalies, activeView]);
 
+  const seasonId = seasonSummary?.competitionId;
+
   const navigateToTeam = (teamId: string) => {
     const team = teams?.find((item) => item.id === teamId);
     if (team) {
       const slug = createTeamSlug(team, teams);
-      navigate(getTeamPath(sport, slug));
+      navigate(getTeamPath(sport, slug, seasonId));
     }
   };
 
@@ -245,6 +247,7 @@ export default function LeagueStanding({
                       teamId={team.teamId}
                       teamName={team.teamName}
                       teams={teams}
+                      seasonId={seasonId}
                       className="team-name"
                     />
                   </div>
@@ -326,6 +329,7 @@ export default function LeagueStanding({
                       teamId={player.teamId}
                       teamName={player.teamName}
                       teams={teams}
+                      seasonId={seasonId}
                       className="team-name"
                     />
                   </div>
@@ -389,6 +393,7 @@ export default function LeagueStanding({
                       teamId={player.teamId}
                       teamName={player.teamName}
                       teams={teams}
+                      seasonId={seasonId}
                       className="team-name"
                     />
                   </div>
@@ -455,6 +460,7 @@ export default function LeagueStanding({
                       teamId={goalie.teamId}
                       teamName={goalie.teamName}
                       teams={teams}
+                      seasonId={seasonId}
                       className="team-name"
                     />
                   </div>

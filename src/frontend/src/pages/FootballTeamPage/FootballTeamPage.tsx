@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import type { FootballMatchDto, FootballTeam } from '../../types/football/footballTypes';
 import { footballTeamNameSearchService } from '../../api/football/footballTeamNameSearchService';
@@ -16,6 +16,7 @@ import RosterSection from './components/RosterSection';
 import SummarySection from './components/SummarySection';
 import Statistics from './components/Statistics';
 import FootballLeagueStanding from '../FootballLeaguePage/components/FootballLeagueStanding';
+import { isGuid } from '../../utils/sportRoutes';
 
 function pickSeasonForDivision(seasons: FootballSeasonDto[], divisionId: string): FootballSeasonDto | null {
   const matching = seasons.filter((season) =>
@@ -46,8 +47,28 @@ async function getCurrentSeason(divisionId: string): Promise<FootballSeasonDto |
   }
 }
 
+async function resolveSeason(
+  divisionId: string,
+  requestedSeasonId: string | null,
+): Promise<FootballSeasonDto | null> {
+  if (isGuid(requestedSeasonId)) {
+    try {
+      const requested = await footballSeasonService.getById(requestedSeasonId);
+      if (requested.data) {
+        return requested.data;
+      }
+    } catch {
+      // Fall back to the current division season when the query id is stale.
+    }
+  }
+
+  return getCurrentSeason(divisionId);
+}
+
 function FootballTeamPage() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const requestedSeasonId = searchParams.get('season');
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -92,7 +113,7 @@ function FootballTeamPage() {
           const teamResponse = await footballTeamService.getById(foundTeam.id);
 
           if (teamResponse.divisionId) {
-            const currentSeasonData = await getCurrentSeason(teamResponse.divisionId);
+            const currentSeasonData = await resolveSeason(teamResponse.divisionId, requestedSeasonId);
             setCurrentSeason(currentSeasonData);
             setTeam(
               currentSeasonData
@@ -114,7 +135,7 @@ function FootballTeamPage() {
       }
     };
     fetchTeamData();
-  }, [slug]);
+  }, [slug, requestedSeasonId]);
 
   // Fetch matches with pagination when team changes or page changes
   useEffect(() => {

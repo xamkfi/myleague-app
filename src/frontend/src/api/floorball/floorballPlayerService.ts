@@ -5,6 +5,7 @@ import type {
 } from '../../types/floorball/floorballTypes';
 import type { Address, ContactInfo } from '../../types/admin/personTypes';
 import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
 
 export interface PersonDto {
@@ -299,31 +300,18 @@ export const floorballPlayerService = {
    * Delete a floorball player
    */
   delete: async (id: string): Promise<void> => {
-    try {
-      console.log('Deleting player with ID:', id);
-      
-      const response = await authFetch(`${API_URL}/FloorballPlayer/${id}`, {
-        method: 'DELETE',
-      });
-      
-      console.log('Delete response status:', response.status);
-      console.log('Delete response ok:', response.ok);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Delete API Error Response:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to delete floorball player'}`);
-      }
-      
-      const apiResponse: ApiResponse<void> = await response.json();
-      console.log('Delete API Response:', apiResponse);
-      
-      if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete floorball player');
-      }
-    } catch (error) {
-      console.error('Error in floorballPlayerService.delete:', error);
-      throw error;
+    const response = await authFetch(`${API_URL}/FloorballPlayer/${id}`, {
+      method: 'DELETE',
+    });
+    const apiResponse: ApiResponse<void> = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete floorball player');
+      throw new Error(errorMessage || 'Failed to delete floorball player');
+    }
+
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete floorball player');
     }
   }
 }; 
