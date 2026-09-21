@@ -608,7 +608,7 @@
         "email": "Email",
         "phone": "Phone",
         "alternativePhone": "Alternative Phone",
-        "floorballAssignment": "Floorball Team Assignment (Optional)",
+        "floorballAssignment": "Team assignment (optional)",
         "team": "Team",
         "selectTeam": "Select a team...",
         "searchTeams": "Search teams...",

@@ -608,7 +608,7 @@
         "email": "Sähköposti",
         "phone": "Puhelin",
         "alternativePhone": "Vaihtoehtoinen puhelin",
-        "floorballAssignment": "Salibandy joukkuemääritys (Valinnainen)",
+        "floorballAssignment": "Joukkuemääritys (valinnainen)",
         "team": "Joukkue",
         "selectTeam": "Valitse joukkue...",
         "searchTeams": "Etsi joukkueita...",
