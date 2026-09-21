@@ -1,5 +1,6 @@
 ﻿import type { ApiResponse, PaginatedApiResponse } from '../../types/football/footballTypes';
 import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
 
 // Referee types based on the backend DTOs
@@ -199,27 +200,18 @@ export const footballRefereeService = {
    * Delete a Football referee
    */
   delete: async (id: string): Promise<void> => {
-    try {
-      
-      const response = await authFetch(`${API_URL}/FootballReferee/${id}`, {
-        method: 'DELETE',
-      });
-      
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Delete API Error Response:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to delete Football referee'}`);
-      }
-      
-      const apiResponse: ApiResponse<void> = await response.json();
-      
-      if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete Football referee');
-      }
-    } catch (error) {
-      console.error('Error in footballRefereeService.delete:', error);
-      throw error;
+    const response = await authFetch(`${API_URL}/FootballReferee/${id}`, {
+      method: 'DELETE',
+    });
+    const apiResponse: ApiResponse<void> = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete Football referee');
+      throw new Error(errorMessage || 'Failed to delete Football referee');
+    }
+
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete Football referee');
     }
   }
 }; 

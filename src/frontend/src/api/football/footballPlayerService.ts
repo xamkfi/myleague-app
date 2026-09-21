@@ -5,6 +5,7 @@
 } from '../../types/football/footballTypes';
 import type { Address, ContactInfo } from '../../types/admin/personTypes';
 import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
 
 export interface PersonDto {
@@ -298,27 +299,18 @@ export const footballPlayerService = {
    * Delete a Football player
    */
   delete: async (id: string): Promise<void> => {
-    try {
-      
-      const response = await authFetch(`${API_URL}/FootballPlayer/${id}`, {
-        method: 'DELETE',
-      });
-      
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Delete API Error Response:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to delete Football player'}`);
-      }
-      
-      const apiResponse: ApiResponse<void> = await response.json();
-      
-      if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete Football player');
-      }
-    } catch (error) {
-      console.error('Error in footballPlayerService.delete:', error);
-      throw error;
+    const response = await authFetch(`${API_URL}/FootballPlayer/${id}`, {
+      method: 'DELETE',
+    });
+    const apiResponse: ApiResponse<void> = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete Football player');
+      throw new Error(errorMessage || 'Failed to delete Football player');
+    }
+
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete Football player');
     }
   }
 }; 
