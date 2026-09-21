@@ -12,6 +12,7 @@ import { LoadingState } from './components/LoadingState';
 import { SeasonsContent } from './components/SeasonsContent';
 import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
 import { ConfirmCompleteSeasonModal } from './components/ConfirmCompleteSeasonModal';
+import { SeasonImportModal } from './components/SeasonImportModal';
 import type { FloorballSeasonDto } from '../../../../api/floorball/floorballSeasonService';
 
 const FloorballSeasonsPage = () => {
@@ -44,7 +45,10 @@ const FloorballSeasonsPage = () => {
     handleCompleteSeason,
     openDeleteModal,
     closeModals,
+    loadSeasons,
   } = useSeasonsManagement();
+
+  const [showImportModal, setShowImportModal] = useState<boolean>(false);
 
   /**
    * Tämä state pitää muistissa kauden, jota käyttäjä yrittää päättää.
@@ -103,7 +107,7 @@ const FloorballSeasonsPage = () => {
     }
   };
 
-  if (loading) {
+  if (loading && !showImportModal) {
     return (
       <PageTemplate title={t('floorball.seasons.title', 'Manage Seasons')}>
         <LoadingState />
@@ -118,6 +122,7 @@ const FloorballSeasonsPage = () => {
           seasonsCount={seasons.length}
           onCreateSeason={() => navigate('/admin/floorball/seasons/create')}
           onManageMatches={() => navigate('/admin/floorball/seasons/matches')}
+          onImportSeason={() => setShowImportModal(true)}
         />
 
         <ErrorPopup message={error} />
@@ -161,6 +166,13 @@ const FloorballSeasonsPage = () => {
             loading={operationLoading === seasonToComplete.id}
             onConfirm={confirmCompleteSeason}
             onCancel={closeCompleteSeasonModal}
+          />
+        )}
+
+        {showImportModal && (
+          <SeasonImportModal
+            onClose={() => setShowImportModal(false)}
+            onImported={() => void loadSeasons({ silent: true })}
           />
         )}
       </div>

@@ -5,12 +5,14 @@ interface SeasonsPageHeaderProps {
   seasonsCount: number;
   onCreateSeason: () => void;
   onManageMatches: () => void;
+  onImportSeason: () => void;
 }
 
 export function SeasonsPageHeader({
   seasonsCount,
   onCreateSeason,
   onManageMatches,
+  onImportSeason,
 }: SeasonsPageHeaderProps) {
   const { t } = useTranslation();
 
@@ -22,6 +24,16 @@ export function SeasonsPageHeader({
       <div className="seasons-actions">
         <button type="button" className="manage-matches-button" onClick={onManageMatches}>
           {t('hockey.management.actions.seasonMatches', 'Manage Season Matches')}
+        </button>
+        <button
+          type="button"
+          className="import-season-button"
+          onClick={onImportSeason}
+          title={t('hockey.seasons.import.buttonTooltip', 'Create a season by uploading a JSON file (myleague format).')}
+        >
+          <i className="fas fa-file-import"></i>
+          {' '}
+          {t('hockey.seasons.import.button', 'Import from JSON')}
         </button>
         <button type="button" className="create-season-button" onClick={onCreateSeason}>
           {t('hockey.seasons.create', 'Create New Season')}

@@ -5,12 +5,14 @@ interface SeasonsPageHeaderProps {
   seasonsCount: number;
   onCreateSeason: () => void;
   onManageMatches: () => void;
+  onImportSeason: () => void;
 }
 
 export const SeasonsPageHeader = ({
   seasonsCount,
   onCreateSeason,
   onManageMatches,
+  onImportSeason,
 }: SeasonsPageHeaderProps) => {
   const { t } = useTranslation();
 
@@ -26,6 +28,16 @@ export const SeasonsPageHeader = ({
           onClick={onManageMatches}
         >
           {t('floorball.management.actions.seasonMatches', 'Manage Season Matches')}
+        </button>
+        <button
+          type="button"
+          className="import-season-button"
+          onClick={onImportSeason}
+          title={t('floorball.seasons.import.buttonTooltip', 'Create a season by uploading a JSON file (myleague format).')}
+        >
+          <i className="fas fa-file-import"></i>
+          {' '}
+          {t('floorball.seasons.import.button', 'Import from JSON')}
         </button>
         <button
           type="button"

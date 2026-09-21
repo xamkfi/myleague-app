@@ -33,4 +33,9 @@ export const hockeyPlayerService = {
       method: 'POST',
       ...jsonBody(data),
     }),
+
+  delete: (id: string): Promise<void> =>
+    hockeyRequest<void>(`/HockeyPlayer/${id}`, 'Failed to delete hockey player', {
+      method: 'DELETE',
+    }),
 };

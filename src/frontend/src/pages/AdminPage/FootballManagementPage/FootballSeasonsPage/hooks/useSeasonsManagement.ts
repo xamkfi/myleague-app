@@ -73,9 +73,11 @@ export const useSeasonsManagement = () => {
     return errorMessage || t('football.seasons.errors.operationFailed', 'Operation failed. Please try again.');
   }, [t]);
 
-  const loadSeasons = useCallback(async () => {
+  const loadSeasons = useCallback(async (options?: { silent?: boolean }) => {
     try {
-      setLoading(true);
+      if (!options?.silent) {
+        setLoading(true);
+      }
       setError(null);
       
       // Always load all seasons, we'll filter them locally
@@ -85,7 +87,9 @@ export const useSeasonsManagement = () => {
       setError(parseApiError(err));
       console.error('Error loading seasons:', err);
     } finally {
-      setLoading(false);
+      if (!options?.silent) {
+        setLoading(false);
+      }
     }
   }, [parseApiError]);
 

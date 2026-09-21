@@ -1,0 +1,32 @@
+{
+  "$schema": "myleague-season-import/v1",
+  "season": {
+    "name": "Jääkiekko kausi 2025-2026",
+    "startDate": "2025-09-01",
+    "endDate": "2026-03-31",
+    "teamCategory": "Adult",
+    "defaultVenue": "Mikkelin jäähalli",
+    "seasonCode": "2025-2026"
+  },
+  "divisions": [
+    { "name": "Miehet 1. divisioona", "level": 1 }
+  ],
+  "clubs": [
+    { "name": "Huru-Ukot", "city": "Mikkeli", "country": "Finland" },
+    { "name": "Weikkoset", "city": "Mikkeli", "country": "Finland" },
+    { "name": "MAHL", "city": "Mikkeli", "country": "Finland" },
+    { "name": "XAMK", "city": "Mikkeli", "country": "Finland" }
+  ],
+  "teams": [
+    { "name": "Huru-Ukot", "clubName": "Huru-Ukot", "divisionName": "Miehet 1. divisioona", "category": "Adult" },
+    { "name": "Weikkoset", "clubName": "Weikkoset", "divisionName": "Miehet 1. divisioona", "category": "Adult" },
+    { "name": "MAHL", "clubName": "MAHL", "divisionName": "Miehet 1. divisioona", "category": "Adult" },
+    { "name": "XAMK", "clubName": "XAMK", "divisionName": "Miehet 1. divisioona", "category": "Adult" }
+  ],
+  "matches": [
+    { "matchNumber": 1, "scheduledDateTime": "2025-09-13T18:00:00+03:00", "homeTeamName": "Huru-Ukot", "awayTeamName": "Weikkoset", "divisionName": "Miehet 1. divisioona" },
+    { "matchNumber": 2, "scheduledDateTime": "2025-09-13T20:00:00+03:00", "homeTeamName": "MAHL", "awayTeamName": "XAMK", "divisionName": "Miehet 1. divisioona" },
+    { "matchNumber": 3, "scheduledDateTime": "2025-09-20T18:00:00+03:00", "homeTeamName": "XAMK", "awayTeamName": "Huru-Ukot", "divisionName": "Miehet 1. divisioona" },
+    { "matchNumber": 4, "scheduledDateTime": "2025-09-20T20:00:00+03:00", "homeTeamName": "Weikkoset", "awayTeamName": "MAHL", "divisionName": "Miehet 1. divisioona" }
+  ]
+}

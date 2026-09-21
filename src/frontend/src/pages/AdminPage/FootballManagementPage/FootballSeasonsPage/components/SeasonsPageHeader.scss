@@ -45,7 +45,8 @@
     }
   }
 
-  .manage-matches-button {
+  .manage-matches-button,
+  .import-season-button {
     padding: map.get($spacing, 'sm') map.get($spacing, 'md');
     background-color: $color-white;
     color: $color-blue-light;
@@ -77,7 +78,8 @@
     align-items: stretch;
 
     .create-season-button,
-    .manage-matches-button {
+    .manage-matches-button,
+    .import-season-button {
       text-align: center;
     }
   }
