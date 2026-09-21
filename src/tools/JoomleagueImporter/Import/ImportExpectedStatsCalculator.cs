@@ -30,13 +30,14 @@ public static class ImportExpectedStatsCalculator
             if (idMap.TryGetSeason(season.OldProjectId, out Guid seasonId))
                 season.NewSeasonId = seasonId;
 
-            foreach (ExpectedTeamStats team in season.Teams)
+            foreach (ExpectedTeamStats team in season.Teams.Where(t => idMap.TryGetTeam(t.OldTeamId, out _)))
             {
                 if (idMap.TryGetTeam(team.OldTeamId, out Guid teamId))
                     team.NewTeamId = teamId;
             }
 
-            foreach (ExpectedPlayerStats player in season.Players)
+            foreach (ExpectedPlayerStats player in season.Players.Where(p =>
+                idMap.TryGetPerson(p.OldPersonId, out IdMapStore.PersonMapping? mapping) && mapping != null))
             {
                 if (idMap.TryGetPerson(player.OldPersonId, out IdMapStore.PersonMapping? mapping) && mapping != null)
                     player.NewPlayerId = mapping.PlayerId;
@@ -108,7 +109,8 @@ public static class ImportExpectedStatsCalculator
                 player.GamesPlayed++;
             }
 
-            foreach (OldMatchEvent ev in matchImport.Events)
+            foreach (OldMatchEvent ev in matchImport.Events.Where(e =>
+                personByTeamPlayer.ContainsKey(e.TeamPlayerId) && project.Teams.ContainsKey(e.ProjectTeamId)))
             {
                 if (!personByTeamPlayer.TryGetValue(ev.TeamPlayerId, out int personId))
                     continue;
@@ -198,19 +200,15 @@ public static class ImportExpectedStatsCalculator
         HashSet<int> sideTeamPlayers = pti.Roster.Select(r => r.TeamPlayer.Id).ToHashSet();
         if (matchImport.Players.Count > 0)
         {
-            foreach (OldMatchPlayer appearance in matchImport.Players)
+            foreach (OldMatchPlayer appearance in matchImport.Players.Where(a => sideTeamPlayers.Contains(a.TeamPlayerId)))
             {
-                if (!sideTeamPlayers.Contains(appearance.TeamPlayerId))
-                    continue;
                 if (personByTeamPlayer.TryGetValue(appearance.TeamPlayerId, out int personId))
                     result.Add((personId, pti.Team.Id));
             }
         }
 
-        foreach (OldMatchEvent ev in matchImport.Events)
+        foreach (OldMatchEvent ev in matchImport.Events.Where(e => e.ProjectTeamId == projectTeamId))
         {
-            if (ev.ProjectTeamId != projectTeamId)
-                continue;
             if (personByTeamPlayer.TryGetValue(ev.TeamPlayerId, out int personId))
                 result.Add((personId, pti.Team.Id));
         }

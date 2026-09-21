@@ -21,12 +21,8 @@ internal static class HistoricalRosterApplicator
         HashSet<Guid> mappedPlayers = MappedPlayerIds(project, idMap);
         int deactivated = 0;
         int failed = 0;
-        HashSet<Guid> seen = [];
-        foreach (ProjectTeamImport pti in project.Teams.Values)
+        foreach (Guid teamId in DistinctMappedTeamIds(project, idMap))
         {
-            if (!idMap.TryGetTeam(pti.Team.Id, out Guid teamId) || !seen.Add(teamId))
-                continue;
-
             FloorballTeamDto? team = await api.GetTeamByIdAsync(teamId, competitionId);
             if (team == null)
                 continue;
@@ -55,12 +51,8 @@ internal static class HistoricalRosterApplicator
         HashSet<Guid> mappedPlayers = MappedPlayerIds(project, idMap);
         int deactivated = 0;
         int failed = 0;
-        HashSet<Guid> seen = [];
-        foreach (ProjectTeamImport pti in project.Teams.Values)
+        foreach (Guid teamId in DistinctMappedTeamIds(project, idMap))
         {
-            if (!idMap.TryGetTeam(pti.Team.Id, out Guid teamId) || !seen.Add(teamId))
-                continue;
-
             FootballTeamDto? team = await api.GetTeamByIdAsync(teamId, competitionId);
             if (team == null)
                 continue;
@@ -89,12 +81,8 @@ internal static class HistoricalRosterApplicator
         HashSet<Guid> mappedPlayers = MappedPlayerIds(project, idMap);
         int deactivated = 0;
         int failed = 0;
-        HashSet<Guid> seen = [];
-        foreach (ProjectTeamImport pti in project.Teams.Values)
+        foreach (Guid teamId in DistinctMappedTeamIds(project, idMap))
         {
-            if (!idMap.TryGetTeam(pti.Team.Id, out Guid teamId) || !seen.Add(teamId))
-                continue;
-
             HockeyTeamDto? team = await api.GetTeamByIdAsync(teamId, competitionId);
             if (team == null)
                 continue;
@@ -125,16 +113,28 @@ internal static class HistoricalRosterApplicator
                           (failed > 0 ? $", {failed} failed" : "") + ".");
     }
 
+    private static IEnumerable<Guid> DistinctMappedTeamIds(ProjectImport project, IdMapStore idMap)
+    {
+        HashSet<Guid> seen = [];
+        return project.Teams.Values
+            .Select(pti =>
+            {
+                bool mapped = idMap.TryGetTeam(pti.Team.Id, out Guid teamId);
+                return (mapped, teamId);
+            })
+            .Where(item => item.mapped && seen.Add(item.teamId))
+            .Select(item => item.teamId);
+    }
+
     private static HashSet<Guid> MappedPlayerIds(ProjectImport project, IdMapStore idMap)
     {
         HashSet<Guid> ids = [];
-        foreach (ProjectTeamImport pti in project.Teams.Values)
+        foreach (RosterEntry entry in project.Teams.Values
+            .SelectMany(pti => pti.Roster)
+            .Where(entry => idMap.TryGetPerson(entry.Person.Id, out _)))
         {
-            foreach (RosterEntry entry in pti.Roster)
-            {
-                if (idMap.TryGetPerson(entry.Person.Id, out IdMapStore.PersonMapping? mapping) && mapping != null)
-                    ids.Add(mapping.PlayerId);
-            }
+            if (idMap.TryGetPerson(entry.Person.Id, out IdMapStore.PersonMapping? mapping) && mapping != null)
+                ids.Add(mapping.PlayerId);
         }
 
         return ids;

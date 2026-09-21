@@ -14,8 +14,7 @@ public static class ImportExpectedStatsWriter
 
     public static string ResolveReportsDirectory()
     {
-        string fromOutput = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "reports"));
-        return fromOutput;
+        return Path.GetFullPath(Path.Combine("..", "..", "..", "reports"), AppContext.BaseDirectory);
     }
 
     public static string ExpectedPath(string sport) =>
