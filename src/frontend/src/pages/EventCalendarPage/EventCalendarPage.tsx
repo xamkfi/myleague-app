@@ -3,9 +3,8 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { floorballSeasonService } from '../../api/floorball/floorballSeasonService';
-import { loadAllHockeyMatches } from '../../api/hockey/loadAllHockeyMatches';
+import { hockeyMatchService } from '../../api/hockey/hockeyMatchService';
 import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
-import { loadTeamNameMap } from '../../utils/hockeyLookups';
 import { mapHockeyMatchToCalendarEvent } from './utils/mapHockeyToCalendarEvent';
 import type { CalendarEvent, CalendarFilters as FiltersType } from '../../types/calendar';
 import { DEFAULT_CALENDAR_FILTERS } from '../../types/calendar';
@@ -76,25 +75,15 @@ function EventCalendarPage() {
       });
       const list = response.data ?? [];
       const floorballEvents = list.map(mapFloorballMatchToCalendarEvent);
-      const [hockeyMatches, teamNames, hockeySeasons] = await Promise.all([
-        loadAllHockeyMatches(audience.teamCategory).catch(() => []),
-        loadTeamNameMap(undefined, audience.teamCategory).catch(() => new Map<string, string>()),
-        hockeySeasonService.getAll(audience.teamCategory).catch(() => []),
-      ]);
-      const seasonNames = new Map(hockeySeasons.map((season) => [season.id, season.name]));
-      const monthStart = new Date(startDate);
-      const monthEnd = new Date(endDate);
-      monthEnd.setHours(23, 59, 59, 999);
-      const hockeyEvents = hockeyMatches
-        .filter((match) => {
-          const kickoff = new Date(match.scheduledStartTime);
-          return kickoff >= monthStart && kickoff <= monthEnd;
+      const hockeyMatches = await hockeyMatchService
+        .getAllListPages({
+          startDate,
+          endDate,
+          sortOrder: 'asc',
+          teamCategory: audience.teamCategory,
         })
-        .map((match) => mapHockeyMatchToCalendarEvent(
-          match,
-          teamNames,
-          match.competitionId ? seasonNames.get(match.competitionId) : undefined,
-        ));
+        .catch(() => []);
+      const hockeyEvents = hockeyMatches.map(mapHockeyMatchToCalendarEvent);
       setAllEvents([...floorballEvents, ...hockeyEvents]);
     } catch (err) {
       console.error('EventCalendarPage: fetch failed', err);

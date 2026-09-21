@@ -52,6 +52,7 @@ namespace Application.Features.Floorball.Teams.Handlers
                     {
                         Id = team.Id,
                         Name = team.Name,
+                        DivisionId = team.DivisionId,
                     }).ToList();
 
                 return Result<List<FloorballTeamNameDto>>.Success(dtos);

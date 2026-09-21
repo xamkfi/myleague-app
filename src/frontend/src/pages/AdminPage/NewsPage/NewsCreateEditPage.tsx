@@ -24,6 +24,7 @@ const emptyNewsData = (): NewsInputsData => ({
   author: '',
   category: '',
   sportCategory: '',
+  teamCategory: '',
   tags: [],
   contentHtml: '',
 });
@@ -93,6 +94,7 @@ export default function NewsCreateEditPage() {
           author: article.author || '',
           category: article.category || '',
           sportCategory: article.sportCategory || '',
+          teamCategory: article.teamCategory || '',
           tags: article.tags || [],
           contentHtml: article.contentHtml || '',
         });
@@ -174,6 +176,7 @@ export default function NewsCreateEditPage() {
     author: newsData.author?.trim() || null,
     category: newsData.category || null,
     sportCategory: newsData.sportCategory || null,
+    teamCategory: newsData.teamCategory || null,
     tags: newsData.tags.filter((tag) => tag.trim() !== ''),
   });
 
@@ -200,6 +203,7 @@ export default function NewsCreateEditPage() {
           author: toNullIfEmpty(newsData.author),
           category: toNullIfEmpty(newsData.category),
           sportCategory: toNullIfEmpty(newsData.sportCategory),
+          teamCategory: toNullIfEmpty(newsData.teamCategory),
           tags: newsData.tags.filter((tag) => tag.trim() !== ''),
         });
         deleteOrphanedImages(value.trim(), trimmedMainPicture ?? '');

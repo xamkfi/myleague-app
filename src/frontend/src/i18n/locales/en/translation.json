@@ -39,6 +39,7 @@
       "title": "Latest News",
       "readMore": "Read more",
       "noNews": "No news available",
+      "noNewsForAudience": "No news for {{audience}} yet.",
       "loading": "Loading news...",
       "error": "Failed to load news",
       "retry": "Try again"
@@ -667,6 +668,8 @@
       "sport_category": "Sport Category",
       "select_category": "Select category",
       "select_sport": "Select sport",
+      "team_category": "Audience",
+      "all_audiences": "All audiences",
       "tags": "Tags",
       "add_tag_placeholder": "Type tag and press Enter...",
       "no_tags": "No tags added yet. Tags help categorize your article.",
@@ -1765,6 +1768,9 @@
     "similarNews": "Similar news",
     "relatedTeams": "Teams related to this article",
     "noNewsFound": "No news found for the selected filters.",
+    "noNewsForAudience": "No news for {{audience}} yet.",
+    "fetchError": "News could not be loaded.",
+    "retry": "Try again",
     "category": {
       "all": "All"
     },

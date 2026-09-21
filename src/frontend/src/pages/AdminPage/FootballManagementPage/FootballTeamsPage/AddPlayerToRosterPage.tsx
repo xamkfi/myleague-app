@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { footballTeamService } from '../../../../api/football/footballTeamService';
@@ -221,6 +221,13 @@ const AddPlayerToRosterPage = () => {
         <div className="team-info-header">
           <span className="team-name">{currentTeam.name}</span>
         </div>
+
+        <p className="create-player-hint">
+          {t('football.teams.createPlayerHint', 'Only existing players can be added. If you just created a person, convert them first.')}{' '}
+          <Link to="/admin/football/players/create">
+            {t('football.teams.createPlayerFromPerson', 'Create player from person')}
+          </Link>
+        </p>
 
         <ErrorPopup message={error} />
 

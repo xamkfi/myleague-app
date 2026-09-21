@@ -1,6 +1,7 @@
 using Application.Common;
 using Application.Features.Hockey.Matches.DTOs;
 using Domain.Common;
+using Domain.Enums.Common;
 using Domain.Enums.Hockey.Matches;
 using MediatR;
 
@@ -31,6 +32,20 @@ public record GetPagedHockeyMatchesQuery(
     HockeyMatchStatus? Status = null,
     string SortOrder = "desc",
     string? SearchQuery = null) : IRequest<Result<PagedResult<HockeyMatchDto>>>
+{
+    public const string ResourceKey = "HockeyMatches";
+}
+
+/// <summary>
+/// Anonymous paginated hockey match list for public calendar and schedule views.
+/// </summary>
+public record GetHockeyMatchesQuery(
+    int Page = 1,
+    int PageSize = 0,
+    DateTime? StartDate = null,
+    DateTime? EndDate = null,
+    TeamCategory? TeamCategory = null,
+    string SortOrder = "desc") : IRequest<Result<PagedResult<HockeyMatchListDto>>>
 {
     public const string ResourceKey = "HockeyMatches";
 }

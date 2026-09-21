@@ -7,6 +7,8 @@ import ResultsSection from './components/ResultsSection';
 import FixturesSection from './components/FixturesSection';
 import SummarySection from './components/SummarySection';
 import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
+import { isNotFoundError } from '../../api/utils/isNotFoundError';
+import { unwrapApiErrorMessage } from '../../api/utils/ParseErrorResponse';
 import { floorballSeasonService } from '../../api/floorball/floorballSeasonService';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { floorballStatisticsService, type FloorballSeasonStatisticsSummaryDto } from '../../api/floorball/floorballStatistics';
@@ -60,6 +62,7 @@ export default function LeaguePage() {
   
   // State for season statistics data
   const [seasonSummary, setSeasonSummary] = useState<FloorballSeasonStatisticsSummaryDto | null>(null);
+  const [seasonName, setSeasonName] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
@@ -83,7 +86,12 @@ export default function LeaguePage() {
         setSeasonSummary(data);
       } catch (err) {
         console.error('Failed to fetch season statistics:', err);
-        setError(err instanceof Error ? err.message : t('leaguePage.errors.loadLeagueData'));
+        if (isNotFoundError(err)) {
+          setSeasonSummary(null);
+          setError(null);
+        } else {
+          setError(unwrapApiErrorMessage(err, t('leaguePage.errors.loadLeagueData')));
+        }
       } finally {
         setLoading(false);
       }
@@ -91,6 +99,31 @@ export default function LeaguePage() {
 
     fetchSeasonData();
   }, [id, t]);
+
+  useEffect(() => {
+    if (!id) {
+      setSeasonName('');
+      return;
+    }
+
+    let cancelled = false;
+    floorballSeasonService
+      .getById(id)
+      .then((result) => {
+        if (!cancelled && result.data?.name) {
+          setSeasonName(result.data.name);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSeasonName('');
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   useEffect(() => {
     if (!id) {
@@ -210,7 +243,7 @@ export default function LeaguePage() {
   };
 
   return (
-    <PageTemplate title={id ? `${t('leaguePage.title')} ${id}` : t('leaguePage.defaultTitle')}>
+    <PageTemplate title={seasonName || seasonSummary?.seasonName || t('leaguePage.defaultTitle')}>
       <div className="league-page">
         {/* Hero Image Background */}
         <div className="hero-image-container">
@@ -226,7 +259,7 @@ export default function LeaguePage() {
               </div>
 
               <div className="league-info">
-                <h1 className="league-title">{seasonSummary?.seasonName || t('leaguePage.defaultTitle')}</h1>
+                <h1 className="league-title">{seasonName || seasonSummary?.seasonName || t('leaguePage.defaultTitle')}</h1>
                 <div className="league-tabs">
                   {tabs.map((tab) => (
                     <button

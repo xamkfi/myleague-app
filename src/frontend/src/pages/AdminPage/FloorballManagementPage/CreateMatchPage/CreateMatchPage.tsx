@@ -178,31 +178,34 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
     return selectedTournament?.groups ?? [];
   }, [isTournament, selectedTournament]);
 
-  // Auto-select the only available division/group.
+  // Auto-select the only available division/group. Re-run when the current
+  // selection is empty so a same-season reselect cannot leave the form stuck
+  // on the "Auto-selected" label with no division id.
   useEffect(() => {
     if (isTournament) {
-      if (tournamentGroups.length === 1) {
+      if (tournamentGroups.length === 1 && selectedGroupId !== tournamentGroups[0].id) {
         setSelectedGroupId(tournamentGroups[0].id);
-      } else if (tournamentGroups.length === 0) {
+      } else if (tournamentGroups.length === 0 && selectedGroupId) {
         setSelectedGroupId('');
       }
-    } else {
-      if (seasonDivisions.length === 1) {
-        setSelectedDivisionId(seasonDivisions[0].divisionId);
-      } else if (seasonDivisions.length === 0) {
-        setSelectedDivisionId('');
-      }
+    } else if (seasonDivisions.length === 1 && selectedDivisionId !== seasonDivisions[0].divisionId) {
+      setSelectedDivisionId(seasonDivisions[0].divisionId);
+    } else if (seasonDivisions.length === 0 && selectedDivisionId) {
+      setSelectedDivisionId('');
     }
-  }, [isTournament, seasonDivisions, tournamentGroups]);
+  }, [isTournament, seasonDivisions, tournamentGroups, selectedDivisionId, selectedGroupId]);
 
   // ── Reset downstream when the competition changes ────────────────────
   const handleCompetitionChange = useCallback((competitionId: string) => {
+    if (competitionId === selectedCompetitionId) {
+      return;
+    }
     setSelectedCompetitionId(competitionId);
     setSelectedDivisionId('');
     setSelectedGroupId('');
     setHomeTeamId('');
     setAwayTeamId('');
-  }, []);
+  }, [selectedCompetitionId]);
 
   const handleDivisionChange = useCallback((divisionId: string) => {
     setSelectedDivisionId(divisionId);

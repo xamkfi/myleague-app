@@ -25,37 +25,7 @@ const CreateTeamPage = () => {
     secondaryJerseyColor: ''
   });
 
-  // Search function for clubs using paginated endpoint
-  const searchClubs = async (query: string, page: number) => {
-    const pageSize = 50;
-    
-    try {
-      // Use paginated endpoint
-      const response = await clubService.getPaged(page, pageSize);
-      
-      let filteredClubs = response.data;
-      
-      // If there's a search query, filter client-side
-      // Note: For better performance with large datasets, backend should support search pagination
-      if (query.trim()) {
-        const queryLower = query.toLowerCase();
-        filteredClubs = response.data.filter(club => 
-          club.name.toLowerCase().includes(queryLower)
-        );
-      }
-      
-      return {
-        data: filteredClubs.map(club => ({ id: club.id, name: club.name })),
-        pagination: {
-          hasNextPage: response.pagination.hasNextPage && (!query.trim() || filteredClubs.length === pageSize),
-          totalCount: query.trim() ? filteredClubs.length : response.pagination.totalCount
-        }
-      };
-    } catch (err) {
-      console.error('Error searching clubs:', err);
-      throw err;
-    }
-  };
+  const searchClubs = (query: string, page: number) => clubService.searchForDropdown(query, page);
 
   const handleInputChange = (field: keyof FootballTeamRequest, value: string) => {
     setFormData(prev => ({

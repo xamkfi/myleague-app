@@ -1,3 +1,5 @@
+import { TEAM_CATEGORY_META } from '../../../../components/TeamCategoryBadge/teamCategoryMeta';
+
 const SPORT_I18N_KEYS: Record<string, string> = {
   Floorball: 'newsPage.sportCategory.floorball',
   Icehockey: 'newsPage.sportCategory.hockey',
@@ -17,4 +19,12 @@ export function newsSportLabel(
 ): string {
   const key = SPORT_I18N_KEYS[value];
   return key ? t(key, value) : value;
+}
+
+export function newsAudienceLabel(
+  t: (key: string, fallback?: string) => string,
+  value: string,
+): string {
+  const meta = TEAM_CATEGORY_META[value];
+  return meta ? t(meta.i18nKey, value) : value;
 }

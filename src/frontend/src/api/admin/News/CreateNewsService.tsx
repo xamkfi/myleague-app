@@ -17,6 +17,7 @@ interface News{
   author: string | null,
   category: string | null,
   sportCategory: string | null,
+  teamCategory: string | null,
   tags: string[] |null
 }
 

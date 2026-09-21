@@ -2,8 +2,9 @@ import { useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
 import '../styles/NewsInputs.scss';
+import { TeamCategory } from '../../../../types/floorball/floorballTypes';
 import { NEWS_CATEGORY_OPTIONS, NEWS_SPORT_CATEGORY_OPTIONS } from '../Utils/NewsFilterContstants';
-import { newsCategoryLabel, newsSportLabel } from '../Utils/newsTaxonomyLabels';
+import { newsAudienceLabel, newsCategoryLabel, newsSportLabel } from '../Utils/newsTaxonomyLabels';
 
 export interface NewsInputsData {
   title: string;
@@ -12,6 +13,7 @@ export interface NewsInputsData {
   tags: string[];
   category: string;
   sportCategory: string;
+  teamCategory: string;
   summary: string;
   contentHtml: string;
 }
@@ -339,6 +341,23 @@ export default function NewsInputs({ data, onChange, errors = {} }: NewsInputsPr
                 {errors.sportCategory}
               </p>
             )}
+          </div>
+
+          <div className="news-inputs__field">
+            <label htmlFor="teamCategory" className="news-inputs__label">
+              {t('admin.news.team_category')}
+            </label>
+            <select
+              id="teamCategory"
+              value={data.teamCategory}
+              onChange={(e) => updateField('teamCategory', e.target.value)}
+              className={`news-inputs__select ${errors.teamCategory ? 'error' : ''}`}
+            >
+              <option value="">{t('admin.news.all_audiences')}</option>
+              {Object.values(TeamCategory).map((audience) => (
+                <option key={audience} value={audience}>{newsAudienceLabel(t, audience)}</option>
+              ))}
+            </select>
           </div>
         </div>
 

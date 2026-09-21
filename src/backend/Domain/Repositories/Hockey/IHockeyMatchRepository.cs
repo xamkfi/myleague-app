@@ -1,6 +1,7 @@
 using Domain.Common;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Matches.Events;
+using Domain.Enums.Common;
 using Domain.Enums.Hockey.Matches;
 
 namespace Domain.Repositories.Hockey;
@@ -15,7 +16,7 @@ public interface IHockeyMatchRepository
     Task<HockeyMatch?> GetByIdAsync(Guid id);
 
     /// <summary>
-    /// Loads matches for a competition with the same detail Includes as <see cref="GetByIdAsync"/>.
+    /// Loads matches for a competition without events, lines, or on-ice state.
     /// </summary>
     Task<IReadOnlyList<HockeyMatch>> GetByCompetitionIdAsync(Guid competitionId);
 
@@ -56,5 +57,6 @@ public interface IHockeyMatchRepository
         HockeyMatchStatus? status = null,
         string sortOrder = "desc",
         string? searchQuery = null,
+        TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
 }
