@@ -44,7 +44,7 @@ export function sanitizeAdminReturnPath(raw: string | null | undefined): string 
     return null;
   }
 
-  let decoded = raw;
+  let decoded: string;
   try {
     decoded = decodeURIComponent(raw);
   } catch {
