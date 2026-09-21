@@ -362,6 +362,7 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /src/backend/WebAPI/deploy.zip
+/tmp-webapi-publish/
 /src/frontend/.env
 /src/tools/FloorballPlayerImporter/DataFiles/Joukkue.json
 /src/tools/FloorballPlayerImporter/DataFiles/poyryn-pantterit-roster.json
