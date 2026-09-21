@@ -1,0 +1,503 @@
+@use "sass:map";
+@use '@variables' as *;
+
+// IMPORTANT: `FloorballTournamentsPage.scss` defines `.modal-overlay .modal-content`
+// (specificity 0,2,0) with `max-width: 500px` and `overflow-y: auto`. Because that
+// selector wins over a bare `.import-modal { ... }` (specificity 0,1,0), we have to
+// scope the import-modal sizing under the same `.modal-overlay .modal-content`
+// chain — otherwise the import modal renders at 500px wide, the AI-help panel and
+// preview form overflow horizontally, and BOTH the wrapper and the body scroll
+// (the classic "double-scrollbar" bug seen in the screenshot). The selector below
+// reaches specificity 0,3,0 so it reliably wins.
+.modal-overlay > .modal-content.import-modal {
+  // Wider than the default confirm modal so the AI-help panel, the preview form
+  // fields and the dry-run table fit comfortably. Capped to the viewport so it
+  // never causes its own horizontal scroll on narrow screens.
+  max-width: min(880px, calc(100vw - 2 * #{map.get($spacing, 'base')}));
+  width: 100%;
+  // Switch off the wrapper-level vertical scroll: the inner `.import-modal__body`
+  // owns scrolling, so allowing it on both produces two competing scrollbars.
+  overflow: hidden;
+  max-height: min(92vh, 1000px);
+  display: flex;
+  flex-direction: column;
+}
+
+.import-modal {
+  // Kept for backwards compatibility / lower-specificity contexts (e.g. tests, story
+  // book, or any future host page that doesn't ship the tournaments-page modal CSS).
+  max-width: 880px;
+
+  &__body {
+    // The wrapper is `display: flex; flex-direction: column` (see scoped rule above),
+    // so the body takes the remaining vertical space and owns the scroll. We also
+    // clamp horizontal overflow so a stray long word / wide child never produces a
+    // horizontal scrollbar on the modal (the source of the cut-off title bug).
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    // Honour border/padding inside the explicit height, otherwise nested padding
+    // can push the body past its parent and trigger the wrapper scroll again.
+    box-sizing: border-box;
+  }
+
+  // Defensive: flex/grid containers default to `min-width: auto`, which prevents
+  // long words / wide selects from shrinking and ends up triggering horizontal
+  // overflow on the parent. Force shrinking on every direct text/form descendant.
+  &__pick,
+  &__ai-help,
+  &__field,
+  &__errors,
+  &__summary,
+  &__log,
+  &__preview {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  &__field-input,
+  select,
+  textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  &__pick {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'base');
+    align-items: center;
+  }
+
+  &__dropzone {
+    display: block;
+    width: 100%;
+    border: 2px dashed $color-border;
+    border-radius: $border-radius-default;
+    padding: map.get($spacing, 'lg');
+    text-align: center;
+    color: $color-text-muted;
+    background: $color-neutral-light-grey;
+    cursor: pointer;
+    @include transition(all);
+
+    &:hover {
+      border-color: $color-blue-light;
+      background: $color-blue-secondary-almost;
+    }
+
+    > i {
+      font-size: 2.5rem;
+      color: $color-blue-light;
+      margin-bottom: map.get($spacing, 'base');
+      display: block;
+    }
+
+    p {
+      margin: 0 0 map.get($spacing, 'base');
+    }
+  }
+
+  &__choose-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'md');
+    background: $color-blue-light;
+    color: $color-white;
+    border: none;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'base');
+    font-weight: map.get($font-weights, 'medium');
+    cursor: pointer;
+    pointer-events: none; // the parent <label> already handles the click
+    @include transition(all);
+  }
+
+  &__dropzone:hover &__choose-btn {
+    background: $color-blue-medium;
+  }
+
+  &__file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  &__sample-link {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    color: $color-blue-light;
+    font-size: map.get($font-sizes, 'sm');
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__ai-help {
+    width: 100%;
+    margin-top: map.get($spacing, 'sm');
+    padding: map.get($spacing, 'base');
+    border: 1px solid $color-border;
+    border-radius: $border-radius-default;
+    background: $color-neutral-light-grey;
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'sm');
+  }
+
+  &__ai-help-title {
+    margin: 0;
+    font-size: map.get($font-sizes, 'base');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-text-primary;
+
+    i {
+      margin-right: map.get($spacing, 'xxs');
+      color: $color-blue-light;
+    }
+  }
+
+  &__ai-help-steps {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+    line-height: 1.5;
+
+    li + li {
+      margin-top: map.get($spacing, 'xxs');
+    }
+  }
+
+  &__ai-help-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__ai-help-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+    cursor: pointer;
+    border: 1px solid transparent;
+    @include transition(all);
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &__ai-help-btn--primary {
+    background: $color-blue-light;
+    color: $color-white;
+    border-color: $color-blue-light;
+
+    &:hover:not(:disabled) {
+      background: $color-blue-medium;
+      border-color: $color-blue-medium;
+    }
+  }
+
+  &__ai-help-btn--ghost {
+    background: transparent;
+    color: $color-blue-light;
+    border-color: $color-blue-light;
+
+    &:hover:not(:disabled) {
+      background: rgba($color-blue-light, 0.08);
+    }
+  }
+
+  &__ai-help-feedback {
+    margin: 0;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'sm');
+    display: flex;
+    gap: map.get($spacing, 'xs');
+    align-items: flex-start;
+
+    i {
+      margin-top: 2px;
+    }
+  }
+
+  &__ai-help-feedback--ok {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+
+  &__ai-help-feedback--info {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+  }
+
+  &__ai-help-feedback--error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+
+  &__filename {
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'sm');
+    margin: 0 0 map.get($spacing, 'xs');
+
+    i {
+      margin-right: map.get($spacing, 'xs');
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xxs');
+    margin-bottom: map.get($spacing, 'base');
+  }
+
+  &__field-label {
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &__field-input {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'sm');
+    font-size: map.get($font-sizes, 'base');
+    color: $color-text-primary;
+    background: $color-white;
+    @include transition(border-color);
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-light;
+    }
+  }
+
+  &__field-hint {
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'xs');
+    margin-top: map.get($spacing, 'xxs');
+  }
+
+  &__counts {
+    width: 100%;
+    border-collapse: collapse;
+    margin: map.get($spacing, 'base') 0;
+
+    th, td {
+      padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+      border-bottom: 1px solid $color-border;
+      text-align: left;
+    }
+
+    th {
+      color: $color-text-muted;
+      font-weight: map.get($font-weights, 'medium');
+      width: 60%;
+    }
+
+    td {
+      color: $color-text-primary;
+      font-weight: map.get($font-weights, 'medium');
+      text-align: right;
+    }
+  }
+
+  &__note {
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'sm');
+    margin: map.get($spacing, 'base') 0 0;
+
+    &--warning {
+      color: $color-yellow-muted;
+      font-weight: map.get($font-weights, 'medium');
+    }
+  }
+
+  &__checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    margin-top: map.get($spacing, 'base');
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+    cursor: pointer;
+
+    &--featured {
+      margin-top: map.get($spacing, 'base');
+      padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      background: $color-neutral-light-grey;
+      border: 1px solid $color-border;
+      border-radius: map.get($border-radius, 'sm');
+      width: 100%;
+      box-sizing: border-box;
+      font-weight: map.get($font-weights, 'medium');
+    }
+  }
+
+  &__field-hint--checkbox {
+    margin: map.get($spacing, 'xxs') 0 0;
+  }
+
+  &__errors {
+    text-align: center;
+
+    h4 {
+      margin: map.get($spacing, 'xs') 0 map.get($spacing, 'base');
+      color: $color-red-primary;
+    }
+
+    ul {
+      text-align: left;
+      background: $color-red-almost;
+      border: 1px solid $color-red-pale;
+      border-radius: map.get($border-radius, 'sm');
+      padding: map.get($spacing, 'base') map.get($spacing, 'base') map.get($spacing, 'base') map.get($spacing, 'lg');
+      margin: 0;
+      color: $color-red-muted;
+      font-size: map.get($font-sizes, 'sm');
+    }
+  }
+
+  &__progress {
+    width: 100%;
+    height: 0.75rem;
+    background: $color-neutral-light-grey;
+    border-radius: $border-radius-default;
+    overflow: hidden;
+    margin-bottom: map.get($spacing, 'xs');
+  }
+
+  &__progress-bar {
+    height: 100%;
+    background: $color-green-primary;
+    @include transition(width);
+  }
+
+  &__progress-label {
+    margin: 0 0 map.get($spacing, 'base');
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+    text-transform: capitalize;
+  }
+
+  &__log {
+    background: $color-neutral-black;
+    color: $color-neutral-light-grey;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: map.get($font-sizes, 'xs');
+    border-radius: map.get($border-radius, 'sm');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+    max-height: 16rem;
+    overflow-y: auto;
+    margin-top: map.get($spacing, 'base');
+  }
+
+  &__log-line {
+    display: flex;
+    gap: map.get($spacing, 'xs');
+    padding: 2px 0;
+    line-height: 1.4;
+    word-break: break-word;
+
+    &--created { color: $color-green-light; }
+    &--existing { color: $color-blue-secondary-light; }
+    &--skipped { color: $color-yellow-light; }
+    &--error { color: $color-red-light; }
+    &--info { color: $color-neutral-light-grey; }
+  }
+
+  &__log-glyph {
+    flex-shrink: 0;
+    width: 1rem;
+    text-align: center;
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  &__summary {
+    margin-top: map.get($spacing, 'base');
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'sm');
+    overflow: hidden;
+  }
+
+  &__summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+    border-bottom: 1px solid $color-border;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__summary-label {
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  &__summary-value {
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  &__summary-existing {
+    color: $color-text-muted;
+    font-weight: map.get($font-weights, 'regular');
+  }
+
+  &__success-icon i {
+    color: $color-green-primary;
+  }
+}
+
+.import-modal__body .warning-icon {
+  text-align: center;
+  margin-bottom: map.get($spacing, 'base');
+
+  i {
+    font-size: map.get($font-sizes, 'xl');
+    color: $color-yellow-primary;
+  }
+}
+
+.btn.btn-primary {
+  background: $color-blue-light;
+  color: $color-white;
+  padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+  border: none;
+  border-radius: map.get($border-radius, 'sm');
+  cursor: pointer;
+  font-weight: map.get($font-weights, 'medium');
+  @include transition(all);
+
+  &:hover {
+    background: $color-blue-medium;
+  }
+}

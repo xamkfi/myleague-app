@@ -1,0 +1,44 @@
+{
+  "$schema": "myleague-season-import/v1",
+  "season": {
+    "name": "Jalkapallo kausi 2025-2026",
+    "startDate": "2025-09-01",
+    "endDate": "2026-03-31",
+    "teamCategory": "Adult",
+    "defaultVenue": "Mikkelin jalkapallokenttä",
+    "numberOfHalves": 2,
+    "halfDurationMinutes": 20,
+    "playersOnField": 5,
+    "requireGoalkeeper": true,
+    "maxSubstitutions": 99,
+    "requireOfficialsToStart": false,
+    "allowExtraTime": false,
+    "extraTimeHalfCount": 2,
+    "extraTimeHalfDurationMinutes": 5,
+    "allowPenaltyShootout": false,
+    "winPoints": 3,
+    "drawPoints": 1,
+    "lossPoints": 0
+  },
+  "divisions": [
+    { "name": "Miehet 5v5", "level": 1 }
+  ],
+  "clubs": [
+    { "name": "Huru-Ukot", "city": "Mikkeli", "country": "Finland" },
+    { "name": "Weikkoset", "city": "Mikkeli", "country": "Finland" },
+    { "name": "MAHL", "city": "Mikkeli", "country": "Finland" },
+    { "name": "XAMK", "city": "Mikkeli", "country": "Finland" }
+  ],
+  "teams": [
+    { "name": "Huru-Ukot", "clubName": "Huru-Ukot", "divisionName": "Miehet 5v5", "category": "Adult" },
+    { "name": "Weikkoset", "clubName": "Weikkoset", "divisionName": "Miehet 5v5", "category": "Adult" },
+    { "name": "MAHL", "clubName": "MAHL", "divisionName": "Miehet 5v5", "category": "Adult" },
+    { "name": "XAMK", "clubName": "XAMK", "divisionName": "Miehet 5v5", "category": "Adult" }
+  ],
+  "matches": [
+    { "matchNumber": 1, "scheduledDateTime": "2025-09-13T18:00:00+03:00", "homeTeamName": "Huru-Ukot", "awayTeamName": "Weikkoset", "divisionName": "Miehet 5v5" },
+    { "matchNumber": 2, "scheduledDateTime": "2025-09-13T19:30:00+03:00", "homeTeamName": "MAHL", "awayTeamName": "XAMK", "divisionName": "Miehet 5v5" },
+    { "matchNumber": 3, "scheduledDateTime": "2025-09-20T18:00:00+03:00", "homeTeamName": "XAMK", "awayTeamName": "Huru-Ukot", "divisionName": "Miehet 5v5" },
+    { "matchNumber": 4, "scheduledDateTime": "2025-09-20T19:30:00+03:00", "homeTeamName": "Weikkoset", "awayTeamName": "MAHL", "divisionName": "Miehet 5v5" }
+  ]
+}

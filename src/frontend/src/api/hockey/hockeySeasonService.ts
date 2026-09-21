@@ -1,5 +1,6 @@
 import type {
   CreateHockeySeasonRequest,
+  HockeyCompetitionTeamDto,
   HockeySeasonDto,
   UpdateHockeySeasonRequest,
 } from '../../types/hockey/hockeyTypes';
@@ -46,8 +47,8 @@ export const hockeySeasonService = {
   complete: (id: string): Promise<HockeySeasonDto> => action(id, 'complete', 'Failed to complete season'),
   cancel: (id: string): Promise<HockeySeasonDto> => action(id, 'cancel', 'Failed to cancel season'),
 
-  addTeam: (seasonId: string, teamId: string, seed?: number): Promise<unknown> =>
-    hockeyRequest(`/HockeySeason/${seasonId}/teams`, 'Failed to add team to season', {
+  addTeam: (seasonId: string, teamId: string, seed?: number): Promise<HockeyCompetitionTeamDto> =>
+    hockeyRequest<HockeyCompetitionTeamDto>(`/HockeySeason/${seasonId}/teams`, 'Failed to add team to season', {
       method: 'POST',
       ...jsonBody({ teamId, seed }),
     }),
