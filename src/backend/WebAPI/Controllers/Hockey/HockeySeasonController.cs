@@ -144,7 +144,8 @@ public class HockeySeasonController : BaseApiController
             request.StartDate,
             request.EndDate,
             request.SeasonCode,
-            request.TeamCategory);
+            request.TeamCategory,
+            request.LogoUrl);
         Result<HockeySeasonDto> result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsSuccess && result.Data is not null)
@@ -175,7 +176,8 @@ public class HockeySeasonController : BaseApiController
             request.StartDate,
             request.EndDate,
             request.SeasonCode,
-            request.TeamCategory), cancellationToken);
+            request.TeamCategory,
+            request.LogoUrl), cancellationToken);
 
         return HandleResult(result, "Hockey season updated successfully", "Failed to update hockey season");
     }

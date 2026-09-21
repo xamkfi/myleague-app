@@ -1,0 +1,124 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.competition-hero {
+  width: 100%;
+  margin-bottom: map.get($spacing, 'xl');
+}
+
+.competition-hero__banner {
+  background: $color-banner-bg;
+  border-radius: map.get($border-radius, 'lg');
+  padding: map.get($spacing, 'lg');
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'md');
+  color: $color-white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba($color-blue-secondary, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+}
+
+.competition-hero__mark {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: map.get($border-radius, 'lg');
+  background: rgba($color-white, 0.12);
+  border: 1px solid rgba($color-white, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+
+  img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+  }
+}
+
+.competition-hero__heading {
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.competition-hero__title {
+  margin: 0;
+  position: relative;
+  z-index: 1;
+  font-family: $font-family-display;
+  font-size: map.get($font-sizes, 'xxl');
+  font-weight: map.get($font-weights, 'extrabold');
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 1.1;
+  color: $color-white;
+}
+
+.competition-hero__below {
+  margin-top: map.get($spacing, 'md');
+}
+
+.competition-hero__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map.get($spacing, 'xs');
+}
+
+.competition-hero__tab {
+  padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+  background: $color-white;
+  border: 1px solid rgba($color-blue-deep, 0.15);
+  color: $color-blue-deep;
+  border-radius: map.get($border-radius, 'lg');
+  cursor: pointer;
+  font-weight: map.get($font-weights, 'medium');
+  font-size: map.get($font-sizes, 'sm');
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba($color-blue-secondary, 0.08);
+  }
+
+  &--active {
+    background: $color-blue-deep;
+    color: $color-white;
+    border-color: $color-blue-deep;
+    font-weight: map.get($font-weights, 'bold');
+  }
+}
+
+@media (max-width: 768px) {
+  .competition-hero__banner {
+    padding: map.get($spacing, 'md');
+  }
+
+  .competition-hero__mark {
+    width: 64px;
+    height: 64px;
+
+    img {
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  .competition-hero__title {
+    font-size: map.get($font-sizes, 'lg');
+  }
+}

@@ -44,6 +44,7 @@ export const hockeyTournamentService = {
       venue?: string;
       contentHtml?: string;
       teamCategory: string;
+      logoUrl?: string | null;
     },
   ): Promise<HockeyTournamentDto> =>
     hockeyRequest<HockeyTournamentDto>(`/HockeyTournament/${id}`, 'Failed to update hockey tournament', {

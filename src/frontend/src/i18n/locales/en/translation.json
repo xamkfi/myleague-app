@@ -11,6 +11,37 @@
     "clubs": "Clubs",
     "team": "Team"
   },
+  "notFound": {
+    "title": "Page not found",
+    "message": "The page you were looking for does not exist or has been moved.",
+    "home": "Back to home"
+  },
+  "competition": {
+    "logoUrl": "Logo URL"
+  },
+  "registerPage": {
+    "intro": "Fill in the form and we will open an email to the club staff.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "ageGroup": "Age group",
+    "ageGroupPlaceholder": "Select an age group",
+    "ageGroupU12": "Under 12",
+    "ageGroupU15": "Under 15",
+    "ageGroupU18": "Under 18",
+    "ageGroupAdult": "Adults",
+    "ageGroupSenior": "Seniors (40+)",
+    "experience": "Experience level",
+    "experiencePlaceholder": "Select your experience level",
+    "experienceBeginner": "Beginner",
+    "experienceIntermediate": "Intermediate",
+    "experienceAdvanced": "Advanced",
+    "notes": "Additional notes",
+    "submit": "Send registration",
+    "mailSubject": "Registration: {{name}}",
+    "thankYouTitle": "Your email app was opened",
+    "thankYouBody": "If the message did not open, send your registration to pasi@mahl.fi."
+  },
   "sessionExpiry": {
     "message": "Your session expires in about {{minutes}} minutes. Stay logged in if you still need this page.",
     "stayLoggedIn": "Stay logged in",

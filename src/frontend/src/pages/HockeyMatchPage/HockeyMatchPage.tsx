@@ -15,6 +15,7 @@ import { useAudience } from '../../context/AudienceContext';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
 import {
   hockeyStatusTranslationKey,
+  buildHockeyJerseyByCareerPlayerId,
   loadHockeyRosterNameMaps,
   loadTeamNameMap,
   mergeHockeyMatchFaceoffWins,
@@ -154,6 +155,7 @@ function HockeyMatchPage() {
             </div>
             <HockeyMatchEvents
               match={match}
+              teams={teams}
               homeName={homeName}
               awayName={awayName}
               playerNames={playerNames}
@@ -173,6 +175,7 @@ function HockeyMatchPage() {
               homeTeamId={match.homeTeamId}
               awayTeamId={match.awayTeamId}
               playerNames={careerPlayerNames}
+              jerseyByPlayerId={buildHockeyJerseyByCareerPlayerId(match, teams)}
             />
           )}
         </div>

@@ -20,6 +20,7 @@ public abstract class HockeyCompetition : BaseEntity
     public HockeyCompetitionType CompetitionType { get; protected set; }
     public HockeyCompetitionStatus Status { get; protected set; }
     public TeamCategory TeamCategory { get; protected set; }
+    public Uri? LogoUrl { get; protected set; }
     public bool IsActive => Status == HockeyCompetitionStatus.Active;
     public bool IsCompleted => Status == HockeyCompetitionStatus.Completed;
     public HockeyCompetitionRules CompetitionRules { get; protected set; } = null!;
@@ -107,6 +108,11 @@ public abstract class HockeyCompetition : BaseEntity
     {
         EnsureMutable();
         TeamCategory = teamCategory;
+    }
+
+    public void UpdateLogo(Uri? logoUrl)
+    {
+        LogoUrl = ValidateLogoUrl(logoUrl);
     }
 
     public void Publish()
@@ -427,5 +433,27 @@ public abstract class HockeyCompetition : BaseEntity
     {
         if (endDate < startDate)
             throw new ArgumentException("End date cannot be before start date.", nameof(endDate));
+    }
+
+    private static Uri? ValidateLogoUrl(Uri? logoUrl)
+    {
+        if (logoUrl is null)
+        {
+            return null;
+        }
+
+        if (!logoUrl.IsAbsoluteUri
+            || (logoUrl.Scheme != Uri.UriSchemeHttp && logoUrl.Scheme != Uri.UriSchemeHttps)
+            || string.IsNullOrWhiteSpace(logoUrl.Host))
+        {
+            throw new ArgumentException("Logo url must be an http or https address", nameof(logoUrl));
+        }
+
+        if (logoUrl.OriginalString.Length > 500)
+        {
+            throw new ArgumentException("Logo url cannot exceed 500 characters", nameof(logoUrl));
+        }
+
+        return logoUrl;
     }
 }

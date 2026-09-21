@@ -42,6 +42,11 @@ public abstract class FloorballCompetition : BaseEntity
     public TeamCategory TeamCategory { get; protected set; }
 
     /// <summary>
+    /// Optional public logo URL for the season or tournament hero.
+    /// </summary>
+    public Uri? LogoUrl { get; protected set; }
+
+    /// <summary>
     /// Gets the teams participating in this competition
     /// </summary>
     public IReadOnlyCollection<FloorballTeam> Teams => _teams.AsReadOnly();
@@ -150,6 +155,14 @@ public abstract class FloorballCompetition : BaseEntity
     }
 
     /// <summary>
+    /// Sets or clears the competition logo URL.
+    /// </summary>
+    public void UpdateLogo(Uri? logoUrl)
+    {
+        LogoUrl = ValidateLogoUrl(logoUrl);
+    }
+
+    /// <summary>
     /// Updates the audience / age-group category for this competition.
     /// </summary>
     public void UpdateTeamCategory(TeamCategory teamCategory)
@@ -231,5 +244,27 @@ public abstract class FloorballCompetition : BaseEntity
         if (_matches.Contains(match))
             return;
         _matches.Add(match);
+    }
+
+    private static Uri? ValidateLogoUrl(Uri? logoUrl)
+    {
+        if (logoUrl is null)
+        {
+            return null;
+        }
+
+        if (!logoUrl.IsAbsoluteUri
+            || (logoUrl.Scheme != Uri.UriSchemeHttp && logoUrl.Scheme != Uri.UriSchemeHttps)
+            || string.IsNullOrWhiteSpace(logoUrl.Host))
+        {
+            throw new ArgumentException("Logo url must be an http or https address", nameof(logoUrl));
+        }
+
+        if (logoUrl.OriginalString.Length > 500)
+        {
+            throw new ArgumentException("Logo url cannot exceed 500 characters", nameof(logoUrl));
+        }
+
+        return logoUrl;
     }
 }

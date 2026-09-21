@@ -86,7 +86,7 @@ function TeamPlayersRow({ isExpanded, isClosing, team }: TeamPlayersRowProps) {
                         key={player.id}
                         className={`admin-roster-player ${!player.isActive ? 'inactive' : ''}`}
                       >
-                        <span className="col-jersey">{player.jerseyNumber ?? '?'}</span>
+                        <span className="col-jersey">{player.jerseyNumber ?? '—'}</span>
                         <span className="col-name">
                           <PlayerLink sport="hockey" playerId={player.playerId}>
                             {playerNames.get(player.playerId) ?? player.playerId.slice(0, 8)}

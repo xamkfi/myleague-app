@@ -18,4 +18,5 @@ public record FootballSeasonDto(
     IReadOnlyCollection<FootballMatchDto> Matches,
     FootballMatchRulesDto MatchRules,
     FootballStandingRulesDto StandingRules,
-    TeamCategory TeamCategory);
+    TeamCategory TeamCategory,
+    string? LogoUrl);

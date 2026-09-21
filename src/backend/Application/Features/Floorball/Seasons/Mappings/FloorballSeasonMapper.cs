@@ -5,6 +5,7 @@ using Application.Features.Floorball.Players.DTOs;
 using Application.Features.Floorball.Referees.DTOs;
 using Application.Features.Floorball.TeamManagers.DTOs;
 using Application.Features.Floorball.Statistics.DTOs;
+using Application.Common;
 using Application.Features.Floorball.Seasons.Commands;
 using Application.Features.Floorball.Seasons.Mappings;
 using Application.Features.Floorball.Matches.Mappings;
@@ -96,7 +97,8 @@ public static class FloorballSeasonMapper
             FloorballTeamMapper.ToDtos(teamsToMap, clubs, new Dictionary<Guid, Person>()).ToList().AsReadOnly(),
             FloorballMatchMapper.ToDtos(matchesToMap).ToList().AsReadOnly(),
             matchRulesDto,
-            season.TeamCategory
+            season.TeamCategory,
+            CompetitionLogoUrl.ToPublicString(season.LogoUrl)
         );
     }
 
@@ -136,13 +138,15 @@ public static class FloorballSeasonMapper
             command.OvertimeDurationMinutes,
             command.AllowShootout);
 
-        return new FloorballSeason(
+        FloorballSeason season = new FloorballSeason(
          command.Name,
          startDateUtc,
          endDateUtc,
          matchRules,
          command.TeamCategory
      );
+        season.UpdateLogo(CompetitionLogoUrl.Parse(command.LogoUrl));
+        return season;
     }
 
     /// <summary>
@@ -194,5 +198,7 @@ public static class FloorballSeasonMapper
         {
             season.UpdateTeamCategory(command.TeamCategory.Value);
         }
+
+        season.UpdateLogo(CompetitionLogoUrl.Parse(command.LogoUrl));
     }
 } 

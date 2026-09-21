@@ -1,6 +1,5 @@
 import React from 'react';
 import './MatchRow.scss';
-import ResultUnknown from '../MatchResultIcons/ResultUnknown';
 import { formatMatchDateTime } from '../../utils/helpers';
 import { FloorballMatchStatus } from '../../types/floorball/floorballTypes';
 import { useNavigate } from 'react-router-dom';
@@ -149,7 +148,7 @@ export default function MatchRow({
 
       {/* Match status */}
       <div className="match-row-status">
-        {statusComponent || <ResultUnknown />}
+        {statusComponent}
       </div>
     </div>
   );

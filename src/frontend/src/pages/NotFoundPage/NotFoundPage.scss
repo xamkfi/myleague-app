@@ -1,0 +1,40 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.not-found-page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: map.get($spacing, 'xl') map.get($spacing, 'md');
+  text-align: center;
+  color: $color-blue-deep;
+
+  &__code {
+    margin: 0;
+    font-family: $font-family-display;
+    font-size: map.get($font-sizes, 'xxl');
+    font-weight: map.get($font-weights, 'extrabold');
+    letter-spacing: 0.08em;
+  }
+
+  &__title {
+    margin: map.get($spacing, 'sm') 0;
+    font-size: map.get($font-sizes, 'xl');
+  }
+
+  &__text {
+    margin: 0 0 map.get($spacing, 'lg');
+    color: $color-neutral-dark-grey;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    border-radius: map.get($border-radius, 'lg');
+    background: $color-banner-bg;
+    color: $color-white;
+    text-decoration: none;
+    font-weight: map.get($font-weights, 'bold');
+  }
+}

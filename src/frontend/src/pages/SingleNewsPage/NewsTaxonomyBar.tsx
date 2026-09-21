@@ -5,6 +5,7 @@ import { newsListUrl, formatNewsTagLabel } from '../NewsPage/newsListFilters';
 import type { RelatedNewsTeam } from './extractRelatedNewsTeams';
 import { SportsCategory } from '../../types/common/sports';
 import SportIcon from '../../components/SportIcon/SportIcon';
+import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 
 type NewsTaxonomyBarProps = {
   sportCategory?: string;
@@ -23,13 +24,14 @@ function sportLabelKey(sport: string): string {
 
 function NewsTeamLogo({ team }: { team: RelatedNewsTeam }) {
   const [failed, setFailed] = useState(false);
-  const hasLogo = Boolean(team.logoUrl?.trim()) && !failed;
+  const logoUrl = resolveLogoUrl(team.logoUrl);
+  const hasLogo = Boolean(logoUrl) && !failed;
 
   return (
     <span className="news-taxonomy-bar__team" title={team.name}>
       {hasLogo ? (
         <img
-          src={team.logoUrl}
+          src={logoUrl}
           alt={team.name}
           className="news-taxonomy-bar__team-logo"
           onError={() => setFailed(true)}

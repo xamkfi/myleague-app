@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Floorball.Tournaments.Commands;
 using FluentValidation;
 using System;
@@ -54,6 +55,10 @@ public class UpdateFloorballTournamentCommandValidator : AbstractValidator<Updat
         RuleFor(x => x.TeamsAdvancingPerGroup)
             .InclusiveBetween(1, 8).WithMessage("Teams advancing per group must be between 1 and 8")
             .When(x => x.HasPlayoffStage);
+
+        RuleFor(x => x.LogoUrl)
+            .Must(CompetitionLogoUrl.IsValidOptional)
+            .WithMessage("Logo url must be an http or https address under 500 characters");
     }
 
     private bool BeValidDate(DateTime date)

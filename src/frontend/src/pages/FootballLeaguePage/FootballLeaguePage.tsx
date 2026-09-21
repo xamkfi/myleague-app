@@ -7,7 +7,8 @@ import ResultsSection from './components/ResultsSection';
 import FixturesSection from './components/FixturesSection';
 import SummarySection from './components/SummarySection';
 import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
-import { footballSeasonService } from '../../api/football/footballSeasonService';
+import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
+import { footballSeasonService, type FootballSeasonDto } from '../../api/football/footballSeasonService';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { footballStatisticsService, type FootballSeasonStatisticsSummaryDto } from '../../api/football/footballStatistics';
 import { footballMatchService } from '../../api/football/footballMatchService';
@@ -63,6 +64,7 @@ export default function FootballLeaguePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
+  const [season, setSeason] = useState<FootballSeasonDto | null>(null);
 
   // State for matches data
   const [matches, setMatches] = useState<FootballMatchDto[] | null>(null);
@@ -91,6 +93,31 @@ export default function FootballLeaguePage() {
 
     fetchSeasonData();
   }, [id, t]);
+
+  useEffect(() => {
+    if (!id) {
+      setSeason(null);
+      return;
+    }
+
+    let cancelled = false;
+    footballSeasonService
+      .getById(id)
+      .then((result) => {
+        if (!cancelled) {
+          setSeason(result.data ?? null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSeason(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   useEffect(() => {
     if (!id) {
@@ -210,38 +237,25 @@ export default function FootballLeaguePage() {
   };
 
   return (
-    <PageTemplate title={id ? `${t('leaguePage.title')} ${id}` : t('leaguePage.defaultTitle')}>
+    <PageTemplate title={season?.name || seasonSummary?.seasonName || t('leaguePage.defaultTitle')}>
       <div className="league-page">
-        {/* Hero Image Background */}
-        <div className="hero-image-container">
-          <div className="hero-image"></div>
-          
-          {/* League Header */}
-          <div className="league-header">
-            <div className="header-content">
-              <div className="league-branding">
-                <div className="league-icon">
-                  <div className="trophy-icon">🏆</div>
-                </div>
-              </div>
-
-              <div className="league-info">
-                <h1 className="league-title">{seasonSummary?.seasonName || t('leaguePage.defaultTitle')}</h1>
-                <div className="league-tabs">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.key}
-                      className={`tab-button ${activeTab === tab.key ? 'active' : ''}`}
-                      onClick={() => handleTabChange(tab.key)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+        <CompetitionHero
+          title={season?.name || seasonSummary?.seasonName || t('leaguePage.defaultTitle')}
+          logoUrl={season?.logoUrl}
+        >
+          <div className="competition-hero__tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`competition-hero__tab ${activeTab === tab.key ? 'competition-hero__tab--active' : ''}`}
+                onClick={() => handleTabChange(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        </div>
+        </CompetitionHero>
         
         <div className="league-content">
           {renderTabContent()}

@@ -1,5 +1,30 @@
+.register-page {
+  width: 100%;
+}
+
+.register-page__hero {
+  background: var(--banner-bg, #1c356d);
+  color: #fff;
+  padding: 2.5rem 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.register-page__title {
+  margin: 0 0 0.75rem;
+  font-size: 2rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.register-page__intro {
+  margin: 0 auto;
+  max-width: 40rem;
+}
+
 .register-container {
   max-width: 600px;
+  margin: 0 auto 3rem;
+  padding: 0 1rem;
 }
 
 .register-intro {

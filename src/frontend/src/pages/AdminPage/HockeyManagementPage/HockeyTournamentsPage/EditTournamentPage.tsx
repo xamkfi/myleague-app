@@ -48,6 +48,7 @@ function EditHockeyTournamentPage() {
   const [clubNames, setClubNames] = useState<Map<string, string>>(new Map());
   const [matches, setMatches] = useState<HockeyMatchDto[]>([]);
   const [name, setName] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [venue, setVenue] = useState('');
@@ -80,6 +81,7 @@ function EditHockeyTournamentPage() {
     setClubNames(clubs);
     setMatches(matchList);
     setName(loaded.name);
+    setLogoUrl(loaded.logoUrl ?? '');
     setStartDate(loaded.startDate.slice(0, 10));
     setEndDate(loaded.endDate.slice(0, 10));
     setVenue(loaded.venue ?? '');
@@ -219,6 +221,7 @@ function EditHockeyTournamentPage() {
                   endDate: new Date(endDate).toISOString(),
                   venue: venue || undefined,
                   teamCategory: competitionCategory,
+                  logoUrl: logoUrl || null,
                 }), t('hockey.tournaments.updated', 'Tournament updated successfully!'));
               }}
             >
@@ -228,6 +231,10 @@ function EditHockeyTournamentPage() {
                 <div className="form-group">
                   <label htmlFor="name">{t('hockey.tournaments.fields.name', 'Name')} *</label>
                   <input id="name" value={name} onChange={(event) => setName(event.target.value)} required disabled={saving} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="logoUrl">{t('competition.logoUrl', 'Logo URL')}</label>
+                  <input id="logoUrl" type="url" value={logoUrl} onChange={(event) => setLogoUrl(event.target.value)} disabled={saving} placeholder="https://" />
                 </div>
                 <div className="form-group">
                   <label htmlFor="venue">{t('hockey.tournaments.venue', 'Venue')}</label>

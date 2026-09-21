@@ -26,4 +26,5 @@ public record CreateFootballSeasonCommand(
     int WinPoints = 3,
     int DrawPoints = 1,
     int LossPoints = 0,
-    TeamCategory TeamCategory = TeamCategory.Adult) : IRequest<Result<FootballSeasonDto>>;
+    TeamCategory TeamCategory = TeamCategory.Adult,
+    string? LogoUrl = null) : IRequest<Result<FootballSeasonDto>>;

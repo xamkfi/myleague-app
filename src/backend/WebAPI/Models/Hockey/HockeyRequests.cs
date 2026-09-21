@@ -43,6 +43,12 @@ public class CreateHockeySeasonRequest
     /// Audience / age-group category (Adult, Youth, Women).
     /// </summary>
     public TeamCategory TeamCategory { get; set; } = TeamCategory.Adult;
+
+    /// <summary>
+    /// Optional public logo URL for the season hero.
+    /// </summary>
+    [StringLength(500)]
+    public string? LogoUrl { get; set; }
 }
 
 /// <summary>
@@ -69,6 +75,10 @@ public class UpdateHockeySeasonRequest
 
     /// <summary>Audience / age-group category.</summary>
     public TeamCategory TeamCategory { get; set; } = TeamCategory.Adult;
+
+    /// <summary>Optional public logo URL for the season hero.</summary>
+    [StringLength(500)]
+    public string? LogoUrl { get; set; }
 }
 
 /// <summary>
@@ -180,6 +190,12 @@ public class CreateHockeyTournamentRequest
     /// Audience / age-group category (Adult, Youth, Women).
     /// </summary>
     public TeamCategory TeamCategory { get; set; } = TeamCategory.Adult;
+
+    /// <summary>
+    /// Optional public logo URL for the tournament hero.
+    /// </summary>
+    [StringLength(500)]
+    public string? LogoUrl { get; set; }
 }
 
 /// <summary>
@@ -587,6 +603,10 @@ public class UpdateHockeyTournamentRequest
 
     /// <summary>Audience / age-group category.</summary>
     public TeamCategory TeamCategory { get; set; } = TeamCategory.Adult;
+
+    /// <summary>Optional public logo URL for the tournament hero.</summary>
+    [StringLength(500)]
+    public string? LogoUrl { get; set; }
 }
 
 /// <summary>

@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Floorball.Tournaments.DTOs;
 using Application.Features.Floorball.Matches.DTOs;
 using Domain.Entities.Floorball;
@@ -53,7 +54,8 @@ public static class FloorballTournamentMapper
             teamCount,
             matchCount,
             playoffSlots,
-            tournament.TeamCategory);
+            tournament.TeamCategory,
+            CompetitionLogoUrl.ToPublicString(tournament.LogoUrl));
     }
 
     /// <summary>

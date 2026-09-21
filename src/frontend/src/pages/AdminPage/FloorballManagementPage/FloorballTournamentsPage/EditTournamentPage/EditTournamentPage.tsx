@@ -177,6 +177,7 @@ const EditTournamentPage = () => {
         teamsAdvancingPerGroup: data.tournamentRules?.teamsAdvancingPerGroup ?? 2,
         hasPlayoffStage: data.tournamentRules?.hasPlayoffStage ?? true,
         hasThirdPlaceMatch: data.tournamentRules?.hasThirdPlaceMatch ?? false,
+        logoUrl: data.logoUrl ?? '',
       });
     } catch {
       setError(t('floorball.tournaments.errors.loadFailed', 'Failed to load tournament'));
@@ -654,6 +655,10 @@ const EditTournamentPage = () => {
                   <div className="form-group">
                     <label htmlFor="edit-name">{t('floorball.tournaments.fields.name', 'Name')} *</label>
                     <input type="text" id="edit-name" name="name" value={formData.name} onChange={handleInputChange} required disabled={loading} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-logoUrl">{t('competition.logoUrl', 'Logo URL')}</label>
+                    <input type="url" id="edit-logoUrl" name="logoUrl" value={formData.logoUrl ?? ''} onChange={handleInputChange} disabled={loading} placeholder="https://" />
                   </div>
                   <div className="form-group">
                     <label htmlFor="edit-venue">{t('floorball.tournaments.fields.venue', 'Venue')}</label>

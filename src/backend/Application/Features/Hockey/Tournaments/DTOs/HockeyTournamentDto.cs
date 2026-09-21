@@ -38,4 +38,5 @@ public record HockeyTournamentDto(
     IReadOnlyCollection<HockeyTournamentGroupDto> Groups,
     IReadOnlyCollection<HockeyPlayoffSeriesDto> PlayoffSeries,
     HockeyTournamentRulesDto TournamentRules,
-    IReadOnlyCollection<HockeyPlayoffScheduleSlotDto> PlayoffSchedule);
+    IReadOnlyCollection<HockeyPlayoffScheduleSlotDto> PlayoffSchedule,
+    string? LogoUrl);
