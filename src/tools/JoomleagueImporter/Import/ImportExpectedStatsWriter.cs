@@ -18,10 +18,10 @@ public static class ImportExpectedStatsWriter
     }
 
     public static string ExpectedPath(string sport) =>
-        Path.Combine(ResolveReportsDirectory(), Path.GetFileName($"expected-{NormalizeSport(sport)}.json"));
+        Path.Join(ResolveReportsDirectory(), Path.GetFileName($"expected-{NormalizeSport(sport)}.json"));
 
     public static string ComparePath(string sport) =>
-        Path.Combine(ResolveReportsDirectory(), Path.GetFileName($"compare-{NormalizeSport(sport)}.json"));
+        Path.Join(ResolveReportsDirectory(), Path.GetFileName($"compare-{NormalizeSport(sport)}.json"));
 
     public static string WriteExpected(ImportExpectedReport report)
     {
