@@ -91,6 +91,16 @@ function LanguageToggle() {
         title={t(current.labelKey)}
       >
         <current.Flag />
+        <svg
+          className="language-toggle-caret"
+          viewBox="0 0 12 8"
+          width="12"
+          height="8"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M1 1.5 6 6.5l5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
 
       {isOpen && (

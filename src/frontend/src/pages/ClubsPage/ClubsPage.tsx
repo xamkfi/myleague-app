@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import CatalogPage from '../../components/CatalogPage/CatalogPage';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import { clubService, type Club } from '../../api/common/clubService';
 import { createClubSlug } from '../../utils/slugUtils';
@@ -58,17 +59,8 @@ function ClubsPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  return (
-    <PageTemplate title={t('clubsPage.title')}>
-      <div className="clubs-page">
-        {/* Hero Banner */}
-        <div className="clubs-page__hero">
-          <div className="clubs-page__hero-overlay" />
-          <div className="clubs-page__hero-content">
-            <h1 className="clubs-page__title">{t('clubsPage.title')}</h1>
-            <p className="clubs-page__description">{t('clubsPage.description')}</p>
-
-            <div className="clubs-page__search">
+  const search = (
+    <div className="clubs-page__search">
               <div className="clubs-page__search-icon" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" />
@@ -86,17 +78,22 @@ function ClubsPage() {
                 <button
                   className="clubs-page__search-clear"
                   onClick={() => setSearchQuery('')}
-                  aria-label="Clear search"
+                  aria-label={t('clubsPage.clearSearch')}
                 >
                   &times;
                 </button>
               )}
-            </div>
-          </div>
-        </div>
+    </div>
+  );
 
-        {/* Content */}
-        <div className="clubs-page__content">
+  return (
+    <PageTemplate title={t('clubsPage.title')} fullBleed>
+      <CatalogPage
+        title={t('clubsPage.title')}
+        description={t('clubsPage.description')}
+        bannerExtra={search}
+      >
+        <div className="clubs-page">
           {isLoading ? (
             <div className="clubs-page__loading">
               <LoadingSpinner text={t('clubsPage.loading')} />
@@ -188,7 +185,7 @@ function ClubsPage() {
             </>
           )}
         </div>
-      </div>
+      </CatalogPage>
     </PageTemplate>
   );
 }

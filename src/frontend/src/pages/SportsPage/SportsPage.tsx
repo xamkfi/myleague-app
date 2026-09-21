@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import CatalogPage from '../../components/CatalogPage/CatalogPage';
 import SportIcon, { type SportIconSport } from '../../components/SportIcon/SportIcon';
-import bannerImage from '../../assets/floorball-banner.png';
 import './SportsPage.scss';
 
 interface SportItem {
@@ -42,16 +42,7 @@ function SportsPage() {
 
   return (
     <PageTemplate title={t('nav.sports')} fullBleed>
-      <div className="sports-page">
-        <header className="sports-page__banner">
-          <img className="sports-page__banner-image" src={bannerImage} alt="" aria-hidden="true" />
-          <div className="sports-page__banner-content">
-            <h1 className="sports-page__title">{t('sportsPage.title')}</h1>
-            <p className="sports-page__description">{t('sportsPage.description')}</p>
-          </div>
-        </header>
-
-        <div className="sports-page__content">
+      <CatalogPage title={t('sportsPage.title')} description={t('sportsPage.description')}>
           <div className="sports-page__grid">
             {SPORTS.map((sport) => {
               const cardClass = sport.enabled
@@ -89,8 +80,7 @@ function SportsPage() {
               );
             })}
           </div>
-        </div>
-      </div>
+      </CatalogPage>
     </PageTemplate>
   );
 }

@@ -1,19 +1,18 @@
 @use 'sass:map';
 @use '@variables' as *;
 
-.sports-page__grid {
+.age-groups-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: map.get($spacing, 'md');
 }
 
-.sport-card {
+.age-group-card {
   display: flex;
   flex-direction: column;
   background: $color-white;
   border-radius: map.get($border-radius, 'lg-plus');
   overflow: hidden;
-  text-decoration: none;
   border: 1px solid $color-neutral-light-grey;
   box-shadow: $box-shadow-drop-1;
   @include transition(all);
@@ -24,36 +23,24 @@
     border-color: $color-blue-light;
   }
 
-  &:focus-visible {
-    outline: 2px solid $color-blue-secondary;
-    outline-offset: 2px;
+  &--selected {
+    border-color: $color-blue-deep;
   }
 
-  &--disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-
-  &__icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  &__band {
     height: 140px;
-    background: linear-gradient(
-      180deg,
-      $color-neutral-light-grey 0%,
-      rgba($color-neutral-light-grey, 0.3) 100%
-    );
-    padding: map.get($spacing, 'md');
   }
 
-  &:hover &__icon .sport-icon {
-    transform: scale(1.08);
+  &[data-audience-card='adult'] &__band {
+    background: #1c356d;
   }
 
-  &__icon .sport-icon {
-    @include transition(transform);
+  &[data-audience-card='youth'] &__band {
+    background: #4e8100;
+  }
+
+  &[data-audience-card='women'] &__band {
+    background: #dd1e84;
   }
 
   &__content {
@@ -82,44 +69,42 @@
     color: $color-neutral-dark-grey;
   }
 
-  &__link {
-    display: inline-block;
+  &__button {
+    align-self: flex-start;
+    border: none;
+    background: transparent;
+    padding: 0;
     color: $color-blue-secondary-muted;
+    font-family: $font-family-body;
     font-weight: map.get($font-weights, 'semibold');
     font-size: map.get($font-sizes, 'sm');
-    @include transition(color);
+    cursor: pointer;
 
-    .sport-card:hover & {
+    &:hover:not(:disabled) {
       color: $color-blue-deep;
     }
-  }
 
-  &__coming-soon {
-    display: inline-block;
-    background: $color-neutral-light-grey;
-    color: $color-neutral-dark-grey;
-    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
-    border-radius: map.get($border-radius, 'sm');
-    font-size: map.get($font-sizes, 'sm');
-    font-weight: map.get($font-weights, 'medium');
+    &:disabled {
+      cursor: default;
+      color: $color-blue-deep;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-blue-secondary;
+      outline-offset: 2px;
+    }
   }
 }
 
 @media (max-width: map.get($breakpoints, 'desktop')) {
-  .sports-page__grid {
+  .age-groups-grid {
     grid-template-columns: 1fr;
     max-width: 480px;
   }
 }
 
 @media (max-width: map.get($breakpoints, 'tablet')) {
-  .sport-card {
-    &__icon {
-      height: 112px;
-    }
-
-    &__content {
-      padding: map.get($spacing, 'md');
-    }
+  .age-group-card__band {
+    height: 112px;
   }
 }

@@ -347,8 +347,6 @@
     }
 
     &-brand .audience-switcher__trigger {
-      min-height: 28px;
-      padding: 0.3rem 0.65rem;
       font-size: map.get($font-sizes, 'sm-xs');
     }
     

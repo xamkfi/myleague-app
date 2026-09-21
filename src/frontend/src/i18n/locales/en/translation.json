@@ -2065,6 +2065,21 @@
     "football": "Football",
     "iceHockey": "Ice Hockey"
   },
+  "tournaments": {
+    "intro": "Browse upcoming, ongoing and finished tournaments. Open a tournament to see groups, the match schedule and statistics.",
+    "open": "Open tournament",
+    "loading": "Loading tournaments...",
+    "retry": "Try again",
+    "noTournaments": "No tournaments right now.",
+    "statusUpcoming": "Upcoming",
+    "statusOngoing": "Ongoing",
+    "statusPast": "Finished",
+    "dates": "Dates",
+    "venue": "Venue",
+    "teams": "Teams",
+    "groups": "Groups",
+    "cardDefaultDescription": "Browse the tournament groups, results and statistics."
+  },
   "sportsPage": {
     "title": "Sports",
     "description": "MAHL sports are divided into different sports categories. Select a sport to see leagues, matches, and statistics.",
@@ -2081,6 +2096,11 @@
     "youth": "Youth",
     "women": "Women",
     "intro": "Select an audience category to browse related content.",
+    "descriptions": {
+      "adult": "Leagues, matches and statistics for adults.",
+      "youth": "Leagues, matches and statistics for youth.",
+      "women": "Leagues, matches and statistics for women."
+    },
     "selected": "Selected",
     "select": "Select",
     "switcherLabel": "Audience switcher"
@@ -3187,6 +3207,7 @@
     "title": "Clubs",
     "description": "Browse and search MAHL league clubs.",
     "searchPlaceholder": "Search clubs...",
+    "clearSearch": "Clear search",
     "noClubs": "No clubs found",
     "viewClub": "View club",
     "loading": "Loading clubs...",

@@ -2073,6 +2073,21 @@
     "football": "Jalkapallo",
     "iceHockey": "Jääkiekko"
   },
+  "tournaments": {
+    "intro": "Selaa tulevia, käynnissä olevia ja päättyneitä turnauksia. Avaa turnaus nähdäksesi lohkot, otteluohjelman ja tilastot.",
+    "open": "Avaa turnaus",
+    "loading": "Ladataan turnauksia...",
+    "retry": "Yritä uudelleen",
+    "noTournaments": "Ei turnauksia tällä hetkellä.",
+    "statusUpcoming": "Tulossa",
+    "statusOngoing": "Käynnissä",
+    "statusPast": "Päättynyt",
+    "dates": "Päivämäärät",
+    "venue": "Paikka",
+    "teams": "Joukkueet",
+    "groups": "Lohkot",
+    "cardDefaultDescription": "Selaa turnauksen lohkoja, tuloksia ja tilastoja."
+  },
   "sportsPage": {
     "title": "Lajit",
     "description": "MAHL lajit jakaantuvat eri urheilulajeihin. Valitse laji nähdäksesi sarjat, ottelut ja tilastot.",
@@ -2089,6 +2104,11 @@
     "youth": "Nuoret",
     "women": "Naiset",
     "intro": "Valitse kohderyhmä nähdäksesi siihen liittyvät sisällöt.",
+    "descriptions": {
+      "adult": "Aikuisten sarjat, ottelut ja tilastot.",
+      "youth": "Nuorten sarjat, ottelut ja tilastot.",
+      "women": "Naisten sarjat, ottelut ja tilastot."
+    },
     "selected": "Valittu",
     "select": "Valitse",
     "switcherLabel": "Kohderyhmän valinta"
@@ -3175,6 +3195,7 @@
     "title": "Seurat",
     "description": "Selaa ja hae MAHL-liigan seuroja.",
     "searchPlaceholder": "Hae seuroja...",
+    "clearSearch": "Tyhjennä haku",
     "noClubs": "Seuroja ei löytynyt",
     "viewClub": "Katso seura",
     "loading": "Ladataan seuroja...",

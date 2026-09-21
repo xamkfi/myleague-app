@@ -1,8 +1,8 @@
 @use 'sass:map';
 @use '@variables' as *;
 
-// Audience (age group) selector shown directly under the MAHL wordmark. The trigger
-// always reveals the active group so the current theme colour is explained, not just shown.
+// Audience (age group) selector shown directly under the MAHL wordmark.
+// The trigger is the group name plus a white caret; colour dots stay in the menu.
 .audience-switcher {
   position: relative;
 
@@ -10,11 +10,11 @@
     display: inline-flex;
     align-items: center;
     gap: map.get($spacing, 'xs');
-    min-height: 32px;
-    padding: 0.4rem 0.85rem;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: map.get($border-radius, 'xl');
-    background: rgba(255, 255, 255, 0.16);
+    min-height: 0;
+    padding: 0;
+    border: none;
+    border-radius: map.get($border-radius, 'md');
+    background: transparent;
     color: $color-white;
     font-family: $font-family-body;
     font-size: map.get($font-sizes, 'sm');
@@ -24,10 +24,9 @@
     cursor: pointer;
     transition: background-color $transition-default, border-color $transition-default;
 
-    &:hover,
     &:focus-visible {
-      background: rgba(255, 255, 255, 0.24);
-      border-color: rgba(255, 255, 255, 0.7);
+      outline: 2px solid $color-white;
+      outline-offset: 3px;
     }
   }
 
@@ -59,6 +58,8 @@
   }
 
   &__caret {
+    flex-shrink: 0;
+    color: $color-white;
     transition: transform $transition-default;
   }
 
