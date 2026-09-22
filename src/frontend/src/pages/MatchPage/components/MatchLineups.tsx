@@ -99,8 +99,8 @@ export default function MatchLineups({ match }: { match: FloorballMatchDto }) {
                     return;
                 }
                 const [homeResponse, awayResponse] = await Promise.all([
-                    floorballTeamService.getById(match.homeTeamId),
-                    floorballTeamService.getById(match.awayTeamId),
+                    floorballTeamService.getById(match.homeTeamId, match.competitionId),
+                    floorballTeamService.getById(match.awayTeamId, match.competitionId),
                 ]);
                 if (cancelled) return;
                 setHomeLookup(buildRosterLookup(homeResponse.roster));
@@ -113,7 +113,7 @@ export default function MatchLineups({ match }: { match: FloorballMatchDto }) {
         return () => {
             cancelled = true;
         };
-    }, [match.homeTeamId, match.awayTeamId]);
+    }, [match.homeTeamId, match.awayTeamId, match.competitionId]);
 
     const homeActiveRoster: ActiveRosterEntry[] = useMemo(
         () => buildActiveRoster(match.homeActivePlayers ?? [], match.homeActiveGoalieId, homeLookup),

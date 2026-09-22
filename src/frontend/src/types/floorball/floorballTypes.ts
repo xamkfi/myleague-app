@@ -102,6 +102,7 @@ export interface FloorballTeam {
 export interface FloorballTeamNameResult {
   id: string;
   name: string;
+  divisionId?: string | null;
 }
 
 // API Response types

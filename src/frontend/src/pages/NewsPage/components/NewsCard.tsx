@@ -5,6 +5,7 @@ import { newsListUrl } from '../newsListFilters';
 import { SportsCategory } from '../../../types/common/sports';
 import { useTranslation } from 'react-i18next';
 import SportIcon from '../../../components/SportIcon/SportIcon';
+import TeamCategoryBadge from '../../../components/TeamCategoryBadge/TeamCategoryBadge';
 
 function sportLabelKey(sport: string): string {
   if (sport === SportsCategory.Floorball) return 'newsPage.sportCategory.floorball';
@@ -39,6 +40,9 @@ export default function NewsCard({ news }: { news: NewsArticleDto }) {
             </div>
             <div className="news-card-title">{news.title}</div>
             <div className="news-card-tags">
+              {news.teamCategory && (
+                <TeamCategoryBadge category={news.teamCategory} />
+              )}
               {news.sportCategory && (
                 <button
                   type="button"

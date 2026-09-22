@@ -21,6 +21,8 @@ using Domain.Entities.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Features.Floorball.Teams.Queries;
@@ -70,14 +72,13 @@ public class GetFloorballTeamByIdHandler : IRequestHandler<GetFloorballTeamByIdQ
         {
             _logger.LogInformation("Retrieving floorball team with ID: {TeamId}", request.Id);
             
-            FloorballTeam? team = await _teamRepository.GetByIdAsync(request.Id);
+            FloorballTeam? team = await _teamRepository.GetByIdAsync(request.Id, request.CompetitionId);
             if (team == null)
             {
                 _logger.LogWarning("Floorball team with ID {TeamId} not found", request.Id);
                 return Result<FloorballTeamDto>.NotFound("FloorballTeam", request.Id);
             }
 
-            // Load the club for the team
             Club? club = await _clubRepository.GetByIdAsync(team.ClubId);
             if (club == null)
             {
@@ -85,22 +86,23 @@ public class GetFloorballTeamByIdHandler : IRequestHandler<GetFloorballTeamByIdQ
                 return Result<FloorballTeamDto>.Failure("Associated club not found");
             }
 
-            //Load Person using player ids.
-            List<Guid> playerIds = team.Roster.Select(t => t.PlayerId).ToList();
+            List<Guid> playerIds = team.Roster.Select(row => row.PlayerId).Distinct().ToList();
             Dictionary<Guid, Person> playerPersons = new Dictionary<Guid, Person>();
 
-            if (playerIds.Any())
+            if (playerIds.Count > 0)
             {
-                foreach (Guid playerId in playerIds)
+                Dictionary<Guid, FloorballPlayer> players =
+                    await _floorballPlayerRepository.GetByIdsAsync(playerIds, cancellationToken);
+                List<Guid> personIds = players.Values.Select(player => player.PersonId).Distinct().ToList();
+                Dictionary<Guid, Person> personsById = personIds.Count == 0
+                    ? new Dictionary<Guid, Person>()
+                    : (await _personRepository.GetByIdsAsync(personIds)).ToDictionary(person => person.Id);
+
+                foreach (KeyValuePair<Guid, FloorballPlayer> pair in players)
                 {
-                    FloorballPlayer? floorballPlayer = await _floorballPlayerRepository.GetByIdAsync(playerId);
-                    if (floorballPlayer != null)
+                    if (personsById.TryGetValue(pair.Value.PersonId, out Person? person))
                     {
-                        Person? person = await _personRepository.GetByIdAsync(floorballPlayer.PersonId);
-                        if (person != null)
-                        {
-                            playerPersons[playerId] = person;
-                        }
+                        playerPersons[pair.Key] = person;
                     }
                 }
             }
@@ -110,9 +112,18 @@ public class GetFloorballTeamByIdHandler : IRequestHandler<GetFloorballTeamByIdQ
 
             return Result<FloorballTeamDto>.Success(teamDto);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (InvalidOperationException ex)
         {
             _logger.LogError(ex, "Error occurred while retrieving floorball team: {TeamId}", request.Id);
+            return Result<FloorballTeamDto>.Failure("An error occurred while retrieving the floorball team.");
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Invalid floorball team query: {TeamId}", request.Id);
             return Result<FloorballTeamDto>.Failure("An error occurred while retrieving the floorball team.");
         }
     }

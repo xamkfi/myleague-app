@@ -30,6 +30,17 @@
     }
   }
 
+  .create-player-hint {
+    margin: 0 0 1.5rem;
+    font-size: 0.875rem;
+    color: $color-neutral-dark-grey;
+
+    a {
+      color: $color-blue-deep;
+      text-decoration: underline;
+    }
+  }
+
   .add-player-roster-loading {
     display: flex;
     justify-content: center;

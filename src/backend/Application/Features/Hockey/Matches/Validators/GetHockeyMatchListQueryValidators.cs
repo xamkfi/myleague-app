@@ -48,3 +48,31 @@ public class GetPagedHockeyMatchesQueryValidator : AbstractValidator<GetPagedHoc
         return $"Page size must be 0 (use default) or between {settings.MinPageSize} and {settings.MaxPageSize}";
     }
 }
+
+public class GetHockeyMatchesQueryValidator : AbstractValidator<GetHockeyMatchesQuery>
+{
+    private readonly IPaginationService _paginationService;
+
+    public GetHockeyMatchesQueryValidator(IPaginationService paginationService)
+    {
+        _paginationService = paginationService;
+
+        RuleFor(x => x.Page)
+            .GreaterThan(0).WithMessage("Page must be greater than 0");
+
+        RuleFor(x => x.PageSize)
+            .Must(pageSize => _paginationService.IsValidPageSize(GetHockeyMatchesQuery.ResourceKey, pageSize))
+            .WithMessage(GetPageSizeErrorMessage());
+
+        RuleFor(x => x.SortOrder)
+            .Must(order => string.Equals(order, "asc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(order, "desc", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("Sort order must be asc or desc.");
+    }
+
+    private string GetPageSizeErrorMessage()
+    {
+        PaginationSettings settings = _paginationService.GetPaginationSettings(GetHockeyMatchesQuery.ResourceKey);
+        return $"Page size must be 0 (use default) or between {settings.MinPageSize} and {settings.MaxPageSize}";
+    }
+}

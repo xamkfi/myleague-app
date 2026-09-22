@@ -42,8 +42,8 @@ export default function MatchEvents({ match }: MatchEventsProps) {
         }
 
         const [homeResponse, awayResponse] = await Promise.all([
-          floorballTeamService.getById(match.homeTeamId),
-          floorballTeamService.getById(match.awayTeamId),
+          floorballTeamService.getById(match.homeTeamId, match.competitionId),
+          floorballTeamService.getById(match.awayTeamId, match.competitionId),
         ]);
         if (cancelled) return;
         setHomeRoster(homeResponse.roster ?? []);
@@ -56,7 +56,7 @@ export default function MatchEvents({ match }: MatchEventsProps) {
     return () => {
       cancelled = true;
     };
-  }, [match.homeTeamId, match.awayTeamId]);
+  }, [match.homeTeamId, match.awayTeamId, match.competitionId]);
 
   // Yksittäinen lookup-taulu kaikille pelaajille → paitanumero. Sama playerId voi olla
   // korkeintaan yhdessä rosterissa, joten yhdistäminen on turvallista.

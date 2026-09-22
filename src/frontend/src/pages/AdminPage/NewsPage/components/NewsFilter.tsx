@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import TeamCategoryFilter from '../../../../components/TeamCategoryFilter/TeamCategoryFilter';
 import './NewsFilter.scss';
 import { NEWS_CATEGORY_OPTIONS, NEWS_SPORT_CATEGORY_OPTIONS } from '../Utils/NewsFilterContstants';
+import { newsCategoryLabel, newsSportLabel } from '../Utils/newsTaxonomyLabels';
 
 export type NewsFilters = {
   category: string;
@@ -45,7 +46,7 @@ export default function NewsFilter({ filters, onFiltersChange, onClearFilters }:
             <option value="">{t('admin.news.filter.allCategories', 'All Categories')}</option>
             {NEWS_CATEGORY_OPTIONS.map((category) => (
                 <option key={category} value={category}>
-                  {category}
+                  {newsCategoryLabel(t, category)}
                 </option>
               ))}
           </select>
@@ -63,7 +64,7 @@ export default function NewsFilter({ filters, onFiltersChange, onClearFilters }:
             <option value="">{t('admin.news.filter.allSports', 'All Sports')}</option>
             {NEWS_SPORT_CATEGORY_OPTIONS.map((sport) => (
                 <option key={sport} value={sport}>
-                  {sport}
+                  {newsSportLabel(t, sport)}
                 </option>
               ))}
           </select>

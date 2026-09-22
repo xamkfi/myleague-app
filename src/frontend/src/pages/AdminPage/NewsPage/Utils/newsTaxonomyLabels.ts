@@ -1,0 +1,22 @@
+import type { TFunction } from 'i18next';
+import { TEAM_CATEGORY_META } from '../../../../components/TeamCategoryBadge/teamCategoryMeta';
+
+const SPORT_I18N_KEYS: Record<string, string> = {
+  Floorball: 'newsPage.sportCategory.floorball',
+  Icehockey: 'newsPage.sportCategory.hockey',
+  Football: 'newsPage.sportCategory.football',
+};
+
+export function newsCategoryLabel(t: TFunction, value: string): string {
+  return t(`newsPage.categoryValues.${value}`, value);
+}
+
+export function newsSportLabel(t: TFunction, value: string): string {
+  const key = SPORT_I18N_KEYS[value];
+  return key ? t(key, value) : value;
+}
+
+export function newsAudienceLabel(t: TFunction, value: string): string {
+  const meta = TEAM_CATEGORY_META[value];
+  return meta ? t(meta.i18nKey, value) : value;
+}

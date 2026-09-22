@@ -10,8 +10,9 @@ import './TournamentsPage.scss';
 
 type LifecycleStatus = 'upcoming' | 'ongoing' | 'past';
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('fi-FI', {
+function formatDate(iso: string, language: string): string {
+  const locale = language.toLowerCase().startsWith('fi') ? 'fi-FI' : 'en-GB';
+  return new Date(iso).toLocaleDateString(locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -54,7 +55,7 @@ function truncate(text: string, max: number): string {
 }
 
 function TournamentsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { audience } = useAudience();
 
   const [tournaments, setTournaments] = useState<FloorballTournamentDto[]>([]);
@@ -91,14 +92,14 @@ function TournamentsPage() {
   }, [fetchTournaments]);
 
   const lifecycleLabels: Record<LifecycleStatus, string> = {
-    upcoming: t('tournaments.statusUpcoming', 'Tulossa'),
-    ongoing: t('tournaments.statusOngoing', 'Käynnissä'),
-    past: t('tournaments.statusPast', 'Päättynyt'),
+    upcoming: t('tournaments.statusUpcoming'),
+    ongoing: t('tournaments.statusOngoing'),
+    past: t('tournaments.statusPast'),
   };
 
   const renderTournamentCard = (tournament: FloorballTournamentDto) => {
     const lifecycle = getLifecycleStatus(tournament);
-    const description = truncate(htmlToPlainText(tournament.contentHtml) || t('tournaments.cardDefaultDescription', 'Selaa turnauksen lohkoja, tuloksia ja tilastoja.'), 220);
+    const description = truncate(htmlToPlainText(tournament.contentHtml) || t('tournaments.cardDefaultDescription'), 220);
 
     return (
       <div key={tournament.id} className="tournament-card">
@@ -111,23 +112,23 @@ function TournamentsPage() {
 
         <div className="tournament-card__meta">
           <div className="tournament-card__meta-row">
-            <span className="tournament-card__meta-label">{t('tournaments.dates', 'Päivämäärät')}</span>
+            <span className="tournament-card__meta-label">{t('tournaments.dates')}</span>
             <span className="tournament-card__meta-value">
-              {formatDate(tournament.startDate)} – {formatDate(tournament.endDate)}
+              {formatDate(tournament.startDate, i18n.language)} – {formatDate(tournament.endDate, i18n.language)}
             </span>
           </div>
           {tournament.venue && (
             <div className="tournament-card__meta-row">
-              <span className="tournament-card__meta-label">{t('tournaments.venue', 'Paikka')}</span>
+              <span className="tournament-card__meta-label">{t('tournaments.venue')}</span>
               <span className="tournament-card__meta-value">{tournament.venue}</span>
             </div>
           )}
           <div className="tournament-card__meta-row">
-            <span className="tournament-card__meta-label">{t('tournaments.teams', 'Joukkueet')}</span>
+            <span className="tournament-card__meta-label">{t('tournaments.teams')}</span>
             <span className="tournament-card__meta-value">
               {tournament.teamCount}
               <span className="tournament-card__meta-separator"> · </span>
-              <span className="tournament-card__meta-label">{t('tournaments.groups', 'Lohkot')}</span>
+              <span className="tournament-card__meta-label">{t('tournaments.groups')}</span>
               <span className="tournament-card__meta-value-secondary">{tournament.groups.length}</span>
             </span>
           </div>
@@ -139,19 +140,19 @@ function TournamentsPage() {
 
         <nav className="tournament-card__links" aria-label={tournament.name}>
           <Link to={`/tournaments/${tournament.id}?tab=summary`} className="tournament-card__link">
-            {t('tournaments.tabSummary', 'Yhteenveto')}
+            {t('tournaments.tabSummary')}
           </Link>
           <Link to={`/tournaments/${tournament.id}?tab=groups`} className="tournament-card__link">
-            {t('tournaments.tabGroups', 'Lohkot')}
+            {t('tournaments.tabGroups')}
           </Link>
           <Link to={`/tournaments/${tournament.id}?tab=fixtures`} className="tournament-card__link">
-            {t('tournaments.tabFixtures', 'Otteluohjelma')}
+            {t('tournaments.tabFixtures')}
           </Link>
           <Link to={`/tournaments/${tournament.id}?tab=results`} className="tournament-card__link">
-            {t('tournaments.tabResults', 'Tulokset')}
+            {t('tournaments.tabResults')}
           </Link>
           <Link to={`/tournaments/${tournament.id}?tab=statistics`} className="tournament-card__link">
-            {t('tournaments.tabStatistics', 'Tilastot')}
+            {t('tournaments.tabStatistics')}
           </Link>
         </nav>
       </div>
@@ -163,7 +164,7 @@ function TournamentsPage() {
       <PageTemplate title={t('nav.tournaments')}>
         <div className="tournaments-page">
           <div className="tournaments-page__loading">
-            <LoadingSpinner variant="light" text={t('tournaments.loading', 'Ladataan turnauksia...')} />
+            <LoadingSpinner variant="light" text={t('tournaments.loading')} />
           </div>
         </div>
       </PageTemplate>
@@ -177,7 +178,7 @@ function TournamentsPage() {
           <div className="tournaments-page__error">
             <p>{error}</p>
             <button onClick={fetchTournaments} className="tournaments-page__retry-btn">
-              {t('tournaments.retry', 'Yritä uudelleen')}
+              {t('tournaments.retry')}
             </button>
           </div>
         </div>
@@ -191,13 +192,13 @@ function TournamentsPage() {
         <div className="tournaments-page__header">
           <h1 className="tournaments-page__title">{t('nav.tournaments')}</h1>
           <p className="tournaments-page__description">
-            {t('tournaments.intro', 'Selaa tulevia, käynnissä olevia ja päättyneitä turnauksia. Avaa turnaus nähdäksesi lohkot, otteluohjelman ja tilastot.')}
+            {t('tournaments.intro')}
           </p>
         </div>
 
         {tournaments.length === 0 ? (
           <div className="tournaments-page__empty">
-            <p>{t('tournaments.noTournaments', 'Ei turnauksia tällä hetkellä.')}</p>
+            <p>{t('tournaments.noTournaments')}</p>
           </div>
         ) : (
           <div className="tournaments-page__list">

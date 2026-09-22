@@ -32,39 +32,6 @@ function pickSeasonForDivision(seasons: FloorballSeasonDto[], divisionId: string
     .sort((left, right) => new Date(right.startDate).getTime() - new Date(left.startDate).getTime())[0] ?? null;
 }
 
-async function getCurrentSeason(divisionId: string): Promise<FloorballSeasonDto | null> {
-  try {
-    const [activeSeasonsResponse, allSeasonsResponse] = await Promise.all([
-      floorballSeasonService.getActive(),
-      floorballSeasonService.getAll(),
-    ]);
-
-    return pickSeasonForDivision(activeSeasonsResponse.data ?? [], divisionId)
-      ?? pickSeasonForDivision(allSeasonsResponse.data ?? [], divisionId);
-  } catch (error) {
-    console.error('Error fetching current season:', error);
-    return null;
-  }
-}
-
-async function resolveSeason(
-  divisionId: string,
-  requestedSeasonId: string | null,
-): Promise<FloorballSeasonDto | null> {
-  if (isGuid(requestedSeasonId)) {
-    try {
-      const requested = await floorballSeasonService.getById(requestedSeasonId);
-      if (requested.data) {
-        return requested.data;
-      }
-    } catch {
-      // Fall back to the current division season when the query id is stale.
-    }
-  }
-
-  return getCurrentSeason(divisionId);
-}
-
 function FloorballTeamPage() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
@@ -103,27 +70,21 @@ function FloorballTeamPage() {
         setLoading(true);
 
         // Fetch all teams to enable slug resolution
-        const teamsResponse = await floorballTeamNameSearchService.getTeamNames("");
+        const [teamsResponse, activeSeasonsResponse, allSeasonsResponse] = await Promise.all([
+          floorballTeamNameSearchService.getTeamNames(""),
+          floorballSeasonService.getActive().catch(() => ({ data: [] as FloorballSeasonDto[] })),
+          floorballSeasonService.getAll().catch(() => ({ data: [] as FloorballSeasonDto[] })),
+        ]);
         const allTeams = teamsResponse.data || [];
-        
-        // Find team by slug
         const foundTeam = findTeamBySlug(allTeams, slug);
 
         if (foundTeam) {
-          const teamResponse = await floorballTeamService.getById(foundTeam.id);
-
-          if (teamResponse.divisionId) {
-            const currentSeasonData = await resolveSeason(teamResponse.divisionId, requestedSeasonId);
-            setCurrentSeason(currentSeasonData);
-            setTeam(
-              currentSeasonData
-                ? await floorballTeamService.getById(foundTeam.id, currentSeasonData.id)
-                : teamResponse,
-            );
-          } else {
-            setCurrentSeason(null);
-            setTeam(teamResponse);
-          }
+          const currentSeasonData = foundTeam.divisionId
+            ? pickSeasonForDivision(activeSeasonsResponse.data ?? [], foundTeam.divisionId)
+              ?? pickSeasonForDivision(allSeasonsResponse.data ?? [], foundTeam.divisionId)
+            : null;
+          setCurrentSeason(currentSeasonData);
+          setTeam(await floorballTeamService.getById(foundTeam.id, currentSeasonData?.id));
         } else {
           setError('Team not found');
         }

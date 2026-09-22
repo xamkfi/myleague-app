@@ -7,6 +7,7 @@ import MatchesList from '../../components/MatchesList/MatchesList';
 import PlannedPlayoffSchedule from '../../components/PlannedPlayoffSchedule';
 import TournamentGroupStandingsTable from '../../components/TournamentGroupStandingsTable/TournamentGroupStandingsTable';
 import TournamentBracket from '../../components/TournamentBracket/TournamentBracket';
+import { isNotFoundError } from '../../api/utils/isNotFoundError';
 import { floorballTournamentService } from '../../api/floorball/floorballTournamentService';
 import {
   floorballStatisticsService,
@@ -33,18 +34,6 @@ type TabType = 'summary' | 'groups' | 'playoffs' | 'statistics' | 'results' | 'f
 const VALID_TABS: TabType[] = ['summary', 'groups', 'playoffs', 'statistics', 'results', 'fixtures'];
 
 type LifecycleStatus = 'upcoming' | 'ongoing' | 'past';
-
-const NOT_FOUND_PATTERNS = [
-  'was not found',
-  'season statistics with key',
-  'no statistics found'
-];
-
-function isNotFoundError(message: string | null | undefined): boolean {
-  if (!message) return false;
-  const lower = message.toLowerCase();
-  return NOT_FOUND_PATTERNS.some((pattern) => lower.includes(pattern));
-}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('fi-FI', {
@@ -178,7 +167,7 @@ function TournamentPage() {
       } catch (err) {
         if (!cancelled) {
           const message = err instanceof Error ? err.message : 'Failed to load statistics';
-          if (isNotFoundError(message)) {
+          if (isNotFoundError(err)) {
             // Tournament has no completed matches yet — that's an expected empty state, not an error.
             setStatsSummary(null);
             setStatsError(null);

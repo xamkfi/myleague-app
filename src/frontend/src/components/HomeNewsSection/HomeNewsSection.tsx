@@ -89,7 +89,7 @@ function HomeNewsSection() {
           {t('homePage.newsSection.title', 'Ajankohtaista')}
         </h2>
         <div className="home-news-section__empty">
-          <p>{t('homePage.newsSection.noNews', 'Ei uutisia saatavilla')}</p>
+          <p>{t('homePage.newsSection.noNewsForAudience', { audience: t(audience.i18nKey) })}</p>
         </div>
       </div>
     );

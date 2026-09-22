@@ -24,20 +24,7 @@ function CreateHockeyTeamPage() {
     teamCategory: 'Adult',
   });
 
-  const searchClubs = async (query: string, page: number) => {
-    const response = await clubService.getPaged(page, 50);
-    const needle = query.trim().toLowerCase();
-    const clubs = needle
-      ? response.data.filter((club) => club.name.toLowerCase().includes(needle))
-      : response.data;
-    return {
-      data: clubs.map((club) => ({ id: club.id, name: club.name })),
-      pagination: {
-        hasNextPage: response.pagination.hasNextPage && !needle,
-        totalCount: needle ? clubs.length : response.pagination.totalCount,
-      },
-    };
-  };
+  const searchClubs = (query: string, page: number) => clubService.searchForDropdown(query, page);
 
   const setField = (field: keyof CreateHockeyTeamRequest, value: string): void => {
     setForm((prev) => ({ ...prev, [field]: value }));

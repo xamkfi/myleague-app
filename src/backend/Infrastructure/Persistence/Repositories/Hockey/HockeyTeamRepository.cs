@@ -32,6 +32,22 @@ public class HockeyTeamRepository : IHockeyTeamRepository
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    public async Task<IReadOnlyDictionary<Guid, string>> GetNamesByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        return await _dbContext.HockeyTeams
+            .AsNoTracking()
+            .Where(t => ids.Contains(t.Id))
+            .Select(t => new { t.Id, t.Name })
+            .ToDictionaryAsync(t => t.Id, t => t.Name, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<HockeyTeam>> GetAllAsync()
     {
         List<HockeyTeam> teams = await TeamQuery()

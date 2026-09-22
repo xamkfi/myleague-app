@@ -53,6 +53,31 @@ export interface GetPagedHockeyMatchesRequest {
   searchQuery?: string;
 }
 
+export interface GetHockeyMatchesRequest {
+  page?: number;
+  pageSize?: number;
+  startDate?: string;
+  endDate?: string;
+  teamCategory?: string;
+  sortOrder?: 'asc' | 'desc' | string;
+}
+
+export interface HockeyMatchListDto {
+  id: string;
+  scheduledStartTime: string;
+  status: HockeyMatchStatus | string;
+  matchType: HockeyMatchType | string;
+  venue: string | null;
+  competitionId: string | null;
+  competitionName: string | null;
+  homeTeamId: string | null;
+  awayTeamId: string | null;
+  homeTeamName: string | null;
+  awayTeamName: string | null;
+  homeScore: number;
+  awayScore: number;
+}
+
 export interface GetPagedHockeyPlayersRequest {
   page?: number;
   pageSize?: number;

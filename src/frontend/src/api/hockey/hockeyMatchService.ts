@@ -1,8 +1,10 @@
 import type {
   CreateHockeyMatchRequest,
+  GetHockeyMatchesRequest,
   GetPagedHockeyMatchesRequest,
   HockeyGoalStrength,
   HockeyMatchDto,
+  HockeyMatchListDto,
   HockeyMatchType,
   HockeyOfficialRole,
   HockeyPenaltyOffence,
@@ -38,6 +40,22 @@ export const hockeyMatchService = {
 
   getAllPages: (params: Omit<GetPagedHockeyMatchesRequest, 'page' | 'pageSize'> = {}): Promise<HockeyMatchDto[]> =>
     loadAllPaged((page, pageSize) => hockeyMatchService.getPaged({ ...params, page, pageSize })),
+
+  getList: (params: GetHockeyMatchesRequest = {}): Promise<PaginatedApiResponse<HockeyMatchListDto>> =>
+    hockeyPagedRequest<HockeyMatchListDto>(
+      `/HockeyMatch${toQueryString({
+        page: params.page,
+        pageSize: params.pageSize,
+        startDate: params.startDate,
+        endDate: params.endDate,
+        teamCategory: params.teamCategory,
+        sortOrder: params.sortOrder,
+      })}`,
+      'Failed to fetch hockey matches',
+    ),
+
+  getAllListPages: (params: Omit<GetHockeyMatchesRequest, 'page' | 'pageSize'> = {}): Promise<HockeyMatchListDto[]> =>
+    loadAllPaged((page, pageSize) => hockeyMatchService.getList({ ...params, page, pageSize })),
 
   getById: (matchId: string): Promise<HockeyMatchDto> =>
     hockeyRequest<HockeyMatchDto>(`/HockeyMatch/${matchId}`, 'Failed to fetch hockey match'),
