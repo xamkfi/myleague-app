@@ -38,43 +38,35 @@ public class VerifyAdminEmailHandler : IRequestHandler<VerifyAdminEmailCommand, 
 
     public async Task<Result<bool>> Handle(VerifyAdminEmailCommand request, CancellationToken cancellationToken)
     {
-        try
+        User? user = await _userRepository.GetByEmailVerificationTokenAsync(request.Token);
+
+        if (user == null)
         {
-            User? user = await _userRepository.GetByEmailVerificationTokenAsync(request.Token);
-
-            if (user == null)
-            {
-                _logger.LogInformation("Email verification attempted with unknown token");
-                return Result<bool>.Failure("This verification link is invalid or has already been used.");
-            }
-
-            if (user.EmailVerificationTokenExpiresAt < DateTime.UtcNow)
-            {
-                _logger.LogInformation("Email verification attempted with expired token for user: {UserId}", user.Id);
-                return Result<bool>.Failure("This verification link has expired. Please ask an administrator to resend the invitation.");
-            }
-
-            string firstName = user.Person?.FirstName ?? "Admin";
-
-            user.VerifyEmail();
-            await _userRepository.UpdateAsync(user);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Email verified for user: {UserId} ({Email})", user.Id, user.Email);
-
-            string loginUrl = $"{_frontendConfig.BaseUrl}/admin/login";
-            await _emailService.SendAdminVerificationSuccessAsync(
-                user.Email,
-                firstName,
-                loginUrl,
-                cancellationToken);
-
-            return Result<bool>.Success(true);
+            _logger.LogInformation("Email verification attempted with unknown token");
+            return Result<bool>.Failure("This verification link is invalid or has already been used.");
         }
-        catch (Exception ex)
+
+        if (user.EmailVerificationTokenExpiresAt < DateTime.UtcNow)
         {
-            _logger.LogError(ex, "Error occurred while verifying admin email with token");
-            return Result<bool>.Failure("An error occurred while verifying the email address.");
+            _logger.LogInformation("Email verification attempted with expired token for user: {UserId}", user.Id);
+            return Result<bool>.Failure("This verification link has expired. Please ask an administrator to resend the invitation.");
         }
+
+        string firstName = user.Person?.FirstName ?? "Admin";
+
+        user.VerifyEmail();
+        await _userRepository.UpdateAsync(user);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Email verified for user: {UserId} ({Email})", user.Id, user.Email);
+
+        string loginUrl = $"{_frontendConfig.BaseUrl}/admin/login";
+        await _emailService.SendAdminVerificationSuccessAsync(
+            user.Email,
+            firstName,
+            loginUrl,
+            cancellationToken);
+
+        return Result<bool>.Success(true);
     }
 }
