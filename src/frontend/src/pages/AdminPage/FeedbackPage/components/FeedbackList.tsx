@@ -11,7 +11,7 @@ import Pagination from "../../../../components/Pagination";
 const FeedbackList = () => {
     const { t } = useTranslation();
 
-    const [feedbacksList, setFeedbacksList] = useState<FeedbackDto[]>([])
+    const [feedbacksList, setFeedbacksList] = useState<FeedbackDto[]>([]);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -59,7 +59,7 @@ const FeedbackList = () => {
     const handleSelectAll = () => {
         setSelectedIds(new Set(feedbacksList.map((a) => a.id)));
     };
-    
+
     const handleClearSelection = () => {
         setSelectedIds(new Set());
     };
@@ -100,10 +100,10 @@ const FeedbackList = () => {
                 }
 
                 await fetchFeedback();
-                
+
                 const successMessage = t('admin.feedback.success.bulkDelete',
                     '{{count}} feedback successfully deleted.',
-                   {count: selectedIds.size} 
+                   {count: selectedIds.size}
                 );
                 setSelectedIds(new Set());
                 console.log(successMessage);
@@ -139,7 +139,7 @@ const FeedbackList = () => {
                     { label: t('admin.feedback.actions.delete', 'Delete'), onClick: handleBulkDelete, variant: 'danger'}
                 ]}
             />
-            
+
             <div className="admin-table__wrapper">
                 <table className="admin-table">
                     <thead>
@@ -163,7 +163,7 @@ const FeedbackList = () => {
                                 className={selectedIds.has(feedback.id) ? 'admin-table__row--selected' : ''}
                             >
                                 <td className="admin-table__checkbox-col">
-                                    <input 
+                                    <input
                                     type="checkbox"
                                     checked={selectedIds.has(feedback.id)}
                                     onChange={() => handleToggleSelect(feedback.id)}/>
