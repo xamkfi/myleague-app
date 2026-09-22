@@ -4,14 +4,16 @@ import StatAbbr from '../../components/StatAbbr/StatAbbr';
 import type { HockeyTeamCompetitionStatisticsDto } from '../../types/hockey/hockeyTypes';
 import { uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
 import { getTeamSlug } from '../../utils/slugUtils';
+import { getTeamPath } from '../../utils/sportRoutes';
 
 interface HockeyStandingsTableProps {
   standings: HockeyTeamCompetitionStatisticsDto[];
   teamNames: Map<string, string>;
+  competitionId?: string | null;
   previewLimit?: number;
 }
 
-function HockeyStandingsTable({ standings, teamNames, previewLimit }: HockeyStandingsTableProps) {
+function HockeyStandingsTable({ standings, teamNames, competitionId, previewLimit }: HockeyStandingsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const namedTeams = [...teamNames.entries()].map(([id, name]) => ({ id, name }));
@@ -42,7 +44,7 @@ function HockeyStandingsTable({ standings, teamNames, previewLimit }: HockeyStan
             <tr
               key={row.teamId}
               className="clickable-row"
-              onClick={() => navigate(`/hockey/team/${getTeamSlug({ id: row.teamId, name }, namedTeams)}`)}
+              onClick={() => navigate(getTeamPath('hockey', getTeamSlug({ id: row.teamId, name }, namedTeams), competitionId))}
             >
               <td className="rank-col">{row.standingRank}</td>
               <td className="team-col">{name}</td>

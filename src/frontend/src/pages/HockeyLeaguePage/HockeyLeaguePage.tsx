@@ -262,6 +262,7 @@ function HockeyLeaguePage() {
                     <HockeyStandingsTable
                       standings={standings}
                       teamNames={teamNames}
+                      competitionId={season?.id}
                       previewLimit={STANDINGS_PREVIEW}
                     />
                     <button
@@ -304,7 +305,7 @@ function HockeyLeaguePage() {
                 </span>
               </div>
             </div>
-            <HockeyStandingsTable standings={standings} teamNames={teamNames} />
+            <HockeyStandingsTable standings={standings} teamNames={teamNames} competitionId={season?.id} />
           </div>
         );
       case 'players':

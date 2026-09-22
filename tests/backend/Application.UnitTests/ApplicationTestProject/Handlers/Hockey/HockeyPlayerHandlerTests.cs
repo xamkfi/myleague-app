@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Features.Common.Deletion;
 using Application.Features.Hockey.Players.Commands;
 using Application.Features.Hockey.Players.DTOs;
 using Application.Features.Hockey.Players.Handlers;
@@ -102,5 +103,28 @@ public class HockeyPlayerHandlerTests
         result.IsSuccess.Should().BeTrue();
         _playerRepo.Verify(r => r.DeleteAsync(playerId), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Delete_PlayerHasCompetitionHistory_ReturnsFailure()
+    {
+        Guid playerId = Guid.NewGuid();
+        Mock<IHockeyTeamRepository> teamRepo = new();
+        _playerRepo.Setup(r => r.ExistsAsync(playerId)).ReturnsAsync(true);
+        _playerRepo.Setup(r => r.HasCompetitionHistoryAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        DeleteHockeyPlayerHandler handler = new(
+            _playerRepo.Object,
+            teamRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<DeleteHockeyPlayerHandler>>());
+
+        Result result = await handler.Handle(new DeleteHockeyPlayerCommand(playerId), CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(DeletionReasons.PlayerHasHistory);
+        _playerRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+        teamRepo.Verify(r => r.GetByPlayerIdAsync(It.IsAny<Guid>()), Times.Never);
     }
 }

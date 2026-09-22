@@ -244,7 +244,10 @@ public class FloorballEntityImporter
         try
         {
         if (_idMap.UnknownPlayers.TryGetValue(oldTeam.Id, out Guid cached))
+        {
+            await _api.AddPlayerToTeamAsync(newTeamId, cached, PositionGoalkeeper, null, competitionId);
             return cached;
+        }
 
         string firstName = "Tuntematon";
         string lastName = $"({oldTeam.Name})";
@@ -280,7 +283,7 @@ public class FloorballEntityImporter
             return null;
         }
 
-        bool added = await _api.AddPlayerToTeamAsync(newTeamId, player.Id, PositionForward, null, competitionId);
+        bool added = await _api.AddPlayerToTeamAsync(newTeamId, player.Id, PositionGoalkeeper, null, competitionId);
         if (!added)
         {
             _log.LogError("CreateUnknownPlayer", new { oldTeam.Id, oldTeam.Name }, "Adding player to team roster failed.");

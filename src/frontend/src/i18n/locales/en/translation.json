@@ -1024,6 +1024,7 @@
         "serverError": "Server error. Please try again later.",
         "overlappingDates": "A season already exists that overlaps with the specified dates.",
         "cannotUpdateCompleted": "Cannot update a completed season.",
+        "hasMatches": "Cannot delete a season that has matches. Delete the matches first.",
         "detailsSaveFailed": "Season details could not be saved: {{reason}}",
         "updateFailed": "Operation failed. Please try again."
       },
@@ -2319,6 +2320,7 @@
         "notFound": "Season not found",
         "updateFailed": "Failed to update season",
         "cannotUpdateCompleted": "Cannot update a completed season.",
+        "hasMatches": "Cannot delete a season that has matches. Delete the matches first.",
         "detailsSaveFailed": "Season details could not be saved: {{reason}}"
       },
       "import": {

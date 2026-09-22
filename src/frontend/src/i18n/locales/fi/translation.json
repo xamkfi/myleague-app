@@ -1031,6 +1031,7 @@
         "serverError": "Palvelinvirhe. Yritä myöhemmin uudelleen.",
         "overlappingDates": "Kausi on jo olemassa, joka menee päällekkäin määritettyjen päivämäärien kanssa.",
         "cannotUpdateCompleted": "Päätettyä kautta ei voi päivittää.",
+        "hasMatches": "Kautta ei voi poistaa, koska sillä on otteluita. Poista ottelut ensin.",
         "detailsSaveFailed": "Kauden tietoja ei voitu tallentaa: {{reason}}",
         "updateFailed": "Toiminto epäonnistui. Yritä uudelleen."
       },
@@ -2327,6 +2328,7 @@
         "notFound": "Kautta ei löytynyt",
         "updateFailed": "Kauden päivitys epäonnistui",
         "cannotUpdateCompleted": "Päätettyä kautta ei voi päivittää.",
+        "hasMatches": "Kautta ei voi poistaa, koska sillä on otteluita. Poista ottelut ensin.",
         "detailsSaveFailed": "Kauden tietoja ei voitu tallentaa: {{reason}}"
       },
       "import": {

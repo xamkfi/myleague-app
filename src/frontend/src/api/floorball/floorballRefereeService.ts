@@ -1,5 +1,6 @@
 import type { ApiResponse, PaginatedApiResponse } from '../../types/floorball/floorballTypes';
 import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
 
 // Referee types based on the backend DTOs
@@ -215,24 +216,16 @@ export const floorballRefereeService = {
    */
   delete: async (id: string): Promise<void> => {
     try {
-      console.log('Deleting referee with ID:', id);
-      
       const response = await authFetch(`${API_URL}/FloorballReferee/${id}`, {
         method: 'DELETE',
       });
-      
-      console.log('Delete response status:', response.status);
-      console.log('Delete response ok:', response.ok);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Delete API Error Response:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to delete floorball referee'}`);
-      }
-      
       const apiResponse: ApiResponse<void> = await response.json();
-      console.log('Delete API Response:', apiResponse);
-      
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete floorball referee');
+        throw new Error(errorMessage || 'Failed to delete floorball referee');
+      }
+
       if (!apiResponse.success) {
         throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete floorball referee');
       }
