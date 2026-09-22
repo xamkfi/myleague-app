@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import HockeyMatchRow from '../../components/HockeyMatchRow/HockeyMatchRow';
@@ -11,6 +11,7 @@ import { clubService } from '../../api/common/clubService';
 import type { HockeyMatchDto, HockeyPlayerCompetitionStatisticsDto, HockeyTeamDto } from '../../types/hockey/hockeyTypes';
 import { shouldRefreshHockeyMatches } from '../../types/hockey/hockeyTypes';
 import { findTeamBySlug, slugify } from '../../utils/slugUtils';
+import { isGuid } from '../../utils/sportRoutes';
 import { loadHockeyRosterNameMaps, loadTeamNameMap } from '../../utils/hockeyLookups';
 import { useAudience } from '../../context/AudienceContext';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
@@ -25,6 +26,8 @@ function HockeyTeamPage() {
   const { audience } = useAudience();
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const requestedSeasonId = searchParams.get('season');
   const [team, setTeam] = useState<HockeyTeamDto | null>(null);
   const [clubName, setClubName] = useState('');
   const [matches, setMatches] = useState<HockeyMatchDto[]>([]);
@@ -44,16 +47,28 @@ function HockeyTeamPage() {
         setError(t('teamUserPage.notFound', 'Team not found'));
         return;
       }
-      setTeam(selected);
+      const matchList = await hockeyMatchService.getByTeam(selected.id);
+      setMatches(matchList);
+      const latestCompetitionId = matchList
+        .filter((match) => match.competitionId)
+        .slice()
+        .sort((left, right) =>
+          new Date(right.scheduledStartTime).getTime() - new Date(left.scheduledStartTime).getTime(),
+        )[0]?.competitionId ?? null;
+      const seasonId = isGuid(requestedSeasonId) ? requestedSeasonId : latestCompetitionId;
+      let scoped = selected;
+      if (seasonId) {
+        try {
+          scoped = await hockeyTeamService.getById(selected.id, seasonId);
+        } catch {
+          scoped = selected;
+        }
+      }
+      setTeam(scoped);
       setTeamNames(await loadTeamNameMap(teams));
-      setMatches(await hockeyMatchService.getByTeam(selected.id));
-      const names = await loadHockeyRosterNameMaps([selected]);
+      const names = await loadHockeyRosterNameMaps([scoped]);
       setPlayerNames(names.byPlayerId);
-      const competitionIds = [...new Set(
-        selected.roster
-          .map((row) => row.competitionId)
-          .filter((value): value is string => Boolean(value)),
-      )];
+      const competitionIds = seasonId ? [seasonId] : [];
       const statsLists = await Promise.all(
         competitionIds.map((competitionId) =>
           hockeyStatisticsService.getPlayers(competitionId).catch(() => []),
@@ -73,7 +88,7 @@ function HockeyTeamPage() {
       setClubName(club?.name ?? '');
     };
     void load().catch((err) => setError(err instanceof Error ? err.message : 'Failed to load team'));
-  }, [slug, t, audience.teamCategory]);
+  }, [slug, t, audience.teamCategory, requestedSeasonId]);
 
   const refreshLiveMatches = useCallback(async (): Promise<void> => {
     if (!team) {

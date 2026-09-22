@@ -133,6 +133,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             });
             services.AddScoped<IPersonNameProvider, PersonNameProvider>();
             services.AddSingleton<SiteSettingsCache>();
+            services.AddSingleton(TimeProvider.System);
             services.AddScoped<ISiteSettingsProvider, SiteSettingsProvider>();
 
             // Add authentication services
@@ -162,6 +163,7 @@ namespace MyLeague.Infrastructure.DependencyInjections
             // Register timer background service
             // No need for it now so disabled by default
             // services.AddHostedService<TimerBackgroundService>();
+            services.AddHostedService<PlayerLicenceResetBackgroundService>();
 
             // Add unit of work
             services.AddScoped<IUnitOfWork, CommonUnitOfWork>();
@@ -199,6 +201,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
 
                     InfoPageContentSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
                     FooterContactSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                    RulesSectionSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                    NewsArticleSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
                 }
             }
 

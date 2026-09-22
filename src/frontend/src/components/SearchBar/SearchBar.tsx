@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { useRef } from 'react';
-import { createClubSlug } from '../../utils/slugUtils';
 import { getPlayerPath, getTeamPath, type SportKind } from '../../utils/sportRoutes';
 
 function toSportKind(sport?: string | null): SportKind {
@@ -14,8 +13,6 @@ function toSportKind(sport?: string | null): SportKind {
 }
 import { slugify } from '../../utils/slugUtils';
 import { globalSearchService } from '../../api/common/globalSearchService';
-import { getClubs } from '../../api/common/clubService';
-import type { Club } from '../../api/common/clubService';
 import SearchIcon from '../../assets/basicIcons/search.svg';
 
 // Add interfaces
@@ -40,7 +37,6 @@ function SearchBar() {
    const [searchResults, setSearchResults] = useState<SearchTeam[]>([]);
    const [peopleResults, setPeopleResults] = useState<SearchPerson[]>([]);
    const [clubResults, setClubResults] = useState<string[]>([]);
-   const [allClubs, setAllClubs] = useState<Club[]>([]);
    const [isSearchFocused, setIsSearchFocused] = useState(false);
    const searchContainerRef = useRef<HTMLDivElement>(null);
    const navigate = useNavigate();
@@ -68,13 +64,10 @@ function SearchBar() {
    }, [navigate]);
 
    const handleClubClick = useCallback((clubName: string) => {
-     const club = allClubs.find(c => c.name === clubName);
-     if (club) {
-       const action = () => navigate(`/club/${createClubSlug(club)}`);
-       setPendingAction(() => action);
-       setIsSearchFocused(false);
-     }
-   }, [allClubs, navigate]);
+     const action = () => navigate(`/club/${slugify(clubName)}`);
+     setPendingAction(() => action);
+     setIsSearchFocused(false);
+   }, [navigate]);
 
    const handleSelectedItem = useCallback(() => {
      const totalPeople = peopleResults.length;
@@ -113,19 +106,6 @@ function SearchBar() {
        }
      }
    };
-
-   // Load all clubs for slug resolution
-   useEffect(() => {
-     const loadClubs = async () => {
-       try {
-         const clubs = await getClubs();
-         setAllClubs(clubs);
-       } catch (err) {
-         console.error('Failed to load clubs:', err);
-       }
-     };
-     loadClubs();
-   }, []);
 
    // Debounced search effect
    useEffect(() => {

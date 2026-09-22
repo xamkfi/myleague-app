@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Floorball.Seasons.Commands;
 using Domain.Enums.Floorball;
 using FluentValidation;
@@ -40,6 +41,10 @@ public class CreateFloorballSeasonCommandValidator : AbstractValidator<CreateFlo
         RuleFor(x => x.OvertimeDurationMinutes)
             .InclusiveBetween(1, 30).WithMessage("Overtime duration must be between 1 and 30 minutes")
             .When(x => x.AllowOvertime);
+
+        RuleFor(x => x.LogoUrl)
+            .Must(CompetitionLogoUrl.IsValidOptional)
+            .WithMessage("Logo url must be an http or https address under 500 characters");
 
     }
 

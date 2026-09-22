@@ -321,7 +321,7 @@ public class UpdateClubHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Data.Should().NotBeNull();
-        result.Data!.FoundingDate.Kind.Should().Be(DateTimeKind.Utc);
+        result.Data!.FoundingDate!.Value.Kind.Should().Be(DateTimeKind.Utc);
     }
 
     [Fact]

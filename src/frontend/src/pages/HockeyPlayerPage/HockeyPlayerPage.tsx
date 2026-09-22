@@ -60,19 +60,54 @@ interface PlayerMatchRow {
   faceoffAttempts: number;
 }
 
-async function loadCompetitionNameMap(): Promise<Map<string, string>> {
+interface CompetitionCatalog {
+  names: Map<string, string>;
+  endDates: Map<string, string>;
+}
+
+async function loadCompetitionCatalog(): Promise<CompetitionCatalog> {
   const [seasons, tournaments] = await Promise.all([
     hockeySeasonService.getAll().catch(() => []),
     hockeyTournamentService.getAll().catch(() => []),
   ]);
   const names = new Map<string, string>();
+  const endDates = new Map<string, string>();
   for (const season of seasons) {
     names.set(season.id, season.name);
+    if (season.endDate) {
+      endDates.set(season.id, season.endDate);
+    }
   }
   for (const tournament of tournaments) {
     names.set(tournament.id, tournament.name);
+    if (tournament.endDate) {
+      endDates.set(tournament.id, tournament.endDate);
+    }
   }
-  return names;
+  return { names, endDates };
+}
+
+function latestPlayerTeam(
+  playerId: string,
+  teams: HockeyTeamDto[],
+  endDates: Map<string, string>,
+): HockeyTeamDto | undefined {
+  let bestTeam: HockeyTeamDto | undefined;
+  let bestKey = '';
+  for (const team of teams) {
+    for (const row of team.roster) {
+      if (row.playerId !== playerId) {
+        continue;
+      }
+      const end = row.competitionId ? endDates.get(row.competitionId) ?? '' : '';
+      const key = `${end}|${row.joinedAt}|${row.isActive ? '1' : '0'}`;
+      if (key > bestKey) {
+        bestKey = key;
+        bestTeam = team;
+      }
+    }
+  }
+  return bestTeam;
 }
 
 async function resolveCompetitionName(
@@ -145,9 +180,14 @@ function HockeyPlayerPage() {
 export interface HockeyPlayerProfileProps {
   playerId: string;
   embedded?: boolean;
+  licenceSummary?: ReactElement;
 }
 
-export function HockeyPlayerProfile({ playerId, embedded = false }: HockeyPlayerProfileProps) {
+export function HockeyPlayerProfile({
+  playerId,
+  embedded = false,
+  licenceSummary,
+}: HockeyPlayerProfileProps) {
   const { t } = useTranslation();
   const { audience } = useAudience();
   const id = playerId;
@@ -176,21 +216,26 @@ export function HockeyPlayerProfile({ playerId, embedded = false }: HockeyPlayer
         setName(t('hockey.players.title', 'Player'));
       }
 
-      const [allTeams, competitionNames] = await Promise.all([
+      const [allTeams, competitions] = await Promise.all([
         hockeyTeamService.getAll(audience.teamCategory),
-        loadCompetitionNameMap(),
+        loadCompetitionCatalog(),
       ]);
+      const competitionNames = competitions.names;
       const playerTeams = allTeams.filter((team) => team.roster.some((row) => row.playerId === loaded.id));
-      setTeams(playerTeams);
+      const latestTeam = latestPlayerTeam(loaded.id, playerTeams, competitions.endDates);
+      const orderedTeams = latestTeam
+        ? [latestTeam, ...playerTeams.filter((team) => team.id !== latestTeam.id)]
+        : playerTeams;
+      setTeams(orderedTeams);
       const teamNames = new Map(allTeams.map((team) => [team.id, team.name]));
 
-      const rosterCompetitionIds = playerTeams.flatMap((team) => team.roster
+      const rosterCompetitionIds = orderedTeams.flatMap((team) => team.roster
         .filter((row) => row.playerId === loaded.id && row.competitionId)
         .map((row) => row.competitionId as string));
 
       const matchesById = new Map<string, HockeyMatchDto>();
       const teamMatchLists = await Promise.all(
-        playerTeams.map((team) => hockeyMatchService.getByTeam(team.id).catch(() => [] as HockeyMatchDto[])),
+        orderedTeams.map((team) => hockeyMatchService.getByTeam(team.id).catch(() => [] as HockeyMatchDto[])),
       );
       for (const list of teamMatchLists) {
         for (const match of list) {
@@ -424,14 +469,16 @@ export function HockeyPlayerProfile({ playerId, embedded = false }: HockeyPlayer
                     <span className="stat-label">{t('hockey.players.shoots', 'Shoots')}</span>
                     <span className="stat-value">{t(`hockey.shoots.${player.shoots}`, player.shoots)}</span>
                   </div>
-                  <div className="stat-item">
-                    <span className="stat-label">{t('hockey.players.status', 'Status')}</span>
-                    <span className={`stat-value ${player.isActive ? 'active' : 'inactive'}`}>
-                      {player.isActive
-                        ? t('hockey.players.active', 'Active')
-                        : t('hockey.players.inactive', 'Inactive')}
-                    </span>
-                  </div>
+                  {licenceSummary ?? (
+                    <div className="stat-item">
+                      <span className="stat-label">{t('hockey.players.status', 'Status')}</span>
+                      <span className={`stat-value ${player.isActive ? 'active' : 'inactive'}`}>
+                        {player.isActive
+                          ? t('hockey.players.active', 'Active')
+                          : t('hockey.players.inactive', 'Inactive')}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

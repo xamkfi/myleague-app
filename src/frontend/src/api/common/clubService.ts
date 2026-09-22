@@ -186,6 +186,39 @@ export const clubService = {
     return data.data || [];
   },
 
+  searchForDropdown: async (
+    query: string,
+    page: number,
+    pageSize: number = 50,
+  ): Promise<{
+    data: Array<{ id: string; name: string }>;
+    pagination: {
+      hasNextPage: boolean;
+      totalCount: number;
+    };
+  }> => {
+    const trimmed = query.trim();
+    if (trimmed) {
+      const clubs = await clubService.searchByName(trimmed);
+      return {
+        data: clubs.map((club) => ({ id: club.id, name: club.name })),
+        pagination: {
+          hasNextPage: false,
+          totalCount: clubs.length,
+        },
+      };
+    }
+
+    const response = await clubService.getPaged(page, pageSize);
+    return {
+      data: response.data.map((club) => ({ id: club.id, name: club.name })),
+      pagination: {
+        hasNextPage: response.pagination.hasNextPage,
+        totalCount: response.pagination.totalCount,
+      },
+    };
+  },
+
   /** Gets the active club admins of a club. */
   getAdmins: async (id: string): Promise<ClubAdminUser[]> => {
     const response = await authFetch(`${VITE_API_URL}/Clubs/${id}/admins`);

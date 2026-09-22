@@ -17,8 +17,9 @@ function FooterLinkList({ items, emptyLabel }: FooterLinkListProps) {
           <a
             key={item.id}
             href={item.url}
-            target="_blank"
-            rel="noreferrer noopener"
+            {...(item.url.startsWith('/')
+              ? {}
+              : { target: '_blank', rel: 'noreferrer noopener' })}
           >
             {item.title}
           </a>

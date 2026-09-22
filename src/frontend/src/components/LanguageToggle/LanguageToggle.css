@@ -1,59 +1,86 @@
 .language-toggle {
   position: relative;
   z-index: 100;
+  flex-shrink: 0;
 }
 
 .language-toggle-button {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  background-color: #555;
-  color: white;
+  justify-content: center;
+  gap: 0.3rem;
+  width: auto;
+  height: auto;
+  padding: 0;
+  color: #fff;
+  background: transparent;
   border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+  border-radius: 0.25rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  line-height: 1;
 }
 
-.language-toggle-button:hover {
-  background-color: #444;
+.language-toggle-button:hover,
+.language-toggle.open .language-toggle-button {
+  background: transparent;
 }
 
-.dropdown-icon {
-  margin-left: 0.5rem;
-  font-size: 0.6rem;
+.language-toggle-caret {
+  flex-shrink: 0;
+  color: #fff;
+  transition: transform 0.15s ease;
+}
+
+.language-toggle.open .language-toggle-caret {
+  transform: rotate(180deg);
+}
+
+.language-toggle-button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.language-toggle-flag {
+  display: block;
+  width: 1.35rem;
+  height: 0.9rem;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.45);
 }
 
 .language-dropdown {
   position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-top: 0.5rem;
-  min-width: 120px;
-  overflow: hidden;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  min-width: 9.5rem;
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
 }
 
 .language-option {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.45rem 0.6rem;
   text-align: left;
   background: none;
   border: none;
+  border-radius: 0.35rem;
   cursor: pointer;
-  color: #333;
-  transition: background-color 0.2s ease;
+  color: #1a2744;
+  font-size: 0.9rem;
 }
 
 .language-option:hover {
-  background-color: #f5f5f5;
+  background: #f3f5f8;
 }
 
 .language-option.active {
-  background-color: #f0f0f0;
-  font-weight: bold;
-} 
+  background: #eef3fb;
+  font-weight: 700;
+}

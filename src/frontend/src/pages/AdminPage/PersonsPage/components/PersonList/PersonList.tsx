@@ -370,7 +370,7 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
         <div className="persons-error">{error}</div>
       )}
 
-      {!loading && !error && (
+      {!loading && (
         <>
           {/* Bulk Actions Bar */}
           <BulkActionsBar

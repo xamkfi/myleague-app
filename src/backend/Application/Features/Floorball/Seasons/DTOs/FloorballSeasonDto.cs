@@ -41,5 +41,6 @@ namespace Application.Features.Floorball.Seasons.DTOs
         IReadOnlyCollection<FloorballTeamDto> Teams,
         IReadOnlyCollection<FloorballMatchDto> Matches,
         FloorballMatchRulesDto MatchRules,
-        TeamCategory TeamCategory);
+        TeamCategory TeamCategory,
+        string? LogoUrl);
 }

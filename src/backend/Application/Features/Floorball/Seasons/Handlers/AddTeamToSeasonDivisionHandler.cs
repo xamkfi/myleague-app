@@ -55,11 +55,8 @@ public class AddTeamToSeasonDivisionHandler : IRequestHandler<AddTeamToSeasonDiv
             season.AddTeam(team);
             RosterEnrollment.Apply(team, request.CompetitionId, request.RosterMode);
 
-            if (season.IsActive)
-            {
-                FloorballTeamSeasonStatistics teamStatistics = new FloorballTeamSeasonStatistics(team.Id, request.CompetitionId);
-                await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
-            }
+            FloorballTeamSeasonStatistics teamStatistics = new FloorballTeamSeasonStatistics(team.Id, request.CompetitionId);
+            await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
 
             List<FloorballPlayerSeasonStatistics> playerStats = team.GetActiveRoster(request.CompetitionId)
                 .Select(player => new FloorballPlayerSeasonStatistics(player.PlayerId, request.TeamId, request.CompetitionId))

@@ -6,11 +6,19 @@ import SportIcon from '../../components/SportIcon/SportIcon';
 import { FloorballPlayerProfile } from '../FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage';
 import { FootballPlayerProfile } from '../FootballPlayerPage/FootballPlayerPage';
 import { HockeyPlayerProfile } from '../HockeyPlayerPage/HockeyPlayerPage';
+import { PlayerLicenceSummary } from './PlayerLicenceSummary';
 import {
   personPlayerSportsService,
+  type PersonPlayerLicence,
   type PersonPlayerSports,
   type PersonSportKind,
 } from '../../api/common/personPlayerSportsService';
+import { floorballSeasonService } from '../../api/floorball/floorballSeasonService';
+import { floorballTournamentService } from '../../api/floorball/floorballTournamentService';
+import { footballSeasonService } from '../../api/football/footballSeasonService';
+import { footballTournamentService } from '../../api/football/footballTournamentService';
+import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
+import { hockeyTournamentService } from '../../api/hockey/hockeyTournamentService';
 import { unwrapApiErrorMessage } from '../../api/utils/ParseErrorResponse';
 import './PlayerPage.scss';
 import '../FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage.scss';
@@ -21,12 +29,87 @@ function isPersonSportKind(value: string | null): value is PersonSportKind {
   return value === 'floorball' || value === 'football' || value === 'hockey';
 }
 
+type DatedCompetition = { id: string; endDate?: string | null };
+
+function addCompetitionsStillInForce(
+  items: DatedCompetition[] | null | undefined,
+  ids: Set<string>,
+): void {
+  const now = Date.now();
+  for (const item of items ?? []) {
+    if (!item.id) {
+      continue;
+    }
+    if (item.endDate) {
+      const end = new Date(item.endDate).getTime();
+      if (!Number.isNaN(end) && end < now) {
+        continue;
+      }
+    }
+    ids.add(item.id);
+  }
+}
+
+async function loadActiveCompetitionIds(sports: PersonSportKind[]): Promise<Set<string>> {
+  const ids = new Set<string>();
+  const tasks: Promise<void>[] = [];
+
+  if (sports.includes('floorball')) {
+    tasks.push(
+      floorballSeasonService
+        .getActive()
+        .then((response) => addCompetitionsStillInForce(response.data, ids))
+        .catch(() => undefined),
+    );
+    tasks.push(
+      floorballTournamentService
+        .getActive()
+        .then((response) => addCompetitionsStillInForce(response.data, ids))
+        .catch(() => undefined),
+    );
+  }
+
+  if (sports.includes('football')) {
+    tasks.push(
+      footballSeasonService
+        .getActive()
+        .then((response) => addCompetitionsStillInForce(response.data, ids))
+        .catch(() => undefined),
+    );
+    tasks.push(
+      footballTournamentService
+        .getActive()
+        .then((response) => addCompetitionsStillInForce(response.data, ids))
+        .catch(() => undefined),
+    );
+  }
+
+  if (sports.includes('hockey')) {
+    tasks.push(
+      hockeySeasonService
+        .getActive()
+        .then((seasons) => addCompetitionsStillInForce(seasons, ids))
+        .catch(() => undefined),
+    );
+    tasks.push(
+      hockeyTournamentService
+        .getActive()
+        .then((tournaments) => addCompetitionsStillInForce(tournaments, ids))
+        .catch(() => undefined),
+    );
+  }
+
+  await Promise.all(tasks);
+  return ids;
+}
+
 function PlayerPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [data, setData] = useState<PersonPlayerSports | null>(null);
+  const [activeCompetitionIds, setActiveCompetitionIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +123,11 @@ function PlayerPage() {
         setLoading(true);
         setError(null);
         setData(null);
+        setActiveCompetitionIds(new Set());
         const result = await personPlayerSportsService.getById(id);
+        const sports = [...new Set(result.licences.map((licence) => licence.sport))];
+        const inForceIds = await loadActiveCompetitionIds(sports);
+        setActiveCompetitionIds(inForceIds);
         setData(result);
 
         if (id.toLowerCase() !== result.personId.toLowerCase()) {
@@ -116,6 +203,13 @@ function PlayerPage() {
     );
   }
 
+  const licences: PersonPlayerLicence[] = (data.licences ?? []).filter(
+    (licence) =>
+      licence.isActive &&
+      licence.competitionId !== null &&
+      activeCompetitionIds.has(licence.competitionId),
+  );
+
   return (
     <PageTemplate title={title}>
       <div className="player-page player-page--shell">
@@ -151,13 +245,25 @@ function PlayerPage() {
         )}
 
         {activeSport === 'floorball' && activePlayerId && (
-          <FloorballPlayerProfile playerId={activePlayerId} embedded />
+          <FloorballPlayerProfile
+            playerId={activePlayerId}
+            embedded
+            licenceSummary={<PlayerLicenceSummary licences={licences.filter((licence) => licence.sport === 'floorball')} />}
+          />
         )}
         {activeSport === 'football' && activePlayerId && (
-          <FootballPlayerProfile playerId={activePlayerId} embedded />
+          <FootballPlayerProfile
+            playerId={activePlayerId}
+            embedded
+            licenceSummary={<PlayerLicenceSummary licences={licences.filter((licence) => licence.sport === 'football')} />}
+          />
         )}
         {activeSport === 'hockey' && activePlayerId && (
-          <HockeyPlayerProfile playerId={activePlayerId} embedded />
+          <HockeyPlayerProfile
+            playerId={activePlayerId}
+            embedded
+            licenceSummary={<PlayerLicenceSummary licences={licences.filter((licence) => licence.sport === 'hockey')} />}
+          />
         )}
       </div>
     </PageTemplate>

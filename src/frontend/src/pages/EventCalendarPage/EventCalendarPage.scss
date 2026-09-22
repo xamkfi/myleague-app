@@ -2,28 +2,6 @@
 @use '@variables' as *;
 
 .event-calendar-page {
-  max-width: $max-width-page;
-  margin: 0 auto;
-  padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'lg');
-
-  &__header {
-    text-align: center;
-    background: $color-banner-bg;
-    border-radius: map.get($border-radius, 'lg');
-    padding: map.get($spacing, 'xl') map.get($spacing, 'lg');
-    margin-bottom: map.get($spacing, 'lg');
-  }
-
-  &__title {
-    font-size: map.get($font-sizes, 'xxl');
-    font-weight: map.get($font-weights, 'extrabold');
-    color: $color-white;
-    margin: 0;
-    font-family: $font-family-display;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
   &__layout {
     display: grid;
     grid-template-columns: 320px 1fr;
@@ -59,17 +37,6 @@
 
 @media (max-width: map.get($breakpoints, 'tablet')) {
   .event-calendar-page {
-    padding: map.get($spacing, 'sm') map.get($spacing, 'sm') map.get($spacing, 'md');
-
-    &__header {
-      padding: map.get($spacing, 'lg') map.get($spacing, 'md');
-      margin-bottom: map.get($spacing, 'md');
-    }
-
-    &__title {
-      font-size: map.get($font-sizes, 'xl');
-    }
-
     &__layout {
       grid-template-columns: 1fr;
       gap: map.get($spacing, 'md');

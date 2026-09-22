@@ -13,6 +13,10 @@ public interface IHockeyTeamRepository
 
     Task<HockeyTeam?> GetByIdAsync(Guid id);
 
+    Task<IReadOnlyDictionary<Guid, string>> GetNamesByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<HockeyTeam>> GetAllAsync();
 
     Task<IReadOnlyList<HockeyTeam>> GetByClubIdAsync(Guid clubId);
@@ -30,4 +34,10 @@ public interface IHockeyTeamRepository
     Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default);
 
     Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default);
+
+    Task<int> DeactivateOpenPlayerLicencesAsync(CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<PlayerLicenceRow>> GetOpenPlayerLicencesAsync(
+        Guid playerId,
+        CancellationToken cancellationToken = default);
 }

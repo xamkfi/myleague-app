@@ -15,11 +15,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: url('http://www.mahl.fi/images/Kausi_2024-2025/SB_Hurut_Minttu.png') center 15%;
-    background-color: $color-blue-medium;
-    background-blend-mode: multiply;
-    background-size: cover;
-    background-repeat: no-repeat;
+    background: linear-gradient(160deg, $color-blue-medium 0%, $color-blue-deep 58%, $color-blue-darkest 100%);
     position: relative;
     left: 50%;
     transform: translateX(-50%);
@@ -70,13 +66,14 @@
         align-items: center;
         justify-content: center;
         gap: map.get($spacing, 'base');
-        min-width: 192px;
-        min-height: 192px;
+        width: 6rem;
+        height: 6rem;
+        flex-shrink: 0;
         
         .league-icon {
           flex-shrink: 0;
-          min-width: 192px;
-          min-height: 192px;
+          width: 6rem;
+          height: 6rem;
           
           .trophy-icon {
             width: 100%;

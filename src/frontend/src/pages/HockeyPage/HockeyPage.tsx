@@ -9,7 +9,7 @@ import type { HockeySeasonDto, HockeyTeamDto } from '../../types/hockey/hockeyTy
 import { useAudience } from '../../context/AudienceContext';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
-import { formatSeasonYearLabel, seasonYearFromDates } from '../../utils/seasonYear';
+import { filterPublicSportYears, formatSeasonYearLabel, pickDefaultSportYear, seasonYearFromDates } from '../../utils/seasonYear';
 import SportLandingPage, {
   PAGE_SIZE,
   type SportLandingLabels,
@@ -114,15 +114,12 @@ function HockeyPage() {
         });
         setAllSeasons(sorted);
         setTeams(teamList);
-        const yearList = toYearList(sorted);
+        const yearList = filterPublicSportYears(toYearList(sorted));
         setYears(yearList);
 
         const urlYear = initialQueryRef.current.year;
         const urlPage = Number(initialQueryRef.current.page || '1');
-        const defaultYear =
-          yearList.find((year) => year.hasActiveSeason)?.year ?? yearList[0]?.year ?? '';
-        const initialYear =
-          urlYear && yearList.some((year) => year.year === urlYear) ? urlYear : defaultYear;
+        const initialYear = pickDefaultSportYear(yearList, urlYear);
 
         setSelectedYear(initialYear);
         setCurrentPage(Number.isFinite(urlPage) && urlPage > 0 ? urlPage : 1);
@@ -135,7 +132,9 @@ function HockeyPage() {
     };
 
     void bootstrap();
-  }, [audience.teamCategory, reloadToken, t]);
+    // `t` is omitted so language changes do not refetch seasons and teams.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audience.teamCategory, reloadToken]);
 
   useEffect(() => {
     if (!selectedYear) {
@@ -183,6 +182,7 @@ function HockeyPage() {
     }
     setSearchParams(next, { replace: true });
 
+    let cancelled = false;
     const loadPage = async () => {
       try {
         setIsLoadingSeasons(true);
@@ -209,6 +209,9 @@ function HockeyPage() {
                 goalDifference: row.goalDifference,
                 points: row.points,
               }));
+              if (cancelled) {
+                return;
+              }
               setSeasonsData((prev) =>
                 prev.map((item) =>
                   item.season.id === season.id
@@ -217,6 +220,9 @@ function HockeyPage() {
                 ),
               );
             } catch {
+              if (cancelled) {
+                return;
+              }
               setSeasonsData((prev) =>
                 prev.map((item) =>
                   item.season.id === season.id ? { ...item, standingsLoading: false } : item,
@@ -262,27 +268,37 @@ function HockeyPage() {
               homeTeamLogo: match.homeTeamId ? teamLogos.get(match.homeTeamId) ?? null : null,
               awayTeamLogo: match.awayTeamId ? teamLogos.get(match.awayTeamId) ?? null : null,
             }));
-          setUpcomingMatches(upcoming);
+          if (!cancelled) {
+            setUpcomingMatches(upcoming);
+          }
         });
 
         await Promise.all([standingsTask, matchesTask]);
       } catch (err) {
         console.error('Failed to fetch hockey seasons:', err);
-        setError(t('hockeyPage.error'));
-        setIsLoadingSeasons(false);
+        if (!cancelled) {
+          setError(t('hockeyPage.error'));
+          setIsLoadingSeasons(false);
+        }
       }
     };
 
     void loadPage();
+    return () => {
+      cancelled = true;
+    };
+    // `t`, teamNames, and teamLogos are omitted so language or map identity
+    // changes do not refetch standings and matches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isLoadingYears,
     selectedYear,
     currentPage,
     pagedSeasons,
+    teams,
     setSearchParams,
-    t,
-    teamNames,
-    teamLogos,
+    audience.teamCategory,
+    reloadToken,
   ]);
 
   const handleYearSelect = (year: string) => {

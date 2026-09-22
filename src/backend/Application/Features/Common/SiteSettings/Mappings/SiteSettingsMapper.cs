@@ -16,7 +16,10 @@ internal static class SiteSettingsMapper
             entity.LoginCodeExpirationMinutes,
             entity.LoginCodeMaxAttempts,
             entity.SessionExpiryWarningMinutes,
-            isPersisted);
+            isPersisted,
+            entity.PlayerLicenceResetMonth,
+            entity.PlayerLicenceResetDay,
+            entity.LastPlayerLicenceResetYear);
     }
 
     public static SiteSettingsDto ToDto(EffectiveAuthSettings settings)
@@ -27,7 +30,10 @@ internal static class SiteSettingsMapper
             settings.LoginCodeExpirationMinutes,
             settings.LoginCodeMaxAttempts,
             settings.SessionExpiryWarningMinutes,
-            settings.IsPersisted);
+            settings.IsPersisted,
+            settings.PlayerLicenceResetMonth,
+            settings.PlayerLicenceResetDay,
+            settings.LastPlayerLicenceResetYear);
     }
 
     public static SiteSettingsEntity ToEntity(UpdateSiteSettingsCommand command)
@@ -38,7 +44,9 @@ internal static class SiteSettingsMapper
             command.RefreshTokenExpirationDays,
             command.LoginCodeExpirationMinutes,
             command.LoginCodeMaxAttempts,
-            command.SessionExpiryWarningMinutes);
+            command.SessionExpiryWarningMinutes,
+            command.PlayerLicenceResetMonth,
+            command.PlayerLicenceResetDay);
     }
 
     public static void UpdateFromCommand(SiteSettingsEntity entity, UpdateSiteSettingsCommand command)
@@ -48,6 +56,8 @@ internal static class SiteSettingsMapper
             command.RefreshTokenExpirationDays,
             command.LoginCodeExpirationMinutes,
             command.LoginCodeMaxAttempts,
-            command.SessionExpiryWarningMinutes);
+            command.SessionExpiryWarningMinutes,
+            command.PlayerLicenceResetMonth,
+            command.PlayerLicenceResetDay);
     }
 }

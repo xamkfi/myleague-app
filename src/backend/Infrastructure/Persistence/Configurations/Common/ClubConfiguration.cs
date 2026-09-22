@@ -31,7 +31,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
                 .HasMaxLength(100);
 
             builder.Property(c => c.FoundingDate)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(c => c.WebsiteUrl)
                 .IsRequired()

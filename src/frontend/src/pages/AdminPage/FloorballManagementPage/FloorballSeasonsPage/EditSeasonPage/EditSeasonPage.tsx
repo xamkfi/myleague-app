@@ -77,6 +77,8 @@ const EditSeasonPage = () => {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [newTeamClubId, setNewTeamClubId] = useState('');
   const [newTeamName, setNewTeamName] = useState('');
+  const [newTeamShortName, setNewTeamShortName] = useState('');
+  const [newTeamHomeArena, setNewTeamHomeArena] = useState('');
   const [creatingTeam, setCreatingTeam] = useState(false);
 
   // ── Load season ──
@@ -98,7 +100,8 @@ const EditSeasonPage = () => {
         periodDurationMinutes: seasonData.data.matchRules?.periodDurationMinutes ?? 15,
         allowOvertime: seasonData.data.matchRules?.allowOvertime ?? true,
         overtimeDurationMinutes: seasonData.data.matchRules?.overtimeDurationMinutes ?? 5,
-        allowShootout: seasonData.data.matchRules?.allowShootout ?? true
+        allowShootout: seasonData.data.matchRules?.allowShootout ?? true,
+        logoUrl: seasonData.data.logoUrl ?? '',
       });
     } catch {
       setError(t('floorball.seasons.errors.loadFailed', 'Failed to load season data'));
@@ -379,6 +382,8 @@ const EditSeasonPage = () => {
         clubId: newTeamClubId,
         divisionId: selectedDivisionId,
         category: (season?.teamCategory as TeamCategory | undefined) ?? TeamCategory.Adult,
+        shortName: newTeamShortName.trim() || undefined,
+        homeArena: newTeamHomeArena.trim() || undefined,
       });
       await floorballSeasonService.addTeamToSeasonDivision(
         competitionId,
@@ -387,6 +392,8 @@ const EditSeasonPage = () => {
         'Empty',
       );
       setNewTeamName('');
+      setNewTeamShortName('');
+      setNewTeamHomeArena('');
       await loadSeason();
       await loadAvailableTeams();
       showSuccess(t('floorball.seasons.teamCreatedFromClub', 'New team created with an empty roster.'));
@@ -520,6 +527,10 @@ const EditSeasonPage = () => {
                 <div className="form-group">
                   <label htmlFor="edit-name">{t('floorball.seasons.fields.name', 'Name')} *</label>
                   <input type="text" id="edit-name" name="name" value={formData.name} onChange={handleInputChange} required disabled={loading} placeholder={t('floorball.seasons.placeholders.name', 'Enter season name')} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-logoUrl">{t('competition.logoUrl', 'Logo URL')}</label>
+                  <input type="url" id="edit-logoUrl" name="logoUrl" value={formData.logoUrl ?? ''} onChange={handleInputChange} disabled={loading} placeholder="https://" />
                 </div>
               </div>
 
@@ -743,6 +754,19 @@ const EditSeasonPage = () => {
                               value={newTeamName}
                               onChange={(event) => setNewTeamName(event.target.value)}
                               placeholder={t('floorball.seasons.newTeamName', 'New team name')}
+                            />
+                            <input
+                              type="text"
+                              value={newTeamShortName}
+                              onChange={(event) => setNewTeamShortName(event.target.value)}
+                              placeholder={t('floorball.seasons.newTeamShortName', 'Short name (optional)')}
+                              maxLength={4}
+                            />
+                            <input
+                              type="text"
+                              value={newTeamHomeArena}
+                              onChange={(event) => setNewTeamHomeArena(event.target.value)}
+                              placeholder={t('floorball.seasons.newTeamHomeArena', 'Home arena (optional)')}
                             />
                             <button
                               type="button"

@@ -296,7 +296,7 @@ const EditRosterPage = () => {
                 <th className="name-column">{t('football.players.name', 'NAME')}</th>
                 <th className="jersey-column">{t('football.players.jersey', 'JERSEY')}</th>
                 <th className="position-column">{t('football.players.position', 'POSITION')}</th>
-                <th className="status-column">{t('football.players.status', 'STATUS')}</th>
+                <th className="status-column">{t('playerLicence.column', 'Licence')}</th>
                 <th className="actions-column">{t('common.actions', 'ACTIONS')}</th>
               </tr>
             </thead>
@@ -401,8 +401,8 @@ const EditRosterPage = () => {
                               onClick={() => handleToggleActive(player)}
                             >
                               {player.isActive 
-                                ? t('football.players.setInactive', 'Set Inactive')
-                                : t('football.players.setActive', 'Set Active')
+                                ? t('playerLicence.markUnpaid', 'Mark licence unpaid')
+                                : t('playerLicence.markPaid', 'Mark licence paid')
                               }
                             </button>
                             <button

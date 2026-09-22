@@ -36,6 +36,12 @@ public class HockeyCompetitionConfiguration : IEntityTypeConfiguration<HockeyCom
             .HasDefaultValue(Domain.Enums.Common.TeamCategory.Adult);
         builder.HasIndex(c => c.TeamCategory);
 
+        builder.Property(c => c.LogoUrl)
+            .HasConversion(
+                uri => uri != null ? uri.ToString() : null,
+                value => value != null ? new Uri(value, UriKind.Absolute) : null)
+            .HasMaxLength(500);
+
         builder.Ignore(c => c.IsActive);
         builder.Ignore(c => c.IsCompleted);
 

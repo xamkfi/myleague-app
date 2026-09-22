@@ -19,6 +19,8 @@ using Application.Features.Common.Persons.Mappings;
 using Application.Features.Common.Clubs.Mappings;
 using Application.Features.Common.Divisions.Mappings;
 using Application.Features.Common.News.Mappings;
+using Application.Features.Common.PlayerLicences.DTOs;
+using Application.Features.Common.PlayerLicences.Mappings;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
@@ -36,6 +38,7 @@ public class GetAllFootballPlayersHandler : BasePagedQueryHandler<GetAllFootball
     IRequestHandler<GetAllFootballPlayersQuery, Result<PagedResult<FootballPlayerDto>>>
 {
     private readonly IFootballPlayerRepository _playerRepository;
+    private readonly IFootballTeamRepository _teamRepository;
     private readonly IPersonRepository _personRepository;
 
     /// <summary>
@@ -47,11 +50,13 @@ public class GetAllFootballPlayersHandler : BasePagedQueryHandler<GetAllFootball
     /// <param name="logger">The logger</param>
     public GetAllFootballPlayersHandler(
         IFootballPlayerRepository playerRepository,
+        IFootballTeamRepository teamRepository,
         IPersonRepository personRepository,
         IPaginationService paginationService,
         ILogger<GetAllFootballPlayersHandler> logger) : base(paginationService, logger)
     {
         _playerRepository = playerRepository;
+        _teamRepository = teamRepository;
         _personRepository = personRepository;
     }
 
@@ -68,8 +73,8 @@ public class GetAllFootballPlayersHandler : BasePagedQueryHandler<GetAllFootball
             // Check for cancellation before starting
             cancellationToken.ThrowIfCancellationRequested();
 
-            _logger.LogInformation("Retrieving football players - Page: {Page}, PageSize: {PageSize}, IsActive: {IsActive}, Position: {Position}, TeamId: {TeamId}, SearchTerm: {SearchTerm}", 
-                request.Page, request.PageSize, request.IsActive, request.Position, request.TeamId, request.SearchTerm);
+            _logger.LogInformation("Retrieving football players - Page: {Page}, PageSize: {PageSize}, IsActive: {IsActive}, Position: {Position}, TeamId: {TeamId}, SearchTerm: {SearchTerm}, HasActiveLicence: {HasActiveLicence}", 
+                request.Page, request.PageSize, request.IsActive, request.Position, request.TeamId, request.SearchTerm, request.HasActiveLicence);
 
             // Validate pagination parameters using base handler
             Result<PaginationValidationResult> validationResult = ValidatePaginationParameters(
@@ -109,10 +114,15 @@ public class GetAllFootballPlayersHandler : BasePagedQueryHandler<GetAllFootball
                 position: positionFilter,
                 teamId: request.TeamId,
                 searchTerm: request.SearchTerm,
+                hasActiveLicence: request.HasActiveLicence,
                 cancellationToken: cancellationToken);
 
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
+
+            List<Guid> playerIds = pagedPlayersWithTeams.Items.Select(item => item.Player.Id).ToList();
+            IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>> licencesByPlayer =
+                await _teamRepository.GetOpenPlayerLicencesByPlayerIdsAsync(playerIds, cancellationToken);
 
             // Load Person data for each player and create DTOs with team information
             List<FootballPlayerDto> playerDtos = new List<FootballPlayerDto>();
@@ -123,6 +133,7 @@ public class GetAllFootballPlayersHandler : BasePagedQueryHandler<GetAllFootball
                 
                 // Create team DTO if team exists
                 FootballTeamNameDto? teamDto = team != null ? new FootballTeamNameDto { Id = team.Id, Name = team.Name } : null;
+                IReadOnlyList<ActivePlayerLicenceDto> activeLicences = LicencesFor(player.Id, licencesByPlayer);
                 
                 if (person != null)
                 {
@@ -135,7 +146,8 @@ public class GetAllFootballPlayersHandler : BasePagedQueryHandler<GetAllFootball
                         player.Position.PrimaryPosition,
                         player.CareerGoals,
                         player.CareerAssists,
-                        teamDto
+                        teamDto,
+                        activeLicences
                     );
                     playerDtos.Add(playerDto);
                 }
@@ -152,7 +164,8 @@ public class GetAllFootballPlayersHandler : BasePagedQueryHandler<GetAllFootball
                         fallbackDto.Position,
                         fallbackDto.CareerGoals,
                         fallbackDto.CareerAssists,
-                        teamDto
+                        teamDto,
+                        activeLicences
                     );
                     playerDtos.Add(playerDtoWithTeam);
                 }
@@ -181,5 +194,17 @@ public class GetAllFootballPlayersHandler : BasePagedQueryHandler<GetAllFootball
             _logger.LogError(ex, "Error occurred while retrieving football players");
             return Result<PagedResult<FootballPlayerDto>>.Failure("An error occurred while retrieving football players.");
         }
+    }
+
+    private static IReadOnlyList<ActivePlayerLicenceDto> LicencesFor(
+        Guid playerId,
+        IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>> licencesByPlayer)
+    {
+        if (!licencesByPlayer.TryGetValue(playerId, out IReadOnlyList<PlayerLicenceRow>? rows))
+        {
+            return Array.Empty<ActivePlayerLicenceDto>();
+        }
+
+        return ActivePlayerLicenceMapper.ToDtos(rows);
     }
 } 

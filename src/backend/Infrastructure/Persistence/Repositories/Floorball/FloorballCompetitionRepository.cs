@@ -195,11 +195,19 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
 
         /// <inheritdoc />
         public async Task<IReadOnlyList<FloorballSeasonDateSummary>> GetSeasonDateSummariesAsync(
+            Domain.Enums.Common.TeamCategory? teamCategory = null,
             CancellationToken cancellationToken = default)
         {
-            return await _entities
+            IQueryable<FloorballSeason> query = _entities
                 .OfType<FloorballSeason>()
-                .AsNoTracking()
+                .AsNoTracking();
+
+            if (teamCategory is Domain.Enums.Common.TeamCategory category)
+            {
+                query = query.Where(s => s.TeamCategory == category);
+            }
+
+            return await query
                 .Select(s => new FloorballSeasonDateSummary(s.StartDate, s.EndDate, s.IsActive))
                 .ToListAsync(cancellationToken);
         }
@@ -224,9 +232,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 query = query.Where(s => s.StartDate.Year == start && s.EndDate.Year == end);
             }
 
-            if (teamCategory.HasValue)
+            if (teamCategory is Domain.Enums.Common.TeamCategory category)
             {
-                query = query.Where(s => s.TeamCategory == teamCategory.Value);
+                query = query.Where(s => s.TeamCategory == category);
             }
 
             int totalCount = await query.CountAsync(cancellationToken);

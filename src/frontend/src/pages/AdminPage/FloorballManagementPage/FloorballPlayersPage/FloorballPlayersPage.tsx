@@ -12,6 +12,8 @@ import AssignToTeamModal from './components/AssignToTeamModal';
 import Pagination from '../../../../components/Pagination';
 import SearchField from '../../../../components/SearchField';
 import BulkActionsBar from '../../../../components/BulkActionsBar/BulkActionsBar';
+import PlayerLicenceFilter from '../../../../components/admin/PlayerLicenceFilter';
+import { licenceFilterToHasActive, type LicenceFilterValue } from '../../../../components/admin/playerLicenceFilter';
 import '../../../../styles/AdminTable.scss';
 import './FloorballPlayersPage.scss';
 import Button from '../../../../components/Button/Button';
@@ -62,6 +64,7 @@ const FloorballPlayersPage = () => {
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [licenceFilter, setLicenceFilter] = useState<LicenceFilterValue>('all');
   const [reloadToken, setReloadToken] = useState(0);
   const hasLoadedOnce = useRef(false);
 
@@ -100,6 +103,7 @@ const FloorballPlayersPage = () => {
           page: currentPage || 1,
           pageSize: pageSize || 10,
           searchTerm: debouncedSearch || undefined,
+          hasActiveLicence: licenceFilterToHasActive(licenceFilter),
           signal: controller.signal,
         });
 
@@ -133,7 +137,7 @@ const FloorballPlayersPage = () => {
       cancelled = true;
       controller.abort();
     };
-  }, [currentPage, pageSize, debouncedSearch, reloadToken, t]);
+  }, [currentPage, pageSize, debouncedSearch, licenceFilter, reloadToken, t]);
 
   const handleDelete = (playerId: string) => {
     const player = players.find(p => p.id === playerId);
@@ -448,6 +452,14 @@ const FloorballPlayersPage = () => {
               placeholder={t('floorball.players.searchPlayers', 'Search players...')}
               fullWidth
               rounded="pill"
+            />
+            <PlayerLicenceFilter
+              id="floorball-players-licence-filter"
+              value={licenceFilter}
+              onChange={(value) => {
+                setLicenceFilter(value);
+                setCurrentPage(1);
+              }}
             />
             <Button
               className="create-player-button"

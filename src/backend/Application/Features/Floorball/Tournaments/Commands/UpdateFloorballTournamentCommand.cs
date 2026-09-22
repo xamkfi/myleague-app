@@ -28,4 +28,5 @@ public record UpdateFloorballTournamentCommand(
     bool HasPlayoffStage,
     bool HasThirdPlaceMatch,
     IReadOnlyList<PlayoffScheduleSlotInput>? PlayoffSchedule = null,
-    Domain.Enums.Common.TeamCategory? TeamCategory = null) : IRequest<Result<FloorballTournamentDto>>;
+    Domain.Enums.Common.TeamCategory? TeamCategory = null,
+    string? LogoUrl = null) : IRequest<Result<FloorballTournamentDto>>;

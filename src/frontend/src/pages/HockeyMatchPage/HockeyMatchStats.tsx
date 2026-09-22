@@ -15,6 +15,7 @@ interface HockeyMatchStatsProps {
   homeTeamId: string | null;
   awayTeamId: string | null;
   playerNames: Map<string, string>;
+  jerseyByPlayerId: Map<string, number>;
 }
 
 function HockeyMatchStats({
@@ -24,6 +25,7 @@ function HockeyMatchStats({
   homeTeamId,
   awayTeamId,
   playerNames,
+  jerseyByPlayerId,
 }: HockeyMatchStatsProps) {
   const { t } = useTranslation();
   const home = stats.teams.find((row) => row.teamId === homeTeamId);
@@ -97,6 +99,7 @@ function HockeyMatchStats({
           <table className="standing-table">
             <thead>
               <tr className="header-row">
+                <th className="stats-col">#</th>
                 <th className="team-col">{t('hockeyPage.player', 'Player')}</th>
                 <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colG', 'G')} title={t('hockeyPage.colGTitle', 'Goals')} /></th>
                 <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colA', 'A')} title={t('hockeyPage.colATitle', 'Assists')} /></th>
@@ -108,6 +111,7 @@ function HockeyMatchStats({
             <tbody>
               {players.map((row) => (
                 <tr key={`${row.playerId}-${row.teamId}`}>
+                  <td className="stats-col">{jerseyByPlayerId.get(row.playerId) ?? '—'}</td>
                   <td className="team-col">
                     <Link to={getPlayerPath('hockey', row.playerId)}>
                       {playerNames.get(row.playerId) ?? row.playerId.slice(0, 8)}
@@ -129,6 +133,7 @@ function HockeyMatchStats({
           <table className="standing-table">
             <thead>
               <tr className="header-row">
+                <th className="stats-col">#</th>
                 <th className="team-col">{t('hockeyPage.goalie', 'Goalie')}</th>
                 <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colSa', 'SA')} title={t('hockeyPage.colSaTitle', 'Shots against')} /></th>
                 <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colSv', 'SV')} title={t('hockeyPage.colSvTitle', 'Saves')} /></th>
@@ -139,6 +144,7 @@ function HockeyMatchStats({
             <tbody>
               {goalies.map((row) => (
                 <tr key={`${row.playerId}-${row.teamId}`}>
+                  <td className="stats-col">{jerseyByPlayerId.get(row.playerId) ?? '—'}</td>
                   <td className="team-col">
                     <Link to={getPlayerPath('hockey', row.playerId)}>
                       {playerNames.get(row.playerId) ?? row.playerId.slice(0, 8)}

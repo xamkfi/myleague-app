@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { isNotFoundError } from '../../api/utils/isNotFoundError';
+import NotFoundPage from '../NotFoundPage/NotFoundPage';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './SingleNewsPage.scss';
 import '../NewsPage/NewsPage.scss';
-import type { NewsArticleDto } from '../../api/news/newsService';
-import { getRecentNewsArticles } from '../../api/news/newsService';
+import { newsService, type NewsArticleDto, type PaginatedNewsResponse } from '../../api/news/newsService';
+import { useAudience } from '../../context/AudienceContext';
 import { singleNewsService } from '../../api/news/singleNewsService';
 import defaultNewsImage from '../../assets/defaultImage.jpg';
 import NewsTaxonomyBar from './NewsTaxonomyBar';
@@ -18,9 +20,11 @@ type SingleNewsPageProps = {
 
 function SingleNewsPage({ newsData }: SingleNewsPageProps) {
   const { t } = useTranslation();
+  const { audience } = useAudience();
   const { id } = useParams<{ id: string }>();
   const [news, setNews] = useState<NewsArticleDto | null>(newsData || null);
   const [relatedNews, setRelatedNews] = useState<NewsArticleDto[]>([]);
+  const [isMissing, setIsMissing] = useState(false);
   const { displayHtml, relatedTeams } = useHydratedNewsHtml(news?.contentHtml ?? '');
 
   useEffect(() => {
@@ -29,11 +33,24 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
     }
 
     let cancelled = false;
-    singleNewsService(id).then((article) => {
-      if (!cancelled) {
-        setNews(article);
-      }
-    });
+    setIsMissing(false);
+    singleNewsService(id)
+      .then((article) => {
+        if (!cancelled) {
+          setNews(article);
+        }
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+        if (isNotFoundError(error)) {
+          setIsMissing(true);
+          setNews(null);
+          return;
+        }
+        console.error('Failed to fetch news article:', error);
+      });
 
     return () => {
       cancelled = true;
@@ -42,15 +59,29 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
 
   useEffect(() => {
     let cancelled = false;
-    getRecentNewsArticles(4).then((articles) => {
-      if (!cancelled) {
-        setRelatedNews(articles.filter((article) => article.id !== id).slice(0, 3));
+    newsService({
+      page: 1,
+      pageSize: 4,
+      teamCategory: audience.teamCategory,
+    }).then((response) => {
+      if (cancelled) {
+        return;
       }
+      const articles = response && typeof response === 'object' && 'pagination' in response
+        ? (response as PaginatedNewsResponse).data
+        : (response as NewsArticleDto[]);
+      setRelatedNews(articles.filter((article) => article.id !== id).slice(0, 3));
+    }).catch((relatedError: unknown) => {
+      console.error('Failed to fetch related news:', relatedError);
     });
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, audience.teamCategory]);
+
+  if (isMissing) {
+    return <NotFoundPage />;
+  }
 
   if (!news) {
     return (
@@ -84,6 +115,7 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
           <NewsTaxonomyBar
             sportCategory={news.sportCategory}
             category={news.category}
+            teamCategory={news.teamCategory}
             tags={news.tags}
             teams={relatedTeams}
             clickable

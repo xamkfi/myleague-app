@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { NewsArticleDto } from '../../api/news/newsService';
+import TeamCategoryBadge from '../TeamCategoryBadge/TeamCategoryBadge';
 import defaultNewsImage from '../../assets/defaultImage.jpg';
 import './MainNewsCard.scss';
 
@@ -32,9 +33,12 @@ function MainNewsCard({ news }: MainNewsCardProps) {
             />
           </div>
           <div className="main-news-content">
-            {news.sportCategory && (
-              <div className="main-news-category">{news.sportCategory}</div>
-            )}
+            <div className="main-news-labels">
+              <TeamCategoryBadge category={news.teamCategory} showAll />
+              {news.sportCategory && (
+                <div className="main-news-category">{news.sportCategory}</div>
+              )}
+            </div>
             <h2 className="main-news-title">{news.title}</h2>
             {news.summary && (
               <div className="main-news-summary">{news.summary}</div>

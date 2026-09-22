@@ -94,6 +94,7 @@ public class CreateFootballTournamentHandler : IRequestHandler<CreateFootballTou
                 tournamentRules,
                 playoffSchedule,
                 request.TeamCategory);
+            tournament.UpdateLogo(CompetitionLogoUrl.Parse(request.LogoUrl));
 
             _logger.LogInformation("Creating new football tournament: {Name}", request.Name);
             await _tournamentRepository.AddAsync(tournament);

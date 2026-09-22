@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, type ReactNode } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
@@ -7,25 +7,51 @@ import { TeamLink } from '../../components/SportLinks';
 import type { Club } from '../../api/common/clubService';
 import { getClubs } from '../../api/common/clubService';
 import { findClubBySlug } from '../../utils/slugUtils';
-import { useDivisions } from '../../hooks/useDivisions';
+import { clubEmail, clubFoundingYear, clubPublicUrl, clubText } from '../../utils/clubDisplay';
 import { useFloorballTeamsData, useFootballTeamsData } from '../../hooks/useTeamsData';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
 import { footballSeasonService, type FootballSeasonDto } from '../../api/football/footballSeasonService';
 import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
-import type { HockeyTeamDto } from '../../types/hockey/hockeyTypes';
-import { getLeaguePath } from '../../utils/sportRoutes';
+import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
+import type { HockeySeasonDto, HockeyTeamDto } from '../../types/hockey/hockeyTypes';
+import { ClubTeamSeasonList } from './components/ClubTeamSeasonList';
 import { useAudience } from '../../context/AudienceContext';
 import './ClubPage.scss';
+
+interface ClubSportSectionProps {
+  title: string;
+  children: ReactNode;
+}
+
+function ClubSportSection({ title, children }: ClubSportSectionProps) {
+  return (
+    <section className="club-page__sport">
+      <h3 className="club-page__sport-title">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+function compareSeasonsByLatestEnd(
+  a: { endDate: string; startDate: string },
+  b: { endDate: string; startDate: string },
+): number {
+  const endDifference = new Date(b.endDate).getTime() - new Date(a.endDate).getTime();
+  if (endDifference !== 0) {
+    return endDifference;
+  }
+  return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+}
 
 function ClubPage() {
   const { slug } = useParams<{ slug: string }>();
   const { t } = useTranslation();
   const { audience } = useAudience();
-  const { divisions } = useDivisions();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [seasons, setSeasons] = useState<FloorballSeasonDto[]>([]);
   const [footballSeasons, setFootballSeasons] = useState<FootballSeasonDto[]>([]);
   const [hockeyTeams, setHockeyTeams] = useState<HockeyTeamDto[]>([]);
+  const [hockeySeasons, setHockeySeasons] = useState<HockeySeasonDto[]>([]);
   const {
     teams,
     setParams: setTeamParams,
@@ -43,14 +69,16 @@ function ClubPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [clubsData, seasonsResponse, footballSeasonsResponse] = await Promise.all([
+        const [clubsData, seasonsResponse, footballSeasonsResponse, hockeySeasonsResponse] = await Promise.all([
           getClubs(),
           floorballSeasonService.getAll(),
           footballSeasonService.getAll().catch(() => ({ data: [] as FootballSeasonDto[] })),
+          hockeySeasonService.getAll(audience.teamCategory).catch(() => [] as HockeySeasonDto[]),
         ]);
         setClubs(clubsData);
         setSeasons(seasonsResponse.data || []);
         setFootballSeasons(footballSeasonsResponse.data || []);
+        setHockeySeasons(hockeySeasonsResponse ?? []);
 
         if (slug) {
           let foundClub = findClubBySlug(clubsData, slug);
@@ -58,12 +86,15 @@ function ClubPage() {
             foundClub = clubsData.find((club) => club.id === slug);
           }
           if (foundClub) {
-            setTeamParams({ clubId: foundClub.id });
-            setFootballTeamParams({ clubId: foundClub.id });
+            const teamFilter = { clubId: foundClub.id, teamCategories: [audience.teamCategory] };
+            setTeamParams(teamFilter);
+            setFootballTeamParams(teamFilter);
             const hockey = await hockeyTeamService
               .getByClubId(foundClub.id, audience.teamCategory)
               .catch(() => []);
             setHockeyTeams(hockey);
+          } else {
+            setHockeyTeams([]);
           }
         }
 
@@ -82,26 +113,13 @@ function ClubPage() {
     [loading, slug, clubs]
   );
 
-  const getDivisionDisplayName = useCallback(
-    (divisionId?: string | null): string => {
-      if (!divisionId) return 'N/A';
-      const division = divisions.find((d) => d.id === divisionId);
-      return division?.name || 'Unknown';
-    },
-    [divisions]
-  );
-
   const getTeamSeasons = useCallback(
     (teamId: string): FloorballSeasonDto[] => {
       return seasons
         .filter((season) =>
           season.seasonDivisions.some((sd) => sd.teamIds.includes(teamId))
         )
-        .sort((a, b) => {
-          if (a.isActive && !b.isActive) return -1;
-          if (!a.isActive && b.isActive) return 1;
-          return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
-        });
+        .sort(compareSeasonsByLatestEnd);
     },
     [seasons]
   );
@@ -112,24 +130,19 @@ function ClubPage() {
         .filter((season) =>
           season.seasonDivisions.some((sd) => sd.teamIds.includes(teamId))
         )
-        .sort((a, b) => {
-          if (a.isActive && !b.isActive) return -1;
-          if (!a.isActive && b.isActive) return 1;
-          return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
-        });
+        .sort(compareSeasonsByLatestEnd);
     },
     [footballSeasons]
   );
 
-  const formatFoundingDate = (dateString?: string | null): string | null => {
-    if (!dateString) return null;
-    try {
-      const date = new Date(dateString);
-      return date.getFullYear().toString();
-    } catch {
-      return null;
-    }
-  };
+  const getHockeyTeamSeasons = useCallback(
+    (teamId: string): HockeySeasonDto[] => {
+      return hockeySeasons
+        .filter((season) => (season.teams ?? []).some((team) => team.teamId === teamId))
+        .sort(compareSeasonsByLatestEnd);
+    },
+    [hockeySeasons]
+  );
 
   if (loading) {
     return (
@@ -172,7 +185,13 @@ function ClubPage() {
     );
   }
 
-  const foundingYear = formatFoundingDate(club.foundingDate);
+  const foundingYear = clubFoundingYear(club.foundingDate);
+  const city = clubText(club.city);
+  const country = clubText(club.country);
+  const location = [city, country].filter(Boolean).join(', ');
+  const websiteUrl = clubPublicUrl(club.websiteUrl);
+  const contactEmail = clubEmail(club.contactEmail);
+  const logoUrl = clubPublicUrl(club.logoUrl);
 
   return (
     <PageTemplate title={club.name}>
@@ -191,8 +210,8 @@ function ClubPage() {
 
             <div className="club-page__header">
               <div className="club-page__logo">
-                {club.logoUrl ? (
-                  <img src={club.logoUrl} alt={`${club.name} logo`} />
+                {logoUrl ? (
+                  <img src={logoUrl} alt={`${club.name} logo`} />
                 ) : (
                   <div className="club-page__logo-placeholder">
                     {club.name.charAt(0)}
@@ -203,14 +222,15 @@ function ClubPage() {
               <div className="club-page__info">
                 <h1 className="club-page__title">{club.name}</h1>
 
+                {(location || foundingYear || websiteUrl || contactEmail) && (
                 <div className="club-page__meta">
-                  {club.city && (
+                  {location && (
                     <span className="club-page__meta-item">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                         <circle cx="12" cy="10" r="3" />
                       </svg>
-                      {club.city}{club.country ? `, ${club.country}` : ''}
+                      {location}
                     </span>
                   )}
                   {foundingYear && (
@@ -224,9 +244,9 @@ function ClubPage() {
                       {t('clubPage.founded')} {foundingYear}
                     </span>
                   )}
-                  {club.websiteUrl && (
+                  {websiteUrl && (
                     <a
-                      href={club.websiteUrl}
+                      href={websiteUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="club-page__meta-item club-page__meta-item--link"
@@ -244,9 +264,9 @@ function ClubPage() {
                       </svg>
                     </a>
                   )}
-                  {club.contactEmail && (
+                  {contactEmail && (
                     <a
-                      href={`mailto:${club.contactEmail}`}
+                      href={`mailto:${contactEmail}`}
                       className="club-page__meta-item club-page__meta-item--link"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -257,6 +277,7 @@ function ClubPage() {
                     </a>
                   )}
                 </div>
+                )}
               </div>
             </div>
           </div>
@@ -266,95 +287,50 @@ function ClubPage() {
         <div className="club-page__content">
           <h2 className="club-page__section-title">{t('clubPage.teams')}</h2>
 
-          {teamsLoading ? (
-            <div className="club-page__teams-loading">
-              <LoadingSpinner size="sm" text={t('clubPage.teamsLoading')} />
-            </div>
-          ) : teams.length > 0 ? (
-            <div className="club-page__teams-grid">
-              {teams.map((team) => {
-                const teamSeasons = getTeamSeasons(team.id);
-                return (
-                  <TeamLink
-                    key={team.id}
-                    sport="floorball"
-                    teamId={team.id}
-                    teamName={team.name}
-                    teams={teams}
-                    className="team-card"
-                  >
-                    <div className="team-card__header">
-                      <h4 className="team-card__name">{team.name}</h4>
-                      <div className="team-card__colors">
-                        <span
-                          className="team-card__color"
-                          style={{ backgroundColor: team.primaryJerseyColor.toLowerCase() }}
-                          title={`Primary: ${team.primaryJerseyColor}`}
-                        />
-                        {team.secondaryJerseyColor && (
-                          <span
-                            className="team-card__color"
-                            style={{ backgroundColor: team.secondaryJerseyColor.toLowerCase() }}
-                            title={`Secondary: ${team.secondaryJerseyColor}`}
-                          />
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="team-card__body">
-                      <div className="team-card__tags">
-                        <span className="team-card__sport">
-                          {t('sports.floorball')}
-                        </span>
-                        <span className="team-card__division">
-                          {getDivisionDisplayName(team.divisionId)}
-                        </span>
-                      </div>
-
-                      {teamSeasons.length > 0 && (
-                        <div className="team-card__seasons">
-                          {teamSeasons.map((season) => (
-                            <Link
-                              key={season.id}
-                              to={getLeaguePath('floorball', season.id)}
-                              className={`team-card__season ${season.isActive ? 'team-card__season--active' : ''}`}
-                              onClick={(event) => event.stopPropagation()}
+          {(teamsLoading || teams.length > 0) && (
+            <ClubSportSection title={t('sports.floorball')}>
+              {teamsLoading ? (
+                <div className="club-page__teams-loading">
+                  <LoadingSpinner size="sm" text={t('clubPage.teamsLoading')} />
+                </div>
+              ) : (
+                <div className="club-page__teams-grid">
+                  {teams.map((team) => {
+                    const teamSeasons = getTeamSeasons(team.id);
+                    return (
+                      <article key={team.id} className="team-card">
+                        <div className="team-card__header">
+                          <h4 className="team-card__name">
+                            <TeamLink
+                              sport="floorball"
+                              teamId={team.id}
+                              teamName={team.name}
+                              teams={teams}
+                              seasonId={teamSeasons[0]?.id}
                             >
-                              {season.name}
-                              {season.isActive && (
-                                <span className="team-card__season-badge">
-                                  {t('floorballPage.active')}
-                                </span>
-                              )}
-                            </Link>
-                          ))}
+                              {team.name}
+                            </TeamLink>
+                          </h4>
                         </div>
-                      )}
-
-                   
-                    </div>
-
-                    <div className="team-card__footer">
-                      <span className="team-card__view-link">
-                        {t('clubPage.viewTeam')}
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
-                      </span>
-                    </div>
-                  </TeamLink>
-                );
-              })}
-            </div>
-          ) : footballTeams.length === 0 ? (
-            <div className="club-page__no-teams">
-              <p>{t('clubPage.noTeams')}</p>
-            </div>
-          ) : null}
+                        <div className="team-card__body">
+                          <ClubTeamSeasonList
+                            sport="floorball"
+                            teamId={team.id}
+                            teamName={team.name}
+                            teams={teams}
+                            seasons={teamSeasons}
+                          />
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </ClubSportSection>
+          )}
 
           {(footballTeamsLoading || footballTeams.length > 0) && (
-            <>
-              <h2 className="club-page__section-title">{t('sports.football')}</h2>
+            <ClubSportSection title={t('sports.football')}>
               {footballTeamsLoading ? (
                 <div className="club-page__teams-loading">
                   <LoadingSpinner size="sm" text={t('clubPage.teamsLoading')} />
@@ -364,89 +340,77 @@ function ClubPage() {
                   {footballTeams.map((team) => {
                     const teamSeasons = getFootballTeamSeasons(team.id);
                     return (
-                      <TeamLink
-                        key={team.id}
-                        sport="football"
-                        teamId={team.id}
-                        teamName={team.name}
-                        teams={footballTeams}
-                        className="team-card"
-                      >
+                      <article key={team.id} className="team-card">
                         <div className="team-card__header">
-                          <h4 className="team-card__name">{team.name}</h4>
+                          <h4 className="team-card__name">
+                            <TeamLink
+                              sport="football"
+                              teamId={team.id}
+                              teamName={team.name}
+                              teams={footballTeams}
+                              seasonId={teamSeasons[0]?.id}
+                            >
+                              {team.name}
+                            </TeamLink>
+                          </h4>
                         </div>
                         <div className="team-card__body">
-                          <div className="team-card__tags">
-                            <span className="team-card__sport">{t('sports.football')}</span>
-                            <span className="team-card__division">
-                              {getDivisionDisplayName(team.divisionId)}
-                            </span>
-                          </div>
-                          {teamSeasons.length > 0 && (
-                            <div className="team-card__seasons">
-                              {teamSeasons.map((season) => (
-                                <Link
-                                  key={season.id}
-                                  to={getLeaguePath('football', season.id)}
-                                  className={`team-card__season ${season.isActive ? 'team-card__season--active' : ''}`}
-                                  onClick={(event) => event.stopPropagation()}
-                                >
-                                  {season.name}
-                                  {season.isActive && (
-                                    <span className="team-card__season-badge">
-                                      {t('floorballPage.active')}
-                                    </span>
-                                  )}
-                                </Link>
-                              ))}
-                            </div>
-                          )}
+                          <ClubTeamSeasonList
+                            sport="football"
+                            teamId={team.id}
+                            teamName={team.name}
+                            teams={footballTeams}
+                            seasons={teamSeasons}
+                          />
                         </div>
-                        <div className="team-card__footer">
-                          <span className="team-card__view-link">{t('clubPage.viewTeam')}</span>
-                        </div>
-                      </TeamLink>
+                      </article>
                     );
                   })}
                 </div>
               )}
-            </>
+            </ClubSportSection>
           )}
 
           {hockeyTeams.length > 0 && (
-            <>
-              <h2 className="club-page__section-title">{t('sports.iceHockey')}</h2>
+            <ClubSportSection title={t('sports.iceHockey')}>
               <div className="club-page__teams-grid">
-                {hockeyTeams.map((team) => (
-                  <TeamLink
-                    key={team.id}
-                    sport="hockey"
-                    teamId={team.id}
-                    teamName={team.name}
-                    teams={hockeyTeams}
-                    className="team-card"
-                  >
-                    <div className="team-card__header">
-                      <h4 className="team-card__name">{team.name}</h4>
-                    </div>
-                    <div className="team-card__body">
-                      <div className="team-card__tags">
-                        <span className="team-card__sport">{t('sports.iceHockey')}</span>
-                        <span className="team-card__sport">
-                          {t(`hockey.teams.categories.${team.teamCategory}`, team.teamCategory)}
-                        </span>
-                        {team.homeArena && (
-                          <span className="team-card__sport">{team.homeArena}</span>
-                        )}
+                {hockeyTeams.map((team) => {
+                  const teamSeasons = getHockeyTeamSeasons(team.id);
+                  return (
+                    <article key={team.id} className="team-card">
+                      <div className="team-card__header">
+                        <h4 className="team-card__name">
+                          <TeamLink
+                            sport="hockey"
+                            teamId={team.id}
+                            teamName={team.name}
+                            teams={hockeyTeams}
+                            seasonId={teamSeasons[0]?.id}
+                          >
+                            {team.name}
+                          </TeamLink>
+                        </h4>
                       </div>
-                    </div>
-                    <div className="team-card__footer">
-                      <span className="team-card__view-link">{t('clubPage.viewTeam')}</span>
-                    </div>
-                  </TeamLink>
-                ))}
+                      <div className="team-card__body">
+                        <ClubTeamSeasonList
+                          sport="hockey"
+                          teamId={team.id}
+                          teamName={team.name}
+                          teams={hockeyTeams}
+                          seasons={teamSeasons}
+                        />
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
-            </>
+            </ClubSportSection>
+          )}
+
+          {!teamsLoading && !footballTeamsLoading && teams.length === 0 && footballTeams.length === 0 && hockeyTeams.length === 0 && (
+            <div className="club-page__no-teams">
+              <p>{t('clubPage.noTeams')}</p>
+            </div>
           )}
         </div>
       </div>

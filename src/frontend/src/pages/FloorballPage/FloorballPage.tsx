@@ -16,7 +16,7 @@ import SportLandingPage, {
   type SportLandingSeasonData,
   type SportLandingUpcomingMatch,
 } from '../SportLanding/SportLandingPage';
-import { formatSeasonYearLabel } from '../../utils/seasonYear';
+import { filterPublicSportYears, formatSeasonYearLabel, pickDefaultSportYear } from '../../utils/seasonYear';
 import bannerImage from '../../assets/floorball-banner.png';
 
 const MAX_UPCOMING_MATCHES = 6;
@@ -25,7 +25,11 @@ function FloorballPage() {
   const { t } = useTranslation();
   const { audience } = useAudience();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initializedRef = useRef(false);
+  const initialQueryRef = useRef({
+    year: searchParams.get('year'),
+    page: searchParams.get('page'),
+  });
+  const hasAppliedInitialQuery = useRef(false);
 
   const [years, setYears] = useState<Array<{ year: string; hasActiveSeason: boolean }>>([]);
   const [selectedYear, setSelectedYear] = useState<string>('');
@@ -39,6 +43,7 @@ function FloorballPage() {
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
   const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
+  const [featuredSeasonId, setFeaturedSeasonId] = useState<string | null>(null);
 
   const selectedYearMeta = useMemo(
     () => years.find((year) => year.year === selectedYear),
@@ -54,6 +59,7 @@ function FloorballPage() {
   useEffect(() => {
     if (!selectedYear) {
       setContentBlocks([]);
+      setFeaturedSeasonId(null);
       return;
     }
 
@@ -62,11 +68,13 @@ function FloorballPage() {
       .getFeaturedContentBlocks(selectedYear)
       .then((result) => {
         if (!cancelled) {
+          setFeaturedSeasonId(result.seasonId);
           setContentBlocks(result.blocks);
         }
       })
       .catch(() => {
         if (!cancelled) {
+          setFeaturedSeasonId(null);
           setContentBlocks([]);
         }
       });
@@ -77,41 +85,65 @@ function FloorballPage() {
   }, [selectedYear]);
 
   useEffect(() => {
-    if (initializedRef.current) {
-      return;
-    }
-    initializedRef.current = true;
+    let cancelled = false;
 
-    const bootstrap = async () => {
+    const loadYears = async () => {
       try {
         setIsLoadingYears(true);
         setError(null);
-        const yearList = await floorballSeasonService.getYears();
+        const yearList = filterPublicSportYears(
+          await floorballSeasonService.getYears(audience.teamCategory),
+        );
+        if (cancelled) {
+          return;
+        }
         setYears(yearList);
 
-        const urlYear = searchParams.get('year');
-        const urlPage = Number(searchParams.get('page') || '1');
-        const defaultYear =
-          yearList.find((year) => year.hasActiveSeason)?.year ?? yearList[0]?.year ?? '';
-        const initialYear =
-          urlYear && yearList.some((year) => year.year === urlYear) ? urlYear : defaultYear;
+        if (!hasAppliedInitialQuery.current) {
+          hasAppliedInitialQuery.current = true;
+          const urlYear = initialQueryRef.current.year;
+          const urlPage = Number(initialQueryRef.current.page || '1');
+          setSelectedYear(pickDefaultSportYear(yearList, urlYear));
+          setCurrentPage(Number.isFinite(urlPage) && urlPage > 0 ? urlPage : 1);
+          return;
+        }
 
-        setSelectedYear(initialYear);
-        setCurrentPage(Number.isFinite(urlPage) && urlPage > 0 ? urlPage : 1);
+        setSelectedYear((current) =>
+          yearList.some((year) => year.year === current)
+            ? current
+            : pickDefaultSportYear(yearList, null),
+        );
+        setCurrentPage(1);
       } catch (err) {
         console.error('Failed to fetch season years:', err);
-        setError(t('floorballPage.error'));
+        if (!cancelled) {
+          setError(t('floorballPage.error'));
+        }
       } finally {
-        setIsLoadingYears(false);
+        if (!cancelled) {
+          setIsLoadingYears(false);
+        }
       }
     };
 
-    void bootstrap();
+    void loadYears();
+    return () => {
+      cancelled = true;
+    };
+    // `t` is omitted so language changes do not refetch season years.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [audience.teamCategory]);
 
   useEffect(() => {
-    if (isLoadingYears || !selectedYear) {
+    if (isLoadingYears) {
+      return;
+    }
+
+    if (!selectedYear) {
+      setSeasonsData([]);
+      setUpcomingMatches([]);
+      setTotalCount(0);
+      setTotalPages(0);
       return;
     }
 
@@ -122,6 +154,7 @@ function FloorballPage() {
     }
     setSearchParams(next, { replace: true });
 
+    let cancelled = false;
     const loadSeasons = async () => {
       try {
         setIsLoadingSeasons(true);
@@ -136,6 +169,9 @@ function FloorballPage() {
         });
 
         const seasons: FloorballSeasonSummaryDto[] = response.data ?? [];
+        if (cancelled) {
+          return;
+        }
         setTotalCount(response.pagination.totalCount);
         setTotalPages(response.pagination.totalPages);
 
@@ -152,6 +188,9 @@ function FloorballPage() {
           seasons.map(async (season) => {
             try {
               const standings = await floorballStatisticsService.getTeamStandings(season.id);
+              if (cancelled) {
+                return;
+              }
               setSeasonsData((prev) =>
                 prev.map((item) =>
                   item.season.id === season.id
@@ -161,6 +200,9 @@ function FloorballPage() {
               );
             } catch (err) {
               console.error(`Failed to fetch standings for season ${season.id}:`, err);
+              if (cancelled) {
+                return;
+              }
               setSeasonsData((prev) =>
                 prev.map((item) =>
                   item.season.id === season.id ? { ...item, standingsLoading: false } : item,
@@ -198,19 +240,28 @@ function FloorballPage() {
                 - new Date(right.scheduledDateTime).getTime(),
             )
             .slice(0, MAX_UPCOMING_MATCHES);
-          setUpcomingMatches(upcoming);
+          if (!cancelled) {
+            setUpcomingMatches(upcoming);
+          }
         });
 
         await Promise.all([standingsTask, matchesTask]);
       } catch (err) {
         console.error('Failed to fetch seasons:', err);
-        setError(t('floorballPage.error'));
-        setIsLoadingSeasons(false);
+        if (!cancelled) {
+          setError(t('floorballPage.error'));
+          setIsLoadingSeasons(false);
+        }
       }
     };
 
     void loadSeasons();
-  }, [isLoadingYears, selectedYear, currentPage, reloadToken, setSearchParams, t, audience.teamCategory]);
+    return () => {
+      cancelled = true;
+    };
+    // `t` is omitted so language changes do not refetch standings and matches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingYears, selectedYear, currentPage, reloadToken, setSearchParams, audience.teamCategory]);
 
   const handleYearSelect = (year: string) => {
     if (year === selectedYear) {
@@ -275,6 +326,10 @@ function FloorballPage() {
     </>
   );
 
+  const visibleContentBlocks = seasonsData.some((item) => item.season.id === featuredSeasonId)
+    ? contentBlocks
+    : [];
+
   return (
     <SportLandingPage
       sport="floorball"
@@ -288,7 +343,7 @@ function FloorballPage() {
       onYearSelect={handleYearSelect}
       seasonsData={seasonsData}
       upcomingMatches={upcomingMatches}
-      contentBlocks={contentBlocks}
+      contentBlocks={visibleContentBlocks}
       fallbackInfo={fallbackInfo}
       isLoadingYears={isLoadingYears}
       isLoadingSeasons={isLoadingSeasons}

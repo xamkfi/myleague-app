@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
 using Domain.Enums.Floorball;
 using JoomleagueImporter.Models;
 
@@ -31,6 +33,7 @@ public class FloorballMatchImporter
     public int Skipped => _skipped;
     public int Failed => _failed;
     public int Repaired => _repaired;
+    public ConcurrentBag<int> FailedMatchIds { get; } = [];
 
     public FloorballMatchImporter(
         FloorballApiClient api,
@@ -50,6 +53,12 @@ public class FloorballMatchImporter
         _fillUnknownGoals = fillUnknownGoals;
         _repairMatchIds = repairMatchIds ?? [];
         _repairAll = repairAll;
+    }
+
+    private void RecordFailed(int oldMatchId)
+    {
+        Interlocked.Increment(ref _failed);
+        FailedMatchIds.Add(oldMatchId);
     }
 
     private class SideInfo
@@ -77,11 +86,11 @@ public class FloorballMatchImporter
         public int TimeSeconds { get; init; }
     }
 
-    private Guid _currentCompetitionId;
+    private readonly AsyncLocal<Guid> _competitionId = new();
 
     public async Task ImportProjectMatchesAsync(ProjectImport pi, FloorballSeasonDto season, Guid refereeId)
     {
-        _currentCompetitionId = season.Id;
+        _competitionId.Value = season.Id;
         OldProject project = pi.Project;
         int periodSeconds = project.PeriodDurationMinutes * 60;
         int regularPeriods = project.NumberOfPeriods;
@@ -150,6 +159,7 @@ public class FloorballMatchImporter
         Console.WriteLine($"  Importing {work.Count} matches (concurrency {MatchImportParallel.Degree})...");
         await MatchImportParallel.ForEachAsync(work, async item =>
         {
+            _competitionId.Value = season.Id;
             try
             {
                 if (item.RepairRequested)
@@ -158,18 +168,18 @@ public class FloorballMatchImporter
                         item.Match, item.ExistingMatchId, item.Home, item.Away,
                         playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
                     if (ok) Interlocked.Increment(ref _repaired);
-                    else Interlocked.Increment(ref _failed);
+                    else RecordFailed(item.Match.Match.Id);
                     return;
                 }
 
                 bool imported = await ImportSingleMatchAsync(
                     item.Match, season, refereeId, item.Home, item.Away,
                     playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
-                if (!imported) Interlocked.Increment(ref _failed);
+                if (!imported) RecordFailed(item.Match.Match.Id);
             }
             catch (Exception ex)
             {
-                Interlocked.Increment(ref _failed);
+                RecordFailed(item.Match.Match.Id);
                 Console.WriteLine($"{item.Prefix} ERROR: {ex.Message}");
                 _log.LogError("ImportMatch", new { item.Match.Match.Id }, ex.ToString());
             }
@@ -558,7 +568,7 @@ public class FloorballMatchImporter
         if (appearedGoalie.HasValue)
             return appearedGoalie.Value;
 
-        return await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId, _currentCompetitionId) ?? Guid.Empty;
+        return await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId, _competitionId.Value) ?? Guid.Empty;
     }
 
     private async Task ApplyAppearancesAsync(
@@ -592,7 +602,12 @@ public class FloorballMatchImporter
         if (!await _api.SetActiveRosterAsync(matchId, side.TeamId, fieldPlayers, goalieId))
         {
             await EnsureAppearancePlayersOnRosterAsync(side, goalieId, fieldPlayers);
-            await _api.SetActiveRosterAsync(matchId, side.TeamId, fieldPlayers, goalieId);
+            if (!await _api.SetActiveRosterAsync(matchId, side.TeamId, fieldPlayers, goalieId))
+            {
+                await Task.Delay(250);
+                await EnsureAppearancePlayersOnRosterAsync(side, goalieId, fieldPlayers);
+                await _api.SetActiveRosterAsync(matchId, side.TeamId, fieldPlayers, goalieId);
+            }
         }
     }
 
@@ -601,9 +616,42 @@ public class FloorballMatchImporter
         Guid goalieId,
         IReadOnlyList<(Guid PlayerId, FloorballPosition Position)> fieldPlayers)
     {
-        await _api.AddPlayerToTeamAsync(side.TeamId, goalieId, position: 4, jerseyNumber: null, _currentCompetitionId);
+        await _api.AddPlayerToTeamAsync(side.TeamId, goalieId, position: 4, jerseyNumber: null, _competitionId.Value);
+        FloorballTeamDto? team = await _api.GetTeamByIdAsync(side.TeamId, _competitionId.Value);
+        FloorballTeamPlayerDto? goalieRow = team?.Roster.FirstOrDefault(row => row.PlayerId == goalieId);
+        HashSet<int> claimed = team?.Roster
+            .Where(row => row.PlayerId != goalieId && row.JerseyNumber is > 0 and < 100)
+            .Select(row => row.JerseyNumber!.Value)
+            .ToHashSet() ?? [];
+        if (goalieRow == null || goalieRow.Position != FloorballPosition.Goalkeeper || !goalieRow.IsActive)
+        {
+            int jersey = HistoricalRosterApplicator.ClaimJersey(goalieRow?.JerseyNumber, claimed);
+            await _api.UpdateTeamPlayerAsync(
+                side.TeamId,
+                goalieId,
+                FloorballPosition.Goalkeeper,
+                jersey,
+                true,
+                _competitionId.Value);
+        }
+
         foreach ((Guid playerId, FloorballPosition _) in fieldPlayers)
-            await _api.AddPlayerToTeamAsync(side.TeamId, playerId, position: 1, jerseyNumber: null, _currentCompetitionId);
+        {
+            await _api.AddPlayerToTeamAsync(side.TeamId, playerId, position: 1, jerseyNumber: null, _competitionId.Value);
+            FloorballTeamPlayerDto? row = team?.Roster.FirstOrDefault(existing => existing.PlayerId == playerId);
+            if (row is { IsActive: true })
+                continue;
+
+            // A duplicate-key add is treated as success even when the existing row is inactive.
+            int jersey = HistoricalRosterApplicator.ClaimJersey(row?.JerseyNumber, claimed);
+            await _api.UpdateTeamPlayerAsync(
+                side.TeamId,
+                playerId,
+                row?.Position ?? FloorballPosition.Forward,
+                jersey,
+                true,
+                _competitionId.Value);
+        }
     }
 
     private static IEnumerable<Guid> EventPlayerIds(List<GoalRec> goals, List<PenaltyRec> penalties, int projectTeamId)
@@ -633,7 +681,7 @@ public class FloorballMatchImporter
     {
         if (!_fillUnknownGoals)
             return null;
-        return await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId, _currentCompetitionId);
+        return await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId, _competitionId.Value);
     }
 
     private static int PeriodOf(int timeSeconds, int periodSeconds, int regularPeriods)

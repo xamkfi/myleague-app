@@ -11,6 +11,37 @@
     "clubs": "Clubs",
     "team": "Team"
   },
+  "notFound": {
+    "title": "Page not found",
+    "message": "The page you were looking for does not exist or has been moved.",
+    "home": "Back to home"
+  },
+  "competition": {
+    "logoUrl": "Logo URL"
+  },
+  "registerPage": {
+    "intro": "Fill in the form and we will open an email to the club staff.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "ageGroup": "Age group",
+    "ageGroupPlaceholder": "Select an age group",
+    "ageGroupU12": "Under 12",
+    "ageGroupU15": "Under 15",
+    "ageGroupU18": "Under 18",
+    "ageGroupAdult": "Adults",
+    "ageGroupSenior": "Seniors (40+)",
+    "experience": "Experience level",
+    "experiencePlaceholder": "Select your experience level",
+    "experienceBeginner": "Beginner",
+    "experienceIntermediate": "Intermediate",
+    "experienceAdvanced": "Advanced",
+    "notes": "Additional notes",
+    "submit": "Send registration",
+    "mailSubject": "Registration: {{name}}",
+    "thankYouTitle": "Your email app was opened",
+    "thankYouBody": "If the message did not open, send your registration to pasi@mahl.fi."
+  },
   "sessionExpiry": {
     "message": "Your session expires in about {{minutes}} minutes. Stay logged in if you still need this page.",
     "stayLoggedIn": "Stay logged in",
@@ -39,6 +70,7 @@
       "title": "Latest News",
       "readMore": "Read more",
       "noNews": "No news available",
+      "noNewsForAudience": "No news for {{audience}} yet.",
       "loading": "Loading news...",
       "error": "Failed to load news",
       "retry": "Try again"
@@ -46,6 +78,7 @@
   },
   "eventCalendarPage": {
     "title": "Event calendar",
+    "description": "Browse matches by month. Pick a day or filter by season, status, and team.",
     "noEvents": "No events",
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
@@ -64,6 +97,7 @@
     },
     "filters": {
       "showFilters": "Filters",
+      "sport": "Sport",
       "status": "Status",
       "season": "Season",
       "allSeasons": "All seasons",
@@ -87,7 +121,12 @@
     "loadingMore": "Loading more...",
     "showMore": "Show more ({{count}})",
     "showLess": "Show less",
-    "error": "Failed to load matches"
+    "error": "Failed to load matches",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "seasonFallback": "Season",
+    "tbd": "TBD",
+    "liveBadge": "LIVE"
   },
   "language": {
     "en": "English",
@@ -136,7 +175,8 @@
       "venue": "Venue",
       "status": "Status",
       "overtime": "Went to overtime",
-      "shootout": "Went to shootout"
+      "shootout": "Went to shootout",
+      "notStarted": "The match has not started yet."
     },
     "lineups": {
       "notSet": "The match lineup has not been set yet."
@@ -299,9 +339,20 @@
   },
   "admin": {
     "title": "Admin Dashboard",
-    "database": "Database",
+    "nav": {
+      "league": "League data",
+      "administration": "Administration"
+    },
     "sportsTitle": "Sports",
     "view": "Admin view",
+    "home": {
+      "teams": "Teams",
+      "players": "Players",
+      "seasons": "Seasons",
+      "tournaments": "Tournaments",
+      "matches": "Matches",
+      "referees": "Referees"
+    },
     "navbar": {
       "matchesInProgress_one": "{{count}} match in progress",
       "matchesInProgress_other": "{{count}} matches in progress"
@@ -325,10 +376,12 @@
       "users": "System Users",
       "manageUsers": "Manage system users",
       "rules": "Rules",
-      "manageRules": "Manage rules"
+      "manageRules": "Manage rules",
+      "manageInfoPages": "Manage info pages",
+      "manageFooterContacts": "Manage footer content",
+      "manageSettings": "Manage site settings"
     },
     "settings": {
-      "navSection": "Settings",
       "nav": "Site settings",
       "pageTitle": "Site settings",
       "description": "Token and login-code lifetimes apply to newly issued sessions only. Secrets stay in server configuration.",
@@ -347,7 +400,16 @@
       "save": "Save settings",
       "saveSuccess": "Settings saved.",
       "saveFailed": "Failed to save settings.",
-      "loadFailed": "Failed to load settings."
+      "loadFailed": "Failed to load settings.",
+      "licenceTitle": "Player licences",
+      "licenceHint": "On this date each year, unpaid team licences become inactive. Default is 1 May.",
+      "licenceDay": "Day",
+      "licenceMonth": "Month",
+      "licenceLastReset": "Last licence reset year: {{year}}.",
+      "licenceResetNow": "Reset player licences now",
+      "licenceResetConfirm": "Deactivate unpaid team licences now? Players stay inactive until you mark each team licence paid again.",
+      "licenceResetSuccess": "Licences reset: {{floorball}} floorball, {{football}} football, {{hockey}} hockey.",
+      "licenceResetFailed": "Failed to reset player licences."
     },
     "siteContent": {
       "title": "Site content",
@@ -566,7 +628,7 @@
         "email": "Email",
         "phone": "Phone",
         "alternativePhone": "Alternative Phone",
-        "floorballAssignment": "Floorball Team Assignment (Optional)",
+        "floorballAssignment": "Team assignment (optional)",
         "team": "Team",
         "selectTeam": "Select a team...",
         "searchTeams": "Search teams...",
@@ -656,6 +718,8 @@
       "sport_category": "Sport Category",
       "select_category": "Select category",
       "select_sport": "Select sport",
+      "team_category": "Audience",
+      "all_audiences": "All audiences",
       "tags": "Tags",
       "add_tag_placeholder": "Type tag and press Enter...",
       "no_tags": "No tags added yet. Tags help categorize your article.",
@@ -683,6 +747,9 @@
       "preview_description": "This is how your article will appear to readers",
       "edit_description": "Edit existing news article",
       "create_description": "Create a new news article",
+      "required_hint": "Title and article content are required. Preview keeps your draft on this page.",
+      "confirmPublishTitle": "Publish article",
+      "confirmUpdateTitle": "Update article",
       "main_picture_preview": "Main picture preview",
       "news_image": "News image",
       "noData": "No news articles found",
@@ -702,7 +769,18 @@
       "actions": {
         "edit": "Edit",
         "delete": "Delete",
+        "archive": "Archive",
+        "unarchive": "Unarchive",
+        "menu": "News actions menu",
         "toggleArchive": "Click to toggle archive status"
+      },
+      "filter": {
+        "category": "Category",
+        "allCategories": "All categories",
+        "sport": "Sport",
+        "allSports": "All sports",
+        "search": "Search",
+        "searchPlaceholder": "Search news articles..."
       },
       "status": {
         "archived": "Yes",
@@ -721,6 +799,7 @@
         "updateArchiveFailed": "Failed to update archive status",
         "publish_error": "Failed to publish news article. Please try again.",
         "update_error": "Failed to update news article. Please try again.",
+        "loadFailed": "Failed to load news article for editing",
         "title_required": "Title is required",
         "title_too_short": "Title must be at least 5 characters long",
         "title_too_long": "Title cannot exceed 200 characters",
@@ -763,6 +842,9 @@
     "create": {
       "title": "Create Club"
     },
+    "edit": {
+      "title": "Edit club"
+    },
     "table": {
       "name": "Club Name",
       "city": "City",
@@ -773,6 +855,11 @@
       "openClub": "Open club"
     },
     "form": {
+      "lead": "Only the club name is required. City, country, founding date and contact details can be left empty.",
+      "basicSection": "Basic information",
+      "contactSection": "Contact details",
+      "optional": "optional",
+      "emailPlaceholder": "club@example.com",
       "name": "Club Name",
       "city": "City",
       "country": "Country",
@@ -808,6 +895,25 @@
       "editTeam": "Edit team",
       "season": "Season",
       "tournament": "Tournament"
+    },
+    "admins": {
+      "title": "Club admins",
+      "hint": "Club admins can edit the club information and manage rosters and match lineups for the teams under the club.",
+      "cardHint": "These users can edit club information and manage team rosters.",
+      "noneSelected": "No club admins assigned yet.",
+      "remove": "Remove",
+      "addButton": "Add club admin",
+      "saveError": "Failed to update club admins",
+      "loadError": "Failed to load users",
+      "searchError": "Failed to search persons",
+      "emailRequired": "This person has no email address, so they cannot be invited as a club admin.",
+      "modalTitle": "Manage club admins",
+      "currentTitle": "Current club admins",
+      "searchTitle": "Search persons",
+      "searchPlaceholder": "Search persons by name...",
+      "noPersons": "No persons found.",
+      "added": "Added",
+      "add": "Add"
     },
     "deleteClubButton": "Delete club",
     "confirmDeleteTitle": "Delete club?",
@@ -995,6 +1101,7 @@
         "serverError": "Server error. Please try again later.",
         "overlappingDates": "A season already exists that overlaps with the specified dates.",
         "cannotUpdateCompleted": "Cannot update a completed season.",
+        "hasMatches": "Cannot delete a season that has matches. Delete the matches first.",
         "detailsSaveFailed": "Season details could not be saved: {{reason}}",
         "updateFailed": "Operation failed. Please try again."
       },
@@ -1004,6 +1111,59 @@
         "divisionRequired": "Please select a valid division.",
         "startDateRequired": "Start date is required.",
         "endDateRequired": "End date is required."
+      },
+      "import": {
+        "button": "Import from JSON",
+        "buttonTooltip": "Create a season by uploading a JSON file (myleague format).",
+        "title": "Import season from JSON",
+        "dropzone": "Drop a JSON file here, or click to choose.",
+        "chooseFile": "Choose file",
+        "downloadSample": "Download sample JSON",
+        "invalidTitle": "JSON validation failed",
+        "invalidJson": "File is not valid JSON: {{msg}}",
+        "seasonName": "Season name",
+        "seasonVenue": "Default venue",
+        "seasonVenuePlaceholder": "e.g. Kampparit Areena",
+        "seasonVenueHint": "Pre-filled from the JSON when available. Used as the default location for matches that omit a venue.",
+        "seasonCategory": "Season type",
+        "seasonCategoryHint": "Applied to the season and to newly created teams (existing teams keep their category).",
+        "previewNote": "Existing clubs/teams (matched by name) are reused. Only missing ones are created.",
+        "autoRevert": "Automatically revert if any step fails",
+        "startImport": "Start import",
+        "starting": "Starting...",
+        "successTitle": "Import complete",
+        "failedTitle": "Import failed",
+        "failedNote": "{{count}} entities were created before the failure. You can revert them.",
+        "aborted": "Import was cancelled by the user.",
+        "unknownError": "Import failed for an unknown reason.",
+        "revertStart": "Reverting created entities...",
+        "revertAll": "Revert all changes",
+        "reverting": "Reverting...",
+        "revertedTitle": "Revert complete",
+        "revertedSummary": "Removed {{deleted}} item(s). {{failed}} failure(s) — check the log.",
+        "openSeason": "Open season",
+        "playerRosterNote": "Player rosters (if included in the JSON) are created and added to teams automatically. Existing players (matched by name) are reused.",
+        "counts": {
+          "clubs": "Clubs",
+          "divisions": "Divisions",
+          "teams": "Teams",
+          "players": "Players",
+          "season": "Season",
+          "assignments": "Season assignments",
+          "matches": "Matches"
+        },
+        "aiHelp": {
+          "title": "Don't have a JSON file yet? Generate one with AI",
+          "step1": "Copy the prompt below with the \"Copy prompt\" button (or download it if copying is blocked).",
+          "step2": "Open ChatGPT, Claude, Gemini or another vision-capable AI and paste the prompt (Ctrl/Cmd + V).",
+          "step3": "Attach a screenshot / photo of the season schedule (and roster sheets if you have them) and send the message.",
+          "step4": "Save the AI's response as a .json file and drop it into the area above.",
+          "copyPrompt": "Copy AI prompt to clipboard",
+          "downloadPrompt": "Download AI prompt as .txt",
+          "copiedToast": "Prompt copied to clipboard. Paste it into your AI chat (Ctrl/Cmd + V) and attach the schedule image.",
+          "downloadedToast": "Prompt downloaded as a .txt file. Open it, copy the contents, and paste them into your AI chat.",
+          "errorToast": "Could not copy or download the prompt. Please try the \"Download\" button again."
+        }
       }
     },
     "tournaments": {
@@ -1686,6 +1846,9 @@
     "similarNews": "Similar news",
     "relatedTeams": "Teams related to this article",
     "noNewsFound": "No news found for the selected filters.",
+    "noNewsForAudience": "No news for {{audience}} yet.",
+    "fetchError": "News could not be loaded.",
+    "retry": "Try again",
     "category": {
       "all": "All"
     },
@@ -1861,6 +2024,11 @@
     "noCareer": "No career data available.",
     "sportsLabel": "Sports",
     "noSports": "This player has no sport profiles.",
+    "licencesTitle": "Current licences",
+    "licencePaid": "Paid",
+    "licenceUnpaid": "Unpaid",
+    "licenceBaseRoster": "Base roster",
+    "noLicences": "No licence currently in force.",
     "sports": {
       "floorball": "Floorball",
       "football": "Football",
@@ -1880,7 +2048,36 @@
       "pageOf": "Page {{current}} / {{total}}"
     }
   },
+  "playerLicence": {
+    "column": "Licence",
+    "markPaid": "Mark licence paid",
+    "markUnpaid": "Mark licence unpaid",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "activeLicences": "Active licences",
+    "noActiveLicences": "No active licences",
+    "filterLabel": "Licence",
+    "filterAll": "All",
+    "filterActive": "Active licence",
+    "filterInactive": "No active licence"
+  },
   "football": {
+    "management": {
+      "actions": {
+        "teams": "Teams",
+        "manageTeams": "Manage teams",
+        "players": "Players",
+        "managePlayers": "Manage players",
+        "seasons": "Seasons",
+        "manageSeasons": "Manage seasons",
+        "tournaments": "Tournaments",
+        "manageTournaments": "Manage tournaments",
+        "matches": "Matches",
+        "manageMatches": "Manage matches",
+        "referees": "Referees",
+        "manageReferees": "Manage referees"
+      }
+    },
     "positions": {
       "Goalkeeper": "Goalkeeper",
       "Defender": "Defender",
@@ -1921,14 +2118,71 @@
     },
     "teams": {
       "rosterCompetition": "Competition",
-      "allCompetitions": "All competitions"
+      "allCompetitions": "All competitions",
+      "createPlayerHint": "Only existing players can be added. If you just created a person, convert them first.",
+      "createPlayerFromPerson": "Create player from person"
     },
     "seasons": {
       "createFromClub": "Create new team",
       "createFromClubHint": "Create a new club team with an empty roster, or add an existing team to copy its latest roster.",
       "selectClub": "Select club",
       "newTeamName": "New team name",
-      "teamCreatedFromClub": "New team created with an empty roster."
+      "newTeamShortName": "Short name (optional)",
+      "newTeamHomeArena": "Home arena (optional)",
+      "teamCreatedFromClub": "New team created with an empty roster.",
+      "import": {
+        "button": "Import from JSON",
+        "buttonTooltip": "Create a season by uploading a JSON file (myleague format).",
+        "title": "Import season from JSON",
+        "dropzone": "Drop a JSON file here, or click to choose.",
+        "chooseFile": "Choose file",
+        "downloadSample": "Download sample JSON",
+        "invalidTitle": "JSON validation failed",
+        "invalidJson": "File is not valid JSON: {{msg}}",
+        "seasonName": "Season name",
+        "seasonVenue": "Default venue",
+        "seasonVenuePlaceholder": "e.g. Kampparit Areena",
+        "seasonVenueHint": "Pre-filled from the JSON when available. Used as the default location for matches that omit a venue.",
+        "seasonCategory": "Season type",
+        "seasonCategoryHint": "Applied to the season and to newly created teams (existing teams keep their category).",
+        "previewNote": "Existing clubs/teams (matched by name) are reused. Only missing ones are created.",
+        "autoRevert": "Automatically revert if any step fails",
+        "startImport": "Start import",
+        "starting": "Starting...",
+        "successTitle": "Import complete",
+        "failedTitle": "Import failed",
+        "failedNote": "{{count}} entities were created before the failure. You can revert them.",
+        "aborted": "Import was cancelled by the user.",
+        "unknownError": "Import failed for an unknown reason.",
+        "revertStart": "Reverting created entities...",
+        "revertAll": "Revert all changes",
+        "reverting": "Reverting...",
+        "revertedTitle": "Revert complete",
+        "revertedSummary": "Removed {{deleted}} item(s). {{failed}} failure(s) — check the log.",
+        "openSeason": "Open season",
+        "playerRosterNote": "Player rosters (if included in the JSON) are created and added to teams automatically. Existing players (matched by name) are reused.",
+        "counts": {
+          "clubs": "Clubs",
+          "divisions": "Divisions",
+          "teams": "Teams",
+          "players": "Players",
+          "season": "Season",
+          "assignments": "Season assignments",
+          "matches": "Matches"
+        },
+        "aiHelp": {
+          "title": "Don't have a JSON file yet? Generate one with AI",
+          "step1": "Copy the prompt below with the \"Copy prompt\" button (or download it if copying is blocked).",
+          "step2": "Open ChatGPT, Claude, Gemini or another vision-capable AI and paste the prompt (Ctrl/Cmd + V).",
+          "step3": "Attach a screenshot / photo of the season schedule (and roster sheets if you have them) and send the message.",
+          "step4": "Save the AI's response as a .json file and drop it into the area above.",
+          "copyPrompt": "Copy AI prompt to clipboard",
+          "downloadPrompt": "Download AI prompt as .txt",
+          "copiedToast": "Prompt copied to clipboard. Paste it into your AI chat (Ctrl/Cmd + V) and attach the schedule image.",
+          "downloadedToast": "Prompt downloaded as a .txt file. Open it, copy the contents, and paste them into your AI chat.",
+          "errorToast": "Could not copy or download the prompt. Please try the \"Download\" button again."
+        }
+      }
     }
   },
   "sports": {
@@ -1936,6 +2190,21 @@
     "floorball": "Floorball",
     "football": "Football",
     "iceHockey": "Ice Hockey"
+  },
+  "tournaments": {
+    "intro": "Browse upcoming, ongoing and finished tournaments. Open a tournament to see groups, the match schedule and statistics.",
+    "open": "Open tournament",
+    "loading": "Loading tournaments...",
+    "retry": "Try again",
+    "noTournaments": "No tournaments right now.",
+    "statusUpcoming": "Upcoming",
+    "statusOngoing": "Ongoing",
+    "statusPast": "Finished",
+    "dates": "Dates",
+    "venue": "Venue",
+    "teams": "Teams",
+    "groups": "Groups",
+    "cardDefaultDescription": "Browse the tournament groups, results and statistics."
   },
   "sportsPage": {
     "title": "Sports",
@@ -1952,10 +2221,21 @@
     "adult": "Adult",
     "youth": "Youth",
     "women": "Women",
+    "all": "All audiences",
     "intro": "Select an audience category to browse related content.",
+    "descriptions": {
+      "adult": "Leagues, matches and statistics for adults.",
+      "youth": "Leagues, matches and statistics for youth.",
+      "women": "Leagues, matches and statistics for women."
+    },
     "selected": "Selected",
     "select": "Select",
-    "switcherLabel": "Audience switcher"
+    "switcherLabel": "Audience switcher",
+    "descriptions": {
+      "adult": "Adult leagues, cups, and club activity.",
+      "youth": "Youth series and junior programmes.",
+      "women": "Women’s leagues, cups, and club activity."
+    }
   },
   "hockey": {
     "management": {
@@ -2022,6 +2302,8 @@
       },
       "addPlayer": "Add player",
       "addPlayerToTeam": "Add Player to Team",
+      "createPlayerHint": "Only existing players can be added. If you just created a person, convert them first.",
+      "createPlayerFromPerson": "Create player from person",
       "searchAvailablePlayers": "Search available players...",
       "selectedPlayers": "{{count}} selected",
       "addSelectedToTeam": "Add Selected to Team ({{count}})",
@@ -2118,6 +2400,8 @@
       "createFromClubHint": "Create a new club team with an empty roster, or add an existing team to copy its latest roster.",
       "selectClub": "Select club",
       "newTeamName": "New team name",
+      "newTeamShortName": "Short name (optional)",
+      "newTeamHomeArena": "Home arena (optional)",
       "teamCreatedFromClub": "New team created with an empty roster.",
       "searchTeams": "Search teams by name...",
       "allCategories": "All Categories",
@@ -2158,7 +2442,61 @@
         "notFound": "Season not found",
         "updateFailed": "Failed to update season",
         "cannotUpdateCompleted": "Cannot update a completed season.",
+        "hasMatches": "Cannot delete a season that has matches. Delete the matches first.",
         "detailsSaveFailed": "Season details could not be saved: {{reason}}"
+      },
+      "import": {
+        "button": "Import from JSON",
+        "buttonTooltip": "Create a season by uploading a JSON file (myleague format).",
+        "title": "Import season from JSON",
+        "dropzone": "Drop a JSON file here, or click to choose.",
+        "chooseFile": "Choose file",
+        "downloadSample": "Download sample JSON",
+        "invalidTitle": "JSON validation failed",
+        "invalidJson": "File is not valid JSON: {{msg}}",
+        "seasonName": "Season name",
+        "seasonVenue": "Default venue",
+        "seasonVenuePlaceholder": "e.g. Kampparit Areena",
+        "seasonVenueHint": "Pre-filled from the JSON when available. Used as the default location for matches that omit a venue.",
+        "seasonCategory": "Season type",
+        "seasonCategoryHint": "Applied to the season and to newly created teams (existing teams keep their category).",
+        "previewNote": "Existing clubs/teams (matched by name) are reused. Only missing ones are created.",
+        "autoRevert": "Automatically revert if any step fails",
+        "startImport": "Start import",
+        "starting": "Starting...",
+        "successTitle": "Import complete",
+        "failedTitle": "Import failed",
+        "failedNote": "{{count}} entities were created before the failure. You can revert them.",
+        "aborted": "Import was cancelled by the user.",
+        "unknownError": "Import failed for an unknown reason.",
+        "revertStart": "Reverting created entities...",
+        "revertAll": "Revert all changes",
+        "reverting": "Reverting...",
+        "revertedTitle": "Revert complete",
+        "revertedSummary": "Removed {{deleted}} item(s). {{failed}} failure(s) — check the log.",
+        "openSeason": "Open season",
+        "playerRosterNote": "Player rosters (if included in the JSON) are created and added to teams automatically. Existing players (matched by name) are reused.",
+        "counts": {
+          "clubs": "Clubs",
+          "divisions": "Divisions",
+          "teams": "Teams",
+          "players": "Players",
+          "season": "Season",
+          "assignments": "Season assignments",
+          "matches": "Matches"
+        },
+        "aiHelp": {
+          "title": "Don't have a JSON file yet? Generate one with AI",
+          "step1": "Copy the prompt below with the \"Copy prompt\" button (or download it if copying is blocked).",
+          "step2": "Open ChatGPT, Claude, Gemini or another vision-capable AI and paste the prompt (Ctrl/Cmd + V).",
+          "step3": "Attach a screenshot / photo of the season schedule (and roster sheets if you have them) and send the message.",
+          "step4": "Save the AI's response as a .json file and drop it into the area above.",
+          "copyPrompt": "Copy AI prompt to clipboard",
+          "downloadPrompt": "Download AI prompt as .txt",
+          "copiedToast": "Prompt copied to clipboard. Paste it into your AI chat (Ctrl/Cmd + V) and attach the schedule image.",
+          "downloadedToast": "Prompt downloaded as a .txt file. Open it, copy the contents, and paste them into your AI chat.",
+          "errorToast": "Could not copy or download the prompt. Please try the \"Download\" button again."
+        }
       }
     },
     "tournaments": {
@@ -2294,6 +2632,8 @@
       "personCreated": "Person created",
       "setActive": "Set Active",
       "setInactive": "Set Inactive",
+      "markLicencePaid": "Mark licence paid",
+      "markLicenceUnpaid": "Mark licence unpaid",
       "confirmDelete": {
         "title": "Confirm Deletion",
         "message": "Remove {{name}} from the team?"
@@ -2997,12 +3337,18 @@
     "contacts": {
       "title": "CONTACTS",
       "empty": "No contacts have been added yet."
+    },
+    "credits": {
+      "madeBy": "Site by",
+      "programme": "Software Engineering",
+      "source": "Source code here"
     }
   },
   "clubsPage": {
     "title": "Clubs",
     "description": "Browse and search MAHL league clubs.",
     "searchPlaceholder": "Search clubs...",
+    "clearSearch": "Clear search",
     "noClubs": "No clubs found",
     "viewClub": "View club",
     "loading": "Loading clubs...",
@@ -3018,14 +3364,16 @@
     "backToClubs": "All clubs",
     "teams": "Teams",
     "teamsLoading": "Loading teams...",
-    "noTeams": "This club doesn't have any floorball teams yet.",
+    "noTeams": "This club has no teams in the selected age group.",
     "website": "Website",
     "city": "City",
     "founded": "Founded",
     "contact": "Contact",
     "activeRoster": "Active roster",
     "noActiveMembers": "No active members",
-    "viewTeam": "View team"
+    "viewTeam": "View team",
+    "showEarlierSeasons": "Earlier seasons ({{count}})",
+    "hideEarlierSeasons": "Hide earlier seasons"
   },
   "clubAdmin": {
     "view": "Club admin",
@@ -3088,6 +3436,31 @@
     "loadClubError": "Failed to load the club",
     "clubInfoSaved": "Club information has been saved.",
     "clubInfoTitle": "Club information"
+  },
+  "tournaments": {
+    "statusUpcoming": "Upcoming",
+    "statusOngoing": "Ongoing",
+    "statusPast": "Finished",
+    "cardDefaultDescription": "Browse groups, results, and statistics for this tournament.",
+    "dates": "Dates",
+    "venue": "Venue",
+    "teams": "Teams",
+    "groups": "Groups",
+    "tabSummary": "Summary",
+    "tabGroups": "Groups",
+    "tabFixtures": "Fixtures",
+    "tabResults": "Results",
+    "tabStatistics": "Statistics",
+    "loading": "Loading tournaments...",
+    "retry": "Try again",
+    "intro": "Browse upcoming, ongoing, and finished tournaments. Open a tournament to see groups, fixtures, and statistics.",
+    "noTournaments": "No tournaments at the moment."
+  },
+  "notFoundPage": {
+    "title": "Page not found",
+    "heading": "This page does not exist",
+    "description": "The address may be outdated or mistyped. Return to the home page to continue.",
+    "home": "Back to home"
   },
   "auth": {
     "loginTitle": "Admin Login",

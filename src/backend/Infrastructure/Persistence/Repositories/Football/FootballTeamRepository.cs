@@ -175,29 +175,57 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
 
         public async Task<Dictionary<Guid, FootballTeam>> GetTeamsByPlayerIdsAsync(IEnumerable<Guid> playerIds, CancellationToken cancellationToken = default)
         {
-            if (!playerIds.Any())
+            List<Guid> ids = playerIds.Distinct().ToList();
+            if (ids.Count == 0)
             {
                 return new Dictionary<Guid, FootballTeam>();
             }
 
-            // Find all teams that contain any of the players
-            List<FootballTeam> teamsWithPlayers = await _entities
-                .Include(t => t.Roster)
-                .Where(t => t.Roster.Any(p => playerIds.Contains(p.PlayerId)))
-                .ToListAsync(cancellationToken);
-
-            Dictionary<Guid, FootballTeam> playerTeamMap = new Dictionary<Guid, FootballTeam>();
-
-            // Map each player to their team
-            foreach (FootballTeam team in teamsWithPlayers)
-            {
-                foreach (FootballTeamPlayer player in team.Roster)
+            var memberships = await (
+                from membership in _dbContext.FootballTeamPlayers
+                where ids.Contains(membership.PlayerId)
+                join competition in _dbContext.FootballCompetitions
+                    on membership.CompetitionId equals competition.Id into competitions
+                from competition in competitions.DefaultIfEmpty()
+                select new
                 {
-                    // If the player is in our list of searched players and not already mapped, add them
-                    if (playerIds.Contains(player.PlayerId) && !playerTeamMap.ContainsKey(player.PlayerId))
-                    {
-                        playerTeamMap[player.PlayerId] = team;
-                    }
+                    membership.PlayerId,
+                    membership.TeamId,
+                    membership.IsActive,
+                    membership.UpdatedAt,
+                    EndDate = competition == null ? (DateTime?)null : competition.EndDate,
+                    StartDate = competition == null ? (DateTime?)null : competition.StartDate,
+                    CompetitionIsCurrent = competition != null && competition.IsActive && !competition.IsCompleted
+                }).ToListAsync(cancellationToken);
+
+            Dictionary<Guid, Guid> playerToTeam = new();
+            foreach (var group in memberships.GroupBy(row => row.PlayerId))
+            {
+                Guid? teamId = CurrentRosterTeamPicker.PickTeamId(group.Select(row => new RosterMembershipCandidate(
+                    row.TeamId,
+                    row.EndDate,
+                    row.StartDate,
+                    row.CompetitionIsCurrent,
+                    row.IsActive,
+                    row.UpdatedAt ?? DateTime.MinValue)));
+                if (teamId.HasValue)
+                {
+                    playerToTeam[group.Key] = teamId.Value;
+                }
+            }
+
+            List<Guid> teamIds = playerToTeam.Values.Distinct().ToList();
+            List<FootballTeam> teams = await _entities
+                .Where(team => teamIds.Contains(team.Id))
+                .ToListAsync(cancellationToken);
+            Dictionary<Guid, FootballTeam> teamsById = teams.ToDictionary(team => team.Id);
+
+            Dictionary<Guid, FootballTeam> playerTeamMap = new();
+            foreach (KeyValuePair<Guid, Guid> pair in playerToTeam)
+            {
+                if (teamsById.TryGetValue(pair.Value, out FootballTeam? team))
+                {
+                    playerTeamMap[pair.Key] = team;
                 }
             }
 
@@ -379,5 +407,97 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         {
             return await _entities.AnyAsync(t => t.DivisionId == divisionId, cancellationToken);
         }
+
+        public async Task<int> DeactivateOpenPlayerLicencesAsync(CancellationToken cancellationToken = default)
+        {
+            DateTime now = DateTime.UtcNow;
+            return await _dbContext.FootballTeamPlayers
+                .Where(row => row.IsActive)
+                .Where(row =>
+                    row.CompetitionId == null
+                    || !_dbContext.FootballCompetitions.Any(competition =>
+                        competition.Id == row.CompetitionId && competition.IsCompleted))
+                .ExecuteUpdateAsync(
+                    setters => setters
+                        .SetProperty(row => row.IsActive, false)
+                        .SetProperty(row => row.UpdatedAt, now),
+                    cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<PlayerLicenceRow>> GetOpenPlayerLicencesAsync(
+            Guid playerId,
+            CancellationToken cancellationToken = default)
+        {
+            List<PlayerLicenceRow> rows = await (
+                from membership in _dbContext.FootballTeamPlayers
+                join team in _dbContext.FootballTeams on membership.TeamId equals team.Id
+                join competition in _dbContext.FootballCompetitions on membership.CompetitionId equals competition.Id into competitions
+                from competition in competitions.DefaultIfEmpty()
+                where membership.PlayerId == playerId
+                    && membership.IsActive
+                    && competition != null
+                    && competition.IsActive
+                    && !competition.IsCompleted
+                orderby team.Name, competition != null ? competition.Name : null
+                select new PlayerLicenceRow(
+                    team.Id,
+                    team.Name,
+                    membership.CompetitionId,
+                    competition != null ? competition.Name : null,
+                    membership.IsActive)
+            ).ToListAsync(cancellationToken);
+
+            return rows;
+        }
+
+        public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>>> GetOpenPlayerLicencesByPlayerIdsAsync(
+            IReadOnlyCollection<Guid> playerIds,
+            CancellationToken cancellationToken = default)
+        {
+            if (playerIds.Count == 0)
+            {
+                return new Dictionary<Guid, IReadOnlyList<PlayerLicenceRow>>();
+            }
+
+            List<Guid> ids = playerIds.Distinct().ToList();
+            List<FootballOpenLicenceRow> rows = await (
+                from membership in _dbContext.FootballTeamPlayers
+                join team in _dbContext.FootballTeams on membership.TeamId equals team.Id
+                join competition in _dbContext.FootballCompetitions on membership.CompetitionId equals competition.Id
+                where ids.Contains(membership.PlayerId)
+                    && membership.IsActive
+                    && competition.IsActive
+                    && !competition.IsCompleted
+                orderby team.Name, competition.Name
+                select new FootballOpenLicenceRow(
+                    membership.PlayerId,
+                    team.Id,
+                    team.Name,
+                    membership.CompetitionId,
+                    competition.Name,
+                    membership.IsActive)
+            ).ToListAsync(cancellationToken);
+
+            return rows
+                .GroupBy(row => row.PlayerId)
+                .ToDictionary(
+                    group => group.Key,
+                    group => (IReadOnlyList<PlayerLicenceRow>)group
+                        .Select(row => new PlayerLicenceRow(
+                            row.TeamId,
+                            row.TeamName,
+                            row.CompetitionId,
+                            row.CompetitionName,
+                            row.IsActive))
+                        .ToList());
+        }
+
+        private sealed record FootballOpenLicenceRow(
+            Guid PlayerId,
+            Guid TeamId,
+            string TeamName,
+            Guid? CompetitionId,
+            string? CompetitionName,
+            bool IsActive);
     }
 }

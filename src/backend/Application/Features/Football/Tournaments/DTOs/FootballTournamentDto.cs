@@ -46,4 +46,5 @@ public record FootballTournamentDto(
     int TeamCount,
     int MatchCount,
     List<FootballPlayoffScheduleSlotDto> PlayoffSchedule,
-    TeamCategory TeamCategory);
+    TeamCategory TeamCategory,
+    string? LogoUrl);

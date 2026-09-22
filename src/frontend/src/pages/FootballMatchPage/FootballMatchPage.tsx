@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { footballMatchService } from '../../api/football/footballMatchService';
 import { FootballMatchStatus, type FootballMatchDto } from '../../types/football/footballTypes';
 import './FootballMatchPage.scss';
@@ -19,6 +20,7 @@ import { getTeamPath } from '../../utils/sportRoutes';
 import { slugify } from '../../utils/slugUtils';
 
 export default function FootballMatchPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [match, setMatch] = useState<FootballMatchDto | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -136,9 +138,15 @@ export default function FootballMatchPage() {
               homeScore: match.homeScore,
               awayScore: match.awayScore,
               scheduledDateTime: match.scheduledDateTime,
+              venue: match.venue,
               isScheduled: match.status === FootballMatchStatus.Scheduled,
               isLive: match.status === FootballMatchStatus.InProgress,
               isFinal: match.status === FootballMatchStatus.Completed,
+              statusLabel:
+                match.status === FootballMatchStatus.Postponed ||
+                match.status === FootballMatchStatus.Cancelled
+                  ? t(`football.matches.status.${match.status}`, match.status)
+                  : null,
             }
           : undefined
       }

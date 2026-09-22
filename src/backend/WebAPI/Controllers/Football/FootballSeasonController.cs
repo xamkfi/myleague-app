@@ -45,14 +45,16 @@ public class FootballSeasonController : BaseApiController
     }
 
     /// <summary>
-    /// Get season years
+    /// Get season years. When <paramref name="teamCategory"/> is set, only years that have a season in that audience are returned.
     /// </summary>
     [HttpGet("years")]
     [ProducesResponseType(typeof(ApiResponse<List<FootballSeasonYearDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ApiResponse<List<FootballSeasonYearDto>>>> GetSeasonYears()
+    public async Task<ActionResult<ApiResponse<List<FootballSeasonYearDto>>>> GetSeasonYears(
+        [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null)
     {
-        Result<IEnumerable<FootballSeasonYearDto>> result = await _mediator.Send(new GetFootballSeasonYearsQuery());
+        Result<IEnumerable<FootballSeasonYearDto>> result =
+            await _mediator.Send(new GetFootballSeasonYearsQuery(teamCategory));
         return HandleListResult(result, "Football season years retrieved successfully", "Failed to retrieve football season years");
     }
 
@@ -201,7 +203,8 @@ public class FootballSeasonController : BaseApiController
             request.WinPoints,
             request.DrawPoints,
             request.LossPoints,
-            request.TeamCategory);
+            request.TeamCategory,
+            request.LogoUrl);
 
         Result<FootballSeasonDto> result = await _mediator.Send(command);
 
@@ -250,7 +253,8 @@ public class FootballSeasonController : BaseApiController
             request.WinPoints,
             request.DrawPoints,
             request.LossPoints,
-            request.TeamCategory);
+            request.TeamCategory,
+            request.LogoUrl);
 
         Result<FootballSeasonDto> result = await _mediator.Send(command);
         return HandleResult(result, "Football season updated successfully", "Failed to update football season");

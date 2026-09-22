@@ -1,46 +1,46 @@
 @use 'sass:map';
 @use '@variables' as *;
 
-// Audience (age group) selector shown directly under the MAHL wordmark. The trigger
-// always reveals the active group so the current theme colour is explained, not just shown.
+// Audience (age group) selector shown directly under the MAHL wordmark.
+// The trigger is the group name plus a white caret; colour dots stay in the menu.
 .audience-switcher {
   position: relative;
 
   &__trigger {
     display: inline-flex;
     align-items: center;
-    gap: map.get($spacing, 'xs');
-    min-height: 32px;
-    padding: 0.4rem 0.85rem;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: map.get($border-radius, 'xl');
-    background: rgba(255, 255, 255, 0.16);
+    gap: 0.4rem;
+    min-height: 0;
+    padding: 0;
+    border: none;
+    border-radius: map.get($border-radius, 'md');
+    background: transparent;
     color: $color-white;
     font-family: $font-family-body;
-    font-size: map.get($font-sizes, 'sm');
+    font-size: 1.15rem;
     font-weight: map.get($font-weights, 'semibold');
-    line-height: 1;
-    letter-spacing: 0.02em;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: background-color $transition-default, border-color $transition-default;
+    transition: color $transition-default, opacity $transition-default;
 
-    &:hover,
     &:focus-visible {
-      background: rgba(255, 255, 255, 0.24);
-      border-color: rgba(255, 255, 255, 0.7);
+      outline: 2px solid $color-white;
+      outline-offset: 3px;
     }
   }
 
   &__dot {
-    width: 10px;
-    height: 10px;
+    width: 6px;
+    height: 6px;
     border-radius: map.get($border-radius, 'full');
     background: var(--brand-light, #{$color-blue-light});
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
     flex-shrink: 0;
 
     &--option {
-      box-shadow: none;
+      width: 8px;
+      height: 8px;
 
       &[data-audience-dot='adult'] {
         background: #1c356d;
@@ -59,6 +59,10 @@
   }
 
   &__caret {
+    flex-shrink: 0;
+    width: 14px;
+    height: 9px;
+    color: $color-white;
     transition: transform $transition-default;
   }
 
@@ -68,53 +72,57 @@
 
   &__menu {
     position: absolute;
-    top: calc(100% + #{map.get($spacing, 'xs')});
+    top: calc(100% + 0.35rem);
     left: 0;
-    min-width: 196px;
+    min-width: 11rem;
     margin: 0;
-    padding: map.get($spacing, 'xxs');
+    padding: 0.25rem;
     list-style: none;
     background: $color-white;
-    border-radius: map.get($border-radius, 'lg-plus');
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    border-radius: map.get($border-radius, 'lg');
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
     z-index: 1100;
   }
 
   &__option {
     display: flex;
     align-items: center;
-    gap: map.get($spacing, 'xs');
+    gap: 0.5rem;
     width: 100%;
-    padding: 0.6rem map.get($spacing, 'sm');
+    padding: 0.5rem 0.7rem;
     border: none;
-    border-radius: map.get($border-radius, 'lg');
+    border-radius: map.get($border-radius, 'sm');
     background: transparent;
     color: $color-navbar;
     font-family: $font-family-body;
-    font-size: map.get($font-sizes, 'sm');
+    font-size: 0.95rem;
     text-align: left;
     cursor: pointer;
     transition: background-color $transition-default;
 
     &:hover {
-      background: rgba($color-navbar, 0.1);
+      background: rgba($color-navbar, 0.08);
     }
 
     &.selected {
-      font-weight: map.get($font-weights, 'bold');
+      font-weight: map.get($font-weights, 'semibold');
+      background: rgba($color-navbar, 0.08);
     }
   }
 
-  // Mobile menu variant: full-width control with the menu pushed inline.
   &--block {
     width: 100%;
 
     .audience-switcher__trigger {
       width: 100%;
       justify-content: space-between;
-      padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
-      font-size: map.get($font-sizes, 'base');
+      min-height: 36px;
+      padding: 0 0.65rem;
+      border: 1px solid rgba(255, 255, 255, 0.22);
       border-radius: map.get($border-radius, 'lg');
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
     }
 
     .audience-switcher__value {

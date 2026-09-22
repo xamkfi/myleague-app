@@ -39,7 +39,11 @@ public class GetHockeyMatchesByCompetitionHandler
             return Result<IEnumerable<HockeyMatchDto>>.Success(
                 matches.Select(HockeyMatchMapper.ToDto).ToList());
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (InvalidOperationException ex)
         {
             _logger.LogError(
                 ex,
@@ -80,7 +84,11 @@ public class GetHockeyMatchesByTeamHandler
             return Result<IEnumerable<HockeyMatchDto>>.Success(
                 matches.Select(HockeyMatchMapper.ToDto).ToList());
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (InvalidOperationException ex)
         {
             _logger.LogError(ex, "Failed GetHockeyMatchesByTeam for {TeamId}", request.TeamId);
             return Result<IEnumerable<HockeyMatchDto>>.Failure(
@@ -130,6 +138,7 @@ public class GetPagedHockeyMatchesHandler
                 request.Status,
                 request.SortOrder,
                 request.SearchQuery,
+                teamCategory: null,
                 cancellationToken);
 
             IReadOnlyList<HockeyMatchDto> items = pagedMatches.Items.Select(HockeyMatchMapper.ToDto).ToList();
@@ -152,6 +161,89 @@ public class GetPagedHockeyMatchesHandler
         {
             _logger.LogError(ex, "Failed to get paged hockey matches");
             return Result<PagedResult<HockeyMatchDto>>.Failure(
+                "An error occurred while retrieving hockey matches.",
+                ex.Flatten());
+        }
+    }
+}
+
+/// <summary>
+/// Handles the public hockey match list used by the event calendar.
+/// </summary>
+public class GetHockeyMatchesHandler
+    : IRequestHandler<GetHockeyMatchesQuery, Result<PagedResult<HockeyMatchListDto>>>
+{
+    private readonly IHockeyMatchRepository _matchRepository;
+    private readonly IHockeyTeamRepository _teamRepository;
+    private readonly IPaginationService _paginationService;
+    private readonly ILogger<GetHockeyMatchesHandler> _logger;
+
+    public GetHockeyMatchesHandler(
+        IHockeyMatchRepository matchRepository,
+        IHockeyTeamRepository teamRepository,
+        IPaginationService paginationService,
+        ILogger<GetHockeyMatchesHandler> logger)
+    {
+        _matchRepository = matchRepository;
+        _teamRepository = teamRepository;
+        _paginationService = paginationService;
+        _logger = logger;
+    }
+
+    public async Task<Result<PagedResult<HockeyMatchListDto>>> Handle(
+        GetHockeyMatchesQuery request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            int pageSize = _paginationService.ResolvePageSize(
+                GetHockeyMatchesQuery.ResourceKey,
+                request.PageSize);
+
+            PagedResult<HockeyMatch> pagedMatches = await _matchRepository.GetPagedAsync(
+                request.Page,
+                pageSize,
+                competitionId: null,
+                teamId: null,
+                request.StartDate,
+                request.EndDate,
+                status: null,
+                request.SortOrder,
+                searchQuery: null,
+                request.TeamCategory,
+                cancellationToken);
+
+            IReadOnlyList<Guid> teamIds = pagedMatches.Items
+                .SelectMany(match => match.MatchTeams.Select(team => team.TeamId))
+                .Distinct()
+                .ToList();
+
+            IReadOnlyDictionary<Guid, string> teamNames = teamIds.Count == 0
+                ? new Dictionary<Guid, string>()
+                : await _teamRepository.GetNamesByIdsAsync(teamIds, cancellationToken);
+
+            IReadOnlyList<HockeyMatchListDto> items =
+                HockeyMatchListMapper.ToDtos(pagedMatches.Items, teamNames);
+
+            return Result<PagedResult<HockeyMatchListDto>>.Success(
+                PagedResult.Create(items, pagedMatches.TotalCount, pagedMatches.Page, pagedMatches.PageSize));
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Public hockey match retrieval was cancelled");
+            throw;
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid public hockey match query");
+            return Result<PagedResult<HockeyMatchListDto>>.Failure(
+                "An error occurred while retrieving hockey matches.",
+                ex.Flatten());
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Failed to get public hockey matches");
+            return Result<PagedResult<HockeyMatchListDto>>.Failure(
                 "An error occurred while retrieving hockey matches.",
                 ex.Flatten());
         }

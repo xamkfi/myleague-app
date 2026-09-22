@@ -1,4 +1,6 @@
 using Application.Common;
+using Application.Features.Common.PlayerLicences.Commands;
+using Application.Features.Common.PlayerLicences.DTOs;
 using Application.Features.Common.SiteSettings.Commands;
 using Application.Features.Common.SiteSettings.DTOs;
 using Application.Features.Common.SiteSettings.Queries;
@@ -11,7 +13,7 @@ using WebAPI.Models.Common;
 namespace WebAPI.Controllers.Common;
 
 /// <summary>
-/// System-admin site settings (auth timings).
+/// System-admin site settings (auth timings and yearly player-licence cutoff).
 /// </summary>
 [Route("api/site-settings")]
 [Authorize(Roles = AuthRoles.AdminOnly)]
@@ -59,9 +61,25 @@ public class SiteSettingsController : BaseApiController
             request.RefreshTokenExpirationDays,
             request.LoginCodeExpirationMinutes,
             request.LoginCodeMaxAttempts,
-            request.SessionExpiryWarningMinutes);
+            request.SessionExpiryWarningMinutes,
+            request.PlayerLicenceResetMonth,
+            request.PlayerLicenceResetDay);
 
         Result<SiteSettingsDto> result = await _mediator.Send(command);
         return HandleResult(result, "Site settings updated successfully", "Failed to update site settings");
+    }
+
+    /// <summary>
+    /// Immediately deactivate open team-roster licences in all sports, then skip the automatic job until next year.
+    /// </summary>
+    [HttpPost("player-licence-reset")]
+    [ProducesResponseType(typeof(ApiResponse<PlayerLicenceResetResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PlayerLicenceResetResultDto>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<PlayerLicenceResetResultDto>>> ResetPlayerLicences()
+    {
+        _logger.LogInformation("Forcing player licence reset");
+        Result<PlayerLicenceResetResultDto> result =
+            await _mediator.Send(new ResetExpiredPlayerLicencesCommand(Force: true));
+        return HandleResult(result, "Player licence reset completed", "Failed to reset player licences");
     }
 }

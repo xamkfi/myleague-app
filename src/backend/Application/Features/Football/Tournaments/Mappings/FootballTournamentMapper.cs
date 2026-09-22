@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Football.Tournaments.DTOs;
 using Application.Features.Football.Matches.DTOs;
 using Domain.Entities.Football.Competitions;
@@ -56,7 +57,8 @@ public static class FootballTournamentMapper
             teamCount,
             matchCount,
             playoffSlots,
-            tournament.TeamCategory);
+            tournament.TeamCategory,
+            CompetitionLogoUrl.ToPublicString(tournament.LogoUrl));
     }
 
     /// <summary>

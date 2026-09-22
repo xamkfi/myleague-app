@@ -136,7 +136,8 @@ public class FootballTournamentController : BaseApiController
             request.HasPlayoffStage,
             request.HasThirdPlaceMatch,
             scheduleSlots,
-            request.TeamCategory ?? Domain.Enums.Common.TeamCategory.Adult
+            request.TeamCategory ?? Domain.Enums.Common.TeamCategory.Adult,
+            request.LogoUrl
         );
 
         Result<FootballTournamentDto> result = await _mediator.Send(command);
@@ -199,7 +200,8 @@ public class FootballTournamentController : BaseApiController
             request.HasPlayoffStage,
             request.HasThirdPlaceMatch,
             scheduleSlots,
-            request.TeamCategory
+            request.TeamCategory,
+            request.LogoUrl
         );
 
         Result<FootballTournamentDto> result = await _mediator.Send(command);

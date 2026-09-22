@@ -21,6 +21,26 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             _personRepository = personRepository;
         }
 
+        private IQueryable<FloorballPlayer> ApplyActiveLicenceFilter(
+            IQueryable<FloorballPlayer> query,
+            bool? hasActiveLicence)
+        {
+            if (hasActiveLicence is not bool licensed)
+            {
+                return query;
+            }
+
+            IQueryable<Guid> licensedPlayerIds =
+                from membership in _dbContext.FloorballTeamPlayers
+                join competition in _dbContext.FloorballCompetitions on membership.CompetitionId equals competition.Id
+                where membership.IsActive && competition.IsActive && !competition.IsCompleted
+                select membership.PlayerId;
+
+            return licensed
+                ? query.Where(player => licensedPlayerIds.Contains(player.Id))
+                : query.Where(player => !licensedPlayerIds.Contains(player.Id));
+        }
+
         private async Task<IQueryable<FloorballPlayer>> ApplyPersonNameSearchAsync(
             IQueryable<FloorballPlayer> query,
             string? searchTerm,
@@ -90,6 +110,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             FloorballPosition? position = null,
             Guid? teamId = null,
             string? searchTerm = null,
+            bool? hasActiveLicence = null,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballPlayer> query = _entities.AsQueryable();
@@ -99,6 +120,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             {
                 query = query.Where(p => p.IsActive == isActive.Value);
             }
+
+            query = ApplyActiveLicenceFilter(query, hasActiveLicence);
 
             if (position.HasValue)
             {
@@ -490,6 +513,21 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .Where(fp => personIds.Contains(fp.PersonId))
                 .GroupBy(fp => fp.PersonId)
                 .ToDictionaryAsync(g => g.Key, g => g.First(), cancellationToken);
+        }
+
+        public async Task<Dictionary<Guid, FloorballPlayer>> GetByIdsAsync(
+            IEnumerable<Guid> ids,
+            CancellationToken cancellationToken = default)
+        {
+            List<Guid> playerIds = ids.Distinct().ToList();
+            if (playerIds.Count == 0)
+            {
+                return new Dictionary<Guid, FloorballPlayer>();
+            }
+
+            return await _entities
+                .Where(player => playerIds.Contains(player.Id))
+                .ToDictionaryAsync(player => player.Id, cancellationToken);
         }
 
         /// <summary>

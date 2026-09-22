@@ -1,3 +1,5 @@
+import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
+
 export interface MatchResultValue {
   homeTeam: string;
   awayTeam: string;
@@ -31,21 +33,7 @@ function escapeHtml(value: string): string {
 }
 
 export function usableTeamLogo(url: string | null | undefined): string | undefined {
-  const trimmed = url?.trim();
-  if (!trimmed) {
-    return undefined;
-  }
-
-  try {
-    const hostname = new URL(trimmed, 'https://myleague.invalid').hostname.toLowerCase();
-    if (hostname === 'example.com' || hostname.endsWith('.example.com')) {
-      return undefined;
-    }
-  } catch {
-    return undefined;
-  }
-
-  return trimmed;
+  return resolveLogoUrl(url);
 }
 
 const formatDate = (iso: string): string =>

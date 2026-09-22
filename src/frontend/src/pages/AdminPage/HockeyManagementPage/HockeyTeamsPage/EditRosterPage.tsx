@@ -187,7 +187,7 @@ function EditHockeyRosterPage() {
                 <th className="name-column">{t('hockey.players.name', 'NAME')}</th>
                 <th className="jersey-column">{t('hockey.players.jersey', 'JERSEY')}</th>
                 <th className="position-column">{t('hockey.players.position', 'POSITION')}</th>
-                <th className="status-column">{t('hockey.players.status', 'STATUS')}</th>
+                <th className="status-column">{t('playerLicence.column', 'Licence')}</th>
                 <th className="actions-column">{t('common.actions', 'ACTIONS')}</th>
               </tr>
             </thead>
@@ -251,8 +251,8 @@ function EditHockeyRosterPage() {
                           <div className="dropdown-menu" onClick={(event) => event.stopPropagation()}>
                             <button type="button" className="dropdown-item status-item" onClick={() => void handleToggleActive(player)}>
                               {player.rosterStatus === 'Active'
-                                ? t('hockey.players.setInactive', 'Set Inactive')
-                                : t('hockey.players.setActive', 'Set Active')}
+                                ? t('playerLicence.markUnpaid', 'Mark licence unpaid')
+                                : t('playerLicence.markPaid', 'Mark licence paid')}
                             </button>
                             <div className="dropdown-item">
                               <select

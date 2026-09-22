@@ -12,9 +12,15 @@ internal static class FooterContactMapper
             return null;
         }
 
-        if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out Uri? uri))
+        string trimmed = url.Trim();
+        if (trimmed.StartsWith('/'))
         {
-            throw new ArgumentException("Url must be an http or https address", nameof(url));
+            return new Uri(trimmed, UriKind.Relative);
+        }
+
+        if (!Uri.TryCreate(trimmed, UriKind.Absolute, out Uri? uri))
+        {
+            throw new ArgumentException("Url must be an http or https address, or a path starting with '/'", nameof(url));
         }
 
         return uri;

@@ -14,7 +14,7 @@ public interface IFloorballTeamRepository
     /// </summary>
     /// <param name="id">The team ID</param>
     /// <returns>The team if found, null otherwise</returns>
-    Task<FloorballTeam?> GetByIdAsync(Guid? id);
+    Task<FloorballTeam?> GetByIdAsync(Guid? id, Guid? competitionId = null);
     
     /// <summary>
     /// Gets a floorball team by name
@@ -177,4 +177,20 @@ public interface IFloorballTeamRepository
     /// Returns true when any team uses the division.
     /// </summary>
     Task<bool> HasAnyForDivisionAsync(Guid divisionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets <c>IsActive = false</c> on open roster rows (base roster or a competition that is not completed).
+    /// </summary>
+    Task<int> DeactivateOpenPlayerLicencesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Paid roster rows on a competition that is currently active. Historical seasons are excluded.
+    /// </summary>
+    Task<IReadOnlyList<PlayerLicenceRow>> GetOpenPlayerLicencesAsync(
+        Guid playerId,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>>> GetOpenPlayerLicencesByPlayerIdsAsync(
+        IReadOnlyCollection<Guid> playerIds,
+        CancellationToken cancellationToken = default);
 } 

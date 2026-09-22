@@ -100,8 +100,8 @@ namespace Application.Features.Floorball.Players.Handlers
                     return Result<FloorballPlayerWithMatchesDto>.Success(emptyResult);
                 }
 
-                FloorballTeam currentTeam = SelectCurrentTeam(playerTeams, player.Id);
-                FloorballTeamPlayer? teamPlayer = currentTeam.Roster.FirstOrDefault(r => r.PlayerId == player.Id);
+                FloorballTeam currentTeam = await SelectLatestTeamAsync(playerTeams, player.Id, cancellationToken);
+                FloorballTeamPlayer? teamPlayer = LatestRosterRow(currentTeam, player.Id);
 
                 List<FloorballMatch> allMatches = new List<FloorballMatch>();
                 foreach (FloorballTeam team in playerTeams)
@@ -219,12 +219,27 @@ namespace Application.Features.Floorball.Players.Handlers
             }
         }
 
-        private static FloorballTeam SelectCurrentTeam(IReadOnlyList<FloorballTeam> playerTeams, Guid playerId)
+        private async Task<FloorballTeam> SelectLatestTeamAsync(
+            IReadOnlyList<FloorballTeam> playerTeams,
+            Guid playerId,
+            CancellationToken cancellationToken)
         {
-            return playerTeams
-                .OrderByDescending(t => t.Roster.Any(r => r.PlayerId == playerId && r.IsActive))
-                .ThenByDescending(t => t.CreatedAt)
-                .First();
+            Dictionary<Guid, FloorballTeam> latest =
+                await _teamRepository.GetTeamsByPlayerIdsAsync([playerId], cancellationToken);
+            if (latest.TryGetValue(playerId, out FloorballTeam? picked))
+            {
+                return playerTeams.FirstOrDefault(team => team.Id == picked.Id) ?? picked;
+            }
+
+            return playerTeams[0];
+        }
+
+        private static FloorballTeamPlayer? LatestRosterRow(FloorballTeam team, Guid playerId)
+        {
+            return team.Roster
+                .Where(row => row.PlayerId == playerId)
+                .OrderByDescending(row => row.UpdatedAt)
+                .FirstOrDefault();
         }
 
         private static bool PlayerAppearedInMatch(FloorballMatch match, Guid playerId)

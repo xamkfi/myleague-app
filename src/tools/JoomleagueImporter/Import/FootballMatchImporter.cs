@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Application.Features.Football.Matches.DTOs;
 using Application.Features.Football.Seasons.DTOs;
 using Domain.Enums.Football;
@@ -31,6 +32,7 @@ public class FootballMatchImporter
     public int Skipped => _skipped;
     public int Failed => _failed;
     public int Repaired => _repaired;
+    public ConcurrentBag<int> FailedMatchIds { get; } = [];
 
     public FootballMatchImporter(
         FootballApiClient api,
@@ -50,6 +52,12 @@ public class FootballMatchImporter
         _fillUnknownGoals = fillUnknownGoals;
         _repairMatchIds = repairMatchIds ?? [];
         _repairAll = repairAll;
+    }
+
+    private void RecordFailed(int oldMatchId)
+    {
+        Interlocked.Increment(ref _failed);
+        FailedMatchIds.Add(oldMatchId);
     }
 
     public async Task CompleteUnfinishedMappedMatchesAsync()
@@ -116,11 +124,11 @@ public class FootballMatchImporter
         public int TimeSeconds { get; init; }
     }
 
-    private Guid _currentCompetitionId;
+    private readonly AsyncLocal<Guid> _competitionId = new();
 
     public async Task ImportProjectMatchesAsync(ProjectImport pi, FootballSeasonDto season, Guid refereeId)
     {
-        _currentCompetitionId = season.Id;
+        _competitionId.Value = season.Id;
         int periodSeconds = Math.Max(1, season.MatchRules.HalfDurationMinutes) * 60;
         int regularPeriods = Math.Max(1, season.MatchRules.NumberOfHalves);
         int playersOnField = Math.Max(1, season.MatchRules.PlayersOnField);
@@ -196,6 +204,7 @@ public class FootballMatchImporter
         Console.WriteLine($"  Importing {work.Count} matches (concurrency {MatchImportParallel.Degree})...");
         await MatchImportParallel.ForEachAsync(work, async item =>
         {
+            _competitionId.Value = season.Id;
             try
             {
                 if (item.RepairRequested)
@@ -204,18 +213,18 @@ public class FootballMatchImporter
                         item.Match, item.ExistingMatchId, item.Home, item.Away, playerByTeamPlayerId,
                         periodSeconds, regularPeriods, playersOnField, item.Prefix);
                     if (ok) Interlocked.Increment(ref _repaired);
-                    else Interlocked.Increment(ref _failed);
+                    else RecordFailed(item.Match.Match.Id);
                     return;
                 }
 
                 bool imported = await ImportSingleMatchAsync(
                     item.Match, season, refereeId, item.Home, item.Away, playerByTeamPlayerId,
                     periodSeconds, regularPeriods, playersOnField, item.Prefix);
-                if (!imported) Interlocked.Increment(ref _failed);
+                if (!imported) RecordFailed(item.Match.Match.Id);
             }
             catch (Exception ex)
             {
-                Interlocked.Increment(ref _failed);
+                RecordFailed(item.Match.Match.Id);
                 Console.WriteLine($"{item.Prefix} ERROR: {ex.Message}");
                 _log.LogError("ImportFootballMatch", new { item.Match.Match.Id }, ex.ToString());
             }
@@ -417,7 +426,7 @@ public class FootballMatchImporter
         {
             int needed = playersOnField - selected.Count;
             List<Guid> pads = await _entities.EnsureUnknownPlayersAsync(
-                side.OldTeam, side.TeamId, needed, _currentCompetitionId);
+                side.OldTeam, side.TeamId, needed, _competitionId.Value);
             foreach (Guid padId in pads)
             {
                 if (selected.Any(c => c.PlayerId == padId))
@@ -714,7 +723,7 @@ public class FootballMatchImporter
     {
         if (!_fillUnknownGoals)
             return null;
-        Guid? unknown = await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId, _currentCompetitionId);
+        Guid? unknown = await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId, _competitionId.Value);
         if (unknown != null && side.Roster.All(c => c.PlayerId != unknown.Value))
             side.Roster.Add(new LineupCandidate { PlayerId = unknown.Value, Position = FootballPosition.Forward });
         return unknown;

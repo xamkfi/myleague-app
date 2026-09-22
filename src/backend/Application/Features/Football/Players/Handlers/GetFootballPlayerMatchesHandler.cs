@@ -98,8 +98,8 @@ namespace Application.Features.Football.Players.Handlers
                     return Result<FootballPlayerWithMatchesDto>.Success(emptyResult);
                 }
 
-                FootballTeam currentTeam = SelectCurrentTeam(playerTeams, player.Id);
-                FootballTeamPlayer? teamPlayer = currentTeam.Roster.FirstOrDefault(r => r.PlayerId == player.Id);
+                FootballTeam currentTeam = await SelectLatestTeamAsync(playerTeams, player.Id, cancellationToken);
+                FootballTeamPlayer? teamPlayer = LatestRosterRow(currentTeam, player.Id);
 
                 List<FootballMatch> allMatches = new List<FootballMatch>();
                 foreach (FootballTeam team in playerTeams)
@@ -219,12 +219,27 @@ namespace Application.Features.Football.Players.Handlers
             }
         }
 
-        private static FootballTeam SelectCurrentTeam(IReadOnlyList<FootballTeam> playerTeams, Guid playerId)
+        private async Task<FootballTeam> SelectLatestTeamAsync(
+            IReadOnlyList<FootballTeam> playerTeams,
+            Guid playerId,
+            CancellationToken cancellationToken)
         {
-            return playerTeams
-                .OrderByDescending(t => t.Roster.Any(r => r.PlayerId == playerId && r.IsActive))
-                .ThenByDescending(t => t.CreatedAt)
-                .First();
+            Dictionary<Guid, FootballTeam> latest =
+                await _teamRepository.GetTeamsByPlayerIdsAsync([playerId], cancellationToken);
+            if (latest.TryGetValue(playerId, out FootballTeam? picked))
+            {
+                return playerTeams.FirstOrDefault(team => team.Id == picked.Id) ?? picked;
+            }
+
+            return playerTeams[0];
+        }
+
+        private static FootballTeamPlayer? LatestRosterRow(FootballTeam team, Guid playerId)
+        {
+            return team.Roster
+                .Where(row => row.PlayerId == playerId)
+                .OrderByDescending(row => row.UpdatedAt)
+                .FirstOrDefault();
         }
 
         private static bool PlayerAppearedInMatch(FootballMatch match, Guid playerId)

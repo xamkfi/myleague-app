@@ -25,6 +25,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
     private readonly IFootballStatisticsRepository _statisticsRepository;
     private readonly IFootballPlayerRepository _footballPlayerRepository;
     private readonly IFootballMatchRepository _footballMatchRepository;
+    private readonly IFootballCompetitionRepository _competitionRepository;
     private readonly IPersonRepository _personRepository;
     private readonly ILogger<GetSeasonStatisticsSummaryHandler> _logger;
 
@@ -32,12 +33,14 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
         IFootballStatisticsRepository statisticsRepository,
         IFootballPlayerRepository footballPlayerRepository,
         IFootballMatchRepository footballMatchRepository,
+        IFootballCompetitionRepository competitionRepository,
         IPersonRepository personRepository,
         ILogger<GetSeasonStatisticsSummaryHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
         _footballPlayerRepository = footballPlayerRepository;
         _footballMatchRepository = footballMatchRepository;
+        _competitionRepository = competitionRepository;
         _personRepository = personRepository;
         _logger = logger;
     }
@@ -59,8 +62,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
 
             if (teamStats.Count == 0)
             {
-                _logger.LogWarning("Season statistics not found for Season: {SeasonId}", request.CompetitionId);
-                return Result<FootballSeasonStatisticsSummaryDto>.NotFound("Season statistics", request.CompetitionId.ToString());
+                return await BuildStandingsFromEnrolledTeamsAsync(request.CompetitionId);
             }
 
             bool isTournament = teamStats[0].Competition is FootballTournament;
@@ -230,6 +232,40 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             _logger.LogError(ex, "Error occurred while getting season statistics summary for Season: {SeasonId}", request.CompetitionId);
             return Result<FootballSeasonStatisticsSummaryDto>.Failure("An error occurred while retrieving season statistics summary.");
         }
+    }
+
+    /// <summary>
+    /// Enrolled teams can exist before any statistics rows are stored. Return those teams with
+    /// zeroed counters so the public standings table is usable before the season is activated.
+    /// </summary>
+    private async Task<Result<FootballSeasonStatisticsSummaryDto>> BuildStandingsFromEnrolledTeamsAsync(Guid competitionId)
+    {
+        FootballCompetition? competition = await _competitionRepository.GetByIdAsync(competitionId);
+        if (competition == null)
+        {
+            _logger.LogWarning("Season statistics not found for Season: {SeasonId}", competitionId);
+            return Result<FootballSeasonStatisticsSummaryDto>.NotFound("Season statistics", competitionId.ToString());
+        }
+
+        string seasonName = competition.Name ?? string.Empty;
+        List<FootballTeamSeasonStatisticsDto> standings = competition.Teams
+            .OrderBy(team => team.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(team => new FootballTeamSeasonStatisticsDto
+            {
+                TeamId = team.Id,
+                CompetitionId = competition.Id,
+                TeamName = team.Name ?? string.Empty,
+                TeamLogo = team.LogoUrl,
+                SeasonName = seasonName
+            })
+            .ToList();
+
+        return Result<FootballSeasonStatisticsSummaryDto>.Success(new FootballSeasonStatisticsSummaryDto
+        {
+            CompetitionId = competition.Id,
+            SeasonName = seasonName,
+            TeamStandings = standings
+        });
     }
 
     private static Dictionary<Guid, TournamentTeamAggregate> BuildTournamentGroupStageAggregates(

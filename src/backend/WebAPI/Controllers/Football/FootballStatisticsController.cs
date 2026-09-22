@@ -180,11 +180,10 @@ public class FootballStatisticsController : BaseApiController
     }
 
     /// <summary>
-    /// Gets team standings for a specific season
+    /// Gets team standings for a specific season. Returns an empty list when the season has no standings yet.
     /// </summary>
     [HttpGet("standings/{competitionId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<List<FootballTeamSeasonStatisticsDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<List<FootballTeamSeasonStatisticsDto>>>> GetTeamStandings(Guid competitionId)
     {

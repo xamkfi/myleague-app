@@ -19,4 +19,5 @@ public record CreateHockeyTournamentCommand(
     DateTime EndDate,
     string? Venue = null,
     string? ContentHtml = null,
-    TeamCategory TeamCategory = TeamCategory.Adult) : IRequest<Result<HockeyTournamentDto>>;
+    TeamCategory TeamCategory = TeamCategory.Adult,
+    string? LogoUrl = null) : IRequest<Result<HockeyTournamentDto>>;

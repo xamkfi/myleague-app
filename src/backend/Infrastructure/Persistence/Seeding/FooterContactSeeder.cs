@@ -39,14 +39,15 @@ public static class FooterContactSeeder
             FooterSection.OtherActivities,
             CreateOtherActivities(),
             cancellationToken);
+        int updated = await FillMissingKnownUrlsAsync(repository, cancellationToken);
 
-        if (added == 0)
+        if (added == 0 && updated == 0)
         {
             return;
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        logger.LogInformation("Seeded {Count} footer entries", added);
+        logger.LogInformation("Seeded {Count} footer entries and filled {Updated} urls", added, updated);
     }
 
     private static async Task<int> SeedSectionIfEmptyAsync(
@@ -128,7 +129,7 @@ public static class FooterContactSeeder
                 null,
                 null,
                 null,
-                null,
+                KnownInternalUrl(title),
                 index,
                 FooterSection.SeasonalSports,
                 "system"))
@@ -152,10 +153,57 @@ public static class FooterContactSeeder
                 null,
                 null,
                 null,
-                null,
+                KnownInternalUrl(title),
                 index,
                 FooterSection.OtherActivities,
                 "system"))
             .ToArray();
+    }
+
+    private static async Task<int> FillMissingKnownUrlsAsync(
+        IFooterContactRepository repository,
+        CancellationToken cancellationToken)
+    {
+        IReadOnlyList<FooterContact> existing = await repository.GetAllAsync(null, cancellationToken);
+        int updated = 0;
+        foreach (FooterContact contact in existing)
+        {
+            if (contact.Url is not null)
+            {
+                continue;
+            }
+
+            Uri? url = KnownInternalUrl(contact.Title);
+            if (url is null)
+            {
+                continue;
+            }
+
+            contact.Update(
+                contact.Title,
+                contact.Details,
+                contact.Email,
+                contact.Phone,
+                url,
+                contact.SortOrder,
+                contact.Section,
+                "system");
+            await repository.UpdateAsync(contact, cancellationToken);
+            updated++;
+        }
+
+        return updated;
+    }
+
+    private static Uri? KnownInternalUrl(string title)
+    {
+        return title switch
+        {
+            "Jalkapallo" or "Talvijalkapallo" => new Uri("/sports/football", UriKind.Relative),
+            "Jääkiekko" or "Jääkiekko +40" => new Uri("/sports/icehockey", UriKind.Relative),
+            "Salibandy" or "Salibandyn Manager" => new Uri("/sports/floorball", UriKind.Relative),
+            "PMT Turnaukset" => new Uri("/turnaukset", UriKind.Relative),
+            _ => null,
+        };
     }
 }

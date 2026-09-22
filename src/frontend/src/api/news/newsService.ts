@@ -149,21 +149,30 @@ export async function deleteNewsService(id: string) {
   }
 }
 
+let newsTagsPromise: Promise<string[]> | null = null;
+
 export async function getNewsTags(): Promise<string[]> {
-  try {
-    const response = await authFetch(`${API_URL}/News/tags`, { method: 'GET' });
-    if (!response.ok) {
+  if (!newsTagsPromise) {
+    newsTagsPromise = loadNewsTags().catch((error: unknown) => {
+      newsTagsPromise = null;
+      console.error('Failed to fetch news tags:', error);
       return [];
-    }
-    const payload: { data?: string[] } | string[] = await response.json();
-    if (Array.isArray(payload)) {
-      return payload;
-    }
-    return payload.data ?? [];
-  } catch (error) {
-    console.error('Failed to fetch news tags:', error);
-    return [];
+    });
   }
+
+  return newsTagsPromise;
+}
+
+async function loadNewsTags(): Promise<string[]> {
+  const response = await authFetch(`${API_URL}/News/tags`, { method: 'GET' });
+  if (!response.ok) {
+    throw new Error('Failed to fetch news tags');
+  }
+  const payload: { data?: string[] } | string[] = await response.json();
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  return payload.data ?? [];
 }
 
 export async function getRecentNewsArticles(count = 4): Promise<NewsArticleDto[]> {

@@ -1,10 +1,17 @@
+@use 'sass:map';
+@use '@variables' as *;
+
 .admin-container {
   padding: 0;
   max-width: 100%;
   margin: 0;
 }
 
-.admin-overview {
+.admin-section + .admin-section {
+  margin-top: 2.75rem;
+}
+
+.admin-section-title {
   font-size: 1.5rem;
   font-weight: 600;
   color: #1e3a5f;
@@ -12,20 +19,79 @@
   letter-spacing: 0.05em;
 }
 
-.admin-sport-selection {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1e3a5f;
-  margin-top: 3rem;
-  margin-bottom: 1.5rem;
-  letter-spacing: 0.05em;
+.admin-sport-tabs {
+  display: flex;
+  width: 100%;
+  margin-bottom: map.get($spacing, 'md');
+
+  &__group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xxs');
+    padding: map.get($spacing, 'xxs');
+    background: $color-white;
+    border: 1px solid rgba($color-blue-deep, 0.15);
+    border-radius: map.get($border-radius, 'xl');
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .tab-button {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'xs') map.get($spacing, 'md');
+    background: transparent;
+    border: none;
+    color: $color-blue-deep;
+    border-radius: map.get($border-radius, 'xl');
+    cursor: pointer;
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: map.get($font-sizes, 'sm');
+    line-height: 1;
+    transition: background-color $transition-default, color $transition-default;
+
+    .sport-icon {
+      transition: filter $transition-default;
+    }
+
+    &:hover {
+      background: rgba($color-blue-deep, 0.08);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-blue-secondary;
+      outline-offset: 2px;
+    }
+
+    &.active {
+      background: $color-blue-deep;
+      color: $color-white;
+      font-weight: map.get($font-weights, 'bold');
+      box-shadow: 0 2px 6px rgba($color-blue-deep, 0.35);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-sport-tabs {
+    &__group {
+      width: 100%;
+      justify-content: stretch;
+    }
+
+    .tab-button {
+      flex: 1;
+      justify-content: center;
+      padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    }
+  }
 }
 
 .admin-actions {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 2rem;
 }
 
 .admin-action-button {
@@ -40,6 +106,7 @@
   font-size: 1rem;
   font-weight: 500;
   color: #1e3a5f;
+  text-decoration: none;
   transition: all 0.2s ease-in-out;
   min-height: 110px;
   text-align: left;
@@ -52,6 +119,7 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     border-color: #d0d5dd;
+    color: #1e3a5f;
   }
 
   &:active {

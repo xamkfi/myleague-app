@@ -115,8 +115,9 @@
   .main-content {
     display: flex;
     flex: 1;
+    align-items: flex-start;
     gap: map.get($spacing, 'md');
-    padding: map.get($spacing, 'md');
+    padding: map.get($spacing, 'lg') map.get($spacing, 'md') map.get($spacing, 'xl');
     width: 100%;
     max-width: $max-width-page;
     margin: 0 auto;
@@ -130,10 +131,8 @@
   }
 
   .sidebar-container {
-    width: $sidebar-width;
+    width: 340px;
     flex-shrink: 0;
-    background-color: $color-sidebar;
-    border-radius: map.get($border-radius, 'lg');
   }
 }
 

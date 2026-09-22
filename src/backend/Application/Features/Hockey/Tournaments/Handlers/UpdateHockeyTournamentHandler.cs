@@ -48,6 +48,7 @@ public class UpdateHockeyTournamentHandler : IRequestHandler<UpdateHockeyTournam
             tournament.UpdateVenue(request.Venue);
             tournament.UpdateContent(request.ContentHtml);
             tournament.UpdateTeamCategory(request.TeamCategory);
+            tournament.UpdateLogo(CompetitionLogoUrl.Parse(request.LogoUrl));
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("UpdateHockeyTournament completed for tournament {TournamentId}", request.TournamentId);

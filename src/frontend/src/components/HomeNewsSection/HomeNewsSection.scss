@@ -5,27 +5,26 @@
 .home-news-section {
   display: flex;
   flex-direction: column;
-  padding: map.get($spacing, 'md');
+  padding: map.get($spacing, 'md') map.get($spacing, 'sm') map.get($spacing, 'sm');
   background: $color-neutral-white;
-  border-radius: map.get($border-radius, 'lg');
-  box-shadow: $box-shadow-drop-1;
-  height: 100%;
-  overflow-y: auto;
+  border: 1px solid rgba($color-blue-deep, 0.08);
+  border-radius: map.get($border-radius, 'lg-plus');
+  box-shadow: 0 1px 2px rgba(22, 52, 107, 0.05);
 
   &__title {
     font-family: $font-family-display;
-    font-size: map.get($font-sizes, 'lg');
-    font-weight: map.get($font-weights, 'bold');
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'semibold');
     color: $color-text-primary;
-    margin-bottom: map.get($spacing, 'md');
+    margin: 0 map.get($spacing, 'sm') map.get($spacing, 'xs');
     padding-bottom: map.get($spacing, 'sm');
-    border-bottom: 2px solid $color-blue-medium;
+    border-bottom: 1px solid $color-neutral-medium-grey;
+    letter-spacing: 0.01em;
   }
 
   &__list {
     display: flex;
     flex-direction: column;
-    gap: map.get($spacing, 'md');
   }
 
   &__empty,
@@ -62,20 +61,20 @@
 .home-news-card {
   display: flex;
   flex-direction: row;
-  background: $color-white;
+  align-items: stretch;
+  background: transparent;
   border-radius: map.get($border-radius, 'lg');
+  border-bottom: 1px solid $color-neutral-medium-grey;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   cursor: pointer;
-  transition: transform $transition-default, box-shadow $transition-default;
+  transition: background $transition-default;
+
+  &:last-child {
+    border-bottom: none;
+  }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-
-    .home-news-card__image {
-      transform: scale(1.05);
-    }
+    background: $color-neutral-light-grey;
 
     .home-news-card__read-more {
       color: $color-blue-deep;
@@ -83,27 +82,31 @@
   }
 
   &__image-container {
-    flex: 0 0 35%;
-    min-width: 200px;
-    max-width: 280px;
-    aspect-ratio: 16/10;
+    flex: 0 0 148px;
+    width: 148px;
+    min-width: 148px;
+    max-width: 148px;
+    height: 104px;
+    margin: map.get($spacing, 'sm') 0 map.get($spacing, 'sm') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'lg');
     overflow: hidden;
     background: $color-neutral-light-grey;
+    align-self: flex-start;
   }
 
   &__image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform $transition-default;
   }
 
   &__content {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: map.get($spacing, 'md');
-    min-width: 0; // Prevents flex child from overflowing
+    justify-content: center;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md') map.get($spacing, 'sm') map.get($spacing, 'sm');
+    min-width: 0;
   }
 
   &__meta {
@@ -133,11 +136,11 @@
 
   &__title {
     font-family: $font-family-display;
-    font-size: map.get($font-sizes, 'md');
-    font-weight: map.get($font-weights, 'bold');
+    font-size: map.get($font-sizes, 'base');
+    font-weight: map.get($font-weights, 'semibold');
     color: $color-text-primary;
-    margin-bottom: map.get($spacing, 'xs');
-    line-height: 1.3;
+    margin-bottom: map.get($spacing, 'xxs');
+    line-height: 1.35;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
@@ -148,8 +151,8 @@
   &__summary {
     font-size: map.get($font-sizes, 'sm');
     color: $color-neutral-dark-grey;
-    line-height: 1.5;
-    margin-bottom: map.get($spacing, 'sm');
+    line-height: 1.45;
+    margin-bottom: map.get($spacing, 'xs');
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
@@ -226,42 +229,31 @@
 // Tablet
 @media (max-width: map.get($breakpoints, 'tablet')) {
   .home-news-section {
-    padding: map.get($spacing, 'sm');
+    padding: map.get($spacing, 'sm') map.get($spacing, 'xs') map.get($spacing, 'xs');
 
     &__title {
-      font-size: map.get($font-sizes, 'md');
-      margin-bottom: map.get($spacing, 'sm');
-    }
-
-    &__list {
-      gap: map.get($spacing, 'sm');
+      font-size: map.get($font-sizes, 'base');
+      margin: 0 map.get($spacing, 'xs') map.get($spacing, 'xs');
     }
   }
 
   .home-news-card {
-    flex-direction: column;
-
     &__image-container {
-      flex: none;
-      width: 100%;
-      max-width: none;
-      min-width: auto;
-      height: 180px;
-      aspect-ratio: auto;
+      flex-basis: 120px;
+      width: 120px;
+      min-width: 120px;
+      max-width: 120px;
+      height: 88px;
+      margin: map.get($spacing, 'xs') 0 map.get($spacing, 'xs') map.get($spacing, 'xs');
     }
 
     &__content {
-      padding: map.get($spacing, 'sm');
-    }
-
-    &__title {
-      font-size: map.get($font-sizes, 'base');
+      padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
     }
 
     &__summary {
-      font-size: map.get($font-sizes, 'sm');
-      -webkit-line-clamp: 3;
-      line-clamp: 3;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
     }
   }
 }
@@ -275,11 +267,7 @@
     &__title {
       font-size: map.get($font-sizes, 'base');
       padding-bottom: map.get($spacing, 'xs');
-      margin-bottom: map.get($spacing, 'xs');
-    }
-
-    &__list {
-      gap: map.get($spacing, 'xs');
+      margin: 0 map.get($spacing, 'xs') map.get($spacing, 'xs');
     }
 
     &__empty,
@@ -293,7 +281,11 @@
     border-radius: map.get($border-radius, 'sm');
 
     &__image-container {
-      height: 150px;
+      flex-basis: 96px;
+      width: 96px;
+      min-width: 96px;
+      max-width: 96px;
+      height: 72px;
     }
 
     &__content {

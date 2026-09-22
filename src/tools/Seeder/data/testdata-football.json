@@ -93,14 +93,14 @@
     ],
 
     "Clubs": [
-      { "Name": "Helsinki FC", "City": "Helsinki", "Country": "Finland", "FoundingDate": "1991-01-15T00:00:00Z", "WebsiteUrl": "https://helsinkifc.fi", "LogoUrl": "https://example.com/logo-helsinkifc.png", "ContactEmail": "info@helsinkifc.fi" },
-      { "Name": "Tampere United", "City": "Tampere", "Country": "Finland", "FoundingDate": "1993-04-20T00:00:00Z", "WebsiteUrl": "https://tampereunited.fi", "LogoUrl": "https://example.com/logo-tampereunited.png", "ContactEmail": "info@tampereunited.fi" },
-      { "Name": "Turku City", "City": "Turku", "Country": "Finland", "FoundingDate": "1989-06-11T00:00:00Z", "WebsiteUrl": "https://turkucity.fi", "LogoUrl": "https://example.com/logo-turkucity.png", "ContactEmail": "info@turkucity.fi" },
-      { "Name": "Oulu Kickers", "City": "Oulu", "Country": "Finland", "FoundingDate": "1996-09-02T00:00:00Z", "WebsiteUrl": "https://oulukickers.fi", "LogoUrl": "https://example.com/logo-oulukickers.png", "ContactEmail": "info@oulukickers.fi" },
-      { "Name": "Espoo Athletic", "City": "Espoo", "Country": "Finland", "FoundingDate": "1998-03-08T00:00:00Z", "WebsiteUrl": "https://espooathletic.fi", "LogoUrl": "https://example.com/logo-espooathletic.png", "ContactEmail": "info@espooathletic.fi" },
-      { "Name": "Vantaa Wanderers", "City": "Vantaa", "Country": "Finland", "FoundingDate": "2001-05-19T00:00:00Z", "WebsiteUrl": "https://vantaawanderers.fi", "LogoUrl": "https://example.com/logo-vantaawanderers.png", "ContactEmail": "info@vantaawanderers.fi" },
-      { "Name": "Lahti Rovers", "City": "Lahti", "Country": "Finland", "FoundingDate": "1994-08-27T00:00:00Z", "WebsiteUrl": "https://lahtirovers.fi", "LogoUrl": "https://example.com/logo-lahtirovers.png", "ContactEmail": "info@lahtirovers.fi" },
-      { "Name": "Kuopio United", "City": "Kuopio", "Country": "Finland", "FoundingDate": "1997-12-04T00:00:00Z", "WebsiteUrl": "https://kuopiounited.fi", "LogoUrl": "https://example.com/logo-kuopiounited.png", "ContactEmail": "info@kuopiounited.fi" }
+      { "Name": "Helsinki FC", "City": "Helsinki", "Country": "Finland", "FoundingDate": "1991-01-15T00:00:00Z", "WebsiteUrl": "https://helsinkifc.fi", "LogoUrl": "", "ContactEmail": "info@helsinkifc.fi" },
+      { "Name": "Tampere United", "City": "Tampere", "Country": "Finland", "FoundingDate": "1993-04-20T00:00:00Z", "WebsiteUrl": "https://tampereunited.fi", "LogoUrl": "", "ContactEmail": "info@tampereunited.fi" },
+      { "Name": "Turku City", "City": "Turku", "Country": "Finland", "FoundingDate": "1989-06-11T00:00:00Z", "WebsiteUrl": "https://turkucity.fi", "LogoUrl": "", "ContactEmail": "info@turkucity.fi" },
+      { "Name": "Oulu Kickers", "City": "Oulu", "Country": "Finland", "FoundingDate": "1996-09-02T00:00:00Z", "WebsiteUrl": "https://oulukickers.fi", "LogoUrl": "", "ContactEmail": "info@oulukickers.fi" },
+      { "Name": "Espoo Athletic", "City": "Espoo", "Country": "Finland", "FoundingDate": "1998-03-08T00:00:00Z", "WebsiteUrl": "https://espooathletic.fi", "LogoUrl": "", "ContactEmail": "info@espooathletic.fi" },
+      { "Name": "Vantaa Wanderers", "City": "Vantaa", "Country": "Finland", "FoundingDate": "2001-05-19T00:00:00Z", "WebsiteUrl": "https://vantaawanderers.fi", "LogoUrl": "", "ContactEmail": "info@vantaawanderers.fi" },
+      { "Name": "Lahti Rovers", "City": "Lahti", "Country": "Finland", "FoundingDate": "1994-08-27T00:00:00Z", "WebsiteUrl": "https://lahtirovers.fi", "LogoUrl": "", "ContactEmail": "info@lahtirovers.fi" },
+      { "Name": "Kuopio United", "City": "Kuopio", "Country": "Finland", "FoundingDate": "1997-12-04T00:00:00Z", "WebsiteUrl": "https://kuopiounited.fi", "LogoUrl": "", "ContactEmail": "info@kuopiounited.fi" }
     ],
 
     "Divisions": [

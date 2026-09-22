@@ -121,6 +121,12 @@ public class CreateFootballSeasonRequest
     /// Audience / age-group category for the season
     /// </summary>
     public TeamCategory TeamCategory { get; set; } = TeamCategory.Adult;
+
+    /// <summary>
+    /// Optional public logo URL for the season hero.
+    /// </summary>
+    [StringLength(500)]
+    public string? LogoUrl { get; set; }
 }
 
 /// <summary>
@@ -216,6 +222,12 @@ public class UpdateFootballSeasonRequest
     /// Audience / age-group category for the season
     /// </summary>
     public TeamCategory? TeamCategory { get; set; }
+
+    /// <summary>
+    /// Optional public logo URL for the season hero.
+    /// </summary>
+    [StringLength(500)]
+    public string? LogoUrl { get; set; }
 }
 
 /// <summary>

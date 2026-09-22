@@ -14,3 +14,42 @@ export function seasonYearFromDates(startDate: string, endDate: string): string 
 export function formatSeasonYearLabel(year: string): string {
   return year.replace('-', '–');
 }
+
+export interface SportYearOption {
+  year: string;
+  hasActiveSeason: boolean;
+}
+
+export function getSeasonStartYear(year: string): number | null {
+  const match = year.match(/^(\d{4})/);
+  return match ? Number(match[1]) : null;
+}
+
+export function isFutureUnpublishedYear(
+  year: SportYearOption,
+  now: Date = new Date(),
+): boolean {
+  const startYear = getSeasonStartYear(year.year);
+  if (startYear === null) {
+    return false;
+  }
+  return !year.hasActiveSeason && startYear > now.getFullYear();
+}
+
+export function filterPublicSportYears(
+  years: SportYearOption[],
+  now: Date = new Date(),
+): SportYearOption[] {
+  return years.filter((year) => !isFutureUnpublishedYear(year, now));
+}
+
+export function pickDefaultSportYear(
+  years: SportYearOption[],
+  urlYear: string | null,
+): string {
+  if (urlYear && years.some((year) => year.year === urlYear)) {
+    return urlYear;
+  }
+
+  return years.find((year) => year.hasActiveSeason)?.year ?? years[0]?.year ?? '';
+}

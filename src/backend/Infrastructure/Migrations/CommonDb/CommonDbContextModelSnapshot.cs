@@ -47,7 +47,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("FoundingDate")
+                    b.Property<DateTime?>("FoundingDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LogoUrl")
@@ -504,11 +504,24 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("LastPlayerLicenceResetYear")
+                        .HasColumnType("integer");
+
                     b.Property<int>("LoginCodeExpirationMinutes")
                         .HasColumnType("integer");
 
                     b.Property<int>("LoginCodeMaxAttempts")
                         .HasColumnType("integer");
+
+                    b.Property<int>("PlayerLicenceResetDay")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
+                    b.Property<int>("PlayerLicenceResetMonth")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(5);
 
                     b.Property<int>("RefreshTokenExpirationDays")
                         .HasColumnType("integer");

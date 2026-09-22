@@ -14,6 +14,7 @@ function CreateHockeyTournamentPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [venue, setVenue] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
   const [teamCategory, setTeamCategory] = useState<HockeyTeamCategory>('Adult');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +30,7 @@ function CreateHockeyTournamentPage() {
         endDate: new Date(endDate).toISOString(),
         venue: venue || undefined,
         teamCategory,
+        logoUrl: logoUrl || undefined,
       });
       navigate(`/admin/hockey/tournaments/${tournament.id}/edit`);
     } catch (err) {
@@ -49,6 +51,10 @@ function CreateHockeyTournamentPage() {
           <div className="form-group">
             <label htmlFor="name">{t('hockey.tournaments.name', 'Name')} *</label>
             <input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label htmlFor="logoUrl">{t('competition.logoUrl', 'Logo URL')}</label>
+            <input id="logoUrl" type="url" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://" />
           </div>
           <div className="form-row">
             <div className="form-group">

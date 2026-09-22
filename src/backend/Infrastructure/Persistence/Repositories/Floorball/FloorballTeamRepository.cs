@@ -27,13 +27,15 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// </summary>
         /// <param name="id">The team ID</param>
         /// <returns>The team if found, null otherwise</returns>
-        public async Task<FloorballTeam?> GetByIdAsync(Guid? id)
+        public async Task<FloorballTeam?> GetByIdAsync(Guid? id, Guid? competitionId = null)
         {
             // Note: Club relationship is managed at the application level since
             // Club is in a different DbContext (CommonDbContext)
-            return await _entities
-                .Include(t => t.Roster)
-                .FirstOrDefaultAsync(t => t.Id == id);
+            IQueryable<FloorballTeam> query = competitionId is Guid competitionFilter
+                ? _entities.Include(t => t.Roster.Where(player => player.CompetitionId == competitionFilter))
+                : _entities.Include(t => t.Roster);
+
+            return await query.FirstOrDefaultAsync(t => t.Id == id);
         }
 
         /// <summary>
@@ -175,29 +177,57 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
 
         public async Task<Dictionary<Guid, FloorballTeam>> GetTeamsByPlayerIdsAsync(IEnumerable<Guid> playerIds, CancellationToken cancellationToken = default)
         {
-            if (!playerIds.Any())
+            List<Guid> ids = playerIds.Distinct().ToList();
+            if (ids.Count == 0)
             {
                 return new Dictionary<Guid, FloorballTeam>();
             }
 
-            // Find all teams that contain any of the players
-            List<FloorballTeam> teamsWithPlayers = await _entities
-                .Include(t => t.Roster)
-                .Where(t => t.Roster.Any(p => playerIds.Contains(p.PlayerId)))
-                .ToListAsync(cancellationToken);
-
-            Dictionary<Guid, FloorballTeam> playerTeamMap = new Dictionary<Guid, FloorballTeam>();
-
-            // Map each player to their team
-            foreach (FloorballTeam team in teamsWithPlayers)
-            {
-                foreach (FloorballTeamPlayer player in team.Roster)
+            var memberships = await (
+                from membership in _dbContext.FloorballTeamPlayers
+                where ids.Contains(membership.PlayerId)
+                join competition in _dbContext.FloorballCompetitions
+                    on membership.CompetitionId equals competition.Id into competitions
+                from competition in competitions.DefaultIfEmpty()
+                select new
                 {
-                    // If the player is in our list of searched players and not already mapped, add them
-                    if (playerIds.Contains(player.PlayerId) && !playerTeamMap.ContainsKey(player.PlayerId))
-                    {
-                        playerTeamMap[player.PlayerId] = team;
-                    }
+                    membership.PlayerId,
+                    membership.TeamId,
+                    membership.IsActive,
+                    membership.UpdatedAt,
+                    EndDate = competition == null ? (DateTime?)null : competition.EndDate,
+                    StartDate = competition == null ? (DateTime?)null : competition.StartDate,
+                    CompetitionIsCurrent = competition != null && competition.IsActive && !competition.IsCompleted
+                }).ToListAsync(cancellationToken);
+
+            Dictionary<Guid, Guid> playerToTeam = new();
+            foreach (var group in memberships.GroupBy(row => row.PlayerId))
+            {
+                Guid? teamId = CurrentRosterTeamPicker.PickTeamId(group.Select(row => new RosterMembershipCandidate(
+                    row.TeamId,
+                    row.EndDate,
+                    row.StartDate,
+                    row.CompetitionIsCurrent,
+                    row.IsActive,
+                    row.UpdatedAt ?? DateTime.MinValue)));
+                if (teamId.HasValue)
+                {
+                    playerToTeam[group.Key] = teamId.Value;
+                }
+            }
+
+            List<Guid> teamIds = playerToTeam.Values.Distinct().ToList();
+            List<FloorballTeam> teams = await _entities
+                .Where(team => teamIds.Contains(team.Id))
+                .ToListAsync(cancellationToken);
+            Dictionary<Guid, FloorballTeam> teamsById = teams.ToDictionary(team => team.Id);
+
+            Dictionary<Guid, FloorballTeam> playerTeamMap = new();
+            foreach (KeyValuePair<Guid, Guid> pair in playerToTeam)
+            {
+                if (teamsById.TryGetValue(pair.Value, out FloorballTeam? team))
+                {
+                    playerTeamMap[pair.Key] = team;
                 }
             }
 
@@ -453,5 +483,97 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         {
             return await _entities.AnyAsync(t => t.DivisionId == divisionId, cancellationToken);
         }
+
+        public async Task<int> DeactivateOpenPlayerLicencesAsync(CancellationToken cancellationToken = default)
+        {
+            DateTime now = DateTime.UtcNow;
+            return await _dbContext.FloorballTeamPlayers
+                .Where(row => row.IsActive)
+                .Where(row =>
+                    row.CompetitionId == null
+                    || !_dbContext.FloorballCompetitions.Any(competition =>
+                        competition.Id == row.CompetitionId && competition.IsCompleted))
+                .ExecuteUpdateAsync(
+                    setters => setters
+                        .SetProperty(row => row.IsActive, false)
+                        .SetProperty(row => row.UpdatedAt, now),
+                    cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<PlayerLicenceRow>> GetOpenPlayerLicencesAsync(
+            Guid playerId,
+            CancellationToken cancellationToken = default)
+        {
+            List<PlayerLicenceRow> rows = await (
+                from membership in _dbContext.FloorballTeamPlayers
+                join team in _dbContext.FloorballTeams on membership.TeamId equals team.Id
+                join competition in _dbContext.FloorballCompetitions on membership.CompetitionId equals competition.Id into competitions
+                from competition in competitions.DefaultIfEmpty()
+                where membership.PlayerId == playerId
+                    && membership.IsActive
+                    && competition != null
+                    && competition.IsActive
+                    && !competition.IsCompleted
+                orderby team.Name, (competition != null ? competition.Name : null)
+                select new PlayerLicenceRow(
+                    team.Id,
+                    team.Name,
+                    membership.CompetitionId,
+                    competition != null ? competition.Name : null,
+                    membership.IsActive)
+            ).ToListAsync(cancellationToken);
+
+            return rows;
+        }
+
+        public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>>> GetOpenPlayerLicencesByPlayerIdsAsync(
+            IReadOnlyCollection<Guid> playerIds,
+            CancellationToken cancellationToken = default)
+        {
+            if (playerIds.Count == 0)
+            {
+                return new Dictionary<Guid, IReadOnlyList<PlayerLicenceRow>>();
+            }
+
+            List<Guid> ids = playerIds.Distinct().ToList();
+            List<FloorballOpenLicenceRow> rows = await (
+                from membership in _dbContext.FloorballTeamPlayers
+                join team in _dbContext.FloorballTeams on membership.TeamId equals team.Id
+                join competition in _dbContext.FloorballCompetitions on membership.CompetitionId equals competition.Id
+                where ids.Contains(membership.PlayerId)
+                    && membership.IsActive
+                    && competition.IsActive
+                    && !competition.IsCompleted
+                orderby team.Name, competition.Name
+                select new FloorballOpenLicenceRow(
+                    membership.PlayerId,
+                    team.Id,
+                    team.Name,
+                    membership.CompetitionId,
+                    competition.Name,
+                    membership.IsActive)
+            ).ToListAsync(cancellationToken);
+
+            return rows
+                .GroupBy(row => row.PlayerId)
+                .ToDictionary(
+                    group => group.Key,
+                    group => (IReadOnlyList<PlayerLicenceRow>)group
+                        .Select(row => new PlayerLicenceRow(
+                            row.TeamId,
+                            row.TeamName,
+                            row.CompetitionId,
+                            row.CompetitionName,
+                            row.IsActive))
+                        .ToList());
+        }
+
+        private sealed record FloorballOpenLicenceRow(
+            Guid PlayerId,
+            Guid TeamId,
+            string TeamName,
+            Guid? CompetitionId,
+            string? CompetitionName,
+            bool IsActive);
     }
 } 

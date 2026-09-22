@@ -19,7 +19,7 @@ internal static class ClubEntityImport
     {
         Console.WriteLine("--- Clubs ---");
 
-        List<(int Key, string Name, string City)> pending = [];
+        List<(int Key, string Name)> pending = [];
         HashSet<int> seen = [];
         foreach (OldTeam team in set.UniqueTeams.Values)
         {
@@ -29,8 +29,7 @@ internal static class ClubEntityImport
                 continue;
 
             string clubName = !string.IsNullOrWhiteSpace(oldClub?.Name) ? oldClub!.Name : team.Name;
-            string city = !string.IsNullOrWhiteSpace(oldClub?.Location) ? oldClub!.Location : "Mikkeli";
-            pending.Add((oldClubKey, clubName, city));
+            pending.Add((oldClubKey, clubName));
         }
 
         ConcurrentDictionary<string, ClubDto> byName = new(StringComparer.OrdinalIgnoreCase);
@@ -48,7 +47,7 @@ internal static class ClubEntityImport
                 return;
             }
 
-            club = await api.CreateClubAsync(item.Name, item.City);
+            club = await api.CreateClubAsync(item.Name);
             if (club == null)
             {
                 foreach (ClubDto refreshed in await api.GetClubsAsync())

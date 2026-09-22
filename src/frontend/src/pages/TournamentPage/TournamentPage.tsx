@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 import MatchesList from '../../components/MatchesList/MatchesList';
 import PlannedPlayoffSchedule from '../../components/PlannedPlayoffSchedule';
 import TournamentGroupStandingsTable from '../../components/TournamentGroupStandingsTable/TournamentGroupStandingsTable';
 import TournamentBracket from '../../components/TournamentBracket/TournamentBracket';
+import { isNotFoundError } from '../../api/utils/isNotFoundError';
 import { floorballTournamentService } from '../../api/floorball/floorballTournamentService';
 import {
   floorballStatisticsService,
@@ -33,18 +35,6 @@ type TabType = 'summary' | 'groups' | 'playoffs' | 'statistics' | 'results' | 'f
 const VALID_TABS: TabType[] = ['summary', 'groups', 'playoffs', 'statistics', 'results', 'fixtures'];
 
 type LifecycleStatus = 'upcoming' | 'ongoing' | 'past';
-
-const NOT_FOUND_PATTERNS = [
-  'was not found',
-  'season statistics with key',
-  'no statistics found'
-];
-
-function isNotFoundError(message: string | null | undefined): boolean {
-  if (!message) return false;
-  const lower = message.toLowerCase();
-  return NOT_FOUND_PATTERNS.some((pattern) => lower.includes(pattern));
-}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('fi-FI', {
@@ -178,7 +168,7 @@ function TournamentPage() {
       } catch (err) {
         if (!cancelled) {
           const message = err instanceof Error ? err.message : 'Failed to load statistics';
-          if (isNotFoundError(message)) {
+          if (isNotFoundError(err)) {
             // Tournament has no completed matches yet — that's an expected empty state, not an error.
             setStatsSummary(null);
             setStatsError(null);
@@ -578,11 +568,11 @@ function TournamentPage() {
   return (
     <PageTemplate title={tournament.name}>
       <div className="tournament-page">
-        <header className="tournament-page__hero">
-          <div className="tournament-page__hero-row">
-            <div className="tournament-page__icon" aria-hidden="true">🏆</div>
-            <div className="tournament-page__heading">
-              <h1 className="tournament-page__title">{tournament.name}</h1>
+        <CompetitionHero
+          title={tournament.name}
+          logoUrl={tournament.logoUrl}
+          meta={
+            <>
               <div className="tournament-page__meta">
                 <span>
                   <i className="fas fa-calendar-alt" aria-hidden="true"></i>
@@ -606,9 +596,9 @@ function TournamentPage() {
               ) : (
                 <p className="tournament-page__description">{description}</p>
               )}
-            </div>
-          </div>
-        </header>
+            </>
+          }
+        />
 
         <nav className="tournament-page__tabs" aria-label={t('tournaments.tabsAria', 'Turnauksen välilehdet')}>
           {tabs.map((tab) => (

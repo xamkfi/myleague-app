@@ -7,6 +7,7 @@ import ClubForm from './ClubForm';
 import ClubAdminsPicker, { type ClubAdminSelection } from './ClubAdminsPicker';
 import { resolveClubAdminUserIds } from './resolveClubAdminUserIds';
 import { clubService, type ClubRequest } from '../../../api/common/clubService';
+import './ClubForm.scss';
 
 function CreateClubPage() {
   const { t } = useTranslation();
@@ -34,11 +35,17 @@ function CreateClubPage() {
 
   return (
     <AdminPageTemplate title={t('clubs.create.title', 'Create Club')}>
-      <div className="clubs-page">
-        <h2>{t('clubs.create.title', 'Create Club')}</h2>
+      <div className="club-editor">
+        <header className="club-editor__header">
+          <h2>{t('clubs.create.title')}</h2>
+          <p>{t('clubs.form.lead')}</p>
+        </header>
         <ErrorPopup message={error} />
-        <ClubAdminsPicker selectedAdmins={admins} onChange={setAdmins} />
-        <ClubForm submitting={submitting} onSubmit={handleSubmit} />
+        <ClubForm
+          submitting={submitting}
+          onSubmit={handleSubmit}
+          beforeActions={<ClubAdminsPicker selectedAdmins={admins} onChange={setAdmins} />}
+        />
       </div>
     </AdminPageTemplate>
   );

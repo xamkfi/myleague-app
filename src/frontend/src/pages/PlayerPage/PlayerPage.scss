@@ -5,6 +5,34 @@
   width: 100%;
 }
 
+.player-licence-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: map.get($spacing, 'xs');
+
+  .stat-value {
+    text-align: left;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'sm');
+    width: 100%;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: map.get($spacing, 'xxs');
+  }
+}
+
 // Sport selector shown above the player profile when the person has several
 // sport profiles. Styled as a segmented control: one pill-shaped container,
 // the active segment filled with the brand colour.

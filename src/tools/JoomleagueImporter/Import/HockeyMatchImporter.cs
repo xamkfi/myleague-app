@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Seasons.DTOs;
 using Application.Features.Hockey.Teams.DTOs;
@@ -28,13 +29,14 @@ public class HockeyMatchImporter
     private int _skipped;
     private int _failed;
     private int _repaired;
-    private Guid _currentCompetitionId;
+    private readonly AsyncLocal<Guid> _competitionId = new();
 
     public int Succeeded => _succeeded;
     public int ScheduledOnly => _scheduledOnly;
     public int Skipped => _skipped;
     public int Failed => _failed;
     public int Repaired => _repaired;
+    public ConcurrentBag<int> FailedMatchIds { get; } = [];
 
     public HockeyMatchImporter(
         HockeyApiClient api,
@@ -54,6 +56,12 @@ public class HockeyMatchImporter
         _fillUnknownGoals = fillUnknownGoals;
         _repairMatchIds = repairMatchIds ?? [];
         _repairAll = repairAll;
+    }
+
+    private void RecordFailed(int oldMatchId)
+    {
+        Interlocked.Increment(ref _failed);
+        FailedMatchIds.Add(oldMatchId);
     }
 
     private class SideInfo
@@ -86,7 +94,7 @@ public class HockeyMatchImporter
 
     public async Task ImportProjectMatchesAsync(ProjectImport pi, HockeySeasonDto season, Guid officialId)
     {
-        _currentCompetitionId = season.Id;
+        _competitionId.Value = season.Id;
         OldProject project = pi.Project;
         int periodSeconds = project.PeriodDurationMinutes * 60;
         int regularPeriods = project.NumberOfPeriods;
@@ -156,6 +164,7 @@ public class HockeyMatchImporter
         Console.WriteLine($"  Importing {work.Count} matches (concurrency {MatchImportParallel.Degree})...");
         await MatchImportParallel.ForEachAsync(work, async item =>
         {
+            _competitionId.Value = season.Id;
             try
             {
                 if (item.RepairRequested)
@@ -164,18 +173,18 @@ public class HockeyMatchImporter
                         item.Match, item.ExistingMatchId, item.Home, item.Away,
                         playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
                     if (ok) Interlocked.Increment(ref _repaired);
-                    else Interlocked.Increment(ref _failed);
+                    else RecordFailed(item.Match.Match.Id);
                     return;
                 }
 
                 bool imported = await ImportSingleMatchAsync(
                     item.Match, season, competitionDivisionId, officialId, item.Home, item.Away,
                     playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
-                if (!imported) Interlocked.Increment(ref _failed);
+                if (!imported) RecordFailed(item.Match.Match.Id);
             }
             catch (Exception ex)
             {
-                Interlocked.Increment(ref _failed);
+                RecordFailed(item.Match.Match.Id);
                 Console.WriteLine($"{item.Prefix} ERROR: {ex.Message}");
                 _log.LogError("ImportHockeyMatch", new { item.Match.Match.Id }, ex.ToString());
             }
@@ -406,7 +415,7 @@ public class HockeyMatchImporter
         if (matchTeam == null)
             return match;
 
-        HockeyTeamDto? team = await _api.GetTeamByIdAsync(side.TeamId, _currentCompetitionId);
+        HockeyTeamDto? team = await _api.GetTeamByIdAsync(side.TeamId, _competitionId.Value);
         if (team == null)
         {
             _log.LogError("ConfirmHockeyRoster", new { side.TeamId }, "Team not found.");
@@ -445,10 +454,10 @@ public class HockeyMatchImporter
         if (dressedGoalies == 0)
         {
             Guid? goaliePlayerId = await _entities.GetOrCreateUnknownGoalieAsync(
-                side.OldTeam, side.TeamId, _currentCompetitionId);
+                side.OldTeam, side.TeamId, _competitionId.Value);
             if (goaliePlayerId.HasValue)
             {
-                team = await _api.GetTeamByIdAsync(side.TeamId, _currentCompetitionId) ?? team;
+                team = await _api.GetTeamByIdAsync(side.TeamId, _competitionId.Value) ?? team;
                 if (dressedTeamPlayerIds.Count >= MaxDressedPlayers && dressedTeamPlayerIds.Count > 0)
                     dressedTeamPlayerIds.RemoveAt(dressedTeamPlayerIds.Count - 1);
                 usedPlayerIds.Remove(goaliePlayerId.Value);
@@ -460,8 +469,8 @@ public class HockeyMatchImporter
         if (missing > 0)
         {
             List<Guid> pads = await _entities.EnsureUnknownPlayersAsync(
-                side.OldTeam, side.TeamId, missing, HockeyPosition.Center, _currentCompetitionId);
-            team = await _api.GetTeamByIdAsync(side.TeamId, _currentCompetitionId) ?? team;
+                side.OldTeam, side.TeamId, missing, HockeyPosition.Center, _competitionId.Value);
+            team = await _api.GetTeamByIdAsync(side.TeamId, _competitionId.Value) ?? team;
             foreach (Guid padId in pads)
                 TryAdd(padId, allowGoalie: false);
         }
@@ -624,8 +633,8 @@ public class HockeyMatchImporter
         if (homeMatchTeam == null || awayMatchTeam == null)
             return (0, 0);
 
-        HockeyTeamDto? homeTeam = await _api.GetTeamByIdAsync(home.TeamId, _currentCompetitionId);
-        HockeyTeamDto? awayTeam = await _api.GetTeamByIdAsync(away.TeamId, _currentCompetitionId);
+        HockeyTeamDto? homeTeam = await _api.GetTeamByIdAsync(home.TeamId, _competitionId.Value);
+        HockeyTeamDto? awayTeam = await _api.GetTeamByIdAsync(away.TeamId, _competitionId.Value);
         Dictionary<Guid, Guid> homeActive = MapActivePlayersByPlayerId(homeMatchTeam, homeTeam);
         Dictionary<Guid, Guid> awayActive = MapActivePlayersByPlayerId(awayMatchTeam, awayTeam);
         Guid? homeGoalieActive = homeMatchTeam.ActivePlayers.FirstOrDefault(p => p.IsGoalie)?.Id;
@@ -734,7 +743,7 @@ public class HockeyMatchImporter
         if (!_fillUnknownGoals)
             return null;
         Guid? playerId = await _entities.GetOrCreateUnknownPlayerAsync(
-            side.OldTeam, side.TeamId, _currentCompetitionId);
+            side.OldTeam, side.TeamId, _competitionId.Value);
         if (playerId.HasValue && !side.RosterPlayerIds.Contains(playerId.Value))
             side.RosterPlayerIds.Add(playerId.Value);
         return playerId;

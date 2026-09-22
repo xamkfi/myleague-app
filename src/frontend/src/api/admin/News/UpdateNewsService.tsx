@@ -1,5 +1,6 @@
 import type { NewsArticleDto } from '../../news/newsService';
 import { authFetch } from '../../utils/authFetch';
+import { parseErrorResponse } from '../../utils/ParseErrorResponse';
 import { API_URL } from '../../../constants/config';
 
 interface UpdateNewsData {
@@ -11,6 +12,7 @@ interface UpdateNewsData {
   author?: string | null;
   category?: string | null;
   sportCategory?: string | null;
+  teamCategory?: string | null;
   tags: string[] | null;
 }
 
@@ -32,9 +34,7 @@ export async function UpdateNewsService(id: string, newsData: UpdateNewsData): P
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.log("Update error response:", errorText);
-      throw new Error("Failed to update news article.");
+      throw new Error(await parseErrorResponse(response, 'Failed to update news article.'));
     }
 
     const data: ApiResponse<NewsArticleDto> = await response.json();

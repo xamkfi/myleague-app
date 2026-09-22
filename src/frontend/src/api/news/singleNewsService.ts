@@ -11,6 +11,7 @@ export interface NewsArticleDto {
   updatedAt?: string;
   category?: string;
   sportCategory?: string;
+  teamCategory?: string;
   tags: string[];
   isArchived: boolean;
 }
@@ -30,9 +31,9 @@ export async function singleNewsService(id: string){
         });
     
         if (!response.ok) {
-            const errorText = await response.text();
-            console.log("Upload error response:", errorText);
-            throw new Error("Failed to fetch news.");
+            const error = new Error(`Failed to fetch news (${response.status})`);
+            (error as Error & { status: number }).status = response.status;
+            throw error;
         }
         const data: ApiResponse<NewsArticleDto> = await response.json();
         return data.data;

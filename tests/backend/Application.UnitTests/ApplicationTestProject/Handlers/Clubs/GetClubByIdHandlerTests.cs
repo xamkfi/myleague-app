@@ -89,9 +89,9 @@ public class GetClubByIdHandlerTests
         result.Data.Should().NotBeNull();
         result.Data!.Id.Should().Be(club.Id);
         result.Data.Name.Should().Be(club.Name);
-        result.Data.WebsiteUrl.Should().Be("https://example.com/");
-        result.Data.LogoUrl.Should().Be("https://example.com/logo.png");
-        result.Data.ContactEmail.Should().Be("contact@example.com");
+        result.Data.WebsiteUrl.Should().BeEmpty();
+        result.Data.LogoUrl.Should().BeEmpty();
+        result.Data.ContactEmail.Should().BeEmpty();
 
         _mockClubRepository.Verify(x => x.GetByIdAsync(clubId), Times.Once);
     }
@@ -305,8 +305,8 @@ public class GetClubByIdHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Data.Should().NotBeNull();
-        result.Data!.WebsiteUrl.Should().Be("https://example.com/");
-        result.Data.LogoUrl.Should().Be("https://example.com/logo.png");
+        result.Data!.WebsiteUrl.Should().BeEmpty();
+        result.Data.LogoUrl.Should().BeEmpty();
         result.Data.ContactEmail.Should().Be("");
     }
 

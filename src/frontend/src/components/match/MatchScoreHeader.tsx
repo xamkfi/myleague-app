@@ -53,9 +53,11 @@ export default function MatchScoreHeader({
   homeScore,
   awayScore,
   scheduledDateTime,
+  venue,
   isScheduled,
   isLive,
   isFinal,
+  statusLabel,
 }: MatchScoreHeaderProps) {
   const { t } = useTranslation();
   const scheduled = formatMatchHeaderDate(scheduledDateTime);
@@ -87,6 +89,12 @@ export default function MatchScoreHeader({
         <span className="date">{scheduled.date}</span>
         <span className="separator">·</span>
         <span className="time">{scheduled.time}</span>
+        {venue && (
+          <>
+            <span className="separator">·</span>
+            <span className="venue">{venue}</span>
+          </>
+        )}
       </div>
 
       {isLive && (
@@ -99,6 +107,12 @@ export default function MatchScoreHeader({
       {isFinal && (
         <div className="match-status final">
           <span>{t('matchPage.final')}</span>
+        </div>
+      )}
+
+      {statusLabel && !isLive && !isFinal && (
+        <div className="match-status final">
+          <span>{statusLabel}</span>
         </div>
       )}
     </div>

@@ -41,7 +41,8 @@
       "venue": "Pelipaikka",
       "status": "Tila",
       "overtime": "Jatkoaika",
-      "shootout": "Voittomaalikilpailu"
+      "shootout": "Voittomaalikilpailu",
+      "notStarted": "Ottelu ei ole vielä alkanut."
     },
     "lineups": {
       "notSet": "Ottelun kokoonpanoa ei ole vielä asetettu."
@@ -98,6 +99,37 @@
     "clubs": "Seurat",
     "team": "Joukkue"
   },
+  "notFound": {
+    "title": "Sivua ei löytynyt",
+    "message": "Etsimääsi sivua ei ole olemassa tai se on siirretty.",
+    "home": "Etusivulle"
+  },
+  "competition": {
+    "logoUrl": "Logon URL"
+  },
+  "registerPage": {
+    "intro": "Täytä lomake, niin avaamme sähköpostin seuran työntekijälle.",
+    "name": "Nimi",
+    "email": "Sähköposti",
+    "phone": "Puhelin",
+    "ageGroup": "Ikäryhmä",
+    "ageGroupPlaceholder": "Valitse ikäryhmä",
+    "ageGroupU12": "Alle 12",
+    "ageGroupU15": "Alle 15",
+    "ageGroupU18": "Alle 18",
+    "ageGroupAdult": "Aikuiset",
+    "ageGroupSenior": "Seniorit (40+)",
+    "experience": "Kokemustaso",
+    "experiencePlaceholder": "Valitse kokemustaso",
+    "experienceBeginner": "Aloittelija",
+    "experienceIntermediate": "Keskitaso",
+    "experienceAdvanced": "Edistynyt",
+    "notes": "Lisätiedot",
+    "submit": "Lähetä ilmoittautuminen",
+    "mailSubject": "Ilmoittautuminen: {{name}}",
+    "thankYouTitle": "Sähköpostiohjelma avattiin",
+    "thankYouBody": "Jos viesti ei avautunut, lähetä ilmoittautuminen osoitteeseen pasi@mahl.fi."
+  },
   "sessionExpiry": {
     "message": "Istuntosi vanhenee noin {{minutes}} minuutin kuluttua. Pysy kirjautuneena, jos tarvitset sivua vielä.",
     "stayLoggedIn": "Pysy kirjautuneena",
@@ -126,6 +158,7 @@
       "title": "Ajankohtaista",
       "readMore": "Lue lisää",
       "noNews": "Ei uutisia saatavilla",
+      "noNewsForAudience": "Ei uutisia kohderyhmälle {{audience}}.",
       "loading": "Ladataan uutisia...",
       "error": "Uutisten lataaminen epäonnistui",
       "retry": "Yritä uudelleen"
@@ -133,6 +166,7 @@
   },
   "eventCalendarPage": {
     "title": "Tapahtumakalenteri",
+    "description": "Selaa otteluita kuukausittain. Valitse päivä tai suodata kauden, tilan ja joukkueen mukaan.",
     "noEvents": "Ei tapahtumia",
     "prevMonth": "Edellinen kuukausi",
     "nextMonth": "Seuraava kuukausi",
@@ -151,6 +185,7 @@
     },
     "filters": {
       "showFilters": "Suodattimet",
+      "sport": "Laji",
       "status": "Tila",
       "season": "Kausi",
       "allSeasons": "Kaikki kaudet",
@@ -174,7 +209,12 @@
     "loadingMore": "Ladataan lisää...",
     "showMore": "Näytä lisää ({{count}})",
     "showLess": "Näytä vähemmän",
-    "error": "Otteluiden lataus epäonnistui"
+    "error": "Otteluiden lataus epäonnistui",
+    "today": "Tänään",
+    "tomorrow": "Huomenna",
+    "seasonFallback": "Kausi",
+    "tbd": "TBD",
+    "liveBadge": "LIVE"
   },
   "language": {
     "en": "Englanti",
@@ -198,7 +238,7 @@
     "noRules": "Sääntöjä ei ole vielä lisätty.",
     "mahlNavigation": "MAHL navigaatio",
     "mahlNav": {
-      "summary": "Summary",
+      "summary": "Yhteenveto",
       "finance": "Seuran talous",
       "partners": "Kumppanuudet",
       "responsibility": "Vastuullisuus",
@@ -299,9 +339,20 @@
   },
   "admin": {
     "title": "Hallintapaneeli",
-    "database": "Tietokanta",
+    "nav": {
+      "league": "Liigan tiedot",
+      "administration": "Ylläpito"
+    },
     "sportsTitle": "Urheilulajit",
     "view": "Admin näkymä",
+    "home": {
+      "teams": "Joukkueet",
+      "players": "Pelaajat",
+      "seasons": "Kaudet",
+      "tournaments": "Turnaukset",
+      "matches": "Ottelut",
+      "referees": "Tuomarit"
+    },
     "navbar": {
       "matchesInProgress_one": "{{count}} ottelu käynnissä",
       "matchesInProgress_other": "{{count}} ottelua käynnissä"
@@ -325,10 +376,12 @@
       "users": "Järjestelmäkäyttäjät",
       "manageUsers": "Hallitse järjestelmäkäyttäjiä",
       "rules": "Säännöt",
-      "manageRules": "Hallitse sääntöjä"
+      "manageRules": "Hallitse sääntöjä",
+      "manageInfoPages": "Hallitse infosivuja",
+      "manageFooterContacts": "Hallitse alatunnistetta",
+      "manageSettings": "Hallitse sivuston asetuksia"
     },
     "settings": {
-      "navSection": "Asetukset",
       "nav": "Sivuston asetukset",
       "pageTitle": "Sivuston asetukset",
       "description": "Tunnisteiden ja kirjautumiskoodin kestot koskevat vain uusia istuntoja. Salaisuudet pysyvät palvelimen asetuksissa.",
@@ -347,7 +400,16 @@
       "save": "Tallenna asetukset",
       "saveSuccess": "Asetukset tallennettu.",
       "saveFailed": "Asetusten tallennus epäonnistui.",
-      "loadFailed": "Asetusten lataus epäonnistui."
+      "loadFailed": "Asetusten lataus epäonnistui.",
+      "licenceTitle": "Pelaajalisenssit",
+      "licenceHint": "Tänä päivänä joka vuosi maksamattomat joukkuelisenssit merkitään ei-aktiivisiksi. Oletus on 1.5.",
+      "licenceDay": "Päivä",
+      "licenceMonth": "Kuukausi",
+      "licenceLastReset": "Viimeisin lisenssinollausvuosi: {{year}}.",
+      "licenceResetNow": "Nollaa pelaajalisenssit nyt",
+      "licenceResetConfirm": "Merkitäänkö maksamattomat joukkuelisenssit ei-aktiivisiksi nyt? Pelaajat pysyvät ei-aktiivisina, kunnes merkitset kunkin joukkuelisenssin maksetuksi.",
+      "licenceResetSuccess": "Lisenssit nollattu: {{floorball}} salibandy, {{football}} jalkapallo, {{hockey}} jääkiekko.",
+      "licenceResetFailed": "Pelaajalisenssien nollaus epäonnistui."
     },
     "siteContent": {
       "title": "Sivuston sisällöt",
@@ -566,7 +628,7 @@
         "email": "Sähköposti",
         "phone": "Puhelin",
         "alternativePhone": "Vaihtoehtoinen puhelin",
-        "floorballAssignment": "Salibandy joukkuemääritys (Valinnainen)",
+        "floorballAssignment": "Joukkuemääritys (valinnainen)",
         "team": "Joukkue",
         "selectTeam": "Valitse joukkue...",
         "searchTeams": "Etsi joukkueita...",
@@ -656,6 +718,8 @@
       "sport_category": "Urheilulaji",
       "select_category": "Valitse kategoria",
       "select_sport": "Valitse urheilulaji",
+      "team_category": "Kohderyhmä",
+      "all_audiences": "Kaikki kohderyhmät",
       "tags": "Tägit",
       "add_tag_placeholder": "Kirjoita tägi ja paina Enter...",
       "no_tags": "Tägejä ei ole vielä lisätty. Tägit auttavat luokittelemaan artikkelisi.",
@@ -683,6 +747,9 @@
       "preview_description": "Näin artikkelisi näyttää lukijoille",
       "edit_description": "Muokkaa olemassa olevaa uutisartikkelia",
       "create_description": "Luo uusi uutisartikkeli",
+      "required_hint": "Otsikko ja artikkelin sisältö ovat pakollisia. Esikatselu säilyttää luonnoksen tällä sivulla.",
+      "confirmPublishTitle": "Julkaise artikkeli",
+      "confirmUpdateTitle": "Päivitä artikkeli",
       "main_picture_preview": "Pääkuvan esikatselu",
       "news_image": "Uutiskuva",
       "noData": "Uutisartikkeleita ei löytynyt",
@@ -702,7 +769,18 @@
       "actions": {
         "edit": "Muokkaa",
         "delete": "Poista",
+        "archive": "Arkistoi",
+        "unarchive": "Palauta",
+        "menu": "Uutisen toiminnot",
         "toggleArchive": "Klikkaa vaihtaaksesi arkistointitilaa"
+      },
+      "filter": {
+        "category": "Kategoria",
+        "allCategories": "Kaikki kategoriat",
+        "sport": "Laji",
+        "allSports": "Kaikki lajit",
+        "search": "Haku",
+        "searchPlaceholder": "Hae uutisartikkeleita..."
       },
       "status": {
         "archived": "Kyllä",
@@ -721,6 +799,7 @@
         "updateArchiveFailed": "Arkistointistatuksen päivitys epäonnistui",
         "publish_error": "Uutisartikkelin julkaisu epäonnistui. Yritä uudelleen.",
         "update_error": "Uutisartikkelin päivitys epäonnistui. Yritä uudelleen.",
+        "loadFailed": "Uutisartikkelin lataus muokkausta varten epäonnistui",
         "title_required": "Otsikko on pakollinen",
         "title_too_short": "Otsikon tulee olla vähintään 5 merkkiä pitkä",
         "title_too_long": "Otsikko ei voi ylittää 200 merkkiä",
@@ -763,6 +842,9 @@
     "create": {
       "title": "Luo Seura"
     },
+    "edit": {
+      "title": "Muokkaa seuraa"
+    },
     "table": {
       "name": "Seuran Nimi",
       "city": "Kaupunki",
@@ -773,6 +855,11 @@
       "openClub": "Avaa seura"
     },
     "form": {
+      "lead": "Vain seuran nimi on pakollinen. Kaupunki, maa, perustamisajankohta ja yhteystiedot voi jättää tyhjiksi.",
+      "basicSection": "Perustiedot",
+      "contactSection": "Yhteystiedot",
+      "optional": "valinnainen",
+      "emailPlaceholder": "seura@esimerkki.fi",
       "name": "Seuran Nimi",
       "city": "Kaupunki",
       "country": "Maa",
@@ -808,6 +895,25 @@
       "editTeam": "Muokkaa joukkuetta",
       "season": "Kausi",
       "tournament": "Turnaus"
+    },
+    "admins": {
+      "title": "Seuran ylläpitäjät",
+      "hint": "Ylläpitäjät voivat muokata seuran tietoja sekä hallita seuran joukkueiden kokoonpanoja ja ottelukokoonpanoja.",
+      "cardHint": "Nämä käyttäjät voivat muokata seuran tietoja ja hallita joukkueiden kokoonpanoja.",
+      "noneSelected": "Seuralle ei ole vielä nimetty ylläpitäjiä.",
+      "remove": "Poista",
+      "addButton": "Lisää ylläpitäjä",
+      "saveError": "Ylläpitäjien päivitys epäonnistui",
+      "loadError": "Käyttäjien lataus epäonnistui",
+      "searchError": "Henkilöhakua ei voitu suorittaa",
+      "emailRequired": "Henkilöllä ei ole sähköpostiosoitetta, joten häntä ei voi kutsua seuran ylläpitäjäksi.",
+      "modalTitle": "Hallitse seuran ylläpitäjiä",
+      "currentTitle": "Nykyiset ylläpitäjät",
+      "searchTitle": "Hae henkilöitä",
+      "searchPlaceholder": "Hae henkilöitä nimellä...",
+      "noPersons": "Henkilöitä ei löytynyt.",
+      "added": "Lisätty",
+      "add": "Lisää"
     },
     "deleteClubButton": "Poista seura",
     "confirmDeleteTitle": "Poista seura?",
@@ -1002,6 +1108,7 @@
         "serverError": "Palvelinvirhe. Yritä myöhemmin uudelleen.",
         "overlappingDates": "Kausi on jo olemassa, joka menee päällekkäin määritettyjen päivämäärien kanssa.",
         "cannotUpdateCompleted": "Päätettyä kautta ei voi päivittää.",
+        "hasMatches": "Kautta ei voi poistaa, koska sillä on otteluita. Poista ottelut ensin.",
         "detailsSaveFailed": "Kauden tietoja ei voitu tallentaa: {{reason}}",
         "updateFailed": "Toiminto epäonnistui. Yritä uudelleen."
       },
@@ -1011,6 +1118,59 @@
         "divisionRequired": "Valitse kelvollinen sarja.",
         "startDateRequired": "Aloituspäivä on pakollinen.",
         "endDateRequired": "Päättymispäivä on pakollinen."
+      },
+      "import": {
+        "button": "Tuo JSON-tiedostosta",
+        "buttonTooltip": "Luo kausi lataamalla JSON-tiedosto (myleague-muoto).",
+        "title": "Tuo kausi JSON-tiedostosta",
+        "dropzone": "Pudota JSON-tiedosto tähän tai klikkaa valitaksesi.",
+        "chooseFile": "Valitse tiedosto",
+        "downloadSample": "Lataa esimerkki-JSON",
+        "invalidTitle": "JSON-tarkistus epäonnistui",
+        "invalidJson": "Tiedosto ei ole kelvollista JSONia: {{msg}}",
+        "seasonName": "Kauden nimi",
+        "seasonVenue": "Oletuspaikka",
+        "seasonVenuePlaceholder": "esim. Kampparit Areena",
+        "seasonVenueHint": "Täytetään JSONista jos saatavilla. Käytetään otteluiden oletuspaikkana, jos ottelulla ei ole omaa paikkaa.",
+        "seasonCategory": "Kauden tyyppi",
+        "seasonCategoryHint": "Sovelletaan kauteen ja uusiin joukkueisiin (olemassa olevat joukkueet säilyttävät kategoriansa).",
+        "previewNote": "Olemassa olevat seurat/joukkueet (nimen perusteella) käytetään uudelleen. Vain puuttuvat luodaan.",
+        "autoRevert": "Peruuta automaattisesti, jos jokin vaihe epäonnistuu",
+        "startImport": "Aloita tuonti",
+        "starting": "Aloitetaan...",
+        "successTitle": "Tuonti valmis",
+        "failedTitle": "Tuonti epäonnistui",
+        "failedNote": "{{count}} kohdetta ehdittiin luoda ennen virhettä. Voit perua ne.",
+        "aborted": "Käyttäjä perui tuonnin.",
+        "unknownError": "Tuonti epäonnistui tuntemattomasta syystä.",
+        "revertStart": "Perutaan luodut kohteet...",
+        "revertAll": "Peru kaikki muutokset",
+        "reverting": "Perutaan...",
+        "revertedTitle": "Peruminen valmis",
+        "revertedSummary": "Poistettiin {{deleted}} kohdetta. {{failed}} epäonnistumista — tarkista loki.",
+        "openSeason": "Avaa kausi",
+        "playerRosterNote": "Pelaajakokoonpanot (jos JSONissa) luodaan ja lisätään joukkueisiin automaattisesti. Olemassa olevat pelaajat (nimen perusteella) käytetään uudelleen.",
+        "counts": {
+          "clubs": "Seurat",
+          "divisions": "Sarjat",
+          "teams": "Joukkueet",
+          "players": "Pelaajat",
+          "season": "Kausi",
+          "assignments": "Kausisijoitukset",
+          "matches": "Ottelut"
+        },
+        "aiHelp": {
+          "title": "Eikö JSON-tiedostoa ole vielä? Luo se tekoälyllä",
+          "step1": "Kopioi alla oleva prompti \"Kopioi prompti\" -painikkeella (tai lataa tiedostona, jos kopiointi on estetty).",
+          "step2": "Avaa ChatGPT, Claude, Gemini tai muu kuvaa ymmärtävä tekoäly ja liitä prompti (Ctrl/Cmd + V).",
+          "step3": "Liitä kuvakaappaus / valokuva kausiohjelmasta (ja kokoonpanolistoista, jos niitä on) ja lähetä viesti.",
+          "step4": "Tallenna tekoälyn vastaus .json-tiedostoksi ja pudota se yllä olevaan alueeseen.",
+          "copyPrompt": "Kopioi AI-prompti leikepöydälle",
+          "downloadPrompt": "Lataa AI-prompti .txt-tiedostona",
+          "copiedToast": "Prompti kopioitiin leikepöydälle. Liitä se tekoälychattiin (Ctrl/Cmd + V) ja liitä aikataulun kuva.",
+          "downloadedToast": "Prompti ladattiin .txt-tiedostona. Avaa se, kopioi sisältö ja liitä tekoälychattiin.",
+          "errorToast": "Promptia ei voitu kopioida eikä ladata. Kokeile \"Lataa\"-painiketta uudelleen."
+        }
       }
     },
     "tournaments": {
@@ -1669,6 +1829,9 @@
     "similarNews": "Samankaltaiset uutiset",
     "relatedTeams": "Uutiseen liittyvät joukkueet",
     "noNewsFound": "Ei uutisia vastaaville hakuehdoille.",
+    "noNewsForAudience": "Ei uutisia kohderyhmälle {{audience}}.",
+    "fetchError": "Uutisia ei voitu ladata.",
+    "retry": "Yritä uudelleen",
     "category": {
       "all": "Kaikki"
     },
@@ -1869,6 +2032,11 @@
     "noCareer": "Ei uratietoja saatavilla.",
     "sportsLabel": "Lajit",
     "noSports": "Pelaajalla ei ole lajiprofiileja.",
+    "licencesTitle": "Voimassa olevat lisenssit",
+    "licencePaid": "Maksettu",
+    "licenceUnpaid": "Maksamatta",
+    "licenceBaseRoster": "Perusjoukkue",
+    "noLicences": "Ei voimassa olevaa lisenssiä.",
     "sports": {
       "floorball": "Salibandy",
       "football": "Jalkapallo",
@@ -1888,7 +2056,36 @@
       "pageOf": "Sivu {{current}} / {{total}}"
     }
   },
+  "playerLicence": {
+    "column": "Lisenssi",
+    "markPaid": "Merkitse lisenssi maksetuksi",
+    "markUnpaid": "Merkitse lisenssi maksamattomaksi",
+    "firstName": "Etunimi",
+    "lastName": "Sukunimi",
+    "activeLicences": "Aktiiviset lisenssit",
+    "noActiveLicences": "Ei aktiivisia lisenssejä",
+    "filterLabel": "Lisenssi",
+    "filterAll": "Kaikki",
+    "filterActive": "Aktiivinen lisenssi",
+    "filterInactive": "Ei aktiivista lisenssiä"
+  },
   "football": {
+    "management": {
+      "actions": {
+        "teams": "Joukkueet",
+        "manageTeams": "Hallitse joukkueita",
+        "players": "Pelaajat",
+        "managePlayers": "Hallitse pelaajia",
+        "seasons": "Kaudet",
+        "manageSeasons": "Hallitse kausia",
+        "tournaments": "Turnaukset",
+        "manageTournaments": "Hallitse turnauksia",
+        "matches": "Ottelut",
+        "manageMatches": "Hallitse otteluita",
+        "referees": "Tuomarit",
+        "manageReferees": "Hallitse tuomareita"
+      }
+    },
     "positions": {
       "Goalkeeper": "Maalivahti",
       "Defender": "Puolustaja",
@@ -1929,14 +2126,71 @@
     },
     "teams": {
       "rosterCompetition": "Kilpailu",
-      "allCompetitions": "Kaikki kilpailut"
+      "allCompetitions": "Kaikki kilpailut",
+      "createPlayerHint": "Vain olemassa olevat pelaajat voidaan lisätä. Jos loit juuri henkilön, muunna hänet ensin pelaajaksi.",
+      "createPlayerFromPerson": "Luo pelaaja henkilöstä"
     },
     "seasons": {
       "createFromClub": "Luo uusi joukkue",
       "createFromClubHint": "Luo seuralle uusi joukkue tyhjällä kokoonpanolla, tai lisää olemassa oleva joukkue kopioidaksesi viimeisimmän kokoonpanon.",
       "selectClub": "Valitse seura",
       "newTeamName": "Uuden joukkueen nimi",
-      "teamCreatedFromClub": "Uusi joukkue luotiin tyhjällä kokoonpanolla."
+      "newTeamShortName": "Lyhenne (valinnainen)",
+      "newTeamHomeArena": "Kotiareena (valinnainen)",
+      "teamCreatedFromClub": "Uusi joukkue luotiin tyhjällä kokoonpanolla.",
+      "import": {
+        "button": "Tuo JSON-tiedostosta",
+        "buttonTooltip": "Luo kausi lataamalla JSON-tiedosto (myleague-muoto).",
+        "title": "Tuo kausi JSON-tiedostosta",
+        "dropzone": "Pudota JSON-tiedosto tähän tai klikkaa valitaksesi.",
+        "chooseFile": "Valitse tiedosto",
+        "downloadSample": "Lataa esimerkki-JSON",
+        "invalidTitle": "JSON-tarkistus epäonnistui",
+        "invalidJson": "Tiedosto ei ole kelvollista JSONia: {{msg}}",
+        "seasonName": "Kauden nimi",
+        "seasonVenue": "Oletuspaikka",
+        "seasonVenuePlaceholder": "esim. Kampparit Areena",
+        "seasonVenueHint": "Täytetään JSONista jos saatavilla. Käytetään otteluiden oletuspaikkana, jos ottelulla ei ole omaa paikkaa.",
+        "seasonCategory": "Kauden tyyppi",
+        "seasonCategoryHint": "Sovelletaan kauteen ja uusiin joukkueisiin (olemassa olevat joukkueet säilyttävät kategoriansa).",
+        "previewNote": "Olemassa olevat seurat/joukkueet (nimen perusteella) käytetään uudelleen. Vain puuttuvat luodaan.",
+        "autoRevert": "Peruuta automaattisesti, jos jokin vaihe epäonnistuu",
+        "startImport": "Aloita tuonti",
+        "starting": "Aloitetaan...",
+        "successTitle": "Tuonti valmis",
+        "failedTitle": "Tuonti epäonnistui",
+        "failedNote": "{{count}} kohdetta ehdittiin luoda ennen virhettä. Voit perua ne.",
+        "aborted": "Käyttäjä perui tuonnin.",
+        "unknownError": "Tuonti epäonnistui tuntemattomasta syystä.",
+        "revertStart": "Perutaan luodut kohteet...",
+        "revertAll": "Peru kaikki muutokset",
+        "reverting": "Perutaan...",
+        "revertedTitle": "Peruminen valmis",
+        "revertedSummary": "Poistettiin {{deleted}} kohdetta. {{failed}} epäonnistumista — tarkista loki.",
+        "openSeason": "Avaa kausi",
+        "playerRosterNote": "Pelaajakokoonpanot (jos JSONissa) luodaan ja lisätään joukkueisiin automaattisesti. Olemassa olevat pelaajat (nimen perusteella) käytetään uudelleen.",
+        "counts": {
+          "clubs": "Seurat",
+          "divisions": "Sarjat",
+          "teams": "Joukkueet",
+          "players": "Pelaajat",
+          "season": "Kausi",
+          "assignments": "Kausisijoitukset",
+          "matches": "Ottelut"
+        },
+        "aiHelp": {
+          "title": "Eikö JSON-tiedostoa ole vielä? Luo se tekoälyllä",
+          "step1": "Kopioi alla oleva prompti \"Kopioi prompti\" -painikkeella (tai lataa tiedostona, jos kopiointi on estetty).",
+          "step2": "Avaa ChatGPT, Claude, Gemini tai muu kuvaa ymmärtävä tekoäly ja liitä prompti (Ctrl/Cmd + V).",
+          "step3": "Liitä kuvakaappaus / valokuva kausiohjelmasta (ja kokoonpanolistoista, jos niitä on) ja lähetä viesti.",
+          "step4": "Tallenna tekoälyn vastaus .json-tiedostoksi ja pudota se yllä olevaan alueeseen.",
+          "copyPrompt": "Kopioi AI-prompti leikepöydälle",
+          "downloadPrompt": "Lataa AI-prompti .txt-tiedostona",
+          "copiedToast": "Prompti kopioitiin leikepöydälle. Liitä se tekoälychattiin (Ctrl/Cmd + V) ja liitä aikataulun kuva.",
+          "downloadedToast": "Prompti ladattiin .txt-tiedostona. Avaa se, kopioi sisältö ja liitä tekoälychattiin.",
+          "errorToast": "Promptia ei voitu kopioida eikä ladata. Kokeile \"Lataa\"-painiketta uudelleen."
+        }
+      }
     }
   },
   "sports": {
@@ -1944,6 +2198,21 @@
     "floorball": "Salibandy",
     "football": "Jalkapallo",
     "iceHockey": "Jääkiekko"
+  },
+  "tournaments": {
+    "intro": "Selaa tulevia, käynnissä olevia ja päättyneitä turnauksia. Avaa turnaus nähdäksesi lohkot, otteluohjelman ja tilastot.",
+    "open": "Avaa turnaus",
+    "loading": "Ladataan turnauksia...",
+    "retry": "Yritä uudelleen",
+    "noTournaments": "Ei turnauksia tällä hetkellä.",
+    "statusUpcoming": "Tulossa",
+    "statusOngoing": "Käynnissä",
+    "statusPast": "Päättynyt",
+    "dates": "Päivämäärät",
+    "venue": "Paikka",
+    "teams": "Joukkueet",
+    "groups": "Lohkot",
+    "cardDefaultDescription": "Selaa turnauksen lohkoja, tuloksia ja tilastoja."
   },
   "sportsPage": {
     "title": "Lajit",
@@ -1960,10 +2229,21 @@
     "adult": "Aikuiset",
     "youth": "Nuoret",
     "women": "Naiset",
+    "all": "Kaikki kohderyhmät",
     "intro": "Valitse kohderyhmä nähdäksesi siihen liittyvät sisällöt.",
+    "descriptions": {
+      "adult": "Aikuisten sarjat, ottelut ja tilastot.",
+      "youth": "Nuorten sarjat, ottelut ja tilastot.",
+      "women": "Naisten sarjat, ottelut ja tilastot."
+    },
     "selected": "Valittu",
     "select": "Valitse",
-    "switcherLabel": "Kohderyhmän valinta"
+    "switcherLabel": "Kohderyhmän valinta",
+    "descriptions": {
+      "adult": "Aikuisten sarjat, cupit ja seuratoiminta.",
+      "youth": "Nuorten sarjat ja junioritoiminta.",
+      "women": "Naisten sarjat, cupit ja seuratoiminta."
+    }
   },
   "hockey": {
     "management": {
@@ -2030,6 +2310,8 @@
       },
       "addPlayer": "Lisää pelaaja",
       "addPlayerToTeam": "Lisää pelaaja joukkueeseen",
+      "createPlayerHint": "Vain olemassa olevat pelaajat voidaan lisätä. Jos loit juuri henkilön, muunna hänet ensin pelaajaksi.",
+      "createPlayerFromPerson": "Luo pelaaja henkilöstä",
       "searchAvailablePlayers": "Hae vapaita pelaajia...",
       "selectedPlayers": "{{count}} valittu",
       "addSelectedToTeam": "Lisää valitut joukkueeseen ({{count}})",
@@ -2126,6 +2408,8 @@
       "createFromClubHint": "Luo seuralle uusi joukkue tyhjällä kokoonpanolla, tai lisää olemassa oleva joukkue kopioidaksesi viimeisimmän kokoonpanon.",
       "selectClub": "Valitse seura",
       "newTeamName": "Uuden joukkueen nimi",
+      "newTeamShortName": "Lyhenne (valinnainen)",
+      "newTeamHomeArena": "Kotiareena (valinnainen)",
       "teamCreatedFromClub": "Uusi joukkue luotiin tyhjällä kokoonpanolla.",
       "searchTeams": "Hae joukkueita nimellä...",
       "allCategories": "Kaikki kategoriat",
@@ -2166,7 +2450,61 @@
         "notFound": "Kautta ei löytynyt",
         "updateFailed": "Kauden päivitys epäonnistui",
         "cannotUpdateCompleted": "Päätettyä kautta ei voi päivittää.",
+        "hasMatches": "Kautta ei voi poistaa, koska sillä on otteluita. Poista ottelut ensin.",
         "detailsSaveFailed": "Kauden tietoja ei voitu tallentaa: {{reason}}"
+      },
+      "import": {
+        "button": "Tuo JSON-tiedostosta",
+        "buttonTooltip": "Luo kausi lataamalla JSON-tiedosto (myleague-muoto).",
+        "title": "Tuo kausi JSON-tiedostosta",
+        "dropzone": "Pudota JSON-tiedosto tähän tai klikkaa valitaksesi.",
+        "chooseFile": "Valitse tiedosto",
+        "downloadSample": "Lataa esimerkki-JSON",
+        "invalidTitle": "JSON-tarkistus epäonnistui",
+        "invalidJson": "Tiedosto ei ole kelvollista JSONia: {{msg}}",
+        "seasonName": "Kauden nimi",
+        "seasonVenue": "Oletuspaikka",
+        "seasonVenuePlaceholder": "esim. Kampparit Areena",
+        "seasonVenueHint": "Täytetään JSONista jos saatavilla. Käytetään otteluiden oletuspaikkana, jos ottelulla ei ole omaa paikkaa.",
+        "seasonCategory": "Kauden tyyppi",
+        "seasonCategoryHint": "Sovelletaan kauteen ja uusiin joukkueisiin (olemassa olevat joukkueet säilyttävät kategoriansa).",
+        "previewNote": "Olemassa olevat seurat/joukkueet (nimen perusteella) käytetään uudelleen. Vain puuttuvat luodaan.",
+        "autoRevert": "Peruuta automaattisesti, jos jokin vaihe epäonnistuu",
+        "startImport": "Aloita tuonti",
+        "starting": "Aloitetaan...",
+        "successTitle": "Tuonti valmis",
+        "failedTitle": "Tuonti epäonnistui",
+        "failedNote": "{{count}} kohdetta ehdittiin luoda ennen virhettä. Voit perua ne.",
+        "aborted": "Käyttäjä perui tuonnin.",
+        "unknownError": "Tuonti epäonnistui tuntemattomasta syystä.",
+        "revertStart": "Perutaan luodut kohteet...",
+        "revertAll": "Peru kaikki muutokset",
+        "reverting": "Perutaan...",
+        "revertedTitle": "Peruminen valmis",
+        "revertedSummary": "Poistettiin {{deleted}} kohdetta. {{failed}} epäonnistumista — tarkista loki.",
+        "openSeason": "Avaa kausi",
+        "playerRosterNote": "Pelaajakokoonpanot (jos JSONissa) luodaan ja lisätään joukkueisiin automaattisesti. Olemassa olevat pelaajat (nimen perusteella) käytetään uudelleen.",
+        "counts": {
+          "clubs": "Seurat",
+          "divisions": "Sarjat",
+          "teams": "Joukkueet",
+          "players": "Pelaajat",
+          "season": "Kausi",
+          "assignments": "Kausisijoitukset",
+          "matches": "Ottelut"
+        },
+        "aiHelp": {
+          "title": "Eikö JSON-tiedostoa ole vielä? Luo se tekoälyllä",
+          "step1": "Kopioi alla oleva prompti \"Kopioi prompti\" -painikkeella (tai lataa tiedostona, jos kopiointi on estetty).",
+          "step2": "Avaa ChatGPT, Claude, Gemini tai muu kuvaa ymmärtävä tekoäly ja liitä prompti (Ctrl/Cmd + V).",
+          "step3": "Liitä kuvakaappaus / valokuva kausiohjelmasta (ja kokoonpanolistoista, jos niitä on) ja lähetä viesti.",
+          "step4": "Tallenna tekoälyn vastaus .json-tiedostoksi ja pudota se yllä olevaan alueeseen.",
+          "copyPrompt": "Kopioi AI-prompti leikepöydälle",
+          "downloadPrompt": "Lataa AI-prompti .txt-tiedostona",
+          "copiedToast": "Prompti kopioitiin leikepöydälle. Liitä se tekoälychattiin (Ctrl/Cmd + V) ja liitä aikataulun kuva.",
+          "downloadedToast": "Prompti ladattiin .txt-tiedostona. Avaa se, kopioi sisältö ja liitä tekoälychattiin.",
+          "errorToast": "Promptia ei voitu kopioida eikä ladata. Kokeile \"Lataa\"-painiketta uudelleen."
+        }
       }
     },
     "tournaments": {
@@ -2987,12 +3325,18 @@
     "contacts": {
       "title": "YHTEYSTIEDOT",
       "empty": "Yhteystietoja ei ole vielä lisätty."
+    },
+    "credits": {
+      "madeBy": "Sivuston tehnyt",
+      "programme": "Ohjelmistotekniikka",
+      "source": "Lähdekoodit täällä"
     }
   },
   "clubsPage": {
     "title": "Seurat",
     "description": "Selaa ja hae MAHL-liigan seuroja.",
     "searchPlaceholder": "Hae seuroja...",
+    "clearSearch": "Tyhjennä haku",
     "noClubs": "Seuroja ei löytynyt",
     "viewClub": "Katso seura",
     "loading": "Ladataan seuroja...",
@@ -3008,14 +3352,16 @@
     "backToClubs": "Kaikki seurat",
     "teams": "Joukkueet",
     "teamsLoading": "Ladataan joukkueita...",
-    "noTeams": "Tällä seuralla ei ole vielä salibandyjoukkueita.",
+    "noTeams": "Tällä seuralla ei ole joukkueita valitussa ikäryhmässä.",
     "website": "Verkkosivu",
     "city": "Kaupunki",
     "founded": "Perustettu",
     "contact": "Yhteystiedot",
     "activeRoster": "Aktiivinen kokoonpano",
     "noActiveMembers": "Ei aktiivisia jäseniä",
-    "viewTeam": "Näytä joukkue"
+    "viewTeam": "Näytä joukkue",
+    "showEarlierSeasons": "Aiemmat kaudet ({{count}})",
+    "hideEarlierSeasons": "Piilota aiemmat kaudet"
   },
   "clubAdmin": {
     "view": "Seuran ylläpito",
@@ -3078,6 +3424,31 @@
     "loadClubError": "Seuran lataus epäonnistui",
     "clubInfoSaved": "Seuran tiedot on tallennettu.",
     "clubInfoTitle": "Seuran tiedot"
+  },
+  "tournaments": {
+    "statusUpcoming": "Tulossa",
+    "statusOngoing": "Käynnissä",
+    "statusPast": "Päättynyt",
+    "cardDefaultDescription": "Selaa turnauksen lohkoja, tuloksia ja tilastoja.",
+    "dates": "Päivämäärät",
+    "venue": "Paikka",
+    "teams": "Joukkueet",
+    "groups": "Lohkot",
+    "tabSummary": "Yhteenveto",
+    "tabGroups": "Lohkot",
+    "tabFixtures": "Otteluohjelma",
+    "tabResults": "Tulokset",
+    "tabStatistics": "Tilastot",
+    "loading": "Ladataan turnauksia...",
+    "retry": "Yritä uudelleen",
+    "intro": "Selaa tulevia, käynnissä olevia ja päättyneitä turnauksia. Avaa turnaus nähdäksesi lohkot, otteluohjelman ja tilastot.",
+    "noTournaments": "Ei turnauksia tällä hetkellä."
+  },
+  "notFoundPage": {
+    "title": "Sivua ei löytynyt",
+    "heading": "Tätä sivua ei ole",
+    "description": "Osoite voi olla vanhentunut tai kirjoitettu väärin. Palaa etusivulle jatkaaksesi.",
+    "home": "Takaisin etusivulle"
   },
   "auth": {
     "loginTitle": "Ylläpito - Kirjautuminen",

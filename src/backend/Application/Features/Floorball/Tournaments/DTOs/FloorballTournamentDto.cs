@@ -47,4 +47,5 @@ public record FloorballTournamentDto(
     int TeamCount,
     int MatchCount,
     List<PlayoffScheduleSlotDto> PlayoffSchedule,
-    TeamCategory TeamCategory);
+    TeamCategory TeamCategory,
+    string? LogoUrl);

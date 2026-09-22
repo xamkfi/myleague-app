@@ -4,7 +4,9 @@
   FootballPosition,
 } from '../../types/football/footballTypes';
 import type { Address, ContactInfo } from '../../types/admin/personTypes';
+import type { ActivePlayerLicence } from '../../types/activePlayerLicence';
 import { authFetch } from '../utils/authFetch';
+import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
 
 export interface PersonDto {
@@ -31,6 +33,7 @@ export interface FootballPlayerDto {
     id: string;
     name: string;
   } | null;
+  activeLicences?: ActivePlayerLicence[] | null;
 }
 
 export interface GetFootballPlayersRequest {
@@ -40,6 +43,7 @@ export interface GetFootballPlayersRequest {
   position?: FootballPosition;
   teamId?: string;
   searchTerm?: string;
+  hasActiveLicence?: boolean;
   signal?: AbortSignal;
 }
 
@@ -130,6 +134,9 @@ export const footballPlayerService = {
       if (params?.position) searchParams.append('position', params.position);
       if (params?.teamId) searchParams.append('teamId', params.teamId);
       if (params?.searchTerm) searchParams.append('searchTerm', params.searchTerm);
+      if (params?.hasActiveLicence !== undefined) {
+        searchParams.append('hasActiveLicence', params.hasActiveLicence.toString());
+      }
 
       const url = `${API_URL}/FootballPlayer?${searchParams.toString()}`;
       const response = await authFetch(url, { signal: params?.signal });
@@ -298,27 +305,18 @@ export const footballPlayerService = {
    * Delete a Football player
    */
   delete: async (id: string): Promise<void> => {
-    try {
-      
-      const response = await authFetch(`${API_URL}/FootballPlayer/${id}`, {
-        method: 'DELETE',
-      });
-      
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Delete API Error Response:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to delete Football player'}`);
-      }
-      
-      const apiResponse: ApiResponse<void> = await response.json();
-      
-      if (!apiResponse.success) {
-        throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete Football player');
-      }
-    } catch (error) {
-      console.error('Error in footballPlayerService.delete:', error);
-      throw error;
+    const response = await authFetch(`${API_URL}/FootballPlayer/${id}`, {
+      method: 'DELETE',
+    });
+    const apiResponse: ApiResponse<void> = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(apiResponse, 'Failed to delete Football player');
+      throw new Error(errorMessage || 'Failed to delete Football player');
+    }
+
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to delete Football player');
     }
   }
 }; 

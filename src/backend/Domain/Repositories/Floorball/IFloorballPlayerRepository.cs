@@ -47,6 +47,7 @@ public interface IFloorballPlayerRepository
         FloorballPosition? position = null,
         Guid? teamId = null,
         string? searchTerm = null,
+        bool? hasActiveLicence = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>
@@ -147,6 +148,11 @@ public interface IFloorballPlayerRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Dictionary where key is PersonId and value is FloorballPlayer.</returns>
     Task<Dictionary<Guid, FloorballPlayer>> GetByPersonIdsAsync(IEnumerable<Guid> personIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets floorball players by a set of player IDs, as a dictionary keyed by player Id.
+    /// </summary>
+    Task<Dictionary<Guid, FloorballPlayer>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Checks if a floorball player exists

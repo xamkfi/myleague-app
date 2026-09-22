@@ -33,5 +33,6 @@ namespace Application.Features.Floorball.Seasons.Commands
         bool AllowOvertime = true,
         int OvertimeDurationMinutes = 5,
         bool AllowShootout = true,
-        TeamCategory? TeamCategory = null) : IRequest<Result<FloorballSeasonDto>>;
+        TeamCategory? TeamCategory = null,
+        string? LogoUrl = null) : IRequest<Result<FloorballSeasonDto>>;
 }

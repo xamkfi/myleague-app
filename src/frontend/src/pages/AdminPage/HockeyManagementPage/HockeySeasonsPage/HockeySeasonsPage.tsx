@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
@@ -10,6 +10,7 @@ import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { LoadingState } from './components/LoadingState';
 import { SeasonsContent } from './components/SeasonsContent';
 import { ConfirmCompleteSeasonModal } from './components/ConfirmCompleteSeasonModal';
+import { SeasonImportModal } from './components/SeasonImportModal';
 import { hockeySeasonService } from '../../../../api/hockey/hockeySeasonService';
 import type { HockeySeasonDto } from '../../../../types/hockey/hockeyTypes';
 
@@ -24,21 +25,27 @@ function HockeySeasonsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [operationLoading, setOperationLoading] = useState<string | null>(null);
   const [seasonToComplete, setSeasonToComplete] = useState<HockeySeasonDto | null>(null);
+  const [showImportModal, setShowImportModal] = useState<boolean>(false);
 
-  useEffect(() => {
-    const load = async (): Promise<void> => {
-      try {
+  const loadSeasons = useCallback(async (options?: { silent?: boolean }): Promise<void> => {
+    try {
+      if (!options?.silent) {
         setLoading(true);
-        setSeasons(await hockeySeasonService.getAll());
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : t('hockey.seasons.errors.loadFailed', 'Failed to load seasons'));
-      } finally {
+      }
+      setSeasons(await hockeySeasonService.getAll());
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('hockey.seasons.errors.loadFailed', 'Failed to load seasons'));
+    } finally {
+      if (!options?.silent) {
         setLoading(false);
       }
-    };
-    void load();
+    }
   }, [t]);
+
+  useEffect(() => {
+    void loadSeasons();
+  }, [loadSeasons]);
 
   const uniqueDivisions = useMemo(() => {
     const names = new Set<string>();
@@ -95,7 +102,7 @@ function HockeySeasonsPage() {
     }
   };
 
-  if (loading) {
+  if (loading && !showImportModal) {
     return (
       <PageTemplate title={t('hockey.seasons.title', 'Manage Seasons')}>
         <LoadingState />
@@ -110,6 +117,7 @@ function HockeySeasonsPage() {
           seasonsCount={seasons.length}
           onCreateSeason={() => navigate('/admin/hockey/seasons/create')}
           onManageMatches={() => navigate('/admin/hockey/seasons/matches')}
+          onImportSeason={() => setShowImportModal(true)}
         />
         <ErrorPopup message={error} />
         <SeasonsFilters
@@ -143,6 +151,14 @@ function HockeySeasonsPage() {
               if (operationLoading !== seasonToComplete.id) {
                 setSeasonToComplete(null);
               }
+            }}
+          />
+        )}
+        {showImportModal && (
+          <SeasonImportModal
+            onClose={() => setShowImportModal(false)}
+            onImported={() => {
+              void loadSeasons({ silent: true });
             }}
           />
         )}

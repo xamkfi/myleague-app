@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './NewsPage.scss';
@@ -9,17 +9,18 @@ import {
   newsService,
   type NewsArticleDto,
   type PaginatedNewsResponse,
-  getMainNewsArticle,
 } from '../../api/news/newsService';
 import { useAudience } from '../../context/AudienceContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Pagination from '../../components/Pagination';
+import TeamCategoryBadge from '../../components/TeamCategoryBadge/TeamCategoryBadge';
 import defaultNewsImage from '../../assets/defaultImage.jpg';
 import {
   newsListFiltersFromSearchParams,
   newsListFiltersToSearchParams,
   type NewsListFilters,
 } from './newsListFilters';
+import { newsCategoryLabel, newsSportLabel } from '../AdminPage/NewsPage/Utils/newsTaxonomyLabels';
 
 function NewsPage() {
   const { t } = useTranslation();
@@ -27,19 +28,20 @@ function NewsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { audience } = useAudience();
   const [newsList, setNewsList] = useState<NewsArticleDto[]>([]);
-  const [mainNews, setMainNews] = useState<NewsArticleDto | null>(null);
   const filters = newsListFiltersFromSearchParams(searchParams);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const filtersKey = `${filters.category}|${filters.sportCategory}|${filters.tag}|${filters.searchTerm}`;
+  const filtersKey = `${audience.teamCategory}|${filters.category}|${filters.sportCategory}|${filters.tag}|${filters.searchTerm}`;
   const previousFiltersKeyRef = useRef(filtersKey);
 
-  const RetrieveNews = useCallback(async () => {
+  const retrieveNews = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const response = await newsService({
         category: filters.category,
@@ -47,7 +49,7 @@ function NewsPage() {
         tag: filters.tag,
         searchTerm: filters.searchTerm,
         page: currentPage,
-        pageSize: pageSize,
+        pageSize,
         teamCategory: audience.teamCategory,
       });
 
@@ -58,18 +60,32 @@ function NewsPage() {
         setTotalPages(paginatedResponse.pagination.totalPages);
         setCurrentPage(paginatedResponse.pagination.currentPage);
         setPageSize(paginatedResponse.pagination.pageSize);
-      } else {
-        const oldResponse = response as NewsArticleDto[];
-        setNewsList(oldResponse);
-        setTotalCount(oldResponse.length);
-        setTotalPages(Math.ceil(oldResponse.length / pageSize));
+        return;
       }
-    } catch (error) {
-      console.error('Failed to fetch news:', error);
+
+      const oldResponse = response as NewsArticleDto[];
+      setNewsList(oldResponse);
+      setTotalCount(oldResponse.length);
+      setTotalPages(Math.ceil(oldResponse.length / pageSize));
+    } catch (fetchError: unknown) {
+      console.error('Failed to fetch news:', fetchError);
+      setNewsList([]);
+      setTotalCount(0);
+      setTotalPages(0);
+      setError(t('newsPage.fetchError'));
     } finally {
       setIsLoading(false);
     }
-  }, [filters.category, filters.sportCategory, filters.tag, filters.searchTerm, currentPage, pageSize, audience.teamCategory]);
+  }, [
+    filters.category,
+    filters.sportCategory,
+    filters.tag,
+    filters.searchTerm,
+    currentPage,
+    pageSize,
+    audience.teamCategory,
+    t,
+  ]);
 
   useEffect(() => {
     const filtersChanged = previousFiltersKeyRef.current !== filtersKey;
@@ -80,12 +96,8 @@ function NewsPage() {
       return;
     }
 
-    void RetrieveNews();
-  }, [RetrieveNews, filtersKey, currentPage]);
-
-  useEffect(() => {
-    getMainNewsArticle().then(setMainNews);
-  }, []);
+    void retrieveNews();
+  }, [retrieveNews, filtersKey, currentPage]);
 
   const handleFilterChange = useCallback((updated: Partial<NewsListFilters>) => {
     setCurrentPage(1);
@@ -99,40 +111,51 @@ function NewsPage() {
   }, [setSearchParams]);
 
   const hasActiveFilter = Boolean(
-    filters.category || filters.sportCategory || filters.tag || filters.searchTerm
+    filters.category || filters.sportCategory || filters.tag || filters.searchTerm,
   );
 
-  const otherNews = mainNews && !hasActiveFilter
-    ? newsList.filter((item) => item.id !== mainNews.id)
+  const featuredNews = !hasActiveFilter && currentPage === 1 ? newsList[0] ?? null : null;
+  const otherNews = featuredNews
+    ? newsList.filter((item) => item.id !== featuredNews.id)
     : newsList;
-
-  const showMainNews = Boolean(mainNews) && !hasActiveFilter;
-  const mainNewsBgStyle = showMainNews
-    ? { '--main-news-image': `url('${mainNews?.mainImage || defaultNewsImage}')` } as React.CSSProperties
+  const featuredNewsBgStyle = featuredNews
+    ? { '--main-news-image': `url('${featuredNews.mainImage || defaultNewsImage}')` } as CSSProperties
     : undefined;
 
   return (
     <div className="news-page">
       <PageTemplate title={t('nav.news')}>
-        {showMainNews && mainNews && (
+        {featuredNews && (
           <div
             className="news-main-bg has-main-image"
-            style={mainNewsBgStyle}
+            style={featuredNewsBgStyle}
           >
             <div className="news-main-section">
               <div className="main-news-card">
                 <div className="main-news-image-container">
                   <img
-                    src={mainNews.mainImage || defaultNewsImage}
-                    alt={mainNews.title}
+                    src={featuredNews.mainImage || defaultNewsImage}
+                    alt={featuredNews.title}
                     className="main-news-image"
                   />
                 </div>
                 <div className="main-news-content">
-                  <div className="main-news-category">{mainNews.sportCategory}</div>
-                  <h2 className="main-news-title">{mainNews.title}</h2>
-                  <div className="main-news-summary">{mainNews.summary}</div>
-                  <button className="main-news-button" onClick={() => navigate(`/uutiset/${mainNews.id}`)}>
+                  <div className="main-news-labels">
+                    <TeamCategoryBadge category={featuredNews.teamCategory} showAll />
+                    {featuredNews.sportCategory && (
+                      <div className="main-news-category">
+                        {newsSportLabel(t, featuredNews.sportCategory)}
+                      </div>
+                    )}
+                  </div>
+                  <h2 className="main-news-title">{featuredNews.title}</h2>
+                  {featuredNews.summary && (
+                    <div className="main-news-summary">{featuredNews.summary}</div>
+                  )}
+                  {featuredNews.category && (
+                    <p className="main-news-meta">{newsCategoryLabel(t, featuredNews.category)}</p>
+                  )}
+                  <button className="main-news-button" onClick={() => navigate(`/uutiset/${featuredNews.id}`)}>
                     {t('newsPage.readMore')}
                   </button>
                 </div>
@@ -142,20 +165,36 @@ function NewsPage() {
         )}
 
         <div className="news-list-section">
-          <h1 className="news-list-title">{t('newsPage.allNews')}</h1>
+          <div className="news-list-heading">
+            <h1 className="news-list-title">{t('newsPage.allNews')}</h1>
+            <p className="news-list-audience">{t(audience.i18nKey)}</p>
+          </div>
 
           <div className="news-filter-wrapper">
             <NewsFilter filters={filters} onFilterChange={handleFilterChange} />
           </div>
+
+          {error && (
+            <div className="no-news-message">
+              <p>{error}</p>
+              <button type="button" className="news-filter-clear" onClick={() => void retrieveNews()}>
+                {t('newsPage.retry')}
+              </button>
+            </div>
+          )}
 
           <div className="news-grid">
             {isLoading ? (
               Array.from({ length: pageSize }, (_, index) => (
                 <NewsCardSkeleton key={`skeleton-${index}`} />
               ))
-            ) : otherNews.length === 0 ? (
+            ) : !error && otherNews.length === 0 && !featuredNews ? (
               <div className="no-news-message">
-                <p>{t('newsPage.noNewsFound')}</p>
+                <p>
+                  {hasActiveFilter
+                    ? t('newsPage.noNewsFound')
+                    : t('newsPage.noNewsForAudience', { audience: t(audience.i18nKey) })}
+                </p>
               </div>
             ) : (
               otherNews.map((item) => (

@@ -15,9 +15,9 @@ namespace Domain.Entities.Common
         public string Name { get; private set; }
 
         /// <summary>
-        /// Gets the founding date of the club.
+        /// Gets the founding date of the club, when one has been recorded.
         /// </summary>
-        public DateTime FoundingDate { get; private set; }
+        public DateTime? FoundingDate { get; private set; }
 
         /// <summary>
         /// Gets the city where the club is located.
@@ -68,7 +68,7 @@ namespace Domain.Entities.Common
             Country = string.Empty;
             WebsiteUrl = new Uri("https://example.com");
             LogoUrl = new Uri("https://example.com/logo.png");
-            ContactEmail = "contact@example.com";
+            ContactEmail = string.Empty;
         }
 
         /// <summary>
@@ -96,12 +96,12 @@ namespace Domain.Entities.Common
 
             Id = Guid.NewGuid();
             Name = name;
-            City = city ?? string.Empty;
-            Country = country ?? string.Empty;
-            FoundingDate = foundingDate ?? DateTime.UtcNow;
+            City = city?.Trim() ?? string.Empty;
+            Country = country?.Trim() ?? string.Empty;
+            FoundingDate = foundingDate;
             WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
             LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
-            ContactEmail = contactEmail ?? "contact@example.com";
+            ContactEmail = string.IsNullOrWhiteSpace(contactEmail) ? string.Empty : contactEmail.Trim();
 
         }
 
@@ -118,8 +118,8 @@ namespace Domain.Entities.Common
             ValidateRequired(name, nameof(name));
 
             Name = name;
-            City = city ?? string.Empty;
-            Country = country ?? string.Empty;
+            City = city?.Trim() ?? string.Empty;
+            Country = country?.Trim() ?? string.Empty;
 
         }
 
@@ -133,7 +133,7 @@ namespace Domain.Entities.Common
         {
             WebsiteUrl = websiteUrl ?? new Uri("https://example.com");
             LogoUrl = logoUrl ?? new Uri("https://example.com/logo.png");
-            ContactEmail = contactEmail ?? "contact@example.com";
+            ContactEmail = string.IsNullOrWhiteSpace(contactEmail) ? string.Empty : contactEmail.Trim();
         }
 
         /// <summary>
@@ -142,10 +142,7 @@ namespace Domain.Entities.Common
         /// <param name="foundingDate">The new founding date of the club (optional).</param>
         public void UpdateFoundingDate(DateTime? foundingDate)
         {
-            if (foundingDate.HasValue)
-            {
-                FoundingDate = foundingDate.Value;
-            }
+            FoundingDate = foundingDate;
         }
 
         /// <summary>

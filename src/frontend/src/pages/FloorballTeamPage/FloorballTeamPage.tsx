@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import type { FloorballMatchDto, FloorballTeam } from '../../types/floorball/floorballTypes';
 import { floorballTeamNameSearchService } from '../../api/floorball/floorballTeamNameSearchService';
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
+import { isGuid } from '../../utils/sportRoutes';
+import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 import './FloorballTeamPage.scss';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto, type FloorballSeasonStatisticsSummaryDto, type FloorballPlayerSeasonStatisticsDto } from '../../api/floorball/floorballStatistics';
@@ -31,23 +33,10 @@ function pickSeasonForDivision(seasons: FloorballSeasonDto[], divisionId: string
     .sort((left, right) => new Date(right.startDate).getTime() - new Date(left.startDate).getTime())[0] ?? null;
 }
 
-async function getCurrentSeason(divisionId: string): Promise<FloorballSeasonDto | null> {
-  try {
-    const [activeSeasonsResponse, allSeasonsResponse] = await Promise.all([
-      floorballSeasonService.getActive(),
-      floorballSeasonService.getAll(),
-    ]);
-
-    return pickSeasonForDivision(activeSeasonsResponse.data ?? [], divisionId)
-      ?? pickSeasonForDivision(allSeasonsResponse.data ?? [], divisionId);
-  } catch (error) {
-    console.error('Error fetching current season:', error);
-    return null;
-  }
-}
-
 function FloorballTeamPage() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const requestedSeasonId = searchParams.get('season');
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -82,27 +71,26 @@ function FloorballTeamPage() {
         setLoading(true);
 
         // Fetch all teams to enable slug resolution
-        const teamsResponse = await floorballTeamNameSearchService.getTeamNames("");
+        const [teamsResponse, activeSeasonsResponse, allSeasonsResponse] = await Promise.all([
+          floorballTeamNameSearchService.getTeamNames(""),
+          floorballSeasonService.getActive().catch(() => ({ data: [] as FloorballSeasonDto[] })),
+          floorballSeasonService.getAll().catch(() => ({ data: [] as FloorballSeasonDto[] })),
+        ]);
         const allTeams = teamsResponse.data || [];
-        
-        // Find team by slug
         const foundTeam = findTeamBySlug(allTeams, slug);
 
         if (foundTeam) {
-          const teamResponse = await floorballTeamService.getById(foundTeam.id);
-
-          if (teamResponse.divisionId) {
-            const currentSeasonData = await getCurrentSeason(teamResponse.divisionId);
-            setCurrentSeason(currentSeasonData);
-            setTeam(
-              currentSeasonData
-                ? await floorballTeamService.getById(foundTeam.id, currentSeasonData.id)
-                : teamResponse,
-            );
-          } else {
-            setCurrentSeason(null);
-            setTeam(teamResponse);
-          }
+          const allSeasons = allSeasonsResponse.data ?? [];
+          const requestedSeason = isGuid(requestedSeasonId)
+            ? allSeasons.find((season) => season.id === requestedSeasonId) ?? null
+            : null;
+          const currentSeasonData = requestedSeason
+            ?? (foundTeam.divisionId
+              ? pickSeasonForDivision(activeSeasonsResponse.data ?? [], foundTeam.divisionId)
+                ?? pickSeasonForDivision(allSeasons, foundTeam.divisionId)
+              : null);
+          setCurrentSeason(currentSeasonData);
+          setTeam(await floorballTeamService.getById(foundTeam.id, currentSeasonData?.id));
         } else {
           setError('Team not found');
         }
@@ -114,7 +102,7 @@ function FloorballTeamPage() {
       }
     };
     fetchTeamData();
-  }, [slug]);
+  }, [slug, requestedSeasonId]);
 
   // Fetch matches with pagination when team changes or page changes
   useEffect(() => {
@@ -358,18 +346,16 @@ function FloorballTeamPage() {
             <div className="header-content">
               <div className="team-branding">
                 <div className="floorball-page-team-logo">
-                  {team.logoUrl ? (
-                    <img 
-                      // TODO: Use real logo when possible
-                      src={"http://www.mahl.fi/media/com_joomleague/clubs/small/myry21_1683621904.jpg"} 
+                  {resolveLogoUrl(team.logoUrl) ? (
+                    <img
+                      src={resolveLogoUrl(team.logoUrl)}
                       alt={`${team.name} logo`}
                       onError={(e) => {
-                        // If team logo fails to load, fallback to club logo
                         const target = e.target as HTMLImageElement;
-                        if (team.club.logoUrl && target.src !== team.club.logoUrl) {
-                          target.src = team.club.logoUrl;
+                        const clubLogo = resolveLogoUrl(team.club.logoUrl);
+                        if (clubLogo && target.src !== clubLogo) {
+                          target.src = clubLogo;
                         } else {
-                          // If both fail, hide the img and show placeholder
                           target.style.display = 'none';
                           const placeholder = target.nextElementSibling as HTMLElement;
                           if (placeholder) {
@@ -378,22 +364,21 @@ function FloorballTeamPage() {
                         }
                       }}
                     />
-                  ) : team.club.logoUrl ? (
-                    <img 
-                      src={team.club.logoUrl} 
+                  ) : resolveLogoUrl(team.club.logoUrl) ? (
+                    <img
+                      src={resolveLogoUrl(team.club.logoUrl)}
                       alt={`${team.club.name} logo`}
                       onError={(e) => {
-                        // If club logo fails to load, hide and show placeholder
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
-                        const placeholder = target.nextElementSibling as HTMLElement;
+                        const placeholder = target.nextElementSibling as HTMLElement | null;
                         if (placeholder) {
                           placeholder.style.display = 'flex';
                         }
                       }}
                     />
                   ) : null}
-                  <div className="logo-placeholder" style={{ display: (team.logoUrl || team.club.logoUrl) ? 'none' : 'flex' }}>
+                  <div className="logo-placeholder" style={{ display: (resolveLogoUrl(team.logoUrl) || resolveLogoUrl(team.club.logoUrl)) ? 'none' : 'flex' }}>
                     {team.name}
                   </div>
                 </div>                

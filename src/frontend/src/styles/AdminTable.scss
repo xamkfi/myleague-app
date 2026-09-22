@@ -104,9 +104,35 @@
   font-size: 0.85rem;
 }
 
-.admin-table__muted {
-  color: $color-neutral-dark-grey;
-  font-size: 0.9rem;
+.admin-table__licences {
+  margin: 0;
+  padding-left: 1.1rem;
+
+  li + li {
+    margin-top: 0.25rem;
+  }
+}
+
+.players-licence-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  select {
+    min-width: 220px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid $color-border;
+    padding: 0 1rem;
+    background-color: $color-neutral-white;
+  }
 }
 
 .admin-table__bold {

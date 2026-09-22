@@ -9,7 +9,10 @@ public record EffectiveAuthSettings(
     int LoginCodeExpirationMinutes,
     int LoginCodeMaxAttempts,
     int SessionExpiryWarningMinutes,
-    bool IsPersisted);
+    bool IsPersisted,
+    int PlayerLicenceResetMonth = 5,
+    int PlayerLicenceResetDay = 1,
+    int? LastPlayerLicenceResetYear = null);
 
 /// <summary>
 /// Reads effective site settings at token/login-code issuance time.

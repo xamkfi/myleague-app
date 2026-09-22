@@ -403,13 +403,28 @@
   height: 100%;
 }
 
+.main-news-labels {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 .main-news-category {
   color: #2a5bd7;
   font-size: 0.95rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.main-news-meta {
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #5a6080;
 }
 
 .main-news-title {
@@ -482,6 +497,12 @@
   box-shadow: 0 5px 25px 0 rgba(57, 62, 99, 0.15);
 }
 
+.news-list-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .news-list-title {
   font-size: 2rem;
   font-weight: 700;
@@ -489,6 +510,13 @@
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+}
+
+.news-list-audience {
+  margin: 0;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'medium');
+  color: $color-blue-deep;
 }
 
 .news-filter-wrapper {

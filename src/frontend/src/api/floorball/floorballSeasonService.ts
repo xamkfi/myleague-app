@@ -27,6 +27,7 @@ export interface FloorballSeasonDto {
   matches: unknown[];
   matchRules: FloorballMatchRules;
   teamCategory?: string;
+  logoUrl?: string | null;
 }
 
 export interface FloorballSeasonSummaryDto {
@@ -64,6 +65,7 @@ export interface CreateFloorballSeasonRequest {
   overtimeDurationMinutes: number;
   allowShootout: boolean;
   teamCategory?: string;
+  logoUrl?: string | null;
 }
 
 export interface UpdateFloorballSeasonRequest {
@@ -76,6 +78,7 @@ export interface UpdateFloorballSeasonRequest {
   overtimeDurationMinutes: number;
   allowShootout: boolean;
   teamCategory?: string;
+  logoUrl?: string | null;
 }
 
 export const floorballSeasonService = {
@@ -110,8 +113,15 @@ export const floorballSeasonService = {
   /**
    * Get distinct season years for public navigation
    */
-  getYears: async (): Promise<FloorballSeasonYearDto[]> => {
-    const response = await authFetch(`${API_URL}/FloorballSeason/years`);
+  getYears: async (teamCategory?: string): Promise<FloorballSeasonYearDto[]> => {
+    const searchParams = new URLSearchParams();
+    if (teamCategory) {
+      searchParams.set('teamCategory', teamCategory);
+    }
+    const query = searchParams.toString();
+    const response = await authFetch(
+      `${API_URL}/FloorballSeason/years${query ? `?${query}` : ''}`,
+    );
     if (!response.ok) {
       const errorMessage = await parseErrorResponse(response, 'Failed to fetch floorball season years');
       throw new Error(errorMessage);

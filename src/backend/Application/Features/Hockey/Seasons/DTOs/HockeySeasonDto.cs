@@ -33,4 +33,5 @@ public record HockeySeasonDto(
     IReadOnlyCollection<HockeyCompetitionTeamDto> Teams,
     IReadOnlyCollection<HockeyCompetitionDivisionDto> Divisions,
     IReadOnlyCollection<HockeyPlayoffSeriesDto> PlayoffSeries,
-    IReadOnlyCollection<HockeyPlayoffScheduleSlotDto> PlayoffSchedule);
+    IReadOnlyCollection<HockeyPlayoffScheduleSlotDto> PlayoffSchedule,
+    string? LogoUrl);

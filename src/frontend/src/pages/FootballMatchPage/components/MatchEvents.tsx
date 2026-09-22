@@ -308,6 +308,10 @@ export default function MatchEvents({ match }: MatchEventsProps) {
     );
   };
 
+  if (allEvents.length === 0) {
+    return null;
+  }
+
   return (
     <div className="match-events">
       {Object.keys(eventsByPeriod)
