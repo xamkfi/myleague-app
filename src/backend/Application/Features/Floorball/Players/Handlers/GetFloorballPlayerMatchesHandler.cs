@@ -113,6 +113,7 @@ namespace Application.Features.Floorball.Players.Handlers
                 }
 
                 List<FloorballMatch> recentMatches = allMatches
+                    .DistinctBy(match => match.Id)
                     .OrderByDescending(m => m.ScheduledDateTime)
                     .Take(request.Limit)
                     .ToList();

@@ -263,7 +263,7 @@ public class FloorballTeam : BaseEntity
         if (HasActiveRosterMembership(player.Id, competitionId))
             throw new InvalidOperationException($"Player with ID {player.Id} is already in the roster.");
         if (jerseyNumber.HasValue && IsJerseyNumberTaken(jerseyNumber.Value, competitionId))
-            throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
+            throw new InvalidOperationException(JerseyTakenMessage(jerseyNumber.Value));
         FloorballTeamPlayer teamPlayer = new FloorballTeamPlayer(
             Id, player.Id, position, jerseyNumber, requestedJerseyNumber, competitionId);
         _roster.Add(teamPlayer);
@@ -298,7 +298,7 @@ public class FloorballTeam : BaseEntity
     {
         FloorballTeamPlayer teamPlayer = GetRosterEntry(playerId, competitionId);
         if (jerseyNumber.HasValue && IsJerseyNumberTaken(jerseyNumber.Value, teamPlayer.CompetitionId, teamPlayer.Id))
-            throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
+            throw new InvalidOperationException(JerseyTakenMessage(jerseyNumber.Value));
         teamPlayer.UpdateJerseyNumber(jerseyNumber);
     }
 
@@ -311,7 +311,7 @@ public class FloorballTeam : BaseEntity
     {
         FloorballTeamPlayer teamPlayer = GetRosterEntry(playerId, competitionId);
         if (jerseyNumber.HasValue && IsJerseyNumberTaken(jerseyNumber.Value, teamPlayer.CompetitionId, teamPlayer.Id))
-            throw new InvalidOperationException($"Jersey number {jerseyNumber} is already assigned to another player.");
+            throw new InvalidOperationException(JerseyTakenMessage(jerseyNumber.Value));
 
         teamPlayer.UpdatePosition(position);
         teamPlayer.UpdateJerseyNumber(jerseyNumber);
@@ -376,9 +376,15 @@ public class FloorballTeam : BaseEntity
         return copied;
     }
 
+    private static string JerseyTakenMessage(int jerseyNumber) =>
+        $"Jersey number {jerseyNumber} is already used by another player on this team in this competition.";
+
+    /// <summary>
+    /// Jersey numbers are unique per team and competition for every roster row.
+    /// An inactive membership still holds its number.
+    /// </summary>
     private bool IsJerseyNumberTaken(int jerseyNumber, Guid? competitionId, Guid? excludeRosterRowId = null) =>
         _roster.Any(p =>
-            p.IsActive &&
             p.CompetitionId == competitionId &&
             p.JerseyNumber == jerseyNumber &&
             p.Id != excludeRosterRowId);

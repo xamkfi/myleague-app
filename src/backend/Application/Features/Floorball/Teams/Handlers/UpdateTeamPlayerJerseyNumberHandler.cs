@@ -6,6 +6,7 @@ using Domain.Entities.Floorball;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Floorball.Teams.Handlers;
@@ -91,10 +92,20 @@ public class UpdateTeamPlayerJerseyNumberHandler : IRequestHandler<UpdateTeamPla
             _logger.LogWarning(ex, "Invalid operation while updating jersey number for player {PlayerId} in team {TeamId}", request.PlayerId, request.TeamId);
             return Result<FloorballTeamPlayerDto>.Failure(ex.Message);
         }
-        catch (Exception ex)
+        catch (ArgumentException ex)
         {
-            _logger.LogError(ex, "Error updating jersey number for player {PlayerId} in team {TeamId}", request.PlayerId, request.TeamId);
-            return Result<FloorballTeamPlayerDto>.Failure("An error occurred while updating the jersey number.");
+            _logger.LogWarning(ex, "Invalid jersey number for player {PlayerId} in team {TeamId}", request.PlayerId, request.TeamId);
+            return Result<FloorballTeamPlayerDto>.Failure(ex.Message);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database rejected jersey number for player {PlayerId} in team {TeamId}", request.PlayerId, request.TeamId);
+            return Result<FloorballTeamPlayerDto>.Failure(
+                "Jersey number is already used by another player on this team in this competition.");
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
     }
 }

@@ -46,88 +46,80 @@ public class VerifyLoginCodeHandler : IRequestHandler<VerifyLoginCodeCommand, Re
 
     public async Task<Result<AuthTokenDto>> Handle(VerifyLoginCodeCommand request, CancellationToken cancellationToken)
     {
-        try
+        User? user = await _userRepository.GetByEmailAsync(request.Email);
+        if (user == null)
         {
-            User? user = await _userRepository.GetByEmailAsync(request.Email);
-            if (user == null)
-            {
-                return Result<AuthTokenDto>.Failure("Invalid email or login code.");
-            }
+            return Result<AuthTokenDto>.Failure("Invalid email or login code.");
+        }
 
-            if (!user.IsActive && !_loginCodeConfig.AutoFillLoginCode)
-            {
-                return Result<AuthTokenDto>.Failure("This account has been deactivated.");
-            }
+        if (!user.IsActive && !_loginCodeConfig.AutoFillLoginCode)
+        {
+            return Result<AuthTokenDto>.Failure("This account has been deactivated.");
+        }
 
-            // Check if there is an active login code
-            if (string.IsNullOrEmpty(user.LoginCode) || !user.LoginCodeExpiresAt.HasValue)
-            {
-                return Result<AuthTokenDto>.Failure("No login code has been requested. Please request a new code.");
-            }
+        // Check if there is an active login code
+        if (string.IsNullOrEmpty(user.LoginCode) || !user.LoginCodeExpiresAt.HasValue)
+        {
+            return Result<AuthTokenDto>.Failure("No login code has been requested. Please request a new code.");
+        }
 
-            // Check if the code has expired
-            if (DateTime.UtcNow >= user.LoginCodeExpiresAt.Value)
-            {
-                user.ClearLoginCode();
-                await _userRepository.UpdateAsync(user);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-                return Result<AuthTokenDto>.Failure("The login code has expired. Please request a new code.");
-            }
+        // Check if the code has expired
+        if (DateTime.UtcNow >= user.LoginCodeExpiresAt.Value)
+        {
+            user.ClearLoginCode();
+            await _userRepository.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Result<AuthTokenDto>.Failure("The login code has expired. Please request a new code.");
+        }
 
-            EffectiveAuthSettings authSettings = await _siteSettingsProvider.GetEffectiveAsync(cancellationToken);
+        EffectiveAuthSettings authSettings = await _siteSettingsProvider.GetEffectiveAsync(cancellationToken);
 
-            // Check brute-force attempts
-            if (user.LoginCodeAttempts >= authSettings.LoginCodeMaxAttempts)
-            {
-                user.ClearLoginCode();
-                await _userRepository.UpdateAsync(user);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-                return Result<AuthTokenDto>.Failure("Too many failed attempts. Please request a new login code.");
-            }
+        // Check brute-force attempts
+        if (user.LoginCodeAttempts >= authSettings.LoginCodeMaxAttempts)
+        {
+            user.ClearLoginCode();
+            await _userRepository.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Result<AuthTokenDto>.Failure("Too many failed attempts. Please request a new login code.");
+        }
 
-            // Validate the code
-            if (!string.Equals(user.LoginCode, request.Code, StringComparison.Ordinal))
-            {
-                user.IncrementLoginCodeAttempts();
-                await _userRepository.UpdateAsync(user);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-                int remainingAttempts = authSettings.LoginCodeMaxAttempts - user.LoginCodeAttempts;
-                _logger.LogInformation("Failed login code attempt for {Email}. {Remaining} attempts remaining.", request.Email, remainingAttempts);
-                return Result<AuthTokenDto>.Failure("Invalid login code.");
-            }
-
-            // Code is valid -- generate tokens
-            (string accessToken, DateTime expiresAt) = _jwtTokenService.GenerateAccessToken(
-                user,
-                authSettings.AccessTokenExpirationMinutes);
-
-            string rawRefreshToken = _jwtTokenService.GenerateRefreshToken();
-            string refreshTokenHash = _jwtTokenService.HashToken(rawRefreshToken);
-
-            DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(authSettings.RefreshTokenExpirationDays);
-            RefreshToken refreshToken = new(user.Id, refreshTokenHash, refreshTokenExpiresAt);
-
-            await _refreshTokenRepository.AddAsync(refreshToken);
-
-            // Record successful login
-            user.RecordLogin();
+        // Validate the code
+        if (!string.Equals(user.LoginCode, request.Code, StringComparison.Ordinal))
+        {
+            user.IncrementLoginCodeAttempts();
             await _userRepository.UpdateAsync(user);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("User {Email} logged in successfully.", request.Email);
+            int remainingAttempts = authSettings.LoginCodeMaxAttempts - user.LoginCodeAttempts;
+            _logger.LogInformation("Failed login code attempt for {Email}. {Remaining} attempts remaining.", request.Email, remainingAttempts);
+            return Result<AuthTokenDto>.Failure("Invalid login code.");
+        }
 
-            AuthTokenDto tokenDto = new(
-                accessToken,
-                rawRefreshToken,
-                expiresAt,
-                authSettings.SessionExpiryWarningMinutes);
-            return Result<AuthTokenDto>.Success(tokenDto);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error verifying login code for {Email}", request.Email);
-            return Result<AuthTokenDto>.Failure("An error occurred while verifying the login code.");
-        }
+        // Code is valid -- generate tokens
+        (string accessToken, DateTime expiresAt) = _jwtTokenService.GenerateAccessToken(
+            user,
+            authSettings.AccessTokenExpirationMinutes);
+
+        string rawRefreshToken = _jwtTokenService.GenerateRefreshToken();
+        string refreshTokenHash = _jwtTokenService.HashToken(rawRefreshToken);
+
+        DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(authSettings.RefreshTokenExpirationDays);
+        RefreshToken refreshToken = new(user.Id, refreshTokenHash, refreshTokenExpiresAt);
+
+        await _refreshTokenRepository.AddAsync(refreshToken);
+
+        // Record successful login
+        user.RecordLogin();
+        await _userRepository.UpdateAsync(user);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("User {Email} logged in successfully.", request.Email);
+
+        AuthTokenDto tokenDto = new(
+            accessToken,
+            rawRefreshToken,
+            expiresAt,
+            authSettings.SessionExpiryWarningMinutes);
+        return Result<AuthTokenDto>.Success(tokenDto);
     }
 }

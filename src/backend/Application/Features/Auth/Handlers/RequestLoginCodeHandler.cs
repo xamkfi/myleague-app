@@ -42,52 +42,44 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
 
     public async Task<Result<string?>> Handle(RequestLoginCodeCommand request, CancellationToken cancellationToken)
     {
-        try
+        Domain.Entities.Common.User? user = await _userRepository.GetByEmailAsync(request.Email);
+        if (user == null)
         {
-            Domain.Entities.Common.User? user = await _userRepository.GetByEmailAsync(request.Email);
-            if (user == null)
-            {
-                // Don't reveal whether the email exists -- return success regardless
-                _logger.LogInformation("Login code requested for non-existent email: {Email}", request.Email);
-                return Result<string?>.Success(null);
-            }
+            // Don't reveal whether the email exists -- return success regardless
+            _logger.LogInformation("Login code requested for non-existent email: {Email}", request.Email);
+            return Result<string?>.Success(null);
+        }
 
-            if (!user.IsActive && !_loginCodeConfig.AutoFillLoginCode)
-            {
-                _logger.LogInformation("Login code requested for deactivated account: {Email}", request.Email);
-                return Result<string?>.Success(null);
-            }
+        if (!user.IsActive && !_loginCodeConfig.AutoFillLoginCode)
+        {
+            _logger.LogInformation("Login code requested for deactivated account: {Email}", request.Email);
+            return Result<string?>.Success(null);
+        }
 
-            EffectiveAuthSettings authSettings = await _siteSettingsProvider.GetEffectiveAsync(cancellationToken);
+        EffectiveAuthSettings authSettings = await _siteSettingsProvider.GetEffectiveAsync(cancellationToken);
 
-            // Generate cryptographically secure code
-            string code = GenerateSecureCode(_loginCodeConfig.CodeLength);
-            DateTime expiresAt = DateTime.UtcNow.AddMinutes(authSettings.LoginCodeExpirationMinutes);
+        // Generate cryptographically secure code
+        string code = GenerateSecureCode(_loginCodeConfig.CodeLength);
+        DateTime expiresAt = DateTime.UtcNow.AddMinutes(authSettings.LoginCodeExpirationMinutes);
 
-            user.SetLoginCode(code, expiresAt);
-            await _userRepository.UpdateAsync(user);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        user.SetLoginCode(code, expiresAt);
+        await _userRepository.UpdateAsync(user);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // In development AutoFillLoginCode is on: return the code to the client and skip email.
-            // Production keeps AutoFillLoginCode false and sends the code by email.
-            if (_loginCodeConfig.AutoFillLoginCode)
-            {
-                _logger.LogInformation(
-                    "Login code generated for {Email} (auto-fill, email skipped), expires at {ExpiresAt}",
-                    request.Email, expiresAt);
-                return Result<string?>.Success(code);
-            }
-
-            await _emailService.SendLoginCodeAsync(request.Email, code, cancellationToken);
-
-            _logger.LogInformation("Login code sent to {Email}, expires at {ExpiresAt}", request.Email, expiresAt);
+        // In development AutoFillLoginCode is on: return the code to the client and skip email.
+        // Production keeps AutoFillLoginCode false and sends the code by email.
+        if (_loginCodeConfig.AutoFillLoginCode)
+        {
+            _logger.LogInformation(
+                "Login code generated for {Email} (auto-fill, email skipped), expires at {ExpiresAt}",
+                request.Email, expiresAt);
             return Result<string?>.Success(code);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error sending login code to {Email}", request.Email);
-            return Result<string?>.Failure("An error occurred while sending the login code.");
-        }
+
+        await _emailService.SendLoginCodeAsync(request.Email, code, cancellationToken);
+
+        _logger.LogInformation("Login code sent to {Email}, expires at {ExpiresAt}", request.Email, expiresAt);
+        return Result<string?>.Success(code);
     }
 
     /// <summary>

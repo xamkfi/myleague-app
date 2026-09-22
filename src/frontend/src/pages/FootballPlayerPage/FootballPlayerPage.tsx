@@ -15,7 +15,9 @@ import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import { TeamLink, MatchLink } from '../../components/SportLinks';
 import { getLeaguePath } from '../../utils/sportRoutes';
 import { useTranslation } from 'react-i18next';
-import './FootballPlayerPage.scss';
+import { PlayerAvatar, PlayerNameHeading } from '../PlayerPage/PlayerAvatar';
+import { PlayerViewTabs } from '../PlayerPage/PlayerViewTabs';
+import '../FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage.scss';
 
 const getPositionText = (position: FootballPosition | string, t: (key: string, fallback: string) => string): string => {
   switch (position) {
@@ -136,7 +138,16 @@ export function FootballPlayerProfile({
   }, [id, t]);
 
   const seasonStats = useMemo(() => profile?.seasonStatistics ?? [], [profile]);
-  const matches = useMemo(() => matchData?.recentMatches ?? [], [matchData]);
+  const matches = useMemo(() => {
+    const seen = new Set<string>();
+    return (matchData?.recentMatches ?? []).filter((match) => {
+      if (seen.has(match.id)) {
+        return false;
+      }
+      seen.add(match.id);
+      return true;
+    });
+  }, [matchData]);
   const totals = useMemo(() => calculateSeasonTotals(seasonStats), [seasonStats]);
   const matchTotals = useMemo(() => calculateMatchTotals(matches), [matches]);
   const totalMatchPages = Math.max(1, Math.ceil(matches.length / MATCHES_PER_PAGE));
@@ -167,19 +178,27 @@ export function FootballPlayerProfile({
   const teamName = matchData?.teamName ?? player.team?.name ?? '';
   const position = matchData?.position ?? player.position;
   const jerseyNumber = matchData?.jerseyNumber;
+  const skaterSeasons = seasonStats.map((stat) => ({
+    competitionId: stat.competitionId,
+    seasonLabel: stat.seasonName,
+    gamesPlayed: stat.gamesPlayed,
+    goals: stat.goals,
+    assists: stat.assists,
+    points: stat.points,
+  }));
 
   return wrap(
     <div className="player-page">
         <div className="player-container">
-          <div className="player-info-layout">
-            <div className="player-info-box">
-              <div className="player-avatar-large">
-                {seasonStats[0]?.teamLogo ? (
-                  <img className="team-logo-img" src={seasonStats[0].teamLogo} alt={teamName} />
-                ) : null}
-              </div>
+          <div className="player-header">
+            <div className="player-header__identity">
+              <PlayerAvatar
+                name={playerName}
+                logoUrl={seasonStats[0]?.teamLogo}
+                logoAlt={teamName}
+              />
               <div className="player-details">
-                <div className="player-name">{playerName}</div>
+                <PlayerNameHeading name={playerName} />
                 <div className="player-details-row">
                   {teamName && (
                     <TeamLink
@@ -194,8 +213,7 @@ export function FootballPlayerProfile({
                 </div>
               </div>
             </div>
-
-            <div className="player-stats-box">
+            <div className="player-header__aside">
               {licenceSummary ?? (
                 <>
                   <div className="stat-item">
@@ -214,6 +232,8 @@ export function FootballPlayerProfile({
           </div>
         </div>
 
+        <PlayerViewTabs skaterSeasons={skaterSeasons} numbers={(
+        <>
         <div className="player-container">
           <div className="career-stats-section">
             <h3>{t('football.player.careerStats', 'Career statistics')}</h3>
@@ -378,6 +398,8 @@ export function FootballPlayerProfile({
             )}
           </div>
         </div>
+        </>
+        )} />
     </div>,
     playerName,
   );

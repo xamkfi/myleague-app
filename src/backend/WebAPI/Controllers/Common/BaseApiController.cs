@@ -1,6 +1,7 @@
 using Application.Common;
 using Domain.Common;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
 
@@ -37,37 +38,26 @@ public abstract class BaseApiController : ControllerBase
     }
 
     /// <summary>
-    /// Maps a failed <see cref="Result{T}"/> to an HTTP error response. Returns 404 NotFound
-    /// when the top-level error message contains "not found", otherwise 400 BadRequest.
+    /// Maps a failed <see cref="Result{T}"/> to an HTTP error response.
     /// </summary>
     /// <remarks>
-    /// Preserves detailed messages from <see cref="Result{T}.GetAllErrors"/> so the frontend
-    /// can show a specific reason instead of just "Validation failed". When the result has
-    /// no detailed errors, the top-level message is duplicated into the <c>errors</c> array
-    /// so callers can rely on a non-empty list.
+    /// 404 when <see cref="Result{T}.ErrorKind"/> is <see cref="ResultErrorKind.NotFound"/>.
+    /// Validation failures stay 400 even if a message contains "not found". Other failures
+    /// still use the "not found" text fallback. Infrastructure exception text becomes a
+    /// generic 500 outside Development. Detailed messages from <see cref="Result{T}.GetAllErrors"/>
+    /// are preserved so the frontend can show a specific reason. When the result has no
+    /// detailed errors, the top-level message is duplicated into the <c>errors</c> array.
     /// </remarks>
     protected ActionResult<ApiResponse<T>> ToErrorResponse<T>(Result<T> result, string defaultMessage)
     {
-        string topMessage = result.Error ?? defaultMessage;
-        List<string> errors = result.GetAllErrors().ToList();
-        if (errors.Count == 0)
-        {
-            errors.Add(topMessage);
-        }
-
-        ApiResponse<T> body = ApiResponse<T>.ErrorResponse(topMessage, errors);
-
-        if (IsNotFoundMessage(topMessage))
-        {
-            return NotFound(body);
-        }
-
-        return BadRequest(body);
+        ApiErrorHttpDecision decision = MapFailure(result.ErrorKind, result.Error, result.GetAllErrors(), defaultMessage);
+        ApiResponse<T> body = ApiResponse<T>.ErrorResponse(decision.Message, decision.Errors);
+        return ToErrorActionResult(decision.StatusCode, body);
     }
 
     /// <summary>
     /// Returns 200 OK with a paginated success envelope when <paramref name="result"/> succeeded,
-    /// otherwise maps the failure to 404 or 400 (never 500 for domain/query failures).
+    /// otherwise maps the failure with the same status rules as <see cref="ToErrorResponse{T}"/>.
     /// </summary>
     protected ActionResult<PaginatedApiResponse<T>> HandlePaginatedResult<T>(
         Result<PagedResult<T>> result,
@@ -137,94 +127,84 @@ public abstract class BaseApiController : ControllerBase
     /// </summary>
     protected ActionResult<ApiResponse> ToErrorResponse(Result result, string defaultMessage)
     {
-        string topMessage = result.Error ?? defaultMessage;
-        List<string> errors = result.GetAllErrors().ToList();
-        if (errors.Count == 0)
-        {
-            errors.Add(topMessage);
-        }
-
+        ApiErrorHttpDecision decision = MapFailure(result.ErrorKind, result.Error, result.GetAllErrors(), defaultMessage);
         ApiResponse body = new ApiResponse
         {
             Success = false,
-            Message = topMessage,
-            Errors = errors,
+            Message = decision.Message,
+            Errors = decision.Errors,
         };
 
-        if (IsNotFoundMessage(topMessage))
-        {
-            return NotFound(body);
-        }
-
-        return BadRequest(body);
+        return ToErrorActionResult(decision.StatusCode, body);
     }
 
     private ActionResult<PaginatedApiResponse<T>> ToPaginatedErrorResponse<T>(
         Result<PagedResult<T>> result,
         string defaultMessage)
     {
-        string topMessage = result.Error ?? defaultMessage;
-        List<string> errors = result.GetAllErrors().ToList();
-        if (errors.Count == 0)
-        {
-            errors.Add(topMessage);
-        }
-
+        ApiErrorHttpDecision decision = MapFailure(result.ErrorKind, result.Error, result.GetAllErrors(), defaultMessage);
         PaginatedApiResponse<T> body = new PaginatedApiResponse<T>
         {
             Success = false,
-            Message = topMessage,
-            Errors = errors,
+            Message = decision.Message,
+            Errors = decision.Errors,
         };
 
-        if (IsNotFoundMessage(topMessage))
-        {
-            return NotFound(body);
-        }
-
-        return BadRequest(body);
+        return ToErrorActionResult(decision.StatusCode, body);
     }
 
     private ActionResult<ApiResponse<List<T>>> ToListErrorResponse<T>(
         Result<IEnumerable<T>> result,
         string defaultMessage)
     {
-        string topMessage = result.Error ?? defaultMessage;
-        List<string> errors = result.GetAllErrors().ToList();
-        if (errors.Count == 0)
-        {
-            errors.Add(topMessage);
-        }
-
-        ApiResponse<List<T>> body = ApiResponse<List<T>>.ErrorResponse(topMessage, errors);
-
-        if (IsNotFoundMessage(topMessage))
-        {
-            return NotFound(body);
-        }
-
-        return BadRequest(body);
+        ApiErrorHttpDecision decision = MapFailure(result.ErrorKind, result.Error, result.GetAllErrors(), defaultMessage);
+        ApiResponse<List<T>> body = ApiResponse<List<T>>.ErrorResponse(decision.Message, decision.Errors);
+        return ToErrorActionResult(decision.StatusCode, body);
     }
 
     private ActionResult<ApiResponse> ToVoidErrorResponse<T>(Result<T> result, string defaultMessage)
     {
-        string topMessage = result.Error ?? defaultMessage;
-        List<string> errors = result.GetAllErrors().ToList();
-        if (errors.Count == 0)
-        {
-            errors.Add(topMessage);
-        }
-
+        ApiErrorHttpDecision decision = MapFailure(result.ErrorKind, result.Error, result.GetAllErrors(), defaultMessage);
         ApiResponse body = new ApiResponse
         {
             Success = false,
-            Message = topMessage,
-            Errors = errors,
+            Message = decision.Message,
+            Errors = decision.Errors,
         };
 
-        if (IsNotFoundMessage(topMessage))
+        return ToErrorActionResult(decision.StatusCode, body);
+    }
+
+    private ApiErrorHttpDecision MapFailure(
+        ResultErrorKind errorKind,
+        string? error,
+        IEnumerable<string> detailedErrors,
+        string defaultMessage)
+    {
+        return ApiErrorHttpMapper.Map(
+            errorKind,
+            error,
+            detailedErrors,
+            defaultMessage,
+            IsDevelopmentEnvironment());
+    }
+
+    private bool IsDevelopmentEnvironment()
+    {
+        IHostEnvironment? environment = HttpContext?.RequestServices.GetService<IHostEnvironment>();
+        return environment?.IsDevelopment() == true;
+    }
+
+    private ActionResult<TBody> ToErrorActionResult<TBody>(int statusCode, TBody body)
+    {
+        if (statusCode == StatusCodes.Status404NotFound)
         {
             return NotFound(body);
+        }
+
+        if (statusCode == StatusCodes.Status500InternalServerError)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, body);
         }
 
         return BadRequest(body);
@@ -248,7 +228,4 @@ public abstract class BaseApiController : ControllerBase
             .Replace("\r", string.Empty)
             .Replace("\n", string.Empty);
     }
-
-    private static bool IsNotFoundMessage(string message) =>
-        message.Contains("not found", StringComparison.OrdinalIgnoreCase);
 }

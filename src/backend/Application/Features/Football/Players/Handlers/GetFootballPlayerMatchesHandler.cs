@@ -111,6 +111,7 @@ namespace Application.Features.Football.Players.Handlers
                 }
 
                 List<FootballMatch> recentMatches = allMatches
+                    .DistinctBy(match => match.Id)
                     .OrderByDescending(m => m.ScheduledDateTime)
                     .Take(request.Limit)
                     .ToList();

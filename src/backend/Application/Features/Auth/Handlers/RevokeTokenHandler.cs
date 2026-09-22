@@ -32,33 +32,25 @@ public class RevokeTokenHandler : IRequestHandler<RevokeTokenCommand, Result<boo
 
     public async Task<Result<bool>> Handle(RevokeTokenCommand request, CancellationToken cancellationToken)
     {
-        try
+        string tokenHash = _jwtTokenService.HashToken(request.RefreshToken);
+        RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenHashAsync(tokenHash);
+
+        if (existingToken == null)
         {
-            string tokenHash = _jwtTokenService.HashToken(request.RefreshToken);
-            RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenHashAsync(tokenHash);
+            return Result<bool>.Failure("Invalid refresh token.");
+        }
 
-            if (existingToken == null)
-            {
-                return Result<bool>.Failure("Invalid refresh token.");
-            }
-
-            if (existingToken.IsRevoked)
-            {
-                // Already revoked, treat as success
-                return Result<bool>.Success(true);
-            }
-
-            existingToken.Revoke();
-            await _refreshTokenRepository.UpdateAsync(existingToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Refresh token revoked for user {UserId}.", existingToken.UserId);
+        if (existingToken.IsRevoked)
+        {
+            // Already revoked, treat as success
             return Result<bool>.Success(true);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error revoking refresh token");
-            return Result<bool>.Failure("An error occurred while revoking the token.");
-        }
+
+        existingToken.Revoke();
+        await _refreshTokenRepository.UpdateAsync(existingToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Refresh token revoked for user {UserId}.", existingToken.UserId);
+        return Result<bool>.Success(true);
     }
 }
