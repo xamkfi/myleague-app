@@ -192,11 +192,8 @@ internal static class ActiveRosterApplicator
         Context(FloorballImportSet set, IdMapStore idMap)
     {
         Dictionary<Guid, int> personByPlayer = [];
-        foreach (KeyValuePair<int, IdMapStore.PersonMapping> pair in idMap.Persons)
-        {
-            if (pair.Value.PlayerId != Guid.Empty)
-                personByPlayer[pair.Value.PlayerId] = pair.Key;
-        }
+        foreach (KeyValuePair<int, IdMapStore.PersonMapping> pair in idMap.Persons.Where(pair => pair.Value.PlayerId != Guid.Empty))
+            personByPlayer[pair.Value.PlayerId] = pair.Key;
 
         HashSet<Guid> unknown = [.. idMap.UnknownPlayers.Values];
         foreach (List<Guid> extras in idMap.ExtraUnknownPlayers.Values)
