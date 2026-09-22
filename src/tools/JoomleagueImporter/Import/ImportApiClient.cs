@@ -168,11 +168,13 @@ public class ImportApiClient : IDisposable
                 return DateTimeOffset.FromUnixTimeSeconds(unixSeconds).UtcDateTime;
             }
         }
-        catch (FormatException)
+        catch (FormatException ex)
         {
+            Console.Error.WriteLine($"Failed to decode JWT payload while reading expiry: {ex.Message}");
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
+            Console.Error.WriteLine($"Failed to parse JWT payload JSON while reading expiry: {ex.Message}");
         }
 
         return DateTime.UtcNow.AddMinutes(10);
