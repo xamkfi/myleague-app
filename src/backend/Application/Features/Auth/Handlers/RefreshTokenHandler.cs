@@ -42,70 +42,62 @@ public class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, Result<A
 
     public async Task<Result<AuthTokenDto>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
     {
-        try
+        string tokenHash = _jwtTokenService.HashToken(request.RefreshToken);
+        RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenHashAsync(tokenHash);
+
+        if (existingToken == null)
         {
-            string tokenHash = _jwtTokenService.HashToken(request.RefreshToken);
-            RefreshToken? existingToken = await _refreshTokenRepository.GetByTokenHashAsync(tokenHash);
+            return Result<AuthTokenDto>.Failure("Invalid refresh token.");
+        }
 
-            if (existingToken == null)
-            {
-                return Result<AuthTokenDto>.Failure("Invalid refresh token.");
-            }
-
-            // If the token has been revoked, this could be a token theft attempt
-            // Revoke all tokens for this user as a safety measure
-            if (existingToken.IsRevoked)
-            {
-                _logger.LogWarning("Reuse of revoked refresh token detected for user {UserId}. Revoking all tokens.", existingToken.UserId);
-                await _refreshTokenRepository.RevokeAllByUserIdAsync(existingToken.UserId);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-                return Result<AuthTokenDto>.Failure("Token has been revoked. Please log in again.");
-            }
-
-            if (existingToken.IsExpired)
-            {
-                return Result<AuthTokenDto>.Failure("Refresh token has expired. Please log in again.");
-            }
-
-            // Load the user
-            User? user = await _userRepository.GetByIdAsync(existingToken.UserId);
-            if (user == null || !user.IsActive)
-            {
-                return Result<AuthTokenDto>.Failure("User account is not available.");
-            }
-
-            EffectiveAuthSettings authSettings = await _siteSettingsProvider.GetEffectiveAsync(cancellationToken);
-
-            // Generate new token pair
-            (string accessToken, DateTime expiresAt) = _jwtTokenService.GenerateAccessToken(
-                user,
-                authSettings.AccessTokenExpirationMinutes);
-
-            string rawNewRefreshToken = _jwtTokenService.GenerateRefreshToken();
-            string newRefreshTokenHash = _jwtTokenService.HashToken(rawNewRefreshToken);
-            DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(authSettings.RefreshTokenExpirationDays);
-
-            RefreshToken newRefreshToken = new(user.Id, newRefreshTokenHash, refreshTokenExpiresAt);
-
-            // Rotate: revoke old token and link to the new one
-            existingToken.Revoke(newRefreshToken.Id);
-            await _refreshTokenRepository.UpdateAsync(existingToken);
-            await _refreshTokenRepository.AddAsync(newRefreshToken);
+        // If the token has been revoked, this could be a token theft attempt
+        // Revoke all tokens for this user as a safety measure
+        if (existingToken.IsRevoked)
+        {
+            _logger.LogWarning("Reuse of revoked refresh token detected for user {UserId}. Revoking all tokens.", existingToken.UserId);
+            await _refreshTokenRepository.RevokeAllByUserIdAsync(existingToken.UserId);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Tokens refreshed for user {Email}.", user.Email);
-
-            AuthTokenDto tokenDto = new(
-                accessToken,
-                rawNewRefreshToken,
-                expiresAt,
-                authSettings.SessionExpiryWarningMinutes);
-            return Result<AuthTokenDto>.Success(tokenDto);
+            return Result<AuthTokenDto>.Failure("Token has been revoked. Please log in again.");
         }
-        catch (Exception ex)
+
+        if (existingToken.IsExpired)
         {
-            _logger.LogError(ex, "Error refreshing token");
-            return Result<AuthTokenDto>.Failure("An error occurred while refreshing the token.");
+            return Result<AuthTokenDto>.Failure("Refresh token has expired. Please log in again.");
         }
+
+        // Load the user
+        User? user = await _userRepository.GetByIdAsync(existingToken.UserId);
+        if (user == null || !user.IsActive)
+        {
+            return Result<AuthTokenDto>.Failure("User account is not available.");
+        }
+
+        EffectiveAuthSettings authSettings = await _siteSettingsProvider.GetEffectiveAsync(cancellationToken);
+
+        // Generate new token pair
+        (string accessToken, DateTime expiresAt) = _jwtTokenService.GenerateAccessToken(
+            user,
+            authSettings.AccessTokenExpirationMinutes);
+
+        string rawNewRefreshToken = _jwtTokenService.GenerateRefreshToken();
+        string newRefreshTokenHash = _jwtTokenService.HashToken(rawNewRefreshToken);
+        DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(authSettings.RefreshTokenExpirationDays);
+
+        RefreshToken newRefreshToken = new(user.Id, newRefreshTokenHash, refreshTokenExpiresAt);
+
+        // Rotate: revoke old token and link to the new one
+        existingToken.Revoke(newRefreshToken.Id);
+        await _refreshTokenRepository.UpdateAsync(existingToken);
+        await _refreshTokenRepository.AddAsync(newRefreshToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Tokens refreshed for user {Email}.", user.Email);
+
+        AuthTokenDto tokenDto = new(
+            accessToken,
+            rawNewRefreshToken,
+            expiresAt,
+            authSettings.SessionExpiryWarningMinutes);
+        return Result<AuthTokenDto>.Success(tokenDto);
     }
 }
