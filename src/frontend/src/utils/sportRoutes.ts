@@ -25,18 +25,28 @@ export function isTournamentCompetition(hints: CompetitionRouteHints | null | un
   return Boolean(stage && stage !== 'None');
 }
 
+const GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isGuid(value: string | null | undefined): value is string {
+  return typeof value === 'string' && GUID_RE.test(value);
+}
+
 function withTab(path: string, tab?: string): string {
   return tab ? `${path}?tab=${tab}` : path;
 }
 
-export function getTeamPath(sport: SportKind, slug: string): string {
+function withSeason(path: string, seasonId?: string | null): string {
+  return isGuid(seasonId) ? `${path}?season=${seasonId}` : path;
+}
+
+export function getTeamPath(sport: SportKind, slug: string, seasonId?: string | null): string {
   if (sport === 'football') {
-    return `/football/team/${slug}`;
+    return withSeason(`/football/team/${slug}`, seasonId);
   }
   if (sport === 'hockey') {
-    return `/hockey/team/${slug}`;
+    return withSeason(`/hockey/team/${slug}`, seasonId);
   }
-  return `/team/${slug}`;
+  return withSeason(`/team/${slug}`, seasonId);
 }
 
 export function getPlayerPath(sport: SportKind, playerId: string): string {

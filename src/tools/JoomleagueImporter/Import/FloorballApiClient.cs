@@ -3,6 +3,7 @@ using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Players.DTOs;
 using Application.Features.Floorball.Referees.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Statistics.DTOs;
 using Application.Features.Floorball.Teams.DTOs;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
@@ -63,9 +64,12 @@ public class FloorballApiClient : ImportApiClient
         return AddPlayerToTeamByQueryAsync(url, jerseyNumber, "Add player to team");
     }
 
-    public async Task<FloorballTeamDto?> GetTeamByIdAsync(Guid teamId)
+    public async Task<FloorballTeamDto?> GetTeamByIdAsync(Guid teamId, Guid? competitionId = null)
     {
-        HttpResponseMessage resp = await Http.GetAsync($"api/floorballteam/{teamId}");
+        string url = $"api/floorballteam/{teamId}";
+        if (competitionId.HasValue)
+            url += $"?competitionId={competitionId.Value}";
+        HttpResponseMessage resp = await Http.GetAsync(url);
         return await ReadDataOrNull<FloorballTeamDto>(resp, $"Get floorball team {teamId}");
     }
 
@@ -74,16 +78,31 @@ public class FloorballApiClient : ImportApiClient
         Guid playerId,
         FloorballPosition position,
         int jerseyNumber,
-        bool isActive)
+        bool isActive,
+        Guid? competitionId = null)
     {
         HttpResponseMessage resp = await Http.PutAsJsonAsync($"api/floorballteam/{teamId}/players/{playerId}", new
         {
             position = position.ToString(),
             jerseyNumber,
             isActive,
+            competitionId,
         });
         return await OkOrWarn(resp, "Update floorball team player");
     }
+
+    public Task<List<FloorballTeamSeasonStatisticsDto>> GetStandingsAsync(Guid competitionId) =>
+        GetUnpaginatedListAsync<FloorballTeamSeasonStatisticsDto>($"api/floorball/statistics/standings/{competitionId}");
+
+    public async Task<FloorballSeasonStatisticsSummaryDto?> GetSeasonStatisticsAsync(Guid competitionId)
+    {
+        HttpResponseMessage resp = await Http.GetAsync($"api/floorball/statistics/season/{competitionId}");
+        return await ReadDataOrNull<FloorballSeasonStatisticsSummaryDto>(resp, $"Get floorball season stats {competitionId}");
+    }
+
+    public Task<List<FloorballPlayerSeasonStatisticsDto>> GetTeamPlayerStatisticsAsync(Guid competitionId, Guid teamId) =>
+        GetUnpaginatedListAsync<FloorballPlayerSeasonStatisticsDto>(
+            $"api/floorball/statistics/team-players/{competitionId}/{teamId}");
 
     public async Task<bool> SetActiveRosterAsync(
         Guid matchId,

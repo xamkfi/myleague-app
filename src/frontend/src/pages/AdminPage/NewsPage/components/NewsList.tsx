@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { createAdminFromState } from '../../../../utils/adminReturnTo';
+import { newsCategoryLabel, newsSportLabel } from '../Utils/newsTaxonomyLabels';
 import type { NewsArticleDto, PaginatedNewsResponse } from '../../../../api/news/newsService'; 
 import { newsService, archiveNewsService, restoreNewsService, deleteNewsService } from '../../../../api/news/newsService';
 import Pagination from '../../../../components/Pagination';
@@ -23,6 +25,7 @@ interface NewsListProps {
 const NewsList = ({ filters }: NewsListProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [newsArticles, setNewsArticles] = useState<NewsArticleDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -157,7 +160,7 @@ const NewsList = ({ filters }: NewsListProps) => {
   };
 
   const handleEdit = (id: string) => {
-    navigate(`/admin/news/edit/${id}`);
+    navigate(`/admin/news/edit/${id}`, { state: createAdminFromState(location.pathname, location.search) });
   };
 
   const handleDelete = async (id: string) => {
@@ -287,10 +290,10 @@ const NewsList = ({ filters }: NewsListProps) => {
                   <div className="categories">
                     <TeamCategoryBadge category={article.teamCategory} />
                     {article.category && (
-                      <span className="admin-tag admin-tag--blue">{article.category}</span>
+                      <span className="admin-tag admin-tag--blue">{newsCategoryLabel(t, article.category)}</span>
                     )}
                     {article.sportCategory && (
-                      <span className="admin-tag admin-tag--purple">{article.sportCategory}</span>
+                      <span className="admin-tag admin-tag--purple">{newsSportLabel(t, article.sportCategory)}</span>
                     )}
                   </div>
                 </td>

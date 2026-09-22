@@ -1,5 +1,10 @@
+import { unwrapApiErrorMessage } from './ParseErrorResponse';
+
 const NOT_FOUND_PATTERNS = [
   '404',
+  'was not found',
+  'season statistics with key',
+  'no statistics found',
   'not found',
   'notfound',
   'ei löytynyt',
@@ -14,17 +19,13 @@ export function isNotFoundError(error: unknown): boolean {
     }
   }
 
-  const message =
+  const raw =
     error instanceof Error
       ? error.message
       : typeof error === 'string'
         ? error
-        : '';
-
-  if (!message) {
-    return false;
-  }
-
-  const lower = message.toLowerCase();
-  return NOT_FOUND_PATTERNS.some((pattern) => lower.includes(pattern));
+        : String(error ?? '');
+  const unwrapped = unwrapApiErrorMessage(error, raw);
+  const haystacks = [raw, unwrapped].map((value) => value.toLowerCase());
+  return haystacks.some((text) => NOT_FOUND_PATTERNS.some((pattern) => text.includes(pattern)));
 }

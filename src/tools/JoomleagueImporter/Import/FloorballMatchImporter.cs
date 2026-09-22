@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Floorball.Teams.DTOs;
 using Domain.Enums.Floorball;
 using JoomleagueImporter.Models;
 
@@ -31,6 +33,7 @@ public class FloorballMatchImporter
     public int Skipped => _skipped;
     public int Failed => _failed;
     public int Repaired => _repaired;
+    public ConcurrentBag<int> FailedMatchIds { get; } = [];
 
     public FloorballMatchImporter(
         FloorballApiClient api,
@@ -50,6 +53,12 @@ public class FloorballMatchImporter
         _fillUnknownGoals = fillUnknownGoals;
         _repairMatchIds = repairMatchIds ?? [];
         _repairAll = repairAll;
+    }
+
+    private void RecordFailed(int oldMatchId)
+    {
+        Interlocked.Increment(ref _failed);
+        FailedMatchIds.Add(oldMatchId);
     }
 
     private class SideInfo
@@ -158,18 +167,18 @@ public class FloorballMatchImporter
                         item.Match, item.ExistingMatchId, item.Home, item.Away,
                         playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
                     if (ok) Interlocked.Increment(ref _repaired);
-                    else Interlocked.Increment(ref _failed);
+                    else RecordFailed(item.Match.Match.Id);
                     return;
                 }
 
                 bool imported = await ImportSingleMatchAsync(
                     item.Match, season, refereeId, item.Home, item.Away,
                     playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
-                if (!imported) Interlocked.Increment(ref _failed);
+                if (!imported) RecordFailed(item.Match.Match.Id);
             }
             catch (Exception ex)
             {
-                Interlocked.Increment(ref _failed);
+                RecordFailed(item.Match.Match.Id);
                 Console.WriteLine($"{item.Prefix} ERROR: {ex.Message}");
                 _log.LogError("ImportMatch", new { item.Match.Match.Id }, ex.ToString());
             }
@@ -602,6 +611,20 @@ public class FloorballMatchImporter
         IReadOnlyList<(Guid PlayerId, FloorballPosition Position)> fieldPlayers)
     {
         await _api.AddPlayerToTeamAsync(side.TeamId, goalieId, position: 4, jerseyNumber: null, _currentCompetitionId);
+        FloorballTeamDto? team = await _api.GetTeamByIdAsync(side.TeamId, _currentCompetitionId);
+        FloorballTeamPlayerDto? goalieRow = team?.Roster.FirstOrDefault(row => row.PlayerId == goalieId);
+        if (goalieRow != null && goalieRow.Position != FloorballPosition.Goalkeeper)
+        {
+            int jersey = goalieRow.JerseyNumber is > 0 and < 100 ? goalieRow.JerseyNumber.Value : 1;
+            await _api.UpdateTeamPlayerAsync(
+                side.TeamId,
+                goalieId,
+                FloorballPosition.Goalkeeper,
+                jersey,
+                true,
+                _currentCompetitionId);
+        }
+
         foreach ((Guid playerId, FloorballPosition _) in fieldPlayers)
             await _api.AddPlayerToTeamAsync(side.TeamId, playerId, position: 1, jerseyNumber: null, _currentCompetitionId);
     }

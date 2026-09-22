@@ -5,9 +5,8 @@ import { floorballMatchService } from '../../api/floorball/floorballMatchService
 import { floorballSeasonService } from '../../api/floorball/floorballSeasonService';
 import { footballMatchService } from '../../api/football/footballMatchService';
 import { footballSeasonService } from '../../api/football/footballSeasonService';
-import { loadAllHockeyMatches } from '../../api/hockey/loadAllHockeyMatches';
+import { hockeyMatchService } from '../../api/hockey/hockeyMatchService';
 import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
-import { loadTeamNameMap } from '../../utils/hockeyLookups';
 import { mapHockeyMatchToCalendarEvent } from './utils/mapHockeyToCalendarEvent';
 import { mapFootballMatchToCalendarEvent } from './utils/mapFootballToCalendarEvent';
 import type { CalendarEvent, CalendarFilters as FiltersType } from '../../types/calendar';
@@ -74,11 +73,7 @@ function EventCalendarPage() {
     setError(null);
     const { startDate, endDate } = getMonthBounds(y, m);
     try {
-      const monthStart = new Date(startDate);
-      const monthEnd = new Date(endDate);
-      monthEnd.setHours(23, 59, 59, 999);
-
-      const [floorballResponse, footballResponse, hockeyMatches, teamNames, hockeySeasons] = await Promise.all([
+      const [floorballResponse, footballResponse, hockeyMatches] = await Promise.all([
         floorballMatchService.getAll({
           startDate,
           endDate,
@@ -93,24 +88,19 @@ function EventCalendarPage() {
           sortOrder: 'asc',
           teamCategory: audience.teamCategory,
         }).catch(() => ({ data: [] })),
-        loadAllHockeyMatches(audience.teamCategory).catch(() => []),
-        loadTeamNameMap(undefined, audience.teamCategory).catch(() => new Map<string, string>()),
-        hockeySeasonService.getAll(audience.teamCategory).catch(() => []),
+        hockeyMatchService
+          .getAllListPages({
+            startDate,
+            endDate,
+            sortOrder: 'asc',
+            teamCategory: audience.teamCategory,
+          })
+          .catch(() => []),
       ]);
 
       const floorballEvents = (floorballResponse.data ?? []).map(mapFloorballMatchToCalendarEvent);
       const footballEvents = (footballResponse.data ?? []).map(mapFootballMatchToCalendarEvent);
-      const seasonNames = new Map(hockeySeasons.map((season) => [season.id, season.name]));
-      const hockeyEvents = hockeyMatches
-        .filter((match) => {
-          const kickoff = new Date(match.scheduledStartTime);
-          return kickoff >= monthStart && kickoff <= monthEnd;
-        })
-        .map((match) => mapHockeyMatchToCalendarEvent(
-          match,
-          teamNames,
-          match.competitionId ? seasonNames.get(match.competitionId) : undefined,
-        ));
+      const hockeyEvents = hockeyMatches.map(mapHockeyMatchToCalendarEvent);
       setAllEvents([...floorballEvents, ...footballEvents, ...hockeyEvents]);
     } catch (err) {
       console.error('EventCalendarPage: fetch failed', err);

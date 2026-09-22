@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import AdminNavBar from '../Navigation/AdminNavBar';
+import AdminBackButton from '../AdminBackButton/AdminBackButton';
+import { rememberAdminLocation } from '../../utils/adminReturnTo';
 import { InProgressMatchesProvider } from '../../hooks/InProgressMatchesProvider';
 import { InProgressFootballMatchesProvider } from '../../hooks/InProgressFootballMatchesProvider';
 import { InProgressHockeyMatchesProvider } from '../../hooks/InProgressHockeyMatchesProvider';
@@ -14,6 +17,7 @@ interface AdminPageTemplateProps {
 }
 
 function AdminPageTemplate({ title, children }: AdminPageTemplateProps) {
+  const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
       return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
@@ -37,6 +41,10 @@ function AdminPageTemplate({ title, children }: AdminPageTemplateProps) {
     };
   }, [title]);
 
+  useEffect(() => {
+    rememberAdminLocation(`${location.pathname}${location.search}`);
+  }, [location.pathname, location.search]);
+
   return (
     <InProgressMatchesProvider>
       <InProgressFootballMatchesProvider>
@@ -45,6 +53,7 @@ function AdminPageTemplate({ title, children }: AdminPageTemplateProps) {
             <AdminNavBar collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
             <div className="admin-page-content">
               <div className="admin-page-body">
+                <AdminBackButton />
                 {children || (
                   <p className="placeholder-text">This admin page is under construction.</p>
                 )}

@@ -1,5 +1,5 @@
 import type { CalendarEvent } from '../../../types/calendar';
-import { isHockeyMatchFinished, isHockeyMatchLive, type HockeyMatchDto } from '../../../types/hockey/hockeyTypes';
+import { isHockeyMatchFinished, isHockeyMatchLive, type HockeyMatchListDto } from '../../../types/hockey/hockeyTypes';
 
 function formatCalendarDate(isoDateTime: string): { date: string; time: string } {
   const parsed = new Date(isoDateTime);
@@ -9,14 +9,10 @@ function formatCalendarDate(isoDateTime: string): { date: string; time: string }
   return { date, time: `${hours}.${minutes}` };
 }
 
-export function mapHockeyMatchToCalendarEvent(
-  match: HockeyMatchDto,
-  teamNames: Map<string, string>,
-  competitionName?: string,
-): CalendarEvent {
+export function mapHockeyMatchToCalendarEvent(match: HockeyMatchListDto): CalendarEvent {
   const { date, time } = formatCalendarDate(match.scheduledStartTime);
-  const home = match.homeTeamId ? teamNames.get(match.homeTeamId) ?? 'TBD' : 'TBD';
-  const away = match.awayTeamId ? teamNames.get(match.awayTeamId) ?? 'TBD' : 'TBD';
+  const home = match.homeTeamName ?? 'TBD';
+  const away = match.awayTeamName ?? 'TBD';
   let status: CalendarEvent['status'] = 'scheduled';
   if (isHockeyMatchLive(match.status)) {
     status = 'live';
@@ -30,7 +26,7 @@ export function mapHockeyMatchToCalendarEvent(
     date,
     time,
     title: `${home} – ${away}`,
-    subtitle: competitionName,
+    subtitle: match.competitionName ?? undefined,
     link: `/hockey/match/${match.id}`,
     sport: 'icehockey',
     status,

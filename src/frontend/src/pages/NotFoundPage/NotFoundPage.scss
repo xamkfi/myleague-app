@@ -2,39 +2,49 @@
 @use '@variables' as *;
 
 .not-found-page {
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: map.get($spacing, 'xl') map.get($spacing, 'md');
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  padding: map.get($spacing, 'lg') map.get($spacing, 'base');
   text-align: center;
-  color: $color-blue-deep;
+}
 
-  &__code {
-    margin: 0;
-    font-family: $font-family-display;
-    font-size: map.get($font-sizes, 'xxl');
-    font-weight: map.get($font-weights, 'extrabold');
-    letter-spacing: 0.08em;
-  }
+.not-found-page__code {
+  margin: 0 0 map.get($spacing, 'xs');
+  color: var(--brand-dark, #{$color-navbar});
+  font-family: $font-family-body;
+  font-size: map.get($font-sizes, 'xl');
+  font-weight: map.get($font-weights, 'bold');
+  letter-spacing: 0.08em;
+}
 
-  &__title {
-    margin: map.get($spacing, 'sm') 0;
-    font-size: map.get($font-sizes, 'xl');
-  }
+.not-found-page__heading {
+  margin: 0 0 map.get($spacing, 'sm');
+  color: $color-text-primary;
+  font-size: map.get($font-sizes, 'lg');
+}
 
-  &__text {
-    margin: 0 0 map.get($spacing, 'lg');
-    color: $color-neutral-dark-grey;
-  }
+.not-found-page__description {
+  max-width: 36rem;
+  margin: 0 0 map.get($spacing, 'md');
+  color: $color-text-muted;
+  line-height: $line-height-relaxed;
+}
 
-  &__link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
-    border-radius: map.get($border-radius, 'lg');
-    background: $color-banner-bg;
-    color: $color-white;
+.not-found-page__home {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 1.1rem;
+  border-radius: map.get($border-radius, 'lg');
+  background: var(--brand-dark, #{$color-navbar});
+  color: $color-white;
+  font-weight: map.get($font-weights, 'semibold');
+  text-decoration: none;
+
+  &:hover {
     text-decoration: none;
-    font-weight: map.get($font-weights, 'bold');
+    filter: brightness(1.08);
   }
 }

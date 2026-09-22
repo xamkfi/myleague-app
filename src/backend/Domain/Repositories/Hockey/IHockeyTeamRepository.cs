@@ -13,6 +13,10 @@ public interface IHockeyTeamRepository
 
     Task<HockeyTeam?> GetByIdAsync(Guid id);
 
+    Task<IReadOnlyDictionary<Guid, string>> GetNamesByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<HockeyTeam>> GetAllAsync();
 
     Task<IReadOnlyList<HockeyTeam>> GetByClubIdAsync(Guid clubId);

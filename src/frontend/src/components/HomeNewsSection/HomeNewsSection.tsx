@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { NewsArticleDto } from '../../api/news/newsService';
+import { useAudience } from '../../context/AudienceContext';
 import HomeNewsCard from './HomeNewsCard';
 import './HomeNewsSection.scss';
 
@@ -12,6 +13,7 @@ type HomeNewsSectionProps = {
 
 function HomeNewsSection({ articles, isLoading, error, onRetry }: HomeNewsSectionProps) {
   const { t } = useTranslation();
+  const { audience } = useAudience();
 
   if (isLoading) {
     return (
@@ -59,7 +61,7 @@ function HomeNewsSection({ articles, isLoading, error, onRetry }: HomeNewsSectio
           {t('homePage.newsSection.title', 'Ajankohtaista')}
         </h2>
         <div className="home-news-section__empty">
-          <p>{t('homePage.newsSection.noNews', 'Ei uutisia saatavilla')}</p>
+          <p>{t('homePage.newsSection.noNewsForAudience', { audience: t(audience.i18nKey) })}</p>
         </div>
       </div>
     );

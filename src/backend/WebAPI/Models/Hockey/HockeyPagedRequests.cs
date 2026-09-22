@@ -85,3 +85,21 @@ public record GetPagedHockeyMatchesRequest : PagedRequestBase
     /// <summary>Optional venue search.</summary>
     public string? SearchQuery { get; init; }
 }
+
+/// <summary>
+/// Query parameters for the public hockey match list.
+/// </summary>
+public record GetHockeyMatchesRequest : PagedRequestBase
+{
+    /// <summary>Optional scheduled start lower bound.</summary>
+    public DateTime? StartDate { get; init; }
+
+    /// <summary>Optional scheduled start upper bound.</summary>
+    public DateTime? EndDate { get; init; }
+
+    /// <summary>Optional audience / age-group filter via the competition.</summary>
+    public TeamCategory? TeamCategory { get; init; }
+
+    /// <summary>Sort order for scheduled start time (<c>asc</c> or <c>desc</c>).</summary>
+    public string SortOrder { get; init; } = "desc";
+}

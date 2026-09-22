@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Seasons.DTOs;
 using Application.Features.Hockey.Teams.DTOs;
@@ -35,6 +36,7 @@ public class HockeyMatchImporter
     public int Skipped => _skipped;
     public int Failed => _failed;
     public int Repaired => _repaired;
+    public ConcurrentBag<int> FailedMatchIds { get; } = [];
 
     public HockeyMatchImporter(
         HockeyApiClient api,
@@ -54,6 +56,12 @@ public class HockeyMatchImporter
         _fillUnknownGoals = fillUnknownGoals;
         _repairMatchIds = repairMatchIds ?? [];
         _repairAll = repairAll;
+    }
+
+    private void RecordFailed(int oldMatchId)
+    {
+        Interlocked.Increment(ref _failed);
+        FailedMatchIds.Add(oldMatchId);
     }
 
     private class SideInfo
@@ -164,18 +172,18 @@ public class HockeyMatchImporter
                         item.Match, item.ExistingMatchId, item.Home, item.Away,
                         playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
                     if (ok) Interlocked.Increment(ref _repaired);
-                    else Interlocked.Increment(ref _failed);
+                    else RecordFailed(item.Match.Match.Id);
                     return;
                 }
 
                 bool imported = await ImportSingleMatchAsync(
                     item.Match, season, competitionDivisionId, officialId, item.Home, item.Away,
                     playerByTeamPlayerId, periodSeconds, regularPeriods, item.Prefix);
-                if (!imported) Interlocked.Increment(ref _failed);
+                if (!imported) RecordFailed(item.Match.Match.Id);
             }
             catch (Exception ex)
             {
-                Interlocked.Increment(ref _failed);
+                RecordFailed(item.Match.Match.Id);
                 Console.WriteLine($"{item.Prefix} ERROR: {ex.Message}");
                 _log.LogError("ImportHockeyMatch", new { item.Match.Match.Id }, ex.ToString());
             }

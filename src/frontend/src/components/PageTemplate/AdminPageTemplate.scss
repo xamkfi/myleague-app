@@ -45,6 +45,21 @@ $sidebar-collapsed-width: 68px;
   }
 }
 
+.admin-page-content:has(.admin-back-bar) {
+  .edit-season-back:not(.edit-season-back--with-actions) {
+    display: none;
+  }
+
+  .edit-season-back--with-actions > .back-button:not(.back-button--primary) {
+    display: none;
+  }
+
+  .back-button-container,
+  .club-details-back {
+    display: none;
+  }
+}
+
 .placeholder-text {
   font-size: map.get($font-sizes, 'md');
   margin-top: map.get($spacing, 'xl');

@@ -235,10 +235,11 @@ const SearchableInfiniteDropdown = ({
     }
   }, [isOpen, highlightedIndex, options, onChange, onEnterSelect]);
 
-  // Intersection Observer for infinite scroll
+  // Intersection Observer for infinite scroll inside the dropdown list, not the viewport
   useEffect(() => {
     const trigger = loadMoreTriggerRef.current;
-    if (!trigger) return;
+    const root = listRef.current;
+    if (!trigger || !isOpen || !root) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -246,7 +247,7 @@ const SearchableInfiniteDropdown = ({
           loadMoreData();
         }
       },
-      { threshold: 0.1 }
+      { root, threshold: 0.1 }
     );
 
     observer.observe(trigger);
@@ -254,7 +255,7 @@ const SearchableInfiniteDropdown = ({
     return () => {
       observer.disconnect();
     };
-  }, [hasMore, loadingMore, loadMoreData]);
+  }, [hasMore, loadingMore, loadMoreData, isOpen, options.length]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

@@ -1,6 +1,7 @@
 using Domain.Common;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Matches.Events;
+using Domain.Enums.Common;
 using Domain.Enums.Hockey.Matches;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +33,7 @@ public class HockeyMatchRepository : IHockeyMatchRepository
 
     public async Task<IReadOnlyList<HockeyMatch>> GetByCompetitionIdAsync(Guid competitionId)
     {
-        return await BuildDetailQuery()
+        return await BuildListQuery()
             .Where(m => m.CompetitionId == competitionId)
             .OrderBy(m => m.ScheduledStartTime)
             .ToListAsync();
@@ -84,13 +85,10 @@ public class HockeyMatchRepository : IHockeyMatchRepository
         HockeyMatchStatus? status = null,
         string sortOrder = "desc",
         string? searchQuery = null,
+        TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default)
     {
-        IQueryable<HockeyMatch> query = _dbContext.HockeyMatches
-            .Include(m => m.MatchTeams)
-            .Include(m => m.Officials)
-            .Include(m => m.PeriodScores)
-            .AsQueryable();
+        IQueryable<HockeyMatch> query = BuildListQuery();
 
         if (competitionId is Guid competitionFilter)
         {
@@ -119,6 +117,11 @@ public class HockeyMatchRepository : IHockeyMatchRepository
             query = query.Where(m => m.Status == statusFilter);
         }
 
+        if (teamCategory is TeamCategory categoryFilter)
+        {
+            query = query.Where(m => m.Competition != null && m.Competition.TeamCategory == categoryFilter);
+        }
+
         if (!string.IsNullOrWhiteSpace(searchQuery))
         {
             string loweredSearch = searchQuery.ToLower();
@@ -137,6 +140,14 @@ public class HockeyMatchRepository : IHockeyMatchRepository
 
         return PagedResult.Create(items, totalCount, page, pageSize);
     }
+
+    private IQueryable<HockeyMatch> BuildListQuery() =>
+        _dbContext.HockeyMatches
+            .AsNoTracking()
+            .Include(m => m.MatchTeams)
+            .Include(m => m.Officials)
+            .Include(m => m.PeriodScores)
+            .Include(m => m.Competition);
 
     private IQueryable<HockeyMatch> BuildDetailQuery() =>
         _dbContext.HockeyMatches

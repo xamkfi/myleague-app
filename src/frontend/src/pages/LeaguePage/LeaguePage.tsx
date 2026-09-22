@@ -8,6 +8,8 @@ import FixturesSection from './components/FixturesSection';
 import SummarySection from './components/SummarySection';
 import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
 import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
+import { isNotFoundError } from '../../api/utils/isNotFoundError';
+import { unwrapApiErrorMessage } from '../../api/utils/ParseErrorResponse';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { floorballStatisticsService, type FloorballSeasonStatisticsSummaryDto } from '../../api/floorball/floorballStatistics';
@@ -85,7 +87,12 @@ export default function LeaguePage() {
         setSeasonSummary(data);
       } catch (err) {
         console.error('Failed to fetch season statistics:', err);
-        setError(err instanceof Error ? err.message : t('leaguePage.errors.loadLeagueData'));
+        if (isNotFoundError(err)) {
+          setSeasonSummary(null);
+          setError(null);
+        } else {
+          setError(unwrapApiErrorMessage(err, t('leaguePage.errors.loadLeagueData')));
+        }
       } finally {
         setLoading(false);
       }

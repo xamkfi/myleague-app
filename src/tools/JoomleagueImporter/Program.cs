@@ -140,6 +140,10 @@ public static class Program
         else
             Console.WriteLine();
 
+        ImportExpectedReport expected = ImportExpectedStatsCalculator.Build(sport, dumpPath, set);
+        string expectedPath = ImportExpectedStatsWriter.WriteExpected(expected);
+        Console.WriteLine($"Expected stats: {expectedPath} ({expected.Seasons.Count} seasons).");
+
         if (dryRun)
         {
             Console.WriteLine("Dry run - nothing was imported.");
@@ -214,19 +218,19 @@ public static class Program
             {
                 using HockeyApiClient api = new(apiBaseUrl);
                 await AuthenticateClientAsync(api, accessToken, refreshToken, loginEmail);
-                return await RunHockeyImportAsync(api, idMap, log, db, set, fillUnknownGoals, repairMatchIds, repairAll);
+                return await RunHockeyImportAsync(api, idMap, log, db, set, sport, dumpPath, fillUnknownGoals, repairMatchIds, repairAll);
             }
 
             if (isFootball)
             {
                 using FootballApiClient api = new(apiBaseUrl);
                 await AuthenticateClientAsync(api, accessToken, refreshToken, loginEmail);
-                return await RunFootballImportAsync(api, idMap, log, db, set, fillUnknownGoals, repairMatchIds, repairAll);
+                return await RunFootballImportAsync(api, idMap, log, db, set, sport, dumpPath, fillUnknownGoals, repairMatchIds, repairAll);
             }
 
             using FloorballApiClient floorballApi = new(apiBaseUrl);
             await AuthenticateClientAsync(floorballApi, accessToken, refreshToken, loginEmail);
-            return await RunFloorballImportAsync(floorballApi, idMap, log, db, set, fillUnknownGoals, repairMatchIds, repairAll);
+            return await RunFloorballImportAsync(floorballApi, idMap, log, db, set, sport, dumpPath, fillUnknownGoals, repairMatchIds, repairAll);
         }
         catch (Exception ex)
         {
@@ -242,6 +246,8 @@ public static class Program
         ImportLogger log,
         JoomleagueDatabase db,
         FloorballImportSet set,
+        string sport,
+        string dumpPath,
         bool fillUnknownGoals,
         HashSet<int> repairMatchIds,
         bool repairAll)
@@ -268,8 +274,16 @@ public static class Program
                 return;
             }
             await matches.ImportProjectMatchesAsync(pi, season, refereeId);
+            await HistoricalRosterApplicator.DeactivateFloorballAsync(pi, season.Id, idMap, api);
         });
 
+        await FinishReportsAsync(
+            sport,
+            dumpPath,
+            set,
+            idMap,
+            matches.FailedMatchIds,
+            expectedReport => ImportStatsComparer.CompareFloorballAsync(expectedReport, api));
         PrintImportComplete(matches.Succeeded, matches.ScheduledOnly, matches.Skipped, matches.Repaired, matches.Failed, log);
         return 0;
     }
@@ -280,6 +294,8 @@ public static class Program
         ImportLogger log,
         JoomleagueDatabase db,
         FloorballImportSet set,
+        string sport,
+        string dumpPath,
         bool fillUnknownGoals,
         HashSet<int> repairMatchIds,
         bool repairAll)
@@ -306,9 +322,17 @@ public static class Program
                 return;
             }
             await matches.ImportProjectMatchesAsync(pi, season, refereeId);
+            await HistoricalRosterApplicator.DeactivateFootballAsync(pi, season.Id, idMap, api);
         });
 
         await matches.CompleteUnfinishedMappedMatchesAsync();
+        await FinishReportsAsync(
+            sport,
+            dumpPath,
+            set,
+            idMap,
+            matches.FailedMatchIds,
+            expectedReport => ImportStatsComparer.CompareFootballAsync(expectedReport, api));
         PrintImportComplete(matches.Succeeded, matches.ScheduledOnly, matches.Skipped, matches.Repaired, matches.Failed, log);
         return 0;
     }
@@ -319,6 +343,8 @@ public static class Program
         ImportLogger log,
         JoomleagueDatabase db,
         FloorballImportSet set,
+        string sport,
+        string dumpPath,
         bool fillUnknownGoals,
         HashSet<int> repairMatchIds,
         bool repairAll)
@@ -346,8 +372,18 @@ public static class Program
             }
             await matches.ImportProjectMatchesAsync(pi, season, officialId);
             await api.RecalculateCompetitionAsync(season.Id);
+            await HistoricalRosterApplicator.DeactivateHockeyAsync(pi, season.Id, idMap, api);
+            if (await api.CompleteSeasonAsync(season.Id))
+                Console.WriteLine("  Season marked completed (historical).");
         });
 
+        await FinishReportsAsync(
+            sport,
+            dumpPath,
+            set,
+            idMap,
+            matches.FailedMatchIds,
+            expectedReport => ImportStatsComparer.CompareHockeyAsync(expectedReport, api));
         PrintImportComplete(matches.Succeeded, matches.ScheduledOnly, matches.Skipped, matches.Repaired, matches.Failed, log);
         return 0;
     }
@@ -358,6 +394,29 @@ public static class Program
             Console.WriteLine("Repair mode: re-importing events for ALL previously processed matches.");
         else if (repairMatchIds.Count > 0)
             Console.WriteLine($"Repair mode: re-importing events for {repairMatchIds.Count} match(es): {string.Join(", ", repairMatchIds)}");
+    }
+
+    private static async Task FinishReportsAsync(
+        string sport,
+        string dumpPath,
+        FloorballImportSet set,
+        IdMapStore idMap,
+        IEnumerable<int> failedMatchIds,
+        Func<ImportExpectedReport, Task<ImportCompareReport>> compare)
+    {
+        ImportExpectedReport expected = ImportExpectedStatsCalculator.Build(sport, dumpPath, set);
+        ImportExpectedStatsCalculator.ApplyIdMap(expected, idMap);
+        expected.ImportFailedMatchIds = failedMatchIds.Distinct().OrderBy(id => id).ToList();
+        string expectedPath = ImportExpectedStatsWriter.WriteExpected(expected);
+        Console.WriteLine($"Expected stats (mapped): {expectedPath}");
+
+        ImportCompareReport compared = await compare(expected);
+        string comparePath = ImportExpectedStatsWriter.WriteCompare(sport, compared);
+        Console.WriteLine($"Compare report: {comparePath} ({compared.Differences} difference(s), {compared.SeasonsCompared} seasons).");
+        foreach (string note in compared.Notes.Take(20))
+            Console.WriteLine($"  {note}");
+        if (compared.Notes.Count > 20)
+            Console.WriteLine($"  ... {compared.Notes.Count - 20} more notes in {comparePath}");
     }
 
     private static void PrintImportComplete(

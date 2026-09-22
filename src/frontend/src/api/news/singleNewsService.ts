@@ -11,6 +11,7 @@ export interface NewsArticleDto {
   updatedAt?: string;
   category?: string;
   sportCategory?: string;
+  teamCategory?: string;
   tags: string[];
   isArchived: boolean;
 }

@@ -41,15 +41,17 @@ const ConfirmationDialog = ({
           )}
         </div>
         <div className="confirmation-actions">
-          <button 
-            onClick={onConfirm} 
+          <button
+            type="button"
+            onClick={onConfirm}
             className="confirm-btn"
             disabled={isLoading}
           >
             {isLoading ? 'Processing...' : confirmText}
           </button>
-          <button 
-            onClick={onCancel} 
+          <button
+            type="button"
+            onClick={onCancel}
             className="cancel-btn"
             disabled={isLoading}
           >

@@ -1,5 +1,4 @@
 .news-management-page {
-  padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
 
@@ -41,7 +40,6 @@
 // Responsive design
 @media (max-width: 768px) {
   .news-management-page {
-    padding: 1rem;
 
     .page-header {
       flex-direction: column;

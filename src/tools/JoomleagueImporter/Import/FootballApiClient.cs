@@ -3,6 +3,7 @@ using Application.Features.Football.Matches.DTOs;
 using Application.Features.Football.Players.DTOs;
 using Application.Features.Football.Referees.DTOs;
 using Application.Features.Football.Seasons.DTOs;
+using Application.Features.Football.Statistics.DTOs;
 using Application.Features.Football.Teams.DTOs;
 using Domain.Enums.Common;
 using Domain.Enums.Football;
@@ -64,9 +65,12 @@ public class FootballApiClient : ImportApiClient
         return AddPlayerToTeamByQueryAsync(url, jerseyNumber, "Add football player to team");
     }
 
-    public async Task<FootballTeamDto?> GetTeamByIdAsync(Guid teamId)
+    public async Task<FootballTeamDto?> GetTeamByIdAsync(Guid teamId, Guid? competitionId = null)
     {
-        HttpResponseMessage resp = await Http.GetAsync($"api/FootballTeam/{teamId}");
+        string url = $"api/FootballTeam/{teamId}";
+        if (competitionId.HasValue)
+            url += $"?competitionId={competitionId.Value}";
+        HttpResponseMessage resp = await Http.GetAsync(url);
         return await ReadDataOrNull<FootballTeamDto>(resp, $"Get football team {teamId}");
     }
 
@@ -75,16 +79,25 @@ public class FootballApiClient : ImportApiClient
         Guid playerId,
         FootballPosition position,
         int jerseyNumber,
-        bool isActive)
+        bool isActive,
+        Guid? competitionId = null)
     {
         HttpResponseMessage resp = await Http.PutAsJsonAsync($"api/FootballTeam/{teamId}/players/{playerId}", new
         {
             position = position.ToString(),
             jerseyNumber,
             isActive,
+            competitionId,
         });
         return await OkOrWarn(resp, "Update football team player");
     }
+
+    public Task<List<FootballTeamSeasonStatisticsDto>> GetStandingsAsync(Guid competitionId) =>
+        GetUnpaginatedListAsync<FootballTeamSeasonStatisticsDto>($"api/football/statistics/standings/{competitionId}");
+
+    public Task<List<FootballPlayerSeasonStatisticsDto>> GetTeamPlayerStatisticsAsync(Guid competitionId, Guid teamId) =>
+        GetUnpaginatedListAsync<FootballPlayerSeasonStatisticsDto>(
+            $"api/football/statistics/team-players/{competitionId}/{teamId}");
 
     public async Task<List<FootballRefereeDto>> GetRefereesAsync() =>
         await GetPaginatedListAsync<FootballRefereeDto>("api/FootballReferee?page=1&PageSize=50");
