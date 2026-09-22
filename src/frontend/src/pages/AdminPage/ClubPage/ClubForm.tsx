@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import { clubService, type ClubRequest } from '../../../api/common/clubService';
@@ -10,9 +10,10 @@ interface ClubFormProps {
   submitting?: boolean;
   onSubmit: (payload: ClubRequest) => Promise<void> | void;
   onDelete?: (() => Promise<void> | void) | undefined;
+  beforeActions?: ReactNode;
 }
 
-function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: ClubFormProps) {
+function ClubForm({ initialValues, submitting = false, onSubmit, onDelete, beforeActions }: ClubFormProps) {
   const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -95,58 +96,106 @@ function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: Clu
   return (
     <form className="club-form" onSubmit={handleSubmit}>
       <ErrorPopup message={error} />
-      <div className="form-grid">
-        <div className="form-group">
-          <label htmlFor="club-name">{t('clubs.form.name', 'Club Name')} *</label>
+
+      <section className="club-form__section">
+        <header className="club-form__section-header">
+          <h3>{t('clubs.form.basicSection')}</h3>
+        </header>
+        <div className="club-form__field">
+          <label htmlFor="club-name">
+            {t('clubs.form.name')}
+            <span className="club-form__required" aria-hidden="true">*</span>
+          </label>
           <input
             id="club-name"
             type="text"
+            required
             value={values.name}
             onChange={(e) => handleChange('name', e.target.value)}
-            placeholder={t('clubs.form.namePlaceholder', 'Enter club name')}
+            placeholder={t('clubs.form.namePlaceholder')}
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="club-city">{t('clubs.form.city', 'City')}</label>
-          <input
-            id="club-city"
-            type="text"
-            value={values.city ?? ''}
-            onChange={(e) => handleChange('city', e.target.value)}
-            placeholder={t('clubs.form.cityPlaceholder', 'Enter city')}
-          />
+        <div className="club-form__grid">
+          <div className="club-form__field">
+            <label htmlFor="club-city">
+              {t('clubs.form.city')}
+              <span className="club-form__optional">{t('clubs.form.optional')}</span>
+            </label>
+            <input
+              id="club-city"
+              type="text"
+              value={values.city ?? ''}
+              onChange={(e) => handleChange('city', e.target.value)}
+              placeholder={t('clubs.form.cityPlaceholder')}
+            />
+          </div>
+          <div className="club-form__field">
+            <label htmlFor="club-country">
+              {t('clubs.form.country')}
+              <span className="club-form__optional">{t('clubs.form.optional')}</span>
+            </label>
+            <input
+              id="club-country"
+              type="text"
+              value={values.country ?? ''}
+              onChange={(e) => handleChange('country', e.target.value)}
+              placeholder={t('clubs.form.countryPlaceholder')}
+            />
+          </div>
+          <div className="club-form__field">
+            <label htmlFor="club-founding-date">
+              {t('clubs.form.foundingDate')}
+              <span className="club-form__optional">{t('clubs.form.optional')}</span>
+            </label>
+            <input
+              id="club-founding-date"
+              type="date"
+              value={values.foundingDate || ''}
+              onChange={(e) => handleChange('foundingDate', e.target.value)}
+            />
+          </div>
         </div>
-        <div className="form-group">
-          <label htmlFor="club-country">{t('clubs.form.country', 'Country')}</label>
-          <input
-            id="club-country"
-            type="text"
-            value={values.country ?? ''}
-            onChange={(e) => handleChange('country', e.target.value)}
-            placeholder={t('clubs.form.countryPlaceholder', 'Enter country')}
-          />
+      </section>
+
+      <section className="club-form__section">
+        <header className="club-form__section-header">
+          <h3>{t('clubs.form.contactSection')}</h3>
+        </header>
+        <div className="club-form__grid">
+          <div className="club-form__field">
+            <label htmlFor="club-website">
+              {t('clubs.form.websiteUrl')}
+              <span className="club-form__optional">{t('clubs.form.optional')}</span>
+            </label>
+            <input
+              id="club-website"
+              type="url"
+              value={values.websiteUrl || ''}
+              onChange={(e) => handleChange('websiteUrl', e.target.value)}
+              placeholder="https://"
+            />
+          </div>
+          <div className="club-form__field">
+            <label htmlFor="club-email">
+              {t('clubs.form.contactEmail')}
+              <span className="club-form__optional">{t('clubs.form.optional')}</span>
+            </label>
+            <input
+              id="club-email"
+              type="email"
+              value={values.contactEmail || ''}
+              onChange={(e) => handleChange('contactEmail', e.target.value)}
+              placeholder={t('clubs.form.emailPlaceholder')}
+            />
+          </div>
         </div>
-        <div className="form-group">
-          <label htmlFor="club-founding-date">{t('clubs.form.foundingDate', 'Founding Date')}</label>
-          <input
-            id="club-founding-date"
-            type="date"
-            value={values.foundingDate || ''}
-            onChange={(e) => handleChange('foundingDate', e.target.value)}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="club-website">{t('clubs.form.websiteUrl', 'Website URL')}</label>
-          <input
-            id="club-website"
-            value={values.websiteUrl || ''}
-            onChange={(e) => handleChange('websiteUrl', e.target.value)}
-            placeholder="https://example.com"
-          />
-        </div>
-        <div className="form-group club-form__logo-group">
+      </section>
+
+      <section className="club-form__section">
+        <div className="club-form__field club-form__logo-group">
           <label className="club-form__logo-label" id="club-logo-label">
             {t('clubs.form.logoUrl')}
+            <span className="club-form__optional">{t('clubs.form.optional')}</span>
           </label>
           {values.logoUrl?.trim() ? (
             <div className="club-form__logo-preview" aria-labelledby="club-logo-label">
@@ -221,25 +270,23 @@ function ClubForm({ initialValues, submitting = false, onSubmit, onDelete }: Clu
             className="club-form__logo-url-input"
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="club-email">{t('clubs.form.contactEmail', 'Contact Email')}</label>
-          <input
-            id="club-email"
-            value={values.contactEmail || ''}
-            onChange={(e) => handleChange('contactEmail', e.target.value)}
-            placeholder="club@example.com"
-          />
-        </div>
-      </div>
-      <div className="form-actions">
-        <div className="left-actions">
+      </section>
+
+      {beforeActions && (
+        <section className="club-form__section club-form__section--admins">
+          {beforeActions}
+        </section>
+      )}
+
+      <div className="club-form__actions">
+        <div className="club-form__actions-left">
           {onDelete && (
             <button type="button" className="btn btn-danger" onClick={() => setConfirmOpen(true)}>
               {t('clubs.deleteClubButton')}
             </button>
           )}
         </div>
-        <div className="right-actions">
+        <div className="club-form__actions-right">
           <button type="submit" className="btn btn-primary">
             {submitting ? t('common.saving', 'Saving...') : t('common.save', 'Save')}
           </button>

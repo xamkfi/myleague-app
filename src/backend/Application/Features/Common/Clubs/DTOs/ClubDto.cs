@@ -9,7 +9,7 @@ namespace Application.Features.Common.Clubs.DTOs;
 public record ClubDto(
     Guid Id,
     string Name,
-    DateTime FoundingDate,
+    DateTime? FoundingDate,
     string City,
     string Country,
     string WebsiteUrl,

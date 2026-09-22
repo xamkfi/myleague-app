@@ -90,12 +90,74 @@
 .footer-version {
   width: 100%;
   max-width: 1200px;
-  text-align: right;
-  font-size: 0.7rem;
-  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: map.get($spacing, 'md');
   padding: map.get($spacing, 'sm') map.get($spacing, 'lg') 0;
   margin-top: map.get($spacing, 'sm');
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-version__meta {
+  margin: 0 0 0 auto;
+  text-align: right;
+  font-size: 0.7rem;
+  opacity: 0.4;
+  white-space: nowrap;
+}
+
+.footer-credits {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  column-gap: 0.85rem;
+  row-gap: 0.2rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.footer-credits__made-by {
+  grid-column: 1;
+  grid-row: 1;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.footer-credits__logo {
+  grid-column: 2;
+  grid-row: 1;
+  height: 30px;
+  width: auto;
+  justify-self: center;
+  filter: brightness(0) invert(1);
+}
+
+.footer-credits__programme {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: center;
+  text-align: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.footer-credits__source {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: inherit;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.footer-credits__github {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
 }
 
 // Mobile responsive styles
@@ -131,6 +193,31 @@
   .footer-contact {
     font-size: 0.85rem;
     gap: map.get($spacing, 'xs');
+  }
+
+  .footer-version {
+    flex-direction: column;
+    align-items: center;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'sm') 0;
+  }
+
+  .footer-credits {
+    grid-template-columns: auto;
+    justify-items: center;
+    row-gap: 0.35rem;
+  }
+
+  .footer-credits__made-by,
+  .footer-credits__logo,
+  .footer-credits__programme,
+  .footer-credits__source {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .footer-version__meta {
+    margin-left: 0;
+    text-align: center;
   }
 }
 

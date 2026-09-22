@@ -11,6 +11,7 @@ using Application.Features.Common.Divisions.DTOs;
 using Application.Features.Common.News.DTOs;
 using Application.Features.Common.Search.DTOs;
 using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.PlayerLicences.DTOs;
 using Application.Features.Common.Shared.DTOs;
 using Application.Features.Floorball.Teams.DTOs;
 using Domain.ValueObjects.Floorball;
@@ -29,5 +30,6 @@ namespace Application.Features.Floorball.Players.DTOs
         FloorballPosition Position,
         int CareerGoals,
         int CareerAssists,
-        FloorballTeamNameDto? Team = null);
+        FloorballTeamNameDto? Team = null,
+        IReadOnlyList<ActivePlayerLicenceDto>? ActiveLicences = null);
 }

@@ -162,11 +162,19 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
 
         /// <inheritdoc />
         public async Task<IReadOnlyList<FootballSeasonDateSummary>> GetSeasonDateSummariesAsync(
+            Domain.Enums.Common.TeamCategory? teamCategory = null,
             CancellationToken cancellationToken = default)
         {
-            return await _entities
+            IQueryable<FootballSeason> query = _entities
                 .OfType<FootballSeason>()
-                .AsNoTracking()
+                .AsNoTracking();
+
+            if (teamCategory.HasValue)
+            {
+                query = query.Where(s => s.TeamCategory == teamCategory.Value);
+            }
+
+            return await query
                 .Select(s => new FootballSeasonDateSummary(s.StartDate, s.EndDate, s.IsActive))
                 .ToListAsync(cancellationToken);
         }

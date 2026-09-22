@@ -87,18 +87,33 @@
     margin-top: 2px;
   }
 
+  &__sport,
   &__venue,
   &__subtitle {
     font-size: map.get($font-sizes, 'xs');
     color: $color-text-muted;
   }
 
+  &__sport {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: map.get($font-weights, 'semibold');
+  }
+
+  &__sport-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  &__sport::after,
   &__venue::after {
     content: '·';
     margin-left: map.get($spacing, 'xs');
     color: $color-neutral-medium-grey;
   }
 
+  &__sport:last-child::after,
   &__venue:last-child::after {
     display: none;
   }

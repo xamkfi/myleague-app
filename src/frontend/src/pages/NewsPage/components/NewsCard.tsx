@@ -40,9 +40,7 @@ export default function NewsCard({ news }: { news: NewsArticleDto }) {
             </div>
             <div className="news-card-title">{news.title}</div>
             <div className="news-card-tags">
-              {news.teamCategory && (
-                <TeamCategoryBadge category={news.teamCategory} />
-              )}
+              <TeamCategoryBadge category={news.teamCategory} showAll />
               {news.sportCategory && (
                 <button
                   type="button"

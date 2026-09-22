@@ -1,10 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import CheckIcon from '../../assets/basicIcons/check.svg';
-import CloseIcon from '../../assets/basicIcons/close.svg';
 import ActionsDropdown from '../ActionsDropdown/ActionsDropdown';
 import PlayerLink from '../SportLinks/PlayerLink';
 import { getPlayerPath, type SportKind } from '../../utils/sportRoutes';
+import type { ActivePlayerLicence } from '../../types/activePlayerLicence';
 import type { AdminAction, AdminPlayerRow, AdminPlayerTableLabels } from './adminTableTypes';
 import '../../styles/AdminTable.scss';
 
@@ -38,6 +37,13 @@ export default function AdminPlayersTable({
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  const formatLicence = (licence: ActivePlayerLicence): string => {
+    if (!licence.competitionName) {
+      return licence.teamName;
+    }
+    return `${licence.teamName} — ${licence.competitionName}`;
+  };
+
   if (players.length === 0) {
     return <div className="no-data-state">{labels.noPlayers}</div>;
   }
@@ -60,17 +66,15 @@ export default function AdminPlayersTable({
               title={labels.selectAll}
             />
           </th>
-          <th>{labels.name}</th>
-          <th>{labels.team}</th>
-          <th>{labels.position}</th>
-          <th>{labels.status}</th>
+          <th>{labels.firstName}</th>
+          <th>{labels.lastName}</th>
+          <th>{labels.licences}</th>
           <th className="admin-table__actions-col">{labels.actions}</th>
         </tr>
       </thead>
       <tbody>
         {players.map((player) => {
           const publicPath = getPlayerPath(sport, player.id);
-          const statusLabel = player.isActive ? t('common.active') : t('common.inactive');
 
           return (
             <tr
@@ -88,23 +92,26 @@ export default function AdminPlayersTable({
               </td>
               <td className="admin-table__name">
                 <PlayerLink sport={sport} playerId={player.id}>
-                  {player.name}
+                  {player.firstName}
                 </PlayerLink>
               </td>
-              <td>{player.teamName || t('common.notAssigned')}</td>
-              <td>{player.positionLabel || t('common.none', 'None')}</td>
+              <td className="admin-table__name">
+                <PlayerLink sport={sport} playerId={player.id}>
+                  {player.lastName}
+                </PlayerLink>
+              </td>
               <td>
-                <span
-                  className={`admin-badge ${player.isActive ? 'admin-badge--active' : 'admin-badge--inactive'}`}
-                  aria-label={statusLabel}
-                  title={statusLabel}
-                >
-                  <img
-                    src={player.isActive ? CheckIcon : CloseIcon}
-                    alt={statusLabel}
-                    className="status-icon"
-                  />
-                </span>
+                {player.licences.length === 0 ? (
+                  <span className="admin-table__muted">{labels.noActiveLicences}</span>
+                ) : (
+                  <ul className="admin-table__licences">
+                    {player.licences.map((licence) => (
+                      <li key={`${licence.teamId}-${licence.competitionId ?? 'base'}`}>
+                        {formatLicence(licence)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </td>
               <td className="admin-table__actions-col" onClick={(event) => event.stopPropagation()}>
                 <ActionsDropdown

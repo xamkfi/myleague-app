@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.Football.Seasons.Commands;
 using Application.Features.Football.Seasons.DTOs;
 using Application.Features.Football.Seasons.Handlers;
+using Application.Features.Football.Seasons.Queries;
 using Domain.Entities.Common;
 using Domain.Entities.Football.Competitions;
 using Domain.Entities.Football.Matches;
@@ -194,5 +195,30 @@ public class FootballSeasonHandlerTests
 
         result.IsFailure.Should().BeTrue();
         _competitionRepo.Verify(r => r.DeleteAsync(id), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetFootballSeasonYears_WithTeamCategory_ReturnsOnlyThatAudiencesYears()
+    {
+        _competitionRepo
+            .Setup(r => r.GetSeasonDateSummariesAsync(TeamCategory.Women, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+            [
+                new FootballSeasonDateSummary(new DateTime(2014, 1, 1), new DateTime(2014, 12, 31), false),
+            ]);
+
+        GetFootballSeasonYearsHandler handler = new(
+            _competitionRepo.Object,
+            Mock.Of<ILogger<GetFootballSeasonYearsHandler>>());
+
+        Result<IEnumerable<FootballSeasonYearDto>> result = await handler.Handle(
+            new GetFootballSeasonYearsQuery(TeamCategory.Women),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        List<FootballSeasonYearDto> years = result.Data!.ToList();
+        years.Should().ContainSingle();
+        years[0].Year.Should().Be("2014");
+        years[0].HasActiveSeason.Should().BeFalse();
     }
 }

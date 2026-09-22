@@ -222,6 +222,17 @@
     border-bottom: 2px solid $color-neutral-light-grey;
   }
 
+  &__sport + &__sport {
+    margin-top: map.get($spacing, 'lg');
+  }
+
+  &__sport-title {
+    margin: 0 0 map.get($spacing, 'sm') 0;
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-deep;
+  }
+
   &__teams-loading {
     display: flex;
     justify-content: center;

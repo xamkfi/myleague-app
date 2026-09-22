@@ -20,6 +20,7 @@ public interface IFootballCompetitionRepository
     Task DeleteAsync(Guid id);
     Task<bool> ExistsAsync(Guid id);
     Task<IReadOnlyList<FootballSeasonDateSummary>> GetSeasonDateSummariesAsync(
+        Domain.Enums.Common.TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
     Task<PagedResult<FootballSeason>> GetSeasonsPagedAsync(
         int page,

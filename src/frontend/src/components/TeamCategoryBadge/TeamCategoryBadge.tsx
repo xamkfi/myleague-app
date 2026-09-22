@@ -4,18 +4,28 @@ import './TeamCategoryBadge.scss';
 
 interface TeamCategoryBadgeProps {
   category?: string | null;
+  /** When true, articles without a group show as visible to every audience. */
+  showAll?: boolean;
 }
 
 /**
  * Small colored pill showing an item's audience/age-group category using the same
  * primary colors as the public site themes. Renders nothing for unknown/missing values.
  */
-function TeamCategoryBadge({ category }: TeamCategoryBadgeProps) {
+function TeamCategoryBadge({ category, showAll = false }: TeamCategoryBadgeProps) {
   const { t } = useTranslation();
   const meta = category ? TEAM_CATEGORY_META[category] : undefined;
 
   if (!meta) {
-    return null;
+    if (!showAll) {
+      return null;
+    }
+
+    return (
+      <span className="team-category-badge team-category-badge--all">
+        {t('audience.all')}
+      </span>
+    );
   }
 
   return (

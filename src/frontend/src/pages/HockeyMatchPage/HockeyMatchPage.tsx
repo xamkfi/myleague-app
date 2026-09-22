@@ -129,9 +129,16 @@ function HockeyMatchPage() {
               homeScore: match.homeScore,
               awayScore: match.awayScore,
               scheduledDateTime: match.scheduledStartTime,
+              venue: match.venue,
               isScheduled: match.status === 'Scheduled',
               isLive: isHockeyMatchLive(match.status),
               isFinal: isHockeyMatchFinished(match.status),
+              statusLabel:
+                match.status !== 'Scheduled' &&
+                !isHockeyMatchLive(match.status) &&
+                !isHockeyMatchFinished(match.status)
+                  ? t(hockeyStatusTranslationKey(match.status), match.status)
+                  : null,
             }
           : undefined
       }
@@ -144,15 +151,12 @@ function HockeyMatchPage() {
       {match && activeTab === 'summary' && (
         <div className="tab-content">
           <div className="summary-content">
-            <div className="match-info">
-              {match.venue && <p>{t('matchPage.matchInfo.venue')}: {match.venue}</p>}
-              <p>
-                {t('matchPage.matchInfo.status')}:{' '}
-                {t(hockeyStatusTranslationKey(match.status), match.status)}
-              </p>
-              {match.wentToOvertime && <p>{t('matchPage.matchInfo.overtime')}</p>}
-              {match.wentToShootout && <p>{t('matchPage.matchInfo.shootout')}</p>}
-            </div>
+            {(match.wentToOvertime || match.wentToShootout) && (
+              <div className="match-notes">
+                {match.wentToOvertime && <span>{t('matchPage.matchInfo.overtime')}</span>}
+                {match.wentToShootout && <span>{t('matchPage.matchInfo.shootout')}</span>}
+              </div>
+            )}
             <HockeyMatchEvents
               match={match}
               teams={teams}

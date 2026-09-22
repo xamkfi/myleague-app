@@ -7,7 +7,9 @@ import ClubForm from './ClubForm';
 import ClubAdminsPicker, { type ClubAdminSelection } from './ClubAdminsPicker';
 import { resolveClubAdminUserIds } from './resolveClubAdminUserIds';
 import { clubService, type Club, type ClubRequest } from '../../../api/common/clubService';
+import { clubEmail, clubPublicUrl, clubText } from '../../../utils/clubDisplay';
 import { mapDeletionError } from '../../../utils/mapDeletionError';
+import './ClubForm.scss';
 
 function toDateInputValue(iso: string | null | undefined): string {
   if (!iso) return '';
@@ -61,12 +63,12 @@ function EditClubPage() {
       club
         ? {
             name: club.name ?? '',
-            city: club.city ?? '',
-            country: club.country ?? '',
+            city: clubText(club.city) ?? '',
+            country: clubText(club.country) ?? '',
             foundingDate: toDateInputValue(club.foundingDate),
-            websiteUrl: club.websiteUrl ?? '',
-            logoUrl: club.logoUrl ?? '',
-            contactEmail: club.contactEmail ?? '',
+            websiteUrl: clubPublicUrl(club.websiteUrl) ?? '',
+            logoUrl: clubPublicUrl(club.logoUrl) ?? '',
+            contactEmail: clubEmail(club.contactEmail) ?? '',
           }
         : undefined,
     [club]
@@ -100,20 +102,22 @@ function EditClubPage() {
 
   return (
     <AdminPageTemplate title={t('clubs.edit.title', 'Edit Club')}>
-      <div className="clubs-page">
-        <h2>{t('clubs.edit.title', 'Edit Club')}</h2>
+      <div className="club-editor">
+        <header className="club-editor__header">
+          {club?.name && <p className="club-editor__club-name">{club.name}</p>}
+          <h2>{t('clubs.edit.title')}</h2>
+          <p>{t('clubs.form.lead')}</p>
+        </header>
         <ErrorPopup message={error} />
-        {loading && <p>{t('common.loading', 'Loading...')}</p>}
+        {loading && <p>{t('common.loading')}</p>}
         {!loading && initialValues && (
-          <>
-            <ClubAdminsPicker selectedAdmins={admins} onChange={setAdmins} />
-            <ClubForm
-              initialValues={initialValues}
-              submitting={submitting}
-              onSubmit={handleSubmit}
-              onDelete={handleDelete}
-            />
-          </>
+          <ClubForm
+            initialValues={initialValues}
+            submitting={submitting}
+            onSubmit={handleSubmit}
+            onDelete={handleDelete}
+            beforeActions={<ClubAdminsPicker selectedAdmins={admins} onChange={setAdmins} />}
+          />
         )}
       </div>
     </AdminPageTemplate>

@@ -63,7 +63,33 @@ public class ClubMapperTests
         result.FoundingDate.Should().Be(club.FoundingDate);
         result.WebsiteUrl.Should().BeEmpty();
         result.LogoUrl.Should().BeEmpty();
-        result.ContactEmail.Should().Be("contact@example.com");
+        result.ContactEmail.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToDto_ClubWithOnlyName_OmitsOptionalFields()
+    {
+        Club club = new Club("Name Only");
+
+        ClubDto result = ClubMapper.ToDto(club);
+
+        result.Name.Should().Be("Name Only");
+        result.City.Should().BeEmpty();
+        result.Country.Should().BeEmpty();
+        result.FoundingDate.Should().BeNull();
+        result.WebsiteUrl.Should().BeEmpty();
+        result.LogoUrl.Should().BeEmpty();
+        result.ContactEmail.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToDto_PlaceholderContactEmail_IsOmitted()
+    {
+        Club club = new Club("Placeholder Club", contactEmail: "contact@example.com");
+
+        ClubDto result = ClubMapper.ToDto(club);
+
+        result.ContactEmail.Should().BeEmpty();
     }
 
     [Fact]
@@ -151,7 +177,7 @@ public class ClubMapperTests
         dtoList[1].Name.Should().Be("Club 2");
         dtoList[1].WebsiteUrl.Should().BeEmpty();
         dtoList[1].LogoUrl.Should().BeEmpty();
-        dtoList[1].ContactEmail.Should().Be("contact@example.com");
+        dtoList[1].ContactEmail.Should().BeEmpty();
 
         // Third club with partial data
         dtoList[2].Name.Should().Be("Club 3");
@@ -295,7 +321,7 @@ public class ClubMapperTests
 
         // Assert
         result.Should().NotBeNull();
-        result.FoundingDate.Kind.Should().Be(DateTimeKind.Utc);
+        result.FoundingDate!.Value.Kind.Should().Be(DateTimeKind.Utc);
     }
 
     [Fact]
@@ -434,7 +460,7 @@ public class ClubMapperTests
         ClubMapper.UpdateFromCommand(existingClub, command);
 
         // Assert
-        existingClub.FoundingDate.Kind.Should().Be(DateTimeKind.Utc);
+        existingClub.FoundingDate!.Value.Kind.Should().Be(DateTimeKind.Utc);
     }
 
     [Fact]

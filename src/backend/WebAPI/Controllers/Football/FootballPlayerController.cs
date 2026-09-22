@@ -53,7 +53,8 @@ namespace WebAPI.Controllers.Football
                 request.IsActive,
                 request.Position,
                 request.TeamId,
-                request.SearchTerm));
+                request.SearchTerm,
+                request.HasActiveLicence));
 
             return HandlePaginatedResult(result, "Football players retrieved successfully", "Failed to retrieve football players");
         }

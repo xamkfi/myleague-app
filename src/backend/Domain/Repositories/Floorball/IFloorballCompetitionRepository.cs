@@ -91,6 +91,7 @@ public interface IFloorballCompetitionRepository
     /// Gets lightweight date summaries for league seasons (excludes tournaments).
     /// </summary>
     Task<IReadOnlyList<FloorballSeasonDateSummary>> GetSeasonDateSummariesAsync(
+        Domain.Enums.Common.TeamCategory? teamCategory = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

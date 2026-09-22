@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import CatalogPage from '../../components/CatalogPage/CatalogPage';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { floorballSeasonService } from '../../api/floorball/floorballSeasonService';
 import { footballMatchService } from '../../api/football/footballMatchService';
@@ -9,20 +10,16 @@ import { hockeyMatchService } from '../../api/hockey/hockeyMatchService';
 import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
 import { mapHockeyMatchToCalendarEvent } from './utils/mapHockeyToCalendarEvent';
 import { mapFootballMatchToCalendarEvent } from './utils/mapFootballToCalendarEvent';
-import type { CalendarEvent, CalendarFilters as FiltersType } from '../../types/calendar';
+import type { CalendarEvent, CalendarFilters as FiltersType, CalendarSeasonOption } from '../../types/calendar';
 import { DEFAULT_CALENDAR_FILTERS } from '../../types/calendar';
 import { mapFloorballMatchToCalendarEvent } from './utils/mapFloorballToCalendarEvent';
+import { applyCalendarFilters } from './utils/applyCalendarFilters';
 import MiniCalendar from './components/MiniCalendar';
 import EventAgendaList from './components/EventAgendaList';
 import CalendarFilters from './components/CalendarFilters';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import { useAudience } from '../../context/AudienceContext';
 import './EventCalendarPage.scss';
-
-interface SeasonOption {
-  id: string;
-  name: string;
-}
 
 function getMonthBounds(year: number, month: number): { startDate: string; endDate: string } {
   const start = new Date(year, month - 1, 1);
@@ -40,7 +37,7 @@ function EventCalendarPage() {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
-  const [seasons, setSeasons] = useState<SeasonOption[]>([]);
+  const [seasons, setSeasons] = useState<CalendarSeasonOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FiltersType>(DEFAULT_CALENDAR_FILTERS);
@@ -59,9 +56,9 @@ function EventCalendarPage() {
         (season) => !season.teamCategory || season.teamCategory === audience.teamCategory,
       );
       setSeasons([
-        ...floorballList.map((season) => ({ id: season.id, name: season.name })),
-        ...hockey.map((season) => ({ id: season.id, name: season.name })),
-        ...footballList.map((season) => ({ id: season.id, name: season.name })),
+        ...floorballList.map((season) => ({ id: season.id, name: season.name, sport: 'floorball' as const })),
+        ...footballList.map((season) => ({ id: season.id, name: season.name, sport: 'football' as const })),
+        ...hockey.map((season) => ({ id: season.id, name: season.name, sport: 'icehockey' as const })),
       ]);
     } catch {
       // Non-critical: seasons filter just won't show options
@@ -122,24 +119,10 @@ function EventCalendarPage() {
     setFilters((prev) => ({ ...prev, selectedDay: null }));
   }, [year, month]);
 
-  const filteredEvents = useMemo(() => {
-    let result = allEvents;
-
-    if (filters.statuses.length > 0) {
-      result = result.filter((e) => e.status && filters.statuses.includes(e.status));
-    }
-
-    if (filters.competitionId) {
-      result = result.filter((e) => e.subtitle === seasons.find((s) => s.id === filters.competitionId)?.name);
-    }
-
-    if (filters.teamSearch.trim()) {
-      const search = filters.teamSearch.trim().toLowerCase();
-      result = result.filter((e) => e.title.toLowerCase().includes(search));
-    }
-
-    return result;
-  }, [allEvents, filters.statuses, filters.competitionId, filters.teamSearch, seasons]);
+  const filteredEvents = useMemo(
+    () => applyCalendarFilters(allEvents, filters, seasons),
+    [allEvents, filters, seasons],
+  );
 
   const goPrevMonth = () => {
     if (month === 1) { setMonth(12); setYear((y) => y - 1); }
@@ -163,55 +146,53 @@ function EventCalendarPage() {
   };
 
   return (
-    <PageTemplate title={t('eventCalendarPage.title')}>
-      <div className="event-calendar-page">
-        <div className="event-calendar-page__header">
-          <h1 className="event-calendar-page__title">{t('eventCalendarPage.title')}</h1>
-        </div>
-
-        <div className="event-calendar-page__layout">
-          <aside className="event-calendar-page__sidebar">
-            <MiniCalendar
-              year={year}
-              month={month}
-              events={filteredEvents}
-              selectedDay={filters.selectedDay}
-              onSelectDay={handleSelectDay}
-              onPrevMonth={goPrevMonth}
-              onNextMonth={goNextMonth}
-              onToday={goToday}
-            />
-            <CalendarFilters
-              filters={filters}
-              onFiltersChange={setFilters}
-              seasons={seasons}
-            />
-          </aside>
-
-          <main className="event-calendar-page__content">
-            {isLoading && (
-              <div className="event-calendar-page__state">
-                <LoadingSpinner size="sm" text={t('eventCalendarPage.loading')} />
-              </div>
-            )}
-
-            {error && (
-              <div className="event-calendar-page__state event-calendar-page__state--error">
-                <p>{error}</p>
-              </div>
-            )}
-
-            {!isLoading && !error && (
-              <EventAgendaList
-                events={filteredEvents}
-                selectedDay={filters.selectedDay}
+    <PageTemplate title={t('eventCalendarPage.title')} fullBleed>
+      <CatalogPage title={t('eventCalendarPage.title')} description={t('eventCalendarPage.description')}>
+        <div className="event-calendar-page">
+          <div className="event-calendar-page__layout">
+            <aside className="event-calendar-page__sidebar">
+              <MiniCalendar
                 year={year}
                 month={month}
+                events={filteredEvents}
+                selectedDay={filters.selectedDay}
+                onSelectDay={handleSelectDay}
+                onPrevMonth={goPrevMonth}
+                onNextMonth={goNextMonth}
+                onToday={goToday}
               />
-            )}
-          </main>
+              <CalendarFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+                seasons={seasons}
+              />
+            </aside>
+
+            <main className="event-calendar-page__content">
+              {isLoading && (
+                <div className="event-calendar-page__state">
+                  <LoadingSpinner size="sm" text={t('eventCalendarPage.loading')} />
+                </div>
+              )}
+
+              {error && (
+                <div className="event-calendar-page__state event-calendar-page__state--error">
+                  <p>{error}</p>
+                </div>
+              )}
+
+              {!isLoading && !error && (
+                <EventAgendaList
+                  events={filteredEvents}
+                  selectedDay={filters.selectedDay}
+                  year={year}
+                  month={month}
+                />
+              )}
+            </main>
+          </div>
         </div>
-      </div>
+      </CatalogPage>
     </PageTemplate>
   );
 }

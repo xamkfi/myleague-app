@@ -25,6 +25,8 @@ using Application.Features.Common.Persons.Mappings;
 using Application.Features.Common.Clubs.Mappings;
 using Application.Features.Common.Divisions.Mappings;
 using Application.Features.Common.News.Mappings;
+using Application.Features.Common.PlayerLicences.DTOs;
+using Application.Features.Common.PlayerLicences.Mappings;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
@@ -42,6 +44,7 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
     IRequestHandler<GetAllFloorballPlayersQuery, Result<PagedResult<FloorballPlayerDto>>>
 {
     private readonly IFloorballPlayerRepository _playerRepository;
+    private readonly IFloorballTeamRepository _teamRepository;
     private readonly IPersonRepository _personRepository;
 
     /// <summary>
@@ -53,11 +56,13 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
     /// <param name="logger">The logger</param>
     public GetAllFloorballPlayersHandler(
         IFloorballPlayerRepository playerRepository,
+        IFloorballTeamRepository teamRepository,
         IPersonRepository personRepository,
         IPaginationService paginationService,
         ILogger<GetAllFloorballPlayersHandler> logger) : base(paginationService, logger)
     {
         _playerRepository = playerRepository;
+        _teamRepository = teamRepository;
         _personRepository = personRepository;
     }
 
@@ -74,8 +79,8 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
             // Check for cancellation before starting
             cancellationToken.ThrowIfCancellationRequested();
 
-            _logger.LogInformation("Retrieving floorball players - Page: {Page}, PageSize: {PageSize}, IsActive: {IsActive}, Position: {Position}, TeamId: {TeamId}, SearchTerm: {SearchTerm}", 
-                request.Page, request.PageSize, request.IsActive, request.Position, request.TeamId, request.SearchTerm);
+            _logger.LogInformation("Retrieving floorball players - Page: {Page}, PageSize: {PageSize}, IsActive: {IsActive}, Position: {Position}, TeamId: {TeamId}, SearchTerm: {SearchTerm}, HasActiveLicence: {HasActiveLicence}", 
+                request.Page, request.PageSize, request.IsActive, request.Position, request.TeamId, request.SearchTerm, request.HasActiveLicence);
 
             // Validate pagination parameters using base handler
             Result<PaginationValidationResult> validationResult = ValidatePaginationParameters(
@@ -115,10 +120,15 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
                 position: positionFilter,
                 teamId: request.TeamId,
                 searchTerm: request.SearchTerm,
+                hasActiveLicence: request.HasActiveLicence,
                 cancellationToken: cancellationToken);
 
             // Check for cancellation after database operations
             cancellationToken.ThrowIfCancellationRequested();
+
+            List<Guid> playerIds = pagedPlayersWithTeams.Items.Select(item => item.Player.Id).ToList();
+            IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>> licencesByPlayer =
+                await _teamRepository.GetOpenPlayerLicencesByPlayerIdsAsync(playerIds, cancellationToken);
 
             // Load Person data for each player and create DTOs with team information
             List<FloorballPlayerDto> playerDtos = new List<FloorballPlayerDto>();
@@ -129,6 +139,7 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
                 
                 // Create team DTO if team exists
                 FloorballTeamNameDto? teamDto = team != null ? new FloorballTeamNameDto { Id = team.Id, Name = team.Name } : null;
+                IReadOnlyList<ActivePlayerLicenceDto> activeLicences = LicencesFor(player.Id, licencesByPlayer);
                 
                 if (person != null)
                 {
@@ -141,7 +152,8 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
                         player.Position.PrimaryPosition,
                         player.CareerGoals,
                         player.CareerAssists,
-                        teamDto
+                        teamDto,
+                        activeLicences
                     );
                     playerDtos.Add(playerDto);
                 }
@@ -158,7 +170,8 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
                         fallbackDto.Position,
                         fallbackDto.CareerGoals,
                         fallbackDto.CareerAssists,
-                        teamDto
+                        teamDto,
+                        activeLicences
                     );
                     playerDtos.Add(playerDtoWithTeam);
                 }
@@ -187,5 +200,17 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
             _logger.LogError(ex, "Error occurred while retrieving floorball players");
             return Result<PagedResult<FloorballPlayerDto>>.Failure("An error occurred while retrieving floorball players.");
         }
+    }
+
+    private static IReadOnlyList<ActivePlayerLicenceDto> LicencesFor(
+        Guid playerId,
+        IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>> licencesByPlayer)
+    {
+        if (!licencesByPlayer.TryGetValue(playerId, out IReadOnlyList<PlayerLicenceRow>? rows))
+        {
+            return Array.Empty<ActivePlayerLicenceDto>();
+        }
+
+        return ActivePlayerLicenceMapper.ToDtos(rows);
     }
 } 

@@ -22,7 +22,8 @@ namespace Application.Features.Football.Players.Queries
         bool? IsActive = null, // null = all, true = active only, false = inactive only
         string? Position = null,
         Guid? TeamId = null,
-        string? SearchTerm = null
+        string? SearchTerm = null,
+        bool? HasActiveLicence = null
     ) : IRequest<Result<PagedResult<FootballPlayerDto>>>
     {
         /// <summary>

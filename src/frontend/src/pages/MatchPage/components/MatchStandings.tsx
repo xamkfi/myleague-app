@@ -14,6 +14,8 @@ import LeagueStanding from '../../../components/LeagueStanding/LeagueStanding';
 import TournamentGroupStandingsTable from '../../../components/TournamentGroupStandingsTable/TournamentGroupStandingsTable';
 import TournamentBracket from '../../../components/TournamentBracket/TournamentBracket';
 import { isTournamentCompetition } from '../../../utils/competitionPath';
+import { isNotFoundError } from '../../../api/utils/isNotFoundError';
+import { unwrapApiErrorMessage } from '../../../api/utils/ParseErrorResponse';
 
 interface MatchStandingsProps {
   match: FloorballMatchDto;
@@ -72,7 +74,12 @@ export default function MatchStandings({ match }: MatchStandingsProps) {
         }
       } catch (err) {
         if (!cancelled) {
-          setStatsError(err instanceof Error ? err.message : 'Failed to load season statistics');
+          if (isNotFoundError(err)) {
+            setSeasonStats(null);
+            setStatsError(null);
+          } else {
+            setStatsError(unwrapApiErrorMessage(err, t('leaguePage.errors.loadLeagueData')));
+          }
         }
       } finally {
         if (!cancelled) {
@@ -84,7 +91,7 @@ export default function MatchStandings({ match }: MatchStandingsProps) {
     return () => {
       cancelled = true;
     };
-  }, [match.competitionId]);
+  }, [match.competitionId, t]);
 
   // For tournament group-stage matches we need the group's display name + the
   // `teamsAdvancingPerGroup` rule so the table can highlight qualifying teams.

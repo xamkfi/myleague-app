@@ -13,6 +13,7 @@ import {
 import { useAudience } from '../../context/AudienceContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Pagination from '../../components/Pagination';
+import TeamCategoryBadge from '../../components/TeamCategoryBadge/TeamCategoryBadge';
 import defaultNewsImage from '../../assets/defaultImage.jpg';
 import {
   newsListFiltersFromSearchParams,
@@ -139,11 +140,14 @@ function NewsPage() {
                   />
                 </div>
                 <div className="main-news-content">
-                  {featuredNews.sportCategory && (
-                    <div className="main-news-category">
-                      {newsSportLabel(t, featuredNews.sportCategory)}
-                    </div>
-                  )}
+                  <div className="main-news-labels">
+                    <TeamCategoryBadge category={featuredNews.teamCategory} showAll />
+                    {featuredNews.sportCategory && (
+                      <div className="main-news-category">
+                        {newsSportLabel(t, featuredNews.sportCategory)}
+                      </div>
+                    )}
+                  </div>
                   <h2 className="main-news-title">{featuredNews.title}</h2>
                   {featuredNews.summary && (
                     <div className="main-news-summary">{featuredNews.summary}</div>

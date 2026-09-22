@@ -449,5 +449,55 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
 
             return rows;
         }
+
+        public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>>> GetOpenPlayerLicencesByPlayerIdsAsync(
+            IReadOnlyCollection<Guid> playerIds,
+            CancellationToken cancellationToken = default)
+        {
+            if (playerIds.Count == 0)
+            {
+                return new Dictionary<Guid, IReadOnlyList<PlayerLicenceRow>>();
+            }
+
+            List<Guid> ids = playerIds.Distinct().ToList();
+            List<FootballOpenLicenceRow> rows = await (
+                from membership in _dbContext.FootballTeamPlayers
+                join team in _dbContext.FootballTeams on membership.TeamId equals team.Id
+                join competition in _dbContext.FootballCompetitions on membership.CompetitionId equals competition.Id
+                where ids.Contains(membership.PlayerId)
+                    && membership.IsActive
+                    && competition.IsActive
+                    && !competition.IsCompleted
+                orderby team.Name, competition.Name
+                select new FootballOpenLicenceRow(
+                    membership.PlayerId,
+                    team.Id,
+                    team.Name,
+                    membership.CompetitionId,
+                    competition.Name,
+                    membership.IsActive)
+            ).ToListAsync(cancellationToken);
+
+            return rows
+                .GroupBy(row => row.PlayerId)
+                .ToDictionary(
+                    group => group.Key,
+                    group => (IReadOnlyList<PlayerLicenceRow>)group
+                        .Select(row => new PlayerLicenceRow(
+                            row.TeamId,
+                            row.TeamName,
+                            row.CompetitionId,
+                            row.CompetitionName,
+                            row.IsActive))
+                        .ToList());
+        }
+
+        private sealed record FootballOpenLicenceRow(
+            Guid PlayerId,
+            Guid TeamId,
+            string TeamName,
+            Guid? CompetitionId,
+            string? CompetitionName,
+            bool IsActive);
     }
 }

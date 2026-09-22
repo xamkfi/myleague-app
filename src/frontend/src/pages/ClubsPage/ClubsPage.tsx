@@ -6,6 +6,7 @@ import CatalogPage from '../../components/CatalogPage/CatalogPage';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import { clubService, type Club } from '../../api/common/clubService';
 import { createClubSlug } from '../../utils/slugUtils';
+import { clubText } from '../../utils/clubDisplay';
 import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 import './ClubsPage.scss';
 
@@ -43,7 +44,7 @@ function ClubsPage() {
     return clubs.filter(
       (club) =>
         club.name.toLowerCase().includes(query) ||
-        club.city?.toLowerCase().includes(query)
+        (clubText(club.city)?.toLowerCase().includes(query) ?? false)
     );
   }, [searchQuery, clubs]);
 
@@ -148,8 +149,8 @@ function ClubsPage() {
                     </div>
                     <div className="club-card__content">
                       <h2 className="club-card__name">{club.name}</h2>
-                      {club.city && (
-                        <p className="club-card__city">{club.city}</p>
+                      {clubText(club.city) && (
+                        <p className="club-card__city">{clubText(club.city)}</p>
                       )}
                       <span className="club-card__link">
                         {t('clubsPage.viewClub')}

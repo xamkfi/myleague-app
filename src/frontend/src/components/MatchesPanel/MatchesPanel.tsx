@@ -246,7 +246,7 @@ function MatchesPanel() {
             <h3 className="matches-panel__section-title">
               {t('sidebar.liveMatches', 'Käynnissä')}
             </h3>
-            <span className="matches-panel__section-count">({liveMatches.length})</span>
+            <span className="matches-panel__section-count">{liveMatches.length}</span>
           </div>
           {liveMatches.map((match) => (
             <MatchPanelCard key={match.id} match={match} />
@@ -262,7 +262,7 @@ function MatchesPanel() {
           </h3>
           {upcoming.totalCount > 0 && (
             <span className="matches-panel__section-count">
-              ({upcoming.visibleCount}/{upcoming.totalCount})
+              {upcoming.visibleCount}/{upcoming.totalCount}
             </span>
           )}
         </div>
@@ -289,7 +289,7 @@ function MatchesPanel() {
           </h3>
           {completed.totalCount > 0 && (
             <span className="matches-panel__section-count">
-              ({completed.visibleCount}/{completed.totalCount})
+              {completed.visibleCount}/{completed.totalCount}
             </span>
           )}
         </div>

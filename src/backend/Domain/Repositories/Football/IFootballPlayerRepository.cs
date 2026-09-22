@@ -19,6 +19,7 @@ public interface IFootballPlayerRepository
         FootballPosition? position = null,
         Guid? teamId = null,
         string? searchTerm = null,
+        bool? hasActiveLicence = null,
         CancellationToken cancellationToken = default);
     Task<PagedResult<FootballPlayer>> GetPagedAsync(
         int page,

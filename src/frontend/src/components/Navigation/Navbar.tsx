@@ -88,28 +88,15 @@ function Navbar() {
         <Link to="/" onClick={closeMobileMenu} className="navbar-brand-logo-link">
           <img src={mahlLogo} alt="MAHL" className="navbar-brand-logo" />
         </Link>
-        <div className="navbar-brand-controls">
-          <AudienceSwitcher />
-          <LanguageToggle />
-        </div>
+        <AudienceSwitcher />
       </div>
-
-      <button
-        className="navbar-mobile-toggle"
-        onClick={toggleMobileMenu}
-        aria-label="Toggle mobile menu"
-        aria-expanded={isMobileMenuOpen}
-      >
-        <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
-        <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
-        <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
-      </button>
 
       <div className="navbar-search desktop-only">
         {!isMobile && <SearchBar />}
       </div>
 
-      <div className="navbar-menu desktop-only">
+      <div className="navbar-trailing">
+        <div className="navbar-menu desktop-only">
         <ul className="navbar-items">
           <li className="navbar-item">
             <Link to="/uutiset">{t('nav.news')}</Link>
@@ -188,6 +175,21 @@ function Navbar() {
           </li>
         </ul>
       </div>
+        <div className="navbar-language">
+          <LanguageToggle />
+        </div>
+      </div>
+
+      <button
+        className="navbar-mobile-toggle"
+        onClick={toggleMobileMenu}
+        aria-label="Toggle mobile menu"
+        aria-expanded={isMobileMenuOpen}
+      >
+        <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+        <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+        <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+      </button>
 
       <div className={`navbar-mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="mobile-menu-content">

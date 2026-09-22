@@ -60,7 +60,6 @@
 
 .tab-content {
   background-color: $color-neutral-white;
-  min-height: 400px;
 }
 
 .summary-content {
@@ -95,22 +94,29 @@
   }
 }
 
-// ===== MATCH INFO (in summary tab) =====
+// ===== MATCH NOTES (overtime / shootout) =====
 
-.match-info {
-  background-color: $color-neutral-light-grey;
-  border-radius: map.get($border-radius, 'lg');
-  padding: 1rem 1.25rem;
+.match-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 
-  p {
-    margin: 0 0 0.5rem 0;
-    font-size: 0.875rem;
+  span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     color: $color-neutral-dark-grey;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
+    background-color: $color-neutral-light-grey;
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
   }
+}
+
+.match-pending {
+  margin: 0;
+  font-size: 0.875rem;
+  color: $color-neutral-dark-grey;
 }
 
 // ===== MATCH EVENTS =====
@@ -628,16 +634,6 @@
     }
   }
 
-  .match-info {
-    padding: map.get($spacing, 'md');
-    border-radius: map.get($border-radius, 'sm');
-    
-    p {
-      font-size: 0.8125rem;
-      margin-bottom: map.get($spacing, 'xs');
-    }
-  }
-
   .events-section {
     margin-top: map.get($spacing, 'md');
     
@@ -788,14 +784,6 @@
     
     .period-result {
       font-size: 0.875rem;
-    }
-  }
-
-  .match-info {
-    padding: map.get($spacing, 'sm');
-    
-    p {
-      font-size: 0.75rem;
     }
   }
 

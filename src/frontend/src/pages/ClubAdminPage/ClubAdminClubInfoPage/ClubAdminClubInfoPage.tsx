@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import ClubAdminPageTemplate from '../components/ClubAdminPageTemplate';
 import ClubForm from '../../AdminPage/ClubPage/ClubForm';
 import { clubService, type Club, type ClubRequest } from '../../../api/common/clubService';
+import { clubEmail, clubPublicUrl, clubText } from '../../../utils/clubDisplay';
 import './ClubAdminClubInfoPage.scss';
 
 /**
@@ -45,12 +46,12 @@ function ClubAdminClubInfoPage() {
     if (!club) return undefined;
     return {
       name: club.name,
-      city: club.city ?? '',
-      country: club.country ?? '',
+      city: clubText(club.city) ?? '',
+      country: clubText(club.country) ?? '',
       foundingDate: club.foundingDate ? club.foundingDate.substring(0, 10) : null,
-      websiteUrl: club.websiteUrl ?? '',
-      logoUrl: club.logoUrl ?? '',
-      contactEmail: club.contactEmail ?? '',
+      websiteUrl: clubPublicUrl(club.websiteUrl) ?? '',
+      logoUrl: clubPublicUrl(club.logoUrl) ?? '',
+      contactEmail: clubEmail(club.contactEmail) ?? '',
     };
   }, [club]);
 

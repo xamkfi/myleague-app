@@ -41,7 +41,8 @@
       "venue": "Pelipaikka",
       "status": "Tila",
       "overtime": "Jatkoaika",
-      "shootout": "Voittomaalikilpailu"
+      "shootout": "Voittomaalikilpailu",
+      "notStarted": "Ottelu ei ole vielä alkanut."
     },
     "lineups": {
       "notSet": "Ottelun kokoonpanoa ei ole vielä asetettu."
@@ -165,6 +166,7 @@
   },
   "eventCalendarPage": {
     "title": "Tapahtumakalenteri",
+    "description": "Selaa otteluita kuukausittain. Valitse päivä tai suodata kauden, tilan ja joukkueen mukaan.",
     "noEvents": "Ei tapahtumia",
     "prevMonth": "Edellinen kuukausi",
     "nextMonth": "Seuraava kuukausi",
@@ -183,6 +185,7 @@
     },
     "filters": {
       "showFilters": "Suodattimet",
+      "sport": "Laji",
       "status": "Tila",
       "season": "Kausi",
       "allSeasons": "Kaikki kaudet",
@@ -206,7 +209,12 @@
     "loadingMore": "Ladataan lisää...",
     "showMore": "Näytä lisää ({{count}})",
     "showLess": "Näytä vähemmän",
-    "error": "Otteluiden lataus epäonnistui"
+    "error": "Otteluiden lataus epäonnistui",
+    "today": "Tänään",
+    "tomorrow": "Huomenna",
+    "seasonFallback": "Kausi",
+    "tbd": "TBD",
+    "liveBadge": "LIVE"
   },
   "language": {
     "en": "Englanti",
@@ -337,6 +345,14 @@
     },
     "sportsTitle": "Urheilulajit",
     "view": "Admin näkymä",
+    "home": {
+      "teams": "Joukkueet",
+      "players": "Pelaajat",
+      "seasons": "Kaudet",
+      "tournaments": "Turnaukset",
+      "matches": "Ottelut",
+      "referees": "Tuomarit"
+    },
     "navbar": {
       "matchesInProgress_one": "{{count}} ottelu käynnissä",
       "matchesInProgress_other": "{{count}} ottelua käynnissä"
@@ -360,7 +376,10 @@
       "users": "Järjestelmäkäyttäjät",
       "manageUsers": "Hallitse järjestelmäkäyttäjiä",
       "rules": "Säännöt",
-      "manageRules": "Hallitse sääntöjä"
+      "manageRules": "Hallitse sääntöjä",
+      "manageInfoPages": "Hallitse infosivuja",
+      "manageFooterContacts": "Hallitse alatunnistetta",
+      "manageSettings": "Hallitse sivuston asetuksia"
     },
     "settings": {
       "nav": "Sivuston asetukset",
@@ -823,6 +842,9 @@
     "create": {
       "title": "Luo Seura"
     },
+    "edit": {
+      "title": "Muokkaa seuraa"
+    },
     "table": {
       "name": "Seuran Nimi",
       "city": "Kaupunki",
@@ -833,6 +855,11 @@
       "openClub": "Avaa seura"
     },
     "form": {
+      "lead": "Vain seuran nimi on pakollinen. Kaupunki, maa, perustamisajankohta ja yhteystiedot voi jättää tyhjiksi.",
+      "basicSection": "Perustiedot",
+      "contactSection": "Yhteystiedot",
+      "optional": "valinnainen",
+      "emailPlaceholder": "seura@esimerkki.fi",
       "name": "Seuran Nimi",
       "city": "Kaupunki",
       "country": "Maa",
@@ -868,6 +895,25 @@
       "editTeam": "Muokkaa joukkuetta",
       "season": "Kausi",
       "tournament": "Turnaus"
+    },
+    "admins": {
+      "title": "Seuran ylläpitäjät",
+      "hint": "Ylläpitäjät voivat muokata seuran tietoja sekä hallita seuran joukkueiden kokoonpanoja ja ottelukokoonpanoja.",
+      "cardHint": "Nämä käyttäjät voivat muokata seuran tietoja ja hallita joukkueiden kokoonpanoja.",
+      "noneSelected": "Seuralle ei ole vielä nimetty ylläpitäjiä.",
+      "remove": "Poista",
+      "addButton": "Lisää ylläpitäjä",
+      "saveError": "Ylläpitäjien päivitys epäonnistui",
+      "loadError": "Käyttäjien lataus epäonnistui",
+      "searchError": "Henkilöhakua ei voitu suorittaa",
+      "emailRequired": "Henkilöllä ei ole sähköpostiosoitetta, joten häntä ei voi kutsua seuran ylläpitäjäksi.",
+      "modalTitle": "Hallitse seuran ylläpitäjiä",
+      "currentTitle": "Nykyiset ylläpitäjät",
+      "searchTitle": "Hae henkilöitä",
+      "searchPlaceholder": "Hae henkilöitä nimellä...",
+      "noPersons": "Henkilöitä ei löytynyt.",
+      "added": "Lisätty",
+      "add": "Lisää"
     },
     "deleteClubButton": "Poista seura",
     "confirmDeleteTitle": "Poista seura?",
@@ -2013,9 +2059,33 @@
   "playerLicence": {
     "column": "Lisenssi",
     "markPaid": "Merkitse lisenssi maksetuksi",
-    "markUnpaid": "Merkitse lisenssi maksamattomaksi"
+    "markUnpaid": "Merkitse lisenssi maksamattomaksi",
+    "firstName": "Etunimi",
+    "lastName": "Sukunimi",
+    "activeLicences": "Aktiiviset lisenssit",
+    "noActiveLicences": "Ei aktiivisia lisenssejä",
+    "filterLabel": "Lisenssi",
+    "filterAll": "Kaikki",
+    "filterActive": "Aktiivinen lisenssi",
+    "filterInactive": "Ei aktiivista lisenssiä"
   },
   "football": {
+    "management": {
+      "actions": {
+        "teams": "Joukkueet",
+        "manageTeams": "Hallitse joukkueita",
+        "players": "Pelaajat",
+        "managePlayers": "Hallitse pelaajia",
+        "seasons": "Kaudet",
+        "manageSeasons": "Hallitse kausia",
+        "tournaments": "Turnaukset",
+        "manageTournaments": "Hallitse turnauksia",
+        "matches": "Ottelut",
+        "manageMatches": "Hallitse otteluita",
+        "referees": "Tuomarit",
+        "manageReferees": "Hallitse tuomareita"
+      }
+    },
     "positions": {
       "Goalkeeper": "Maalivahti",
       "Defender": "Puolustaja",
@@ -2159,6 +2229,7 @@
     "adult": "Aikuiset",
     "youth": "Nuoret",
     "women": "Naiset",
+    "all": "Kaikki kohderyhmät",
     "intro": "Valitse kohderyhmä nähdäksesi siihen liittyvät sisällöt.",
     "descriptions": {
       "adult": "Aikuisten sarjat, ottelut ja tilastot.",
@@ -3254,6 +3325,11 @@
     "contacts": {
       "title": "YHTEYSTIEDOT",
       "empty": "Yhteystietoja ei ole vielä lisätty."
+    },
+    "credits": {
+      "madeBy": "Sivuston tehnyt",
+      "programme": "Ohjelmistotekniikka",
+      "source": "Lähdekoodit täällä"
     }
   },
   "clubsPage": {
@@ -3276,7 +3352,7 @@
     "backToClubs": "Kaikki seurat",
     "teams": "Joukkueet",
     "teamsLoading": "Ladataan joukkueita...",
-    "noTeams": "Tällä seuralla ei ole vielä salibandyjoukkueita.",
+    "noTeams": "Tällä seuralla ei ole joukkueita valitussa ikäryhmässä.",
     "website": "Verkkosivu",
     "city": "Kaupunki",
     "founded": "Perustettu",

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import { FloorballMatchStatus } from '../../types/floorball/floorballTypes';
 import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
@@ -9,6 +10,7 @@ interface MatchPanelCardProps {
 
 function MatchPanelCard({ match }: MatchPanelCardProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const isLive = match.status === FloorballMatchStatus.InProgress;
   const isCompleted = match.status === FloorballMatchStatus.Completed;
@@ -27,8 +29,8 @@ function MatchPanelCard({ match }: MatchPanelCardProps) {
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    if (d.toDateString() === now.toDateString()) return 'Tänään';
-    if (d.toDateString() === tomorrow.toDateString()) return 'Huomenna';
+    if (d.toDateString() === now.toDateString()) return t('sidebar.today', 'Tänään');
+    if (d.toDateString() === tomorrow.toDateString()) return t('sidebar.tomorrow', 'Huomenna');
 
     return d.toLocaleDateString('fi-FI', { day: 'numeric', month: 'numeric' });
   };
@@ -66,7 +68,12 @@ function MatchPanelCard({ match }: MatchPanelCardProps) {
         />
       );
     }
-    return <span className="match-panel-card__team-logo-fallback" />;
+    const initial = teamName.trim().charAt(0).toUpperCase();
+    return (
+      <span className="match-panel-card__team-logo-fallback" aria-hidden="true">
+        {initial || '·'}
+      </span>
+    );
   };
 
   const renderTeamRow = (
@@ -85,19 +92,21 @@ function MatchPanelCard({ match }: MatchPanelCardProps) {
     </div>
   );
 
+  const statusClass = isLive
+    ? 'match-panel-card match-panel-card--live'
+    : isCompleted
+      ? 'match-panel-card match-panel-card--completed'
+      : 'match-panel-card match-panel-card--scheduled';
+
   return (
     <div
-      className="match-panel-card"
+      className={statusClass}
       role="button"
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
     >
-      {/* Top row: competition name (season OR tournament) + date */}
       <div className="match-panel-card__top">
-        <span className="match-panel-card__season">
-          {match.competitionName || 'Kausi'}
-        </span>
         <span className="match-panel-card__date">{dateLabel}</span>
       </div>
 
@@ -105,18 +114,22 @@ function MatchPanelCard({ match }: MatchPanelCardProps) {
       {isLive && (
         <span className="match-panel-card__live-badge">
           <span className="pulse-dot pulse-dot--sm pulse-dot--white" />
-          LIVE
+          {t('sidebar.liveBadge', 'LIVE')}
         </span>
       )}
 
       {/* Teams. Unassigned slots fall back to "TBD" so future-scheduled fixtures still render. */}
-      {renderTeamRow(match.homeTeamName ?? 'TBD', match.homeTeamLogo, match.homeScore)}
-      {renderTeamRow(match.awayTeamName ?? 'TBD', match.awayTeamLogo, match.awayScore)}
+      {renderTeamRow(match.homeTeamName ?? t('sidebar.tbd', 'TBD'), match.homeTeamLogo, match.homeScore)}
+      {renderTeamRow(match.awayTeamName ?? t('sidebar.tbd', 'TBD'), match.awayTeamLogo, match.awayScore)}
 
-      {/* Venue */}
-      {match.venue && (
-        <span className="match-panel-card__venue">{match.venue}</span>
-      )}
+      <div className="match-panel-card__footer">
+        <span className="match-panel-card__season">
+          {match.competitionName || t('sidebar.seasonFallback', 'Kausi')}
+        </span>
+        {match.venue && (
+          <span className="match-panel-card__venue">{match.venue}</span>
+        )}
+      </div>
     </div>
   );
 }

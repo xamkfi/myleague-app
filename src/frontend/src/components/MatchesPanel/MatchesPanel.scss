@@ -8,12 +8,12 @@
 .matches-panel {
   display: flex;
   flex-direction: column;
-  gap: map.get($spacing, 'sm');
+  gap: map.get($spacing, 'lg');
   padding: map.get($spacing, 'md');
   background: $color-neutral-white;
-  border-radius: map.get($border-radius, 'lg');
-  height: 100%;
-  overflow-y: auto;
+  border: 1px solid rgba($color-blue-deep, 0.08);
+  border-radius: map.get($border-radius, 'lg-plus');
+  box-shadow: 0 1px 2px rgba(22, 52, 107, 0.05);
 
   // --- States: loading / error ---
   &__state {
@@ -58,28 +58,33 @@
     display: flex;
     align-items: center;
     gap: map.get($spacing, 'xs');
-    padding-bottom: map.get($spacing, 'xxs');
-    border-bottom: 2px solid $color-neutral-medium-grey;
+    padding-bottom: map.get($spacing, 'xs');
+    border-bottom: 1px solid $color-neutral-medium-grey;
   }
 
   &__section-header--live {
-    border-bottom-color: $color-red-primary;
+    border-bottom-color: rgba($color-red-primary, 0.45);
   }
 
   &__section-title {
     font-family: $font-family-display;
     font-size: map.get($font-sizes, 'sm-xs');
-    font-weight: map.get($font-weights, 'bold');
+    font-weight: map.get($font-weights, 'semibold');
     color: $color-text-primary;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.08em;
     margin: 0;
   }
 
   &__section-count {
+    margin-left: auto;
+    padding: 0.1rem 0.45rem;
+    border-radius: map.get($border-radius, 'xl');
+    background: $color-neutral-light-grey;
     font-size: map.get($font-sizes, 'xs');
     color: $color-text-muted;
-    font-weight: map.get($font-weights, 'regular');
+    font-weight: map.get($font-weights, 'medium');
+    font-variant-numeric: tabular-nums;
   }
 
   &__empty-text {
@@ -101,18 +106,20 @@
   &__more-btn {
     width: 100%;
     padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
-    background: $color-blue-medium;
-    color: $color-white;
-    border: none;
-    border-radius: map.get($border-radius, 'sm');
+    background: transparent;
+    color: $color-blue-medium;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'lg');
     font-size: map.get($font-sizes, 'xs');
     font-family: $font-family-body;
     font-weight: map.get($font-weights, 'medium');
     cursor: pointer;
-    transition: background $transition-default, opacity $transition-default;
+    transition: background $transition-default, border-color $transition-default, color $transition-default, opacity $transition-default;
 
     &:hover:not(:disabled) {
-      background: $color-blue-deep;
+      background: $color-neutral-light-grey;
+      border-color: $color-blue-light;
+      color: $color-blue-deep;
     }
 
     &:focus-visible {
@@ -178,21 +185,35 @@
 .match-panel-card {
   display: flex;
   flex-direction: column;
-  gap: map.get($spacing, 'xxs');
-  background-color: $color-brand-darkest;
-  color: $color-white;
+  gap: 2px;
+  background: $color-white;
+  color: $color-text-primary;
+  border: 1px solid $color-neutral-medium-grey;
   border-radius: map.get($border-radius, 'lg');
-  padding: map.get($spacing, 'sm') map.get($spacing, 'sm');
+  padding: map.get($spacing, 'sm');
   cursor: pointer;
-  transition: background $transition-default, box-shadow $transition-default;
+  transition: background $transition-default, border-color $transition-default;
   position: relative;
   overflow: hidden;
 
-  // Darkened via an overlay instead of color.adjust(), because the base colour is an
-  // audience-theme CSS variable that Sass colour functions cannot read.
   &:hover {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.12));
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    background: $color-neutral-light-grey;
+    border-color: $color-blue-light;
+  }
+
+  &--live {
+    background: $color-red-almost;
+    border-color: rgba($color-red-primary, 0.35);
+
+    &:hover {
+      background: $color-red-pale;
+      border-color: $color-red-light;
+    }
+  }
+
+  &--scheduled &__date {
+    color: $color-brand-medium;
+    font-weight: map.get($font-weights, 'semibold');
   }
 
   &:focus-visible {
@@ -200,31 +221,38 @@
     outline-offset: 2px;
   }
 
-  // --- Top row: season + date ---
+  // --- Top row: date ---
   &__top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: map.get($spacing, 'xs');
+    margin-bottom: 2px;
+  }
+
+  &__date {
+    font-size: 0.75rem;
+    color: $color-neutral-dark-grey;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    min-width: 0;
+    margin-top: 4px;
   }
 
   &__season {
     font-size: 0.65rem;
     font-weight: map.get($font-weights, 'medium');
-    color: rgba($color-white, 0.6);
+    color: $color-text-muted;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.03em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
-  }
-
-  &__date {
-    font-size: 0.65rem;
-    color: rgba($color-white, 0.55);
-    white-space: nowrap;
-    flex-shrink: 0;
   }
 
   // --- Live badge ---
@@ -270,17 +298,25 @@
   }
 
   &__team-logo-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: rgba($color-white, 0.12);
+    background: $color-neutral-light-grey;
+    border: 1px solid $color-neutral-medium-grey;
     flex-shrink: 0;
+    font-size: 0.65rem;
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-neutral-dark-grey;
+    line-height: 1;
   }
 
   &__team-name {
-    font-size: map.get($font-sizes, 'xs');
-    font-weight: map.get($font-weights, 'medium');
-    color: $color-white;
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-text-primary;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -289,20 +325,26 @@
   &__score {
     font-size: map.get($font-sizes, 'sm');
     font-weight: map.get($font-weights, 'bold');
-    color: $color-white;
-    min-width: 18px;
+    color: $color-text-primary;
+    min-width: 1.25rem;
     text-align: right;
     flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
   }
 
-  // --- Venue footer ---
   &__venue {
-    font-size: 0.6rem;
-    color: rgba($color-white, 0.5);
+    flex-shrink: 0;
+    max-width: 46%;
+    font-size: 0.65rem;
+    color: $color-text-muted;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: map.get($spacing, 'xxs');
+
+    &::before {
+      content: '·';
+      margin-right: 0.35rem;
+    }
   }
 }
 
@@ -332,9 +374,12 @@
     }
 
     &__season,
-    &__date,
     &__venue {
-      font-size: 0.55rem;
+      font-size: 0.6rem;
+    }
+
+    &__date {
+      font-size: 0.7rem;
     }
   }
 }

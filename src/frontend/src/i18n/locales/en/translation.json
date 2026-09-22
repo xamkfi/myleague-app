@@ -78,6 +78,7 @@
   },
   "eventCalendarPage": {
     "title": "Event calendar",
+    "description": "Browse matches by month. Pick a day or filter by season, status, and team.",
     "noEvents": "No events",
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
@@ -96,6 +97,7 @@
     },
     "filters": {
       "showFilters": "Filters",
+      "sport": "Sport",
       "status": "Status",
       "season": "Season",
       "allSeasons": "All seasons",
@@ -119,7 +121,12 @@
     "loadingMore": "Loading more...",
     "showMore": "Show more ({{count}})",
     "showLess": "Show less",
-    "error": "Failed to load matches"
+    "error": "Failed to load matches",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "seasonFallback": "Season",
+    "tbd": "TBD",
+    "liveBadge": "LIVE"
   },
   "language": {
     "en": "English",
@@ -168,7 +175,8 @@
       "venue": "Venue",
       "status": "Status",
       "overtime": "Went to overtime",
-      "shootout": "Went to shootout"
+      "shootout": "Went to shootout",
+      "notStarted": "The match has not started yet."
     },
     "lineups": {
       "notSet": "The match lineup has not been set yet."
@@ -337,6 +345,14 @@
     },
     "sportsTitle": "Sports",
     "view": "Admin view",
+    "home": {
+      "teams": "Teams",
+      "players": "Players",
+      "seasons": "Seasons",
+      "tournaments": "Tournaments",
+      "matches": "Matches",
+      "referees": "Referees"
+    },
     "navbar": {
       "matchesInProgress_one": "{{count}} match in progress",
       "matchesInProgress_other": "{{count}} matches in progress"
@@ -360,7 +376,10 @@
       "users": "System Users",
       "manageUsers": "Manage system users",
       "rules": "Rules",
-      "manageRules": "Manage rules"
+      "manageRules": "Manage rules",
+      "manageInfoPages": "Manage info pages",
+      "manageFooterContacts": "Manage footer content",
+      "manageSettings": "Manage site settings"
     },
     "settings": {
       "nav": "Site settings",
@@ -823,6 +842,9 @@
     "create": {
       "title": "Create Club"
     },
+    "edit": {
+      "title": "Edit club"
+    },
     "table": {
       "name": "Club Name",
       "city": "City",
@@ -833,6 +855,11 @@
       "openClub": "Open club"
     },
     "form": {
+      "lead": "Only the club name is required. City, country, founding date and contact details can be left empty.",
+      "basicSection": "Basic information",
+      "contactSection": "Contact details",
+      "optional": "optional",
+      "emailPlaceholder": "club@example.com",
       "name": "Club Name",
       "city": "City",
       "country": "Country",
@@ -868,6 +895,25 @@
       "editTeam": "Edit team",
       "season": "Season",
       "tournament": "Tournament"
+    },
+    "admins": {
+      "title": "Club admins",
+      "hint": "Club admins can edit the club information and manage rosters and match lineups for the teams under the club.",
+      "cardHint": "These users can edit club information and manage team rosters.",
+      "noneSelected": "No club admins assigned yet.",
+      "remove": "Remove",
+      "addButton": "Add club admin",
+      "saveError": "Failed to update club admins",
+      "loadError": "Failed to load users",
+      "searchError": "Failed to search persons",
+      "emailRequired": "This person has no email address, so they cannot be invited as a club admin.",
+      "modalTitle": "Manage club admins",
+      "currentTitle": "Current club admins",
+      "searchTitle": "Search persons",
+      "searchPlaceholder": "Search persons by name...",
+      "noPersons": "No persons found.",
+      "added": "Added",
+      "add": "Add"
     },
     "deleteClubButton": "Delete club",
     "confirmDeleteTitle": "Delete club?",
@@ -2005,9 +2051,33 @@
   "playerLicence": {
     "column": "Licence",
     "markPaid": "Mark licence paid",
-    "markUnpaid": "Mark licence unpaid"
+    "markUnpaid": "Mark licence unpaid",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "activeLicences": "Active licences",
+    "noActiveLicences": "No active licences",
+    "filterLabel": "Licence",
+    "filterAll": "All",
+    "filterActive": "Active licence",
+    "filterInactive": "No active licence"
   },
   "football": {
+    "management": {
+      "actions": {
+        "teams": "Teams",
+        "manageTeams": "Manage teams",
+        "players": "Players",
+        "managePlayers": "Manage players",
+        "seasons": "Seasons",
+        "manageSeasons": "Manage seasons",
+        "tournaments": "Tournaments",
+        "manageTournaments": "Manage tournaments",
+        "matches": "Matches",
+        "manageMatches": "Manage matches",
+        "referees": "Referees",
+        "manageReferees": "Manage referees"
+      }
+    },
     "positions": {
       "Goalkeeper": "Goalkeeper",
       "Defender": "Defender",
@@ -2151,6 +2221,7 @@
     "adult": "Adult",
     "youth": "Youth",
     "women": "Women",
+    "all": "All audiences",
     "intro": "Select an audience category to browse related content.",
     "descriptions": {
       "adult": "Leagues, matches and statistics for adults.",
@@ -3266,6 +3337,11 @@
     "contacts": {
       "title": "CONTACTS",
       "empty": "No contacts have been added yet."
+    },
+    "credits": {
+      "madeBy": "Site by",
+      "programme": "Software Engineering",
+      "source": "Source code here"
     }
   },
   "clubsPage": {
@@ -3288,7 +3364,7 @@
     "backToClubs": "All clubs",
     "teams": "Teams",
     "teamsLoading": "Loading teams...",
-    "noTeams": "This club doesn't have any floorball teams yet.",
+    "noTeams": "This club has no teams in the selected age group.",
     "website": "Website",
     "city": "City",
     "founded": "Founded",

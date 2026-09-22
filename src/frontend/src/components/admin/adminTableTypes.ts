@@ -1,3 +1,5 @@
+import type { ActivePlayerLicence } from '../../types/activePlayerLicence';
+
 export interface AdminAction {
   label: string;
   onClick: () => void;
@@ -109,19 +111,19 @@ export interface AdminPlayerRow {
   id: string;
   rowKey?: string;
   teamId?: string;
-  name: string;
-  teamName: string;
-  positionLabel: string;
+  firstName: string;
+  lastName: string;
+  licences: ActivePlayerLicence[];
   isActive: boolean;
 }
 
 export interface AdminPlayerTableLabels {
   noPlayers: string;
   selectAll: string;
-  name: string;
-  team: string;
-  position: string;
-  status: string;
+  firstName: string;
+  lastName: string;
+  licences: string;
+  noActiveLicences: string;
   actions: string;
   assignToTeam: string;
   deactivate: string;

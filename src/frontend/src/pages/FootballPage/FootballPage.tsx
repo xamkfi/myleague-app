@@ -25,7 +25,11 @@ function FootballPage() {
   const { t } = useTranslation();
   const { audience } = useAudience();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initializedRef = useRef(false);
+  const initialQueryRef = useRef({
+    year: searchParams.get('year'),
+    page: searchParams.get('page'),
+  });
+  const hasAppliedInitialQuery = useRef(false);
 
   const [years, setYears] = useState<Array<{ year: string; hasActiveSeason: boolean }>>([]);
   const [selectedYear, setSelectedYear] = useState<string>('');
@@ -39,6 +43,7 @@ function FootballPage() {
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
   const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
+  const [featuredSeasonId, setFeaturedSeasonId] = useState<string | null>(null);
 
   const selectedYearMeta = useMemo(
     () => years.find((year) => year.year === selectedYear),
@@ -54,6 +59,7 @@ function FootballPage() {
   useEffect(() => {
     if (!selectedYear) {
       setContentBlocks([]);
+      setFeaturedSeasonId(null);
       return;
     }
 
@@ -62,11 +68,13 @@ function FootballPage() {
       .getFeaturedContentBlocks(selectedYear)
       .then((result) => {
         if (!cancelled) {
+          setFeaturedSeasonId(result.seasonId);
           setContentBlocks(result.blocks);
         }
       })
       .catch(() => {
         if (!cancelled) {
+          setFeaturedSeasonId(null);
           setContentBlocks([]);
         }
       });
@@ -77,38 +85,65 @@ function FootballPage() {
   }, [selectedYear]);
 
   useEffect(() => {
-    if (initializedRef.current) {
-      return;
-    }
-    initializedRef.current = true;
+    let cancelled = false;
 
-    const bootstrap = async () => {
+    const loadYears = async () => {
       try {
         setIsLoadingYears(true);
         setError(null);
-        const yearList = filterPublicSportYears(await footballSeasonService.getYears());
+        const yearList = filterPublicSportYears(
+          await footballSeasonService.getYears(audience.teamCategory),
+        );
+        if (cancelled) {
+          return;
+        }
         setYears(yearList);
 
-        const urlYear = searchParams.get('year');
-        const urlPage = Number(searchParams.get('page') || '1');
-        const initialYear = pickDefaultSportYear(yearList, urlYear);
+        if (!hasAppliedInitialQuery.current) {
+          hasAppliedInitialQuery.current = true;
+          const urlYear = initialQueryRef.current.year;
+          const urlPage = Number(initialQueryRef.current.page || '1');
+          setSelectedYear(pickDefaultSportYear(yearList, urlYear));
+          setCurrentPage(Number.isFinite(urlPage) && urlPage > 0 ? urlPage : 1);
+          return;
+        }
 
-        setSelectedYear(initialYear);
-        setCurrentPage(Number.isFinite(urlPage) && urlPage > 0 ? urlPage : 1);
+        setSelectedYear((current) =>
+          yearList.some((year) => year.year === current)
+            ? current
+            : pickDefaultSportYear(yearList),
+        );
+        setCurrentPage(1);
       } catch (err) {
         console.error('Failed to fetch season years:', err);
-        setError(t('footballPage.error'));
+        if (!cancelled) {
+          setError(t('footballPage.error'));
+        }
       } finally {
-        setIsLoadingYears(false);
+        if (!cancelled) {
+          setIsLoadingYears(false);
+        }
       }
     };
 
-    void bootstrap();
+    void loadYears();
+    return () => {
+      cancelled = true;
+    };
+    // `t` is omitted so language changes do not refetch season years.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [audience.teamCategory]);
 
   useEffect(() => {
-    if (isLoadingYears || !selectedYear) {
+    if (isLoadingYears) {
+      return;
+    }
+
+    if (!selectedYear) {
+      setSeasonsData([]);
+      setUpcomingMatches([]);
+      setTotalCount(0);
+      setTotalPages(0);
       return;
     }
 
@@ -291,6 +326,10 @@ function FootballPage() {
     </>
   );
 
+  const visibleContentBlocks = seasonsData.some((item) => item.season.id === featuredSeasonId)
+    ? contentBlocks
+    : [];
+
   return (
     <SportLandingPage
       sport="football"
@@ -304,7 +343,7 @@ function FootballPage() {
       onYearSelect={handleYearSelect}
       seasonsData={seasonsData}
       upcomingMatches={upcomingMatches}
-      contentBlocks={contentBlocks}
+      contentBlocks={visibleContentBlocks}
       fallbackInfo={fallbackInfo}
       isLoadingYears={isLoadingYears}
       isLoadingSeasons={isLoadingSeasons}
