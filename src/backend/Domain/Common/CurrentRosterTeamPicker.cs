@@ -20,16 +20,16 @@ public static class CurrentRosterTeamPicker
     public static Guid? PickTeamId(IEnumerable<RosterMembershipCandidate> memberships)
     {
         ArgumentNullException.ThrowIfNull(memberships);
-        RosterMembershipCandidate? best = null;
-        foreach (RosterMembershipCandidate row in memberships)
+        List<RosterMembershipCandidate> rows = memberships.ToList();
+        if (rows.Count == 0)
         {
-            if (best == null || Compare(row, best.Value) > 0)
-            {
-                best = row;
-            }
+            return null;
         }
 
-        return best?.TeamId;
+        RosterMembershipCandidate best = rows
+            .OrderByDescending(row => row, Comparer<RosterMembershipCandidate>.Create(Compare))
+            .First();
+        return best.TeamId;
     }
 
     public static int Compare(RosterMembershipCandidate left, RosterMembershipCandidate right)

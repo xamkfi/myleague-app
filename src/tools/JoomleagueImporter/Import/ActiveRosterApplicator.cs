@@ -20,26 +20,19 @@ internal static class ActiveRosterApplicator
         int deactivated = 0;
         int failed = 0;
 
-        foreach (ProjectImport project in set.Projects)
+        foreach ((ProjectImport project, Guid competitionId) in ProjectsWithSeason(set.Projects, idMap))
         {
-            if (!idMap.TryGetSeason(project.Project.Id, out Guid competitionId))
-                continue;
-
-            foreach (ProjectTeamImport pti in project.Teams.Values)
+            foreach ((ProjectTeamImport pti, Guid teamId) in TeamsWithId(project.Teams.Values, idMap))
             {
-                if (!idMap.TryGetTeam(pti.Team.Id, out Guid teamId))
-                    continue;
-
                 FloorballTeamDto? team = await api.GetTeamByIdAsync(teamId, competitionId);
                 if (team == null)
                     continue;
 
                 HashSet<int> used = UsedJerseys(team.Roster.Select(row => row.JerseyNumber));
-                foreach (FloorballTeamPlayerDto row in team.Roster)
+                foreach ((FloorballTeamPlayerDto row, bool shouldBeActive) in RosterChanges(
+                    team.Roster,
+                    row => Decide(row.PlayerId, row.IsActive, project, pti, personByPlayer, latest, unknown)))
                 {
-                    if (!ShouldChange(row.PlayerId, row.IsActive, project, pti, personByPlayer, latest, unknown, out bool shouldBeActive))
-                        continue;
-
                     int jersey = ExistingOrNext(row.JerseyNumber, used);
                     bool ok = await api.UpdateTeamPlayerAsync(
                         teamId, row.PlayerId, row.Position, jersey, shouldBeActive, competitionId);
@@ -59,26 +52,19 @@ internal static class ActiveRosterApplicator
         int deactivated = 0;
         int failed = 0;
 
-        foreach (ProjectImport project in set.Projects)
+        foreach ((ProjectImport project, Guid competitionId) in ProjectsWithSeason(set.Projects, idMap))
         {
-            if (!idMap.TryGetSeason(project.Project.Id, out Guid competitionId))
-                continue;
-
-            foreach (ProjectTeamImport pti in project.Teams.Values)
+            foreach ((ProjectTeamImport pti, Guid teamId) in TeamsWithId(project.Teams.Values, idMap))
             {
-                if (!idMap.TryGetTeam(pti.Team.Id, out Guid teamId))
-                    continue;
-
                 FootballTeamDto? team = await api.GetTeamByIdAsync(teamId, competitionId);
                 if (team == null)
                     continue;
 
                 HashSet<int> used = UsedJerseys(team.Roster.Select(row => row.JerseyNumber));
-                foreach (FootballTeamPlayerDto row in team.Roster)
+                foreach ((FootballTeamPlayerDto row, bool shouldBeActive) in RosterChanges(
+                    team.Roster,
+                    row => Decide(row.PlayerId, row.IsActive, project, pti, personByPlayer, latest, unknown)))
                 {
-                    if (!ShouldChange(row.PlayerId, row.IsActive, project, pti, personByPlayer, latest, unknown, out bool shouldBeActive))
-                        continue;
-
                     int jersey = ExistingOrNext(row.JerseyNumber, used);
                     bool ok = await api.UpdateTeamPlayerAsync(
                         teamId, row.PlayerId, row.Position, jersey, shouldBeActive, competitionId);
@@ -98,26 +84,19 @@ internal static class ActiveRosterApplicator
         int deactivated = 0;
         int failed = 0;
 
-        foreach (ProjectImport project in set.Projects)
+        foreach ((ProjectImport project, Guid competitionId) in ProjectsWithSeason(set.Projects, idMap))
         {
-            if (!idMap.TryGetSeason(project.Project.Id, out Guid competitionId))
-                continue;
-
-            foreach (ProjectTeamImport pti in project.Teams.Values)
+            foreach ((ProjectTeamImport pti, Guid teamId) in TeamsWithId(project.Teams.Values, idMap))
             {
-                if (!idMap.TryGetTeam(pti.Team.Id, out Guid teamId))
-                    continue;
-
                 HockeyTeamDto? team = await api.GetTeamByIdAsync(teamId, competitionId);
                 if (team == null)
                     continue;
 
                 HashSet<int> used = UsedJerseys(team.Roster.Select(row => row.JerseyNumber));
-                foreach (HockeyTeamPlayerDto row in team.Roster)
+                foreach ((HockeyTeamPlayerDto row, bool shouldBeActive) in RosterChanges(
+                    team.Roster,
+                    row => Decide(row.PlayerId, row.IsActive, project, pti, personByPlayer, latest, unknown)))
                 {
-                    if (!ShouldChange(row.PlayerId, row.IsActive, project, pti, personByPlayer, latest, unknown, out bool shouldBeActive))
-                        continue;
-
                     if (!Enum.TryParse(row.Position, ignoreCase: true, out HockeyPosition position))
                         position = HockeyPosition.Center;
                     if (!Enum.TryParse(row.CaptainRole, ignoreCase: true, out HockeyCaptainRole captain))
@@ -137,6 +116,56 @@ internal static class ActiveRosterApplicator
         }
 
         Print(activated, deactivated, failed);
+    }
+
+    private static IEnumerable<(ProjectImport Project, Guid CompetitionId)> ProjectsWithSeason(
+        IEnumerable<ProjectImport> projects,
+        IdMapStore idMap) =>
+        projects
+            .Select(project =>
+            {
+                bool found = idMap.TryGetSeason(project.Project.Id, out Guid competitionId);
+                return (project, found, competitionId);
+            })
+            .Where(item => item.found)
+            .Select(item => (item.project, item.competitionId));
+
+    private static IEnumerable<(ProjectTeamImport Team, Guid TeamId)> TeamsWithId(
+        IEnumerable<ProjectTeamImport> teams,
+        IdMapStore idMap) =>
+        teams
+            .Select(team =>
+            {
+                bool found = idMap.TryGetTeam(team.Team.Id, out Guid teamId);
+                return (team, found, teamId);
+            })
+            .Where(item => item.found)
+            .Select(item => (item.team, item.teamId));
+
+    private static IEnumerable<(TRow Row, bool ShouldBeActive)> RosterChanges<TRow>(
+        IEnumerable<TRow> roster,
+        Func<TRow, (bool ShouldChange, bool ShouldBeActive)> decide) =>
+        roster
+            .Select(row =>
+            {
+                (bool shouldChange, bool shouldBeActive) = decide(row);
+                return (row, shouldChange, shouldBeActive);
+            })
+            .Where(item => item.shouldChange)
+            .Select(item => (item.row, item.shouldBeActive));
+
+    private static (bool ShouldChange, bool ShouldBeActive) Decide(
+        Guid playerId,
+        bool isActive,
+        ProjectImport project,
+        ProjectTeamImport team,
+        Dictionary<Guid, int> personByPlayer,
+        Dictionary<int, LatestMembership> latest,
+        HashSet<Guid> unknown)
+    {
+        bool shouldChange = ShouldChange(
+            playerId, isActive, project, team, personByPlayer, latest, unknown, out bool shouldBeActive);
+        return (shouldChange, shouldBeActive);
     }
 
     private static bool ShouldChange(
