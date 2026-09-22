@@ -10,9 +10,12 @@ import Pagination from '../../../../components/Pagination';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { hockeyTeamService } from '../../../../api/hockey/hockeyTeamService';
 import { hockeyPlayerService } from '../../../../api/hockey/hockeyPlayerService';
-import { loadPersonNameMap } from '../../../../utils/hockeyLookups';
-import type { HockeyPosition } from '../../../../types/hockey/hockeyTypes';
+import { personApi } from '../../../../api/admin/personApi';
+import type { HockeyPosition, HockeyTeamDto } from '../../../../types/hockey/hockeyTypes';
+import type { ActivePlayerLicence } from '../../../../types/activePlayerLicence';
 import PlayersTable, { type HockeyPlayerListRow } from './components/PlayersTable';
+import PlayerLicenceFilter from '../../../../components/admin/PlayerLicenceFilter';
+import type { LicenceFilterValue } from '../../../../components/admin/playerLicenceFilter';
 import AssignToTeamModal from './components/AssignToTeamModal';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import '../../../../styles/AdminTable.scss';
@@ -27,6 +30,7 @@ function HockeyPlayersPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [teamFilter, setTeamFilter] = useState('');
+  const [licenceFilter, setLicenceFilter] = useState<LicenceFilterValue>('all');
   const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -42,21 +46,42 @@ function HockeyPlayersPage() {
         hockeyTeamService.getAll(),
         hockeyPlayerService.getAllPages(),
       ]);
-      const people = await loadPersonNameMap(profiles.map((player) => player.personId));
-      const list: HockeyPlayerListRow[] = [];
+      const people = await loadPersonNames(profiles.map((player) => player.personId));
+      const byPlayer = new Map<string, HockeyPlayerListRow>();
       for (const team of teams) {
         for (const row of team.roster) {
           const profile = profiles.find((player) => player.id === row.playerId);
-          list.push({
-            playerId: row.playerId,
-            teamId: team.id,
-            teamName: team.name,
-            name: profile ? people.get(profile.personId) ?? row.playerId.slice(0, 8) : row.playerId.slice(0, 8),
-            position: row.position,
-            isActive: row.rosterStatus === 'Active',
-          });
+          const names = profile ? people.get(profile.personId) : undefined;
+          const firstName = names?.firstName ?? row.playerId.slice(0, 8);
+          const lastName = names?.lastName ?? '';
+          const licence = openHockeyLicence(team, row);
+          const existing = byPlayer.get(row.playerId);
+          if (!existing) {
+            byPlayer.set(row.playerId, {
+              playerId: row.playerId,
+              teamId: team.id,
+              teamIds: [team.id],
+              firstName,
+              lastName,
+              name: `${firstName} ${lastName}`.trim(),
+              position: row.position,
+              isActive: row.rosterStatus === 'Active',
+              licences: licence ? [licence] : [],
+            });
+            continue;
+          }
+          if (!existing.teamIds.includes(team.id)) {
+            existing.teamIds.push(team.id);
+          }
+          if (licence && !existing.licences.some((item) => item.teamId === licence.teamId && item.competitionId === licence.competitionId)) {
+            existing.licences.push(licence);
+          }
+          if (row.rosterStatus === 'Active') {
+            existing.isActive = true;
+          }
         }
       }
+      const list = [...byPlayer.values()];
       setRows(list);
       setTeamOptions(
         [...teams]
@@ -78,19 +103,25 @@ function HockeyPlayersPage() {
   const filtered = useMemo(() => {
     const needle = searchTerm.trim().toLowerCase();
     return rows.filter((row) => {
-      if (teamFilter && row.teamId !== teamFilter) {
+      if (teamFilter && !row.teamIds.includes(teamFilter)) {
+        return false;
+      }
+      if (licenceFilter === 'active' && row.licences.length === 0) {
+        return false;
+      }
+      if (licenceFilter === 'inactive' && row.licences.length > 0) {
         return false;
       }
       if (!needle) {
         return true;
       }
-      return row.name.toLowerCase().includes(needle);
+      return `${row.firstName} ${row.lastName}`.toLowerCase().includes(needle);
     });
-  }, [rows, searchTerm, teamFilter]);
+  }, [rows, searchTerm, teamFilter, licenceFilter]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, teamFilter]);
+  }, [searchTerm, teamFilter, licenceFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const paged = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -150,6 +181,11 @@ function HockeyPlayersPage() {
               placeholder={t('hockey.players.searchByName', 'Search by name...')}
               fullWidth
               rounded="pill"
+            />
+            <PlayerLicenceFilter
+              id="hockey-players-licence-filter"
+              value={licenceFilter}
+              onChange={setLicenceFilter}
             />
             <Button iconLeft={AddIcon} onClick={() => navigate('/admin/hockey/players/create')}>
               {t('hockey.players.create', 'Create player')}
@@ -253,3 +289,35 @@ function HockeyPlayersPage() {
 }
 
 export default HockeyPlayersPage;
+
+async function loadPersonNames(
+  personIds: string[],
+): Promise<Map<string, { firstName: string; lastName: string }>> {
+  const unique = [...new Set(personIds.filter(Boolean))];
+  const entries = await Promise.all(
+    unique.map(async (personId) => {
+      try {
+        const person = await personApi.getById(personId);
+        return [personId, { firstName: person.firstName, lastName: person.lastName }] as const;
+      } catch {
+        return [personId, { firstName: personId.slice(0, 8), lastName: '' }] as const;
+      }
+    }),
+  );
+  return new Map(entries);
+}
+
+function openHockeyLicence(
+  team: HockeyTeamDto,
+  row: HockeyTeamDto['roster'][number],
+): ActivePlayerLicence | null {
+  if (row.rosterStatus !== 'Active' || row.competitionId === null) {
+    return null;
+  }
+  return {
+    teamId: team.id,
+    teamName: team.name,
+    competitionId: row.competitionId,
+    competitionName: null,
+  };
+}

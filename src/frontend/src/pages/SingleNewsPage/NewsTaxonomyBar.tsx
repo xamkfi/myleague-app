@@ -56,14 +56,6 @@ export default function NewsTaxonomyBar({
 }: NewsTaxonomyBarProps) {
   const { t } = useTranslation();
   const hasTeams = teams.length > 0;
-  const hasSport = Boolean(sportCategory);
-  const hasCategory = Boolean(category);
-  const hasAudience = Boolean(teamCategory);
-  const hasTags = tags.length > 0;
-
-  if (!hasTeams && !hasSport && !hasCategory && !hasAudience && !hasTags) {
-    return null;
-  }
 
   const renderChip = (label: string, className: string, to?: string, icon?: ReactNode) => {
     const content = (
@@ -94,7 +86,7 @@ export default function NewsTaxonomyBar({
         </div>
       )}
       <div className="news-taxonomy-bar__chips">
-        {hasAudience && <TeamCategoryBadge category={teamCategory} />}
+        <TeamCategoryBadge category={teamCategory} showAll />
         {sportCategory &&
           renderChip(
             t(sportLabelKey(sportCategory), sportCategory),

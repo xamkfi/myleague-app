@@ -60,16 +60,18 @@ namespace WebAPI.Controllers.Floorball
 
         /// <summary>
         /// Gets distinct season years for public year navigation.
+        /// When <paramref name="teamCategory"/> is set, only years that have a season in that audience are returned.
         /// </summary>
         [HttpGet("years")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballSeasonYearDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballSeasonYearDto>>>> GetSeasonYears()
+        public async Task<ActionResult<ApiResponse<List<FloorballSeasonYearDto>>>> GetSeasonYears(
+            [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null)
         {
-            _logger.LogInformation("Getting floorball season years");
+            _logger.LogInformation("Getting floorball season years for team category {TeamCategory}", teamCategory);
 
             Result<IEnumerable<FloorballSeasonYearDto>> result =
-                await _mediator.Send(new GetFloorballSeasonYearsQuery());
+                await _mediator.Send(new GetFloorballSeasonYearsQuery(teamCategory));
 
             return HandleListResult(result, "Floorball season years retrieved successfully", "Failed to retrieve floorball season years");
         }

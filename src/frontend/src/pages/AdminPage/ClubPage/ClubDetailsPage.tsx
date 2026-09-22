@@ -16,6 +16,7 @@ import {
 } from './ClubAdminsPicker';
 import ClubTeamCard, { type ClubTeamCardData } from './ClubTeamCard';
 import { resolveClubAdminUserIds } from './resolveClubAdminUserIds';
+import { clubEmail, clubPublicUrl, clubText } from '../../../utils/clubDisplay';
 import './ClubDetailsPage.scss';
 
 interface TeamPage<T> {
@@ -173,6 +174,11 @@ function ClubDetailsPage() {
   const getDivisionName = (divisionId?: string | null) =>
     divisionId ? divisionNameById.get(divisionId) ?? '' : '';
 
+  const logoUrl = clubPublicUrl(club?.logoUrl);
+  const websiteUrl = clubPublicUrl(club?.websiteUrl);
+  const contactEmail = clubEmail(club?.contactEmail);
+  const location = [clubText(club?.city), clubText(club?.country)].filter(Boolean).join(', ');
+
   const toggleTeam = (teamKey: string) => {
     setExpandedTeamKeys((previous) => {
       const next = new Set(previous);
@@ -202,8 +208,8 @@ function ClubDetailsPage() {
               <article className="club-card">
                 <div className="club-card-header">
                   <div className="club-logo">
-                    {club.logoUrl ? (
-                      <img src={club.logoUrl} alt="" />
+                    {logoUrl ? (
+                      <img src={logoUrl} alt="" />
                     ) : (
                       <div className="logo-placeholder" aria-hidden="true">
                         {club.name.charAt(0)}
@@ -213,7 +219,7 @@ function ClubDetailsPage() {
                   <div className="club-identity">
                     <h2 className="club-name">{club.name}</h2>
                     <p className="club-location">
-                      {[club.city, club.country].filter(Boolean).join(', ') || '—'}
+                      {location || '—'}
                     </p>
                   </div>
                   <div className="club-actions">
@@ -234,9 +240,9 @@ function ClubDetailsPage() {
                   <div className="info-row">
                     <span className="label">{t('clubs.form.websiteUrl', 'Website URL')}</span>
                     <span className="value">
-                      {club.websiteUrl ? (
-                        <a href={club.websiteUrl} target="_blank" rel="noopener noreferrer">
-                          {club.websiteUrl}
+                      {websiteUrl ? (
+                        <a href={websiteUrl} target="_blank" rel="noopener noreferrer">
+                          {websiteUrl}
                         </a>
                       ) : (
                         '—'
@@ -246,8 +252,8 @@ function ClubDetailsPage() {
                   <div className="info-row">
                     <span className="label">{t('clubs.form.contactEmail', 'Contact Email')}</span>
                     <span className="value">
-                      {club.contactEmail ? (
-                        <a href={`mailto:${club.contactEmail}`}>{club.contactEmail}</a>
+                      {contactEmail ? (
+                        <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
                       ) : (
                         '—'
                       )}

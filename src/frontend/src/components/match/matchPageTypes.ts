@@ -14,9 +14,11 @@ export interface MatchScoreHeaderProps {
   homeScore: number;
   awayScore: number;
   scheduledDateTime: string;
+  venue?: string | null;
   isScheduled: boolean;
   isLive: boolean;
   isFinal: boolean;
+  statusLabel?: string | null;
 }
 
 export function resolveTableTabVariant(

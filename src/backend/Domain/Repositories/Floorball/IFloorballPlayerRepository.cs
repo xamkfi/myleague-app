@@ -47,6 +47,7 @@ public interface IFloorballPlayerRepository
         FloorballPosition? position = null,
         Guid? teamId = null,
         string? searchTerm = null,
+        bool? hasActiveLicence = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>

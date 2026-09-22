@@ -91,7 +91,7 @@ public class GetClubByIdHandlerTests
         result.Data.Name.Should().Be(club.Name);
         result.Data.WebsiteUrl.Should().BeEmpty();
         result.Data.LogoUrl.Should().BeEmpty();
-        result.Data.ContactEmail.Should().Be("contact@example.com");
+        result.Data.ContactEmail.Should().BeEmpty();
 
         _mockClubRepository.Verify(x => x.GetByIdAsync(clubId), Times.Once);
     }

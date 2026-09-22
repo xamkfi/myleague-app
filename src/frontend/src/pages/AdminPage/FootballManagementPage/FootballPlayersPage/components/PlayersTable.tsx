@@ -30,20 +30,18 @@ const PlayersTable = ({
       sport="football"
       players={players.map((player) => ({
         id: player.id,
-        name: player.person.fullName || `${player.person.firstName} ${player.person.lastName}`,
-        teamName: player.team?.name ?? '',
-        positionLabel: player.position
-          ? t(`football.positions.${player.position.toLowerCase()}`, player.position)
-          : '',
+        firstName: player.person.firstName,
+        lastName: player.person.lastName,
+        licences: player.activeLicences ?? [],
         isActive: player.isActive,
       }))}
       labels={{
         noPlayers: t('football.players.noPlayers', 'No players found.'),
         selectAll: t('football.players.selectAll', 'Select all players'),
-        name: t('football.players.table.name', 'Name'),
-        team: t('football.players.table.team', 'Team'),
-        position: t('football.players.table.position', 'Position'),
-        status: t('football.players.table.status', 'Status'),
+        firstName: t('playerLicence.firstName'),
+        lastName: t('playerLicence.lastName'),
+        licences: t('playerLicence.activeLicences'),
+        noActiveLicences: t('playerLicence.noActiveLicences'),
         actions: t('football.players.table.actions', 'Actions'),
         assignToTeam: t('football.teams.assignPlayerToTeam', 'Assign to Team'),
         deactivate: t('football.players.actions.deactivate', 'Deactivate Player'),

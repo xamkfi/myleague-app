@@ -17,6 +17,7 @@ using Application.Features.Floorball.Statistics.Queries;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Domain.Entities.Common;
+using Domain.Entities.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Domain.Enums.Floorball;
@@ -32,6 +33,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
     private readonly IFloorballPlayerRepository _floorballPlayerRepository;
     private readonly IFloorballTeamRepository _floorballTeamRepository;
     private readonly IFloorballMatchRepository _floorballMatchRepository;
+    private readonly IFloorballCompetitionRepository _competitionRepository;
     private readonly IPersonRepository _personRepository;
     private readonly ILogger<GetSeasonStatisticsSummaryHandler> _logger;
 
@@ -45,6 +47,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
         IFloorballPlayerRepository floorballPlayerRepository,
         IFloorballTeamRepository floorballTeamRepository,
         IFloorballMatchRepository floorballMatchRepository,
+        IFloorballCompetitionRepository competitionRepository,
         IPersonRepository personRepository,
         ILogger<GetSeasonStatisticsSummaryHandler> logger)
     {
@@ -52,6 +55,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
         _floorballPlayerRepository = floorballPlayerRepository;
         _floorballTeamRepository = floorballTeamRepository;
         _floorballMatchRepository = floorballMatchRepository;
+        _competitionRepository = competitionRepository;
         _personRepository = personRepository;
         _logger = logger;
     }
@@ -86,8 +90,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
 
             if (teamStats.Count == 0)
             {
-                _logger.LogWarning("Season statistics not found for Season: {SeasonId}", request.CompetitionId);
-                return Result<FloorballSeasonStatisticsSummaryDto>.NotFound("Season statistics", request.CompetitionId.ToString());
+                return await BuildStandingsFromEnrolledTeamsAsync(request.CompetitionId);
             }
 
             // For tournaments the team-standings table (W/L/T/Pts) must only reflect group-stage
@@ -286,6 +289,42 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             _logger.LogError(ex, "Error occurred while getting season statistics summary for Season: {SeasonId}", request.CompetitionId);
             return Result<FloorballSeasonStatisticsSummaryDto>.Failure("An error occurred while retrieving season statistics summary.");
         }
+    }
+
+    /// <summary>
+    /// A competition can have enrolled teams and a published fixture list before any statistics
+    /// rows exist. Those rows used to be created only when the season was activated, so an
+    /// inactive season returned 404 and the public standings tab showed an error. Return the
+    /// enrolled teams with zeroed counters instead.
+    /// </summary>
+    private async Task<Result<FloorballSeasonStatisticsSummaryDto>> BuildStandingsFromEnrolledTeamsAsync(Guid competitionId)
+    {
+        FloorballCompetition? competition = await _competitionRepository.GetByIdAsync(competitionId);
+        if (competition == null)
+        {
+            _logger.LogWarning("Season statistics not found for Season: {SeasonId}", competitionId);
+            return Result<FloorballSeasonStatisticsSummaryDto>.NotFound("Season statistics", competitionId.ToString());
+        }
+
+        string seasonName = competition.Name ?? string.Empty;
+        List<FloorballTeamSeasonStatisticsDto> standings = competition.Teams
+            .OrderBy(team => team.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(team => new FloorballTeamSeasonStatisticsDto
+            {
+                TeamId = team.Id,
+                CompetitionId = competition.Id,
+                TeamName = team.Name ?? string.Empty,
+                TeamLogo = team.LogoUrl,
+                SeasonName = seasonName
+            })
+            .ToList();
+
+        return Result<FloorballSeasonStatisticsSummaryDto>.Success(new FloorballSeasonStatisticsSummaryDto
+        {
+            CompetitionId = competition.Id,
+            SeasonName = seasonName,
+            TeamStandings = standings
+        });
     }
 
     /// <summary>

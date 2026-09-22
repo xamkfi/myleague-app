@@ -53,7 +53,8 @@ namespace WebAPI.Controllers.Floorball
                 request.IsActive,
                 request.Position,
                 request.TeamId,
-                request.SearchTerm));
+                request.SearchTerm,
+                request.HasActiveLicence));
 
             return HandlePaginatedResult(result, "Floorball players retrieved successfully", "Failed to retrieve floorball players");
         }

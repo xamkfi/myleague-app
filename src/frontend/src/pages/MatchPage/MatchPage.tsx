@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { FloorballMatchStatus, type FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import './MatchPage.scss';
@@ -16,6 +17,7 @@ import { getTeamPath } from '../../utils/sportRoutes';
 import { slugify } from '../../utils/slugUtils';
 
 export default function MatchPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [match, setMatch] = useState<FloorballMatchDto | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -131,9 +133,15 @@ export default function MatchPage() {
               homeScore: match.homeScore,
               awayScore: match.awayScore,
               scheduledDateTime: match.scheduledDateTime,
+              venue: match.venue,
               isScheduled: match.status === FloorballMatchStatus.Scheduled,
               isLive: match.status === FloorballMatchStatus.InProgress,
               isFinal: match.status === FloorballMatchStatus.Completed,
+              statusLabel:
+                match.status === FloorballMatchStatus.Postponed ||
+                match.status === FloorballMatchStatus.Cancelled
+                  ? t(`floorball.matches.status.${match.status}`)
+                  : null,
             }
           : undefined
       }

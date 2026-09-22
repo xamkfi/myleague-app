@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.Floorball.Seasons.Commands;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Seasons.Handlers;
+using Application.Features.Floorball.Seasons.Queries;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball;
 using Domain.Enums.Common;
@@ -233,6 +234,36 @@ public class FloorballSeasonHandlerTests
         result.IsSuccess.Should().BeTrue();
         _competitionRepo.Verify(r => r.DeleteAsync(id), Times.Once);
         _floorballUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetFloorballSeasonYears_WithTeamCategory_ReturnsOnlyThatAudiencesYears()
+    {
+        _competitionRepo
+            .Setup(r => r.GetSeasonDateSummariesAsync(TeamCategory.Youth, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+            [
+                new FloorballSeasonDateSummary(new DateTime(2025, 9, 1), new DateTime(2026, 4, 30), true),
+                new FloorballSeasonDateSummary(new DateTime(2025, 9, 1), new DateTime(2026, 4, 30), false),
+                new FloorballSeasonDateSummary(new DateTime(2024, 9, 1), new DateTime(2025, 4, 30), false),
+            ]);
+
+        GetFloorballSeasonYearsHandler handler = new(
+            _competitionRepo.Object,
+            Mock.Of<ILogger<GetFloorballSeasonYearsHandler>>());
+
+        Result<IEnumerable<FloorballSeasonYearDto>> result = await handler.Handle(
+            new GetFloorballSeasonYearsQuery(TeamCategory.Youth),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        List<FloorballSeasonYearDto> years = result.Data!.ToList();
+        years.Should().HaveCount(2);
+        years[0].Year.Should().Be("2025-2026");
+        years[0].SeasonCount.Should().Be(2);
+        years[0].HasActiveSeason.Should().BeTrue();
+        years[1].Year.Should().Be("2024-2025");
+        years[1].HasActiveSeason.Should().BeFalse();
     }
 
     private static FloorballMatch CreateMatchStub()

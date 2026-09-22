@@ -38,7 +38,7 @@ public static class ClubMapper
             club.Country,
             ToPublicUrl(club.WebsiteUrl),
             ToPublicUrl(club.LogoUrl),
-            club.ContactEmail
+            ToPublicEmail(club.ContactEmail)
         );
     }
 
@@ -70,25 +70,11 @@ public static class ClubMapper
         Uri? websiteUri = !string.IsNullOrEmpty(command.WebsiteUrl) ? new Uri(command.WebsiteUrl) : null;
         Uri? logoUri = !string.IsNullOrEmpty(command.LogoUrl) ? new Uri(command.LogoUrl) : null;
 
-        DateTime? foundingDateUtc = null;
-        if (command.FoundingDate.HasValue)
-        {
-            DateTime foundingDate = command.FoundingDate.Value;
-            // Ensure DateTime is in UTC to support PostgreSQL timestamp with time zone
-            foundingDateUtc = foundingDate.Kind switch
-            {
-                DateTimeKind.Utc => foundingDate,
-                DateTimeKind.Local => foundingDate.ToUniversalTime(),
-                DateTimeKind.Unspecified => DateTime.SpecifyKind(foundingDate, DateTimeKind.Utc),
-                _ => DateTime.SpecifyKind(foundingDate, DateTimeKind.Utc)
-            };
-        }
-
         return new Club(
             command.Name,
             command.City,
             command.Country,
-            foundingDateUtc,
+            ToUtc(command.FoundingDate),
             websiteUri,
             logoUri,
             command.ContactEmail
@@ -111,18 +97,7 @@ public static class ClubMapper
         // Update basic info
         club.UpdateBasicInfo(command.Name, command.City, command.Country);
 
-        // Update founding date with UTC conversion (only if provided)
-        if (command.FoundingDate.HasValue)
-        {
-            DateTime foundingDateUtc = command.FoundingDate.Value.Kind switch
-            {
-                DateTimeKind.Utc => command.FoundingDate.Value,
-                DateTimeKind.Local => command.FoundingDate.Value.ToUniversalTime(),
-                DateTimeKind.Unspecified => DateTime.SpecifyKind(command.FoundingDate.Value, DateTimeKind.Utc),
-                _ => DateTime.SpecifyKind(command.FoundingDate.Value, DateTimeKind.Utc)
-            };
-            club.UpdateFoundingDate(foundingDateUtc);
-        }
+        club.UpdateFoundingDate(ToUtc(command.FoundingDate));
 
         // Update online presence
         Uri? websiteUri = !string.IsNullOrEmpty(command.WebsiteUrl) ? new Uri(command.WebsiteUrl) : null;
@@ -145,5 +120,37 @@ public static class ClubMapper
         }
 
         return uri.ToString();
+    }
+
+    private static string ToPublicEmail(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return string.Empty;
+        }
+
+        string trimmed = email.Trim();
+        if (trimmed.Equals("contact@example.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return string.Empty;
+        }
+
+        return trimmed;
+    }
+
+    private static DateTime? ToUtc(DateTime? value)
+    {
+        if (!value.HasValue)
+        {
+            return null;
+        }
+
+        DateTime foundingDate = value.Value;
+        return foundingDate.Kind switch
+        {
+            DateTimeKind.Utc => foundingDate,
+            DateTimeKind.Local => foundingDate.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(foundingDate, DateTimeKind.Utc)
+        };
     }
 } 

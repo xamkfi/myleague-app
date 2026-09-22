@@ -103,7 +103,7 @@ public class GetAllClubsHandlerTests
         clubDtos[2].Name.Should().Be("Club 3");
         clubDtos[2].WebsiteUrl.Should().BeEmpty();
         clubDtos[2].LogoUrl.Should().BeEmpty();
-        clubDtos[2].ContactEmail.Should().Be("contact@example.com");
+        clubDtos[2].ContactEmail.Should().BeEmpty();
 
         _mockClubRepository.Verify(x => x.GetPagedAsync(1, 50, It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -364,7 +364,7 @@ public class GetAllClubsHandlerTests
         clubDtos[1].Name.Should().Be("Minimal Club");
         clubDtos[1].WebsiteUrl.Should().BeEmpty();
         clubDtos[1].LogoUrl.Should().BeEmpty();
-        clubDtos[1].ContactEmail.Should().Be("contact@example.com");
+        clubDtos[1].ContactEmail.Should().BeEmpty();
 
         // Partial data club
         clubDtos[2].Name.Should().Be("Partial Club");

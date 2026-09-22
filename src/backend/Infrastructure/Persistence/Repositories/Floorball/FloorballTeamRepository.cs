@@ -525,5 +525,55 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
 
             return rows;
         }
+
+        public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>>> GetOpenPlayerLicencesByPlayerIdsAsync(
+            IReadOnlyCollection<Guid> playerIds,
+            CancellationToken cancellationToken = default)
+        {
+            if (playerIds.Count == 0)
+            {
+                return new Dictionary<Guid, IReadOnlyList<PlayerLicenceRow>>();
+            }
+
+            List<Guid> ids = playerIds.Distinct().ToList();
+            List<FloorballOpenLicenceRow> rows = await (
+                from membership in _dbContext.FloorballTeamPlayers
+                join team in _dbContext.FloorballTeams on membership.TeamId equals team.Id
+                join competition in _dbContext.FloorballCompetitions on membership.CompetitionId equals competition.Id
+                where ids.Contains(membership.PlayerId)
+                    && membership.IsActive
+                    && competition.IsActive
+                    && !competition.IsCompleted
+                orderby team.Name, competition.Name
+                select new FloorballOpenLicenceRow(
+                    membership.PlayerId,
+                    team.Id,
+                    team.Name,
+                    membership.CompetitionId,
+                    competition.Name,
+                    membership.IsActive)
+            ).ToListAsync(cancellationToken);
+
+            return rows
+                .GroupBy(row => row.PlayerId)
+                .ToDictionary(
+                    group => group.Key,
+                    group => (IReadOnlyList<PlayerLicenceRow>)group
+                        .Select(row => new PlayerLicenceRow(
+                            row.TeamId,
+                            row.TeamName,
+                            row.CompetitionId,
+                            row.CompetitionName,
+                            row.IsActive))
+                        .ToList());
+        }
+
+        private sealed record FloorballOpenLicenceRow(
+            Guid PlayerId,
+            Guid TeamId,
+            string TeamName,
+            Guid? CompetitionId,
+            string? CompetitionName,
+            bool IsActive);
     }
 } 

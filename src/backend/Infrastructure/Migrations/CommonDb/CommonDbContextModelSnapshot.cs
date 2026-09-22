@@ -47,7 +47,7 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("FoundingDate")
+                    b.Property<DateTime?>("FoundingDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LogoUrl")

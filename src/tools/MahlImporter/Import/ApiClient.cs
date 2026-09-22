@@ -69,9 +69,9 @@ public class ApiClient : IDisposable
         return await GetPaginatedListAsync<ClubDto>("api/clubs?Page=1&PageSize=100");
     }
 
-    public async Task<ClubDto?> CreateClubAsync(string name, string city = "Mikkeli", string country = "Finland")
+    public async Task<ClubDto?> CreateClubAsync(string name)
     {
-        HttpResponseMessage resp = await _http.PostAsJsonAsync("api/clubs", new { name, city, country, foundingDate = "2000-01-01" });
+        HttpResponseMessage resp = await _http.PostAsJsonAsync("api/clubs", new { name });
         return await ReadDataOrNull<ClubDto>(resp, $"Create club '{name}'");
     }
 

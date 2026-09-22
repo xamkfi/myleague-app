@@ -189,4 +189,8 @@ public interface IFloorballTeamRepository
     Task<IReadOnlyList<PlayerLicenceRow>> GetOpenPlayerLicencesAsync(
         Guid playerId,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>>> GetOpenPlayerLicencesByPlayerIdsAsync(
+        IReadOnlyCollection<Guid> playerIds,
+        CancellationToken cancellationToken = default);
 } 

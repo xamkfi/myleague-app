@@ -5,6 +5,7 @@ import type { FloorballMatchDto, FloorballTeam } from '../../types/floorball/flo
 import { floorballTeamNameSearchService } from '../../api/floorball/floorballTeamNameSearchService';
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
+import { isGuid } from '../../utils/sportRoutes';
 import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 import './FloorballTeamPage.scss';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
@@ -79,10 +80,15 @@ function FloorballTeamPage() {
         const foundTeam = findTeamBySlug(allTeams, slug);
 
         if (foundTeam) {
-          const currentSeasonData = foundTeam.divisionId
-            ? pickSeasonForDivision(activeSeasonsResponse.data ?? [], foundTeam.divisionId)
-              ?? pickSeasonForDivision(allSeasonsResponse.data ?? [], foundTeam.divisionId)
+          const allSeasons = allSeasonsResponse.data ?? [];
+          const requestedSeason = isGuid(requestedSeasonId)
+            ? allSeasons.find((season) => season.id === requestedSeasonId) ?? null
             : null;
+          const currentSeasonData = requestedSeason
+            ?? (foundTeam.divisionId
+              ? pickSeasonForDivision(activeSeasonsResponse.data ?? [], foundTeam.divisionId)
+                ?? pickSeasonForDivision(allSeasons, foundTeam.divisionId)
+              : null);
           setCurrentSeason(currentSeasonData);
           setTeam(await floorballTeamService.getById(foundTeam.id, currentSeasonData?.id));
         } else {

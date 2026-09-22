@@ -29,6 +29,11 @@ namespace WebAPI.Models.Floorball
         /// Gets the search term for filtering by player name
         /// </summary>
         public string? SearchTerm { get; init; }
+
+        /// <summary>
+        /// When true, only players with an active competition licence. When false, only players without one.
+        /// </summary>
+        public bool? HasActiveLicence { get; init; }
     }
 
     /// <summary>

@@ -8,6 +8,7 @@ import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import type { FootballMatchDto } from '../../types/football/footballTypes';
 import type { HockeyMatchDto } from '../../types/hockey/hockeyTypes';
 import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
+import { clubPublicUrl, clubText } from '../../utils/clubDisplay';
 import './ClubAdminPage.scss';
 
 interface UpcomingMatchSummary {
@@ -150,14 +151,19 @@ function ClubAdminPage() {
         </div>
       )}
 
-      {clubs.map((club) => (
+      {clubs.map((club) => {
+        const logoUrl = clubPublicUrl(club.logoUrl);
+        const city = clubText(club.city);
+        return (
         <section key={club.clubId} className="club-admin-club-section">
           <div className="club-admin-club-header">
             <div className="club-admin-club-identity">
-              {club.logoUrl && <img src={club.logoUrl} alt="" className="club-admin-club-logo" />}
+              {logoUrl && (
+                <img src={logoUrl} alt="" className="club-admin-club-logo" />
+              )}
               <div>
                 <h2 className="club-admin-club-name">{club.name}</h2>
-                {club.city && <span className="club-admin-club-city">{club.city}</span>}
+                {city && <span className="club-admin-club-city">{city}</span>}
               </div>
             </div>
             <Link
@@ -234,7 +240,8 @@ function ClubAdminPage() {
             </div>
           )}
         </section>
-      ))}
+        );
+      })}
     </ClubAdminPageTemplate>
   );
 }

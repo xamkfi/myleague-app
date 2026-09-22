@@ -113,19 +113,10 @@ public class GetAllFloorballTeamsHandler : BasePagedQueryHandler<GetAllFloorball
                 teamCategories: request.TeamCategories,
                 cancellationToken: cancellationToken);
             
-            // Load all clubs for DTO mapping (since Club navigation is ignored in FloorballTeam)
-            IEnumerable<Club> clubs = await _clubRepository.GetAllAsync();
-            Dictionary<Guid, Club> clubDictionary = new Dictionary<Guid, Club>();
-            foreach (Club club in clubs)
-            {
-                clubDictionary[club.Id] = club;
-            }
+            HashSet<Guid> clubIds = pagedTeams.Items.Select(team => team.ClubId).ToHashSet();
+            Dictionary<Guid, Club> clubDictionary = await _clubRepository.GetByIdsAsync(clubIds, cancellationToken);
 
-            // Load Person data for all players in all team rosters
-            Dictionary<Guid, Person> playerPersons = new Dictionary<Guid, Person>();
             HashSet<Guid> allPlayerIds = new HashSet<Guid>();
-            
-            // Collect all unique player IDs from all teams
             foreach (FloorballTeam team in pagedTeams.Items)
             {
                 foreach (FloorballTeamPlayer rosterPlayer in team.Roster)
@@ -133,17 +124,19 @@ public class GetAllFloorballTeamsHandler : BasePagedQueryHandler<GetAllFloorball
                     allPlayerIds.Add(rosterPlayer.PlayerId);
                 }
             }
-            
-            // Load Person data for all unique players
-            foreach (Guid playerId in allPlayerIds)
+
+            Dictionary<Guid, Person> playerPersons = new Dictionary<Guid, Person>();
+            if (allPlayerIds.Count > 0)
             {
-                FloorballPlayer? floorballPlayer = await _playerRepository.GetByIdAsync(playerId);
-                if (floorballPlayer != null)
+                Dictionary<Guid, FloorballPlayer> players = await _playerRepository.GetByIdsAsync(allPlayerIds, cancellationToken);
+                IEnumerable<Person> persons = await _personRepository.GetByIdsAsync(
+                    players.Values.Select(player => player.PersonId).Distinct());
+                Dictionary<Guid, Person> personsById = persons.ToDictionary(person => person.Id);
+                foreach (KeyValuePair<Guid, FloorballPlayer> entry in players)
                 {
-                    Person? person = await _personRepository.GetByIdAsync(floorballPlayer.PersonId);
-                    if (person != null)
+                    if (personsById.TryGetValue(entry.Value.PersonId, out Person? person))
                     {
-                        playerPersons[playerId] = person;
+                        playerPersons[entry.Key] = person;
                     }
                 }
             }

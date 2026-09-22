@@ -4,6 +4,7 @@ import type {
   FloorballPosition,
 } from '../../types/floorball/floorballTypes';
 import type { Address, ContactInfo } from '../../types/admin/personTypes';
+import type { ActivePlayerLicence } from '../../types/activePlayerLicence';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
@@ -32,6 +33,7 @@ export interface FloorballPlayerDto {
     id: string;
     name: string;
   } | null;
+  activeLicences?: ActivePlayerLicence[] | null;
 }
 
 export interface GetFloorballPlayersRequest {
@@ -41,6 +43,7 @@ export interface GetFloorballPlayersRequest {
   position?: FloorballPosition;
   teamId?: string;
   searchTerm?: string;
+  hasActiveLicence?: boolean;
   signal?: AbortSignal;
 }
 
@@ -129,6 +132,9 @@ export const floorballPlayerService = {
       if (params?.position) searchParams.append('position', params.position);
       if (params?.teamId) searchParams.append('teamId', params.teamId);
       if (params?.searchTerm) searchParams.append('searchTerm', params.searchTerm);
+      if (params?.hasActiveLicence !== undefined) {
+        searchParams.append('hasActiveLicence', params.hasActiveLicence.toString());
+      }
 
       const url = `${API_URL}/FloorballPlayer?${searchParams.toString()}`;
       const response = await authFetch(url, { signal: params?.signal });

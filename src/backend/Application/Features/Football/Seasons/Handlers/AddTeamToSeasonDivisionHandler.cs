@@ -54,11 +54,8 @@ public class AddTeamToSeasonDivisionHandler : IRequestHandler<AddTeamToSeasonDiv
             season.AddTeam(team);
             RosterEnrollment.Apply(team, request.CompetitionId, request.RosterMode);
 
-            if (season.IsActive)
-            {
-                FootballTeamSeasonStatistics teamStatistics = new(team.Id, request.CompetitionId);
-                await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
-            }
+            FootballTeamSeasonStatistics teamStatistics = new(team.Id, request.CompetitionId);
+            await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
 
             foreach (FootballTeamPlayer player in team.GetActiveRoster(request.CompetitionId))
             {

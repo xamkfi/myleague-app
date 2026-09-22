@@ -403,11 +403,19 @@
   height: 100%;
 }
 
+.main-news-labels {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 .main-news-category {
   color: #2a5bd7;
   font-size: 0.95rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
   text-transform: uppercase;
   letter-spacing: 1px;
 }

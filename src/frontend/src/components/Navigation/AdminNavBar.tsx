@@ -31,10 +31,10 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [floorballDropdownOpen, setFloorballDropdownOpen] = useState(true);
-  const [footballDropdownOpen, setFootballDropdownOpen] = useState(true);
-  const [hockeyDropdownOpen, setHockeyDropdownOpen] = useState(true);
-  const [siteContentDropdownOpen, setSiteContentDropdownOpen] = useState(true);
+  const [floorballDropdownOpen, setFloorballDropdownOpen] = useState(false);
+  const [footballDropdownOpen, setFootballDropdownOpen] = useState(false);
+  const [hockeyDropdownOpen, setHockeyDropdownOpen] = useState(false);
+  const [siteContentDropdownOpen, setSiteContentDropdownOpen] = useState(false);
   const inProgress = useInProgressMatches();
   const footballInProgress = useInProgressFootballMatches();
   const hockeyLive = useHockeyInProgressMatches();

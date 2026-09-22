@@ -47,23 +47,28 @@ function HockeyTeamPage() {
         setError(t('teamUserPage.notFound', 'Team not found'));
         return;
       }
+      const matchList = await hockeyMatchService.getByTeam(selected.id);
+      setMatches(matchList);
+      const latestCompetitionId = matchList
+        .filter((match) => match.competitionId)
+        .slice()
+        .sort((left, right) =>
+          new Date(right.scheduledStartTime).getTime() - new Date(left.scheduledStartTime).getTime(),
+        )[0]?.competitionId ?? null;
+      const seasonId = isGuid(requestedSeasonId) ? requestedSeasonId : latestCompetitionId;
       let scoped = selected;
-      if (isGuid(requestedSeasonId)) {
+      if (seasonId) {
         try {
-          scoped = await hockeyTeamService.getById(selected.id, requestedSeasonId);
+          scoped = await hockeyTeamService.getById(selected.id, seasonId);
         } catch {
           scoped = selected;
         }
       }
       setTeam(scoped);
       setTeamNames(await loadTeamNameMap(teams));
-      setMatches(await hockeyMatchService.getByTeam(selected.id));
       const names = await loadHockeyRosterNameMaps([scoped]);
       setPlayerNames(names.byPlayerId);
-      const competitionIds = [...new Set(
-        (isGuid(requestedSeasonId) ? [requestedSeasonId] : scoped.roster.map((row) => row.competitionId))
-          .filter((value): value is string => Boolean(value)),
-      )];
+      const competitionIds = seasonId ? [seasonId] : [];
       const statsLists = await Promise.all(
         competitionIds.map((competitionId) =>
           hockeyStatisticsService.getPlayers(competitionId).catch(() => []),

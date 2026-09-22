@@ -21,6 +21,26 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
             _personRepository = personRepository;
         }
 
+        private IQueryable<FootballPlayer> ApplyActiveLicenceFilter(
+            IQueryable<FootballPlayer> query,
+            bool? hasActiveLicence)
+        {
+            if (hasActiveLicence is not bool licensed)
+            {
+                return query;
+            }
+
+            IQueryable<Guid> licensedPlayerIds =
+                from membership in _dbContext.FootballTeamPlayers
+                join competition in _dbContext.FootballCompetitions on membership.CompetitionId equals competition.Id
+                where membership.IsActive && competition.IsActive && !competition.IsCompleted
+                select membership.PlayerId;
+
+            return licensed
+                ? query.Where(player => licensedPlayerIds.Contains(player.Id))
+                : query.Where(player => !licensedPlayerIds.Contains(player.Id));
+        }
+
         private async Task<IQueryable<FootballPlayer>> ApplyPersonNameSearchAsync(
             IQueryable<FootballPlayer> query,
             string? searchTerm,
@@ -90,6 +110,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
             FootballPosition? position = null,
             Guid? teamId = null,
             string? searchTerm = null,
+            bool? hasActiveLicence = null,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FootballPlayer> query = _entities.AsQueryable();
@@ -99,6 +120,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
             {
                 query = query.Where(p => p.IsActive == isActive.Value);
             }
+
+            query = ApplyActiveLicenceFilter(query, hasActiveLicence);
 
             if (position.HasValue)
             {

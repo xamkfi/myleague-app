@@ -32,7 +32,9 @@ public class GetFloorballSeasonYearsHandler
         try
         {
             IReadOnlyList<FloorballSeasonDateSummary> summaries =
-                await _competitionRepository.GetSeasonDateSummariesAsync(cancellationToken);
+                await _competitionRepository.GetSeasonDateSummariesAsync(
+                    request.TeamCategory,
+                    cancellationToken);
 
             List<FloorballSeasonYearDto> years = summaries
                 .GroupBy(s => FloorballSeasonYear.FromDates(s.StartDate, s.EndDate))
