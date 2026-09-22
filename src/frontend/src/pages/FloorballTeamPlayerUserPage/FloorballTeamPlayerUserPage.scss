@@ -16,37 +16,43 @@
 .player-container {
   @include container;
   font-size: map.get($font-sizes, "sm");
+  margin-top: 0;
   margin-bottom: map.get($spacing, "md");
-  margin-top: map.get($spacing, "md");
   color: $color-neutral-black;
 }
 
 // ── Player Header ──
 
-.player-info-layout {
+.player-header {
   display: flex;
+  align-items: stretch;
   justify-content: space-between;
-  align-items: flex-start;
   gap: map.get($spacing, 'lg');
-  margin-bottom: map.get($spacing, 'lg');
 }
 
-.player-info-box {
-  flex: 1;
-  background-color: $color-white;
-  border-radius: map.get($border-radius, 'md');
-  padding: map.get($spacing, 'lg');
+.player-header__identity {
   display: flex;
   align-items: center;
   gap: map.get($spacing, 'lg');
-  box-shadow: $box-shadow-drop-1;
+  flex: 1;
+  min-width: 0;
+}
+
+.player-header__aside {
+  flex: 0 1 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: map.get($spacing, 'sm');
+  padding-left: map.get($spacing, 'lg');
+  border-left: 1px solid $color-border;
 }
 
 .player-avatar-large {
-  width: 100px;
-  height: 100px;
-  border-radius: map.get($border-radius, 'md');
-  background-color: #e0e0e0;
+  width: 72px;
+  height: 72px;
+  border-radius: map.get($border-radius, 'lg-plus');
+  background-color: $color-blue-background;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -54,8 +60,17 @@
   overflow: hidden;
 
   &.player-avatar--creator {
-    border: 2px solid $color-primary;
-    background-color: $color-neutral-black;
+    width: 112px;
+    height: 112px;
+    border: 2px solid #ffd100;
+    box-shadow:
+      0 0 0 2px #ff2e93,
+      0 0 10px rgba(255, 209, 0, 0.55);
+    background-color: #111;
+  }
+
+  &.player-avatar--initials {
+    background-color: $color-blue-deep;
   }
 }
 
@@ -69,13 +84,23 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: map.get($border-radius, 'sm');
+  padding: map.get($spacing, 'xs');
+}
+
+.player-avatar-initials {
+  color: $color-white;
+  font-size: map.get($font-sizes, 'lg');
+  font-weight: map.get($font-weights, 'bold');
+  letter-spacing: 0.04em;
+  line-height: 1;
 }
 
 .player-details {
   display: flex;
   flex-direction: column;
   gap: map.get($spacing, 'sm');
+  flex: 1;
+  min-width: 0;
 }
 
 .player-name {
@@ -88,36 +113,25 @@
   gap: map.get($spacing, 'sm');
 
   &--creator {
-    background: linear-gradient(135deg, $color-blue-deep, #b8860b, $color-blue-deep);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: creator-shimmer 4s ease-in-out infinite;
+    gap: 0.4rem;
   }
 }
 
-.creator-title {
-  -webkit-text-fill-color: #b8860b;
-  font-size: map.get($font-sizes, 'sm');
-  font-weight: map.get($font-weights, 'semibold');
-  background: linear-gradient(135deg, rgba(184, 134, 11, 0.12), rgba(255, 215, 0, 0.08));
-  padding: map.get($spacing, 'xxs') map.get($spacing, 'sm');
-  border-radius: map.get($border-radius, 'xl');
-  border: 1px solid rgba(184, 134, 11, 0.25);
-  white-space: nowrap;
-  filter: drop-shadow(0 0 3px rgba(184, 134, 11, 0.3));
-}
+.creator-bicep {
+  font-size: 0.72em;
+  line-height: 1;
+  flex-shrink: 0;
 
-@keyframes creator-shimmer {
-  0%, 100% { background-position: 0% center; }
-  50% { background-position: 200% center; }
+  &--mirror {
+    transform: scaleX(-1);
+  }
 }
 
 .player-details-row {
   display: flex;
-  gap: map.get($spacing, 'sm');
-  align-items: center;
+  flex-wrap: wrap;
+  gap: map.get($spacing, 'xs') map.get($spacing, 'sm');
+  align-items: baseline;
 }
 
 .player-team,
@@ -126,19 +140,7 @@
   font-size: map.get($font-sizes, 'md');
   color: $color-text-muted;
   font-weight: map.get($font-weights, 'normal');
-}
-
-.player-stats-box {
-  width: 300px;
-  background-color: $color-white;
-  border: 1px solid #e0e0e0;
-  border-radius: map.get($border-radius, 'md');
-  padding: map.get($spacing, 'lg');
-  display: flex;
-  flex-direction: column;
-  gap: map.get($spacing, 'md');
-  box-shadow: $box-shadow-drop-1;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .stat-item {
@@ -196,12 +198,10 @@
   }
 
   &-box {
-    background-color: $color-background-light;
+    background-color: $color-neutral-light-grey;
     padding: map.get($spacing, 'base');
-    border-radius: map.get($border-radius, 'sm');
-    box-shadow: var(--shadow-sm);
+    border-radius: map.get($border-radius, 'lg');
     text-align: center;
-    border: 1px solid $color-border;
   }
 
   &-label {
@@ -245,18 +245,17 @@
 
   thead {
     tr {
-      background: $color-banner-bg;
-      color: $color-banner-text;
+      background: transparent;
+      color: $color-blue-deep;
     }
 
     th {
       padding: map.get($spacing, 'sm') map.get($spacing, 'xs');
-      font-weight: map.get($font-weights, 'bold');
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      font-weight: map.get($font-weights, 'semibold');
+      letter-spacing: 0.2px;
       font-size: map.get($font-sizes, 'xs');
       white-space: nowrap;
-      border-bottom: 2px solid $color-border;
+      border-bottom: 2px solid $color-blue-background;
     }
   }
 
@@ -397,6 +396,159 @@
   white-space: nowrap;
 }
 
+// ── Numbers / development tabs ──
+
+.player-view-tabs {
+  width: 100%;
+  max-width: $max-width-container;
+  margin: 0 auto map.get($spacing, 'md');
+
+  &__group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xxs');
+    padding: map.get($spacing, 'xxs');
+    background: $color-white;
+    border: 1px solid rgba($color-blue-deep, 0.15);
+    border-radius: map.get($border-radius, 'xl');
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .tab-button {
+    display: inline-flex;
+    align-items: center;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'md');
+    background: transparent;
+    border: none;
+    color: $color-blue-deep;
+    border-radius: map.get($border-radius, 'xl');
+    cursor: pointer;
+    font-family: $font-family-body;
+    font-weight: map.get($font-weights, 'medium');
+    font-size: map.get($font-sizes, 'sm');
+    line-height: 1;
+
+    &:hover {
+      background: rgba($color-blue-deep, 0.08);
+    }
+
+    &.active {
+      background: $color-blue-deep;
+      color: $color-white;
+      font-weight: map.get($font-weights, 'bold');
+    }
+  }
+}
+
+.player-charts {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'lg');
+}
+
+.player-chart {
+  margin: 0;
+}
+
+.player-chart__title {
+  margin-bottom: map.get($spacing, 'sm');
+  color: $color-blue-deep;
+  font-size: map.get($font-sizes, 'md');
+  font-weight: map.get($font-weights, 'bold');
+}
+
+.player-chart__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.player-chart__grid {
+  stroke: $color-neutral-medium-grey;
+  stroke-width: 1;
+}
+
+.player-chart__axis {
+  stroke: $color-blue-background;
+  stroke-width: 1.5;
+}
+
+.player-chart__tick,
+.player-chart__label {
+  fill: $color-text-muted;
+  font-size: 10px;
+}
+
+.player-chart__bar--goals {
+  fill: $color-blue-deep;
+}
+
+.player-chart__bar--assists {
+  fill: $color-green-muted;
+}
+
+.player-chart__line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.player-chart__line--points,
+.player-chart__dot--points {
+  stroke: $color-yellow-muted;
+}
+
+.player-chart__dot--points {
+  fill: $color-yellow-primary;
+}
+
+.player-chart__line--saves,
+.player-chart__dot--saves {
+  stroke: $color-blue-deep;
+}
+
+.player-chart__dot--saves {
+  fill: $color-blue-light;
+}
+
+.player-chart__line--average,
+.player-chart__dot--average {
+  stroke: $color-red-muted;
+}
+
+.player-chart__dot--average {
+  fill: $color-red-primary;
+}
+
+.player-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map.get($spacing, 'sm') map.get($spacing, 'md');
+  margin: map.get($spacing, 'sm') 0 0;
+  padding: 0;
+  list-style: none;
+  color: $color-text-muted;
+  font-size: map.get($font-sizes, 'sm');
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+  }
+}
+
+.player-chart__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+
+  &--goals { background: $color-blue-deep; }
+  &--assists { background: $color-green-muted; }
+  &--points { background: $color-yellow-primary; }
+  &--saves { background: $color-blue-deep; }
+  &--average { background: $color-red-primary; }
+}
+
 // ── No Data Message ──
 
 .no-data-message {
@@ -412,31 +564,39 @@
 // ── Responsive ──
 
 @media (max-width: 768px) {
-  .player-info-layout {
+  .player-header {
     flex-direction: column;
     gap: map.get($spacing, 'md');
   }
 
-  .player-info-box {
-    flex-direction: column;
-    text-align: center;
-    gap: map.get($spacing, 'md');
+  .player-header__aside {
+    flex-basis: auto;
+    width: 100%;
+    padding-left: 0;
+    padding-top: map.get($spacing, 'md');
+    border-left: none;
+    border-top: 1px solid $color-border;
   }
 
   .player-avatar-large {
-    width: 80px;
-    height: 80px;
-    align-self: center;
+    width: 64px;
+    height: 64px;
+
+    &.player-avatar--creator {
+      width: 88px;
+      height: 88px;
+    }
   }
 
-  .player-stats-box {
-    width: 100%;
-  }
+  .player-view-tabs {
+    &__group {
+      width: 100%;
+    }
 
-  .player-details-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: map.get($spacing, 'xs');
+    .tab-button {
+      flex: 1;
+      justify-content: center;
+    }
   }
 
   .stats {

@@ -5,6 +5,7 @@ using Application.Features.Hockey.Teams.Mappings;
 using Domain.Entities.Hockey.Teams;
 using Domain.Repositories.Hockey;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Hockey.Teams.Handlers;
@@ -54,17 +55,22 @@ public class UpdateHockeyTeamPlayerHandler : IRequestHandler<UpdateHockeyTeamPla
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Domain rejected UpdateHockeyTeamPlayer for {TeamId}", request.TeamId);
-            return Result<HockeyTeamDto>.Failure(ex.Message, ex.Flatten());
+            return Result<HockeyTeamDto>.Failure(ex.Message);
         }
         catch (ArgumentException ex)
         {
             _logger.LogWarning(ex, "Invalid UpdateHockeyTeamPlayer for {TeamId}", request.TeamId);
-            return Result<HockeyTeamDto>.Failure(ex.Message, ex.Flatten());
+            return Result<HockeyTeamDto>.Failure(ex.Message);
         }
-        catch (Exception ex)
+        catch (DbUpdateException ex)
         {
-            _logger.LogError(ex, "Failed UpdateHockeyTeamPlayer for {TeamId}", request.TeamId);
-            return Result<HockeyTeamDto>.Failure("An error occurred while updating the team player.", ex.Flatten());
+            _logger.LogError(ex, "Database rejected UpdateHockeyTeamPlayer for {TeamId}", request.TeamId);
+            return Result<HockeyTeamDto>.Failure(
+                "Jersey number is already used by another player on this team in this competition.");
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
     }
 }

@@ -1,12 +1,12 @@
 {
   "matchPage": {
     "navigation": {
-      "summary": "YHTEENVETO",
-      "lineups": "KOKOONPANOT",
-      "stats": "TILASTOT",
-      "table": "SARJATAULUKKO",
-      "groupStandings": "LOHKON TAULUKKO",
-      "playoffBracket": "PUDOTUSPELIKAAVIO"
+      "summary": "Yhteenveto",
+      "lineups": "Kokoonpanot",
+      "stats": "Tilastot",
+      "table": "Sarjataulukko",
+      "groupStandings": "Lohkon taulukko",
+      "playoffBracket": "Pudotuspelikaavio"
     },
     "standings": {
       "groupFallback": "Lohko",
@@ -2054,6 +2054,21 @@
       "next": "Seuraava sivu",
       "last": "Viimeinen sivu",
       "pageOf": "Sivu {{current}} / {{total}}"
+    },
+    "charts": {
+      "tabsLabel": "Tilastonäkymä",
+      "numbers": "Numerot",
+      "development": "Kehitys",
+      "loading": "Ladataan kaavioita...",
+      "needMoreSeasons": "Kehitystä voi näyttää, kun pelaajalla on tilastoja vähintään kahdelta kaudelta.",
+      "needMoreGoalieSeasons": "Maalivahdin kehitystä voi näyttää, kun kausia on vähintään kaksi.",
+      "skaterTitle": "Maalit, syötöt ja pisteet ottelua kohti",
+      "goalieTitle": "Torjuntaprosentti ja päästettyjen keskiarvo",
+      "goals": "Maalit",
+      "assists": "Syötöt",
+      "pointsPerGame": "Pisteet / ottelu",
+      "savePercentage": "Torjunta-%",
+      "goalsAgainstAverage": "Päästettyjen keskiarvo"
     }
   },
   "playerLicence": {

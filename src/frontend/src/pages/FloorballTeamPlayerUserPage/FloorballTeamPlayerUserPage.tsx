@@ -14,6 +14,8 @@ import {
 } from "../../api/floorball/floorballStatistics";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
 import { TeamLink, MatchLink } from "../../components/SportLinks";
+import { PlayerAvatar, PlayerNameHeading } from "../PlayerPage/PlayerAvatar";
+import { PlayerViewTabs } from "../PlayerPage/PlayerViewTabs";
 import { getLeaguePath } from "../../utils/sportRoutes";
 import { useTranslation } from "react-i18next";
 import './FloorballTeamPlayerUserPage.scss';
@@ -182,7 +184,16 @@ export function FloorballPlayerProfile({
 
   const seasonStats = useMemo(() => profile?.seasonStatistics ?? [], [profile]);
   const goalieStats = useMemo(() => profile?.seasonStatisticsForGoalie ?? [], [profile]);
-  const matches = useMemo(() => matchData?.recentMatches ?? [], [matchData]);
+  const matches = useMemo(() => {
+    const seen = new Set<string>();
+    return (matchData?.recentMatches ?? []).filter((match) => {
+      if (seen.has(match.id)) {
+        return false;
+      }
+      seen.add(match.id);
+      return true;
+    });
+  }, [matchData]);
   const totals = useMemo(() => calculateSeasonTotals(seasonStats), [seasonStats]);
   const goalieTotals = useMemo(() => calculateGoalieTotals(goalieStats), [goalieStats]);
   const matchTotals = useMemo(() => calculateMatchTotals(matches), [matches]);
@@ -205,39 +216,40 @@ export function FloorballPlayerProfile({
 
   const { player } = profile;
   const playerName = player.person.fullName;
-  const isCreator = playerName === 'Tuomas Reijonen';
   const teamName = matchData?.teamName ?? player.team?.name ?? '';
   const position = matchData?.position ?? player.position;
   const jerseyNumber = matchData?.jerseyNumber;
+  const skaterSeasons = seasonStats.map((stat) => ({
+    competitionId: stat.competitionId,
+    seasonLabel: stat.seasonName,
+    gamesPlayed: stat.gamesPlayed,
+    goals: stat.goals,
+    assists: stat.assists,
+    points: stat.points,
+  }));
+  const goalieChartSeasons = goalieStats.map((stat) => ({
+    competitionId: stat.competitionId,
+    seasonLabel: stat.seasonName,
+    saves: stat.saves,
+    shotsAgainst: stat.shotsAgainst,
+    goalsAgainst: stat.goalsAgainst,
+    minutesPlayed: stat.minutesPlayed,
+    gamesPlayed: stat.gamesPlayed,
+    goalsAgainstAverage: stat.goalsAgainstAverage,
+  }));
 
   return wrap(
       <div className="player-page">
-        {/* Player Header */}
         <div className="player-container">
-          <div className="player-info-layout">
-            <div className="player-info-box">
-              <div className={`player-avatar-large${isCreator ? ' player-avatar--creator' : ''}`}>
-                {isCreator ? (
-                  <img
-                    className="creator-avatar-img"
-                    src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExanpjZzBqNm1xYnp1d3Y5c2V5OWxoeTg2ZjV5dHpldHQ4anI0dDd5MSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/sPE5g5cHJ3dNm/giphy.gif"
-                    alt="Creator avatar"
-                  />
-                ) : seasonStats[0]?.teamLogo ? (
-                  <img
-                    className="team-logo-img"
-                    src={seasonStats[0].teamLogo}
-                    alt={teamName}
-                  />
-                ) : null}
-              </div>
+          <div className="player-header">
+            <div className="player-header__identity">
+              <PlayerAvatar
+                name={playerName}
+                logoUrl={seasonStats[0]?.teamLogo}
+                logoAlt={teamName}
+              />
               <div className="player-details">
-                <div className={`player-name${isCreator ? ' player-name--creator' : ''}`}>
-                  {playerName}
-                  {isCreator && (
-                    <span className="creator-title" title="System Creator">Macho King</span>
-                  )}
-                </div>
+                <PlayerNameHeading name={playerName} />
                 <div className="player-details-row">
                   {teamName && (
                     <TeamLink
@@ -252,8 +264,7 @@ export function FloorballPlayerProfile({
                 </div>
               </div>
             </div>
-
-            <div className="player-stats-box">
+            <div className="player-header__aside">
               {licenceSummary ?? (
                 <>
                   <div className="stat-item">
@@ -272,6 +283,8 @@ export function FloorballPlayerProfile({
           </div>
         </div>
 
+        <PlayerViewTabs skaterSeasons={skaterSeasons} goalieSeasons={goalieChartSeasons} numbers={(
+        <>
         {/* Career Summary Boxes */}
         <div className="player-container">
           <div className="career-stats-section">
@@ -613,6 +626,8 @@ export function FloorballPlayerProfile({
             )}
           </div>
         </div>
+        </>
+        )} />
       </div>,
     playerName,
   );

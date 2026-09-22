@@ -9,6 +9,7 @@ using Application.Features.Football.Referees.Mappings;
 using Application.Features.Football.TeamManagers.Mappings;
 using Application.Common;
 using Domain.Entities.Football.Teams;
+using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Common;
 using Domain.Repositories.Football;
 using Domain.ValueObjects.Football;
@@ -128,10 +129,25 @@ public class UpdateTeamPlayerHandler : IRequestHandler<UpdateTeamPlayerCommand, 
 
             return Result<FootballTeamPlayerDto>.Success(teamPlayerDto);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error occurred while updating player {PlayerId} in team {TeamId}", request.PlayerId, request.TeamId);
-            return Result<FootballTeamPlayerDto>.Failure("An error occurred while updating the player in the team.");
+            _logger.LogWarning(ex, "Domain rejected updating player {PlayerId} in team {TeamId}", request.PlayerId, request.TeamId);
+            return Result<FootballTeamPlayerDto>.Failure(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid update for player {PlayerId} in team {TeamId}", request.PlayerId, request.TeamId);
+            return Result<FootballTeamPlayerDto>.Failure(ex.Message);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database rejected updating player {PlayerId} in team {TeamId}", request.PlayerId, request.TeamId);
+            return Result<FootballTeamPlayerDto>.Failure(
+                "Jersey number is already used by another player on this team in this competition.");
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
     }
 } 

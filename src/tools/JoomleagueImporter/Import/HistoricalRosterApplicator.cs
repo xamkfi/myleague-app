@@ -27,8 +27,13 @@ internal static class HistoricalRosterApplicator
             if (team == null)
                 continue;
 
-            HashSet<int> claimed = [];
-            foreach (FloorballTeamPlayerDto row in team.Roster.Where(r => r.IsActive && mappedPlayers.Contains(r.PlayerId)))
+            List<FloorballTeamPlayerDto> toDeactivate = team.Roster
+                .Where(r => r.IsActive && mappedPlayers.Contains(r.PlayerId))
+                .ToList();
+            HashSet<Guid> updating = toDeactivate.Select(r => r.PlayerId).ToHashSet();
+            HashSet<int> claimed = ReservedJerseys(
+                team.Roster.Where(r => !updating.Contains(r.PlayerId)).Select(r => r.JerseyNumber));
+            foreach (FloorballTeamPlayerDto row in toDeactivate)
             {
                 int jersey = ClaimJersey(row.JerseyNumber, claimed);
                 if (await api.UpdateTeamPlayerAsync(teamId, row.PlayerId, row.Position, jersey, false, competitionId))
@@ -57,8 +62,13 @@ internal static class HistoricalRosterApplicator
             if (team == null)
                 continue;
 
-            HashSet<int> claimed = [];
-            foreach (FootballTeamPlayerDto row in team.Roster.Where(r => r.IsActive && mappedPlayers.Contains(r.PlayerId)))
+            List<FootballTeamPlayerDto> toDeactivate = team.Roster
+                .Where(r => r.IsActive && mappedPlayers.Contains(r.PlayerId))
+                .ToList();
+            HashSet<Guid> updating = toDeactivate.Select(r => r.PlayerId).ToHashSet();
+            HashSet<int> claimed = ReservedJerseys(
+                team.Roster.Where(r => !updating.Contains(r.PlayerId)).Select(r => r.JerseyNumber));
+            foreach (FootballTeamPlayerDto row in toDeactivate)
             {
                 int jersey = ClaimJersey(row.JerseyNumber, claimed);
                 if (await api.UpdateTeamPlayerAsync(teamId, row.PlayerId, row.Position, jersey, false, competitionId))
@@ -87,8 +97,13 @@ internal static class HistoricalRosterApplicator
             if (team == null)
                 continue;
 
-            HashSet<int> claimed = [];
-            foreach (HockeyTeamPlayerDto row in team.Roster.Where(r => r.IsActive && mappedPlayers.Contains(r.PlayerId)))
+            List<HockeyTeamPlayerDto> toDeactivate = team.Roster
+                .Where(r => r.IsActive && mappedPlayers.Contains(r.PlayerId))
+                .ToList();
+            HashSet<Guid> updating = toDeactivate.Select(r => r.PlayerId).ToHashSet();
+            HashSet<int> claimed = ReservedJerseys(
+                team.Roster.Where(r => !updating.Contains(r.PlayerId)).Select(r => r.JerseyNumber));
+            foreach (HockeyTeamPlayerDto row in toDeactivate)
             {
                 if (!Enum.TryParse(row.Position, ignoreCase: true, out HockeyPosition position))
                     position = HockeyPosition.Center;
@@ -139,6 +154,22 @@ internal static class HistoricalRosterApplicator
             .Where(item => item.found)
             .Select(item => item.playerId)
             .ToHashSet();
+    }
+
+    /// <summary>
+    /// Numbers already held by roster rows that this pass will not update.
+    /// Inactive floorball and football rows still occupy a number in the database.
+    /// </summary>
+    internal static HashSet<int> ReservedJerseys(IEnumerable<int?> jerseyNumbersHeldByOthers)
+    {
+        HashSet<int> claimed = [];
+        foreach (int? jerseyNumber in jerseyNumbersHeldByOthers)
+        {
+            if (jerseyNumber is > 0 and < 100)
+                claimed.Add(jerseyNumber.Value);
+        }
+
+        return claimed;
     }
 
     /// <summary>
