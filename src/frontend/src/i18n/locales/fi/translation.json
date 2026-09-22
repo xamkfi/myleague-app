@@ -98,6 +98,28 @@
     "clubs": "Seurat",
     "team": "Joukkue"
   },
+  "registerPage": {
+    "intro": "Täytä lomake ilmoittautuaksesi tulevalle kaudelle.",
+    "name": "Nimi",
+    "email": "Sähköposti",
+    "phone": "Puhelin",
+    "ageGroup": "Ikäryhmä",
+    "selectAgeGroup": "Valitse ikäryhmä",
+    "under12": "Alle 12",
+    "under15": "Alle 15",
+    "under18": "Alle 18",
+    "adult": "Aikuiset",
+    "senior": "Seniorit (40+)",
+    "experience": "Kokemustaso",
+    "selectExperience": "Valitse kokemustaso",
+    "beginner": "Aloittelija",
+    "intermediate": "Keskitaso",
+    "advanced": "Edistynyt",
+    "notes": "Lisätiedot",
+    "submit": "Ilmoittaudu",
+    "thankYouTitle": "Kiitos ilmoittautumisesta!",
+    "thankYouBody": "Olemme vastaanottaneet tietosi ja olemme sinuun yhteydessä."
+  },
   "sessionExpiry": {
     "message": "Istuntosi vanhenee noin {{minutes}} minuutin kuluttua. Pysy kirjautuneena, jos tarvitset sivua vielä.",
     "stayLoggedIn": "Pysy kirjautuneena",

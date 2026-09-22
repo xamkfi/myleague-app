@@ -17,6 +17,11 @@ const LOAD_MORE_STEP = 10;
 // Upper bound to avoid runaway pagination on misconfigured backends.
 const MAX_TOTAL = 200;
 
+/** Scheduled matches from earlier seasons stay Scheduled, but they are not upcoming. */
+function upcomingStartDate(): string {
+  return new Date().toISOString();
+}
+
 interface PaginatedSectionState {
   matches: FloorballMatchDto[];
   /** Total number of matches the backend says exist for this filter. */
@@ -65,6 +70,7 @@ function MatchesPanel() {
         }),
         floorballMatchService.getAll({
           status: FloorballMatchStatus.Scheduled,
+          startDate: upcomingStartDate(),
           sortOrder: 'asc',
           pageSize: INITIAL_VISIBLE,
           teamCategory,
@@ -126,6 +132,7 @@ function MatchesPanel() {
         const response = await floorballMatchService.getAll({
           status:
             kind === 'upcoming' ? FloorballMatchStatus.Scheduled : FloorballMatchStatus.Completed,
+          startDate: kind === 'upcoming' ? upcomingStartDate() : undefined,
           sortOrder: kind === 'upcoming' ? 'asc' : 'desc',
           pageSize: nextSize,
           teamCategory,

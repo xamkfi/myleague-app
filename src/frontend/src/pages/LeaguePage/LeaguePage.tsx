@@ -210,7 +210,7 @@ export default function LeaguePage() {
   };
 
   return (
-    <PageTemplate title={id ? `${t('leaguePage.title')} ${id}` : t('leaguePage.defaultTitle')}>
+    <PageTemplate title={seasonSummary?.seasonName || t('leaguePage.defaultTitle')}>
       <div className="league-page">
         {/* Hero Image Background */}
         <div className="hero-image-container">

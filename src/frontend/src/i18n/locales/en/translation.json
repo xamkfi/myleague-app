@@ -11,6 +11,28 @@
     "clubs": "Clubs",
     "team": "Team"
   },
+  "registerPage": {
+    "intro": "Fill out the form below to register for the upcoming season.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "ageGroup": "Age group",
+    "selectAgeGroup": "Select an age group",
+    "under12": "Under 12",
+    "under15": "Under 15",
+    "under18": "Under 18",
+    "adult": "Adult",
+    "senior": "Senior (40+)",
+    "experience": "Experience level",
+    "selectExperience": "Select your experience level",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "notes": "Additional notes",
+    "submit": "Register",
+    "thankYouTitle": "Thank you for registering!",
+    "thankYouBody": "We've received your information and will be in touch soon."
+  },
   "sessionExpiry": {
     "message": "Your session expires in about {{minutes}} minutes. Stay logged in if you still need this page.",
     "stayLoggedIn": "Stay logged in",
