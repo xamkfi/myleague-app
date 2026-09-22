@@ -53,6 +53,31 @@ export interface GetPagedHockeyMatchesRequest {
   searchQuery?: string;
 }
 
+export interface GetHockeyMatchesRequest {
+  page?: number;
+  pageSize?: number;
+  startDate?: string;
+  endDate?: string;
+  teamCategory?: string;
+  sortOrder?: 'asc' | 'desc' | string;
+}
+
+export interface HockeyMatchListDto {
+  id: string;
+  scheduledStartTime: string;
+  status: HockeyMatchStatus | string;
+  matchType: HockeyMatchType | string;
+  venue: string | null;
+  competitionId: string | null;
+  competitionName: string | null;
+  homeTeamId: string | null;
+  awayTeamId: string | null;
+  homeTeamName: string | null;
+  awayTeamName: string | null;
+  homeScore: number;
+  awayScore: number;
+}
+
 export interface GetPagedHockeyPlayersRequest {
   page?: number;
   pageSize?: number;
@@ -429,6 +454,7 @@ export interface HockeySeasonDto {
   divisions: HockeyCompetitionDivisionDto[];
   playoffSeries: HockeyPlayoffSeriesDto[];
   playoffSchedule: HockeyPlayoffScheduleSlotDto[];
+  logoUrl?: string | null;
 }
 
 export interface CreateHockeySeasonRequest {
@@ -437,6 +463,7 @@ export interface CreateHockeySeasonRequest {
   endDate: string;
   seasonCode?: string;
   teamCategory?: HockeyTeamCategory;
+  logoUrl?: string | null;
 }
 
 export interface UpdateHockeySeasonRequest {
@@ -445,6 +472,7 @@ export interface UpdateHockeySeasonRequest {
   endDate: string;
   seasonCode?: string | null;
   teamCategory: HockeyTeamCategory;
+  logoUrl?: string | null;
 }
 
 export interface HockeyTournamentRulesDto {
@@ -490,6 +518,7 @@ export interface HockeyTournamentDto {
   playoffSeries: HockeyPlayoffSeriesDto[];
   tournamentRules: HockeyTournamentRulesDto;
   playoffSchedule: HockeyPlayoffScheduleSlotDto[];
+  logoUrl?: string | null;
 }
 
 export interface CreateHockeyTournamentRequest {
@@ -499,6 +528,7 @@ export interface CreateHockeyTournamentRequest {
   venue?: string;
   contentHtml?: string;
   teamCategory?: HockeyTeamCategory;
+  logoUrl?: string | null;
 }
 
 export interface HockeyMatchActivePlayerDto {

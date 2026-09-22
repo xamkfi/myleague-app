@@ -255,6 +255,19 @@ export const CreateSeasonPage = () => {
               </div>
 
               <div className="form-group">
+                <label htmlFor="create-logoUrl">{t('competition.logoUrl', 'Logo URL')}</label>
+                <input
+                  type="url"
+                  id="create-logoUrl"
+                  name="logoUrl"
+                  value={formData.logoUrl ?? ''}
+                  onChange={handleInputChange}
+                  disabled={loading}
+                  placeholder="https://"
+                />
+              </div>
+
+              <div className="form-group">
                 <label>
                   {t('football.seasons.fields.divisions', 'Divisions')} *
                 </label>

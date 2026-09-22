@@ -93,7 +93,8 @@ public class HockeyTournamentController : BaseApiController
             request.EndDate,
             request.Venue,
             request.ContentHtml,
-            request.TeamCategory);
+            request.TeamCategory,
+            request.LogoUrl);
 
         Result<HockeyTournamentDto> result = await _mediator.Send(command, cancellationToken);
 
@@ -126,7 +127,8 @@ public class HockeyTournamentController : BaseApiController
             request.EndDate,
             request.Venue,
             request.ContentHtml,
-            request.TeamCategory), cancellationToken);
+            request.TeamCategory,
+            request.LogoUrl), cancellationToken);
 
         return HandleResult(result, "Hockey tournament updated successfully", "Failed to update hockey tournament");
     }

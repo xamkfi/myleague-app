@@ -153,7 +153,7 @@ const TeamPlayersRow = ({ teamId, isExpanded, isClosing, team }: TeamPlayersRowP
                           key={playerId}
                           className={`admin-roster-player ${!isActive ? 'inactive' : ''}`}
                         >
-                          <span className="col-jersey">{jerseyNumber ?? '?'}</span>
+                          <span className="col-jersey">{jerseyNumber ?? '—'}</span>
                           <span className="col-name">
                             {'id' in player ? (
                               <PlayerLink sport="floorball" playerId={player.id}>

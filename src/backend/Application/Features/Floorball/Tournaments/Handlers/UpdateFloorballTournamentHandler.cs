@@ -67,6 +67,8 @@ public class UpdateFloorballTournamentHandler : IRequestHandler<UpdateFloorballT
                 tournament.UpdateTeamCategory(request.TeamCategory.Value);
             }
 
+            tournament.UpdateLogo(CompetitionLogoUrl.Parse(request.LogoUrl));
+
             FloorballMatchRules groupStageMatchRules = new FloorballMatchRules(
                 request.GroupStageNumberOfPeriods,
                 request.GroupStagePeriodDurationMinutes,

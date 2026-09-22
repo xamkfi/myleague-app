@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { createAdminFromState } from '../../../utils/adminReturnTo';
 import NewsList from './components/NewsList';
 import Button from '../../../components/Button/Button';
 import AddIcon from '../../../assets/basicIcons/add.svg';
@@ -11,6 +12,7 @@ import NewsFilter, { type NewsFilters } from './components/NewsFilter';
 const NewsManagementPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [filters, setFilters] = useState<NewsFilters>({
     category: '',
@@ -59,7 +61,7 @@ const NewsManagementPage = () => {
   };
 
   const handleCreateNew = () => {
-    navigate('/admin/news/create');
+    navigate('/admin/news/create', { state: createAdminFromState(location.pathname, location.search) });
   };
 
   return (

@@ -15,4 +15,5 @@ public record UpdateHockeyTournamentCommand(
     DateTime EndDate,
     string? Venue,
     string? ContentHtml,
-    TeamCategory TeamCategory) : IRequest<Result<HockeyTournamentDto>>;
+    TeamCategory TeamCategory,
+    string? LogoUrl = null) : IRequest<Result<HockeyTournamentDto>>;

@@ -246,7 +246,8 @@ namespace WebAPI.Controllers.Floorball
                 request.AllowOvertime,
                 request.OvertimeDurationMinutes,
                 request.AllowShootout,
-                request.TeamCategory
+                request.TeamCategory,
+                request.LogoUrl
             );
 
             Result<FloorballSeasonDto> result = await _mediator.Send(command);
@@ -294,7 +295,8 @@ namespace WebAPI.Controllers.Floorball
                 request.AllowOvertime,
                 request.OvertimeDurationMinutes,
                 request.AllowShootout,
-                request.TeamCategory
+                request.TeamCategory,
+                request.LogoUrl
             );
 
             Result<FloorballSeasonDto> result = await _mediator.Send(command);

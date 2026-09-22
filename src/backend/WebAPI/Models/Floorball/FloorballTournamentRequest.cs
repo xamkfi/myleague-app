@@ -147,6 +147,12 @@ namespace WebAPI.Models.Floorball
         /// On update, omit to keep the existing value.
         /// </summary>
         public Domain.Enums.Common.TeamCategory? TeamCategory { get; set; }
+
+        /// <summary>
+        /// Optional public logo URL for the tournament hero.
+        /// </summary>
+        [StringLength(500)]
+        public string? LogoUrl { get; set; }
     }
 
     /// <summary>

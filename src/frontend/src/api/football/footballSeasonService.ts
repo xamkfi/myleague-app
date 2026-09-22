@@ -34,6 +34,7 @@ export interface FootballSeasonDto {
   matchRules: FootballMatchRules;
   standingRules?: FootballStandingRulesDto;
   teamCategory?: string;
+  logoUrl?: string | null;
 }
 
 export interface FootballSeasonSummaryDto {
@@ -79,6 +80,7 @@ export interface CreateFootballSeasonRequest {
   drawPoints: number;
   lossPoints: number;
   teamCategory?: string;
+  logoUrl?: string | null;
 }
 
 export const FOOTBALL_HOBBY_MATCH_RULE_DEFAULTS = {
@@ -118,6 +120,7 @@ export interface UpdateFootballSeasonRequest {
   drawPoints: number;
   lossPoints: number;
   teamCategory?: string;
+  logoUrl?: string | null;
 }
 
 export const footballSeasonService = {

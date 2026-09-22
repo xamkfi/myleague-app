@@ -57,6 +57,28 @@ public class HockeyMatchController : BaseApiController
     }
 
     /// <summary>
+    /// Gets paginated hockey matches for public calendar and schedule views.
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(PaginatedApiResponse<HockeyMatchListDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedApiResponse<HockeyMatchListDto>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PaginatedApiResponse<HockeyMatchListDto>>> GetList(
+        [FromQuery] GetHockeyMatchesRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<PagedResult<HockeyMatchListDto>> result = await _mediator.Send(
+            new GetHockeyMatchesQuery(
+                request.Page,
+                request.PageSize,
+                request.StartDate,
+                request.EndDate,
+                request.TeamCategory,
+                request.SortOrder),
+            cancellationToken);
+        return HandlePaginatedResult(result, "Hockey matches retrieved successfully", "Failed to retrieve hockey matches");
+    }
+
+    /// <summary>
     /// Gets a hockey match by id.
     /// </summary>
     [HttpGet("{matchId:guid}")]

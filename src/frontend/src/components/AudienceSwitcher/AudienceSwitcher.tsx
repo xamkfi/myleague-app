@@ -60,12 +60,12 @@ function AudienceSwitcher({ variant = 'brand' }: AudienceSwitcherProps) {
         <svg
           className="audience-switcher__caret"
           viewBox="0 0 12 8"
-          width="12"
-          height="8"
+          width="8"
+          height="5"
           aria-hidden="true"
           focusable="false"
         >
-          <path d="M1 1.5 6 6.5l5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M1 1.5 6 6.5l5-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 

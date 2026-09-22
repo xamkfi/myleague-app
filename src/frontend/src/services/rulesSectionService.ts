@@ -11,10 +11,6 @@ import type {
 
 export class RulesSectionService {
     private getBaseUrl(): string {
-        if (import.meta.env.DEV) {
-            return "http://localhost:8080/api/RulesSection";
-        }
-
         return `${API_URL}/RulesSection`;
     }
 

@@ -41,6 +41,12 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
 
             builder.HasIndex(s => s.TeamCategory);
 
+            builder.Property(s => s.LogoUrl)
+                .HasConversion(
+                    uri => uri != null ? uri.ToString() : null,
+                    value => value != null ? new Uri(value, UriKind.Absolute) : null)
+                .HasMaxLength(500);
+
             builder.OwnsOne(s => s.MatchRules, rules =>
             {
                 rules.Property(r => r.NumberOfPeriods)

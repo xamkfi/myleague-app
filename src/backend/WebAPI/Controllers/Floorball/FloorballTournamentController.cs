@@ -141,7 +141,8 @@ namespace WebAPI.Controllers.Floorball
                 request.HasPlayoffStage,
                 request.HasThirdPlaceMatch,
                 scheduleSlots,
-                request.TeamCategory ?? Domain.Enums.Common.TeamCategory.Adult
+                request.TeamCategory ?? Domain.Enums.Common.TeamCategory.Adult,
+                request.LogoUrl
             );
 
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
@@ -197,7 +198,8 @@ namespace WebAPI.Controllers.Floorball
                 request.HasPlayoffStage,
                 request.HasThirdPlaceMatch,
                 scheduleSlots,
-                request.TeamCategory
+                request.TeamCategory,
+                request.LogoUrl
             );
 
             Result<FloorballTournamentDto> result = await _mediator.Send(command);

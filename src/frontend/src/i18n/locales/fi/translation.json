@@ -98,27 +98,36 @@
     "clubs": "Seurat",
     "team": "Joukkue"
   },
+  "notFound": {
+    "title": "Sivua ei löytynyt",
+    "message": "Etsimääsi sivua ei ole olemassa tai se on siirretty.",
+    "home": "Etusivulle"
+  },
+  "competition": {
+    "logoUrl": "Logon URL"
+  },
   "registerPage": {
-    "intro": "Täytä lomake ilmoittautuaksesi tulevalle kaudelle.",
+    "intro": "Täytä lomake, niin avaamme sähköpostin seuran työntekijälle.",
     "name": "Nimi",
     "email": "Sähköposti",
     "phone": "Puhelin",
     "ageGroup": "Ikäryhmä",
-    "selectAgeGroup": "Valitse ikäryhmä",
-    "under12": "Alle 12",
-    "under15": "Alle 15",
-    "under18": "Alle 18",
-    "adult": "Aikuiset",
-    "senior": "Seniorit (40+)",
+    "ageGroupPlaceholder": "Valitse ikäryhmä",
+    "ageGroupU12": "Alle 12",
+    "ageGroupU15": "Alle 15",
+    "ageGroupU18": "Alle 18",
+    "ageGroupAdult": "Aikuiset",
+    "ageGroupSenior": "Seniorit (40+)",
     "experience": "Kokemustaso",
-    "selectExperience": "Valitse kokemustaso",
-    "beginner": "Aloittelija",
-    "intermediate": "Keskitaso",
-    "advanced": "Edistynyt",
+    "experiencePlaceholder": "Valitse kokemustaso",
+    "experienceBeginner": "Aloittelija",
+    "experienceIntermediate": "Keskitaso",
+    "experienceAdvanced": "Edistynyt",
     "notes": "Lisätiedot",
-    "submit": "Ilmoittaudu",
-    "thankYouTitle": "Kiitos ilmoittautumisesta!",
-    "thankYouBody": "Olemme vastaanottaneet tietosi ja olemme sinuun yhteydessä."
+    "submit": "Lähetä ilmoittautuminen",
+    "mailSubject": "Ilmoittautuminen: {{name}}",
+    "thankYouTitle": "Sähköpostiohjelma avattiin",
+    "thankYouBody": "Jos viesti ei avautunut, lähetä ilmoittautuminen osoitteeseen pasi@mahl.fi."
   },
   "sessionExpiry": {
     "message": "Istuntosi vanhenee noin {{minutes}} minuutin kuluttua. Pysy kirjautuneena, jos tarvitset sivua vielä.",
@@ -148,6 +157,7 @@
       "title": "Ajankohtaista",
       "readMore": "Lue lisää",
       "noNews": "Ei uutisia saatavilla",
+      "noNewsForAudience": "Ei uutisia kohderyhmälle {{audience}}.",
       "loading": "Ladataan uutisia...",
       "error": "Uutisten lataaminen epäonnistui",
       "retry": "Yritä uudelleen"
@@ -220,7 +230,7 @@
     "noRules": "Sääntöjä ei ole vielä lisätty.",
     "mahlNavigation": "MAHL navigaatio",
     "mahlNav": {
-      "summary": "Summary",
+      "summary": "Yhteenveto",
       "finance": "Seuran talous",
       "partners": "Kumppanuudet",
       "responsibility": "Vastuullisuus",
@@ -599,7 +609,7 @@
         "email": "Sähköposti",
         "phone": "Puhelin",
         "alternativePhone": "Vaihtoehtoinen puhelin",
-        "floorballAssignment": "Salibandy joukkuemääritys (Valinnainen)",
+        "floorballAssignment": "Joukkuemääritys (valinnainen)",
         "team": "Joukkue",
         "selectTeam": "Valitse joukkue...",
         "searchTeams": "Etsi joukkueita...",
@@ -689,6 +699,8 @@
       "sport_category": "Urheilulaji",
       "select_category": "Valitse kategoria",
       "select_sport": "Valitse urheilulaji",
+      "team_category": "Kohderyhmä",
+      "all_audiences": "Kaikki kohderyhmät",
       "tags": "Tägit",
       "add_tag_placeholder": "Kirjoita tägi ja paina Enter...",
       "no_tags": "Tägejä ei ole vielä lisätty. Tägit auttavat luokittelemaan artikkelisi.",
@@ -716,6 +728,9 @@
       "preview_description": "Näin artikkelisi näyttää lukijoille",
       "edit_description": "Muokkaa olemassa olevaa uutisartikkelia",
       "create_description": "Luo uusi uutisartikkeli",
+      "required_hint": "Otsikko ja artikkelin sisältö ovat pakollisia. Esikatselu säilyttää luonnoksen tällä sivulla.",
+      "confirmPublishTitle": "Julkaise artikkeli",
+      "confirmUpdateTitle": "Päivitä artikkeli",
       "main_picture_preview": "Pääkuvan esikatselu",
       "news_image": "Uutiskuva",
       "noData": "Uutisartikkeleita ei löytynyt",
@@ -735,7 +750,18 @@
       "actions": {
         "edit": "Muokkaa",
         "delete": "Poista",
+        "archive": "Arkistoi",
+        "unarchive": "Palauta",
+        "menu": "Uutisen toiminnot",
         "toggleArchive": "Klikkaa vaihtaaksesi arkistointitilaa"
+      },
+      "filter": {
+        "category": "Kategoria",
+        "allCategories": "Kaikki kategoriat",
+        "sport": "Laji",
+        "allSports": "Kaikki lajit",
+        "search": "Haku",
+        "searchPlaceholder": "Hae uutisartikkeleita..."
       },
       "status": {
         "archived": "Kyllä",
@@ -754,6 +780,7 @@
         "updateArchiveFailed": "Arkistointistatuksen päivitys epäonnistui",
         "publish_error": "Uutisartikkelin julkaisu epäonnistui. Yritä uudelleen.",
         "update_error": "Uutisartikkelin päivitys epäonnistui. Yritä uudelleen.",
+        "loadFailed": "Uutisartikkelin lataus muokkausta varten epäonnistui",
         "title_required": "Otsikko on pakollinen",
         "title_too_short": "Otsikon tulee olla vähintään 5 merkkiä pitkä",
         "title_too_long": "Otsikko ei voi ylittää 200 merkkiä",
@@ -1756,6 +1783,9 @@
     "similarNews": "Samankaltaiset uutiset",
     "relatedTeams": "Uutiseen liittyvät joukkueet",
     "noNewsFound": "Ei uutisia vastaaville hakuehdoille.",
+    "noNewsForAudience": "Ei uutisia kohderyhmälle {{audience}}.",
+    "fetchError": "Uutisia ei voitu ladata.",
+    "retry": "Yritä uudelleen",
     "category": {
       "all": "Kaikki"
     },
@@ -2026,13 +2056,17 @@
     },
     "teams": {
       "rosterCompetition": "Kilpailu",
-      "allCompetitions": "Kaikki kilpailut"
+      "allCompetitions": "Kaikki kilpailut",
+      "createPlayerHint": "Vain olemassa olevat pelaajat voidaan lisätä. Jos loit juuri henkilön, muunna hänet ensin pelaajaksi.",
+      "createPlayerFromPerson": "Luo pelaaja henkilöstä"
     },
     "seasons": {
       "createFromClub": "Luo uusi joukkue",
       "createFromClubHint": "Luo seuralle uusi joukkue tyhjällä kokoonpanolla, tai lisää olemassa oleva joukkue kopioidaksesi viimeisimmän kokoonpanon.",
       "selectClub": "Valitse seura",
       "newTeamName": "Uuden joukkueen nimi",
+      "newTeamShortName": "Lyhenne (valinnainen)",
+      "newTeamHomeArena": "Kotiareena (valinnainen)",
       "teamCreatedFromClub": "Uusi joukkue luotiin tyhjällä kokoonpanolla.",
       "import": {
         "button": "Tuo JSON-tiedostosta",
@@ -2133,7 +2167,12 @@
     },
     "selected": "Valittu",
     "select": "Valitse",
-    "switcherLabel": "Kohderyhmän valinta"
+    "switcherLabel": "Kohderyhmän valinta",
+    "descriptions": {
+      "adult": "Aikuisten sarjat, cupit ja seuratoiminta.",
+      "youth": "Nuorten sarjat ja junioritoiminta.",
+      "women": "Naisten sarjat, cupit ja seuratoiminta."
+    }
   },
   "hockey": {
     "management": {
@@ -2200,6 +2239,8 @@
       },
       "addPlayer": "Lisää pelaaja",
       "addPlayerToTeam": "Lisää pelaaja joukkueeseen",
+      "createPlayerHint": "Vain olemassa olevat pelaajat voidaan lisätä. Jos loit juuri henkilön, muunna hänet ensin pelaajaksi.",
+      "createPlayerFromPerson": "Luo pelaaja henkilöstä",
       "searchAvailablePlayers": "Hae vapaita pelaajia...",
       "selectedPlayers": "{{count}} valittu",
       "addSelectedToTeam": "Lisää valitut joukkueeseen ({{count}})",
@@ -2296,6 +2337,8 @@
       "createFromClubHint": "Luo seuralle uusi joukkue tyhjällä kokoonpanolla, tai lisää olemassa oleva joukkue kopioidaksesi viimeisimmän kokoonpanon.",
       "selectClub": "Valitse seura",
       "newTeamName": "Uuden joukkueen nimi",
+      "newTeamShortName": "Lyhenne (valinnainen)",
+      "newTeamHomeArena": "Kotiareena (valinnainen)",
       "teamCreatedFromClub": "Uusi joukkue luotiin tyhjällä kokoonpanolla.",
       "searchTeams": "Hae joukkueita nimellä...",
       "allCategories": "Kaikki kategoriat",
@@ -3305,6 +3348,31 @@
     "loadClubError": "Seuran lataus epäonnistui",
     "clubInfoSaved": "Seuran tiedot on tallennettu.",
     "clubInfoTitle": "Seuran tiedot"
+  },
+  "tournaments": {
+    "statusUpcoming": "Tulossa",
+    "statusOngoing": "Käynnissä",
+    "statusPast": "Päättynyt",
+    "cardDefaultDescription": "Selaa turnauksen lohkoja, tuloksia ja tilastoja.",
+    "dates": "Päivämäärät",
+    "venue": "Paikka",
+    "teams": "Joukkueet",
+    "groups": "Lohkot",
+    "tabSummary": "Yhteenveto",
+    "tabGroups": "Lohkot",
+    "tabFixtures": "Otteluohjelma",
+    "tabResults": "Tulokset",
+    "tabStatistics": "Tilastot",
+    "loading": "Ladataan turnauksia...",
+    "retry": "Yritä uudelleen",
+    "intro": "Selaa tulevia, käynnissä olevia ja päättyneitä turnauksia. Avaa turnaus nähdäksesi lohkot, otteluohjelman ja tilastot.",
+    "noTournaments": "Ei turnauksia tällä hetkellä."
+  },
+  "notFoundPage": {
+    "title": "Sivua ei löytynyt",
+    "heading": "Tätä sivua ei ole",
+    "description": "Osoite voi olla vanhentunut tai kirjoitettu väärin. Palaa etusivulle jatkaaksesi.",
+    "home": "Takaisin etusivulle"
   },
   "auth": {
     "loginTitle": "Ylläpito - Kirjautuminen",

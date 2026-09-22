@@ -120,6 +120,24 @@ public class FooterContactTests
     }
 
     [Fact]
+    public void Constructor_RelativeInternalUrl_SetsUrl()
+    {
+        FooterContact contact = new(
+            Guid.NewGuid(),
+            "Jalkapallo",
+            null,
+            null,
+            null,
+            new Uri("/sports/football", UriKind.Relative),
+            0,
+            FooterSection.SeasonalSports);
+
+        contact.Url.Should().NotBeNull();
+        contact.Url!.IsAbsoluteUri.Should().BeFalse();
+        contact.Url.OriginalString.Should().Be("/sports/football");
+    }
+
+    [Fact]
     public void Constructor_InvalidUrl_Throws()
     {
         Action act = () => new FooterContact(Guid.NewGuid(), "Office", null, null, null, new Uri("ftp://mahl.fi"), 0);

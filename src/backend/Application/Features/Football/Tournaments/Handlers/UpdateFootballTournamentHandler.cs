@@ -70,6 +70,8 @@ public class UpdateFootballTournamentHandler : IRequestHandler<UpdateFootballTou
                 tournament.UpdateTeamCategory(request.TeamCategory.Value);
             }
 
+            tournament.UpdateLogo(CompetitionLogoUrl.Parse(request.LogoUrl));
+
             FootballMatchRules groupStageMatchRules = new FootballMatchRules(
                 request.GroupStageNumberOfHalves,
                 request.GroupStageHalfDurationMinutes,

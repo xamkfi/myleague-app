@@ -41,4 +41,16 @@ i18n
     }
   });
 
-export default i18n; 
+function syncDocumentLanguage(language: string): void {
+  const normalized = language.toLowerCase().startsWith('fi') ? 'fi' : 'en';
+  document.documentElement.lang = normalized;
+}
+
+i18n.on('languageChanged', syncDocumentLanguage);
+i18n.on('initialized', () => {
+  syncDocumentLanguage(i18n.language);
+});
+syncDocumentLanguage(i18n.language);
+
+export default i18n;
+ 

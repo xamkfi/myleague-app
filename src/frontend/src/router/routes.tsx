@@ -28,6 +28,7 @@ const LeaguePage = lazyWithRetry(() => import('../pages/LeaguePage/LeaguePage'))
 const FloorballPage = lazyWithRetry(() => import('../pages/FloorballPage/FloorballPage'));
 const ClubsPage = lazyWithRetry(() => import('../pages/ClubsPage/ClubsPage'));
 const EventCalendarPage = lazyWithRetry(() => import('../pages/EventCalendarPage/EventCalendarPage'));
+const NotFoundPage = lazyWithRetry(() => import('../pages/NotFoundPage/NotFoundPage'));
 
 // Admin pages
 const LoginPage = lazyWithRetry(() => import('../pages/AdminPage/LoginPage/LoginPage'));
@@ -842,6 +843,10 @@ export const routes: RouteObject[] = [
   {
     path: '/football/player/:id',
     element: <RedirectToPlayer sport="football" />
+  },
+  {
+    path: '*',
+    element: <SuspenseWrapper><NotFoundPage /></SuspenseWrapper>
   }
     ]
   }

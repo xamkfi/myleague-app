@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Hockey.Seasons.Commands;
 using FluentValidation;
 
@@ -26,5 +27,8 @@ public class CreateHockeySeasonCommandValidator : AbstractValidator<CreateHockey
             .When(x => !string.IsNullOrWhiteSpace(x.SeasonCode));
 
         RuleFor(x => x.TeamCategory).IsInEnum();
+        RuleFor(x => x.LogoUrl)
+            .Must(CompetitionLogoUrl.IsValidOptional)
+            .WithMessage("Logo url must be an http or https address under 500 characters");
     }
 }

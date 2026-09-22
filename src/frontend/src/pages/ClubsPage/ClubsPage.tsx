@@ -6,6 +6,7 @@ import CatalogPage from '../../components/CatalogPage/CatalogPage';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import { clubService, type Club } from '../../api/common/clubService';
 import { createClubSlug } from '../../utils/slugUtils';
+import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 import './ClubsPage.scss';
 
 const PAGE_SIZE = 12;
@@ -123,9 +124,9 @@ function ClubsPage() {
                     className="club-card"
                   >
                     <div className="club-card__logo">
-                      {club.logoUrl ? (
+                      {resolveLogoUrl(club.logoUrl) ? (
                         <img
-                          src={club.logoUrl}
+                          src={resolveLogoUrl(club.logoUrl)}
                           alt={`${club.name} logo`}
                           loading="lazy"
                           onError={(e) => {

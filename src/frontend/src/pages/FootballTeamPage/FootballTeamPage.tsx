@@ -5,6 +5,7 @@ import type { FootballMatchDto, FootballTeam } from '../../types/football/footba
 import { footballTeamNameSearchService } from '../../api/football/footballTeamNameSearchService';
 import { footballTeamService } from '../../api/football/footballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
+import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 import './FootballTeamPage.scss';
 import { footballMatchService } from '../../api/football/footballMatchService';
 import { footballStatisticsService, type FootballTeamSeasonStatisticsDto, type FootballSeasonStatisticsSummaryDto, type FootballPlayerSeasonStatisticsDto } from '../../api/football/footballStatistics';
@@ -379,16 +380,30 @@ function FootballTeamPage() {
             <div className="header-content">
               <div className="team-branding">
                 <div className="football-page-team-logo">
-                  {team.logoUrl || team.club.logoUrl ? (
+                  {resolveLogoUrl(team.logoUrl) ? (
                     <img
-                      src={team.logoUrl || team.club.logoUrl}
+                      src={resolveLogoUrl(team.logoUrl)}
                       alt={`${team.name} logo`}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        if (team.logoUrl && team.club.logoUrl && target.src !== team.club.logoUrl) {
-                          target.src = team.club.logoUrl;
-                          return;
+                        const clubLogo = resolveLogoUrl(team.club.logoUrl);
+                        if (clubLogo && target.src !== clubLogo) {
+                          target.src = clubLogo;
+                        } else {
+                          target.style.display = 'none';
+                          const placeholder = target.nextElementSibling as HTMLElement;
+                          if (placeholder) {
+                            placeholder.style.display = 'flex';
+                          }
                         }
+                      }}
+                    />
+                  ) : resolveLogoUrl(team.club.logoUrl) ? (
+                    <img
+                      src={resolveLogoUrl(team.club.logoUrl)}
+                      alt={`${team.club.name} logo`}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
                         const placeholder = target.nextElementSibling as HTMLElement | null;
                         if (placeholder) {
@@ -397,7 +412,7 @@ function FootballTeamPage() {
                       }}
                     />
                   ) : null}
-                  <div className="logo-placeholder" style={{ display: (team.logoUrl || team.club.logoUrl) ? 'none' : 'flex' }}>
+                  <div className="logo-placeholder" style={{ display: (resolveLogoUrl(team.logoUrl) || resolveLogoUrl(team.club.logoUrl)) ? 'none' : 'flex' }}>
                     {team.name}
                   </div>
                 </div>                

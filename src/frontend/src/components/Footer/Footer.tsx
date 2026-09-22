@@ -7,10 +7,6 @@ import FooterLinkList from './FooterLinkList';
 import mahlLogo from '../../assets/logos/Mahl_primary_V3.svg';
 import './Footer.scss';
 
-function obfuscateEmail(email: string): string {
-  return email.replace('@', ' (at) ');
-}
-
 export default function Footer() {
   const { t } = useTranslation();
   const [backendVersion, setBackendVersion] = useState<string>('...');
@@ -60,8 +56,12 @@ export default function Footer() {
                   {contact.details && (
                     <span className="footer-contact-entry__details">{contact.details}</span>
                   )}
-                  {contact.email && <span>{obfuscateEmail(contact.email)}</span>}
-                  {contact.phone && <span>{contact.phone}</span>}
+                  {contact.email && (
+                    <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                  )}
+                  {contact.phone && (
+                    <a href={`tel:${contact.phone.replace(/\s+/g, '')}`}>{contact.phone}</a>
+                  )}
                 </div>
               ))
             )}

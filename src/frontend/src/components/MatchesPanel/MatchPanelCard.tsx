@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import { FloorballMatchStatus } from '../../types/floorball/floorballTypes';
+import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 
 interface MatchPanelCardProps {
   match: FloorballMatchDto;
@@ -52,10 +53,11 @@ function MatchPanelCard({ match }: MatchPanelCardProps) {
   // --- Render helpers ---
 
   const renderTeamLogo = (logoUrl: string | null, teamName: string) => {
-    if (logoUrl) {
+    const resolved = resolveLogoUrl(logoUrl);
+    if (resolved) {
       return (
         <img
-          src={logoUrl}
+          src={resolved}
           alt={teamName}
           className="match-panel-card__team-logo"
           onError={(e) => {

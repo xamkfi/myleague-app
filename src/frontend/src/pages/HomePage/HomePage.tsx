@@ -1,58 +1,65 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import HomeNewsSection from '../../components/HomeNewsSection/HomeNewsSection';
 import NewsHeroCarousel from '../../components/NewsHeroCarousel/NewsHeroCarousel';
 import MatchesPanel from '../../components/MatchesPanel/MatchesPanel';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import { newsService, type NewsArticleDto, type PaginatedNewsResponse } from '../../api/news/newsService';
 import { useAudience } from '../../context/AudienceContext';
+import { useTranslation } from 'react-i18next';
 import './HomePage.scss';
 
+function unwrapNewsList(response: PaginatedNewsResponse | NewsArticleDto[]): NewsArticleDto[] {
+  if (response && typeof response === 'object' && 'pagination' in response) {
+    return response.data;
+  }
+
+  return response.slice(0, 10);
+}
+
 function HomePage() {
+  const { t } = useTranslation();
   const { audience } = useAudience();
-  const [heroNews, setHeroNews] = useState<NewsArticleDto[]>([]);
-  const [isLoadingHeroNews, setIsLoadingHeroNews] = useState(true);
+  const [newsArticles, setNewsArticles] = useState<NewsArticleDto[]>([]);
+  const [isLoadingNews, setIsLoadingNews] = useState(true);
+  const [newsError, setNewsError] = useState<string | null>(null);
+
+  const fetchNews = useCallback(async () => {
+    try {
+      setIsLoadingNews(true);
+      setNewsError(null);
+      const response = await newsService({
+        page: 1,
+        pageSize: 10,
+        includeArchived: false,
+        teamCategory: audience.teamCategory,
+      });
+      setNewsArticles(unwrapNewsList(response));
+    } catch (error) {
+      console.error('Failed to fetch news:', error);
+      setNewsError(t('homePage.newsSection.error', 'Uutisten lataaminen epäonnistui'));
+      setNewsArticles([]);
+    } finally {
+      setIsLoadingNews(false);
+    }
+  }, [audience.teamCategory, t]);
 
   useEffect(() => {
-    const fetchHeroNews = async () => {
-      try {
-        setIsLoadingHeroNews(true);
-        const response = await newsService({
-          page: 1,
-          pageSize: 5,
-          includeArchived: false,
-          teamCategory: audience.teamCategory,
-        });
+    void fetchNews();
+  }, [fetchNews]);
 
-        if (response && typeof response === 'object' && 'pagination' in response) {
-          const paginatedResponse = response as PaginatedNewsResponse;
-          setHeroNews(paginatedResponse.data);
-        } else {
-          const oldResponse = response as NewsArticleDto[];
-          setHeroNews(oldResponse.slice(0, 5));
-        }
-      } catch (error) {
-        console.error('Failed to fetch hero news:', error);
-      } finally {
-        setIsLoadingHeroNews(false);
-      }
-    };
-
-    fetchHeroNews();
-  }, [audience.teamCategory]);
+  const heroNews = newsArticles.slice(0, 5);
 
   return (
     <div className="home-page-wrapper">
       <PageTemplate title="Home">
         <div className="home-page">
-          {/* Main News Hero Carousel */}
-          {!isLoadingHeroNews && heroNews.length > 0 && (
+          {!isLoadingNews && heroNews.length > 0 && (
             <div className="hero-news-container">
               <NewsHeroCarousel newsArticles={heroNews} />
             </div>
           )}
 
-          {/* Loading skeleton for hero news */}
-          {isLoadingHeroNews && (
+          {isLoadingNews && (
             <div className="hero-news-container hero-news-container--loading">
               <div className="main-news-skeleton">
                 <div className="skeleton-image" />
@@ -66,10 +73,14 @@ function HomePage() {
             </div>
           )}
 
-          {/* Content Section: News List + Sidebar */}
           <div className="main-content">
             <div className="news-section-container">
-              <HomeNewsSection />
+              <HomeNewsSection
+                articles={newsArticles}
+                isLoading={isLoadingNews}
+                error={newsError}
+                onRetry={fetchNews}
+              />
             </div>
             <div className="sidebar-container">
               <MatchesPanel />

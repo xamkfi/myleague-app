@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Hockey.Competitions.DTOs;
 using Application.Features.Hockey.Seasons.DTOs;
 using Application.Features.Hockey.Tournaments.DTOs;
@@ -146,7 +147,8 @@ public static class HockeyCompetitionMapper
             season.Teams.Select(ToTeamDto).ToList(),
             season.Divisions.Select(ToDivisionDto).ToList(),
             season.PlayoffSeries.Select(series => ToPlayoffSeriesDto(series, season.Matches)).ToList(),
-            season.PlayoffSchedule.Select(ToPlayoffScheduleSlotDto).ToList());
+            season.PlayoffSchedule.Select(ToPlayoffScheduleSlotDto).ToList(),
+            CompetitionLogoUrl.ToPublicString(season.LogoUrl));
     }
 
     /// <summary>
@@ -200,7 +202,8 @@ public static class HockeyCompetitionMapper
             tournament.Groups.Select(ToGroupDto).ToList(),
             tournament.PlayoffSeries.Select(series => ToPlayoffSeriesDto(series, tournament.Matches)).ToList(),
             ToTournamentRulesDto(tournament.TournamentRules),
-            tournament.PlayoffSchedule.Select(ToPlayoffScheduleSlotDto).ToList());
+            tournament.PlayoffSchedule.Select(ToPlayoffScheduleSlotDto).ToList(),
+            CompetitionLogoUrl.ToPublicString(tournament.LogoUrl));
     }
 
     /// <summary>

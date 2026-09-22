@@ -5,10 +5,13 @@ import { newsListUrl, formatNewsTagLabel } from '../NewsPage/newsListFilters';
 import type { RelatedNewsTeam } from './extractRelatedNewsTeams';
 import { SportsCategory } from '../../types/common/sports';
 import SportIcon from '../../components/SportIcon/SportIcon';
+import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
+import TeamCategoryBadge from '../../components/TeamCategoryBadge/TeamCategoryBadge';
 
 type NewsTaxonomyBarProps = {
   sportCategory?: string;
   category?: string;
+  teamCategory?: string;
   tags?: string[];
   teams?: RelatedNewsTeam[];
   clickable?: boolean;
@@ -23,13 +26,14 @@ function sportLabelKey(sport: string): string {
 
 function NewsTeamLogo({ team }: { team: RelatedNewsTeam }) {
   const [failed, setFailed] = useState(false);
-  const hasLogo = Boolean(team.logoUrl?.trim()) && !failed;
+  const logoUrl = resolveLogoUrl(team.logoUrl);
+  const hasLogo = Boolean(logoUrl) && !failed;
 
   return (
     <span className="news-taxonomy-bar__team" title={team.name}>
       {hasLogo ? (
         <img
-          src={team.logoUrl}
+          src={logoUrl}
           alt={team.name}
           className="news-taxonomy-bar__team-logo"
           onError={() => setFailed(true)}
@@ -45,6 +49,7 @@ function NewsTeamLogo({ team }: { team: RelatedNewsTeam }) {
 export default function NewsTaxonomyBar({
   sportCategory,
   category,
+  teamCategory,
   tags = [],
   teams = [],
   clickable = false,
@@ -53,9 +58,10 @@ export default function NewsTaxonomyBar({
   const hasTeams = teams.length > 0;
   const hasSport = Boolean(sportCategory);
   const hasCategory = Boolean(category);
+  const hasAudience = Boolean(teamCategory);
   const hasTags = tags.length > 0;
 
-  if (!hasTeams && !hasSport && !hasCategory && !hasTags) {
+  if (!hasTeams && !hasSport && !hasCategory && !hasAudience && !hasTags) {
     return null;
   }
 
@@ -88,6 +94,7 @@ export default function NewsTaxonomyBar({
         </div>
       )}
       <div className="news-taxonomy-bar__chips">
+        {hasAudience && <TeamCategoryBadge category={teamCategory} />}
         {sportCategory &&
           renderChip(
             t(sportLabelKey(sportCategory), sportCategory),

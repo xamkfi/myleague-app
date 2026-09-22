@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories;
+using Npgsql;
 using System.Text.Json;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Common
@@ -394,14 +395,39 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
                 return query;
             }
 
-            List<Guid> matchingIds = (await _entities
-                    .AsNoTracking()
-                    .Select(article => new { article.Id, article.Tags })
-                    .ToListAsync(cancellationToken))
-                .Where(row => row.Tags.Any(stored =>
-                    string.Equals(NormalizeNewsTag(stored), needle, StringComparison.OrdinalIgnoreCase)))
-                .Select(row => row.Id)
-                .ToList();
+            string normalizedNeedle = needle.ToLowerInvariant();
+            List<Guid> matchingIds;
+            try
+            {
+                matchingIds = await _dbContext.Database
+                    .SqlQueryRaw<Guid>(
+                        $$"""
+                        SELECT n."Id" AS "Value"
+                        FROM common."NewsArticles" n
+                        WHERE EXISTS (
+                            SELECT 1
+                            FROM jsonb_array_elements_text({{TagsJsonbExpression}}) AS t
+                            WHERE LOWER(BTRIM(
+                                CASE
+                                    WHEN LEFT(BTRIM(t), 1) = '#' THEN SUBSTRING(BTRIM(t) FROM 2)
+                                    ELSE BTRIM(t)
+                                END
+                            )) = {0}
+                        )
+                        """,
+                        normalizedNeedle)
+                    .ToListAsync(cancellationToken);
+            }
+            catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.InvalidTextRepresentation)
+            {
+                _logger.LogWarning(ex, "Invalid Tags JSON while filtering news; falling back to in-memory match");
+                matchingIds = await LoadMatchingIdsInMemoryAsync(needle, cancellationToken);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Tag filter SQL failed; falling back to in-memory match");
+                matchingIds = await LoadMatchingIdsInMemoryAsync(needle, cancellationToken);
+            }
 
             if (matchingIds.Count == 0)
             {
@@ -452,26 +478,73 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
         {
             try
             {
-                List<string> serializedTags = await _dbContext.Database
-                    .SqlQueryRaw<string>("SELECT COALESCE(\"Tags\", '[]') AS \"Value\" FROM common.\"NewsArticles\"")
+                List<string> unnestedTags = await _dbContext.Database
+                    .SqlQueryRaw<string>(
+                        $"""
+                        SELECT BTRIM(t.elem) AS "Value"
+                        FROM common."NewsArticles" n
+                        CROSS JOIN LATERAL jsonb_array_elements_text({TagsJsonbExpression}) AS t(elem)
+                        WHERE BTRIM(t.elem) <> ''
+                        """)
                     .ToListAsync(cancellationToken);
 
-                return serializedTags
-                    .SelectMany(DeserializeTags)
-                    .Where(tag => !string.IsNullOrWhiteSpace(tag))
-                    .Select(tag => tag.Trim())
-                    .GroupBy(tag => tag, StringComparer.OrdinalIgnoreCase)
-                    .OrderByDescending(group => group.Count())
-                    .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
-                    .Select(group => group.First())
-                    .ToList();
+                return DistinctTagsByUsage(unnestedTags);
             }
-            catch (Exception ex)
+            catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.InvalidTextRepresentation)
             {
-                _logger.LogError(ex, "Error occurred while retrieving news article tags");
-                throw;
+                _logger.LogWarning(ex, "Invalid Tags JSON while listing tags; falling back to in-memory parse");
+                return await LoadAllTagsInMemoryAsync(cancellationToken);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Tag list SQL failed; falling back to in-memory parse");
+                return await LoadAllTagsInMemoryAsync(cancellationToken);
             }
         }
+
+        private async Task<List<Guid>> LoadMatchingIdsInMemoryAsync(string needle, CancellationToken cancellationToken)
+        {
+            return (await _entities
+                    .AsNoTracking()
+                    .Select(article => new { article.Id, article.Tags })
+                    .ToListAsync(cancellationToken))
+                .Where(row => row.Tags.Any(stored =>
+                    string.Equals(NormalizeNewsTag(stored), needle, StringComparison.OrdinalIgnoreCase)))
+                .Select(row => row.Id)
+                .ToList();
+        }
+
+        private async Task<IEnumerable<string>> LoadAllTagsInMemoryAsync(CancellationToken cancellationToken)
+        {
+            List<string> serializedTags = await _dbContext.Database
+                .SqlQueryRaw<string>("SELECT COALESCE(\"Tags\", '[]') AS \"Value\" FROM common.\"NewsArticles\"")
+                .ToListAsync(cancellationToken);
+
+            return DistinctTagsByUsage(serializedTags.SelectMany(DeserializeTags));
+        }
+
+        private static IReadOnlyList<string> DistinctTagsByUsage(IEnumerable<string> tags)
+        {
+            return tags
+                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Select(tag => tag.Trim())
+                .GroupBy(tag => NormalizeNewsTag(tag), StringComparer.OrdinalIgnoreCase)
+                .OrderByDescending(group => group.Count())
+                .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.First())
+                .ToList();
+        }
+
+        /// <summary>
+        /// Casts n."Tags" JSON text to jsonb, treating empty or non-array values as [].
+        /// </summary>
+        private const string TagsJsonbExpression = """
+            CASE
+                WHEN n."Tags" IS NULL OR BTRIM(n."Tags") = '' THEN '[]'::jsonb
+                WHEN LEFT(BTRIM(n."Tags"), 1) = '[' THEN n."Tags"::jsonb
+                ELSE '[]'::jsonb
+            END
+            """;
 
         private static IEnumerable<string> DeserializeTags(string json)
         {

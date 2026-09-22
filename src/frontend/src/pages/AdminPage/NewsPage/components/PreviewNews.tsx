@@ -32,6 +32,7 @@ export default function PreviewNews({ value, newsData }: PreviewNewsProps) {
           <NewsTaxonomyBar
             sportCategory={newsData?.sportCategory}
             category={newsData?.category}
+            teamCategory={newsData?.teamCategory}
             tags={newsData?.tags}
             teams={relatedTeams}
           />

@@ -17,4 +17,5 @@ public record CreateHockeySeasonCommand(
     DateTime StartDate,
     DateTime EndDate,
     string? SeasonCode = null,
-    TeamCategory TeamCategory = TeamCategory.Adult) : IRequest<Result<HockeySeasonDto>>;
+    TeamCategory TeamCategory = TeamCategory.Adult,
+    string? LogoUrl = null) : IRequest<Result<HockeySeasonDto>>;

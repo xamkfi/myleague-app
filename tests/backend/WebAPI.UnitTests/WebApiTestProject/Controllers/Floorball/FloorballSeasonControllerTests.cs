@@ -39,7 +39,8 @@ public class FloorballSeasonControllerTests
             Teams: Array.Empty<FloorballTeamDto>(),
             Matches: Array.Empty<FloorballMatchDto>(),
             MatchRules: new FloorballMatchRulesDto(2, 15, true, 5, true),
-            TeamCategory: TeamCategory.Adult);
+            TeamCategory: TeamCategory.Adult,
+            LogoUrl: null);
 
     [Fact]
     public async Task GetSeasonById_WhenFound_ReturnsOk()

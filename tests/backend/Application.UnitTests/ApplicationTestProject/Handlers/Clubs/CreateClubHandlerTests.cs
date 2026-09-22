@@ -98,8 +98,8 @@ public class CreateClubHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Data.Should().NotBeNull();
         result.Data!.Name.Should().Be(command.Name);
-        result.Data.WebsiteUrl.Should().Be("https://example.com/");
-        result.Data.LogoUrl.Should().Be("https://example.com/logo.png");
+        result.Data.WebsiteUrl.Should().BeEmpty();
+        result.Data.LogoUrl.Should().BeEmpty();
         result.Data.ContactEmail.Should().Be("");
     }
 

@@ -1,386 +1,332 @@
-import { useState, useEffect, useRef } from "react";
-import PageTemplate from "../../../components/PageTemplate/AdminPageTemplate";
-import RichTextEditor, { extractRichTextImageUrls } from "../../../components/RichTextEditor";
-import { useTranslation } from "react-i18next";
-import NewsInputs, { type NewsInputsData } from "./components/NewsInputs";
-import PreviewNews from "./components/PreviewNews";
-import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
-import { CreateNewsService } from "../../../api/admin/News/CreateNewsService";
-import { UpdateNewsService } from "../../../api/admin/News/UpdateNewsService";
-import { handleImageDeleteService } from "../../../api/admin/News/handleImageDeleteService";
-import { useNavigate, useParams } from "react-router-dom";
-import { singleNewsService } from "../../../api/news/singleNewsService";
-import "./NewsCreateEditPage.scss";
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
+import RichTextEditor, { extractRichTextImageUrls } from '../../../components/RichTextEditor';
+import Button from '../../../components/Button/Button';
+import ConfirmationDialog from '../../../components/ConfirmationDialog/ConfirmationDialog';
+import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
+import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
+import NewsInputs, { type NewsInputsData } from './components/NewsInputs';
+import PreviewNews from './components/PreviewNews';
+import { CreateNewsService } from '../../../api/admin/News/CreateNewsService';
+import { UpdateNewsService } from '../../../api/admin/News/UpdateNewsService';
+import { handleImageDeleteService } from '../../../api/admin/News/handleImageDeleteService';
+import { singleNewsService } from '../../../api/news/singleNewsService';
+import { useAdminReturnTo } from '../../../hooks/useAdminReturnTo';
+import { unwrapApiErrorMessage } from '../../../api/utils/ParseErrorResponse';
+import './NewsCreateEditPage.scss';
+
+const emptyNewsData = (): NewsInputsData => ({
+  title: '',
+  mainPicture: '',
+  summary: '',
+  author: '',
+  category: '',
+  sportCategory: '',
+  teamCategory: '',
+  tags: [],
+  contentHtml: '',
+});
+
+const collectStoredImageUrls = (html: string, mainPicture: string): string[] => {
+  const urls = extractRichTextImageUrls(html);
+  if (mainPicture.trim()) {
+    urls.push(mainPicture.trim());
+  }
+  return Array.from(new Set(urls));
+};
 
 export default function NewsCreateEditPage() {
   const { t } = useTranslation();
   const { id } = useParams();
-  const isEditMode = !!id;
-  const [value, setValue] = useState("");
-  const [preview, setPreview] = useState(false);
-  const [loadingAnimation, setLoadingAnimation] = useState(false);
-  const [isLoadingArticle, setIsLoadingArticle] = useState(isEditMode);
-
-  const [newsData, setNewsData] = useState<NewsInputsData>({
-    title: '',
-    mainPicture: '',
-    summary: '',
-    author: '',
-    category: '',
-    sportCategory: '',
-    tags: [],
-    contentHtml: ''
-  });
-
-  const [errors, setErrors] = useState<Partial<NewsInputsData>>({});
-  const [contentError, setContentError] = useState<string>('');
-  const originalImageUrlsRef = useRef<string[]>([]);
-
+  const isEditMode = Boolean(id);
   const navigate = useNavigate();
+  const { returnTo } = useAdminReturnTo();
 
-  const collectStoredImageUrls = (html: string, mainPicture: string): string[] => {
-    const urls = extractRichTextImageUrls(html);
-    if (mainPicture.trim()) {
-      urls.push(mainPicture.trim());
-    }
-    return Array.from(new Set(urls));
-  };
+  const [value, setValue] = useState('');
+  const [preview, setPreview] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingContent, setIsUploadingContent] = useState(false);
+  const [isLoadingArticle, setIsLoadingArticle] = useState(isEditMode);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [newsData, setNewsData] = useState<NewsInputsData>(emptyNewsData);
+  const [errors, setErrors] = useState<Partial<Record<keyof NewsInputsData, string>>>({});
+  const [contentError, setContentError] = useState('');
+  const originalImageUrlsRef = useRef<string[]>([]);
+  const leaveTimeoutRef = useRef<number | null>(null);
 
   const deleteOrphanedImages = (keptHtml: string, keptMainPicture: string): void => {
     const kept = new Set(collectStoredImageUrls(keptHtml, keptMainPicture));
     originalImageUrlsRef.current
       .filter((url) => !kept.has(url))
       .forEach((url) => {
-        handleImageDeleteService(url).catch((error) => {
-          console.error('Failed to delete orphaned image:', error);
+        handleImageDeleteService(url).catch((deleteError: unknown) => {
+          console.error('Failed to delete orphaned image:', deleteError);
         });
       });
   };
 
-  // Load existing article data if in edit mode
   useEffect(() => {
-    if (isEditMode && id) {
-      const fetchNewsArticle = async () => {
-        try {
-          setIsLoadingArticle(true);
-          const article = await singleNewsService(id);
-          setNewsData({
-            title: article.title || '',
-            mainPicture: article.mainImage || '',
-            summary: article.summary || '',
-            author: article.author || '',
-            category: article.category || '',
-            sportCategory: article.sportCategory || '',
-            tags: article.tags || [],
-            contentHtml: article.contentHtml || ''
-          });
-          setValue(article.contentHtml || '');
-          originalImageUrlsRef.current = collectStoredImageUrls(
-            article.contentHtml || '',
-            article.mainImage || ''
-          );
-        } catch (error) {
-          console.error('Failed to fetch news article:', error);
-          alert('Failed to load news article for editing');
-          navigate('/admin/news');
-        } finally {
-          setIsLoadingArticle(false);
-        }
-      };
-      fetchNewsArticle();
+    return () => {
+      if (leaveTimeoutRef.current !== null) {
+        window.clearTimeout(leaveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isEditMode || !id) {
+      return;
     }
-  }, [id, isEditMode, navigate]);
+
+    const fetchNewsArticle = async (): Promise<void> => {
+      try {
+        setIsLoadingArticle(true);
+        setError(null);
+        const article = await singleNewsService(id);
+        setNewsData({
+          title: article.title || '',
+          mainPicture: article.mainImage || '',
+          summary: article.summary || '',
+          author: article.author || '',
+          category: article.category || '',
+          sportCategory: article.sportCategory || '',
+          teamCategory: article.teamCategory || '',
+          tags: article.tags || [],
+          contentHtml: article.contentHtml || '',
+        });
+        setValue(article.contentHtml || '');
+        originalImageUrlsRef.current = collectStoredImageUrls(
+          article.contentHtml || '',
+          article.mainImage || '',
+        );
+      } catch (loadError: unknown) {
+        console.error('Failed to fetch news article:', loadError);
+        setError(t('admin.news.errors.loadFailed', 'Failed to load news article for editing'));
+      } finally {
+        setIsLoadingArticle(false);
+      }
+    };
+
+    void fetchNewsArticle();
+  }, [id, isEditMode, t]);
 
   const validateInputs = (): boolean => {
-    const newErrors: Partial<NewsInputsData> = {};
+    const newErrors: Partial<Record<keyof NewsInputsData, string>> = {};
     let newContentError = '';
 
     if (!newsData.title.trim()) {
-      newErrors.title = t('admin.news.error.title_required', 'Title is required');
+      newErrors.title = t('admin.news.errors.title_required');
     } else if (newsData.title.trim().length < 5) {
-      newErrors.title = t('admin.news.error.title_too_short', 'Title must be at least 5 characters long');
+      newErrors.title = t('admin.news.errors.title_too_short');
     } else if (newsData.title.trim().length > 200) {
-      newErrors.title = t('admin.news.error.title_too_long', 'Title cannot exceed 200 characters');
+      newErrors.title = t('admin.news.errors.title_too_long');
     }
 
     if (!value.trim()) {
-      newContentError = t('admin.news.error.content_required', 'Article content is required');
+      newContentError = t('admin.news.errors.content_required');
     }
 
     if (newsData.author && newsData.author.trim().length > 50) {
-      newErrors.author = t('admin.news.error.author_too_long', 'Author name cannot exceed 50 characters');
+      newErrors.author = t('admin.news.errors.author_too_long');
     }
 
     if (newsData.summary && newsData.summary.trim().length > 200) {
-      newErrors.summary = t('admin.news.error.summary_too_long', 'Summary cannot exceed 200 characters');
+      newErrors.summary = t('admin.news.errors.summary_too_long');
     }
 
     setErrors(newErrors);
     setContentError(newContentError);
-    
+
     return Object.keys(newErrors).length === 0 && !newContentError;
   };
 
-  const handlePublish = async () => {
-    if (validateInputs()) {
-      const confirmMessage = isEditMode 
-        ? t('admin.news.confirm_update', 'Are you sure you want to update this news article?')
-        : t('admin.news.confirm_publish', 'Are you sure you want to publish this news article?');
-      
-      const confirmAction = window.confirm(confirmMessage);
-      
-      if (!confirmAction) {
-        return;
-      }
-
-      try {
-        setLoadingAnimation(true);
-        
-        const newsToSubmit = convertToNewsData();
-        
-        if (isEditMode) {
-          // Helper function to convert empty strings to null
-          const toNullIfEmpty = (value: string | undefined | null): string | null => {
-            if (!value || value.trim() === '') return null;
-            return value.trim();
-          };
-
-          const trimmedMainPicture = toNullIfEmpty(newsData.mainPicture);
-          const filteredTags = newsData.tags.filter(tag => tag.trim() !== '');
-
-          const updateData: {
-            title: string;
-            contentHtml: string;
-            mainImage: string | null;
-            summary: string | null;
-            imageUrls: string[] | null;
-            author: string | null;
-            category: string | null;
-            sportCategory: string | null;
-            tags: string[];
-          } = {
-            title: newsData.title.trim(),
-            contentHtml: value.trim(),
-            mainImage: trimmedMainPicture,
-            summary: toNullIfEmpty(newsData.summary),
-            imageUrls: trimmedMainPicture ? [trimmedMainPicture] : null,
-            author: toNullIfEmpty(newsData.author),
-            category: toNullIfEmpty(newsData.category),
-            sportCategory: toNullIfEmpty(newsData.sportCategory),
-            tags: filteredTags
-          };
-          await UpdateNewsService(id, updateData);
-          deleteOrphanedImages(value.trim(), trimmedMainPicture ?? '');
-          console.log("News updated successfully:", newsToSubmit);
-          alert(t('admin.news.update_success', 'News article updated successfully!'));
-        } else {
-          const response = await CreateNewsService(newsToSubmit);
-          console.log("News created successfully:", response);
-          alert(t('admin.news.publish_success', 'News article published successfully!'));
-          removeInputFields();
-        }
-        
-        navigate('/admin/news');
-        
-      } catch (err) {
-        console.error("Failed to save news:", err);
-        const errorMessage = isEditMode 
-          ? t('admin.news.update_error', 'Failed to update news article. Please try again.')
-          : t('admin.news.publish_error', 'Failed to publish news article. Please try again.');
-        alert(errorMessage);
-      } finally {
-        setLoadingAnimation(false);
-      }
-    } else {
-      const firstErrorElement = document.querySelector('.border-red-300, .text-red-600');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+  const scrollToFirstError = (): void => {
+    const firstErrorElement = document.querySelector('.news-inputs__error, .news-editor__content-error');
+    if (firstErrorElement) {
+      firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
 
-  const convertToNewsData = () => {
-    return {
-      title: newsData.title.trim(),
-      mainImage: newsData.mainPicture || null,
-      contentHtml: value.trim(),
-      summary: newsData.summary?.trim() || null,
-      author: newsData.author?.trim() || null,
-      category: newsData.category || null,
-      sportCategory: newsData.sportCategory || null,
-      tags: newsData.tags.filter(tag => tag.trim() !== ''),
-    };
+  const handlePublishClick = (): void => {
+    setError(null);
+    if (validateInputs()) {
+      setConfirmOpen(true);
+      return;
+    }
+    setPreview(false);
+    scrollToFirstError();
   };
 
-  const removeInputFields = () => {
-    setValue("");
-    setNewsData({
-      title: '',
-      mainPicture: '',
-      summary: '',
-      author: '',
-      category: '',
-      sportCategory: '',
-      tags: [],
-      contentHtml: ''
-    });
-    setErrors({});
-    setContentError('');
+  const toNullIfEmpty = (input: string | undefined | null): string | null => {
+    if (!input || input.trim() === '') {
+      return null;
+    }
+    return input.trim();
   };
+
+  const convertToNewsData = () => ({
+    title: newsData.title.trim(),
+    mainImage: newsData.mainPicture || null,
+    contentHtml: value.trim(),
+    summary: newsData.summary?.trim() || null,
+    author: newsData.author?.trim() || null,
+    category: newsData.category || null,
+    sportCategory: newsData.sportCategory || null,
+    teamCategory: newsData.teamCategory || null,
+    tags: newsData.tags.filter((tag) => tag.trim() !== ''),
+  });
+
+  const leaveAfterSuccess = (message: string): void => {
+    setSuccessMessage(message);
+    leaveTimeoutRef.current = window.setTimeout(() => {
+      navigate(returnTo);
+    }, 900);
+  };
+
+  const handleConfirmPublish = async (): Promise<void> => {
+    try {
+      setIsSaving(true);
+      setError(null);
+
+      if (isEditMode && id) {
+        const trimmedMainPicture = toNullIfEmpty(newsData.mainPicture);
+        await UpdateNewsService(id, {
+          title: newsData.title.trim(),
+          contentHtml: value.trim(),
+          mainImage: trimmedMainPicture,
+          summary: toNullIfEmpty(newsData.summary),
+          imageUrls: trimmedMainPicture ? [trimmedMainPicture] : null,
+          author: toNullIfEmpty(newsData.author),
+          category: toNullIfEmpty(newsData.category),
+          sportCategory: toNullIfEmpty(newsData.sportCategory),
+          teamCategory: toNullIfEmpty(newsData.teamCategory),
+          tags: newsData.tags.filter((tag) => tag.trim() !== ''),
+        });
+        deleteOrphanedImages(value.trim(), trimmedMainPicture ?? '');
+        setConfirmOpen(false);
+        leaveAfterSuccess(t('admin.news.success.update_success'));
+        return;
+      }
+
+      await CreateNewsService(convertToNewsData());
+      setConfirmOpen(false);
+      leaveAfterSuccess(t('admin.news.success.publish_success'));
+    } catch (saveError: unknown) {
+      const fallback = isEditMode
+        ? t('admin.news.errors.update_error')
+        : t('admin.news.errors.publish_error');
+      setError(unwrapApiErrorMessage(saveError, fallback));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const pageTitle = isEditMode ? t('admin.news.edit') : t('admin.news.create');
+  const busy = isSaving || isUploadingContent;
 
   if (isLoadingArticle) {
     return (
-      <PageTemplate title={t('admin.news.loading', 'Loading...')}>
-        <div className="flex justify-center items-center min-h-screen">
-          <LoadingSpinner text={t('admin.news.loading_article', 'Loading article...')} />
+      <PageTemplate title={t('admin.news.loading')}>
+        <div className="news-editor news-editor--loading">
+          <LoadingSpinner text={t('admin.news.loading_article')} />
         </div>
-      </PageTemplate>
-    );
-  }
-
-  if (preview) {
-    return (
-      <PageTemplate title={isEditMode ? t('admin.news.edit', 'Edit News Article') : t('admin.news.create', 'Create News Article')}>
-      <div className="min-h-screen">
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-          <div className="max-w-6xl mx-auto px-4 py-3">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                  {t('admin.news.preview_mode', 'Preview Mode')}
-                </span>
-                <span className="text-gray-600 text-sm">
-                  {t('admin.news.preview_description', 'This is how your article will appear to readers')}
-                </span>
-              </div>
-              
-              <button 
-                onClick={() => setPreview(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                {t('admin.news.edit_content', 'Edit Content')}
-              </button>
-            </div>
-          </div>
-        </div>
-
-
-          <PreviewNews 
-            value={value} 
-            newsData={newsData}
-          />
-
-      </div>
       </PageTemplate>
     );
   }
 
   return (
-    <PageTemplate title={isEditMode ? t('admin.news.edit', 'Edit News Article') : t('admin.news.create', 'Create News Article')}>
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-          <div className="max-w-6xl mx-auto px-4 py-3">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                  {isEditMode ? t('admin.news.edit_mode', 'Edit Mode') : t('admin.news.create_mode', 'Create Mode')}
-                </span>
-                <span className="text-gray-600 text-sm">
-                  {isEditMode ? t('admin.news.edit_description', 'Edit existing news article') : t('admin.news.create_description', 'Create a new news article')}
-                </span>
-              </div>
-              
-              <div className="flex gap-3">
-                <button
-                  onClick={handlePublish}
-                  disabled={loadingAnimation}
-                  className={`px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 ${
-                    loadingAnimation ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {loadingAnimation && (
-                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  )}
-                  {isEditMode ? t('admin.news.update', 'Update Article') : t('admin.news.publish', 'Publish')}
-                </button>
-                <button 
-                  onClick={() => setPreview(true)}
-                  className="px-4 py-2 bg-green-200 text-green-700 hover:bg-green-200 rounded-lg font-medium transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  {t('admin.news.preview', 'Preview')}
-                </button>
-              </div>
-            </div>
+    <PageTemplate title={pageTitle}>
+      <div className="news-editor">
+        {successMessage && (
+          <div className="success-toast" role="status">
+            <p>{successMessage}</p>
           </div>
-        </div>
+        )}
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2 mb-6">
-              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              {t('admin.news.article_details', 'Article Details')}
-            </h2>
-            
-            <NewsInputs 
-              data={newsData}
-              onChange={setNewsData}
-              errors={errors}
-            />
+        <ErrorPopup message={error} />
+
+        <header className="news-editor__toolbar">
+          <div className="news-editor__intro">
+            <p className="news-editor__eyebrow">
+              {isEditMode ? t('admin.news.edit_mode') : t('admin.news.create_mode')}
+            </p>
+            <h1 className="news-editor__title">{pageTitle}</h1>
+            <p className="news-editor__hint">{t('admin.news.required_hint')}</p>
           </div>
-        </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  {t('admin.news.content', 'Article Content')}
-                  <span className="text-red-500">*</span>
-                </h2>
-                
-                {contentError && (
-                  <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {contentError}
-                  </p>
-                )}
-              </div>
+          <div className="news-editor__actions">
+            <Button
+              variant="secondary"
+              onClick={() => setPreview((current) => !current)}
+              disabled={busy}
+            >
+              {preview ? t('admin.news.edit_content') : t('admin.news.preview')}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handlePublishClick}
+              disabled={busy}
+              isLoading={isSaving}
+            >
+              {isEditMode ? t('admin.news.update') : t('admin.news.publish')}
+            </Button>
+          </div>
+        </header>
 
-              {loadingAnimation && (
-                <div className="flex items-center gap-2">
-                  <LoadingSpinner size="sm" text="Uploading image..." />
-                </div>
+        <div hidden={preview} className="news-editor__form">
+          <section className="news-editor__card">
+            <h2 className="news-editor__section-title">{t('admin.news.article_details')}</h2>
+            <NewsInputs data={newsData} onChange={setNewsData} errors={errors} />
+          </section>
+
+          <section className="news-editor__card">
+            <div className="news-editor__section-heading">
+              <h2 className="news-editor__section-title">
+                {t('admin.news.content')}
+                <span className="news-editor__required" aria-hidden="true">*</span>
+              </h2>
+              {isUploadingContent && (
+                <LoadingSpinner size="sm" text={t('admin.news.uploading')} />
               )}
             </div>
-            
-            <div className={`border rounded-lg ${contentError ? 'border-red-300' : 'border-gray-200'}`}>
+            {contentError && (
+              <p className="news-editor__content-error">{contentError}</p>
+            )}
+            <div className={`news-editor__richtext ${contentError ? 'news-editor__richtext--error' : ''}`}>
               <RichTextEditor
                 value={value}
                 onChange={setValue}
-                onUploadingChange={setLoadingAnimation}
+                onUploadingChange={setIsUploadingContent}
                 showMatchInsert
               />
             </div>
-            
-          </div>
+          </section>
         </div>
+
+        {preview && (
+          <section className="news-editor__preview" aria-live="polite">
+            <p className="news-editor__preview-note">{t('admin.news.preview_description')}</p>
+            <PreviewNews value={value} newsData={newsData} />
+          </section>
+        )}
+
+        <ConfirmationDialog
+          isOpen={confirmOpen}
+          icon="📰"
+          title={isEditMode ? t('admin.news.confirmUpdateTitle') : t('admin.news.confirmPublishTitle')}
+          message={isEditMode ? t('admin.news.confirm_update') : t('admin.news.confirm_publish')}
+          confirmText={isEditMode ? t('admin.news.update') : t('admin.news.publish')}
+          cancelText={t('common.cancel')}
+          isLoading={isSaving}
+          onConfirm={() => {
+            void handleConfirmPublish();
+          }}
+          onCancel={() => setConfirmOpen(false)}
+        />
       </div>
     </PageTemplate>
   );

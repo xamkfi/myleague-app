@@ -18,7 +18,7 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("hockey")
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -39,6 +39,10 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -309,7 +313,6 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
             modelBuilder.Entity("Domain.Entities.Hockey.Competitions.HockeySeasonContentBlock", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("ContentHtml")

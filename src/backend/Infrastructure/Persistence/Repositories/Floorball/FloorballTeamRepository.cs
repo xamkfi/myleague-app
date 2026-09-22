@@ -27,13 +27,15 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// </summary>
         /// <param name="id">The team ID</param>
         /// <returns>The team if found, null otherwise</returns>
-        public async Task<FloorballTeam?> GetByIdAsync(Guid? id)
+        public async Task<FloorballTeam?> GetByIdAsync(Guid? id, Guid? competitionId = null)
         {
             // Note: Club relationship is managed at the application level since
             // Club is in a different DbContext (CommonDbContext)
-            return await _entities
-                .Include(t => t.Roster)
-                .FirstOrDefaultAsync(t => t.Id == id);
+            IQueryable<FloorballTeam> query = competitionId is Guid competitionFilter
+                ? _entities.Include(t => t.Roster.Where(player => player.CompetitionId == competitionFilter))
+                : _entities.Include(t => t.Roster);
+
+            return await query.FirstOrDefaultAsync(t => t.Id == id);
         }
 
         /// <summary>
