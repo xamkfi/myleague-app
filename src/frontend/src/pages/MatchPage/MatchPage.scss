@@ -67,10 +67,17 @@
   max-width: 1000px;
   margin: 0 auto;
 
-  .summary-stats-section {
+  .summary-events-section {
     margin-top: 2.5rem;
     padding-top: 2rem;
     border-top: 1px solid $color-neutral-light-grey;
+
+    .match-events {
+      margin-top: 0;
+    }
+  }
+
+  .summary-stats-section {
 
     h3 {
       font-size: 1.125rem;
@@ -610,7 +617,7 @@
   .summary-content {
     padding: map.get($spacing, 'md');
     
-    .summary-stats-section {
+    .summary-events-section {
       margin-top: map.get($spacing, 'lg');
       padding-top: map.get($spacing, 'md');
     }
@@ -759,14 +766,14 @@
   .summary-content {
     padding: map.get($spacing, 'sm');
     
-    .summary-stats-section {
+    .summary-events-section {
       margin-top: map.get($spacing, 'md');
       padding-top: map.get($spacing, 'sm');
-      
-      h3 {
-        font-size: 1rem;
-        margin-bottom: map.get($spacing, 'sm');
-      }
+    }
+
+    .summary-stats-section h3 {
+      font-size: 1rem;
+      margin-bottom: map.get($spacing, 'sm');
     }
   }
 

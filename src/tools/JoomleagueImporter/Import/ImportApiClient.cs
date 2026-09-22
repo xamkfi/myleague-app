@@ -97,10 +97,24 @@ public class ImportApiClient : IDisposable
                 Console.WriteLine("Authenticated with provided token (refresh applied).\n");
                 return;
             }
-            catch (Exception ex) when (!string.IsNullOrWhiteSpace(accessToken))
+            catch (HttpRequestException ex) when (!string.IsNullOrWhiteSpace(accessToken))
             {
-                Console.WriteLine($"Refresh failed ({ex.Message}); using provided access token.");
-                ApplyTokens(accessToken.Trim(), _refreshToken, DateTime.UtcNow.AddMinutes(10));
+                UseAccessTokenAfterRefreshFailure(accessToken, ex.Message);
+                return;
+            }
+            catch (InvalidOperationException ex) when (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                UseAccessTokenAfterRefreshFailure(accessToken, ex.Message);
+                return;
+            }
+            catch (JsonException ex) when (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                UseAccessTokenAfterRefreshFailure(accessToken, ex.Message);
+                return;
+            }
+            catch (TaskCanceledException ex) when (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                UseAccessTokenAfterRefreshFailure(accessToken, ex.Message);
                 return;
             }
         }
@@ -108,8 +122,62 @@ public class ImportApiClient : IDisposable
         if (string.IsNullOrWhiteSpace(accessToken))
             throw new InvalidOperationException("Provide --access-token and/or --refresh-token, or use local Development login.");
 
-        ApplyTokens(accessToken.Trim(), refreshToken: null, DateTime.UtcNow.AddMinutes(12));
-        Console.WriteLine("Authenticated with provided access token (no refresh token — session ends when the JWT expires).\n");
+        ApplyTokens(accessToken.Trim(), refreshToken: null, ReadJwtExpiryUtc(accessToken));
+        Console.WriteLine($"Authenticated with provided access token (no refresh token — session ends {_accessExpiresAtUtc:u}).\n");
+    }
+
+    /// <summary>
+    /// A revoked refresh token must not stay attached. Otherwise the client treats a
+    /// guessed expiry as real and aborts the import while the access token is still valid.
+    /// </summary>
+    private void UseAccessTokenAfterRefreshFailure(string accessToken, string reason)
+    {
+        Console.WriteLine($"Refresh failed ({reason}); using provided access token.");
+        _refreshToken = null;
+        ApplyTokens(accessToken.Trim(), refreshToken: null, ReadJwtExpiryUtc(accessToken));
+        Console.WriteLine($"Access token expires {_accessExpiresAtUtc:u}.");
+    }
+
+    /// <summary>
+    /// Reads the JWT <c>exp</c> claim. Signature is not verified; the caller already holds the token.
+    /// </summary>
+    internal static DateTime ReadJwtExpiryUtc(string accessToken)
+    {
+        string[] parts = accessToken.Split('.');
+        if (parts.Length < 2)
+            return DateTime.UtcNow.AddMinutes(10);
+
+        string payload = parts[1].Replace('-', '+').Replace('_', '/');
+        switch (payload.Length % 4)
+        {
+            case 2:
+                payload += "==";
+                break;
+            case 3:
+                payload += "=";
+                break;
+        }
+
+        try
+        {
+            byte[] jsonBytes = Convert.FromBase64String(payload);
+            using JsonDocument doc = JsonDocument.Parse(jsonBytes);
+            if (doc.RootElement.TryGetProperty("exp", out JsonElement exp)
+                && exp.TryGetInt64(out long unixSeconds))
+            {
+                return DateTimeOffset.FromUnixTimeSeconds(unixSeconds).UtcDateTime;
+            }
+        }
+        catch (FormatException ex)
+        {
+            Console.Error.WriteLine($"Failed to decode JWT payload while reading expiry: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            Console.Error.WriteLine($"Failed to parse JWT payload JSON while reading expiry: {ex.Message}");
+        }
+
+        return DateTime.UtcNow.AddMinutes(10);
     }
 
     public async Task<List<ClubDto>> GetClubsAsync() =>

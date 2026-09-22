@@ -39,9 +39,9 @@
 .player-sport-tabs {
   display: flex;
   width: 100%;
-  max-width: $max-width-page;
-  margin: map.get($spacing, 'md') auto 0;
-  padding: 0 map.get($spacing, 'base');
+  max-width: $max-width-container;
+  margin: 0 auto map.get($spacing, 'md');
+  padding: 0;
 
   &__group {
     display: inline-flex;
@@ -94,8 +94,6 @@
 
 @media (max-width: 768px) {
   .player-sport-tabs {
-    padding: 0 map.get($spacing, 'sm');
-
     &__group {
       width: 100%;
       justify-content: stretch;

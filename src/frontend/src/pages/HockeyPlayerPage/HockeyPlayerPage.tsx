@@ -27,6 +27,8 @@ import {
   type HockeyFaceoffTally,
 } from '../../utils/hockeyLookups';
 import StatAbbr from '../../components/StatAbbr/StatAbbr';
+import { PlayerAvatar, PlayerNameHeading } from '../PlayerPage/PlayerAvatar';
+import { PlayerViewTabs } from '../PlayerPage/PlayerViewTabs';
 import '../FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage.scss';
 
 const MATCHES_PER_PAGE = 20;
@@ -451,11 +453,11 @@ export function HockeyPlayerProfile({
         {player && (
           <>
             <div className="player-container">
-              <div className="player-info-layout">
-                <div className="player-info-box">
-                  <div className="player-avatar-large" />
+              <div className="player-header">
+                <div className="player-header__identity">
+                  <PlayerAvatar name={name} logoAlt={teams[0]?.name ?? name} />
                   <div className="player-details">
-                    <div className="player-name">{name}</div>
+                    <PlayerNameHeading name={name} />
                     <div className="player-details-row">
                       {teams[0] && <span className="player-team">{teams[0].name}</span>}
                       <span className="player-position">
@@ -464,7 +466,7 @@ export function HockeyPlayerProfile({
                     </div>
                   </div>
                 </div>
-                <div className="player-stats-box">
+                <div className="player-header__aside">
                   <div className="stat-item">
                     <span className="stat-label">{t('hockey.players.shoots', 'Shoots')}</span>
                     <span className="stat-value">{t(`hockey.shoots.${player.shoots}`, player.shoots)}</span>
@@ -482,6 +484,27 @@ export function HockeyPlayerProfile({
                 </div>
               </div>
             </div>
+            <PlayerViewTabs
+              skaterSeasons={seasonRows.map((row) => ({
+                competitionId: row.competitionId,
+                seasonLabel: row.competitionName,
+                gamesPlayed: row.stats.gamesPlayed,
+                goals: row.stats.goals,
+                assists: row.stats.assists,
+                points: row.stats.points,
+              }))}
+              goalieSeasons={goalieRows.map((row) => ({
+                competitionId: row.competitionId,
+                seasonLabel: row.competitionName,
+                saves: row.stats.saves,
+                shotsAgainst: row.stats.shotsAgainst,
+                goalsAgainst: row.stats.goalsAgainst,
+                minutesPlayed: 0,
+                gamesPlayed: row.stats.gamesPlayed,
+                goalsAgainstAverage: row.stats.goalsAgainstAverage,
+              }))}
+              numbers={(
+            <>
             <div className="player-container">
               <div className="career-stats-section">
                 <h3>{t('hockey.players.careerStats', 'Career statistics')}</h3>
@@ -699,18 +722,9 @@ export function HockeyPlayerProfile({
                 )}
               </div>
             </div>
-            <div className="player-container">
-              <h2>{t('hockey.players.team', 'Teams')}</h2>
-              <ul>
-                {teams.map((team) => (
-                  <li key={team.id}>
-                    <Link to={`/hockey/team/${getTeamSlug({ id: team.id, name: team.name }, namedTeams)}`}>
-                      {team.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            </>
+              )}
+            />
           </>
         )}
       </div>,

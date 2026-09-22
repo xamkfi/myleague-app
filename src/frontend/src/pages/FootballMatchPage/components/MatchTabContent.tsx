@@ -38,11 +38,15 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
                 <p className="match-pending">{t('matchPage.matchInfo.notStarted')}</p>
               )}
 
-              <MatchEvents match={match} />
-
               {hasStarted && (
                 <div className="summary-stats-section">
                   <MatchStats match={match} />
+                </div>
+              )}
+
+              {hasEvents && (
+                <div className="summary-events-section">
+                  <MatchEvents match={match} />
                 </div>
               )}
             </div>

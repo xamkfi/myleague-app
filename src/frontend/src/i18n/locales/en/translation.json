@@ -135,12 +135,12 @@
   },
   "matchPage": {
     "navigation": {
-      "summary": "SUMMARY",
-      "lineups": "LINEUPS",
-      "stats": "STATS",
-      "table": "TABLE",
-      "groupStandings": "GROUP STANDINGS",
-      "playoffBracket": "PLAYOFF BRACKET"
+      "summary": "Summary",
+      "lineups": "Lineups",
+      "stats": "Stats",
+      "table": "Table",
+      "groupStandings": "Group standings",
+      "playoffBracket": "Playoff bracket"
     },
     "standings": {
       "groupFallback": "Group",
@@ -2046,6 +2046,21 @@
       "next": "Next page",
       "last": "Last page",
       "pageOf": "Page {{current}} / {{total}}"
+    },
+    "charts": {
+      "tabsLabel": "Statistics view",
+      "numbers": "Numbers",
+      "development": "Development",
+      "loading": "Loading charts...",
+      "needMoreSeasons": "Development can be shown once the player has statistics from at least two seasons.",
+      "needMoreGoalieSeasons": "Goalie development can be shown once there are at least two seasons.",
+      "skaterTitle": "Goals, assists and points per game",
+      "goalieTitle": "Save percentage and goals-against average",
+      "goals": "Goals",
+      "assists": "Assists",
+      "pointsPerGame": "Points / game",
+      "savePercentage": "Save %",
+      "goalsAgainstAverage": "Goals-against average"
     }
   },
   "playerLicence": {

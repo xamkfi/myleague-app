@@ -25,4 +25,14 @@ public class ClaimJerseyTests
 
         jersey.Should().Be(2);
     }
+
+    [Fact]
+    public void ClaimJersey_NumberHeldByAnotherRow_SkipsReservedNumber()
+    {
+        HashSet<int> claimed = HistoricalRosterApplicator.ReservedJerseys([1, null, 100]);
+
+        int jersey = HistoricalRosterApplicator.ClaimJersey(null, claimed);
+
+        jersey.Should().Be(2);
+    }
 }
