@@ -22,6 +22,12 @@ public class FootballCompetitionConfiguration : IEntityTypeConfiguration<Footbal
         builder.Property(s => s.TeamCategory).IsRequired().HasConversion<string>().HasDefaultValue(Domain.Enums.Common.TeamCategory.Adult);
         builder.HasIndex(s => s.TeamCategory);
 
+        builder.Property(s => s.LogoUrl)
+            .HasConversion(
+                uri => uri != null ? uri.ToString() : null,
+                value => value != null ? new Uri(value, UriKind.Absolute) : null)
+            .HasMaxLength(500);
+
         builder.OwnsOne(s => s.MatchRules, rules => FootballMatchRulesMapping.Map(rules, "MatchRules_"));
         builder.OwnsOne(s => s.StandingRules, rules => FootballMatchRulesMapping.MapStandingRules(rules, "StandingRules_"));
 

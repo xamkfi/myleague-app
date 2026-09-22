@@ -39,6 +39,7 @@ public class CreateHockeyTournamentHandler : IRequestHandler<CreateHockeyTournam
                 request.Venue,
                 request.ContentHtml,
                 teamCategory: request.TeamCategory);
+            tournament.UpdateLogo(CompetitionLogoUrl.Parse(request.LogoUrl));
 
             await _competitionRepository.AddAsync(tournament);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 import MatchesList from '../../components/MatchesList/MatchesList';
 import PlannedPlayoffSchedule from '../../components/PlannedPlayoffSchedule';
@@ -567,11 +568,11 @@ function TournamentPage() {
   return (
     <PageTemplate title={tournament.name}>
       <div className="tournament-page">
-        <header className="tournament-page__hero">
-          <div className="tournament-page__hero-row">
-            <div className="tournament-page__icon" aria-hidden="true">🏆</div>
-            <div className="tournament-page__heading">
-              <h1 className="tournament-page__title">{tournament.name}</h1>
+        <CompetitionHero
+          title={tournament.name}
+          logoUrl={tournament.logoUrl}
+          meta={
+            <>
               <div className="tournament-page__meta">
                 <span>
                   <i className="fas fa-calendar-alt" aria-hidden="true"></i>
@@ -595,9 +596,9 @@ function TournamentPage() {
               ) : (
                 <p className="tournament-page__description">{description}</p>
               )}
-            </div>
-          </div>
-        </header>
+            </>
+          }
+        />
 
         <nav className="tournament-page__tabs" aria-label={t('tournaments.tabsAria', 'Turnauksen välilehdet')}>
           {tabs.map((tab) => (

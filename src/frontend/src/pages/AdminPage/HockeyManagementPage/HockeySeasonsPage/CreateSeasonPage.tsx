@@ -16,6 +16,7 @@ function CreateHockeySeasonPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [seasonCode, setSeasonCode] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
   const [teamCategory, setTeamCategory] = useState<HockeyTeamCategory>('Adult');
   const [selectedDivisionIds, setSelectedDivisionIds] = useState<string[]>([]);
   const [divisions, setDivisions] = useState<Array<{ id: string; name: string }>>([]);
@@ -43,6 +44,7 @@ function CreateHockeySeasonPage() {
         endDate: new Date(endDate).toISOString(),
         seasonCode: seasonCode || undefined,
         teamCategory,
+        logoUrl: logoUrl || undefined,
       });
       for (const [index, divisionId] of selectedDivisionIds.entries()) {
         const division = divisions.find((item) => item.id === divisionId);
@@ -67,6 +69,10 @@ function CreateHockeySeasonPage() {
           <div className="form-group">
             <label htmlFor="name">{t('hockey.seasons.name', 'Name')} *</label>
             <input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label htmlFor="logoUrl">{t('competition.logoUrl', 'Logo URL')}</label>
+            <input id="logoUrl" type="url" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://" />
           </div>
           <div className="form-row">
             <div className="form-group">

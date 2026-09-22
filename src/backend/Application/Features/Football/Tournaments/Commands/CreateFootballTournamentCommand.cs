@@ -49,4 +49,5 @@ public record CreateFootballTournamentCommand(
     bool HasPlayoffStage,
     bool HasThirdPlaceMatch,
     IReadOnlyList<FootballPlayoffScheduleSlotInput>? PlayoffSchedule = null,
-    Domain.Enums.Common.TeamCategory TeamCategory = Domain.Enums.Common.TeamCategory.Adult) : IRequest<Result<FootballTournamentDto>>;
+    Domain.Enums.Common.TeamCategory TeamCategory = Domain.Enums.Common.TeamCategory.Adult,
+    string? LogoUrl = null) : IRequest<Result<FootballTournamentDto>>;

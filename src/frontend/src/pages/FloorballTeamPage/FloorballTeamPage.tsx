@@ -5,6 +5,7 @@ import type { FloorballMatchDto, FloorballTeam } from '../../types/floorball/flo
 import { floorballTeamNameSearchService } from '../../api/floorball/floorballTeamNameSearchService';
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
+import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 import './FloorballTeamPage.scss';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto, type FloorballSeasonStatisticsSummaryDto, type FloorballPlayerSeasonStatisticsDto } from '../../api/floorball/floorballStatistics';
@@ -16,7 +17,6 @@ import RosterSection from './components/RosterSection';
 import SummarySection from './components/SummarySection';
 import Statistics from './components/Statistics';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
-import { isGuid } from '../../utils/sportRoutes';
 
 function pickSeasonForDivision(seasons: FloorballSeasonDto[], divisionId: string): FloorballSeasonDto | null {
   const matching = seasons.filter((season) =>
@@ -340,18 +340,16 @@ function FloorballTeamPage() {
             <div className="header-content">
               <div className="team-branding">
                 <div className="floorball-page-team-logo">
-                  {team.logoUrl ? (
-                    <img 
-                      // TODO: Use real logo when possible
-                      src={"http://www.mahl.fi/media/com_joomleague/clubs/small/myry21_1683621904.jpg"} 
+                  {resolveLogoUrl(team.logoUrl) ? (
+                    <img
+                      src={resolveLogoUrl(team.logoUrl)}
                       alt={`${team.name} logo`}
                       onError={(e) => {
-                        // If team logo fails to load, fallback to club logo
                         const target = e.target as HTMLImageElement;
-                        if (team.club.logoUrl && target.src !== team.club.logoUrl) {
-                          target.src = team.club.logoUrl;
+                        const clubLogo = resolveLogoUrl(team.club.logoUrl);
+                        if (clubLogo && target.src !== clubLogo) {
+                          target.src = clubLogo;
                         } else {
-                          // If both fail, hide the img and show placeholder
                           target.style.display = 'none';
                           const placeholder = target.nextElementSibling as HTMLElement;
                           if (placeholder) {
@@ -360,12 +358,11 @@ function FloorballTeamPage() {
                         }
                       }}
                     />
-                  ) : team.club.logoUrl ? (
-                    <img 
-                      src={team.club.logoUrl} 
+                  ) : resolveLogoUrl(team.club.logoUrl) ? (
+                    <img
+                      src={resolveLogoUrl(team.club.logoUrl)}
                       alt={`${team.club.name} logo`}
                       onError={(e) => {
-                        // If club logo fails to load, hide and show placeholder
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
                         const placeholder = target.nextElementSibling as HTMLElement;
@@ -375,7 +372,7 @@ function FloorballTeamPage() {
                       }}
                     />
                   ) : null}
-                  <div className="logo-placeholder" style={{ display: (team.logoUrl || team.club.logoUrl) ? 'none' : 'flex' }}>
+                  <div className="logo-placeholder" style={{ display: (resolveLogoUrl(team.logoUrl) || resolveLogoUrl(team.club.logoUrl)) ? 'none' : 'flex' }}>
                     {team.name}
                   </div>
                 </div>                

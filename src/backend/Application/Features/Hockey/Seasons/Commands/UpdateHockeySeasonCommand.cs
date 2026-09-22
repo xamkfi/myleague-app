@@ -14,4 +14,5 @@ public record UpdateHockeySeasonCommand(
     DateTime StartDate,
     DateTime EndDate,
     string? SeasonCode,
-    TeamCategory TeamCategory) : IRequest<Result<HockeySeasonDto>>;
+    TeamCategory TeamCategory,
+    string? LogoUrl = null) : IRequest<Result<HockeySeasonDto>>;

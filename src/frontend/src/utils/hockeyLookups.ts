@@ -114,17 +114,39 @@ export function formatHockeyClock(totalSeconds: number): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
-export function hockeyEventPlayerLabel(
+export function resolveHockeyCareerPlayerId(
   match: HockeyMatchDto,
-  event: HockeyMatchEventDto,
-  playerNames: Map<string, string>
-): string {
-  if (!event.matchActivePlayerId) {
-    return event.description?.trim() ?? '';
+  teams: HockeyTeamDto[],
+  matchActivePlayerId: string | null | undefined,
+): string | undefined {
+  if (!matchActivePlayerId) {
+    return undefined;
   }
 
   for (const side of match.matchTeams) {
-    const player = side.activePlayers.find((row) => row.id === event.matchActivePlayerId);
+    const active = side.activePlayers.find((row) => row.id === matchActivePlayerId);
+    if (!active) {
+      continue;
+    }
+
+    const career = teams.find((team) => team.id === side.teamId);
+    return career?.roster.find((row) => row.id === active.teamPlayerId)?.playerId;
+  }
+
+  return undefined;
+}
+
+export function hockeyActivePlayerLabel(
+  match: HockeyMatchDto,
+  matchActivePlayerId: string | null | undefined,
+  playerNames: Map<string, string>,
+): string {
+  if (!matchActivePlayerId) {
+    return '';
+  }
+
+  for (const side of match.matchTeams) {
+    const player = side.activePlayers.find((row) => row.id === matchActivePlayerId);
     if (!player) {
       continue;
     }
@@ -132,7 +154,34 @@ export function hockeyEventPlayerLabel(
     return name ? `#${player.jerseyNumber} ${name}` : `#${player.jerseyNumber}`;
   }
 
-  return event.description?.trim() ?? '';
+  return '';
+}
+
+export function hockeyEventPlayerLabel(
+  match: HockeyMatchDto,
+  event: HockeyMatchEventDto,
+  playerNames: Map<string, string>
+): string {
+  return hockeyActivePlayerLabel(match, event.matchActivePlayerId, playerNames)
+    || event.description?.trim()
+    || '';
+}
+
+export function buildHockeyJerseyByCareerPlayerId(
+  match: HockeyMatchDto,
+  teams: HockeyTeamDto[],
+): Map<string, number> {
+  const jerseys = new Map<string, number>();
+  for (const side of match.matchTeams) {
+    const career = teams.find((team) => team.id === side.teamId);
+    for (const active of side.activePlayers) {
+      const playerId = career?.roster.find((row) => row.id === active.teamPlayerId)?.playerId;
+      if (playerId && Number.isFinite(active.jerseyNumber)) {
+        jerseys.set(playerId, active.jerseyNumber);
+      }
+    }
+  }
+  return jerseys;
 }
 
 export function toDateTimeLocalValue(iso: string): string {

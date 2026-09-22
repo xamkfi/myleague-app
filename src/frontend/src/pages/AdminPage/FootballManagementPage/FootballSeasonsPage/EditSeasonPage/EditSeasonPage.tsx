@@ -112,6 +112,7 @@ const EditSeasonPage = () => {
         drawPoints: standing?.drawPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.drawPoints,
         lossPoints: standing?.lossPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.lossPoints,
         teamCategory: seasonData.data.teamCategory,
+        logoUrl: seasonData.data.logoUrl ?? '',
       });
     } catch {
       setError(t('football.seasons.errors.loadFailed', 'Failed to load season data'));
@@ -539,6 +540,10 @@ const EditSeasonPage = () => {
                 <div className="form-group">
                   <label htmlFor="edit-name">{t('football.seasons.fields.name', 'Name')} *</label>
                   <input type="text" id="edit-name" name="name" value={formData.name} onChange={handleInputChange} required disabled={loading} placeholder={t('football.seasons.placeholders.name', 'Enter season name')} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-logoUrl">{t('competition.logoUrl', 'Logo URL')}</label>
+                  <input type="url" id="edit-logoUrl" name="logoUrl" value={formData.logoUrl ?? ''} onChange={handleInputChange} disabled={loading} placeholder="https://" />
                 </div>
               </div>
 

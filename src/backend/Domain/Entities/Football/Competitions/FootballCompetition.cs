@@ -16,6 +16,7 @@ public abstract class FootballCompetition : BaseEntity
     public bool IsActive { get; protected set; }
     public bool IsCompleted { get; protected set; }
     public TeamCategory TeamCategory { get; protected set; }
+    public Uri? LogoUrl { get; protected set; }
     public IReadOnlyCollection<FootballTeam> Teams => _teams.AsReadOnly();
     private protected readonly List<FootballTeam> _teams = new();
     public IReadOnlyCollection<FootballMatch> Matches => _matches.AsReadOnly();
@@ -100,6 +101,11 @@ public abstract class FootballCompetition : BaseEntity
         TeamCategory = teamCategory;
     }
 
+    public void UpdateLogo(Uri? logoUrl)
+    {
+        LogoUrl = ValidateLogoUrl(logoUrl);
+    }
+
     public void Activate()
     {
         if (IsCompleted)
@@ -147,5 +153,27 @@ public abstract class FootballCompetition : BaseEntity
         if (_matches.Contains(match))
             return;
         _matches.Add(match);
+    }
+
+    private static Uri? ValidateLogoUrl(Uri? logoUrl)
+    {
+        if (logoUrl is null)
+        {
+            return null;
+        }
+
+        if (!logoUrl.IsAbsoluteUri
+            || (logoUrl.Scheme != Uri.UriSchemeHttp && logoUrl.Scheme != Uri.UriSchemeHttps)
+            || string.IsNullOrWhiteSpace(logoUrl.Host))
+        {
+            throw new ArgumentException("Logo url must be an http or https address", nameof(logoUrl));
+        }
+
+        if (logoUrl.OriginalString.Length > 500)
+        {
+            throw new ArgumentException("Logo url cannot exceed 500 characters", nameof(logoUrl));
+        }
+
+        return logoUrl;
     }
 }

@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Football.Matches.DTOs;
 using Application.Features.Football.Matches.Mappings;
 using Application.Features.Football.Seasons.Commands;
@@ -71,7 +72,8 @@ public static class FootballSeasonMapper
             FootballMatchMapper.ToDtos(matchesToMap).ToList().AsReadOnly(),
             matchRulesDto,
             standingRulesDto,
-            season.TeamCategory);
+            season.TeamCategory,
+            CompetitionLogoUrl.ToPublicString(season.LogoUrl));
     }
 
     public static FootballSeason ToEntity(CreateFootballSeasonCommand command)
@@ -98,13 +100,15 @@ public static class FootballSeasonMapper
             command.DrawPoints,
             command.LossPoints);
 
-        return new FootballSeason(
+        FootballSeason season = new FootballSeason(
             command.Name,
             startDateUtc,
             endDateUtc,
             matchRules,
             standingRules,
             command.TeamCategory);
+        season.UpdateLogo(CompetitionLogoUrl.Parse(command.LogoUrl));
+        return season;
     }
 
     public static void UpdateFromCommand(FootballCompetition season, UpdateFootballSeasonCommand command)
@@ -136,6 +140,8 @@ public static class FootballSeasonMapper
         {
             season.UpdateTeamCategory(command.TeamCategory.Value);
         }
+
+        season.UpdateLogo(CompetitionLogoUrl.Parse(command.LogoUrl));
     }
 
     private static IEnumerable<FootballTeamSummaryDto> ToTeamSummaryDtos(

@@ -201,6 +201,8 @@ namespace MyLeague.Infrastructure.DependencyInjections
 
                     InfoPageContentSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
                     FooterContactSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                    RulesSectionSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                    NewsArticleSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
                 }
             }
 

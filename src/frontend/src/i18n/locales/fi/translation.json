@@ -98,6 +98,37 @@
     "clubs": "Seurat",
     "team": "Joukkue"
   },
+  "notFound": {
+    "title": "Sivua ei löytynyt",
+    "message": "Etsimääsi sivua ei ole olemassa tai se on siirretty.",
+    "home": "Etusivulle"
+  },
+  "competition": {
+    "logoUrl": "Logon URL"
+  },
+  "registerPage": {
+    "intro": "Täytä lomake, niin avaamme sähköpostin seuran työntekijälle.",
+    "name": "Nimi",
+    "email": "Sähköposti",
+    "phone": "Puhelin",
+    "ageGroup": "Ikäryhmä",
+    "ageGroupPlaceholder": "Valitse ikäryhmä",
+    "ageGroupU12": "Alle 12",
+    "ageGroupU15": "Alle 15",
+    "ageGroupU18": "Alle 18",
+    "ageGroupAdult": "Aikuiset",
+    "ageGroupSenior": "Seniorit (40+)",
+    "experience": "Kokemustaso",
+    "experiencePlaceholder": "Valitse kokemustaso",
+    "experienceBeginner": "Aloittelija",
+    "experienceIntermediate": "Keskitaso",
+    "experienceAdvanced": "Edistynyt",
+    "notes": "Lisätiedot",
+    "submit": "Lähetä ilmoittautuminen",
+    "mailSubject": "Ilmoittautuminen: {{name}}",
+    "thankYouTitle": "Sähköpostiohjelma avattiin",
+    "thankYouBody": "Jos viesti ei avautunut, lähetä ilmoittautuminen osoitteeseen pasi@mahl.fi."
+  },
   "sessionExpiry": {
     "message": "Istuntosi vanhenee noin {{minutes}} minuutin kuluttua. Pysy kirjautuneena, jos tarvitset sivua vielä.",
     "stayLoggedIn": "Pysy kirjautuneena",
@@ -578,7 +609,7 @@
         "email": "Sähköposti",
         "phone": "Puhelin",
         "alternativePhone": "Vaihtoehtoinen puhelin",
-        "floorballAssignment": "Salibandy joukkuemääritys (Valinnainen)",
+        "floorballAssignment": "Joukkuemääritys (valinnainen)",
         "team": "Joukkue",
         "selectTeam": "Valitse joukkue...",
         "searchTeams": "Etsi joukkueita...",

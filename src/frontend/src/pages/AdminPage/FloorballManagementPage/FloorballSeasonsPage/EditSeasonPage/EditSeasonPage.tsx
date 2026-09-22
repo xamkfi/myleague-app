@@ -100,7 +100,8 @@ const EditSeasonPage = () => {
         periodDurationMinutes: seasonData.data.matchRules?.periodDurationMinutes ?? 15,
         allowOvertime: seasonData.data.matchRules?.allowOvertime ?? true,
         overtimeDurationMinutes: seasonData.data.matchRules?.overtimeDurationMinutes ?? 5,
-        allowShootout: seasonData.data.matchRules?.allowShootout ?? true
+        allowShootout: seasonData.data.matchRules?.allowShootout ?? true,
+        logoUrl: seasonData.data.logoUrl ?? '',
       });
     } catch {
       setError(t('floorball.seasons.errors.loadFailed', 'Failed to load season data'));
@@ -526,6 +527,10 @@ const EditSeasonPage = () => {
                 <div className="form-group">
                   <label htmlFor="edit-name">{t('floorball.seasons.fields.name', 'Name')} *</label>
                   <input type="text" id="edit-name" name="name" value={formData.name} onChange={handleInputChange} required disabled={loading} placeholder={t('floorball.seasons.placeholders.name', 'Enter season name')} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-logoUrl">{t('competition.logoUrl', 'Logo URL')}</label>
+                  <input type="url" id="edit-logoUrl" name="logoUrl" value={formData.logoUrl ?? ''} onChange={handleInputChange} disabled={loading} placeholder="https://" />
                 </div>
               </div>
 

@@ -7,9 +7,10 @@ import ResultsSection from './components/ResultsSection';
 import FixturesSection from './components/FixturesSection';
 import SummarySection from './components/SummarySection';
 import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
+import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
 import { isNotFoundError } from '../../api/utils/isNotFoundError';
 import { unwrapApiErrorMessage } from '../../api/utils/ParseErrorResponse';
-import { floorballSeasonService } from '../../api/floorball/floorballSeasonService';
+import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { floorballStatisticsService, type FloorballSeasonStatisticsSummaryDto } from '../../api/floorball/floorballStatistics';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
@@ -62,10 +63,10 @@ export default function LeaguePage() {
   
   // State for season statistics data
   const [seasonSummary, setSeasonSummary] = useState<FloorballSeasonStatisticsSummaryDto | null>(null);
-  const [seasonName, setSeasonName] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
+  const [season, setSeason] = useState<FloorballSeasonDto | null>(null);
 
   // State for matches data
   const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null);
@@ -102,7 +103,7 @@ export default function LeaguePage() {
 
   useEffect(() => {
     if (!id) {
-      setSeasonName('');
+      setSeason(null);
       return;
     }
 
@@ -110,13 +111,13 @@ export default function LeaguePage() {
     floorballSeasonService
       .getById(id)
       .then((result) => {
-        if (!cancelled && result.data?.name) {
-          setSeasonName(result.data.name);
+        if (!cancelled) {
+          setSeason(result.data ?? null);
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setSeasonName('');
+          setSeason(null);
         }
       });
 
@@ -243,38 +244,25 @@ export default function LeaguePage() {
   };
 
   return (
-    <PageTemplate title={seasonName || seasonSummary?.seasonName || t('leaguePage.defaultTitle')}>
+    <PageTemplate title={season?.name || seasonSummary?.seasonName || t('leaguePage.defaultTitle')}>
       <div className="league-page">
-        {/* Hero Image Background */}
-        <div className="hero-image-container">
-          <div className="hero-image"></div>
-          
-          {/* League Header */}
-          <div className="league-header">
-            <div className="header-content">
-              <div className="league-branding">
-                <div className="league-icon">
-                  <div className="trophy-icon">🏆</div>
-                </div>
-              </div>
-
-              <div className="league-info">
-                <h1 className="league-title">{seasonName || seasonSummary?.seasonName || t('leaguePage.defaultTitle')}</h1>
-                <div className="league-tabs">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.key}
-                      className={`tab-button ${activeTab === tab.key ? 'active' : ''}`}
-                      onClick={() => handleTabChange(tab.key)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+        <CompetitionHero
+          title={season?.name || seasonSummary?.seasonName || t('leaguePage.defaultTitle')}
+          logoUrl={season?.logoUrl}
+        >
+          <div className="competition-hero__tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`competition-hero__tab ${activeTab === tab.key ? 'competition-hero__tab--active' : ''}`}
+                onClick={() => handleTabChange(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        </div>
+        </CompetitionHero>
         
         <div className="league-content">
           {renderTabContent()}

@@ -22,6 +22,7 @@ export interface FloorballTournamentDto {
    */
   playoffSchedule: PlayoffScheduleSlotDto[];
   teamCategory?: string;
+  logoUrl?: string | null;
 }
 
 export interface PlayoffScheduleSlotDto {
@@ -135,6 +136,7 @@ export interface CreateFloorballTournamentRequest {
    */
   playoffSchedule?: PlayoffScheduleSlotRequest[];
   teamCategory?: string;
+  logoUrl?: string | null;
 }
 
 export interface PlayoffScheduleSlotRequest {

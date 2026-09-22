@@ -201,7 +201,8 @@ public class FootballSeasonController : BaseApiController
             request.WinPoints,
             request.DrawPoints,
             request.LossPoints,
-            request.TeamCategory);
+            request.TeamCategory,
+            request.LogoUrl);
 
         Result<FootballSeasonDto> result = await _mediator.Send(command);
 
@@ -250,7 +251,8 @@ public class FootballSeasonController : BaseApiController
             request.WinPoints,
             request.DrawPoints,
             request.LossPoints,
-            request.TeamCategory);
+            request.TeamCategory,
+            request.LogoUrl);
 
         Result<FootballSeasonDto> result = await _mediator.Send(command);
         return HandleResult(result, "Football season updated successfully", "Failed to update football season");

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
 import HockeyMatchRow from '../../components/HockeyMatchRow/HockeyMatchRow';
 import HockeyStandingsTable from '../HockeyLeaguePage/HockeyStandingsTable';
 import { hockeyTournamentService } from '../../api/hockey/hockeyTournamentService';
@@ -74,10 +75,17 @@ function HockeyTournamentPage() {
   return (
     <PageTemplate title={tournament?.name ?? t('hockey.tournaments.title', 'Tournament')}>
       <div className="tournament-page">
-        <div className="tournament-page__hero">
-          <h1 className="tournament-page__title">{tournament?.name}</h1>
-          <p>{tournament?.currentStage} · {tournament?.status}</p>
-        </div>
+        <CompetitionHero
+          title={tournament?.name ?? t('hockey.tournaments.title', 'Tournament')}
+          logoUrl={tournament?.logoUrl}
+          meta={
+            tournament ? (
+              <p className="tournament-page__meta">
+                {tournament.currentStage} · {tournament.status}
+              </p>
+            ) : null
+          }
+        />
         {error && <p>{error}</p>}
         {tournament?.groups.map((group) => {
           const standings = groupStandings.get(group.id) ?? [];

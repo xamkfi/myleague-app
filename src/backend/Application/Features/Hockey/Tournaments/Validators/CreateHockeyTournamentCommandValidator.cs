@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Hockey.Tournaments.Commands;
 using FluentValidation;
 
@@ -26,5 +27,8 @@ public class CreateHockeyTournamentCommandValidator : AbstractValidator<CreateHo
             .When(x => !string.IsNullOrWhiteSpace(x.Venue));
 
         RuleFor(x => x.TeamCategory).IsInEnum();
+        RuleFor(x => x.LogoUrl)
+            .Must(CompetitionLogoUrl.IsValidOptional)
+            .WithMessage("Logo url must be an http or https address under 500 characters");
     }
 }

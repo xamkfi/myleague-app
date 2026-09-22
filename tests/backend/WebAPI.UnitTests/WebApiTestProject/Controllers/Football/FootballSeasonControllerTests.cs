@@ -37,7 +37,8 @@ public class FootballSeasonControllerTests
             Matches: Array.Empty<FootballMatchDto>(),
             MatchRules: new FootballMatchRulesDto(2, 20, 5, true, 0, false, false, 2, 5, false),
             StandingRules: new FootballStandingRulesDto(3, 1, 0),
-            TeamCategory: TeamCategory.Adult);
+            TeamCategory: TeamCategory.Adult,
+            LogoUrl: null);
 
     [Fact]
     public async Task GetSeasonById_WhenFound_ReturnsOk()

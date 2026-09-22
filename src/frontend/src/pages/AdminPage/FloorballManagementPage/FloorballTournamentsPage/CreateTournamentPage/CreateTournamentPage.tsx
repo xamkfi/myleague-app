@@ -33,6 +33,7 @@ const CreateTournamentPage = () => {
     teamsAdvancingPerGroup: 2,
     hasPlayoffStage: true,
     hasThirdPlaceMatch: false,
+    logoUrl: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -152,6 +153,19 @@ const CreateTournamentPage = () => {
                   required
                   disabled={loading}
                   placeholder={t('floorball.tournaments.placeholders.name', 'Enter tournament name')}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="create-logoUrl">{t('competition.logoUrl', 'Logo URL')}</label>
+                <input
+                  type="url"
+                  id="create-logoUrl"
+                  name="logoUrl"
+                  value={formData.logoUrl ?? ''}
+                  onChange={handleInputChange}
+                  disabled={loading}
+                  placeholder="https://"
                 />
               </div>
 

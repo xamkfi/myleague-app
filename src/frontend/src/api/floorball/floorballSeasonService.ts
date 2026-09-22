@@ -27,6 +27,7 @@ export interface FloorballSeasonDto {
   matches: unknown[];
   matchRules: FloorballMatchRules;
   teamCategory?: string;
+  logoUrl?: string | null;
 }
 
 export interface FloorballSeasonSummaryDto {
@@ -64,6 +65,7 @@ export interface CreateFloorballSeasonRequest {
   overtimeDurationMinutes: number;
   allowShootout: boolean;
   teamCategory?: string;
+  logoUrl?: string | null;
 }
 
 export interface UpdateFloorballSeasonRequest {
@@ -76,6 +78,7 @@ export interface UpdateFloorballSeasonRequest {
   overtimeDurationMinutes: number;
   allowShootout: boolean;
   teamCategory?: string;
+  logoUrl?: string | null;
 }
 
 export const floorballSeasonService = {

@@ -82,6 +82,12 @@ namespace WebAPI.Models.Floorball
         /// Audience / age-group category. Default: Adult.
         /// </summary>
         public Domain.Enums.Common.TeamCategory TeamCategory { get; set; } = Domain.Enums.Common.TeamCategory.Adult;
+
+        /// <summary>
+        /// Optional public logo URL for the season hero.
+        /// </summary>
+        [StringLength(500)]
+        public string? LogoUrl { get; set; }
     }
 
     /// <summary>
@@ -137,6 +143,12 @@ namespace WebAPI.Models.Floorball
         /// Audience / age-group category. When omitted, the existing value is kept.
         /// </summary>
         public Domain.Enums.Common.TeamCategory? TeamCategory { get; set; }
+
+        /// <summary>
+        /// Optional public logo URL for the season hero.
+        /// </summary>
+        [StringLength(500)]
+        public string? LogoUrl { get; set; }
     }
 
     /// <summary>

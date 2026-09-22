@@ -8,6 +8,7 @@ import HockeyPlayerStatsTables from './HockeyPlayerStatsTables';
 import SharedFixturesSection from '../../components/FixturesSection/FixturesSection';
 import type { FixtureMatch } from '../../components/FixturesSection/FixturesSection';
 import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
+import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
 import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
 import { hockeyMatchService } from '../../api/hockey/hockeyMatchService';
 import { hockeyStatisticsService } from '../../api/hockey/hockeyStatisticsService';
@@ -380,33 +381,20 @@ function HockeyLeaguePage() {
   return (
     <PageTemplate title={season?.name ?? t('leaguePage.defaultTitle')}>
       <div className="league-page">
-        <div className="hero-image-container">
-          <div className="hero-image" />
-          <div className="league-header">
-            <div className="header-content">
-              <div className="league-branding">
-                <div className="league-icon">
-                  <div className="trophy-icon">🏆</div>
-                </div>
-              </div>
-              <div className="league-info">
-                <h1 className="league-title">{season?.name ?? t('leaguePage.defaultTitle')}</h1>
-                <div className="league-tabs">
-                  {tabs.map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      className={`tab-button ${tab === item.key ? 'active' : ''}`}
-                      onClick={() => setTab(item.key)}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+        <CompetitionHero title={season?.name ?? t('leaguePage.defaultTitle')} logoUrl={season?.logoUrl}>
+          <div className="competition-hero__tabs">
+            {tabs.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className={`competition-hero__tab ${tab === item.key ? 'competition-hero__tab--active' : ''}`}
+                onClick={() => setTab(item.key)}
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
-        </div>
+        </CompetitionHero>
         <div className="league-content">
           {renderTabContent()}
         </div>

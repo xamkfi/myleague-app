@@ -36,8 +36,8 @@ public static class ClubMapper
             club.FoundingDate,
             club.City,
             club.Country,
-            club.WebsiteUrl?.ToString() ?? string.Empty,
-            club.LogoUrl?.ToString() ?? string.Empty,
+            ToPublicUrl(club.WebsiteUrl),
+            ToPublicUrl(club.LogoUrl),
             club.ContactEmail
         );
     }
@@ -128,5 +128,22 @@ public static class ClubMapper
         Uri? websiteUri = !string.IsNullOrEmpty(command.WebsiteUrl) ? new Uri(command.WebsiteUrl) : null;
         Uri? logoUri = !string.IsNullOrEmpty(command.LogoUrl) ? new Uri(command.LogoUrl) : null;
         club.UpdateOnlinePresence(websiteUri, logoUri, command.ContactEmail);
+    }
+
+    private static string ToPublicUrl(Uri? uri)
+    {
+        if (uri is null)
+        {
+            return string.Empty;
+        }
+
+        string host = uri.Host;
+        if (host.Equals("example.com", StringComparison.OrdinalIgnoreCase)
+            || host.EndsWith(".example.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return string.Empty;
+        }
+
+        return uri.ToString();
     }
 } 

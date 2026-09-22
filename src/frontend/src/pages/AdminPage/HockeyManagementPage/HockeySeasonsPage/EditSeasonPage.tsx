@@ -37,6 +37,7 @@ function EditHockeySeasonPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [seasonCode, setSeasonCode] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
   const [competitionCategory, setCompetitionCategory] = useState<HockeyTeamCategory>('Adult');
   const [selectedDivisionId, setSelectedDivisionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +72,7 @@ function EditHockeySeasonPage() {
     setStartDate(loaded.startDate.slice(0, 10));
     setEndDate(loaded.endDate.slice(0, 10));
     setSeasonCode(loaded.seasonCode ?? '');
+    setLogoUrl(loaded.logoUrl ?? '');
     setCompetitionCategory(loaded.teamCategory ?? 'Adult');
   }, [competitionId]);
 
@@ -203,6 +205,7 @@ function EditHockeySeasonPage() {
                       endDate: new Date(endDate).toISOString(),
                       seasonCode: seasonCode || null,
                       teamCategory: competitionCategory,
+                      logoUrl: logoUrl || null,
                     });
                     await hockeySeasonService.replaceContentBlocks(
                       season.id,
@@ -222,6 +225,10 @@ function EditHockeySeasonPage() {
                 <div className="form-group">
                   <label htmlFor="edit-name">{t('hockey.seasons.fields.name', 'Name')} *</label>
                   <input id="edit-name" value={name} onChange={(event) => setName(event.target.value)} required disabled={saving} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="edit-logoUrl">{t('competition.logoUrl', 'Logo URL')}</label>
+                  <input id="edit-logoUrl" type="url" value={logoUrl} onChange={(event) => setLogoUrl(event.target.value)} disabled={saving} placeholder="https://" />
                 </div>
                 <div className="form-group">
                   <label htmlFor="edit-code">{t('hockey.seasons.seasonCode', 'Season code')}</label>

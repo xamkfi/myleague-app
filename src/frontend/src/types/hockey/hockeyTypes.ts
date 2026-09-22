@@ -454,6 +454,7 @@ export interface HockeySeasonDto {
   divisions: HockeyCompetitionDivisionDto[];
   playoffSeries: HockeyPlayoffSeriesDto[];
   playoffSchedule: HockeyPlayoffScheduleSlotDto[];
+  logoUrl?: string | null;
 }
 
 export interface CreateHockeySeasonRequest {
@@ -462,6 +463,7 @@ export interface CreateHockeySeasonRequest {
   endDate: string;
   seasonCode?: string;
   teamCategory?: HockeyTeamCategory;
+  logoUrl?: string | null;
 }
 
 export interface UpdateHockeySeasonRequest {
@@ -470,6 +472,7 @@ export interface UpdateHockeySeasonRequest {
   endDate: string;
   seasonCode?: string | null;
   teamCategory: HockeyTeamCategory;
+  logoUrl?: string | null;
 }
 
 export interface HockeyTournamentRulesDto {
@@ -515,6 +518,7 @@ export interface HockeyTournamentDto {
   playoffSeries: HockeyPlayoffSeriesDto[];
   tournamentRules: HockeyTournamentRulesDto;
   playoffSchedule: HockeyPlayoffScheduleSlotDto[];
+  logoUrl?: string | null;
 }
 
 export interface CreateHockeyTournamentRequest {
@@ -524,6 +528,7 @@ export interface CreateHockeyTournamentRequest {
   venue?: string;
   contentHtml?: string;
   teamCategory?: HockeyTeamCategory;
+  logoUrl?: string | null;
 }
 
 export interface HockeyMatchActivePlayerDto {

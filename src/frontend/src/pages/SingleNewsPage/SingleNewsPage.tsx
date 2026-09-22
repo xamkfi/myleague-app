@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { isNotFoundError } from '../../api/utils/isNotFoundError';
+import NotFoundPage from '../NotFoundPage/NotFoundPage';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import './SingleNewsPage.scss';
 import '../NewsPage/NewsPage.scss';
@@ -22,6 +24,7 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
   const { id } = useParams<{ id: string }>();
   const [news, setNews] = useState<NewsArticleDto | null>(newsData || null);
   const [relatedNews, setRelatedNews] = useState<NewsArticleDto[]>([]);
+  const [isMissing, setIsMissing] = useState(false);
   const { displayHtml, relatedTeams } = useHydratedNewsHtml(news?.contentHtml ?? '');
 
   useEffect(() => {
@@ -30,11 +33,24 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
     }
 
     let cancelled = false;
-    singleNewsService(id).then((article) => {
-      if (!cancelled) {
-        setNews(article);
-      }
-    });
+    setIsMissing(false);
+    singleNewsService(id)
+      .then((article) => {
+        if (!cancelled) {
+          setNews(article);
+        }
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+        if (isNotFoundError(error)) {
+          setIsMissing(true);
+          setNews(null);
+          return;
+        }
+        console.error('Failed to fetch news article:', error);
+      });
 
     return () => {
       cancelled = true;
@@ -62,6 +78,10 @@ function SingleNewsPage({ newsData }: SingleNewsPageProps) {
       cancelled = true;
     };
   }, [id, audience.teamCategory]);
+
+  if (isMissing) {
+    return <NotFoundPage />;
+  }
 
   if (!news) {
     return (

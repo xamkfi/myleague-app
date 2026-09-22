@@ -1,47 +1,19 @@
-import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { newsService, type NewsArticleDto, type PaginatedNewsResponse } from '../../api/news/newsService';
+import type { NewsArticleDto } from '../../api/news/newsService';
 import { useAudience } from '../../context/AudienceContext';
 import HomeNewsCard from './HomeNewsCard';
 import './HomeNewsSection.scss';
 
-function HomeNewsSection() {
+type HomeNewsSectionProps = {
+  articles: NewsArticleDto[];
+  isLoading: boolean;
+  error: string | null;
+  onRetry: () => void;
+};
+
+function HomeNewsSection({ articles, isLoading, error, onRetry }: HomeNewsSectionProps) {
   const { t } = useTranslation();
   const { audience } = useAudience();
-  const [newsArticles, setNewsArticles] = useState<NewsArticleDto[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchNews = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const response = await newsService({
-        page: 1,
-        pageSize: 10,
-        includeArchived: false,
-        teamCategory: audience.teamCategory,
-      });
-
-      if (response && typeof response === 'object' && 'pagination' in response) {
-        const paginatedResponse = response as PaginatedNewsResponse;
-        setNewsArticles(paginatedResponse.data);
-      } else {
-        const oldResponse = response as NewsArticleDto[];
-        setNewsArticles(oldResponse.slice(0, 10));
-      }
-    } catch (err) {
-      console.error('Failed to fetch news:', err);
-      setError(t('homePage.newsSection.error', 'Uutisten lataaminen epäonnistui'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [t, audience.teamCategory]);
-
-  useEffect(() => {
-    fetchNews();
-  }, [fetchNews]);
 
   if (isLoading) {
     return (
@@ -74,7 +46,7 @@ function HomeNewsSection() {
         </h2>
         <div className="home-news-section__error">
           <p>{error}</p>
-          <button onClick={fetchNews} className="home-news-section__retry-btn">
+          <button type="button" onClick={onRetry} className="home-news-section__retry-btn">
             {t('homePage.newsSection.retry', 'Yritä uudelleen')}
           </button>
         </div>
@@ -82,7 +54,7 @@ function HomeNewsSection() {
     );
   }
 
-  if (newsArticles.length === 0) {
+  if (articles.length === 0) {
     return (
       <div className="home-news-section">
         <h2 className="home-news-section__title">
@@ -101,7 +73,7 @@ function HomeNewsSection() {
         {t('homePage.newsSection.title', 'Ajankohtaista')}
       </h2>
       <div className="home-news-section__list">
-        {newsArticles.map((news) => (
+        {articles.map((news) => (
           <HomeNewsCard key={news.id} news={news} />
         ))}
       </div>

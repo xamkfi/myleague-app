@@ -29,7 +29,7 @@ public class UpdateFooterContactCommandValidator : AbstractValidator<UpdateFoote
 
         RuleFor(x => x.Url)
             .MaximumLength(500).WithMessage("Url cannot exceed 500 characters")
-            .Must(BeHttpUrl).WithMessage("Url must be an http or https address")
+            .Must(BePublicUrl).WithMessage("Url must be an http or https address, or a path starting with '/'")
             .When(x => !string.IsNullOrWhiteSpace(x.Url));
 
         RuleFor(x => x.SortOrder)
@@ -44,9 +44,20 @@ public class UpdateFooterContactCommandValidator : AbstractValidator<UpdateFoote
         return email is not null && email.Contains('@', StringComparison.Ordinal);
     }
 
-    private static bool BeHttpUrl(string? url)
+    private static bool BePublicUrl(string? url)
     {
-        return Uri.TryCreate(url, UriKind.Absolute, out Uri? uri)
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return false;
+        }
+
+        string trimmed = url.Trim();
+        if (trimmed.StartsWith('/') && trimmed.Length <= 500)
+        {
+            return true;
+        }
+
+        return Uri.TryCreate(trimmed, UriKind.Absolute, out Uri? uri)
             && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
             && !string.IsNullOrWhiteSpace(uri.Host);
     }

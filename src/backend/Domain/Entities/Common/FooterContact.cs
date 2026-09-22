@@ -113,8 +113,17 @@ public class FooterContact : BaseEntity
             return null;
         }
 
-        if (!url.IsAbsoluteUri
-            || (url.Scheme != Uri.UriSchemeHttp && url.Scheme != Uri.UriSchemeHttps)
+        if (!url.IsAbsoluteUri)
+        {
+            if (!url.OriginalString.StartsWith('/') || url.OriginalString.Length > 500)
+            {
+                throw new ArgumentException("Relative url must start with '/' and stay under 500 characters", nameof(url));
+            }
+
+            return url;
+        }
+
+        if ((url.Scheme != Uri.UriSchemeHttp && url.Scheme != Uri.UriSchemeHttps)
             || string.IsNullOrWhiteSpace(url.Host))
         {
             throw new ArgumentException("Url must be an http or https address", nameof(url));
