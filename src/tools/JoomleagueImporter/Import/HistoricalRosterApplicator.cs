@@ -27,10 +27,10 @@ internal static class HistoricalRosterApplicator
             if (team == null)
                 continue;
 
-            HashSet<int> used = UsedJerseys(team.Roster.Select(r => r.JerseyNumber));
+            HashSet<int> claimed = [];
             foreach (FloorballTeamPlayerDto row in team.Roster.Where(r => r.IsActive && mappedPlayers.Contains(r.PlayerId)))
             {
-                int jersey = ExistingOrNext(row.JerseyNumber, used);
+                int jersey = ClaimJersey(row.JerseyNumber, claimed);
                 if (await api.UpdateTeamPlayerAsync(teamId, row.PlayerId, row.Position, jersey, false, competitionId))
                     deactivated++;
                 else
@@ -57,10 +57,10 @@ internal static class HistoricalRosterApplicator
             if (team == null)
                 continue;
 
-            HashSet<int> used = UsedJerseys(team.Roster.Select(r => r.JerseyNumber));
+            HashSet<int> claimed = [];
             foreach (FootballTeamPlayerDto row in team.Roster.Where(r => r.IsActive && mappedPlayers.Contains(r.PlayerId)))
             {
-                int jersey = ExistingOrNext(row.JerseyNumber, used);
+                int jersey = ClaimJersey(row.JerseyNumber, claimed);
                 if (await api.UpdateTeamPlayerAsync(teamId, row.PlayerId, row.Position, jersey, false, competitionId))
                     deactivated++;
                 else
@@ -87,14 +87,14 @@ internal static class HistoricalRosterApplicator
             if (team == null)
                 continue;
 
-            HashSet<int> used = UsedJerseys(team.Roster.Select(r => r.JerseyNumber));
+            HashSet<int> claimed = [];
             foreach (HockeyTeamPlayerDto row in team.Roster.Where(r => r.IsActive && mappedPlayers.Contains(r.PlayerId)))
             {
                 if (!Enum.TryParse(row.Position, ignoreCase: true, out HockeyPosition position))
                     position = HockeyPosition.Center;
                 if (!Enum.TryParse(row.CaptainRole, ignoreCase: true, out HockeyCaptainRole captain))
                     captain = HockeyCaptainRole.None;
-                int jersey = ExistingOrNext(row.JerseyNumber, used);
+                int jersey = ClaimJersey(row.JerseyNumber, claimed);
                 if (await api.UpdateTeamPlayerAsync(
                         teamId,
                         row.PlayerId,
@@ -141,17 +141,18 @@ internal static class HistoricalRosterApplicator
             .ToHashSet();
     }
 
-    private static HashSet<int> UsedJerseys(IEnumerable<int?> numbers) =>
-        numbers.Where(n => n is > 0 and < 100).Select(n => n!.Value).ToHashSet();
-
-    private static int ExistingOrNext(int? preferred, HashSet<int> used)
+    /// <summary>
+    /// Keeps <paramref name="preferred"/> when it is free. A second player who already
+    /// shares that number gets the next free number so the unique jersey constraint holds.
+    /// </summary>
+    internal static int ClaimJersey(int? preferred, HashSet<int> claimed)
     {
-        if (preferred is > 0 and < 100)
+        if (preferred is > 0 and < 100 && claimed.Add(preferred.Value))
             return preferred.Value;
 
         for (int number = 1; number <= 99; number++)
         {
-            if (used.Add(number))
+            if (claimed.Add(number))
                 return number;
         }
 

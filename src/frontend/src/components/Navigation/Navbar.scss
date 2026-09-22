@@ -38,6 +38,12 @@
       display: block;
       filter: brightness(0) invert(1);
     }
+
+    &-controls {
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, 'xs');
+    }
   }
 
   &-search {
@@ -340,6 +346,10 @@
 
     &-brand {
       gap: 0.5rem;
+
+      .audience-switcher__trigger {
+        font-size: map.get($font-sizes, 'sm-xs');
+      }
     }
     
     &-search {

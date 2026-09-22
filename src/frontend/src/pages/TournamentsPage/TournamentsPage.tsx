@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import CatalogPage from '../../components/CatalogPage/CatalogPage';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import { floorballTournamentService } from '../../api/floorball/floorballTournamentService';
 import type { FloorballTournamentDto } from '../../types/floorball/tournamentTypes';
@@ -10,8 +11,7 @@ import './TournamentsPage.scss';
 
 type LifecycleStatus = 'upcoming' | 'ongoing' | 'past';
 
-function formatDate(iso: string, language: string): string {
-  const locale = language.toLowerCase().startsWith('fi') ? 'fi-FI' : 'en-GB';
+function formatDate(iso: string, locale: string): string {
   return new Date(iso).toLocaleDateString(locale, {
     year: 'numeric',
     month: 'long',
@@ -56,6 +56,7 @@ function truncate(text: string, max: number): string {
 
 function TournamentsPage() {
   const { t, i18n } = useTranslation();
+  const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fi-FI';
   const { audience } = useAudience();
 
   const [tournaments, setTournaments] = useState<FloorballTournamentDto[]>([]);
@@ -92,121 +93,80 @@ function TournamentsPage() {
   }, [fetchTournaments]);
 
   const lifecycleLabels: Record<LifecycleStatus, string> = {
-    upcoming: t('tournaments.statusUpcoming'),
-    ongoing: t('tournaments.statusOngoing'),
-    past: t('tournaments.statusPast'),
+    upcoming: t('tournaments.statusUpcoming', 'Tulossa'),
+    ongoing: t('tournaments.statusOngoing', 'Käynnissä'),
+    past: t('tournaments.statusPast', 'Päättynyt'),
   };
 
   const renderTournamentCard = (tournament: FloorballTournamentDto) => {
     const lifecycle = getLifecycleStatus(tournament);
-    const description = truncate(htmlToPlainText(tournament.contentHtml) || t('tournaments.cardDefaultDescription'), 220);
+    const description = truncate(htmlToPlainText(tournament.contentHtml) || t('tournaments.cardDefaultDescription', 'Selaa turnauksen lohkoja, tuloksia ja tilastoja.'), 220);
+
+    const meta = [
+      `${formatDate(tournament.startDate, locale)} – ${formatDate(tournament.endDate, locale)}`,
+      tournament.venue,
+      `${t('tournaments.teams', 'Joukkueet')}: ${tournament.teamCount}`,
+    ].filter(Boolean).join(' · ');
 
     return (
-      <div key={tournament.id} className="tournament-card">
-        <div className="tournament-card__header">
-          <h2 className="tournament-card__title">{tournament.name}</h2>
+      <Link
+        key={tournament.id}
+        to={`/tournaments/${tournament.id}?tab=summary`}
+        className="tournament-card"
+      >
+        <div className="tournament-card__content">
           <span className={`tournament-card__badge tournament-card__badge--${lifecycle}`}>
             {lifecycleLabels[lifecycle]}
           </span>
+          <h2 className="tournament-card__title">{tournament.name}</h2>
+          <p className="tournament-card__meta">{meta}</p>
+          {description && <p className="tournament-card__description">{description}</p>}
+          <span className="tournament-card__link">{t('tournaments.open', 'Avaa turnaus')} →</span>
         </div>
-
-        <div className="tournament-card__meta">
-          <div className="tournament-card__meta-row">
-            <span className="tournament-card__meta-label">{t('tournaments.dates')}</span>
-            <span className="tournament-card__meta-value">
-              {formatDate(tournament.startDate, i18n.language)} – {formatDate(tournament.endDate, i18n.language)}
-            </span>
-          </div>
-          {tournament.venue && (
-            <div className="tournament-card__meta-row">
-              <span className="tournament-card__meta-label">{t('tournaments.venue')}</span>
-              <span className="tournament-card__meta-value">{tournament.venue}</span>
-            </div>
-          )}
-          <div className="tournament-card__meta-row">
-            <span className="tournament-card__meta-label">{t('tournaments.teams')}</span>
-            <span className="tournament-card__meta-value">
-              {tournament.teamCount}
-              <span className="tournament-card__meta-separator"> · </span>
-              <span className="tournament-card__meta-label">{t('tournaments.groups')}</span>
-              <span className="tournament-card__meta-value-secondary">{tournament.groups.length}</span>
-            </span>
-          </div>
-        </div>
-
-        {description && (
-          <p className="tournament-card__description">{description}</p>
-        )}
-
-        <nav className="tournament-card__links" aria-label={tournament.name}>
-          <Link to={`/tournaments/${tournament.id}?tab=summary`} className="tournament-card__link">
-            {t('tournaments.tabSummary')}
-          </Link>
-          <Link to={`/tournaments/${tournament.id}?tab=groups`} className="tournament-card__link">
-            {t('tournaments.tabGroups')}
-          </Link>
-          <Link to={`/tournaments/${tournament.id}?tab=fixtures`} className="tournament-card__link">
-            {t('tournaments.tabFixtures')}
-          </Link>
-          <Link to={`/tournaments/${tournament.id}?tab=results`} className="tournament-card__link">
-            {t('tournaments.tabResults')}
-          </Link>
-          <Link to={`/tournaments/${tournament.id}?tab=statistics`} className="tournament-card__link">
-            {t('tournaments.tabStatistics')}
-          </Link>
-        </nav>
-      </div>
+      </Link>
     );
   };
 
+  const page = (body: ReactNode) => (
+    <PageTemplate title={t('nav.tournaments')} fullBleed>
+      <CatalogPage
+        title={t('nav.tournaments')}
+        description={t('tournaments.intro', 'Selaa tulevia, käynnissä olevia ja päättyneitä turnauksia. Avaa turnaus nähdäksesi lohkot, otteluohjelman ja tilastot.')}
+      >
+        {body}
+      </CatalogPage>
+    </PageTemplate>
+  );
+
   if (loading) {
-    return (
-      <PageTemplate title={t('nav.tournaments')}>
-        <div className="tournaments-page">
-          <div className="tournaments-page__loading">
-            <LoadingSpinner variant="light" text={t('tournaments.loading')} />
-          </div>
-        </div>
-      </PageTemplate>
+    return page(
+      <div className="tournaments-page__status">
+        <LoadingSpinner variant="light" text={t('tournaments.loading', 'Ladataan turnauksia...')} />
+      </div>,
     );
   }
 
   if (error) {
-    return (
-      <PageTemplate title={t('nav.tournaments')}>
-        <div className="tournaments-page">
-          <div className="tournaments-page__error">
-            <p>{error}</p>
-            <button onClick={fetchTournaments} className="tournaments-page__retry-btn">
-              {t('tournaments.retry')}
-            </button>
-          </div>
-        </div>
-      </PageTemplate>
+    return page(
+      <div className="tournaments-page__status">
+        <p>{error}</p>
+        <button type="button" onClick={fetchTournaments} className="tournaments-page__retry-btn">
+          {t('tournaments.retry', 'Yritä uudelleen')}
+        </button>
+      </div>,
     );
   }
 
-  return (
-    <PageTemplate title={t('nav.tournaments')}>
-      <div className="tournaments-page">
-        <div className="tournaments-page__header">
-          <h1 className="tournaments-page__title">{t('nav.tournaments')}</h1>
-          <p className="tournaments-page__description">
-            {t('tournaments.intro')}
-          </p>
-        </div>
-
-        {tournaments.length === 0 ? (
-          <div className="tournaments-page__empty">
-            <p>{t('tournaments.noTournaments')}</p>
-          </div>
-        ) : (
-          <div className="tournaments-page__list">
-            {tournaments.map(renderTournamentCard)}
-          </div>
-        )}
+  return page(
+    tournaments.length === 0 ? (
+      <div className="tournaments-page__status">
+        <p>{t('tournaments.noTournaments', 'Ei turnauksia tällä hetkellä.')}</p>
       </div>
-    </PageTemplate>
+    ) : (
+      <div className="tournaments-page__list">
+        {tournaments.map(renderTournamentCard)}
+      </div>
+    ),
   );
 }
 

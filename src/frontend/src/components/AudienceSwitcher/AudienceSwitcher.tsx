@@ -56,7 +56,6 @@ function AudienceSwitcher({ variant = 'brand' }: AudienceSwitcherProps) {
         aria-expanded={isOpen}
         aria-label={t('audience.switcherLabel')}
       >
-        <span className="audience-switcher__dot" aria-hidden="true" />
         <span className="audience-switcher__value">{t(audience.i18nKey)}</span>
         <svg
           className="audience-switcher__caret"

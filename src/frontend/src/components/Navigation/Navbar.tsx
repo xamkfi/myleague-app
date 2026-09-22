@@ -88,7 +88,10 @@ function Navbar() {
         <Link to="/" onClick={closeMobileMenu} className="navbar-brand-logo-link">
           <img src={mahlLogo} alt="MAHL" className="navbar-brand-logo" />
         </Link>
-        <AudienceSwitcher />
+        <div className="navbar-brand-controls">
+          <AudienceSwitcher />
+          <LanguageToggle />
+        </div>
       </div>
 
       <button
@@ -186,12 +189,6 @@ function Navbar() {
         </ul>
       </div>
 
-      <div className="navbar-end desktop-only">
-        <div className="navbar-language">
-          <LanguageToggle />
-        </div>
-      </div>
-
       <div className={`navbar-mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="mobile-menu-content">
           <div className="mobile-audience">
@@ -263,9 +260,6 @@ function Navbar() {
             </li>
           </ul>
 
-          <div className="mobile-language">
-            <LanguageToggle />
-          </div>
         </div>
       </div>
     </nav>

@@ -404,7 +404,11 @@ export const floorballStatisticsService = {
   getTeamStandings: async (competitionId: string): Promise<FloorballTeamSeasonStatisticsDto[]> => {
     try {
       const response = await fetch(`${API_URL}/floorball/statistics/standings/${competitionId}`);
-      
+
+      if (response.status === 404) {
+        return [];
+      }
+
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch team standings');
         throw new Error(errorMessage);

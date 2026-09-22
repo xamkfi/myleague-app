@@ -184,7 +184,7 @@ public interface IFloorballTeamRepository
     Task<int> DeactivateOpenPlayerLicencesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Current (open) roster memberships for a player, used as paid-licence rows.
+    /// Paid roster rows on a competition that is currently active. Historical seasons are excluded.
     /// </summary>
     Task<IReadOnlyList<PlayerLicenceRow>> GetOpenPlayerLicencesAsync(
         Guid playerId,

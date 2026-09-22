@@ -124,11 +124,11 @@ public class FootballMatchImporter
         public int TimeSeconds { get; init; }
     }
 
-    private Guid _currentCompetitionId;
+    private readonly AsyncLocal<Guid> _competitionId = new();
 
     public async Task ImportProjectMatchesAsync(ProjectImport pi, FootballSeasonDto season, Guid refereeId)
     {
-        _currentCompetitionId = season.Id;
+        _competitionId.Value = season.Id;
         int periodSeconds = Math.Max(1, season.MatchRules.HalfDurationMinutes) * 60;
         int regularPeriods = Math.Max(1, season.MatchRules.NumberOfHalves);
         int playersOnField = Math.Max(1, season.MatchRules.PlayersOnField);
@@ -204,6 +204,7 @@ public class FootballMatchImporter
         Console.WriteLine($"  Importing {work.Count} matches (concurrency {MatchImportParallel.Degree})...");
         await MatchImportParallel.ForEachAsync(work, async item =>
         {
+            _competitionId.Value = season.Id;
             try
             {
                 if (item.RepairRequested)
@@ -425,7 +426,7 @@ public class FootballMatchImporter
         {
             int needed = playersOnField - selected.Count;
             List<Guid> pads = await _entities.EnsureUnknownPlayersAsync(
-                side.OldTeam, side.TeamId, needed, _currentCompetitionId);
+                side.OldTeam, side.TeamId, needed, _competitionId.Value);
             foreach (Guid padId in pads)
             {
                 if (selected.Any(c => c.PlayerId == padId))
@@ -722,7 +723,7 @@ public class FootballMatchImporter
     {
         if (!_fillUnknownGoals)
             return null;
-        Guid? unknown = await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId, _currentCompetitionId);
+        Guid? unknown = await _entities.GetOrCreateUnknownPlayerAsync(side.OldTeam, side.TeamId, _competitionId.Value);
         if (unknown != null && side.Roster.All(c => c.PlayerId != unknown.Value))
             side.Roster.Add(new LineupCandidate { PlayerId = unknown.Value, Position = FootballPosition.Forward });
         return unknown;

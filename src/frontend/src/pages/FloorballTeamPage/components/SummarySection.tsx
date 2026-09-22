@@ -93,17 +93,30 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                </div>
             )}
 
+            {(() => {
+               const now = Date.now();
+               const todaysMatchIds = new Set(todaysMatches?.map(match => match.id) ?? []);
+               const upcomingMatches = matches.filter((match) => {
+                  if (todaysMatchIds.has(match.id) || match.status === 'Completed' || match.status === 'Cancelled') {
+                     return false;
+                  }
+                  if (match.status === 'InProgress') {
+                     return true;
+                  }
+                  return new Date(match.scheduledDateTime).getTime() >= now;
+               });
+               if (upcomingMatches.length === 0) {
+                  return null;
+               }
+               return (
+                  <>
             <div className="summary-header">
                {t('teamUserPage.scheduled')}
             </div>
 
             {/* Seasons */}
             {seasons?.map((season) => {
-               const seasonMatches = matches.filter(match => match.competitionId === season.id);
-               
-               // Filter out matches that are already shown in today's matches
-               const todaysMatchIds = todaysMatches?.map(match => match.id) || [];
-               const filteredSeasonMatches = seasonMatches.filter(match => !todaysMatchIds.includes(match.id));
+               const filteredSeasonMatches = upcomingMatches.filter(match => match.competitionId === season.id);
                
                // Only render season if it has matches (excluding today's matches)
                if (filteredSeasonMatches.length === 0) return null;
@@ -141,6 +154,9 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                   </div>
                );
             })}
+                  </>
+               );
+            })()}
          </div>
          {/* Latest Matches Section - Only show if there are finished matches */}
          {(() => {

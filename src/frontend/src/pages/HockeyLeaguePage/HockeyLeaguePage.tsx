@@ -121,6 +121,7 @@ function HockeyLeaguePage() {
     if (!id) {
       return;
     }
+    let cancelled = false;
     const load = async (): Promise<void> => {
       setLoading(true);
       setMatchesLoading(true);
@@ -134,24 +135,41 @@ function HockeyLeaguePage() {
           hockeyTeamService.getAll(audience.teamCategory),
           hockeySeasonService.getContentBlocks(id).catch(() => ({ seasonId: id, blocks: [] })),
         ]);
+        if (cancelled) {
+          return;
+        }
         setSeason(loaded);
         setContentBlocks(content.blocks);
         setStandings(uniqueHockeyStandingsByTeamId(standingList));
         setGoalies(goalieList);
         setTeams(teamList);
-        const names = await loadHockeyRosterNameMaps(teamList);
-        setPlayerNames(names.byPlayerId);
         const matchList = await hockeyMatchService.getByCompetition(id).catch(() => []);
+        if (cancelled) {
+          return;
+        }
         setAllMatches(matchList);
         setPlayers(mergeHockeyPlayerFaceoffWins(playerList, matchList));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : t('leaguePage.errors.loadLeagueData'));
-      } finally {
         setLoading(false);
         setMatchesLoading(false);
+
+        const seasonTeamIds = new Set(loaded.teams.map((team) => team.teamId));
+        const seasonTeams = teamList.filter((team) => seasonTeamIds.has(team.id));
+        const names = await loadHockeyRosterNameMaps(seasonTeams);
+        if (!cancelled) {
+          setPlayerNames(names.byPlayerId);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : t('leaguePage.errors.loadLeagueData'));
+          setLoading(false);
+          setMatchesLoading(false);
+        }
       }
     };
     void load();
+    return () => {
+      cancelled = true;
+    };
   }, [id, audience.teamCategory, t]);
 
   const refreshLiveMatches = useCallback(async (): Promise<void> => {

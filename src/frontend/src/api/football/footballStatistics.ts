@@ -1,4 +1,4 @@
-﻿import type { 
+import type { 
   ApiResponse
 } from '../../types/football/footballTypes';
 import type { FootballTournamentGroupStandingDto } from '../../types/football/tournamentTypes';
@@ -339,7 +339,11 @@ export const footballStatisticsService = {
   getTeamStandings: async (competitionId: string): Promise<FootballTeamSeasonStatisticsDto[]> => {
     try {
       const response = await fetch(`${API_URL}/football/statistics/standings/${competitionId}`);
-      
+
+      if (response.status === 404) {
+        return [];
+      }
+
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch team standings');
         throw new Error(errorMessage);

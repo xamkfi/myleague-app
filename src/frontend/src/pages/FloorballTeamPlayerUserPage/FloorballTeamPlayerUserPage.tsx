@@ -137,9 +137,14 @@ const MATCHES_PER_PAGE = 20;
 export interface FloorballPlayerProfileProps {
   playerId: string;
   embedded?: boolean;
+  licenceSummary?: ReactElement;
 }
 
-export function FloorballPlayerProfile({ playerId, embedded = false }: FloorballPlayerProfileProps) {
+export function FloorballPlayerProfile({
+  playerId,
+  embedded = false,
+  licenceSummary,
+}: FloorballPlayerProfileProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fi-FI';
   const id = playerId;
@@ -249,16 +254,20 @@ export function FloorballPlayerProfile({ playerId, embedded = false }: Floorball
             </div>
 
             <div className="player-stats-box">
-              <div className="stat-item">
-                <span className="stat-label">{t('playerPage.status')}:</span>
-                <span className={`stat-value ${player.isActive ? 'active' : 'inactive'}`}>
-                  {player.isActive ? t('playerPage.active') : t('playerPage.inactive')}
-                </span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">{t('playerPage.position')}:</span>
-                <span className="stat-value">{getPositionText(position, t)}</span>
-              </div>
+              {licenceSummary ?? (
+                <>
+                  <div className="stat-item">
+                    <span className="stat-label">{t('playerPage.status')}:</span>
+                    <span className={`stat-value ${player.isActive ? 'active' : 'inactive'}`}>
+                      {player.isActive ? t('playerPage.active') : t('playerPage.inactive')}
+                    </span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">{t('playerPage.position')}:</span>
+                    <span className="stat-value">{getPositionText(position, t)}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

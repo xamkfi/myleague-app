@@ -217,10 +217,9 @@ namespace WebAPI.Controllers.Floorball
         /// Gets team standings for a specific season
         /// </summary>
         /// <param name="competitionId">The season ID</param>
-        /// <returns>Team standings ordered by points</returns>
+        /// <returns>Team standings ordered by points. An empty list when the season has no standings yet.</returns>
         [HttpGet("standings/{competitionId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTeamSeasonStatisticsDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<FloorballTeamSeasonStatisticsDto>>>> GetTeamStandings(Guid competitionId)
         {

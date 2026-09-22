@@ -150,9 +150,9 @@ public class HockeyTeamRepository : IHockeyTeamRepository
             from competition in competitions.DefaultIfEmpty()
             where membership.PlayerId == playerId
                 && membership.LeftAt == null
-                && (membership.CompetitionId == null
-                    || competition == null
-                    || competition.Status != HockeyCompetitionStatus.Completed)
+                && membership.RosterStatus == HockeyRosterStatus.Active
+                && competition != null
+                && competition.Status == HockeyCompetitionStatus.Active
             orderby team.Name, competition != null ? competition.Name : null
             select new PlayerLicenceRow(
                 team.Id,

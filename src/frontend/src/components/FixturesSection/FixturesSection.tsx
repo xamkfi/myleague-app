@@ -50,8 +50,15 @@ function isLive(status: string): boolean {
   return status === 'InProgress';
 }
 
-function isUpcoming(status: string): boolean {
-  return status === 'Scheduled' || status === 'InProgress';
+function isStillAhead(match: FixtureMatch): boolean {
+  if (match.status === 'InProgress') {
+    return true;
+  }
+  return new Date(match.scheduledDateTime).getTime() >= Date.now();
+}
+
+function isUpcoming(match: FixtureMatch): boolean {
+  return (match.status === 'Scheduled' || match.status === 'InProgress') && isStillAhead(match);
 }
 
 export default function FixturesSection({
@@ -73,11 +80,11 @@ export default function FixturesSection({
 
     switch (filter) {
       case 'upcoming':
-        return matches.filter((match) => !isCompleted(match.status));
+        return matches.filter((match) => !isCompleted(match.status) && isStillAhead(match));
       case 'past':
-        return matches.filter((match) => isCompleted(match.status));
+        return matches.filter((match) => isCompleted(match.status) || !isStillAhead(match));
       case 'next': {
-        const nextMatch = matches.find((match) => isUpcoming(match.status));
+        const nextMatch = matches.find((match) => isUpcoming(match));
         return nextMatch ? [nextMatch] : [];
       }
       default:

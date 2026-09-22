@@ -365,7 +365,7 @@ function FloorballTeamPage() {
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
-                        const placeholder = target.nextElementSibling as HTMLElement;
+                        const placeholder = target.nextElementSibling as HTMLElement | null;
                         if (placeholder) {
                           placeholder.style.display = 'flex';
                         }

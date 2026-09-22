@@ -258,7 +258,6 @@ public static class Program
         await entities.ImportClubsAsync(set, db);
         await entities.ImportPersonsAndPlayersAsync(set);
         await entities.ImportTeamsAsync(set, db, division);
-        await entities.ApplyActiveMembershipsAsync(set);
         Guid refereeId = await entities.GetOrCreateImportRefereeAsync();
 
         FloorballMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
@@ -276,6 +275,9 @@ public static class Program
             await matches.ImportProjectMatchesAsync(pi, season, refereeId);
             await HistoricalRosterApplicator.DeactivateFloorballAsync(pi, season.Id, idMap, api);
         });
+
+        Console.WriteLine("--- Current club memberships ---");
+        await ActiveRosterApplicator.ApplyFloorballAsync(set, idMap, api);
 
         await FinishReportsAsync(
             sport,
@@ -306,7 +308,6 @@ public static class Program
         await entities.ImportClubsAsync(set, db);
         await entities.ImportPersonsAndPlayersAsync(set);
         await entities.ImportTeamsAsync(set, db, division);
-        await entities.ApplyActiveMembershipsAsync(set);
         Guid refereeId = await entities.GetOrCreateImportRefereeAsync();
 
         FootballMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
@@ -324,6 +325,9 @@ public static class Program
             await matches.ImportProjectMatchesAsync(pi, season, refereeId);
             await HistoricalRosterApplicator.DeactivateFootballAsync(pi, season.Id, idMap, api);
         });
+
+        Console.WriteLine("--- Current club memberships ---");
+        await ActiveRosterApplicator.ApplyFootballAsync(set, idMap, api);
 
         await matches.CompleteUnfinishedMappedMatchesAsync();
         await FinishReportsAsync(
@@ -355,7 +359,6 @@ public static class Program
         await entities.ImportClubsAsync(set, db);
         await entities.ImportPersonsAndPlayersAsync(set);
         await entities.ImportTeamsAsync(set, db, division);
-        await entities.ApplyActiveMembershipsAsync(set);
         Guid officialId = await entities.GetOrCreateImportOfficialAsync();
 
         HockeyMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
@@ -376,6 +379,9 @@ public static class Program
             if (await api.CompleteSeasonAsync(season.Id))
                 Console.WriteLine("  Season marked completed (historical).");
         });
+
+        Console.WriteLine("--- Current club memberships ---");
+        await ActiveRosterApplicator.ApplyHockeyAsync(set, idMap, api);
 
         await FinishReportsAsync(
             sport,
