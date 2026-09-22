@@ -202,9 +202,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 .OfType<FloorballSeason>()
                 .AsNoTracking();
 
-            if (teamCategory.HasValue)
+            if (teamCategory is Domain.Enums.Common.TeamCategory category)
             {
-                query = query.Where(s => s.TeamCategory == teamCategory.Value);
+                query = query.Where(s => s.TeamCategory == category);
             }
 
             return await query
@@ -232,9 +232,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                 query = query.Where(s => s.StartDate.Year == start && s.EndDate.Year == end);
             }
 
-            if (teamCategory.HasValue)
+            if (teamCategory is Domain.Enums.Common.TeamCategory category)
             {
-                query = query.Where(s => s.TeamCategory == teamCategory.Value);
+                query = query.Where(s => s.TeamCategory == category);
             }
 
             int totalCount = await query.CountAsync(cancellationToken);

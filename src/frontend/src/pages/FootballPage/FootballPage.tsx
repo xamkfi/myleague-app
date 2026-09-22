@@ -111,7 +111,7 @@ function FootballPage() {
         setSelectedYear((current) =>
           yearList.some((year) => year.year === current)
             ? current
-            : pickDefaultSportYear(yearList),
+            : pickDefaultSportYear(yearList, null),
         );
         setCurrentPage(1);
       } catch (err) {
