@@ -2,7 +2,12 @@ using Application.Common;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Matches.Mappings;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
@@ -11,13 +16,13 @@ using Microsoft.Extensions.Logging;
 namespace Application.Features.Floorball.Matches.Handlers;
 
 /// <summary>
-/// Handler for <see cref="AddOfficialToMatchCommand"/>. Loads the target match and the
+/// Handler for <see cref="AddFloorballOfficialToMatchCommand"/>. Loads the target match and the
 /// referee in one transactional unit and appends the referee through the domain entity's
 /// invariants. The previous WebAPI controller used to do this with a Get + Update round-trip
 /// from the controller body — this handler centralises the logic so the controller stays
 /// thin and validation happens in one place.
 /// </summary>
-public class AddOfficialToMatchHandler : IRequestHandler<AddOfficialToMatchCommand, Result<FloorballMatchDto>>
+public class AddOfficialToMatchHandler : IRequestHandler<AddFloorballOfficialToMatchCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballRefereeRepository _refereeRepository;
@@ -36,7 +41,7 @@ public class AddOfficialToMatchHandler : IRequestHandler<AddOfficialToMatchComma
         _logger = logger;
     }
 
-    public async Task<Result<FloorballMatchDto>> Handle(AddOfficialToMatchCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballMatchDto>> Handle(AddFloorballOfficialToMatchCommand request, CancellationToken cancellationToken)
     {
         try
         {

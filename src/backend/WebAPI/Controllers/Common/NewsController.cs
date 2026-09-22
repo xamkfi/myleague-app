@@ -3,10 +3,10 @@ using Domain.Constants;
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Application.Common;
-using Application.Features.Common.Images.Commands;
-using Application.Features.Common.News.Commands;
-using Application.Features.Common.News.DTOs;
-using Application.Features.Common.News.Queries;
+using Application.Features.Common.Content.Images.Commands;
+using Application.Features.Common.Content.News.Commands;
+using Application.Features.Common.Content.News.DTOs;
+using Application.Features.Common.Content.News.Queries;
 using Domain.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

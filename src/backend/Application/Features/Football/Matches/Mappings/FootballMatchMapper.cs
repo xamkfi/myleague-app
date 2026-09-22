@@ -7,6 +7,8 @@ using Domain.Entities.Football.Teams;
 using Domain.Enums.Football;
 using Domain.ValueObjects.Football;
 
+using Domain.Entities.Football.Officials;
+
 namespace Application.Features.Football.Matches.Mappings;
 
 /// <summary>

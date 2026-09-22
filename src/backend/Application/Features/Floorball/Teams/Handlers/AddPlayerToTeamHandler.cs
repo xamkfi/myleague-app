@@ -14,7 +14,12 @@ using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
 using Application.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Entities.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -23,11 +28,11 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
-using Application.Features.Common.Users.Mappings;
-using Application.Features.Common.Persons.Mappings;
-using Application.Features.Common.Clubs.Mappings;
-using Application.Features.Common.Divisions.Mappings;
-using Application.Features.Common.News.Mappings;
+using Application.Features.Common.Organization.Users.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
+using Application.Features.Common.Organization.Clubs.Mappings;
+using Application.Features.Common.Organization.Divisions.Mappings;
+using Application.Features.Common.Content.News.Mappings;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,7 +41,7 @@ namespace Application.Features.Floorball.Teams.Handlers;
 /// <summary>
 /// Handler for adding a player to a floorball team
 /// </summary>
-public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Result<FloorballTeamDto>>
+public class AddPlayerToTeamHandler : IRequestHandler<AddFloorballPlayerToTeamCommand, Result<FloorballTeamDto>>
 {
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballPlayerRepository _playerRepository;
@@ -71,12 +76,12 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
     }
 
     /// <summary>
-    /// Handles the AddPlayerToTeamCommand request
+    /// Handles the AddFloorballPlayerToTeamCommand request
     /// </summary>
     /// <param name="request">The command containing player and team information</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated team as a DTO wrapped in a Result</returns>
-    public async Task<Result<FloorballTeamDto>> Handle(AddPlayerToTeamCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballTeamDto>> Handle(AddFloorballPlayerToTeamCommand request, CancellationToken cancellationToken)
     {
         try
         {

@@ -48,16 +48,16 @@ public class FootballMatchLineupController : BaseApiController
             return BadRequest(ApiResponse<FootballMatchDto>.ErrorResponse("Request body is required."));
         }
 
-        SetMatchLineupCommand command = new()
+        SetFootballMatchLineupCommand command = new()
         {
             MatchId = matchId,
             TeamId = teamId,
-            Players = request.Players?.Select(p => new LineupPlayerInput
+            Players = request.Players?.Select(p => new FootballLineupPlayerInput
             {
                 PlayerId = p.PlayerId,
                 Position = p.Position,
                 IsOnField = p.IsOnField
-            }).ToList() ?? new List<LineupPlayerInput>()
+            }).ToList() ?? new List<FootballLineupPlayerInput>()
         };
 
         Result<FootballMatchDto> result = await _mediator.Send(command, cancellationToken);

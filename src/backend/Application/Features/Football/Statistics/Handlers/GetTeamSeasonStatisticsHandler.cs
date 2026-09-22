@@ -12,7 +12,7 @@ namespace Application.Features.Football.Statistics.Handlers;
 /// <summary>
 /// Handler for retrieving team season statistics
 /// </summary>
-public class GetTeamSeasonStatisticsHandler : IRequestHandler<GetTeamSeasonStatisticsQuery, Result<FootballTeamSeasonStatisticsDto>>
+public class GetTeamSeasonStatisticsHandler : IRequestHandler<GetFootballTeamSeasonStatisticsQuery, Result<FootballTeamSeasonStatisticsDto>>
 {
     private readonly IFootballStatisticsRepository _statisticsRepository;
     private readonly ILogger<GetTeamSeasonStatisticsHandler> _logger;
@@ -25,7 +25,7 @@ public class GetTeamSeasonStatisticsHandler : IRequestHandler<GetTeamSeasonStati
         _logger = logger;
     }
 
-    public async Task<Result<FootballTeamSeasonStatisticsDto>> Handle(GetTeamSeasonStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTeamSeasonStatisticsDto>> Handle(GetFootballTeamSeasonStatisticsQuery request, CancellationToken cancellationToken)
     {
         try
         {

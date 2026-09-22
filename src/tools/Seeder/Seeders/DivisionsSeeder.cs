@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.Organization.Divisions.DTOs;
 using Domain.Enums.Common;
 using WebAPI.Models.Common;
 

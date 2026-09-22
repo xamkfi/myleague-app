@@ -1,5 +1,5 @@
-using Application.Features.Common.News.Queries;
-using Application.Features.Common.News.Validators;
+using Application.Features.Common.Content.News.Queries;
+using Application.Features.Common.Content.News.Validators;
 using Application.Services.Common;
 using FluentValidation.TestHelper;
 using Moq;

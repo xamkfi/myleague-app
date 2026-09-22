@@ -2,7 +2,12 @@ using Application.Common;
 using Application.Features.Floorball.Tournaments.DTOs;
 using Application.Features.Floorball.Tournaments.Queries;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
@@ -17,7 +22,7 @@ namespace Application.Features.Floorball.Tournaments.Handlers;
 /// single round-trip.
 /// </summary>
 public class GetTournamentPlayoffBracketHandler
-    : IRequestHandler<GetTournamentPlayoffBracketQuery, Result<FloorballPlayoffBracketDto>>
+    : IRequestHandler<GetFloorballTournamentPlayoffBracketQuery, Result<FloorballPlayoffBracketDto>>
 {
     private readonly IFloorballTournamentRepository _tournamentRepository;
     private readonly IFloorballMatchRepository _matchRepository;
@@ -40,7 +45,7 @@ public class GetTournamentPlayoffBracketHandler
     }
 
     public async Task<Result<FloorballPlayoffBracketDto>> Handle(
-        GetTournamentPlayoffBracketQuery request,
+        GetFloorballTournamentPlayoffBracketQuery request,
         CancellationToken cancellationToken)
     {
         try

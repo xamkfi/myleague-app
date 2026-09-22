@@ -14,7 +14,12 @@ using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
 using Application.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -31,7 +36,7 @@ namespace Application.Features.Floorball.Matches.Handlers;
 /// <summary>
 /// Handler for recording a goal in a floorball match
 /// </summary>
-public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<FloorballMatchDto>>
+public class RecordGoalHandler : IRequestHandler<RecordFloorballGoalCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
@@ -69,12 +74,12 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Floor
     }
 
     /// <summary>
-    /// Handles the RecordGoalCommand request
+    /// Handles the RecordFloorballGoalCommand request
     /// </summary>
     /// <param name="request">The command containing goal information</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated match as a DTO wrapped in a Result</returns>
-    public async Task<Result<FloorballMatchDto>> Handle(RecordGoalCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballMatchDto>> Handle(RecordFloorballGoalCommand request, CancellationToken cancellationToken)
     {
         try
         {

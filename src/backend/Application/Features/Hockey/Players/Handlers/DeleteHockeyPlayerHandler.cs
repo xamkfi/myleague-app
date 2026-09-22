@@ -1,5 +1,5 @@
 using Application.Common;
-using Application.Features.Common.Deletion;
+using Application.Features.Common.Organization.Deletion;
 using Application.Features.Hockey.Players.Commands;
 using Domain.Entities.Hockey.Teams;
 using Domain.Repositories.Hockey;

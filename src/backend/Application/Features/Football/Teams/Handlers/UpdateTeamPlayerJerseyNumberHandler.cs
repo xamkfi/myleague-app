@@ -15,7 +15,7 @@ namespace Application.Features.Football.Teams.Handlers;
 /// Handler for updating only the jersey number of a player in a football team roster.
 /// The player's position and active status are preserved.
 /// </summary>
-public class UpdateTeamPlayerJerseyNumberHandler : IRequestHandler<UpdateTeamPlayerJerseyNumberCommand, Result<FootballTeamPlayerDto>>
+public class UpdateTeamPlayerJerseyNumberHandler : IRequestHandler<UpdateFootballTeamPlayerJerseyNumberCommand, Result<FootballTeamPlayerDto>>
 {
     private readonly IFootballTeamRepository _teamRepository;
     private readonly IFootballPlayerRepository _playerRepository;
@@ -41,9 +41,9 @@ public class UpdateTeamPlayerJerseyNumberHandler : IRequestHandler<UpdateTeamPla
     }
 
     /// <summary>
-    /// Handles the UpdateTeamPlayerJerseyNumberCommand request
+    /// Handles the UpdateFootballTeamPlayerJerseyNumberCommand request
     /// </summary>
-    public async Task<Result<FootballTeamPlayerDto>> Handle(UpdateTeamPlayerJerseyNumberCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTeamPlayerDto>> Handle(UpdateFootballTeamPlayerJerseyNumberCommand request, CancellationToken cancellationToken)
     {
         try
         {

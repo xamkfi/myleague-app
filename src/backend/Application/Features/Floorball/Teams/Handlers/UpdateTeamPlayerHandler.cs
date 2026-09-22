@@ -14,7 +14,12 @@ using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
 using Application.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Common;
 using Domain.Repositories.Floorball;
@@ -32,7 +37,7 @@ namespace Application.Features.Floorball.Teams.Handlers;
 /// <summary>
 /// Handler for updating a player's information within a floorball team
 /// </summary>
-public class UpdateTeamPlayerHandler : IRequestHandler<UpdateTeamPlayerCommand, Result<FloorballTeamPlayerDto>>
+public class UpdateTeamPlayerHandler : IRequestHandler<UpdateFloorballTeamPlayerCommand, Result<FloorballTeamPlayerDto>>
 {
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballPlayerRepository _playerRepository;
@@ -63,12 +68,12 @@ public class UpdateTeamPlayerHandler : IRequestHandler<UpdateTeamPlayerCommand, 
     }
 
     /// <summary>
-    /// Handles the UpdateTeamPlayerCommand request
+    /// Handles the UpdateFloorballTeamPlayerCommand request
     /// </summary>
     /// <param name="request">The command containing updated player information</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated team player as a DTO wrapped in a Result</returns>
-    public async Task<Result<FloorballTeamPlayerDto>> Handle(UpdateTeamPlayerCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballTeamPlayerDto>> Handle(UpdateFloorballTeamPlayerCommand request, CancellationToken cancellationToken)
     {
         try
         {

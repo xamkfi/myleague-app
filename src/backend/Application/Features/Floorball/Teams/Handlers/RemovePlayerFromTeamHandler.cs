@@ -14,7 +14,12 @@ using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
 using Application.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Entities.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -29,7 +34,7 @@ namespace Application.Features.Floorball.Teams.Handlers;
 /// <summary>
 /// Handler for removing a player from a floorball team
 /// </summary>
-public class RemovePlayerFromTeamHandler : IRequestHandler<RemovePlayerFromTeamCommand, Result<FloorballTeamDto>>
+public class RemovePlayerFromTeamHandler : IRequestHandler<RemoveFloorballPlayerFromTeamCommand, Result<FloorballTeamDto>>
 {
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IClubRepository _clubRepository;
@@ -59,12 +64,12 @@ public class RemovePlayerFromTeamHandler : IRequestHandler<RemovePlayerFromTeamC
     }
 
     /// <summary>
-    /// Handles the RemovePlayerFromTeamCommand request
+    /// Handles the RemoveFloorballPlayerFromTeamCommand request
     /// </summary>
     /// <param name="request">The command containing player and team information</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated team as a DTO wrapped in a Result</returns>
-    public async Task<Result<FloorballTeamDto>> Handle(RemovePlayerFromTeamCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballTeamDto>> Handle(RemoveFloorballPlayerFromTeamCommand request, CancellationToken cancellationToken)
     {
         try
         {

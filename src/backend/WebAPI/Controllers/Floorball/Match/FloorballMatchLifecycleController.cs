@@ -109,7 +109,7 @@ namespace WebAPI.Controllers.Floorball.Match
             _logger.LogInformation("Postponing match ID: {matchId}", matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new PostponeMatchCommand(matchId), cancellationToken);
+                new PostponeFloorballMatchCommand(matchId), cancellationToken);
 
             return HandleResult(result, "Match postponed successfully", "Failed to postpone match");
         }
@@ -128,7 +128,7 @@ namespace WebAPI.Controllers.Floorball.Match
             _logger.LogInformation("Canceling match ID: {matchId}", matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new CancelMatchCommand(matchId), cancellationToken);
+                new CancelFloorballMatchCommand(matchId), cancellationToken);
 
             return HandleResult(result, "Match canceled successfully", "Failed to cancel match");
         }
@@ -147,7 +147,7 @@ namespace WebAPI.Controllers.Floorball.Match
             _logger.LogInformation("Reactivating match ID: {matchId}", matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new ReactivateMatchCommand(matchId), cancellationToken);
+                new ReactivateFloorballMatchCommand(matchId), cancellationToken);
 
             return HandleResult(result, "Match reactivated successfully", "Failed to reactivate match");
         }
@@ -174,7 +174,7 @@ namespace WebAPI.Controllers.Floorball.Match
                 "Assigning teams on floorball match {MatchId}: home={HomeTeamId}, away={AwayTeamId}",
                 matchId, SanitizeForLog(request.HomeTeamId), SanitizeForLog(request.AwayTeamId));
 
-            AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(
+            AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(
                 matchId,
                 request.HomeTeamId,
                 request.AwayTeamId);

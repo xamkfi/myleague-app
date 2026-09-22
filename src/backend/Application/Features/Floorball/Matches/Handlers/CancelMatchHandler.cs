@@ -18,14 +18,19 @@ using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
 using MediatR;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 
 namespace Application.Features.Floorball.Matches.Handlers;
 
 /// <summary>
 /// CancelMatchHandler is responsible for handling the cancellation of a floorball match.
 /// </summary>
-public class CancelMatchHandler : IRequestHandler<CancelMatchCommand, Result<FloorballMatchDto>>
+public class CancelMatchHandler : IRequestHandler<CancelFloorballMatchCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
@@ -38,7 +43,7 @@ public class CancelMatchHandler : IRequestHandler<CancelMatchCommand, Result<Flo
         _logger = logger;
     }
 
-    public async Task<Result<FloorballMatchDto>> Handle(CancelMatchCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballMatchDto>> Handle(CancelFloorballMatchCommand request, CancellationToken cancellationToken)
     {
         try
         {

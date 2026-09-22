@@ -23,7 +23,7 @@ namespace Application.Features.Floorball.Statistics.Handlers;
 /// <summary>
 /// Handler for retrieving match statistics
 /// </summary>
-public class GetMatchStatisticsHandler : IRequestHandler<GetMatchStatisticsQuery, Result<List<FloorballMatchTeamStatisticsDto>>>
+public class GetMatchStatisticsHandler : IRequestHandler<GetFloorballMatchStatisticsQuery, Result<List<FloorballMatchTeamStatisticsDto>>>
 {
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly ILogger<GetMatchStatisticsHandler> _logger;
@@ -42,18 +42,18 @@ public class GetMatchStatisticsHandler : IRequestHandler<GetMatchStatisticsQuery
     }
 
     /// <summary>
-    /// Handles the GetMatchStatisticsQuery request
+    /// Handles the GetFloorballMatchStatisticsQuery request
     /// </summary>
     /// <param name="request">The query containing the match ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing list of match team statistics DTOs</returns>
-    public async Task<Result<List<FloorballMatchTeamStatisticsDto>>> Handle(GetMatchStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<FloorballMatchTeamStatisticsDto>>> Handle(GetFloorballMatchStatisticsQuery request, CancellationToken cancellationToken)
     {
         try
         {
             _logger.LogInformation("Getting match statistics for Match: {MatchId}", request.MatchId);
 
-            List<Domain.Entities.Floorball.FloorballMatchTeamStatistics> matchStats = 
+            List<Domain.Entities.Floorball.Statistics.FloorballMatchTeamStatistics> matchStats = 
                 (await _statisticsRepository.GetMatchStatisticsAsync(request.MatchId, cancellationToken)).ToList();
 
             if (matchStats == null || matchStats.Count == 0)

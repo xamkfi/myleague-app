@@ -1,8 +1,8 @@
 using Domain.Constants;
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Features.Common.InfoPageContent.Commands;
-using Application.Features.Common.InfoPageContent.Queries;
+using Application.Features.Common.Content.InfoPageContent.Commands;
+using Application.Features.Common.Content.InfoPageContent.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -80,7 +80,7 @@ public class FootballMatchLifecycleController : BaseApiController
         Guid matchId,
         CancellationToken cancellationToken)
     {
-        Result<FootballMatchDto> result = await _mediator.Send(new PostponeMatchCommand(matchId), cancellationToken);
+        Result<FootballMatchDto> result = await _mediator.Send(new PostponeFootballMatchCommand(matchId), cancellationToken);
         return HandleResult(result, "Match postponed successfully", "Failed to postpone match");
     }
 
@@ -93,7 +93,7 @@ public class FootballMatchLifecycleController : BaseApiController
         Guid matchId,
         CancellationToken cancellationToken)
     {
-        Result<FootballMatchDto> result = await _mediator.Send(new CancelMatchCommand(matchId), cancellationToken);
+        Result<FootballMatchDto> result = await _mediator.Send(new CancelFootballMatchCommand(matchId), cancellationToken);
         return HandleResult(result, "Match canceled successfully", "Failed to cancel match");
     }
 
@@ -106,7 +106,7 @@ public class FootballMatchLifecycleController : BaseApiController
         Guid matchId,
         CancellationToken cancellationToken)
     {
-        Result<FootballMatchDto> result = await _mediator.Send(new ReactivateMatchCommand(matchId), cancellationToken);
+        Result<FootballMatchDto> result = await _mediator.Send(new ReactivateFootballMatchCommand(matchId), cancellationToken);
         return HandleResult(result, "Match reactivated successfully", "Failed to reactivate match");
     }
 
@@ -120,7 +120,7 @@ public class FootballMatchLifecycleController : BaseApiController
         [FromBody] AssignMatchTeamsRequest request,
         CancellationToken cancellationToken)
     {
-        AssignMatchTeamsCommand command = new(matchId, request.HomeTeamId, request.AwayTeamId);
+        AssignFootballMatchTeamsCommand command = new(matchId, request.HomeTeamId, request.AwayTeamId);
         Result<FootballMatchDto> result = await _mediator.Send(command, cancellationToken);
         return HandleResult(result, "Match teams updated successfully", "Failed to update match teams");
     }

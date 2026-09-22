@@ -1,3 +1,4 @@
+using Application.Features.Football.Competitions.Commands;
 using Domain.Constants;
 using Application.Common;
 using Application.Features.Football.Seasons.Commands;
@@ -305,7 +306,7 @@ public class FootballSeasonController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballSeasonDto>>> AddTeamToSeason(Guid competitionId, Guid teamId)
     {
-        Result<FootballSeasonDto> result = await _mediator.Send(new AddTeamToSeasonCommand(competitionId, teamId));
+        Result<FootballSeasonDto> result = await _mediator.Send(new AddFootballTeamToSeasonCommand(competitionId, teamId));
         return HandleResult(result, "Team added to football season successfully", "Failed to add team to football season");
     }
 
@@ -317,7 +318,7 @@ public class FootballSeasonController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballSeasonDto>>> RemoveTeamFromSeason(Guid competitionId, Guid teamId)
     {
-        Result<FootballSeasonDto> result = await _mediator.Send(new RemoveTeamFromSeasonCommand(competitionId, teamId));
+        Result<FootballSeasonDto> result = await _mediator.Send(new RemoveFootballTeamFromSeasonCommand(competitionId, teamId));
         return HandleResult(result, "Team removed from football season successfully", "Failed to remove team from football season");
     }
 
@@ -329,7 +330,7 @@ public class FootballSeasonController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse>> AddDivisionToSeason(Guid competitionId, Guid divisionId)
     {
-        Result result = await _mediator.Send(new AddDivisionToSeasonCommand(competitionId, divisionId));
+        Result result = await _mediator.Send(new AddFootballDivisionToSeasonCommand(competitionId, divisionId));
         return HandleVoidResult(result, "Division added to football season successfully", "Failed to add division to season");
     }
 
@@ -341,7 +342,7 @@ public class FootballSeasonController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse>> RemoveDivisionFromSeason(Guid competitionId, Guid divisionId)
     {
-        Result result = await _mediator.Send(new RemoveDivisionFromSeasonCommand(competitionId, divisionId));
+        Result result = await _mediator.Send(new RemoveFootballDivisionFromSeasonCommand(competitionId, divisionId));
         return HandleVoidResult(result, "Division removed from football season successfully", "Failed to remove division from season");
     }
 
@@ -357,7 +358,7 @@ public class FootballSeasonController : BaseApiController
         Guid teamId,
         [FromQuery] Domain.Enums.Common.RosterEnrollmentMode rosterMode = Domain.Enums.Common.RosterEnrollmentMode.CopyLatest)
     {
-        Result result = await _mediator.Send(new AddTeamToSeasonDivisionCommand(competitionId, divisionId, teamId, rosterMode));
+        Result result = await _mediator.Send(new AddFootballTeamToSeasonDivisionCommand(competitionId, divisionId, teamId, rosterMode));
         return HandleVoidResult(result, "Team added to season division successfully", "Failed to add team to season division");
     }
 
@@ -369,7 +370,7 @@ public class FootballSeasonController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse>> RemoveTeamFromSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
     {
-        Result result = await _mediator.Send(new RemoveTeamFromSeasonDivisionCommand(competitionId, divisionId, teamId));
+        Result result = await _mediator.Send(new RemoveFootballTeamFromSeasonDivisionCommand(competitionId, divisionId, teamId));
         return HandleVoidResult(result, "Team removed from season division successfully", "Failed to remove team from season division");
     }
 

@@ -1,0 +1,102 @@
+using Application.Features.Common.Organization.Users.Commands;
+using Application.Common;
+using Application.Features.Common.Organization.Users.DTOs;
+using Application.Features.Common.Organization.Persons.DTOs;
+using Application.Features.Common.Organization.Clubs.DTOs;
+using Application.Features.Common.Organization.Divisions.DTOs;
+using Application.Features.Common.Content.News.DTOs;
+using Application.Features.Common.CrossCutting.Search.DTOs;
+using Application.Features.Common.CrossCutting.MatchTimer.DTOs;
+using Application.Features.Common.Shared.DTOs;
+using Application.Features.Common.Organization.Users.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
+using Application.Features.Common.Organization.Clubs.Mappings;
+using Application.Features.Common.Organization.Divisions.Mappings;
+using Application.Features.Common.Content.News.Mappings;
+using Domain.Entities.Common;
+using Domain.Repositories.Common;
+using MediatR;
+using Microsoft.Extensions.Logging;
+
+namespace Application.Features.Common.Organization.Users.Handlers;
+
+/// <summary>
+/// Handler for updating an existing user
+/// </summary>
+public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, Result<UserDto>>
+{
+    private readonly IUserRepository _userRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<UpdateUserHandler> _logger;
+
+    public UpdateUserHandler(
+        IUserRepository userRepository,
+        IRefreshTokenRepository refreshTokenRepository,
+        IUnitOfWork unitOfWork,
+        ILogger<UpdateUserHandler> logger)
+    {
+        _userRepository = userRepository;
+        _refreshTokenRepository = refreshTokenRepository;
+        _unitOfWork = unitOfWork;
+        _logger = logger;
+    }
+
+    public async Task<Result<UserDto>> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            User? user = await _userRepository.GetByIdAsync(request.Id);
+            if (user == null)
+            {
+                _logger.LogInformation("Attempt to update non-existent user with ID: {UserId}", request.Id);
+                return Result<UserDto>.Failure($"User with ID '{request.Id}' does not exist.");
+            }
+
+            // Check if the new email already exists (for another user)
+            if (!string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase)
+                && await _userRepository.ExistsByEmailAsync(request.Email))
+            {
+                _logger.LogInformation("Attempt to update user with existing email: {Email}", request.Email);
+                return Result<UserDto>.Failure($"A user with the email '{request.Email}' already exists.");
+            }
+
+            bool roleChanged = user.Role != request.Role;
+            bool deactivated = user.IsActive && !request.IsActive;
+
+            UserMapper.UpdateFromCommand(user, request);
+
+            _logger.LogInformation("Updating user: {Email} (ID: {UserId})", user.Email, user.Id);
+            await _userRepository.UpdateAsync(user);
+
+            // When privileges are revoked (role change or deactivation), revoke refresh tokens
+            // so the old access ends as soon as the current access token expires.
+            if (roleChanged || deactivated)
+            {
+                _logger.LogInformation(
+                    "Revoking refresh tokens for user {UserId} (role changed: {RoleChanged}, deactivated: {Deactivated})",
+                    user.Id, roleChanged, deactivated);
+                await _refreshTokenRepository.RevokeAllByUserIdAsync(user.Id);
+            }
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            User? updatedUser = await _userRepository.GetByIdAsync(user.Id);
+            if (updatedUser == null)
+            {
+                _logger.LogError("Failed to retrieve updated user with ID: {UserId}", user.Id);
+                return Result<UserDto>.Failure("Failed to retrieve the updated user.");
+            }
+
+            UserDto userDto = UserMapper.ToDto(updatedUser);
+            _logger.LogInformation("Successfully updated user with ID: {UserId}", user.Id);
+
+            return Result<UserDto>.Success(userDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while updating user: {UserId}", request.Id);
+            return Result<UserDto>.Failure("An error occurred while updating the user.");
+        }
+    }
+}

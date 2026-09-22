@@ -1,4 +1,4 @@
-using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Organization.Persons.DTOs;
 using Application.Features.Football.Referees.Queries;
 using Application.Features.Football.Teams.DTOs;
 using Application.Features.Football.Players.DTOs;
@@ -21,11 +21,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Application.Features.Common.Users.Mappings;
-using Application.Features.Common.Persons.Mappings;
-using Application.Features.Common.Clubs.Mappings;
-using Application.Features.Common.Divisions.Mappings;
-using Application.Features.Common.News.Mappings;
+using Application.Features.Common.Organization.Users.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
+using Application.Features.Common.Organization.Clubs.Mappings;
+using Application.Features.Common.Organization.Divisions.Mappings;
+using Application.Features.Common.Content.News.Mappings;
+
+using Domain.Entities.Football.Officials;
 
 namespace Application.Features.Football.Referees.Handlers;
 

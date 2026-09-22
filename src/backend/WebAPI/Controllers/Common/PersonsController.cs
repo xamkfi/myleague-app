@@ -1,10 +1,10 @@
 using Domain.Constants;
 using Application.Common;
-using Application.Features.Common.Clubs.Commands;
-using Application.Features.Common.Persons.Commands;
-using Application.Features.Common.Persons.DTOs;
-using Application.Features.Common.Persons.Mappings;
-using Application.Features.Common.Persons.Queries;
+using Application.Features.Common.Organization.Clubs.Commands;
+using Application.Features.Common.Organization.Persons.Commands;
+using Application.Features.Common.Organization.Persons.DTOs;
+using Application.Features.Common.Organization.Persons.Mappings;
+using Application.Features.Common.Organization.Persons.Queries;
 using Application.Features.Common.Shared.DTOs;
 using Domain.Common;
 using Domain.ValueObjects.Common;

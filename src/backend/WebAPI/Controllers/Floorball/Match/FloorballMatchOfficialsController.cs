@@ -37,7 +37,7 @@ namespace WebAPI.Controllers.Floorball.Match
 
         /// <summary>
         /// Adds an official (referee) to a floorball match (append semantics). Routed through
-        /// the dedicated <see cref="AddOfficialToMatchCommand"/> so the append logic happens
+        /// the dedicated <see cref="AddFloorballOfficialToMatchCommand"/> so the append logic happens
         /// inside one transactional handler instead of two consecutive mediator calls.
         /// </summary>
         [HttpPost]
@@ -52,7 +52,7 @@ namespace WebAPI.Controllers.Floorball.Match
             _logger.LogInformation("Adding official {refereeId} to match ID: {matchId}", request.RefereeId, matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new AddOfficialToMatchCommand(matchId, request.RefereeId), cancellationToken);
+                new AddFloorballOfficialToMatchCommand(matchId, request.RefereeId), cancellationToken);
 
             return HandleResult(result, "Official added successfully", "Failed to add official");
         }
@@ -72,7 +72,7 @@ namespace WebAPI.Controllers.Floorball.Match
             _logger.LogInformation("Updating officials for match ID: {matchId}", matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new UpdateMatchOfficialsCommand(matchId, request.Officials ?? Array.Empty<Guid>()),
+                new UpdateFloorballMatchOfficialsCommand(matchId, request.Officials ?? Array.Empty<Guid>()),
                 cancellationToken);
 
             return HandleResult(result, "Officials updated successfully", "Failed to update officials");
@@ -93,7 +93,7 @@ namespace WebAPI.Controllers.Floorball.Match
             _logger.LogInformation("Removing official {refereeId} from match ID: {matchId}", refereeId, matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new RemoveOfficialFromMatchCommand(matchId, refereeId), cancellationToken);
+                new RemoveFloorballOfficialFromMatchCommand(matchId, refereeId), cancellationToken);
 
             return HandleResult(result, "Official removed successfully", "Failed to remove official");
         }
@@ -114,7 +114,7 @@ namespace WebAPI.Controllers.Floorball.Match
             _logger.LogInformation("Setting referee {refereeId} for match ID: {matchId}", refereeId, matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new UpdateMatchOfficialsCommand(matchId, new[] { refereeId }), cancellationToken);
+                new UpdateFloorballMatchOfficialsCommand(matchId, new[] { refereeId }), cancellationToken);
 
             return HandleResult(result, "Referee set successfully", "Failed to set referee");
         }

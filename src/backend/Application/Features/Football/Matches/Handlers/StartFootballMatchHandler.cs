@@ -1,6 +1,6 @@
 using Application.Common;
 using Application.Constants;
-using Application.Features.Common.MatchTimer.Services;
+using Application.Features.Common.CrossCutting.MatchTimer.Services;
 using Application.Features.Football.Matches.Commands;
 using Application.Features.Football.Matches.DTOs;
 using Application.Features.Football.Matches.Mappings;

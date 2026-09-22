@@ -9,6 +9,8 @@ using Domain.Repositories.Football;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
+using Domain.Entities.Football.Officials;
+
 namespace Application.Features.Football.Matches.Handlers;
 
 public class CreateFootballMatchHandler : IRequestHandler<CreateFootballMatchCommand, Result<FootballMatchDto>>

@@ -1,6 +1,6 @@
-# Floorball League Management System - Domain Glossary
+# MyLeague domain glossary
 
-This glossary defines the key terms used in the floorball league management system's domain model. These terms form our "ubiquitous language" - a shared vocabulary used by both developers and domain experts.
+This glossary defines the key terms in the MyLeague domain model for floorball, football, and ice hockey. These terms form the ubiquitous language shared by developers and domain experts.
 
 ## Core Entities
 
@@ -133,15 +133,21 @@ Configurable match timing and roster rules: number of halves, half duration, pla
 ### FootballStandingRules
 Point allocation for league tables. Default is 3 points for a win, 1 for a draw, 0 for a loss.
 
+## Historical names
+
+Floorball and football keep `Referee`, `TeamManager`, and `*SeasonStatistics` as class names, HTTP routes, and table names. Hockey uses `Official`, `TeamStaff`, and `*CompetitionStatistics` for the same ideas. New code uses the name already established for that sport. Do not introduce a fourth word, and do not rename the persisted floorball or football names without a dedicated migration.
+
+The EF history folder `Migrations/FloorBallDb` stays. Public floorball URLs stay `/league`, `/match`, `/team`, and `/tournaments`.
+
 ## Aggregate Roots
 
-The following entities serve as aggregate roots in our domain model:
-
-1. **Club** - Manages membership and teams
-2. **Person** - Manages personal details and contacts
-3. **FloorballSeason** - Manages schedule and participating teams
-4. **FloorballMatch** - Manages all match-related data and events
-5. **FloorballTeam** - Manages roster and team details
-6. **FloorballPlayer** - Manages player-specific attributes
-7. **FloorballTeamManager** - Manages team administrative responsibilities
-8. **FloorballReferee** - Manages referee qualifications and match assignments
+1. **Club** — membership and teams
+2. **Person** — identity and contacts
+3. **User** — login account linked to a person
+4. **Division** — shared age or skill band referenced by competitions
+5. **FloorballSeason** / **FloorballTournament** — schedule and participating teams. Football and hockey have the same pair on `FootballCompetition` and `HockeyCompetition`
+6. **FloorballMatch**, **FootballMatch**, **HockeyMatch** — one game and its events
+7. **FloorballTeam**, **FootballTeam**, **HockeyTeam** — roster and team details
+8. **FloorballPlayer**, **FootballPlayer**, **HockeyPlayer** — sport-specific player profile
+9. **FloorballTeamManager** / **FootballTeamManager** / **HockeyTeamStaff** — team administration
+10. **FloorballReferee** / **FootballReferee** / **HockeyOfficial** — match official profile

@@ -26,7 +26,7 @@ namespace Application.Features.Football.Teams.Handlers;
 /// <summary>
 /// Handler for updating a player's information within a football team
 /// </summary>
-public class UpdateTeamPlayerHandler : IRequestHandler<UpdateTeamPlayerCommand, Result<FootballTeamPlayerDto>>
+public class UpdateTeamPlayerHandler : IRequestHandler<UpdateFootballTeamPlayerCommand, Result<FootballTeamPlayerDto>>
 {
     private readonly IFootballTeamRepository _teamRepository;
     private readonly IFootballPlayerRepository _playerRepository;
@@ -57,12 +57,12 @@ public class UpdateTeamPlayerHandler : IRequestHandler<UpdateTeamPlayerCommand, 
     }
 
     /// <summary>
-    /// Handles the UpdateTeamPlayerCommand request
+    /// Handles the UpdateFootballTeamPlayerCommand request
     /// </summary>
     /// <param name="request">The command containing updated player information</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated team player as a DTO wrapped in a Result</returns>
-    public async Task<Result<FootballTeamPlayerDto>> Handle(UpdateTeamPlayerCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTeamPlayerDto>> Handle(UpdateFootballTeamPlayerCommand request, CancellationToken cancellationToken)
     {
         try
         {

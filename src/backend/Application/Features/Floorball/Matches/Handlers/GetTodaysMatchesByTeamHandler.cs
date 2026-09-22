@@ -4,7 +4,12 @@ using Application.Features.Floorball.Matches.Mappings;
 using Application.Features.Floorball.Matches.Queries;
 using Domain.Common;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
@@ -14,7 +19,7 @@ using System.Linq;
 
 namespace Application.Features.Floorball.Matches.Handlers;
 
-public class GetTodaysMatchesByTeamHandler : IRequestHandler<GetTodaysMatchesByTeamQuery, Result<IEnumerable<FloorballMatchDto>>>
+public class GetTodaysMatchesByTeamHandler : IRequestHandler<GetTodaysFloorballMatchesByTeamQuery, Result<IEnumerable<FloorballMatchDto>>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IClubRepository _clubRepository;
@@ -30,7 +35,7 @@ public class GetTodaysMatchesByTeamHandler : IRequestHandler<GetTodaysMatchesByT
         _logger = logger;
     }
 
-    public async Task<Result<IEnumerable<FloorballMatchDto>>> Handle(GetTodaysMatchesByTeamQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<FloorballMatchDto>>> Handle(GetTodaysFloorballMatchesByTeamQuery request, CancellationToken cancellationToken)
     {
         try
         {

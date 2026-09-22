@@ -14,7 +14,12 @@ using Application.Features.Floorball.Players.Mappings;
 using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -27,7 +32,7 @@ namespace Application.Features.Floorball.Matches.Handlers;
 /// <summary>
 /// Handler for recording a penalty in a floorball match
 /// </summary>
-public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result<FloorballMatchDto>>
+public class RecordPenaltyHandler : IRequestHandler<RecordFloorballPenaltyCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
@@ -56,7 +61,7 @@ public class RecordPenaltyHandler : IRequestHandler<RecordPenaltyCommand, Result
         _logger = logger;
     }
 
-    public async Task<Result<FloorballMatchDto>> Handle(RecordPenaltyCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballMatchDto>> Handle(RecordFloorballPenaltyCommand request, CancellationToken cancellationToken)
     {
         try
         {

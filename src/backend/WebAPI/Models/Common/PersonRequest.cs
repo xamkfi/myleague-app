@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Organization.Persons.DTOs;
 using Application.Features.Common.Shared.DTOs;
 
 namespace WebAPI.Models.Common;

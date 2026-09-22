@@ -1,7 +1,12 @@
 using Application.Common;
-using Application.Features.Common.Deletion;
+using Application.Features.Common.Organization.Deletion;
 using Application.Features.Floorball.Players.Commands;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;

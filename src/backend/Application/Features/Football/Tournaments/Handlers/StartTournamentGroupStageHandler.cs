@@ -18,7 +18,7 @@ namespace Application.Features.Football.Tournaments.Handlers;
 /// <summary>
 /// Handler for starting the group stage of a tournament
 /// </summary>
-public class StartTournamentGroupStageHandler : IRequestHandler<StartTournamentGroupStageCommand, Result<FootballTournamentDto>>
+public class StartTournamentGroupStageHandler : IRequestHandler<StartFootballTournamentGroupStageCommand, Result<FootballTournamentDto>>
 {
     private readonly IFootballTournamentRepository _tournamentRepository;
     private readonly IFootballUnitOfWork _unitOfWork;
@@ -34,7 +34,7 @@ public class StartTournamentGroupStageHandler : IRequestHandler<StartTournamentG
         _logger = logger;
     }
 
-    public async Task<Result<FootballTournamentDto>> Handle(StartTournamentGroupStageCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTournamentDto>> Handle(StartFootballTournamentGroupStageCommand request, CancellationToken cancellationToken)
     {
         try
         {

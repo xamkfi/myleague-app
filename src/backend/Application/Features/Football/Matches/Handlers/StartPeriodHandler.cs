@@ -1,5 +1,5 @@
 using Application.Common;
-using Application.Features.Common.MatchTimer.Services;
+using Application.Features.Common.CrossCutting.MatchTimer.Services;
 using Application.Features.Football.Matches.Commands;
 using Application.Features.Football.Matches.DTOs;
 using Application.Features.Football.Matches.Mappings;
@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Football.Matches.Handlers;
 
-public class StartPeriodHandler : IRequestHandler<StartPeriodCommand, Result<FootballMatchDto>>
+public class StartPeriodHandler : IRequestHandler<StartFootballPeriodCommand, Result<FootballMatchDto>>
 {
     private readonly IFootballMatchRepository _matchRepository;
     private readonly IFootballUnitOfWork _unitOfWork;
@@ -30,7 +30,7 @@ public class StartPeriodHandler : IRequestHandler<StartPeriodCommand, Result<Foo
         _logger = logger;
     }
 
-    public async Task<Result<FootballMatchDto>> Handle(StartPeriodCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballMatchDto>> Handle(StartFootballPeriodCommand request, CancellationToken cancellationToken)
     {
         try
         {

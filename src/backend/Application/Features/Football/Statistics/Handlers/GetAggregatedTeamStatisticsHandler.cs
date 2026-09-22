@@ -14,7 +14,7 @@ namespace Application.Features.Football.Statistics.Handlers;
 /// Returns a team's combined statistics aggregated across every competition (regular seasons +
 /// tournaments) the team has participated in.
 /// </summary>
-public class GetAggregatedTeamStatisticsHandler : IRequestHandler<GetAggregatedTeamStatisticsQuery, Result<FootballTeamSeasonStatisticsDto>>
+public class GetAggregatedTeamStatisticsHandler : IRequestHandler<GetAggregatedFootballTeamStatisticsQuery, Result<FootballTeamSeasonStatisticsDto>>
 {
     private readonly IFootballStatisticsRepository _statisticsRepository;
     private readonly IFootballTeamRepository _teamRepository;
@@ -30,7 +30,7 @@ public class GetAggregatedTeamStatisticsHandler : IRequestHandler<GetAggregatedT
         _logger = logger;
     }
 
-    public async Task<Result<FootballTeamSeasonStatisticsDto>> Handle(GetAggregatedTeamStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTeamSeasonStatisticsDto>> Handle(GetAggregatedFootballTeamStatisticsQuery request, CancellationToken cancellationToken)
     {
         try
         {

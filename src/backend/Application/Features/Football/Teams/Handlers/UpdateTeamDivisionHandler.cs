@@ -21,7 +21,7 @@ namespace Application.Features.Football.Teams.Handlers
     /// <summary>
     /// Handler for updating a division of an existing team
     /// </summary>
-    public class UpdateTeamDivisionHandler : IRequestHandler<UpdateTeamDivisionCommand, Result<FootballTeamDto>>
+    public class UpdateTeamDivisionHandler : IRequestHandler<UpdateFootballTeamDivisionCommand, Result<FootballTeamDto>>
     {
         private readonly ILogger<UpdateTeamDivisionHandler> _logger;
         private readonly IFootballTeamRepository _footballTeamRepository;
@@ -52,7 +52,7 @@ namespace Application.Features.Football.Teams.Handlers
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Result<FootballTeamDto>> Handle(UpdateTeamDivisionCommand request, CancellationToken cancellationToken)
+        public async Task<Result<FootballTeamDto>> Handle(UpdateFootballTeamDivisionCommand request, CancellationToken cancellationToken)
         {
             try
             {

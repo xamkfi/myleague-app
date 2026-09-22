@@ -1,14 +1,19 @@
 using Application.Features.Floorball.Referees.Commands;
 using Application.Features.Floorball.Referees.DTOs;
 using Application.Common;
-using Application.Features.Common.Deletion;
-using Domain.Entities.Floorball;
+using Application.Features.Common.Organization.Deletion;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
 using Domain.Entities.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
-using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
 
 namespace Application.Features.Floorball.Referees.Handlers;
 

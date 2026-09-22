@@ -15,7 +15,7 @@ namespace Application.Features.Football.Statistics.Handlers;
 /// Returns per-player statistics for a team aggregated across every competition the team has
 /// played in.
 /// </summary>
-public class GetAggregatedTeamPlayerStatisticsHandler : IRequestHandler<GetAggregatedTeamPlayerStatisticsQuery, Result<List<FootballPlayerSeasonStatisticsDto>>>
+public class GetAggregatedTeamPlayerStatisticsHandler : IRequestHandler<GetAggregatedFootballTeamPlayerStatisticsQuery, Result<List<FootballPlayerSeasonStatisticsDto>>>
 {
     private readonly IFootballStatisticsRepository _statisticsRepository;
     private readonly IPersonRepository _personRepository;
@@ -31,7 +31,7 @@ public class GetAggregatedTeamPlayerStatisticsHandler : IRequestHandler<GetAggre
         _logger = logger;
     }
 
-    public async Task<Result<List<FootballPlayerSeasonStatisticsDto>>> Handle(GetAggregatedTeamPlayerStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<FootballPlayerSeasonStatisticsDto>>> Handle(GetAggregatedFootballTeamPlayerStatisticsQuery request, CancellationToken cancellationToken)
     {
         try
         {

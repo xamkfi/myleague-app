@@ -1,5 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.ValueObjects.Floorball;
 using MyLeague.Infrastructure.Persistence.Extensions;
 using MyLeague.Infrastructure.Persistence.Configurations.Floorball;

@@ -20,7 +20,7 @@ namespace Application.Features.Football.Statistics.Handlers;
 /// <summary>
 /// Handler for retrieving season statistics summary
 /// </summary>
-public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatisticsSummaryQuery, Result<FootballSeasonStatisticsSummaryDto>>
+public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeasonStatisticsSummaryQuery, Result<FootballSeasonStatisticsSummaryDto>>
 {
     private readonly IFootballStatisticsRepository _statisticsRepository;
     private readonly IFootballPlayerRepository _footballPlayerRepository;
@@ -45,7 +45,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
         _logger = logger;
     }
 
-    public async Task<Result<FootballSeasonStatisticsSummaryDto>> Handle(GetSeasonStatisticsSummaryQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FootballSeasonStatisticsSummaryDto>> Handle(GetFootballSeasonStatisticsSummaryQuery request, CancellationToken cancellationToken)
     {
         try
         {

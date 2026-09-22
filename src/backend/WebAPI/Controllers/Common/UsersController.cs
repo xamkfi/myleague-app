@@ -1,9 +1,9 @@
 using System.Security.Claims;
 using Domain.Constants;
 using Application.Common;
-using Application.Features.Common.Users.Commands;
-using Application.Features.Common.Users.DTOs;
-using Application.Features.Common.Users.Queries;
+using Application.Features.Common.Organization.Users.Commands;
+using Application.Features.Common.Organization.Users.DTOs;
+using Application.Features.Common.Organization.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

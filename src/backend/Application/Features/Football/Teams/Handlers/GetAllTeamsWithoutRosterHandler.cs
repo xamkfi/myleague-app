@@ -7,11 +7,11 @@ using Application.Features.Football.Teams.Mappings;
 using Application.Features.Football.Players.Mappings;
 using Application.Features.Football.Referees.Mappings;
 using Application.Features.Football.TeamManagers.Mappings;
-using Application.Features.Common.Users.Mappings;
-using Application.Features.Common.Persons.Mappings;
-using Application.Features.Common.Clubs.Mappings;
-using Application.Features.Common.Divisions.Mappings;
-using Application.Features.Common.News.Mappings;
+using Application.Features.Common.Organization.Users.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
+using Application.Features.Common.Organization.Clubs.Mappings;
+using Application.Features.Common.Organization.Divisions.Mappings;
+using Application.Features.Common.Content.News.Mappings;
 using Application.Common;
 using Application.Services.Common;
 using Domain.Common;
@@ -34,8 +34,8 @@ namespace Application.Features.Football.Teams.Handlers;
 /// <summary>
 /// Handler for retrieving paginated football teams without roster with filtering support
 /// </summary>
-public class GetAllTeamsWithoutRosterHandler : BasePagedQueryHandler<GetAllTeamsWithoutRosterQuery, FootballTeamSummaryDto>,
-    IRequestHandler<GetAllTeamsWithoutRosterQuery, Result<PagedResult<FootballTeamSummaryDto>>>
+public class GetAllTeamsWithoutRosterHandler : BasePagedQueryHandler<GetAllFootballTeamsWithoutRosterQuery, FootballTeamSummaryDto>,
+    IRequestHandler<GetAllFootballTeamsWithoutRosterQuery, Result<PagedResult<FootballTeamSummaryDto>>>
 {
     private readonly IFootballTeamRepository _teamRepository;
     private readonly IClubRepository _clubRepository;
@@ -58,12 +58,12 @@ public class GetAllTeamsWithoutRosterHandler : BasePagedQueryHandler<GetAllTeams
     }
 
     /// <summary>
-    /// Handles the GetAllTeamsWithoutRosterQuery request
+    /// Handles the GetAllFootballTeamsWithoutRosterQuery request
     /// </summary>
     /// <param name="request">The query containing pagination and filtering parameters</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A paginated collection of football teams as summary DTOs wrapped in a Result</returns>
-    public async Task<Result<PagedResult<FootballTeamSummaryDto>>> Handle(GetAllTeamsWithoutRosterQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<FootballTeamSummaryDto>>> Handle(GetAllFootballTeamsWithoutRosterQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -75,7 +75,7 @@ public class GetAllTeamsWithoutRosterHandler : BasePagedQueryHandler<GetAllTeams
 
             // Validate pagination parameters using base handler
             Result<PaginationValidationResult> validationResult = ValidatePaginationParameters(
-                request.Page, request.PageSize, GetAllTeamsWithoutRosterQuery.ResourceKey);
+                request.Page, request.PageSize, GetAllFootballTeamsWithoutRosterQuery.ResourceKey);
             
             if (validationResult.IsFailure)
             {

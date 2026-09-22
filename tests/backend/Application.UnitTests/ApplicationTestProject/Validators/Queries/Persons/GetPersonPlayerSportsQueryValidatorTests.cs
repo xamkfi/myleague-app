@@ -1,5 +1,5 @@
-using Application.Features.Common.Persons.Queries;
-using Application.Features.Common.Persons.Validators;
+using Application.Features.Common.Organization.Persons.Queries;
+using Application.Features.Common.Organization.Persons.Validators;
 using FluentValidation.TestHelper;
 
 namespace ApplicationTestProject.Validators.Queries.Persons;

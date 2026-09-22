@@ -2,7 +2,12 @@ using Application.Common;
 using Application.Features.Floorball.Statistics.Mappings;
 using Application.Features.Floorball.Statistics.Queries;
 using Application.Features.Floorball.Teams.DTOs;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -16,7 +21,7 @@ namespace Application.Features.Floorball.Statistics.Handlers;
 /// This handler walks all stat rows for the team and folds them into a single DTO so the
 /// "Overall Record" block reflects every match the team has played.
 /// </summary>
-public class GetAggregatedTeamStatisticsHandler : IRequestHandler<GetAggregatedTeamStatisticsQuery, Result<FloorballTeamSeasonStatisticsDto>>
+public class GetAggregatedTeamStatisticsHandler : IRequestHandler<GetAggregatedFloorballTeamStatisticsQuery, Result<FloorballTeamSeasonStatisticsDto>>
 {
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballTeamRepository _teamRepository;
@@ -32,7 +37,7 @@ public class GetAggregatedTeamStatisticsHandler : IRequestHandler<GetAggregatedT
         _logger = logger;
     }
 
-    public async Task<Result<FloorballTeamSeasonStatisticsDto>> Handle(GetAggregatedTeamStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballTeamSeasonStatisticsDto>> Handle(GetAggregatedFloorballTeamStatisticsQuery request, CancellationToken cancellationToken)
     {
         try
         {

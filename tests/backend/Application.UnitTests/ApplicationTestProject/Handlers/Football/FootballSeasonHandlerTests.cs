@@ -1,3 +1,5 @@
+using Application.Features.Football.Competitions.Commands;
+using Application.Features.Football.Competitions.Handlers;
 using Application.Common;
 using Application.Features.Football.Seasons.Commands;
 using Application.Features.Football.Seasons.DTOs;
@@ -126,7 +128,7 @@ public class FootballSeasonHandlerTests
         _clubRepo.Setup(r => r.GetByIdAsync(team.ClubId)).ReturnsAsync(new Club("Club"));
 
         Result<FootballSeasonDto> result = await handler.Handle(
-            new AddTeamToSeasonCommand(season.Id, team.Id),
+            new AddFootballTeamToSeasonCommand(season.Id, team.Id),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
@@ -160,7 +162,7 @@ public class FootballSeasonHandlerTests
         _teamRepo.Setup(r => r.GetByIdAsync((Guid?)teamId)).ReturnsAsync((FootballTeam?)null);
 
         Result<FootballSeasonDto> result = await handler.Handle(
-            new AddTeamToSeasonCommand(season.Id, teamId),
+            new AddFootballTeamToSeasonCommand(season.Id, teamId),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();

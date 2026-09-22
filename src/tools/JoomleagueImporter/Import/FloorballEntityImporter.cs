@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using Application.Features.Common.Clubs.DTOs;
-using Application.Features.Common.Divisions.DTOs;
-using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Organization.Clubs.DTOs;
+using Application.Features.Common.Organization.Divisions.DTOs;
+using Application.Features.Common.Organization.Persons.DTOs;
 using Application.Features.Floorball.Players.DTOs;
 using Application.Features.Floorball.Referees.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;

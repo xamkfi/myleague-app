@@ -127,7 +127,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting floorball team names filtered by: {nameFilter}", SanitizeForLog(nameFilter));
 
-            Result<List<FloorballTeamNameDto>> result = await _mediator.Send(new GetTeamNamesQuery(nameFilter));
+            Result<List<FloorballTeamNameDto>> result = await _mediator.Send(new GetFloorballTeamNamesQuery(nameFilter));
 
             return HandleResult(result, "Filtered team names retrieved successfully", "Failed to retrieve team names");
         }
@@ -150,7 +150,7 @@ namespace WebAPI.Controllers.Floorball
                 SanitizeForLog(request.SearchTerm),
                 SanitizeForLog(request.TeamCategory));
 
-            Result<PagedResult<FloorballTeamSummaryDto>> result = await _mediator.Send(new GetAllTeamsWithoutRosterQuery(
+            Result<PagedResult<FloorballTeamSummaryDto>> result = await _mediator.Send(new GetAllFloorballTeamsWithoutRosterQuery(
                 request.Page,
                 request.PageSize,
                 request.SearchTerm,
@@ -298,7 +298,7 @@ namespace WebAPI.Controllers.Floorball
                 teamId,
                 SanitizeForLog(position));
 
-            Result<FloorballTeamDto> result = await _mediator.Send(new AddPlayerToTeamCommand(
+            Result<FloorballTeamDto> result = await _mediator.Send(new AddFloorballPlayerToTeamCommand(
                 teamId,
                 playerId,
                 position,
@@ -327,7 +327,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Removing player {playerId} from team {teamId}", playerId, teamId);
 
-            Result<FloorballTeamDto> result = await _mediator.Send(new RemovePlayerFromTeamCommand(teamId, playerId, competitionId));
+            Result<FloorballTeamDto> result = await _mediator.Send(new RemoveFloorballPlayerFromTeamCommand(teamId, playerId, competitionId));
 
             return HandleResult(result, "Player removed from team successfully", "Failed to remove player from team");
         }
@@ -357,7 +357,7 @@ namespace WebAPI.Controllers.Floorball
                 request.JerseyNumber,
                 request.IsActive);
 
-            Result<FloorballTeamPlayerDto> result = await _mediator.Send(new UpdateTeamPlayerCommand(
+            Result<FloorballTeamPlayerDto> result = await _mediator.Send(new UpdateFloorballTeamPlayerCommand(
                 teamId,
                 playerId,
                 request.Position,
@@ -384,7 +384,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Updating teams {teamId} into division {divisionId}", teamId, divisionId);
 
-            Result<FloorballTeamDto> result = await _mediator.Send(new UpdateTeamDivisionCommand(teamId, divisionId));
+            Result<FloorballTeamDto> result = await _mediator.Send(new UpdateFloorballTeamDivisionCommand(teamId, divisionId));
 
             return HandleResult(result, "Team division updated succesfully", "Failed to update teams division");
         }

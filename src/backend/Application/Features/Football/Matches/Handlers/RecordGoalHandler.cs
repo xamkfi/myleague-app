@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Football.Matches.Handlers;
 
-public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<FootballMatchDto>>
+public class RecordGoalHandler : IRequestHandler<RecordFootballGoalCommand, Result<FootballMatchDto>>
 {
     private readonly IFootballMatchRepository _matchRepository;
     private readonly IFootballTeamRepository _teamRepository;
@@ -43,7 +43,7 @@ public class RecordGoalHandler : IRequestHandler<RecordGoalCommand, Result<Footb
         _logger = logger;
     }
 
-    public async Task<Result<FootballMatchDto>> Handle(RecordGoalCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballMatchDto>> Handle(RecordFootballGoalCommand request, CancellationToken cancellationToken)
     {
         try
         {

@@ -1,8 +1,8 @@
 using Domain.Constants;
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Features.Common.FooterContacts.Commands;
-using Application.Features.Common.FooterContacts.Queries;
+using Application.Features.Common.Content.FooterContacts.Commands;
+using Application.Features.Common.Content.FooterContacts.Queries;
 using Domain.Enums.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

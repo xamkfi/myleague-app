@@ -1,7 +1,7 @@
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Features.Common.InfoPageContent.Commands;
-using Application.Features.Common.InfoPageContent.Queries;
+using Application.Features.Common.Content.InfoPageContent.Commands;
+using Application.Features.Common.Content.InfoPageContent.Queries;
 using Domain.Repositories.Common;
 using Moq;
 using InfoPageEntity = Domain.Entities.Common.InfoPageContent;

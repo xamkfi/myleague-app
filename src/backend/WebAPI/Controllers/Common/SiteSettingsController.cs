@@ -1,6 +1,6 @@
 using Application.Common;
-using Application.Features.Common.PlayerLicences.Commands;
-using Application.Features.Common.PlayerLicences.DTOs;
+using Application.Features.Common.Organization.PlayerLicences.Commands;
+using Application.Features.Common.Organization.PlayerLicences.DTOs;
 using Application.Features.Common.SiteSettings.Commands;
 using Application.Features.Common.SiteSettings.DTOs;
 using Application.Features.Common.SiteSettings.Queries;

@@ -23,7 +23,7 @@ namespace Application.Features.Football.Teams.Handlers;
 /// <summary>
 /// Handler for removing a player from a football team
 /// </summary>
-public class RemovePlayerFromTeamHandler : IRequestHandler<RemovePlayerFromTeamCommand, Result<FootballTeamDto>>
+public class RemovePlayerFromTeamHandler : IRequestHandler<RemoveFootballPlayerFromTeamCommand, Result<FootballTeamDto>>
 {
     private readonly IFootballTeamRepository _teamRepository;
     private readonly IClubRepository _clubRepository;
@@ -53,12 +53,12 @@ public class RemovePlayerFromTeamHandler : IRequestHandler<RemovePlayerFromTeamC
     }
 
     /// <summary>
-    /// Handles the RemovePlayerFromTeamCommand request
+    /// Handles the RemoveFootballPlayerFromTeamCommand request
     /// </summary>
     /// <param name="request">The command containing player and team information</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated team as a DTO wrapped in a Result</returns>
-    public async Task<Result<FootballTeamDto>> Handle(RemovePlayerFromTeamCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTeamDto>> Handle(RemoveFootballPlayerFromTeamCommand request, CancellationToken cancellationToken)
     {
         try
         {

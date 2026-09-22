@@ -1,7 +1,7 @@
 using Application.Common;
-using Application.Features.Common.Deletion;
-using Application.Features.Common.Divisions.Commands;
-using Application.Features.Common.Divisions.Handlers;
+using Application.Features.Common.Organization.Deletion;
+using Application.Features.Common.Organization.Divisions.Commands;
+using Application.Features.Common.Organization.Divisions.Handlers;
 using Domain.Entities.Common;
 using Domain.Enums.Common;
 using Domain.Repositories.Common;

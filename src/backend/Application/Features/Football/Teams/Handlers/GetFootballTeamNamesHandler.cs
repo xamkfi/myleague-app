@@ -22,7 +22,7 @@ namespace Application.Features.Football.Teams.Handlers
     /// <summary>
     /// Handler to retrieve football team names with optional filter
     /// </summary>
-    public class GetFootballTeamNamesHandler : IRequestHandler<GetTeamNamesQuery, Result<List<FootballTeamNameDto>>>
+    public class GetFootballTeamNamesHandler : IRequestHandler<GetFootballTeamNamesQuery, Result<List<FootballTeamNameDto>>>
     {
         private readonly IFootballTeamRepository _footballTeamRepository;
         private readonly ILogger<GetFootballTeamNamesHandler> _logger;
@@ -36,7 +36,7 @@ namespace Application.Features.Football.Teams.Handlers
             _logger = logger;
         }
 
-        public async Task<Result<List<FootballTeamNameDto>>> Handle(GetTeamNamesQuery request, CancellationToken cancellationToken)
+        public async Task<Result<List<FootballTeamNameDto>>> Handle(GetFootballTeamNamesQuery request, CancellationToken cancellationToken)
         {
             try
             {

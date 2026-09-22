@@ -1,0 +1,17 @@
+using System;
+using Application.Common;
+using Application.Features.Floorball.Seasons.DTOs;
+using MediatR;
+
+namespace Application.Features.Floorball.Competitions.Commands
+{
+    /// <summary>
+    /// Command for adding a team to a floorball season
+    /// </summary>
+    /// <param name="CompetitionId">The ID of the competition to add the team to</param>
+    /// <param name="TeamId">The ID of the team to add to the season</param>
+    public record AddFloorballTeamToSeasonCommand(
+        Guid CompetitionId,
+        Guid TeamId,
+        Domain.Enums.Common.RosterEnrollmentMode RosterMode = Domain.Enums.Common.RosterEnrollmentMode.CopyLatest) : IRequest<Result<FloorballSeasonDto>>;
+} 

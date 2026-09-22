@@ -2,7 +2,12 @@ using Application.Common;
 using Application.Features.Floorball.Tournaments.Commands;
 using Application.Features.Floorball.Tournaments.DTOs;
 using Application.Features.Floorball.Tournaments.Handlers;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -66,7 +71,7 @@ public class FloorballTournamentHandlerTests
             .ReturnsAsync((FloorballTournament?)null);
 
         Result<FloorballTournamentDto> result = await handler.Handle(
-            new StartTournamentGroupStageCommand(id),
+            new StartFloorballTournamentGroupStageCommand(id),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
@@ -92,7 +97,7 @@ public class FloorballTournamentHandlerTests
             .ReturnsAsync(tournament);
 
         Result<FloorballTournamentDto> result = await handler.Handle(
-            new CancelTournamentCommand(tournament.Id),
+            new CancelFloorballTournamentCommand(tournament.Id),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();

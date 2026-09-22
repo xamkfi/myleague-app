@@ -14,7 +14,7 @@ namespace Application.Features.Football.Statistics.Handlers;
 /// <summary>
 /// Handler for retrieving all player statistics for a specific team in a season
 /// </summary>
-public class GetTeamPlayerStatisticsHandler : IRequestHandler<GetTeamPlayerStatisticsQuery, Result<List<FootballPlayerSeasonStatisticsDto>>>
+public class GetTeamPlayerStatisticsHandler : IRequestHandler<GetFootballTeamPlayerStatisticsQuery, Result<List<FootballPlayerSeasonStatisticsDto>>>
 {
     private readonly IFootballStatisticsRepository _statisticsRepository;
     private readonly IPersonRepository _personRepository;
@@ -30,7 +30,7 @@ public class GetTeamPlayerStatisticsHandler : IRequestHandler<GetTeamPlayerStati
         _logger = logger;
     }
 
-    public async Task<Result<List<FootballPlayerSeasonStatisticsDto>>> Handle(GetTeamPlayerStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<FootballPlayerSeasonStatisticsDto>>> Handle(GetFootballTeamPlayerStatisticsQuery request, CancellationToken cancellationToken)
     {
         try
         {
