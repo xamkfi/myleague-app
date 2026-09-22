@@ -250,10 +250,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
 
                 if (!string.IsNullOrWhiteSpace(search))
                 {
-                    search = search.ToLower();
                     query = query.Where(n =>
-                        EF.Functions.Like(n.Title ?? "", $"%{search}%") ||
-                        EF.Functions.Like(n.Summary ?? "", $"%{search}%"));
+                        EF.Functions.ILike(n.Title ?? "", $"%{search}%") ||
+                        EF.Functions.ILike(n.Summary ?? "", $"%{search}%"));
                 }
 
                 if (!string.IsNullOrWhiteSpace(sportCategory))
@@ -327,10 +326,9 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Common
 
                 if (!string.IsNullOrWhiteSpace(search))
                 {
-                    search = search.ToLower();
                     query = query.Where(n =>
-                        EF.Functions.Like(n.Title ?? "", $"%{search}%") ||
-                        EF.Functions.Like(n.Summary ?? "", $"%{search}%"));
+                        EF.Functions.ILike(n.Title ?? "", $"%{search}%") ||
+                        EF.Functions.ILike(n.Summary ?? "", $"%{search}%"));
                 }
 
                 if (!string.IsNullOrWhiteSpace(author))
