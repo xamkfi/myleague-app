@@ -8,6 +8,7 @@ import FixturesSection from './components/FixturesSection';
 import SummarySection from './components/SummarySection';
 import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
 import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
+import UnderlineTabs from '../../components/UnderlineTabs/UnderlineTabs';
 import { isNotFoundError } from '../../api/utils/isNotFoundError';
 import { unwrapApiErrorMessage } from '../../api/utils/ParseErrorResponse';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
@@ -249,20 +250,13 @@ export default function FloorballLeaguePage() {
         <CompetitionHero
           title={season?.name || seasonSummary?.seasonName || t('leaguePage.defaultTitle')}
           logoUrl={season?.logoUrl}
-        >
-          <div className="competition-hero__tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`competition-hero__tab ${activeTab === tab.key ? 'competition-hero__tab--active' : ''}`}
-                onClick={() => handleTabChange(tab.key)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </CompetitionHero>
+        />
+        <UnderlineTabs
+          tabs={tabs.map((tab) => ({ id: tab.key, label: tab.label }))}
+          activeId={activeTab}
+          onChange={(id) => handleTabChange(id as TabType)}
+          ariaLabel={t('leaguePage.defaultTitle')}
+        />
         
         <div className="league-content">
           {renderTabContent()}

@@ -11,6 +11,10 @@
   margin: 0 auto;
   padding: map.get($spacing, 'md') map.get($spacing, 'lg') map.get($spacing, 'xl');
 
+  .competition-hero {
+    margin-bottom: map.get($spacing, 'md');
+  }
+
   &__hero {
     background: $color-banner-bg;
     border-radius: map.get($border-radius, 'lg');
@@ -112,38 +116,6 @@
     &--upcoming { background: $color-blue-secondary; }
     &--ongoing { background: $color-green-primary; }
     &--past { background: rgba($color-white, 0.18); }
-  }
-
-  &__tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: map.get($spacing, 'xs');
-    margin-bottom: map.get($spacing, 'lg');
-  }
-
-  &__tab {
-    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
-    background: $color-white;
-    border: 1px solid rgba($color-blue-deep, 0.15);
-    color: $color-blue-deep;
-    border-radius: map.get($border-radius, 'lg');
-    cursor: pointer;
-    font-weight: map.get($font-weights, 'medium');
-    font-size: map.get($font-sizes, 'sm');
-    transition: all 0.2s ease;
-    box-shadow: $box-shadow-drop-1;
-
-    &:hover {
-      background: rgba($color-blue-secondary, 0.08);
-      color: $color-blue-deep;
-    }
-
-    &--active {
-      background: $color-blue-deep;
-      color: $color-white;
-      border-color: $color-blue-deep;
-      font-weight: map.get($font-weights, 'bold');
-    }
   }
 
   &__content {
