@@ -2,21 +2,25 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
+import UnderlineTabs from '../../components/UnderlineTabs/UnderlineTabs';
 import HockeyMatchRow from '../../components/HockeyMatchRow/HockeyMatchRow';
 import HockeyRosterSection from './HockeyRosterSection';
 import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
 import { hockeyMatchService } from '../../api/hockey/hockeyMatchService';
 import { hockeyStatisticsService } from '../../api/hockey/hockeyStatisticsService';
+import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
+import { hockeyTournamentService } from '../../api/hockey/hockeyTournamentService';
 import { clubService } from '../../api/common/clubService';
 import type { HockeyMatchDto, HockeyPlayerCompetitionStatisticsDto, HockeyTeamDto } from '../../types/hockey/hockeyTypes';
 import { shouldRefreshHockeyMatches } from '../../types/hockey/hockeyTypes';
 import { findTeamBySlug, slugify } from '../../utils/slugUtils';
-import { isGuid } from '../../utils/sportRoutes';
+import { teamMarkLabel } from '../../utils/teamMarkLabel';
+import { getLeaguePath, getTournamentPath, isGuid } from '../../utils/sportRoutes';
 import { loadHockeyRosterNameMaps, loadTeamNameMap } from '../../utils/hockeyLookups';
 import { useAudience } from '../../context/AudienceContext';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
 import '../FloorballTeamPage/FloorballTeamPage.scss';
-import '../FloorballTeamPage/components/TeamNavbar.scss';
 import '../../components/MatchesList/MatchesList.scss';
 
 type HockeyTeamTab = 'roster' | 'results';
@@ -30,6 +34,8 @@ function HockeyTeamPage() {
   const requestedSeasonId = searchParams.get('season');
   const [team, setTeam] = useState<HockeyTeamDto | null>(null);
   const [clubName, setClubName] = useState('');
+  const [clubLogo, setClubLogo] = useState<string | null>(null);
+  const [competitionLink, setCompetitionLink] = useState<{ name: string; path: string } | null>(null);
   const [matches, setMatches] = useState<HockeyMatchDto[]>([]);
   const [teamNames, setTeamNames] = useState<Map<string, string>>(new Map());
   const [playerNames, setPlayerNames] = useState<Map<string, string>>(new Map());
@@ -86,6 +92,22 @@ function HockeyTeamPage() {
       const clubs = await clubService.getAll().catch(() => []);
       const club = clubs.find((item) => item.id === selected.clubId);
       setClubName(club?.name ?? '');
+      setClubLogo(club?.logoUrl ?? null);
+      if (seasonId) {
+        const season = await hockeySeasonService.getById(seasonId).catch(() => null);
+        if (season) {
+          setCompetitionLink({ name: season.name, path: getLeaguePath('hockey', season.id) });
+        } else {
+          const tournament = await hockeyTournamentService.getById(seasonId).catch(() => null);
+          setCompetitionLink(
+            tournament
+              ? { name: tournament.name, path: getTournamentPath('hockey', tournament.id) }
+              : null,
+          );
+        }
+      } else {
+        setCompetitionLink(null);
+      }
     };
     void load().catch((err) => setError(err instanceof Error ? err.message : 'Failed to load team'));
   }, [slug, t, audience.teamCategory, requestedSeasonId]);
@@ -132,54 +154,66 @@ function HockeyTeamPage() {
   return (
     <PageTemplate title={team.name}>
       <div className="floorball-team-page">
-        <div className="hero-image-container">
-          <div className="hero-image" />
-          <div className="team-header">
-            <div className="left-navigation-container">
-              <div className="breadcrumb">
-                {clubName && (
-                  <>
-                    <button
-                      type="button"
-                      className="club-link"
-                      onClick={() => navigate(`/club/${slugify(clubName)}`)}
-                    >
-                      {clubName}
-                    </button>
-                    <span className="separator">›</span>
-                  </>
-                )}
-                <span className="current">{team.name}</span>
+        <nav className="floorball-team-page__crumb" aria-label={clubName || team.name}>
+          {clubName && (
+            <>
+              <button
+                type="button"
+                className="floorball-team-page__crumb-link"
+                onClick={() => navigate(`/club/${slugify(clubName)}`)}
+              >
+                {clubName}
+              </button>
+              <span aria-hidden="true">›</span>
+            </>
+          )}
+          <span className="floorball-team-page__crumb-current">{team.name}</span>
+        </nav>
+
+        <CompetitionHero
+          title={team.name}
+          logoUrl={team.logoUrl || clubLogo}
+          markLabel={teamMarkLabel(team.name)}
+          meta={competitionLink ? (
+            <button
+              type="button"
+              className="floorball-team-page__season"
+              onClick={() => navigate(competitionLink.path)}
+            >
+              {competitionLink.name}
+            </button>
+          ) : null}
+        />
+
+        <UnderlineTabs
+          tabs={[
+            { id: 'roster', label: t('teamUserPage.roster') },
+            { id: 'results', label: t('teamUserPage.results') },
+          ]}
+          activeId={activeTab}
+          onChange={(id) => setActiveTab(id as HockeyTeamTab)}
+          ariaLabel={t('teamUserPage.summary')}
+        />
+
+        <div
+          className="tab-content-container"
+          role="tabpanel"
+          id={`tabpanel-${activeTab}`}
+          aria-labelledby={`tab-${activeTab}`}
+        >
+          {activeTab === 'roster' && (
+            <HockeyRosterSection team={team} playerNames={playerNames} playerStats={playerStats} />
+          )}
+          {activeTab === 'results' && (
+            <div className="results-section">
+              <div className="matches-grid">
+                {matches.map((match) => (
+                  <HockeyMatchRow key={match.id} match={match} teamNames={teamNames} />
+                ))}
               </div>
             </div>
-            <div className="header-content">
-              <div className="team-info">
-                <h1>{team.name}</h1>
-                <p>{team.homeArena}{team.shortName ? ` · ${team.shortName}` : ''}</p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
-        <div className="team-navigation-tabs" role="tablist">
-          <button type="button" className={`team-nav-tab ${activeTab === 'roster' ? 'active' : ''}`} onClick={() => setActiveTab('roster')}>
-            {t('teamUserPage.roster', 'Roster')}
-          </button>
-          <button type="button" className={`team-nav-tab ${activeTab === 'results' ? 'active' : ''}`} onClick={() => setActiveTab('results')}>
-            {t('teamUserPage.results', 'Results')}
-          </button>
-        </div>
-        {activeTab === 'roster' && (
-          <HockeyRosterSection team={team} playerNames={playerNames} playerStats={playerStats} />
-        )}
-        {activeTab === 'results' && (
-          <div className="results-section">
-            <div className="matches-grid">
-              {matches.map((match) => (
-                <HockeyMatchRow key={match.id} match={match} teamNames={teamNames} />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </PageTemplate>
   );

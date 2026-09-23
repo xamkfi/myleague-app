@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
+import UnderlineTabs from '../../components/UnderlineTabs/UnderlineTabs';
 import FootballLeagueStanding from '../FootballLeaguePage/components/FootballLeagueStanding';
 import MatchesList from '../FootballLeaguePage/components/FootballMatchesList';
 import PlannedPlayoffSchedule from './components/FootballPlannedPlayoffSchedule';
@@ -611,18 +612,12 @@ function FootballTournamentPage() {
           }
         />
 
-        <nav className="tournament-page__tabs" aria-label={t('tournaments.tabsAria', 'Turnauksen välilehdet')}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`tournament-page__tab ${activeTab === tab.key ? 'tournament-page__tab--active' : ''}`}
-              onClick={() => handleTabChange(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
+        <UnderlineTabs
+          tabs={tabs.map((tab) => ({ id: tab.key, label: tab.label }))}
+          activeId={activeTab}
+          onChange={(id) => handleTabChange(id as TabType)}
+          ariaLabel={t('tournaments.tabsAria', 'Turnauksen välilehdet')}
+        />
 
         {renderTabContent()}
       </div>

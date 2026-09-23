@@ -9,6 +9,10 @@
   position: relative;
   padding-bottom: map.get($spacing, 'lg');
 
+  .competition-hero {
+    margin-bottom: map.get($spacing, 'md');
+  }
+
   // Hero Image Background
   .hero-image-container {
     display: flex;
