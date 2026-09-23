@@ -242,6 +242,8 @@ public class HockeyStatisticsHandlerTests
 
         GetHockeyCompetitionStandingsHandler handler = new(
             _statsRepo.Object,
+            _competitionRepo.Object,
+            _teamRepo.Object,
             Mock.Of<ILogger<GetHockeyCompetitionStandingsHandler>>());
 
         Result<List<HockeyTeamCompetitionStatisticsDto>> result = await handler.Handle(

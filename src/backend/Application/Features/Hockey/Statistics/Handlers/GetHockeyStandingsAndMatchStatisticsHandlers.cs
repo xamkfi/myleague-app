@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.Hockey.Statistics.DTOs;
 using Application.Features.Hockey.Statistics.Mappings;
 using Application.Features.Hockey.Statistics.Queries;
+using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Statistics;
 using Domain.Enums.Hockey.Statistics;
 using Domain.Repositories.Hockey;
@@ -66,13 +67,19 @@ public class GetHockeyCompetitionStandingsHandler
     : IRequestHandler<GetHockeyCompetitionStandingsQuery, Result<List<HockeyTeamCompetitionStatisticsDto>>>
 {
     private readonly IHockeyStatisticsRepository _statisticsRepository;
+    private readonly IHockeyCompetitionRepository _competitionRepository;
+    private readonly IHockeyTeamRepository _teamRepository;
     private readonly ILogger<GetHockeyCompetitionStandingsHandler> _logger;
 
     public GetHockeyCompetitionStandingsHandler(
         IHockeyStatisticsRepository statisticsRepository,
+        IHockeyCompetitionRepository competitionRepository,
+        IHockeyTeamRepository teamRepository,
         ILogger<GetHockeyCompetitionStandingsHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
+        _competitionRepository = competitionRepository;
+        _teamRepository = teamRepository;
         _logger = logger;
     }
 
@@ -87,8 +94,25 @@ public class GetHockeyCompetitionStandingsHandler
                     request.CompetitionId,
                     HockeyStatisticsScope.Competition);
 
-            return Result<List<HockeyTeamCompetitionStatisticsDto>>.Success(
-                HockeyStatisticsHandlerSupport.DistinctStandings(rows.Select(HockeyStatisticsMapper.ToDto)));
+            List<HockeyTeamCompetitionStatisticsDto> standings =
+                HockeyStatisticsHandlerSupport.DistinctStandings(rows.Select(HockeyStatisticsMapper.ToDto));
+
+            HockeyCompetition? competition = await _competitionRepository.GetByIdAsync(request.CompetitionId);
+            List<Guid> enrolled = competition is null
+                ? []
+                : HockeyStatisticsHandlerSupport.ActiveCompetitionTeamIds(competition);
+
+            standings = await HockeyStatisticsHandlerSupport.WithEnrolledZerosAsync(
+                competition,
+                standings,
+                enrolled,
+                _teamRepository,
+                request.CompetitionId,
+                HockeyStatisticsScope.Competition,
+                tournamentGroupId: null,
+                cancellationToken);
+
+            return Result<List<HockeyTeamCompetitionStatisticsDto>>.Success(standings);
         }
         catch (Exception ex)
         {
@@ -149,13 +173,19 @@ public class GetHockeyTournamentGroupStandingsHandler
     : IRequestHandler<GetHockeyTournamentGroupStandingsQuery, Result<List<HockeyTeamCompetitionStatisticsDto>>>
 {
     private readonly IHockeyStatisticsRepository _statisticsRepository;
+    private readonly IHockeyCompetitionRepository _competitionRepository;
+    private readonly IHockeyTeamRepository _teamRepository;
     private readonly ILogger<GetHockeyTournamentGroupStandingsHandler> _logger;
 
     public GetHockeyTournamentGroupStandingsHandler(
         IHockeyStatisticsRepository statisticsRepository,
+        IHockeyCompetitionRepository competitionRepository,
+        IHockeyTeamRepository teamRepository,
         ILogger<GetHockeyTournamentGroupStandingsHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
+        _competitionRepository = competitionRepository;
+        _teamRepository = teamRepository;
         _logger = logger;
     }
 
@@ -171,8 +201,30 @@ public class GetHockeyTournamentGroupStandingsHandler
                     HockeyStatisticsScope.TournamentGroup,
                     tournamentGroupId: request.TournamentGroupId);
 
-            return Result<List<HockeyTeamCompetitionStatisticsDto>>.Success(
-                HockeyStatisticsHandlerSupport.DistinctStandings(rows.Select(HockeyStatisticsMapper.ToDto)));
+            List<HockeyTeamCompetitionStatisticsDto> standings =
+                HockeyStatisticsHandlerSupport.DistinctStandings(rows.Select(HockeyStatisticsMapper.ToDto));
+
+            HockeyCompetition? competition = await _competitionRepository.GetByIdAsync(request.CompetitionId);
+            List<Guid> enrolled = [];
+            HockeyCompetition? fillSource = null;
+            if (competition is HockeyTournament tournament
+                && tournament.Groups.Any(group => group.Id == request.TournamentGroupId))
+            {
+                enrolled = HockeyStatisticsHandlerSupport.ActiveGroupTeamIds(tournament, request.TournamentGroupId);
+                fillSource = tournament;
+            }
+
+            standings = await HockeyStatisticsHandlerSupport.WithEnrolledZerosAsync(
+                fillSource,
+                standings,
+                enrolled,
+                _teamRepository,
+                request.CompetitionId,
+                HockeyStatisticsScope.TournamentGroup,
+                request.TournamentGroupId,
+                cancellationToken);
+
+            return Result<List<HockeyTeamCompetitionStatisticsDto>>.Success(standings);
         }
         catch (Exception ex)
         {

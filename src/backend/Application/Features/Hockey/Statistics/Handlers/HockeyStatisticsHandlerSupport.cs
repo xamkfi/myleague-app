@@ -1,4 +1,5 @@
 using Application.Features.Hockey.Statistics.DTOs;
+using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Hockey.Statistics;
@@ -100,6 +101,105 @@ internal static class HockeyStatisticsHandlerSupport
 
         for (int i = 0; i < ordered.Count; i++)
             ordered[i].SetStandingRank(i + 1);
+    }
+
+    public static bool IsStarted(HockeyCompetition competition) =>
+        competition.IsActive || competition.IsCompleted;
+
+    public static List<Guid> ActiveCompetitionTeamIds(HockeyCompetition competition) =>
+        competition.Teams
+            .Where(team => team.IsActive)
+            .Select(team => team.TeamId)
+            .Distinct()
+            .ToList();
+
+    public static List<Guid> ActiveGroupTeamIds(HockeyTournament tournament, Guid groupId)
+    {
+        HockeyTournamentGroup? group = tournament.Groups.FirstOrDefault(item => item.Id == groupId);
+        if (group is null)
+            return [];
+
+        Dictionary<Guid, HockeyCompetitionTeam> members = tournament.Teams.ToDictionary(team => team.Id);
+        List<Guid> teamIds = new();
+        foreach (HockeyTournamentGroupTeam membership in group.Teams)
+        {
+            if (!membership.IsActive)
+                continue;
+            if (!members.TryGetValue(membership.CompetitionTeamId, out HockeyCompetitionTeam? member) || !member.IsActive)
+                continue;
+            teamIds.Add(member.TeamId);
+        }
+
+        return teamIds.Distinct().ToList();
+    }
+
+    public static async Task<List<HockeyTeamCompetitionStatisticsDto>> WithEnrolledZerosAsync(
+        HockeyCompetition? competition,
+        IReadOnlyList<HockeyTeamCompetitionStatisticsDto> existing,
+        IReadOnlyList<Guid> enrolledTeamIds,
+        IHockeyTeamRepository teams,
+        Guid competitionId,
+        HockeyStatisticsScope scope,
+        Guid? tournamentGroupId,
+        CancellationToken cancellationToken)
+    {
+        if (competition is null || !IsStarted(competition))
+            return existing.ToList();
+
+        HashSet<Guid> nameIds = existing.Select(row => row.TeamId).ToHashSet();
+        foreach (Guid teamId in enrolledTeamIds)
+            nameIds.Add(teamId);
+
+        IReadOnlyDictionary<Guid, string> names = nameIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await teams.GetNamesByIdsAsync(nameIds.ToList(), cancellationToken);
+
+        return MergeZeros(existing, enrolledTeamIds, names, competitionId, scope, tournamentGroupId);
+    }
+
+    private static List<HockeyTeamCompetitionStatisticsDto> MergeZeros(
+        IReadOnlyList<HockeyTeamCompetitionStatisticsDto> existing,
+        IReadOnlyList<Guid> enrolledTeamIds,
+        IReadOnlyDictionary<Guid, string> names,
+        Guid competitionId,
+        HockeyStatisticsScope scope,
+        Guid? tournamentGroupId)
+    {
+        HashSet<Guid> present = existing.Select(row => row.TeamId).ToHashSet();
+        List<HockeyTeamCompetitionStatisticsDto> merged = existing.ToList();
+        foreach (HockeyTeamCompetitionStatisticsDto row in merged)
+        {
+            if (names.TryGetValue(row.TeamId, out string? name))
+                row.TeamName = name;
+        }
+
+        foreach (Guid teamId in enrolledTeamIds)
+        {
+            if (!present.Add(teamId))
+                continue;
+
+            merged.Add(new HockeyTeamCompetitionStatisticsDto
+            {
+                TeamId = teamId,
+                CompetitionId = competitionId,
+                Scope = scope,
+                TournamentGroupId = tournamentGroupId,
+                TeamName = names.TryGetValue(teamId, out string? name) ? name : string.Empty
+            });
+        }
+
+        List<HockeyTeamCompetitionStatisticsDto> ordered = merged
+            .OrderByDescending(row => row.Points)
+            .ThenByDescending(row => row.RegulationWins)
+            .ThenByDescending(row => row.GoalDifference)
+            .ThenByDescending(row => row.GoalsFor)
+            .ThenBy(row => row.TeamName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        for (int index = 0; index < ordered.Count; index++)
+            ordered[index].StandingRank = index + 1;
+
+        return ordered;
     }
 
     public static List<HockeyTeamCompetitionStatisticsDto> DistinctStandings(

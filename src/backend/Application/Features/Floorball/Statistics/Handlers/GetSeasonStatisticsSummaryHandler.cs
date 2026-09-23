@@ -39,6 +39,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
     private readonly IFloorballTeamRepository _floorballTeamRepository;
     private readonly IFloorballMatchRepository _floorballMatchRepository;
     private readonly IFloorballCompetitionRepository _competitionRepository;
+    private readonly IFloorballTournamentRepository _tournamentRepository;
     private readonly IPersonRepository _personRepository;
     private readonly ILogger<GetSeasonStatisticsSummaryHandler> _logger;
 
@@ -53,6 +54,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
         IFloorballTeamRepository floorballTeamRepository,
         IFloorballMatchRepository floorballMatchRepository,
         IFloorballCompetitionRepository competitionRepository,
+        IFloorballTournamentRepository tournamentRepository,
         IPersonRepository personRepository,
         ILogger<GetSeasonStatisticsSummaryHandler> logger)
     {
@@ -61,6 +63,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
         _floorballTeamRepository = floorballTeamRepository;
         _floorballMatchRepository = floorballMatchRepository;
         _competitionRepository = competitionRepository;
+        _tournamentRepository = tournamentRepository;
         _personRepository = personRepository;
         _logger = logger;
     }
@@ -95,7 +98,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
 
             if (teamStats.Count == 0)
             {
-                return await BuildStandingsFromEnrolledTeamsAsync(request.CompetitionId);
+                return await BuildStandingsFromEnrolledTeamsAsync(request.CompetitionId, cancellationToken);
             }
 
             // For tournaments the team-standings table (W/L/T/Pts) must only reflect group-stage
@@ -292,6 +295,14 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
                 }
             }
 
+            summaryDto.TeamStandings = await FloorballEnrolledStandings.WithEnrolledZerosAsync(
+                request.CompetitionId,
+                summaryDto.TeamStandings,
+                _competitionRepository,
+                _tournamentRepository,
+                _floorballTeamRepository,
+                cancellationToken);
+
             _logger.LogInformation("Successfully retrieved season statistics summary for Season: {SeasonId}", request.CompetitionId);
             return Result<FloorballSeasonStatisticsSummaryDto>.Success(summaryDto);
         }
@@ -303,12 +314,13 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
     }
 
     /// <summary>
-    /// A competition can have enrolled teams and a published fixture list before any statistics
-    /// rows exist. Those rows used to be created only when the season was activated, so an
-    /// inactive season returned 404 and the public standings tab showed an error. Return the
-    /// enrolled teams with zeroed counters instead.
+    /// A started competition lists every enrolled team even when statistics rows do not exist yet.
+    /// Seasons use <see cref="FloorballCompetition.Teams"/>. Tournaments also include group teams.
+    /// Draft and cancelled competitions stay empty.
     /// </summary>
-    private async Task<Result<FloorballSeasonStatisticsSummaryDto>> BuildStandingsFromEnrolledTeamsAsync(Guid competitionId)
+    private async Task<Result<FloorballSeasonStatisticsSummaryDto>> BuildStandingsFromEnrolledTeamsAsync(
+        Guid competitionId,
+        CancellationToken cancellationToken)
     {
         FloorballCompetition? competition = await _competitionRepository.GetByIdAsync(competitionId);
         if (competition == null)
@@ -318,17 +330,13 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
         }
 
         string seasonName = competition.Name ?? string.Empty;
-        List<FloorballTeamSeasonStatisticsDto> standings = competition.Teams
-            .OrderBy(team => team.Name, StringComparer.OrdinalIgnoreCase)
-            .Select(team => new FloorballTeamSeasonStatisticsDto
-            {
-                TeamId = team.Id,
-                CompetitionId = competition.Id,
-                TeamName = team.Name ?? string.Empty,
-                TeamLogo = team.LogoUrl,
-                SeasonName = seasonName
-            })
-            .ToList();
+        List<FloorballTeamSeasonStatisticsDto> standings = await FloorballEnrolledStandings.WithEnrolledZerosAsync(
+            competitionId,
+            [],
+            _competitionRepository,
+            _tournamentRepository,
+            _floorballTeamRepository,
+            cancellationToken);
 
         return Result<FloorballSeasonStatisticsSummaryDto>.Success(new FloorballSeasonStatisticsSummaryDto
         {

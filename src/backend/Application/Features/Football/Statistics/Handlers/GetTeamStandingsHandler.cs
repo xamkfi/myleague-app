@@ -15,13 +15,22 @@ namespace Application.Features.Football.Statistics.Handlers;
 public class GetTeamStandingsHandler : IRequestHandler<GetFootballTeamStandingsQuery, Result<List<FootballTeamSeasonStatisticsDto>>>
 {
     private readonly IFootballStatisticsRepository _statisticsRepository;
+    private readonly IFootballCompetitionRepository _competitionRepository;
+    private readonly IFootballTournamentRepository _tournamentRepository;
+    private readonly IFootballTeamRepository _teamRepository;
     private readonly ILogger<GetTeamStandingsHandler> _logger;
 
     public GetTeamStandingsHandler(
         IFootballStatisticsRepository statisticsRepository,
+        IFootballCompetitionRepository competitionRepository,
+        IFootballTournamentRepository tournamentRepository,
+        IFootballTeamRepository teamRepository,
         ILogger<GetTeamStandingsHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
+        _competitionRepository = competitionRepository;
+        _tournamentRepository = tournamentRepository;
+        _teamRepository = teamRepository;
         _logger = logger;
     }
 
@@ -32,17 +41,19 @@ public class GetTeamStandingsHandler : IRequestHandler<GetFootballTeamStandingsQ
             _logger.LogInformation("Getting team standings for Season: {SeasonId}", request.CompetitionId);
 
             List<FootballTeamSeasonStatistics> standings =
-                (await _statisticsRepository.GetTeamStandingsAsync(request.CompetitionId, cancellationToken)).ToList();
-
-            if (standings.Count == 0)
-            {
-                _logger.LogInformation("No team standings yet for Season: {SeasonId}", request.CompetitionId);
-                return Result<List<FootballTeamSeasonStatisticsDto>>.Success([]);
-            }
+                await _statisticsRepository.GetTeamStandingsAsync(request.CompetitionId, cancellationToken);
 
             List<FootballTeamSeasonStatisticsDto> standingsDtos = standings
-                .Select(ts => FootballStatisticsMapper.ToDto(ts))
+                .Select(FootballStatisticsMapper.ToDto)
                 .ToList();
+
+            standingsDtos = await FootballEnrolledStandings.WithEnrolledZerosAsync(
+                request.CompetitionId,
+                standingsDtos,
+                _competitionRepository,
+                _tournamentRepository,
+                _teamRepository,
+                cancellationToken);
 
             _logger.LogInformation("Successfully retrieved team standings for Season: {SeasonId} - {Count} teams", request.CompetitionId, standingsDtos.Count);
             return Result<List<FootballTeamSeasonStatisticsDto>>.Success(standingsDtos);

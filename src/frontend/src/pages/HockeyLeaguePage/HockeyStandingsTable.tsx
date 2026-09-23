@@ -39,7 +39,7 @@ function HockeyStandingsTable({ standings, teamNames, competitionId, previewLimi
       </thead>
       <tbody>
         {rows.map((row) => {
-          const name = teamNames.get(row.teamId) ?? row.teamId.slice(0, 8);
+          const name = teamNames.get(row.teamId) || row.teamName || row.teamId.slice(0, 8);
           return (
             <tr
               key={row.teamId}

@@ -134,6 +134,7 @@ public class HockeyTeamCompetitionStatisticsDto
 {
     public Guid Id { get; set; }
     public Guid TeamId { get; set; }
+    public string TeamName { get; set; } = string.Empty;
     public Guid CompetitionId { get; set; }
     public HockeyStatisticsScope Scope { get; set; }
     public Guid? CompetitionDivisionId { get; set; }
