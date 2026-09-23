@@ -54,6 +54,30 @@ public class FootballApiClient : ImportApiClient
         return await ReadDataOrNull<FootballTeamDto>(resp, $"Create football team '{name}'");
     }
 
+    public async Task<bool> UpdateTeamPlacementAsync(
+        Application.Features.Football.Teams.DTOs.FootballTeamSummaryDto team,
+        Guid divisionId,
+        TeamCategory teamCategory)
+    {
+        if (team.DivisionId == divisionId && team.TeamCategory == teamCategory)
+            return false;
+
+        FootballTeamDto? full = await GetTeamByIdAsync(team.Id);
+        HttpResponseMessage resp = await Http.PutAsJsonAsync($"api/FootballTeam/{team.Id}", new
+        {
+            name = team.Name,
+            divisionId,
+            clubId = team.Club.Id,
+            homeArena = full?.HomeArena ?? team.HomeArena,
+            primaryJerseyColor = full?.PrimaryJerseyColor ?? team.PrimaryJerseyColor,
+            secondaryJerseyColor = full?.SecondaryJerseyColor ?? team.SecondaryJerseyColor,
+            logoUrl = string.IsNullOrWhiteSpace(full?.LogoUrl ?? team.LogoUrl) ? null : (full?.LogoUrl ?? team.LogoUrl),
+            category = teamCategory.ToString(),
+            shortName = full?.ShortName,
+        });
+        return await ReadDataOrNull<FootballTeamDto>(resp, $"Update football team '{team.Name}'") != null;
+    }
+
     public Task<bool> AddPlayerToTeamAsync(
         Guid teamId,
         Guid playerId,
@@ -168,6 +192,14 @@ public class FootballApiClient : ImportApiClient
             teamCategory = teamCategory.ToString(),
         });
         return await ReadDataOrNull<FootballSeasonDto>(resp, $"Update football season '{season.Name}' category");
+    }
+
+    public async Task<bool> AddDivisionToSeasonAsync(Guid seasonId, Guid divisionId)
+    {
+        HttpResponseMessage resp = await Http.PostAsync(
+            $"api/FootballSeason/{seasonId}/divisions/{divisionId}",
+            null);
+        return await OkOrAlready(resp, "AddDivisionToFootballSeason");
     }
 
     public async Task<bool> AddTeamToSeasonAsync(Guid seasonId, Guid teamId)

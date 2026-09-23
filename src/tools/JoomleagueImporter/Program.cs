@@ -254,10 +254,9 @@ public static class Program
     {
         FloorballEntityImporter entities = new(api, idMap, log);
 
-        DivisionDto division = await entities.GetOrCreateImportDivisionAsync();
         await entities.ImportClubsAsync(set, db);
         await entities.ImportPersonsAndPlayersAsync(set);
-        await entities.ImportTeamsAsync(set, db, division);
+        await entities.ImportTeamsAsync(set, db);
         Guid refereeId = await entities.GetOrCreateImportRefereeAsync();
 
         FloorballMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
@@ -266,7 +265,7 @@ public static class Program
         await MatchImportParallel.ForEachSeasonAsync(set.Projects, async pi =>
         {
             Console.WriteLine($"\n=== {pi.Project.Name} (JL project {pi.Project.Id}, {pi.Matches.Count} matches) ===");
-            FloorballSeasonDto? season = await entities.ImportSeasonAsync(pi, division);
+            FloorballSeasonDto? season = await entities.ImportSeasonAsync(pi);
             if (season == null)
             {
                 Console.WriteLine("  SKIP: season could not be created.");
@@ -304,10 +303,9 @@ public static class Program
     {
         FootballEntityImporter entities = new(api, idMap, log);
 
-        DivisionDto division = await entities.GetOrCreateImportDivisionAsync();
         await entities.ImportClubsAsync(set, db);
         await entities.ImportPersonsAndPlayersAsync(set);
-        await entities.ImportTeamsAsync(set, db, division);
+        await entities.ImportTeamsAsync(set, db);
         Guid refereeId = await entities.GetOrCreateImportRefereeAsync();
 
         FootballMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
@@ -316,7 +314,7 @@ public static class Program
         await MatchImportParallel.ForEachSeasonAsync(set.Projects, async pi =>
         {
             Console.WriteLine($"\n=== {pi.Project.Name} (JL project {pi.Project.Id}, {pi.Matches.Count} matches) ===");
-            FootballSeasonDto? season = await entities.ImportSeasonAsync(pi, division);
+            FootballSeasonDto? season = await entities.ImportSeasonAsync(pi);
             if (season == null)
             {
                 Console.WriteLine("  SKIP: season could not be created.");
@@ -355,10 +353,9 @@ public static class Program
     {
         HockeyEntityImporter entities = new(api, idMap, log);
 
-        DivisionDto division = await entities.GetOrCreateImportDivisionAsync();
         await entities.ImportClubsAsync(set, db);
         await entities.ImportPersonsAndPlayersAsync(set);
-        await entities.ImportTeamsAsync(set, db, division);
+        await entities.ImportTeamsAsync(set, db);
         Guid officialId = await entities.GetOrCreateImportOfficialAsync();
 
         HockeyMatchImporter matches = new(api, idMap, log, entities, db, fillUnknownGoals, repairMatchIds, repairAll);
@@ -367,7 +364,7 @@ public static class Program
         await MatchImportParallel.ForEachSeasonAsync(set.Projects, async pi =>
         {
             Console.WriteLine($"\n=== {pi.Project.Name} (JL project {pi.Project.Id}, {pi.Matches.Count} matches) ===");
-            HockeySeasonDto? season = await entities.ImportSeasonAsync(pi, division);
+            HockeySeasonDto? season = await entities.ImportSeasonAsync(pi);
             if (season == null)
             {
                 Console.WriteLine("  SKIP: season could not be created.");

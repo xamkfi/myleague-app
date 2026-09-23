@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { FloorballSeasonStatisticsSummaryDto } from '../../../api/floorball/floorballStatistics';
 import { TeamLink } from '../../../components/SportLinks';
+import TeamLogoMark from '../../../components/TeamLogoMark/TeamLogoMark';
 
 interface SummarySectionProps {
   seasonSummary: FloorballSeasonStatisticsSummaryDto | null;
@@ -106,19 +107,12 @@ export default function SummarySection({ seasonSummary, loading, error }: Summar
                   <td className="summary-section__col-rank">{index + 1}</td>
                   <td className="summary-section__col-team">
                     <div className="summary-section__team-info">
-                      {team.teamLogo && team.teamLogo.trim() !== '' ? (
-                        <img
-                          className="summary-section__team-logo"
-                          src={team.teamLogo}
-                          alt={team.teamName}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="summary-section__team-logo-empty" />
-                      )}
+                      <TeamLogoMark
+                        logo={team.teamLogo}
+                        name={team.teamName}
+                        imageClassName="summary-section__team-logo"
+                        fallbackClassName="summary-section__team-logo-empty"
+                      />
                       <TeamLink
                         sport="floorball"
                         teamId={team.teamId}

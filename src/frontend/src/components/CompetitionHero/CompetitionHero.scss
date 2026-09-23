@@ -50,6 +50,15 @@
   }
 }
 
+.competition-hero__mark-label {
+  font-family: $font-family-display;
+  font-size: map.get($font-sizes, 'md');
+  font-weight: map.get($font-weights, 'extrabold');
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: $color-white;
+}
+
 .competition-hero__heading {
   min-width: 0;
   position: relative;

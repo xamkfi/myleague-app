@@ -21,37 +21,20 @@ public class HockeyEntityImporter
 {
     public const int HobbyMinDressedPlayers = 6;
 
+    private const string SportLabel = "Jääkiekko";
+    private const string SportType = "Icehockey";
+
     private readonly HockeyApiClient _api;
     private readonly IdMapStore _idMap;
     private readonly ImportLogger _log;
+    private readonly ImportDivisionCatalog _divisions;
 
     public HockeyEntityImporter(HockeyApiClient api, IdMapStore idMap, ImportLogger log)
     {
         _api = api;
         _idMap = idMap;
         _log = log;
-    }
-
-    public async Task<DivisionDto> GetOrCreateImportDivisionAsync()
-    {
-        Console.WriteLine("--- Division ---");
-        const string divisionName = "MAHL Jääkiekko";
-
-        List<DivisionDto> divisions = await _api.GetDivisionsAsync();
-        DivisionDto? division = divisions.FirstOrDefault(d =>
-            string.Equals(d.Name, divisionName, StringComparison.OrdinalIgnoreCase));
-        if (division != null)
-        {
-            Console.WriteLine($"  Using existing division '{division.Name}' ({division.Id})");
-            return division;
-        }
-
-        division = await _api.CreateDivisionAsync(
-            divisionName, "JoomLeague-tuonnin jääkiekkosarjat", 1, "Icehockey");
-        if (division == null)
-            throw new InvalidOperationException($"Failed to create division '{divisionName}'.");
-        Console.WriteLine($"  Created division '{division.Name}' ({division.Id})");
-        return division;
+        _divisions = new ImportDivisionCatalog(api);
     }
 
     public Task ImportClubsAsync(FloorballImportSet set, JoomleagueDatabase db) =>
@@ -127,35 +110,37 @@ public class HockeyEntityImporter
         Console.WriteLine($"  Persons: {created} created, {reused} already existed, {failed} failed (total {total}).");
     }
 
-    public async Task ImportTeamsAsync(FloorballImportSet set, JoomleagueDatabase db, DivisionDto division)
+    public async Task ImportTeamsAsync(FloorballImportSet set, JoomleagueDatabase db)
     {
         Console.WriteLine("--- Teams & Rosters ---");
-        int mappedTeams = set.UniqueTeams.Keys.Count(_idMap.HasTeam);
-        if (mappedTeams == set.UniqueTeams.Count)
-        {
-            Console.WriteLine($"  Teams: 0 created, {mappedTeams} already mapped (roster check skipped).");
-            return;
-        }
+        (_, Dictionary<int, TeamCategory> categories) = TeamRosterUnion.Build(set);
 
+        Dictionary<Guid, HockeyTeamDto> byId = [];
         ConcurrentDictionary<string, HockeyTeamDto> byName = new(StringComparer.OrdinalIgnoreCase);
-        foreach (HockeyTeamDto t in await _api.GetTeamsAsync())
-            byName.TryAdd(t.Name, t);
-
-        List<OldTeam> pending = [];
-        foreach (OldTeam oldTeam in set.UniqueTeams.Values)
+        foreach (HockeyTeamDto existing in await _api.GetTeamsAsync())
         {
-            if (_idMap.HasTeam(oldTeam.Id))
-                continue;
-            pending.Add(oldTeam);
+            byId[existing.Id] = existing;
+            byName.TryAdd(existing.Name, existing);
         }
 
-        int created = 0, reused = 0;
-        Console.WriteLine($"  Importing {pending.Count} teams (concurrency {MatchImportParallel.TeamDegree})...");
-        await MatchImportParallel.ForEachTeamAsync(pending, async oldTeam =>
+        int created = 0, reused = 0, updated = 0;
+        List<OldTeam> teams = set.UniqueTeams.Values.ToList();
+        Console.WriteLine($"  Importing {teams.Count} teams (concurrency {MatchImportParallel.TeamDegree})...");
+        await MatchImportParallel.ForEachTeamAsync(teams, async oldTeam =>
         {
-            TeamCategory teamCategory = TeamCategoryResolver.InferFromName(oldTeam.Name);
+            TeamCategory teamCategory = categories.TryGetValue(oldTeam.Id, out TeamCategory fromProjects)
+                ? fromProjects
+                : TeamCategoryResolver.InferFromName(oldTeam.Name);
+            ImportSeriesProfile home = ImportSeriesResolver.HomeForTeam(set, oldTeam.Id, SportLabel);
+            DivisionDto division = await _divisions.GetOrCreateAsync(home, SportType);
 
-            if (!byName.TryGetValue(oldTeam.Name, out HockeyTeamDto? team))
+            HockeyTeamDto? team = null;
+            if (_idMap.Teams.TryGetValue(oldTeam.Id, out Guid mappedId))
+                byId.TryGetValue(mappedId, out team);
+            if (team == null)
+                byName.TryGetValue(oldTeam.Name, out team);
+
+            if (team == null)
             {
                 int clubKey = oldTeam.ClubId.HasValue && db.Clubs.ContainsKey(oldTeam.ClubId.Value)
                     ? oldTeam.ClubId.Value
@@ -173,20 +158,22 @@ public class HockeyEntityImporter
                     _log.LogError("CreateHockeyTeam", new { oldTeam.Id, oldTeam.Name }, "API returned null.");
                     return;
                 }
+                byId[team.Id] = team;
                 byName.TryAdd(team.Name, team);
                 Interlocked.Increment(ref created);
             }
             else
             {
                 Interlocked.Increment(ref reused);
+                if (await _api.UpdateTeamPlacementAsync(team, division.Id, teamCategory))
+                    Interlocked.Increment(ref updated);
             }
 
             _idMap.MapTeam(oldTeam.Id, team.Id);
-            Console.WriteLine($"  {oldTeam.Name}: team ready (roster imported per season)");
         });
 
         _idMap.Save(force: true);
-        Console.WriteLine($"  Teams: {created} created, {reused} already existed.");
+        Console.WriteLine($"  Teams: {created} created, {reused} already existed, {updated} placement updated.");
     }
 
     public Task ApplyActiveMembershipsAsync(FloorballImportSet set)
@@ -418,9 +405,12 @@ public class HockeyEntityImporter
         return player.Id;
     }
 
-    public async Task<HockeySeasonDto?> ImportSeasonAsync(ProjectImport pi, DivisionDto division)
+    public async Task<HockeySeasonDto?> ImportSeasonAsync(ProjectImport pi)
     {
         OldProject project = pi.Project;
+        ImportSeriesProfile profile = ImportSeriesResolver.Resolve(project.Name, SportLabel);
+        DivisionDto division = await _divisions.GetOrCreateAsync(profile, SportType);
+        TeamCategory teamCategory = profile.Category;
         int periodCount = Math.Clamp(project.NumberOfPeriods, 1, 5);
         int periodMinutes = Math.Clamp(project.PeriodDurationMinutes, 1, 60);
 
@@ -432,7 +422,8 @@ public class HockeyEntityImporter
                 ?? await _api.GetSeasonByIdAsync(mappedSeasonId);
             if (mapped != null)
             {
-                Console.WriteLine($"  Season already imported: '{mapped.Name}' ({mapped.Id})");
+                mapped = await EnsureSeasonCategoryAsync(mapped, teamCategory);
+                Console.WriteLine($"  Season already imported: '{mapped.Name}' ({mapped.Id}) [{mapped.TeamCategory}]");
                 await EnsureSeasonReadyAsync(mapped, pi, division, periodCount, periodMinutes);
                 return await _api.GetSeasonByIdAsync(mapped.Id) ?? mapped;
             }
@@ -461,17 +452,18 @@ public class HockeyEntityImporter
             DateTime end = matchDates.Count > 0 ? matchDates.Max().AddMonths(1) : start.AddYears(1);
             if (end <= start) end = start.AddMonths(6);
 
-            season = await _api.CreateSeasonAsync(seasonName, start, end);
+            season = await _api.CreateSeasonAsync(seasonName, start, end, teamCategory);
             if (season == null)
             {
-                _log.LogError("CreateHockeySeason", new { project.Id, seasonName }, "API returned null.");
+                _log.LogError("CreateHockeySeason", new { project.Id, seasonName, teamCategory }, "API returned null.");
                 return null;
             }
-            Console.WriteLine($"  Created season '{seasonName}' ({season.Id}) {periodCount}×{periodMinutes} min");
+            Console.WriteLine($"  Created season '{seasonName}' ({season.Id}) [{teamCategory}] {periodCount}×{periodMinutes} min");
         }
         else
         {
-            Console.WriteLine($"  Using existing season '{seasonName}' ({season.Id})");
+            season = await EnsureSeasonCategoryAsync(season, teamCategory);
+            Console.WriteLine($"  Using existing season '{seasonName}' ({season.Id}) [{season.TeamCategory}]");
         }
 
         _idMap.MapSeason(project.Id, season.Id);
@@ -489,7 +481,9 @@ public class HockeyEntityImporter
     {
         await _api.EnsureSeasonContentBlocksAsync("api/HockeySeason", season.Id, pi.Project);
         await _api.ApplyHobbyRulesAsync(season.Id, periodCount, periodMinutes, HobbyMinDressedPlayers);
-        await _api.AddDivisionToSeasonAsync(season.Id, division.Id, division.Name);
+        bool divisionPresent = season.Divisions.Any(item => item.DivisionId == division.Id);
+        if (!divisionPresent)
+            await _api.AddDivisionToSeasonAsync(season.Id, division.Id, division.Name);
 
         HockeySeasonDto? refreshed = await _api.GetSeasonByIdAsync(season.Id) ?? season;
         Guid? competitionDivisionId = refreshed.Divisions
@@ -522,10 +516,32 @@ public class HockeyEntityImporter
             await ImportProjectRosterAsync(pti, teamId, season.Id);
         }
 
-        await _api.PublishSeasonAsync(season.Id);
-        await _api.OpenSeasonRegistrationAsync(season.Id);
-        await _api.ActivateSeasonAsync(season.Id);
+        if (season.EndDate.Date >= DateTime.UtcNow.Date)
+        {
+            await _api.PublishSeasonAsync(season.Id);
+            await _api.OpenSeasonRegistrationAsync(season.Id);
+            await _api.ActivateSeasonAsync(season.Id);
+        }
         Console.WriteLine($"  Teams in season: {teamsAdded}/{pi.Teams.Count}");
+    }
+
+    private async Task<HockeySeasonDto> EnsureSeasonCategoryAsync(HockeySeasonDto season, TeamCategory expected)
+    {
+        if (string.Equals(season.TeamCategory, expected.ToString(), StringComparison.OrdinalIgnoreCase))
+            return season;
+
+        HockeySeasonDto? updated = await _api.UpdateSeasonAsync(season, expected);
+        if (updated == null)
+        {
+            _log.LogError(
+                "UpdateHockeySeasonCategory",
+                new { season.Id, season.Name, From = season.TeamCategory, To = expected },
+                "API returned null; keeping previous category.");
+            return season;
+        }
+
+        Console.WriteLine($"  Updated season category '{season.Name}': {season.TeamCategory} → {expected}");
+        return updated;
     }
 
     private async Task ImportProjectRosterAsync(ProjectTeamImport pti, Guid teamId, Guid competitionId)

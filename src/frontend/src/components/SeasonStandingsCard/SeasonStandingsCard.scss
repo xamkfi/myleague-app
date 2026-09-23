@@ -218,9 +218,19 @@
   object-fit: contain;
 
   &--empty {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
-    background: rgba($color-neutral-dark-grey, 0.3);
+    background: $color-neutral-light-grey;
+    border: 1px solid $color-neutral-medium-grey;
+    font-size: 0.65rem;
+    font-weight: map.get($font-weights, 'extrabold');
+    font-family: $font-family-display;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    color: $color-neutral-dark-grey;
+    line-height: 1;
   }
 }
 
