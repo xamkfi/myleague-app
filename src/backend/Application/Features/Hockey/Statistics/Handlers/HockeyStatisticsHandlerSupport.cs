@@ -120,17 +120,13 @@ internal static class HockeyStatisticsHandlerSupport
             return [];
 
         Dictionary<Guid, HockeyCompetitionTeam> members = tournament.Teams.ToDictionary(team => team.Id);
-        List<Guid> teamIds = new();
-        foreach (HockeyTournamentGroupTeam membership in group.Teams)
-        {
-            if (!membership.IsActive)
-                continue;
-            if (!members.TryGetValue(membership.CompetitionTeamId, out HockeyCompetitionTeam? member) || !member.IsActive)
-                continue;
-            teamIds.Add(member.TeamId);
-        }
-
-        return teamIds.Distinct().ToList();
+        return group.Teams
+            .Where(membership => membership.IsActive && members.ContainsKey(membership.CompetitionTeamId))
+            .Select(membership => members[membership.CompetitionTeamId])
+            .Where(member => member.IsActive)
+            .Select(member => member.TeamId)
+            .Distinct()
+            .ToList();
     }
 
     public static async Task<List<HockeyTeamCompetitionStatisticsDto>> WithEnrolledZerosAsync(
@@ -167,17 +163,11 @@ internal static class HockeyStatisticsHandlerSupport
     {
         HashSet<Guid> present = existing.Select(row => row.TeamId).ToHashSet();
         List<HockeyTeamCompetitionStatisticsDto> merged = existing.ToList();
-        foreach (HockeyTeamCompetitionStatisticsDto row in merged)
-        {
-            if (names.TryGetValue(row.TeamId, out string? name))
-                row.TeamName = name;
-        }
+        foreach (HockeyTeamCompetitionStatisticsDto row in merged.Where(row => names.ContainsKey(row.TeamId)))
+            row.TeamName = names[row.TeamId];
 
-        foreach (Guid teamId in enrolledTeamIds)
+        foreach (Guid teamId in enrolledTeamIds.Where(teamId => present.Add(teamId)))
         {
-            if (!present.Add(teamId))
-                continue;
-
             merged.Add(new HockeyTeamCompetitionStatisticsDto
             {
                 TeamId = teamId,

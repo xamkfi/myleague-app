@@ -86,11 +86,8 @@ internal static class FloorballEnrolledStandings
     {
         HashSet<Guid> present = existing.Select(row => row.TeamId).ToHashSet();
         List<FloorballTeamSeasonStatisticsDto> merged = existing.ToList();
-        foreach (FloorballTeam team in enrolled)
+        foreach (FloorballTeam team in enrolled.Where(team => present.Add(team.Id)))
         {
-            if (!present.Add(team.Id))
-                continue;
-
             merged.Add(new FloorballTeamSeasonStatisticsDto
             {
                 TeamId = team.Id,
