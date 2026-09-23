@@ -25,7 +25,7 @@ namespace Application.Features.Floorball.Statistics.Handlers;
 /// <summary>
 /// Handler for retrieving top scorers for a season
 /// </summary>
-public class GetTopScorersHandler : IRequestHandler<GetTopScorersQuery, Result<List<FloorballPlayerSeasonStatisticsDto>>>
+public class GetTopScorersHandler : IRequestHandler<GetFloorballTopScorersQuery, Result<List<FloorballPlayerSeasonStatisticsDto>>>
 {
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IPersonRepository _personRepository;
@@ -47,18 +47,18 @@ public class GetTopScorersHandler : IRequestHandler<GetTopScorersQuery, Result<L
     }
 
     /// <summary>
-    /// Handles the GetTopScorersQuery request
+    /// Handles the GetFloorballTopScorersQuery request
     /// </summary>
     /// <param name="request">The query containing season ID and top N count</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of top scoring players wrapped in a Result</returns>
-    public async Task<Result<List<FloorballPlayerSeasonStatisticsDto>>> Handle(GetTopScorersQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<FloorballPlayerSeasonStatisticsDto>>> Handle(GetFloorballTopScorersQuery request, CancellationToken cancellationToken)
     {
         try
         {
             _logger.LogInformation("Retrieving top {TopN} scorers for Season {SeasonId}", request.TopN, request.CompetitionId);
 
-            List<Domain.Entities.Floorball.FloorballPlayerSeasonStatistics>? topScorers = await _statisticsRepository.GetTopScorersAsync(request.CompetitionId, request.TopN, cancellationToken);
+            List<Domain.Entities.Floorball.Statistics.FloorballPlayerSeasonStatistics>? topScorers = await _statisticsRepository.GetTopScorersAsync(request.CompetitionId, request.TopN, cancellationToken);
 
             IEnumerable<Guid> PersonIds = topScorers.Select(x => x.Player.PersonId).ToList();
             IEnumerable<Person>? persons = await _personRepository.GetByIdsAsync(PersonIds);

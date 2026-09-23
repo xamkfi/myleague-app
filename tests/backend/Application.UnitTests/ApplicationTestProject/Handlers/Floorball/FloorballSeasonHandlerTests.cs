@@ -1,10 +1,17 @@
+using Application.Features.Floorball.Competitions.Commands;
+using Application.Features.Floorball.Competitions.Handlers;
 using Application.Common;
 using Application.Features.Floorball.Seasons.Commands;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Seasons.Handlers;
 using Application.Features.Floorball.Seasons.Queries;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Common;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
@@ -143,7 +150,7 @@ public class FloorballSeasonHandlerTests
         _competitionRepo.Setup(r => r.GetByIdAsync(seasonId)).ReturnsAsync((FloorballCompetition?)null);
 
         Result<FloorballSeasonDto> result = await handler.Handle(
-            new AddTeamToSeasonCommand(seasonId, Guid.NewGuid()),
+            new AddFloorballTeamToSeasonCommand(seasonId, Guid.NewGuid()),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
@@ -177,7 +184,7 @@ public class FloorballSeasonHandlerTests
         _clubRepo.Setup(r => r.GetByIdAsync(team.ClubId)).ReturnsAsync(new Club("Club"));
 
         Result<FloorballSeasonDto> result = await handler.Handle(
-            new AddTeamToSeasonCommand(season.Id, team.Id),
+            new AddFloorballTeamToSeasonCommand(season.Id, team.Id),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();

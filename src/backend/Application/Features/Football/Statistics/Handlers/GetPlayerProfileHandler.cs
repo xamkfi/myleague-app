@@ -15,7 +15,7 @@ namespace Application.Features.Football.Statistics.Handlers;
 /// <summary>
 /// Gets a player full profile with all statistics from seasons.
 /// </summary>
-public class GetPlayerProfileHandler : IRequestHandler<GetPlayerProfileQuery, Result<FootballPlayerProfileDto>>
+public class GetPlayerProfileHandler : IRequestHandler<GetFootballPlayerProfileQuery, Result<FootballPlayerProfileDto>>
 {
     private readonly IFootballStatisticsRepository _footballStatisticsRepository;
     private readonly IFootballPlayerRepository _footballPlayerRepository;
@@ -34,7 +34,7 @@ public class GetPlayerProfileHandler : IRequestHandler<GetPlayerProfileQuery, Re
         _logger = logger;
     }
 
-    public async Task<Result<FootballPlayerProfileDto>> Handle(GetPlayerProfileQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FootballPlayerProfileDto>> Handle(GetFootballPlayerProfileQuery request, CancellationToken cancellationToken)
     {
         try
         {

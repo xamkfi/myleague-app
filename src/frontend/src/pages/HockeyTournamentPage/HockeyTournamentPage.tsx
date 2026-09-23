@@ -18,7 +18,7 @@ import { shouldRefreshHockeyMatches } from '../../types/hockey/hockeyTypes';
 import { loadTeamNameMap, uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
 import { useAudience } from '../../context/AudienceContext';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
-import '../TournamentPage/TournamentPage.scss';
+import '../FloorballTournamentPage/FloorballTournamentPage.scss';
 import '../../components/MatchesList/MatchesList.scss';
 import '../../components/LeagueStanding/LeagueStanding.scss';
 

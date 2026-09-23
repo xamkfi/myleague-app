@@ -3,9 +3,9 @@ import ReactQuill from 'react-quill';
 import { useTranslation } from 'react-i18next';
 import 'react-quill/dist/quill.snow.css';
 
-import { handleImageUploadService } from '../../api/admin/News/handleImageUploadService';
+import { handleImageUploadService } from '../../api/news/handleImageUploadService';
 import MatchSelectionHeader from '../../pages/AdminPage/NewsPage/components/MatchSelectionHeader';
-import type { FloorballMatch } from '../../api/admin/News/GetMatchesService';
+import type { FloorballMatch } from '../../api/news/GetMatchesService';
 import {
   ensureMatchResultBlotRegistered,
   type MatchResultValue,

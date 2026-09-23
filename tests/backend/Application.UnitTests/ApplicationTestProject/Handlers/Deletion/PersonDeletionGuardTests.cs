@@ -1,6 +1,11 @@
-using Application.Features.Common.Deletion;
+using Application.Features.Common.Organization.Deletion;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
@@ -31,7 +36,7 @@ public class PersonDeletionGuardTests
         _clubManagerRepository.Setup(x => x.GetAllByPersonIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync(Enumerable.Empty<ClubManager>());
         _floorballTeamManagerRepository.Setup(x => x.GetAllByPersonIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(Enumerable.Empty<Domain.Entities.Floorball.FloorballTeamManager>());
+            .ReturnsAsync(Enumerable.Empty<Domain.Entities.Floorball.Teams.FloorballTeamManager>());
         _footballTeamManagerRepository.Setup(x => x.GetAllByPersonIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync(Enumerable.Empty<Domain.Entities.Football.Teams.FootballTeamManager>());
 

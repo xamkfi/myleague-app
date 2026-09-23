@@ -1,6 +1,6 @@
 using Application.Common;
-using Application.Features.Common.ClubAdmin.DTOs;
-using Application.Features.Common.ClubAdmin.Queries;
+using Application.Features.Common.Organization.ClubAdmin.DTOs;
+using Application.Features.Common.Organization.ClubAdmin.Queries;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Matches.Queries;
@@ -26,8 +26,8 @@ using WebAPI.Models.Common;
 using WebAPI.Models.Floorball;
 using WebAPI.Models.Football;
 using WebAPI.Models.Hockey;
-using FloorballJerseyNumberCommand = Application.Features.Floorball.Teams.Commands.UpdateTeamPlayerJerseyNumberCommand;
-using FootballJerseyNumberCommand = Application.Features.Football.Teams.Commands.UpdateTeamPlayerJerseyNumberCommand;
+using FloorballJerseyNumberCommand = Application.Features.Floorball.Teams.Commands.UpdateFloorballTeamPlayerJerseyNumberCommand;
+using FootballJerseyNumberCommand = Application.Features.Football.Teams.Commands.UpdateFootballTeamPlayerJerseyNumberCommand;
 using HockeyJerseyNumberCommand = Application.Features.Hockey.Teams.Commands.UpdateHockeyTeamPlayerJerseyNumberCommand;
 
 namespace WebAPI.Controllers.Common;
@@ -260,15 +260,15 @@ public class ClubAdminController : BaseApiController
             "Club admin announcing roster for floorball match {MatchId}, team {TeamId} ({PlayerCount} players, goalie={GoalieId})",
             matchId, teamId, request.Players?.Count ?? 0, SanitizeForLog(request.GoalieId));
 
-        SetMatchActiveRosterCommand command = new SetMatchActiveRosterCommand
+        SetFloorballMatchActiveRosterCommand command = new SetFloorballMatchActiveRosterCommand
         {
             MatchId = matchId,
             TeamId = teamId,
-            Players = request.Players?.Select(p => new ActivePlayerInput
+            Players = request.Players?.Select(p => new FloorballActivePlayerInput
             {
                 PlayerId = p.PlayerId,
                 Position = p.Position,
-            }).ToList() ?? new List<ActivePlayerInput>(),
+            }).ToList() ?? new List<FloorballActivePlayerInput>(),
             GoalieId = request.GoalieId,
         };
 
@@ -327,16 +327,16 @@ public class ClubAdminController : BaseApiController
             "Club admin announcing lineup for football match {MatchId}, team {TeamId} ({PlayerCount} players)",
             matchId, teamId, request.Players?.Count ?? 0);
 
-        SetMatchLineupCommand command = new SetMatchLineupCommand
+        SetFootballMatchLineupCommand command = new SetFootballMatchLineupCommand
         {
             MatchId = matchId,
             TeamId = teamId,
-            Players = request.Players?.Select(p => new LineupPlayerInput
+            Players = request.Players?.Select(p => new FootballLineupPlayerInput
             {
                 PlayerId = p.PlayerId,
                 Position = p.Position,
                 IsOnField = p.IsOnField,
-            }).ToList() ?? new List<LineupPlayerInput>(),
+            }).ToList() ?? new List<FootballLineupPlayerInput>(),
         };
 
         Result<FootballMatchDto> result = await _mediator.Send(command, cancellationToken);

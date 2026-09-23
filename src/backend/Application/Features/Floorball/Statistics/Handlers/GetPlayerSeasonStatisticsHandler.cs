@@ -25,7 +25,7 @@ namespace Application.Features.Floorball.Statistics.Handlers;
 /// <summary>
 /// Handler for retrieving player season statistics
 /// </summary>
-public class GetPlayerSeasonStatisticsHandler : IRequestHandler<GetPlayerSeasonStatisticsQuery, Result<FloorballPlayerSeasonStatisticsDto>>
+public class GetPlayerSeasonStatisticsHandler : IRequestHandler<GetFloorballPlayerSeasonStatisticsQuery, Result<FloorballPlayerSeasonStatisticsDto>>
 {
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballPlayerRepository _floorballPlayerRepository;
@@ -53,12 +53,12 @@ public class GetPlayerSeasonStatisticsHandler : IRequestHandler<GetPlayerSeasonS
     }
 
     /// <summary>
-    /// Handles the GetPlayerSeasonStatisticsQuery request
+    /// Handles the GetFloorballPlayerSeasonStatisticsQuery request
     /// </summary>
     /// <param name="request">The query containing player and season IDs</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing player season statistics DTO</returns>
-    public async Task<Result<FloorballPlayerSeasonStatisticsDto>> Handle(GetPlayerSeasonStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballPlayerSeasonStatisticsDto>> Handle(GetFloorballPlayerSeasonStatisticsQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -66,10 +66,10 @@ public class GetPlayerSeasonStatisticsHandler : IRequestHandler<GetPlayerSeasonS
 
             // Note: We need to find the team ID for this player in this season
             // This is a limitation of our current design - we might need to adjust the repository method
-            IEnumerable<Domain.Entities.Floorball.FloorballPlayerSeasonStatistics> allPlayerStats = 
+            IEnumerable<Domain.Entities.Floorball.Statistics.FloorballPlayerSeasonStatistics> allPlayerStats = 
                 await _statisticsRepository.GetPlayerStatisticsByCompetitionAsync(request.CompetitionId, cancellationToken);
 
-            Domain.Entities.Floorball.FloorballPlayerSeasonStatistics? playerStats = 
+            Domain.Entities.Floorball.Statistics.FloorballPlayerSeasonStatistics? playerStats = 
                 allPlayerStats.FirstOrDefault(ps => ps.PlayerId == request.PlayerId);
 
             if (playerStats == null)

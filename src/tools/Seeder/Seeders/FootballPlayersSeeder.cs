@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Organization.Persons.DTOs;
 using Application.Features.Football.Players.DTOs;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;

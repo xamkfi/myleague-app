@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StatAbbr from '../../components/StatAbbr/StatAbbr';
-import StatRow from '../MatchPage/components/StatRow';
-import { getTeamInitials } from '../MatchPage/components/matchUtils';
+import StatRow from '../FloorballMatchPage/components/StatRow';
+import { getTeamInitials } from '../FloorballMatchPage/components/matchUtils';
 import type { HockeyMatchStatisticsDto } from '../../types/hockey/hockeyTypes';
 import { formatHockeyFaceoffPercentage } from '../../utils/hockeyLookups';
 import { getPlayerPath } from '../../utils/sportRoutes';
-import '../MatchPage/components/MatchStats.scss';
+import '../FloorballMatchPage/components/MatchStats.scss';
 
 interface HockeyMatchStatsProps {
   stats: HockeyMatchStatisticsDto;

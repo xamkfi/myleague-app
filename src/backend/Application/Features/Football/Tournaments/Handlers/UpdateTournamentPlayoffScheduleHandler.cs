@@ -19,7 +19,7 @@ namespace Application.Features.Football.Tournaments.Handlers;
 /// targeted update. The domain entity enforces the lifecycle rule (no edits once the bracket
 /// has been generated) — see <see cref="FootballTournament.SetPlayoffSchedule"/>.
 /// </summary>
-public class UpdateTournamentPlayoffScheduleHandler : IRequestHandler<UpdateTournamentPlayoffScheduleCommand, Result<FootballTournamentDto>>
+public class UpdateTournamentPlayoffScheduleHandler : IRequestHandler<UpdateFootballTournamentPlayoffScheduleCommand, Result<FootballTournamentDto>>
 {
     private readonly IFootballTournamentRepository _tournamentRepository;
     private readonly IFootballUnitOfWork _unitOfWork;
@@ -35,7 +35,7 @@ public class UpdateTournamentPlayoffScheduleHandler : IRequestHandler<UpdateTour
         _logger = logger;
     }
 
-    public async Task<Result<FootballTournamentDto>> Handle(UpdateTournamentPlayoffScheduleCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTournamentDto>> Handle(UpdateFootballTournamentPlayoffScheduleCommand request, CancellationToken cancellationToken)
     {
         try
         {

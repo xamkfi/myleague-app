@@ -1,5 +1,5 @@
-using Application.Features.Common.Users.Commands;
-using Application.Features.Common.Users.Validators;
+using Application.Features.Common.Organization.Users.Commands;
+using Application.Features.Common.Organization.Users.Validators;
 
 namespace ApplicationTestProject.Validators.Users;
 

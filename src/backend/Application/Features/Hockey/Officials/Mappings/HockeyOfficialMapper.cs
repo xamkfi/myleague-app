@@ -1,6 +1,8 @@
 using Application.Features.Hockey.Officials.DTOs;
 using Domain.Entities.Hockey.Teams;
 
+using Domain.Entities.Hockey.Officials;
+
 namespace Application.Features.Hockey.Officials.Mappings;
 
 /// <summary>

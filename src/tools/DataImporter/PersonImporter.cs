@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Organization.Persons.DTOs;
 using DataImporter.Models;
 using WebAPI.Models.Common;
 

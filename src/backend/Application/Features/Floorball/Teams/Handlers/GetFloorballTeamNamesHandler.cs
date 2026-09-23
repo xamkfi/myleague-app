@@ -16,7 +16,12 @@ using Application.Features.Floorball.TeamManagers.DTOs;
 using Application.Features.Floorball.Statistics.DTOs;
 using Application.Features.Floorball.Teams.Queries;
 using Domain.Repositories.Floorball;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Application.Common;
 using Microsoft.Extensions.Logging;
 
@@ -25,7 +30,7 @@ namespace Application.Features.Floorball.Teams.Handlers
     /// <summary>
     /// Handler to retrieve floorball team names with optional filter
     /// </summary>
-    public class GetFloorballTeamNamesHandler : IRequestHandler<GetTeamNamesQuery, Result<List<FloorballTeamNameDto>>>
+    public class GetFloorballTeamNamesHandler : IRequestHandler<GetFloorballTeamNamesQuery, Result<List<FloorballTeamNameDto>>>
     {
         private readonly IFloorballTeamRepository _floorballTeamRepository;
         private readonly ILogger<GetFloorballTeamNamesHandler> _logger;
@@ -39,7 +44,7 @@ namespace Application.Features.Floorball.Teams.Handlers
             _logger = logger;
         }
 
-        public async Task<Result<List<FloorballTeamNameDto>>> Handle(GetTeamNamesQuery request, CancellationToken cancellationToken)
+        public async Task<Result<List<FloorballTeamNameDto>>> Handle(GetFloorballTeamNamesQuery request, CancellationToken cancellationToken)
         {
             try
             {

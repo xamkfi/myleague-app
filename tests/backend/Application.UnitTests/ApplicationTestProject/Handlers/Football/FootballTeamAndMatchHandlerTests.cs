@@ -5,7 +5,7 @@ using Application.Features.Football.Matches.Handlers;
 using Application.Features.Football.Teams.Commands;
 using Application.Features.Football.Teams.DTOs;
 using Application.Features.Football.Teams.Handlers;
-using Application.Features.Common.MatchTimer.Services;
+using Application.Features.Common.CrossCutting.MatchTimer.Services;
 using Application.Interfaces.Common;
 using Domain.Entities.Common;
 using Domain.Entities.Football.Competitions;

@@ -27,9 +27,9 @@ Match **events** (goals, penalties, cards, shots, and so on) are persisted entit
 Domain/
 ├── Entities/
 │   ├── Common/          # Person, Club, User, Division, News, Rules, Info pages, FooterContact, …
-│   ├── Floorball/       # Flat layout: teams, matches, competitions, stats
-│   ├── Football/        # Competitions, Matches, Teams, Statistics
-│   └── Hockey/          # Competitions, Matches, Teams, Statistics
+│   ├── Floorball/       # Competitions, Matches/Events, Teams, Statistics, Officials
+│   ├── Football/        # Competitions, Matches, Teams, Statistics, Officials
+│   └── Hockey/          # Competitions, Matches/Events, Teams, Statistics, Officials
 ├── ValueObjects/        # Common + per-sport (rules, addresses, match values)
 ├── Enums/               # Common + per-sport
 ├── Repositories/        # Interfaces only

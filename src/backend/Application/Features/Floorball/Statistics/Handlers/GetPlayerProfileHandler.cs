@@ -16,7 +16,12 @@ using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
 using Application.Features.Floorball.Statistics.Queries;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
@@ -27,7 +32,7 @@ namespace Application.Features.Floorball.Statistics.Handlers
     /// <summary>
     /// Gets a player full profile with all statistics from seasons.
     /// </summary>
-    public class GetPlayerProfileHandler : IRequestHandler<GetPlayerProfileQuery, Result<FloorballPlayerProfileDto>>
+    public class GetPlayerProfileHandler : IRequestHandler<GetFloorballPlayerProfileQuery, Result<FloorballPlayerProfileDto>>
     {
         /// <summary>
         /// Initializes the instances of repositories
@@ -49,12 +54,12 @@ namespace Application.Features.Floorball.Statistics.Handlers
         }
 
         /// <summary>
-        /// Handles the GetPlayerProfileQuery
+        /// Handles the GetFloorballPlayerProfileQuery
         /// </summary>
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Result<FloorballPlayerProfileDto>> Handle(GetPlayerProfileQuery request, CancellationToken cancellationToken)
+        public async Task<Result<FloorballPlayerProfileDto>> Handle(GetFloorballPlayerProfileQuery request, CancellationToken cancellationToken)
         {
             try
             {

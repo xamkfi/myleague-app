@@ -7,7 +7,7 @@ import { hockeyTournamentService } from '../../api/hockey/hockeyTournamentServic
 import type { HockeyTournamentDto } from '../../types/hockey/hockeyTypes';
 import { formatHockeyDate } from '../../utils/hockeyLookups';
 import { useAudience } from '../../context/AudienceContext';
-import '../TournamentsPage/TournamentsPage.scss';
+import '../FloorballTournamentsPage/FloorballTournamentsPage.scss';
 
 type LifecycleStatus = 'upcoming' | 'ongoing' | 'past';
 

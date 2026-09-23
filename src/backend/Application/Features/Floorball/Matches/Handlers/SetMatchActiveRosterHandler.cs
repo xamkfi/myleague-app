@@ -2,7 +2,12 @@ using Application.Common;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Matches.Mappings;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -13,7 +18,7 @@ namespace Application.Features.Floorball.Matches.Handlers;
 /// Handler for replacing the active field player lineup (and optional goalie) for a single team
 /// in a match. Mirrors <see cref="ChangeGoalieHandler"/> but operates on the full lineup.
 /// </summary>
-public class SetMatchActiveRosterHandler : IRequestHandler<SetMatchActiveRosterCommand, Result<FloorballMatchDto>>
+public class SetMatchActiveRosterHandler : IRequestHandler<SetFloorballMatchActiveRosterCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
@@ -32,7 +37,7 @@ public class SetMatchActiveRosterHandler : IRequestHandler<SetMatchActiveRosterC
         _logger = logger;
     }
 
-    public async Task<Result<FloorballMatchDto>> Handle(SetMatchActiveRosterCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballMatchDto>> Handle(SetFloorballMatchActiveRosterCommand request, CancellationToken cancellationToken)
     {
         try
         {

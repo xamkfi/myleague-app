@@ -20,7 +20,7 @@ namespace Application.Features.Football.Tournaments.Handlers;
 /// single round-trip.
 /// </summary>
 public class GetTournamentPlayoffBracketHandler
-    : IRequestHandler<GetTournamentPlayoffBracketQuery, Result<FootballPlayoffBracketDto>>
+    : IRequestHandler<GetFootballTournamentPlayoffBracketQuery, Result<FootballPlayoffBracketDto>>
 {
     private readonly IFootballTournamentRepository _tournamentRepository;
     private readonly IFootballMatchRepository _matchRepository;
@@ -43,7 +43,7 @@ public class GetTournamentPlayoffBracketHandler
     }
 
     public async Task<Result<FootballPlayoffBracketDto>> Handle(
-        GetTournamentPlayoffBracketQuery request,
+        GetFootballTournamentPlayoffBracketQuery request,
         CancellationToken cancellationToken)
     {
         try

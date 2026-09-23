@@ -18,7 +18,7 @@ namespace Application.Features.Football.Tournaments.Handlers;
 /// <summary>
 /// Handler for cancelling a tournament
 /// </summary>
-public class CancelTournamentHandler : IRequestHandler<CancelTournamentCommand, Result<FootballTournamentDto>>
+public class CancelTournamentHandler : IRequestHandler<CancelFootballTournamentCommand, Result<FootballTournamentDto>>
 {
     private readonly IFootballTournamentRepository _tournamentRepository;
     private readonly IFootballUnitOfWork _unitOfWork;
@@ -34,7 +34,7 @@ public class CancelTournamentHandler : IRequestHandler<CancelTournamentCommand, 
         _logger = logger;
     }
 
-    public async Task<Result<FootballTournamentDto>> Handle(CancelTournamentCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTournamentDto>> Handle(CancelFootballTournamentCommand request, CancellationToken cancellationToken)
     {
         try
         {

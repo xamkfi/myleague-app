@@ -23,7 +23,7 @@ namespace Application.Features.Floorball.Statistics.Handlers;
 /// <summary>
 /// Handler for retrieving team season statistics
 /// </summary>
-public class GetTeamSeasonStatisticsHandler : IRequestHandler<GetTeamSeasonStatisticsQuery, Result<FloorballTeamSeasonStatisticsDto>>
+public class GetTeamSeasonStatisticsHandler : IRequestHandler<GetFloorballTeamSeasonStatisticsQuery, Result<FloorballTeamSeasonStatisticsDto>>
 {
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballTeamRepository _teamRepository;
@@ -43,18 +43,18 @@ public class GetTeamSeasonStatisticsHandler : IRequestHandler<GetTeamSeasonStati
     }
 
     /// <summary>
-    /// Handles the GetTeamSeasonStatisticsQuery request
+    /// Handles the GetFloorballTeamSeasonStatisticsQuery request
     /// </summary>
     /// <param name="request">The query containing team and season IDs</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Team statistics DTO wrapped in a Result</returns>
-    public async Task<Result<FloorballTeamSeasonStatisticsDto>> Handle(GetTeamSeasonStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballTeamSeasonStatisticsDto>> Handle(GetFloorballTeamSeasonStatisticsQuery request, CancellationToken cancellationToken)
     {
         try
         {
             _logger.LogInformation("Retrieving team statistics for Team {TeamId} in Competition {CompetitionId}", request.TeamId, request.CompetitionId);
 
-            Domain.Entities.Floorball.FloorballTeamSeasonStatistics? statistics = await _statisticsRepository.GetTeamSeasonStatisticsAsync(request.TeamId, request.CompetitionId, cancellationToken);
+            Domain.Entities.Floorball.Statistics.FloorballTeamSeasonStatistics? statistics = await _statisticsRepository.GetTeamSeasonStatisticsAsync(request.TeamId, request.CompetitionId, cancellationToken);
             
             if (statistics == null)
             {

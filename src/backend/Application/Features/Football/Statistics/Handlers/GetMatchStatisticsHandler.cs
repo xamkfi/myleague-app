@@ -12,7 +12,7 @@ namespace Application.Features.Football.Statistics.Handlers;
 /// <summary>
 /// Handler for retrieving match statistics
 /// </summary>
-public class GetMatchStatisticsHandler : IRequestHandler<GetMatchStatisticsQuery, Result<List<FootballMatchTeamStatisticsDto>>>
+public class GetMatchStatisticsHandler : IRequestHandler<GetFootballMatchStatisticsQuery, Result<List<FootballMatchTeamStatisticsDto>>>
 {
     private readonly IFootballStatisticsRepository _statisticsRepository;
     private readonly ILogger<GetMatchStatisticsHandler> _logger;
@@ -25,7 +25,7 @@ public class GetMatchStatisticsHandler : IRequestHandler<GetMatchStatisticsQuery
         _logger = logger;
     }
 
-    public async Task<Result<List<FootballMatchTeamStatisticsDto>>> Handle(GetMatchStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<FootballMatchTeamStatisticsDto>>> Handle(GetFootballMatchStatisticsQuery request, CancellationToken cancellationToken)
     {
         try
         {

@@ -1,6 +1,6 @@
 using Application.Common;
-using Application.Features.Common.News.Handlers;
-using Application.Features.Common.News.Queries;
+using Application.Features.Common.Content.News.Handlers;
+using Application.Features.Common.Content.News.Queries;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
 using Moq;

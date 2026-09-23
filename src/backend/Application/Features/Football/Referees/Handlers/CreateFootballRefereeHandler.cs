@@ -10,11 +10,11 @@ using Application.Features.Football.TeamManagers.Mappings;
 using Application.Common;
 using Domain.Entities.Football.Teams;
 using Domain.Repositories.Football;
-using Application.Features.Common.Users.Mappings;
-using Application.Features.Common.Persons.Mappings;
-using Application.Features.Common.Clubs.Mappings;
-using Application.Features.Common.Divisions.Mappings;
-using Application.Features.Common.News.Mappings;
+using Application.Features.Common.Organization.Users.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
+using Application.Features.Common.Organization.Clubs.Mappings;
+using Application.Features.Common.Organization.Divisions.Mappings;
+using Application.Features.Common.Content.News.Mappings;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using System;
@@ -22,6 +22,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
 using Domain.Entities.Common;
+
+using Domain.Entities.Football.Officials;
 
 namespace Application.Features.Football.Referees.Handlers;
 

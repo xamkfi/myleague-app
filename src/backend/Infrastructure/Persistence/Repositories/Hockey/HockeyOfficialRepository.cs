@@ -4,6 +4,8 @@ using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
 
+using Domain.Entities.Hockey.Officials;
+
 namespace MyLeague.Infrastructure.Persistence.Repositories.Hockey;
 
 /// <summary>

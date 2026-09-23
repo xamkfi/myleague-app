@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
-using Application.Features.Common.MatchTimer.DTOs;
-using Application.Features.Common.MatchTimer.Services;
+using Application.Features.Common.CrossCutting.MatchTimer.DTOs;
+using Application.Features.Common.CrossCutting.MatchTimer.Services;
 using Microsoft.Extensions.Logging;
 using MyLeague.Infrastructure.SignalR;
 

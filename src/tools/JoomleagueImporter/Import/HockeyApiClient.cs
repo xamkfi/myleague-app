@@ -11,6 +11,8 @@ using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Matches;
 using Domain.Enums.Hockey.Teams;
 
+using Domain.Entities.Hockey.Officials;
+
 namespace JoomleagueImporter.Import;
 
 /// <summary>

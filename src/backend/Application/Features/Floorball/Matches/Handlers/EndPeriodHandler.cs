@@ -14,7 +14,12 @@ using Application.Features.Floorball.Players.Mappings;
 using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
@@ -25,7 +30,7 @@ namespace Application.Features.Floorball.Matches.Handlers;
 /// <summary>
 /// Handler for ending a period in a floorball match
 /// </summary>
-public class EndPeriodHandler : IRequestHandler<EndPeriodCommand, Result<FloorballMatchDto>>
+public class EndPeriodHandler : IRequestHandler<EndFloorballPeriodCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
@@ -45,9 +50,9 @@ public class EndPeriodHandler : IRequestHandler<EndPeriodCommand, Result<Floorba
     }
 
     /// <summary>
-    /// Handles the EndPeriodCommand request
+    /// Handles the EndFloorballPeriodCommand request
     /// </summary>
-    public async Task<Result<FloorballMatchDto>> Handle(EndPeriodCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballMatchDto>> Handle(EndFloorballPeriodCommand request, CancellationToken cancellationToken)
     {
         try
         {

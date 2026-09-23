@@ -5,6 +5,8 @@ using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
 using WebAPI.Models.Football;
 
+using Domain.Entities.Football.Officials;
+
 namespace Seeder;
 
 public static class FootballRefereesSeeder

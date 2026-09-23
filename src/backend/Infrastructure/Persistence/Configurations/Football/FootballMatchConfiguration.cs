@@ -4,6 +4,8 @@ using Domain.Entities.Football.Teams;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+using Domain.Entities.Football.Officials;
+
 namespace MyLeague.Infrastructure.Persistence.Configurations.Football;
 
 public class FootballMatchConfiguration : IEntityTypeConfiguration<FootballMatch>

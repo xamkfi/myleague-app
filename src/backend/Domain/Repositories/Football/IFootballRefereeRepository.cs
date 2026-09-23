@@ -1,6 +1,8 @@
 using Domain.Common;
 using Domain.Entities.Football.Teams;
 
+using Domain.Entities.Football.Officials;
+
 namespace Domain.Repositories.Football;
 
 /// <summary>

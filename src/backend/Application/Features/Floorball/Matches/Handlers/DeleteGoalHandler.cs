@@ -14,7 +14,12 @@ using Application.Features.Floorball.Players.Mappings;
 using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -28,7 +33,7 @@ namespace Application.Features.Floorball.Matches.Handlers;
 /// <summary>
 /// Handler for deleting a goal event from a floorball match (non-event-sourced)
 /// </summary>
-public class DeleteGoalHandler : IRequestHandler<DeleteGoalCommand, Result<FloorballMatchDto>>
+public class DeleteGoalHandler : IRequestHandler<DeleteFloorballGoalCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
@@ -53,7 +58,7 @@ public class DeleteGoalHandler : IRequestHandler<DeleteGoalCommand, Result<Floor
         _logger = logger;
     }
 
-    public async Task<Result<FloorballMatchDto>> Handle(DeleteGoalCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballMatchDto>> Handle(DeleteFloorballGoalCommand request, CancellationToken cancellationToken)
     {
         try
         {

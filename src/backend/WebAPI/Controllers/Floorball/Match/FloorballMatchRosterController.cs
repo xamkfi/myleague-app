@@ -48,7 +48,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Changing goalie for match {matchId}, team {teamId} to {goalieId}", matchId, teamId, goalieId);
 
-            ChangeGoalieCommand command = new ChangeGoalieCommand
+            ChangeFloorballGoalieCommand command = new ChangeFloorballGoalieCommand
             {
                 MatchId = matchId,
                 TeamId = teamId,
@@ -86,15 +86,15 @@ namespace WebAPI.Controllers.Floorball
                 request.Players?.Count ?? 0,
                 SanitizeForLog(request.GoalieId));
 
-            SetMatchActiveRosterCommand command = new SetMatchActiveRosterCommand
+            SetFloorballMatchActiveRosterCommand command = new SetFloorballMatchActiveRosterCommand
             {
                 MatchId = matchId,
                 TeamId = teamId,
-                Players = request.Players?.Select(p => new ActivePlayerInput
+                Players = request.Players?.Select(p => new FloorballActivePlayerInput
                 {
                     PlayerId = p.PlayerId,
                     Position = p.Position,
-                }).ToList() ?? new List<ActivePlayerInput>(),
+                }).ToList() ?? new List<FloorballActivePlayerInput>(),
                 GoalieId = request.GoalieId,
             };
 

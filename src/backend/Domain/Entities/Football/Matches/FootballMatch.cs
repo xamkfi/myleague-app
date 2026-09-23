@@ -3,6 +3,8 @@ using Domain.Entities.Football.Teams;
 using Domain.Enums.Football;
 using Domain.ValueObjects.Football;
 
+using Domain.Entities.Football.Officials;
+
 namespace Domain.Entities.Football.Matches;
 
 /// <summary>

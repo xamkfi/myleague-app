@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Football.Matches.Handlers;
 
-public class RemoveOfficialFromMatchHandler : IRequestHandler<RemoveOfficialFromMatchCommand, Result<FootballMatchDto>>
+public class RemoveOfficialFromMatchHandler : IRequestHandler<RemoveFootballOfficialFromMatchCommand, Result<FootballMatchDto>>
 {
     private readonly IFootballMatchRepository _matchRepository;
     private readonly IFootballUnitOfWork _unitOfWork;
@@ -25,7 +25,7 @@ public class RemoveOfficialFromMatchHandler : IRequestHandler<RemoveOfficialFrom
         _logger = logger;
     }
 
-    public async Task<Result<FootballMatchDto>> Handle(RemoveOfficialFromMatchCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballMatchDto>> Handle(RemoveFootballOfficialFromMatchCommand request, CancellationToken cancellationToken)
     {
         try
         {

@@ -1,8 +1,8 @@
 using Domain.Constants;
 using Application.Common;
 using Application.DTOs.Common;
-using Application.Features.Common.RulesSection.Commands;
-using Application.Features.Common.RulesSection.Queries;
+using Application.Features.Common.Content.RulesSection.Commands;
+using Application.Features.Common.Content.RulesSection.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

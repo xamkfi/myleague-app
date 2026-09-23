@@ -1,12 +1,12 @@
 
 
-using Application.Features.Common.Users.DTOs;
-using Application.Features.Common.Persons.DTOs;
-using Application.Features.Common.Clubs.DTOs;
-using Application.Features.Common.Divisions.DTOs;
-using Application.Features.Common.News.DTOs;
-using Application.Features.Common.Search.DTOs;
-using Application.Features.Common.MatchTimer.DTOs;
+using Application.Features.Common.Organization.Users.DTOs;
+using Application.Features.Common.Organization.Persons.DTOs;
+using Application.Features.Common.Organization.Clubs.DTOs;
+using Application.Features.Common.Organization.Divisions.DTOs;
+using Application.Features.Common.Content.News.DTOs;
+using Application.Features.Common.CrossCutting.Search.DTOs;
+using Application.Features.Common.CrossCutting.MatchTimer.DTOs;
 using Application.Features.Common.Shared.DTOs;
 using Application.Features.Football.Teams.DTOs;
 using Domain.Enums.Football;

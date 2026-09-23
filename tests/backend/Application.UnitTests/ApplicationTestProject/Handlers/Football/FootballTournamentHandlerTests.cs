@@ -81,7 +81,7 @@ public class FootballTournamentHandlerTests
             .ReturnsAsync(tournament);
 
         Result<FootballTournamentDto> result = await handler.Handle(
-            new CancelTournamentCommand(tournament.Id),
+            new CancelFootballTournamentCommand(tournament.Id),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();

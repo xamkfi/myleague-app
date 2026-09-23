@@ -5,6 +5,8 @@ using Domain.Common;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
 
+using Domain.Entities.Football.Officials;
+
 namespace MyLeague.Infrastructure.Persistence.Repositories.Football
 {
     /// <summary>

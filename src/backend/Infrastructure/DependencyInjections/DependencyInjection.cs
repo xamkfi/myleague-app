@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Application.Configuration;
-using Application.Features.Common.MatchTimer.Services;
+using Application.Features.Common.CrossCutting.MatchTimer.Services;
 using Application.Interfaces.Auth;
 using Application.Interfaces.Common;
 using Domain.Repositories.Common;

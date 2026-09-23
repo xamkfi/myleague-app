@@ -1,7 +1,7 @@
 using Application.Common;
-using Application.Features.Common.Clubs.DTOs;
-using Application.Features.Common.Clubs.Handlers;
-using Application.Features.Common.Clubs.Queries;
+using Application.Features.Common.Organization.Clubs.DTOs;
+using Application.Features.Common.Organization.Clubs.Handlers;
+using Application.Features.Common.Organization.Clubs.Queries;
 using Application.Services.Common;
 using Domain.Common;
 using Domain.Entities.Common;

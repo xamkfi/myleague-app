@@ -127,7 +127,7 @@ namespace WebAPI.Controllers.Football
         {
             _logger.LogInformation("Getting football team names filtered by: {nameFilter}", SanitizeForLog(nameFilter));
 
-            Result<List<FootballTeamNameDto>> result = await _mediator.Send(new GetTeamNamesQuery(nameFilter));
+            Result<List<FootballTeamNameDto>> result = await _mediator.Send(new GetFootballTeamNamesQuery(nameFilter));
 
             return HandleResult(result, "Filtered team names retrieved successfully", "Failed to retrieve team names");
         }
@@ -150,7 +150,7 @@ namespace WebAPI.Controllers.Football
                 SanitizeForLog(request.SearchTerm),
                 SanitizeForLog(request.TeamCategory));
 
-            Result<PagedResult<FootballTeamSummaryDto>> result = await _mediator.Send(new GetAllTeamsWithoutRosterQuery(
+            Result<PagedResult<FootballTeamSummaryDto>> result = await _mediator.Send(new GetAllFootballTeamsWithoutRosterQuery(
                 request.Page,
                 request.PageSize,
                 request.SearchTerm,
@@ -298,7 +298,7 @@ namespace WebAPI.Controllers.Football
                 teamId,
                 SanitizeForLog(position));
 
-            Result<FootballTeamDto> result = await _mediator.Send(new AddPlayerToTeamCommand(
+            Result<FootballTeamDto> result = await _mediator.Send(new AddFootballPlayerToTeamCommand(
                 teamId,
                 playerId,
                 position,
@@ -327,7 +327,7 @@ namespace WebAPI.Controllers.Football
         {
             _logger.LogInformation("Removing player {playerId} from team {teamId}", playerId, teamId);
 
-            Result<FootballTeamDto> result = await _mediator.Send(new RemovePlayerFromTeamCommand(teamId, playerId, competitionId));
+            Result<FootballTeamDto> result = await _mediator.Send(new RemoveFootballPlayerFromTeamCommand(teamId, playerId, competitionId));
 
             return HandleResult(result, "Player removed from team successfully", "Failed to remove player from team");
         }
@@ -357,7 +357,7 @@ namespace WebAPI.Controllers.Football
                 request.JerseyNumber,
                 request.IsActive);
 
-            Result<FootballTeamPlayerDto> result = await _mediator.Send(new UpdateTeamPlayerCommand(
+            Result<FootballTeamPlayerDto> result = await _mediator.Send(new UpdateFootballTeamPlayerCommand(
                 teamId,
                 playerId,
                 request.Position,
@@ -384,7 +384,7 @@ namespace WebAPI.Controllers.Football
         {
             _logger.LogInformation("Updating teams {teamId} into division {divisionId}", teamId, divisionId);
 
-            Result<FootballTeamDto> result = await _mediator.Send(new UpdateTeamDivisionCommand(teamId, divisionId));
+            Result<FootballTeamDto> result = await _mediator.Send(new UpdateFootballTeamDivisionCommand(teamId, divisionId));
 
             return HandleResult(result, "Team division updated succesfully", "Failed to update teams division");
         }

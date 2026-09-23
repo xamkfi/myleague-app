@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Football.Matches.Handlers;
 
-public class RecordSubstitutionHandler : IRequestHandler<RecordSubstitutionCommand, Result<FootballMatchDto>>
+public class RecordSubstitutionHandler : IRequestHandler<RecordFootballSubstitutionCommand, Result<FootballMatchDto>>
 {
     private readonly IFootballMatchRepository _matchRepository;
     private readonly IFootballTeamRepository _teamRepository;
@@ -38,7 +38,7 @@ public class RecordSubstitutionHandler : IRequestHandler<RecordSubstitutionComma
         _logger = logger;
     }
 
-    public async Task<Result<FootballMatchDto>> Handle(RecordSubstitutionCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballMatchDto>> Handle(RecordFootballSubstitutionCommand request, CancellationToken cancellationToken)
     {
         try
         {

@@ -118,7 +118,7 @@ public class FootballMatchesController : BaseApiController
         CancellationToken cancellationToken)
     {
         Result<IEnumerable<FootballMatchDto>> result =
-            await _mediator.Send(new GetTodaysMatchesByTeamQuery(teamId), cancellationToken);
+            await _mediator.Send(new GetTodaysFootballMatchesByTeamQuery(teamId), cancellationToken);
         return HandleListResult(result, "Retrieved today's football matches with team ID successfully", "Failed to retrieve today's football matches with team ID");
     }
 

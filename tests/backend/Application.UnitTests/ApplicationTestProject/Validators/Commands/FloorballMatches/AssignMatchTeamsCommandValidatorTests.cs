@@ -5,7 +5,7 @@ using FluentValidation.TestHelper;
 namespace ApplicationTestProject.Validators.Commands.FloorballMatches;
 
 /// <summary>
-/// Validator tests for <see cref="AssignMatchTeamsCommand"/>. The validator's job is to enforce
+/// Validator tests for <see cref="AssignFloorballMatchTeamsCommand"/>. The validator's job is to enforce
 /// shape constraints (non-empty match id, non-empty team ids when provided, different home/away
 /// when both are provided). Match-existence and status validation live in the handler.
 /// </summary>
@@ -18,9 +18,9 @@ public class AssignMatchTeamsCommandValidatorTests
     {
         // Clearing both slots back to TBD is a legitimate use-case (admin reverts an incorrect
         // jury override); the validator must allow it.
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(Guid.NewGuid(), null, null);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(Guid.NewGuid(), null, null);
 
-        TestValidationResult<AssignMatchTeamsCommand> result = _validator.TestValidate(command);
+        TestValidationResult<AssignFloorballMatchTeamsCommand> result = _validator.TestValidate(command);
 
         result.ShouldNotHaveAnyValidationErrors();
     }
@@ -28,9 +28,9 @@ public class AssignMatchTeamsCommandValidatorTests
     [Fact]
     public void Validate_OnlyHomeProvided_PassesSoCallerCanFillSlots()
     {
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(Guid.NewGuid(), Guid.NewGuid(), null);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(Guid.NewGuid(), Guid.NewGuid(), null);
 
-        TestValidationResult<AssignMatchTeamsCommand> result = _validator.TestValidate(command);
+        TestValidationResult<AssignFloorballMatchTeamsCommand> result = _validator.TestValidate(command);
 
         result.ShouldNotHaveAnyValidationErrors();
     }
@@ -38,9 +38,9 @@ public class AssignMatchTeamsCommandValidatorTests
     [Fact]
     public void Validate_DifferentHomeAndAway_Passes()
     {
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
 
-        TestValidationResult<AssignMatchTeamsCommand> result = _validator.TestValidate(command);
+        TestValidationResult<AssignFloorballMatchTeamsCommand> result = _validator.TestValidate(command);
 
         result.ShouldNotHaveAnyValidationErrors();
     }
@@ -48,9 +48,9 @@ public class AssignMatchTeamsCommandValidatorTests
     [Fact]
     public void Validate_EmptyMatchId_Fails()
     {
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(Guid.Empty, null, null);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(Guid.Empty, null, null);
 
-        TestValidationResult<AssignMatchTeamsCommand> result = _validator.TestValidate(command);
+        TestValidationResult<AssignFloorballMatchTeamsCommand> result = _validator.TestValidate(command);
 
         result.ShouldHaveValidationErrorFor(c => c.MatchId);
     }
@@ -60,9 +60,9 @@ public class AssignMatchTeamsCommandValidatorTests
     {
         // Distinguish "not provided" (null) from "provided but empty Guid" — the latter is a
         // common admin-tooling bug that the validator must catch.
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(Guid.NewGuid(), Guid.Empty, null);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(Guid.NewGuid(), Guid.Empty, null);
 
-        TestValidationResult<AssignMatchTeamsCommand> result = _validator.TestValidate(command);
+        TestValidationResult<AssignFloorballMatchTeamsCommand> result = _validator.TestValidate(command);
 
         result.ShouldHaveValidationErrorFor("HomeTeamId.Value");
     }
@@ -71,9 +71,9 @@ public class AssignMatchTeamsCommandValidatorTests
     public void Validate_SameHomeAndAway_Fails()
     {
         Guid teamId = Guid.NewGuid();
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(Guid.NewGuid(), teamId, teamId);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(Guid.NewGuid(), teamId, teamId);
 
-        TestValidationResult<AssignMatchTeamsCommand> result = _validator.TestValidate(command);
+        TestValidationResult<AssignFloorballMatchTeamsCommand> result = _validator.TestValidate(command);
 
         result.ShouldHaveValidationErrorFor(c => c.AwayTeamId);
     }

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Football.Matches.Handlers;
 
-public class CancelMatchHandler : IRequestHandler<CancelMatchCommand, Result<FootballMatchDto>>
+public class CancelMatchHandler : IRequestHandler<CancelFootballMatchCommand, Result<FootballMatchDto>>
 {
     private readonly IFootballMatchRepository _matchRepository;
     private readonly IFootballUnitOfWork _unitOfWork;
@@ -25,7 +25,7 @@ public class CancelMatchHandler : IRequestHandler<CancelMatchCommand, Result<Foo
         _logger = logger;
     }
 
-    public async Task<Result<FootballMatchDto>> Handle(CancelMatchCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballMatchDto>> Handle(CancelFootballMatchCommand request, CancellationToken cancellationToken)
     {
         try
         {

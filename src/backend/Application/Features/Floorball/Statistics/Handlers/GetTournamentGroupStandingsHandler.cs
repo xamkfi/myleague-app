@@ -8,7 +8,12 @@ using Application.Features.Floorball.Statistics.DTOs;
 using Application.Features.Floorball.Statistics.Queries;
 using Application.Features.Floorball.Tournaments.Services;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
@@ -23,7 +28,7 @@ namespace Application.Features.Floorball.Statistics.Handlers;
 /// using a 3-1-0 points convention to stay consistent with season standings.
 /// </summary>
 public class GetTournamentGroupStandingsHandler
-    : IRequestHandler<GetTournamentGroupStandingsQuery, Result<List<FloorballTournamentGroupStandingDto>>>
+    : IRequestHandler<GetFloorballTournamentGroupStandingsQuery, Result<List<FloorballTournamentGroupStandingDto>>>
 {
     private readonly IFloorballTournamentRepository _tournamentRepository;
     private readonly IFloorballMatchRepository _matchRepository;
@@ -43,7 +48,7 @@ public class GetTournamentGroupStandingsHandler
     }
 
     public async Task<Result<List<FloorballTournamentGroupStandingDto>>> Handle(
-        GetTournamentGroupStandingsQuery request,
+        GetFloorballTournamentGroupStandingsQuery request,
         CancellationToken cancellationToken)
     {
         try

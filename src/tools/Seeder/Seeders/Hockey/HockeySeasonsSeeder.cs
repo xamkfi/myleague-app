@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.Organization.Divisions.DTOs;
 using Application.Features.Hockey.Seasons.DTOs;
 using WebAPI.Models.Common;
 using WebAPI.Models.Hockey;

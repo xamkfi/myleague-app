@@ -1,14 +1,16 @@
 using Application.Features.Football.Referees.Commands;
 using Application.Features.Football.Referees.DTOs;
 using Application.Common;
-using Application.Features.Common.Deletion;
+using Application.Features.Common.Organization.Deletion;
 using Domain.Entities.Football.Teams;
 using Domain.Repositories.Football;
 using Domain.Repositories.Common;
 using Domain.Entities.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
-using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
+
+using Domain.Entities.Football.Officials;
 
 namespace Application.Features.Football.Referees.Handlers;
 

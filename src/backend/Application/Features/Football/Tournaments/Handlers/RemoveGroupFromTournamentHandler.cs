@@ -18,7 +18,7 @@ namespace Application.Features.Football.Tournaments.Handlers;
 /// <summary>
 /// Handler for removing a group from a tournament
 /// </summary>
-public class RemoveGroupFromTournamentHandler : IRequestHandler<RemoveGroupFromTournamentCommand, Result<FootballTournamentDto>>
+public class RemoveGroupFromTournamentHandler : IRequestHandler<RemoveFootballGroupFromTournamentCommand, Result<FootballTournamentDto>>
 {
     private readonly IFootballTournamentRepository _tournamentRepository;
     private readonly IFootballUnitOfWork _unitOfWork;
@@ -34,7 +34,7 @@ public class RemoveGroupFromTournamentHandler : IRequestHandler<RemoveGroupFromT
         _logger = logger;
     }
 
-    public async Task<Result<FootballTournamentDto>> Handle(RemoveGroupFromTournamentCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTournamentDto>> Handle(RemoveFootballGroupFromTournamentCommand request, CancellationToken cancellationToken)
     {
         try
         {

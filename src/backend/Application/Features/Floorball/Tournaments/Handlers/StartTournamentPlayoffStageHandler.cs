@@ -3,7 +3,12 @@ using Application.Features.Floorball.Tournaments.Commands;
 using Application.Features.Floorball.Tournaments.DTOs;
 using Application.Features.Floorball.Tournaments.Mappings;
 using Application.Features.Floorball.Tournaments.Services;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using Domain.ValueObjects.Floorball;
@@ -26,7 +31,7 @@ namespace Application.Features.Floorball.Tournaments.Handlers;
 ///  - If the tournament is already in PlayoffStage and at least one playoff match exists, the existing
 ///    structure is returned (no duplicates created, no error).
 /// </summary>
-public class StartTournamentPlayoffStageHandler : IRequestHandler<StartTournamentPlayoffStageCommand, Result<FloorballTournamentDto>>
+public class StartTournamentPlayoffStageHandler : IRequestHandler<StartFloorballTournamentPlayoffStageCommand, Result<FloorballTournamentDto>>
 {
     private readonly IFloorballTournamentRepository _tournamentRepository;
     private readonly IFloorballMatchRepository _matchRepository;
@@ -48,7 +53,7 @@ public class StartTournamentPlayoffStageHandler : IRequestHandler<StartTournamen
         _logger = logger;
     }
 
-    public async Task<Result<FloorballTournamentDto>> Handle(StartTournamentPlayoffStageCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballTournamentDto>> Handle(StartFloorballTournamentPlayoffStageCommand request, CancellationToken cancellationToken)
     {
         try
         {

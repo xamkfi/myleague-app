@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using Application.Features.Common.Clubs.DTOs;
+using Application.Features.Common.Organization.Clubs.DTOs;
 using JoomleagueImporter.Models;
 
 namespace JoomleagueImporter.Import;

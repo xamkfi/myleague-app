@@ -34,9 +34,9 @@ import {
 import { useAudience } from '../../context/AudienceContext';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
-import '../LeaguePage/LeaguePage.scss';
-import '../LeaguePage/components/SummarySection.scss';
-import '../LeaguePage/components/FixturesSection.scss';
+import '../FloorballLeaguePage/FloorballLeaguePage.scss';
+import '../FloorballLeaguePage/components/SummarySection.scss';
+import '../FloorballLeaguePage/components/FixturesSection.scss';
 import '../../components/LeagueStanding/LeagueStanding.scss';
 import '../../components/MatchesList/MatchesList.scss';
 

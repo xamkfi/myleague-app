@@ -1,3 +1,4 @@
+using Application.Features.Floorball.Competitions.Commands;
 using Domain.Constants;
 using System;
 using System.Globalization;
@@ -9,7 +10,12 @@ using Application.Features.Floorball.Seasons.Commands;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Seasons.Queries;
 using Domain.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Floorball;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -387,7 +393,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Adding team {teamId} to floorball season with ID: {id}", teamId, competitionId);
 
-            AddTeamToSeasonCommand command = new AddTeamToSeasonCommand(competitionId, teamId);
+            AddFloorballTeamToSeasonCommand command = new AddFloorballTeamToSeasonCommand(competitionId, teamId);
             Result<FloorballSeasonDto> result = await _mediator.Send(command);
 
             return HandleResult(result, "Team added to floorball season successfully", "Failed to add team to floorball season");
@@ -409,7 +415,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Removing team {teamId} from floorball season with ID: {id}", teamId, competitionId);
 
-            RemoveTeamFromSeasonCommand command = new RemoveTeamFromSeasonCommand(competitionId, teamId);
+            RemoveFloorballTeamFromSeasonCommand command = new RemoveFloorballTeamFromSeasonCommand(competitionId, teamId);
             Result<FloorballSeasonDto> result = await _mediator.Send(command);
 
             return HandleResult(result, "Team removed from floorball season successfully", "Failed to remove team from floorball season");
@@ -427,7 +433,7 @@ namespace WebAPI.Controllers.Floorball
         public async Task<ActionResult<ApiResponse>> AddDivisionToSeason(Guid competitionId, Guid divisionId)
         {
             _logger.LogInformation("Adding division {divisionId} to floorball season with ID: {id}", divisionId, competitionId);
-            AddDivisionToSeasonCommand command = new AddDivisionToSeasonCommand(competitionId, divisionId);
+            AddFloorballDivisionToSeasonCommand command = new AddFloorballDivisionToSeasonCommand(competitionId, divisionId);
             Result result = await _mediator.Send(command);
 
             return HandleVoidResult(result, "Division added to floorball season successfully", "Failed to add division to season");
@@ -445,7 +451,7 @@ namespace WebAPI.Controllers.Floorball
         public async Task<ActionResult<ApiResponse>> RemoveDivisionFromSeason(Guid competitionId, Guid divisionId)
         {
             _logger.LogInformation("Removing division {divisionId} from floorball season with ID: {id}", divisionId, competitionId);
-            RemoveDivisionFromSeasonCommand command = new RemoveDivisionFromSeasonCommand(competitionId, divisionId);
+            RemoveFloorballDivisionFromSeasonCommand command = new RemoveFloorballDivisionFromSeasonCommand(competitionId, divisionId);
             Result result = await _mediator.Send(command);
 
             return HandleVoidResult(result, "Division removed from floorball season successfully", "Failed to remove division from season");
@@ -468,7 +474,7 @@ namespace WebAPI.Controllers.Floorball
             [FromQuery] Domain.Enums.Common.RosterEnrollmentMode rosterMode = Domain.Enums.Common.RosterEnrollmentMode.CopyLatest)
         {
             _logger.LogInformation("Adding team {teamId} to season {id} division {divisionId}", teamId, competitionId, divisionId);
-            AddTeamToSeasonDivisionCommand command = new AddTeamToSeasonDivisionCommand(competitionId, divisionId, teamId, rosterMode);
+            AddFloorballTeamToSeasonDivisionCommand command = new AddFloorballTeamToSeasonDivisionCommand(competitionId, divisionId, teamId, rosterMode);
             Result result = await _mediator.Send(command);
 
             return HandleVoidResult(result, "Team added to season division successfully", "Failed to add team to season division");
@@ -487,7 +493,7 @@ namespace WebAPI.Controllers.Floorball
         public async Task<ActionResult<ApiResponse>> RemoveTeamFromSeasonDivision(Guid competitionId, Guid divisionId, Guid teamId)
         {
             _logger.LogInformation("Removing team {teamId} from season {id} division {divisionId}", teamId, competitionId, divisionId);
-            RemoveTeamFromSeasonDivisionCommand command = new RemoveTeamFromSeasonDivisionCommand(competitionId, divisionId, teamId);
+            RemoveFloorballTeamFromSeasonDivisionCommand command = new RemoveFloorballTeamFromSeasonDivisionCommand(competitionId, divisionId, teamId);
             Result result = await _mediator.Send(command);
 
             return HandleVoidResult(result, "Team removed from season division successfully", "Failed to remove team from season division");

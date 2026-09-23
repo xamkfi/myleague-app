@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Configurations.Football;
 using MyLeague.Infrastructure.Persistence.Extensions;
 
+using Domain.Entities.Football.Officials;
+
 namespace MyLeague.Infrastructure.Persistence.Contexts;
 
 /// <summary>

@@ -1,5 +1,5 @@
-using Application.Features.Common.News.Commands;
-using Application.Features.Common.News.Mappings;
+using Application.Features.Common.Content.News.Commands;
+using Application.Features.Common.Content.News.Mappings;
 using Domain.Entities.Common;
 
 namespace ApplicationTestProject.Mappings;

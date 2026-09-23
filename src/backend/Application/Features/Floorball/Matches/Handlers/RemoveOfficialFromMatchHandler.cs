@@ -14,7 +14,12 @@ using Application.Features.Floorball.Players.Mappings;
 using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
@@ -22,7 +27,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Floorball.Matches.Handlers;
 
-public class RemoveOfficialFromMatchHandler : IRequestHandler<RemoveOfficialFromMatchCommand, Result<FloorballMatchDto>>
+public class RemoveOfficialFromMatchHandler : IRequestHandler<RemoveFloorballOfficialFromMatchCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
@@ -38,7 +43,7 @@ public class RemoveOfficialFromMatchHandler : IRequestHandler<RemoveOfficialFrom
         _logger = logger;
     }
 
-    public async Task<Result<FloorballMatchDto>> Handle(RemoveOfficialFromMatchCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballMatchDto>> Handle(RemoveFloorballOfficialFromMatchCommand request, CancellationToken cancellationToken)
     {
         try
         {

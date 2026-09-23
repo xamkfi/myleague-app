@@ -24,14 +24,17 @@ Application/
 ├── Features/
 │   ├── Auth/                 # Login code, verify, refresh, revoke
 │   ├── Common/
-│   │   ├── Clubs / ClubAdmin / Divisions / Persons / Users
-│   │   ├── News / Images / Search
-│   │   ├── InfoPageContent / RulesSection / FooterContacts
-│   │   ├── MatchTimer / TeamLeader
+│   │   ├── Organization/     # Clubs, ClubAdmin, Persons, Users, Divisions,
+│   │   │                     # PlayerLicences, Deletion
+│   │   ├── Content/          # News, Images, InfoPageContent, RulesSection,
+│   │   │                     # FooterContacts
+│   │   ├── CrossCutting/     # Search, MatchTimer
+│   │   ├── SiteSettings/
 │   │   └── Shared/           # PagedResult and other shared DTOs
-│   ├── Floorball/            # Matches, Players, Referees, Seasons,
-│   │                         # Statistics, TeamManagers, Teams, Tournaments
-│   ├── Football/             # Same slice as floorball
+│   ├── Floorball/            # Competitions, Matches, Players, Referees,
+│   │                         # Seasons, Statistics, TeamManagers, Teams,
+│   │                         # Tournaments
+│   ├── Football/             # Same slices as floorball, including Competitions
 │   └── Hockey/               # Competitions, Matches, Officials, Players,
 │                             # Seasons, Statistics, Teams, Tournaments
 ├── Behaviors/                # Validation + logging pipelines
