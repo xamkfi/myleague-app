@@ -13,6 +13,23 @@ interface SummarySectionProps {
 
 }
 
+function selectUpcomingMatches(
+   matches: FloorballMatchDto[],
+   todaysMatches: FloorballMatchDto[] | null,
+): FloorballMatchDto[] {
+   const now = Date.now();
+   const todaysMatchIds = new Set(todaysMatches?.map((match) => match.id) ?? []);
+   return matches.filter((match) => {
+      if (todaysMatchIds.has(match.id) || match.status === 'Completed' || match.status === 'Cancelled') {
+         return false;
+      }
+      if (match.status === 'InProgress') {
+         return true;
+      }
+      return new Date(match.scheduledDateTime).getTime() >= now;
+   });
+}
+
 export default function SummarySection({ team, matches }: SummarySectionProps) {
    const { t } = useTranslation();
    const [seasons, setSeasons] = useState<FloorballSeasonDto[] | null>(null);
@@ -41,21 +58,26 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
       }
    }, [todaysMatches, fetchTodaysMatches, fetchSeasons]);
 
+   const hasTodaysMatches = (todaysMatches?.length ?? 0) > 0;
+   const upcomingMatches = selectUpcomingMatches(matches, todaysMatches);
+   const finishedMatches = matches
+      .filter((match) => match.status === 'Completed')
+      .sort((left, right) => new Date(right.scheduledDateTime).getTime() - new Date(left.scheduledDateTime).getTime())
+      .slice(0, 5);
+
    return (
       <div>
+         {(hasTodaysMatches || upcomingMatches.length > 0) && (
          <div className="summary-container">
-            {/* Today's Matches Section */}
-            {todaysMatches && todaysMatches.length > 0 && (
+            {hasTodaysMatches && todaysMatches && (
                <div>
                   <div className="summary-header">
                      {t('teamUserPage.todaysMatches')}
                   </div>
                   
-                  {/* Group today's matches by season */}
                   {seasons?.map((season) => {
                      const todaysSeasonMatches = todaysMatches.filter(match => match.competitionId === season.id);
                      
-                     // Only render season if it has today's matches
                      if (todaysSeasonMatches.length === 0) return null;
                      
                      return (
@@ -93,32 +115,15 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                </div>
             )}
 
-            {(() => {
-               const now = Date.now();
-               const todaysMatchIds = new Set(todaysMatches?.map(match => match.id) ?? []);
-               const upcomingMatches = matches.filter((match) => {
-                  if (todaysMatchIds.has(match.id) || match.status === 'Completed' || match.status === 'Cancelled') {
-                     return false;
-                  }
-                  if (match.status === 'InProgress') {
-                     return true;
-                  }
-                  return new Date(match.scheduledDateTime).getTime() >= now;
-               });
-               if (upcomingMatches.length === 0) {
-                  return null;
-               }
-               return (
-                  <>
+            {upcomingMatches.length > 0 && (
+               <>
             <div className="summary-header">
                {t('teamUserPage.scheduled')}
             </div>
 
-            {/* Seasons */}
             {seasons?.map((season) => {
                const filteredSeasonMatches = upcomingMatches.filter(match => match.competitionId === season.id);
                
-               // Only render season if it has matches (excluding today's matches)
                if (filteredSeasonMatches.length === 0) return null;
                
                return (
@@ -154,25 +159,17 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                   </div>
                );
             })}
-                  </>
-               );
-            })()}
+               </>
+            )}
          </div>
-         {/* Latest Matches Section - Only show if there are finished matches */}
-         {(() => {
-            const finishedMatches = matches.filter(match => match.status === 'Completed');
-            if (finishedMatches.length === 0) return null;
-            
-            return (
+         )}
+         {finishedMatches.length > 0 && (
                <div className="summary-container">
                   <div className="summary-header">
                      {t('teamUserPage.latestMatches')}
                   </div>
                   <div className="summary-season-container">
-                     {finishedMatches
-                        .sort((a, b) => new Date(b.scheduledDateTime).getTime() - new Date(a.scheduledDateTime).getTime())
-                        .slice(0, 5)
-                        .map((match) => (
+                     {finishedMatches.map((match) => (
                            <MatchRow
                               key={match.id}
                               id={match.id}
@@ -190,8 +187,7 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
                         ))}
                   </div>
                </div>
-            );
-         })()}
+         )}
       </div>
    )
 }

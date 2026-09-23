@@ -5,24 +5,34 @@ import type { FloorballMatchDto, FloorballTeam } from '../../types/floorball/flo
 import { floorballTeamNameSearchService } from '../../api/floorball/floorballTeamNameSearchService';
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
+import { teamMarkLabel } from '../../utils/teamMarkLabel';
 import { isGuid } from '../../utils/sportRoutes';
-import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 import './FloorballTeamPage.scss';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto, type FloorballSeasonStatisticsSummaryDto, type FloorballPlayerSeasonStatisticsDto } from '../../api/floorball/floorballStatistics';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../api/floorball/floorballSeasonService';
-import TeamNavbar from './components/TeamNavbar';
+import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
 import ResultsSection from './components/ResultsSection';
 import { useTranslation } from 'react-i18next';
 import RosterSection from './components/RosterSection';
 import SummarySection from './components/SummarySection';
 import Statistics from './components/Statistics';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
+import TeamNavbar from '../../components/TeamNavbar/TeamNavbar';
+import { isNotFoundError } from '../../api/utils/isNotFoundError';
 
-function pickSeasonForDivision(seasons: FloorballSeasonDto[], divisionId: string): FloorballSeasonDto | null {
-  const matching = seasons.filter((season) =>
+function pickSeasonForDivision(
+  seasons: FloorballSeasonDto[],
+  divisionId: string,
+  teamCategory?: string | null,
+): FloorballSeasonDto | null {
+  const inDivision = seasons.filter((season) =>
     season.seasonDivisions?.some((seasonDivision) => seasonDivision.divisionId === divisionId),
   );
+  const sameCategory = teamCategory
+    ? inDivision.filter((season) => season.teamCategory === teamCategory)
+    : [];
+  const matching = sameCategory.length > 0 ? sameCategory : inDivision;
   const active = matching.find((season) => season.isActive);
   if (active) {
     return active;
@@ -80,17 +90,26 @@ function FloorballTeamPage() {
         const foundTeam = findTeamBySlug(allTeams, slug);
 
         if (foundTeam) {
+          const teamDetails = await floorballTeamService.getById(foundTeam.id);
           const allSeasons = allSeasonsResponse.data ?? [];
           const requestedSeason = isGuid(requestedSeasonId)
             ? allSeasons.find((season) => season.id === requestedSeasonId) ?? null
             : null;
           const currentSeasonData = requestedSeason
             ?? (foundTeam.divisionId
-              ? pickSeasonForDivision(activeSeasonsResponse.data ?? [], foundTeam.divisionId)
-                ?? pickSeasonForDivision(allSeasons, foundTeam.divisionId)
+              ? pickSeasonForDivision(activeSeasonsResponse.data ?? [], foundTeam.divisionId, teamDetails.teamCategory)
+                ?? pickSeasonForDivision(allSeasons, foundTeam.divisionId, teamDetails.teamCategory)
               : null);
           setCurrentSeason(currentSeasonData);
-          setTeam(await floorballTeamService.getById(foundTeam.id, currentSeasonData?.id));
+          setTeamStatistics(null);
+          setPlayerStatistics(null);
+          setSeasonSummary(null);
+          setFetchedTabs(new Set());
+          setTeam(
+            currentSeasonData
+              ? await floorballTeamService.getById(foundTeam.id, currentSeasonData.id)
+              : teamDetails,
+          );
         } else {
           setError('Team not found');
         }
@@ -146,22 +165,18 @@ function FloorballTeamPage() {
         const fetchTeamStats = tabId === 'stats' && !teamStatistics;
         const fetchPlayerStats = !playerStatistics;
 
-        // Both fetches aggregate across all competitions the team has played in (regular season +
-        // tournaments) so tournament games and points appear on the Statistics tab alongside the
-        // regular-season totals. Using the per-competition endpoints with currentSeason.id silently
-        // drops tournament rows because those are stored under the tournament's CompetitionId.
         if (fetchTeamStats && fetchPlayerStats) {
           const [teamStats, playerStats] = await Promise.all([
-            floorballStatisticsService.getAggregatedTeamStatistics(team.id),
-            floorballStatisticsService.getAggregatedTeamPlayerStatistics(team.id)
+            floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id),
+            floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id),
           ]);
           setTeamStatistics(teamStats);
           setPlayerStatistics(playerStats);
         } else if (fetchTeamStats) {
-          const teamStats = await floorballStatisticsService.getAggregatedTeamStatistics(team.id);
+          const teamStats = await floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id);
           setTeamStatistics(teamStats);
         } else if (fetchPlayerStats) {
-          const playerStats = await floorballStatisticsService.getAggregatedTeamPlayerStatistics(team.id);
+          const playerStats = await floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id);
           setPlayerStatistics(playerStats);
         }
       } else if (tabId === 'standings') {
@@ -175,7 +190,10 @@ function FloorballTeamPage() {
       
     } catch (error) {
       console.error(`Failed to fetch ${tabId} data:`, error);
-      if (tabId === 'stats' || tabId === 'roster') {
+      if ((tabId === 'stats' || tabId === 'roster') && isNotFoundError(error)) {
+        setTeamStatistics(null);
+        setPlayerStatistics([]);
+      } else if (tabId === 'stats' || tabId === 'roster') {
         setStatisticsError('Failed to load team statistics');
       } else if (tabId === 'standings') {
         setSeasonSummaryError('Failed to load season summary');
@@ -292,11 +310,7 @@ function FloorballTeamPage() {
             roster={team.roster}
             loading={statisticsLoading}
             error={statisticsError}
-            // Stats are aggregated across the season + every tournament the team played in, so
-            // labelling the block with just the season name (e.g. "2025-2026 SALIBANDY | LIIGA")
-            // would be misleading. The "all competitions" label makes it clear that tournament
-            // games / points are included.
-            seasonName={t('teamUserPage.stats.allCompetitions')}
+            seasonName={currentSeason?.name}
           />
         );
 
@@ -321,97 +335,39 @@ function FloorballTeamPage() {
   return (
     <PageTemplate title={team.name}>
       <div className="floorball-team-page">
+        <nav className="floorball-team-page__crumb" aria-label={team.club.name}>
+          <button type="button" className="floorball-team-page__crumb-link" onClick={handleBackToClub}>
+            {team.club.name}
+          </button>
+          <span aria-hidden="true">›</span>
+          <span className="floorball-team-page__crumb-current">{team.name}</span>
+        </nav>
 
-        {/* Hero Image Background */}
-        <div className="hero-image-container">
-          <div className="hero-image"></div>
-          
+        <CompetitionHero
+          title={team.name}
+          logoUrl={team.logoUrl || team.club.logoUrl}
+          markLabel={teamMarkLabel(team.name)}
+          meta={currentSeason ? (
+            <button
+              type="button"
+              className="floorball-team-page__season"
+              onClick={() => navigate(`/league/${currentSeason.id}`)}
+            >
+              {currentSeason.name}
+            </button>
+          ) : null}
+        />
 
-
-          {/* Team Header */}
-          <div className="team-header">
-
-
-            {/* Breadcrumb Navigation */}
-            <div className="left-navigation-container">
-              <div className="breadcrumb">
-                <button onClick={handleBackToClub} className="club-link">
-                  {team.club.name}
-                </button>
-                <span className="separator">›</span>
-                <span className="current">{team.name}</span>
-              </div>
-            </div>
-            
-            <div className="header-content">
-              <div className="team-branding">
-                <div className="floorball-page-team-logo">
-                  {resolveLogoUrl(team.logoUrl) ? (
-                    <img
-                      src={resolveLogoUrl(team.logoUrl)}
-                      alt={`${team.name} logo`}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        const clubLogo = resolveLogoUrl(team.club.logoUrl);
-                        if (clubLogo && target.src !== clubLogo) {
-                          target.src = clubLogo;
-                        } else {
-                          target.style.display = 'none';
-                          const placeholder = target.nextElementSibling as HTMLElement;
-                          if (placeholder) {
-                            placeholder.style.display = 'flex';
-                          }
-                        }
-                      }}
-                    />
-                  ) : resolveLogoUrl(team.club.logoUrl) ? (
-                    <img
-                      src={resolveLogoUrl(team.club.logoUrl)}
-                      alt={`${team.club.name} logo`}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const placeholder = target.nextElementSibling as HTMLElement | null;
-                        if (placeholder) {
-                          placeholder.style.display = 'flex';
-                        }
-                      }}
-                    />
-                  ) : null}
-                  <div className="logo-placeholder" style={{ display: (resolveLogoUrl(team.logoUrl) || resolveLogoUrl(team.club.logoUrl)) ? 'none' : 'flex' }}>
-                    {team.name}
-                  </div>
-                </div>                
-              </div>
-
-              <div className="team-info">
-                <div className="team-info-container">
-                  <h1>{team.name}</h1>
-                  {currentSeason && (
-                    <button
-                      className="division-link"
-                      onClick={() => navigate(`/league/${currentSeason.id}`)}
-                    >
-                      {currentSeason.name}
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-            </div>
-
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
         <TeamNavbar currentTab={activeTab} onTabChange={handleTabChange} />
 
-        {/* Tab Content */}
-        <div className="tab-content-container">
-            {renderTabContent()}
+        <div
+          className="tab-content-container"
+          role="tabpanel"
+          id={`tabpanel-${activeTab}`}
+          aria-labelledby={`tab-${activeTab}`}
+        >
+          {renderTabContent()}
         </div>
-
-
       </div>
     </PageTemplate>
   );
