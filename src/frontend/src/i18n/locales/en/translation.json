@@ -78,7 +78,7 @@
   },
   "eventCalendarPage": {
     "title": "Event calendar",
-    "description": "Browse matches by month. Pick a day or filter by season, status, and team.",
+    "description": "Browse matches by month. Choose a sport, then narrow by season and team.",
     "noEvents": "No events",
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
@@ -91,14 +91,11 @@
     "eventSingular": "event",
     "eventPlural": "events",
     "status": {
-      "scheduled": "Scheduled",
-      "live": "Live",
-      "completed": "Completed"
+      "live": "Live"
     },
     "filters": {
       "showFilters": "Filters",
       "sport": "Sport",
-      "status": "Status",
       "season": "Season",
       "allSeasons": "All seasons",
       "team": "Team",

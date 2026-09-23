@@ -147,4 +147,88 @@ public class FloorballTeamAndMatchRepositoryTests : FloorballIntegrationTestBase
         loaded.CompetitionId.Should().Be(season.Id);
         loaded.Status.Should().Be(FloorballMatchStatus.Scheduled);
     }
+
+    [Fact]
+    public async Task GetLastCompletedForTeamsAsync_ReturnsNewestCompletedMatchesForThoseTeams()
+    {
+        FloorballSeason season = new(
+            "Season",
+            new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc));
+        FloorballSeason otherSeason = new(
+            "Other",
+            new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc));
+        FloorballTeam home = CreateTeam("Home");
+        FloorballTeam away = CreateTeam("Away");
+        FloorballPlayer homeGoalie = AddGoalie(home, 1);
+        FloorballPlayer awayGoalie = AddGoalie(away, 1);
+        season.AddTeam(home);
+        season.AddTeam(away);
+        otherSeason.AddTeam(home);
+        otherSeason.AddTeam(away);
+
+        FloorballMatch older = CreateMatch(season, home, away, new DateTime(2027, 1, 1, 18, 0, 0, DateTimeKind.Utc));
+        FloorballMatch newer = CreateMatch(season, home, away, new DateTime(2027, 2, 1, 18, 0, 0, DateTimeKind.Utc));
+        FloorballMatch scheduled = CreateMatch(season, home, away, new DateTime(2027, 3, 1, 18, 0, 0, DateTimeKind.Utc));
+        FloorballMatch otherCompetition = CreateMatch(otherSeason, home, away, new DateTime(2027, 4, 1, 18, 0, 0, DateTimeKind.Utc));
+        Complete(older, home, away, homeGoalie, awayGoalie);
+        Complete(newer, home, away, homeGoalie, awayGoalie);
+        Complete(otherCompetition, home, away, homeGoalie, awayGoalie);
+
+        await CompetitionRepository.AddAsync(season);
+        await CompetitionRepository.AddAsync(otherSeason);
+        await MatchRepository.AddAsync(older);
+        await MatchRepository.AddAsync(newer);
+        await MatchRepository.AddAsync(scheduled);
+        await MatchRepository.AddAsync(otherCompetition);
+        await DbContext.SaveChangesAsync();
+
+        List<FloorballMatch> result = (await MatchRepository.GetLastCompletedForTeamsAsync(
+            season.Id,
+            new[] { home.Id, away.Id })).ToList();
+
+        result.Select(match => match.Id).Should().Equal(newer.Id, older.Id);
+    }
+
+    [Fact]
+    public async Task GetLastCompletedForTeamsAsync_WhenNoTeams_ReturnsEmpty()
+    {
+        IEnumerable<FloorballMatch> result = await MatchRepository.GetLastCompletedForTeamsAsync(
+            Guid.NewGuid(),
+            Array.Empty<Guid>());
+
+        result.Should().BeEmpty();
+    }
+
+    private FloorballPlayer AddGoalie(FloorballTeam team, int jerseyNumber)
+    {
+        FloorballPlayer goalie = new(Guid.NewGuid(), new Position(FloorballPosition.Goalkeeper));
+        DbContext.FloorballPlayers.Add(goalie);
+        team.AddPlayer(goalie, FloorballPosition.Goalkeeper, jerseyNumber);
+        return goalie;
+    }
+
+    private static FloorballMatch CreateMatch(FloorballSeason season, FloorballTeam home, FloorballTeam away, DateTime start)
+    {
+        return new FloorballMatch(season, home, away, start, "Arena");
+    }
+
+    private static void Complete(
+        FloorballMatch match,
+        FloorballTeam home,
+        FloorballTeam away,
+        FloorballPlayer homeGoalie,
+        FloorballPlayer awayGoalie)
+    {
+        FloorballReferee referee = new(
+            Guid.NewGuid(),
+            new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2027, 12, 31, 0, 0, 0, DateTimeKind.Utc));
+        match.AddOfficial(referee);
+        match.SetActiveGoalie(home.Id, homeGoalie.Id);
+        match.SetActiveGoalie(away.Id, awayGoalie.Id);
+        match.Start();
+        match.Complete();
+    }
 }

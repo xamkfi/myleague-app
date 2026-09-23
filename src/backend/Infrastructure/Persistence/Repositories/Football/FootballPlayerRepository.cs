@@ -378,6 +378,21 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                 .ToDictionaryAsync(g => g.Key, g => g.First(), cancellationToken);
         }
 
+        public async Task<Dictionary<Guid, FootballPlayer>> GetByIdsAsync(
+            IEnumerable<Guid> ids,
+            CancellationToken cancellationToken = default)
+        {
+            List<Guid> playerIds = ids.Distinct().ToList();
+            if (playerIds.Count == 0)
+            {
+                return new Dictionary<Guid, FootballPlayer>();
+            }
+
+            return await _entities
+                .Where(player => playerIds.Contains(player.Id))
+                .ToDictionaryAsync(player => player.Id, cancellationToken);
+        }
+
         /// <summary>
         /// Searches for football players by name
         /// </summary>

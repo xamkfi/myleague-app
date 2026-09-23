@@ -41,7 +41,7 @@ public class GetAllFootballSeasonsHandler : IRequestHandler<GetAllFootballSeason
 
             IEnumerable<FootballCompetition> competitions = await _seasonRepository.GetAllAsync();
             List<FootballCompetition> seasonList = competitions.OfType<FootballSeason>().Cast<FootballCompetition>().ToList();
-            List<FootballSeasonDto> seasonDtos = await MapSeasonsAsync(seasonList);
+            List<FootballSeasonDto> seasonDtos = await MapSeasonsAsync(seasonList, cancellationToken);
 
             _logger.LogInformation("Successfully retrieved {SeasonCount} football seasons", seasonDtos.Count);
             return Result<IEnumerable<FootballSeasonDto>>.Success(seasonDtos);
@@ -53,9 +53,10 @@ public class GetAllFootballSeasonsHandler : IRequestHandler<GetAllFootballSeason
         }
     }
 
-    private async Task<List<FootballSeasonDto>> MapSeasonsAsync(List<FootballCompetition> seasonList)
+    private async Task<List<FootballSeasonDto>> MapSeasonsAsync(
+        List<FootballCompetition> seasonList,
+        CancellationToken cancellationToken)
     {
-        Dictionary<Guid, Club> clubsDict = new();
         HashSet<Guid> allClubIds = seasonList.SelectMany(s => s.Teams).Select(t => t.ClubId).ToHashSet();
         Dictionary<Guid, List<FootballTeam>> seasonTeamsBySeason = new();
 
@@ -71,14 +72,7 @@ public class GetAllFootballSeasonsHandler : IRequestHandler<GetAllFootballSeason
             }
         }
 
-        foreach (Guid clubId in allClubIds)
-        {
-            Club? club = await _clubRepository.GetByIdAsync(clubId);
-            if (club != null)
-            {
-                clubsDict[clubId] = club;
-            }
-        }
+        Dictionary<Guid, Club> clubsDict = await _clubRepository.GetByIdsAsync(allClubIds, cancellationToken);
 
         Dictionary<Guid, IReadOnlyCollection<FootballSeasonDivisionDto>> seasonDivisionsBySeason = new();
         foreach (FootballCompetition season in seasonList)
