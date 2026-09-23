@@ -42,6 +42,11 @@ public interface IFootballPlayerRepository
     Task DeleteAsync(Guid id);
     Task<IEnumerable<FootballPlayer>> SearchByNameAsync(string searchTerm);
     Task<Dictionary<Guid, FootballPlayer>> GetByPersonIdsAsync(IEnumerable<Guid> personIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets football players by a set of player IDs, as a dictionary keyed by player Id.
+    /// </summary>
+    Task<Dictionary<Guid, FootballPlayer>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(Guid id);
 
     /// <summary>

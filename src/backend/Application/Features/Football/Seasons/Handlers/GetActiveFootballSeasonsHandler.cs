@@ -42,7 +42,6 @@ public class GetActiveFootballSeasonsHandler : IRequestHandler<GetActiveFootball
             IEnumerable<FootballCompetition> competitions = await _seasonRepository.GetActiveAsync();
             List<FootballCompetition> seasonList = competitions.OfType<FootballSeason>().Cast<FootballCompetition>().ToList();
 
-            Dictionary<Guid, Club> clubsDict = new();
             HashSet<Guid> allClubIds = seasonList.SelectMany(s => s.Teams).Select(t => t.ClubId).ToHashSet();
             Dictionary<Guid, List<FootballTeam>> seasonTeamsBySeason = new();
 
@@ -58,14 +57,7 @@ public class GetActiveFootballSeasonsHandler : IRequestHandler<GetActiveFootball
                 }
             }
 
-            foreach (Guid clubId in allClubIds)
-            {
-                Club? club = await _clubRepository.GetByIdAsync(clubId);
-                if (club != null)
-                {
-                    clubsDict[clubId] = club;
-                }
-            }
+            Dictionary<Guid, Club> clubsDict = await _clubRepository.GetByIdsAsync(allClubIds, cancellationToken);
 
             Dictionary<Guid, IReadOnlyCollection<FootballSeasonDivisionDto>> seasonDivisionsBySeason = new();
             foreach (FootballCompetition season in seasonList)

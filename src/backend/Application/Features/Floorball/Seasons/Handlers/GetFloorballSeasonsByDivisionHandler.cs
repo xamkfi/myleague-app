@@ -63,8 +63,6 @@ public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorball
             // not tournaments (which are managed via FloorballTournamentController).
             List<FloorballCompetition> seasonList = competitions.OfType<FloorballSeason>().Cast<FloorballCompetition>().ToList();
 
-            // Load clubs for all teams across all seasons
-            Dictionary<Guid, Club> clubsDict = new Dictionary<Guid, Club>();
             HashSet<Guid> allClubIds = seasonList
                 .SelectMany(s => s.Teams)
                 .Select(t => t.ClubId)
@@ -84,14 +82,7 @@ public class GetFloorballSeasonsByDivisionHandler : IRequestHandler<GetFloorball
                 }
             }
 
-            foreach (Guid clubId in allClubIds)
-            {
-                Club? club = await _clubRepository.GetByIdAsync(clubId);
-                if (club != null)
-                {
-                    clubsDict[clubId] = club;
-                }
-            }
+            Dictionary<Guid, Club> clubsDict = await _clubRepository.GetByIdsAsync(allClubIds, cancellationToken);
 
             Dictionary<Guid, IReadOnlyCollection<FloorballSeasonDivisionDto>> seasonDivisionsBySeason = new Dictionary<Guid, IReadOnlyCollection<FloorballSeasonDivisionDto>>();
             foreach (FloorballCompetition season in seasonList)

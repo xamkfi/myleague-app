@@ -75,6 +75,16 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
                 tournamentAggregates = BuildTournamentGroupStageAggregates(tournamentMatches, standingRules);
             }
 
+            List<FootballMatch> seasonCompletedMatches = new List<FootballMatch>();
+            if (!isTournament)
+            {
+                List<Guid> formTeamIds = teamStats.Select(ts => ts.TeamId).Distinct().ToList();
+                seasonCompletedMatches = (await _footballMatchRepository.GetLastCompletedForTeamsAsync(
+                    request.CompetitionId,
+                    formTeamIds,
+                    cancellationToken)).ToList();
+            }
+
             Dictionary<Guid, FootballGameResult[]> last5ByTeam = new Dictionary<Guid, FootballGameResult[]>();
             foreach (FootballTeamSeasonStatistics ts in teamStats)
             {
@@ -90,7 +100,9 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
                 }
                 else
                 {
-                    matches = await _footballMatchRepository.GetLastCompletedByTeamAsync(ts.TeamId, request.CompetitionId, 5);
+                    matches = seasonCompletedMatches
+                        .Where(m => m.HomeTeamId == ts.TeamId || m.AwayTeamId == ts.TeamId)
+                        .Take(5);
                 }
 
                 FootballGameResult[] form = matches.Select(m =>
@@ -108,22 +120,16 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
 
             Dictionary<Guid, Person> playerPersonLookup = new Dictionary<Guid, Person>();
 
-            IEnumerable<Guid> playerIds = topScorers.Select(ps => ps.PlayerId)
+            List<Guid> playerIds = topScorers.Select(ps => ps.PlayerId)
                 .Concat(topAssists.Select(ps => ps.PlayerId))
                 .Distinct()
                 .ToList();
 
-            if (playerIds.Any())
+            if (playerIds.Count > 0)
             {
-                List<FootballPlayer> players = new List<FootballPlayer>();
-                foreach (Guid playerId in playerIds)
-                {
-                    FootballPlayer? player = await _footballPlayerRepository.GetByIdAsync(playerId);
-                    if (player != null)
-                    {
-                        players.Add(player);
-                    }
-                }
+                Dictionary<Guid, FootballPlayer> playersById =
+                    await _footballPlayerRepository.GetByIdsAsync(playerIds, cancellationToken);
+                List<FootballPlayer> players = playersById.Values.ToList();
 
                 List<Guid> personIds = players.Select(p => p.PersonId).Distinct().ToList();
 

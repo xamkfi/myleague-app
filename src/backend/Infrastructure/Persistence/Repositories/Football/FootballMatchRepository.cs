@@ -472,5 +472,30 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                 .Take(count)
                 .ToListAsync();
         }
+
+        /// <summary>
+        /// Completed matches in one competition for the given teams, newest first.
+        /// </summary>
+        public async Task<IEnumerable<FootballMatch>> GetLastCompletedForTeamsAsync(
+            Guid competitionId,
+            IEnumerable<Guid> teamIds,
+            CancellationToken cancellationToken = default)
+        {
+            List<Guid> ids = teamIds.Distinct().ToList();
+            if (ids.Count == 0)
+            {
+                return Array.Empty<FootballMatch>();
+            }
+
+            return await _entities
+                .AsNoTracking()
+                .Where(m =>
+                    m.CompetitionId == competitionId &&
+                    m.Status == FootballMatchStatus.Completed &&
+                    ((m.HomeTeamId.HasValue && ids.Contains(m.HomeTeamId.Value))
+                        || (m.AwayTeamId.HasValue && ids.Contains(m.AwayTeamId.Value))))
+                .OrderByDescending(m => m.ScheduledDateTime)
+                .ToListAsync(cancellationToken);
+        }
     }
 }
