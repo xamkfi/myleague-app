@@ -26,6 +26,8 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
     private readonly IFootballPlayerRepository _footballPlayerRepository;
     private readonly IFootballMatchRepository _footballMatchRepository;
     private readonly IFootballCompetitionRepository _competitionRepository;
+    private readonly IFootballTournamentRepository _tournamentRepository;
+    private readonly IFootballTeamRepository _teamRepository;
     private readonly IPersonRepository _personRepository;
     private readonly ILogger<GetSeasonStatisticsSummaryHandler> _logger;
 
@@ -34,6 +36,8 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
         IFootballPlayerRepository footballPlayerRepository,
         IFootballMatchRepository footballMatchRepository,
         IFootballCompetitionRepository competitionRepository,
+        IFootballTournamentRepository tournamentRepository,
+        IFootballTeamRepository teamRepository,
         IPersonRepository personRepository,
         ILogger<GetSeasonStatisticsSummaryHandler> logger)
     {
@@ -41,6 +45,8 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
         _footballPlayerRepository = footballPlayerRepository;
         _footballMatchRepository = footballMatchRepository;
         _competitionRepository = competitionRepository;
+        _tournamentRepository = tournamentRepository;
+        _teamRepository = teamRepository;
         _personRepository = personRepository;
         _logger = logger;
     }
@@ -62,7 +68,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
 
             if (teamStats.Count == 0)
             {
-                return await BuildStandingsFromEnrolledTeamsAsync(request.CompetitionId);
+                return await BuildStandingsFromEnrolledTeamsAsync(request.CompetitionId, cancellationToken);
             }
 
             bool isTournament = teamStats[0].Competition is FootballTournament;
@@ -230,6 +236,14 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
                 }
             }
 
+            summaryDto.TeamStandings = await FootballEnrolledStandings.WithEnrolledZerosAsync(
+                request.CompetitionId,
+                summaryDto.TeamStandings,
+                _competitionRepository,
+                _tournamentRepository,
+                _teamRepository,
+                cancellationToken);
+
             _logger.LogInformation("Successfully retrieved season statistics summary for Season: {SeasonId}", request.CompetitionId);
             return Result<FootballSeasonStatisticsSummaryDto>.Success(summaryDto);
         }
@@ -241,10 +255,13 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
     }
 
     /// <summary>
-    /// Enrolled teams can exist before any statistics rows are stored. Return those teams with
-    /// zeroed counters so the public standings table is usable before the season is activated.
+    /// A started competition lists every enrolled team even when statistics rows do not exist yet.
+    /// Seasons use competition teams. Tournaments also include group teams.
+    /// Draft and cancelled competitions stay empty.
     /// </summary>
-    private async Task<Result<FootballSeasonStatisticsSummaryDto>> BuildStandingsFromEnrolledTeamsAsync(Guid competitionId)
+    private async Task<Result<FootballSeasonStatisticsSummaryDto>> BuildStandingsFromEnrolledTeamsAsync(
+        Guid competitionId,
+        CancellationToken cancellationToken)
     {
         FootballCompetition? competition = await _competitionRepository.GetByIdAsync(competitionId);
         if (competition == null)
@@ -254,17 +271,13 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
         }
 
         string seasonName = competition.Name ?? string.Empty;
-        List<FootballTeamSeasonStatisticsDto> standings = competition.Teams
-            .OrderBy(team => team.Name, StringComparer.OrdinalIgnoreCase)
-            .Select(team => new FootballTeamSeasonStatisticsDto
-            {
-                TeamId = team.Id,
-                CompetitionId = competition.Id,
-                TeamName = team.Name ?? string.Empty,
-                TeamLogo = team.LogoUrl,
-                SeasonName = seasonName
-            })
-            .ToList();
+        List<FootballTeamSeasonStatisticsDto> standings = await FootballEnrolledStandings.WithEnrolledZerosAsync(
+            competitionId,
+            [],
+            _competitionRepository,
+            _tournamentRepository,
+            _teamRepository,
+            cancellationToken);
 
         return Result<FootballSeasonStatisticsSummaryDto>.Success(new FootballSeasonStatisticsSummaryDto
         {

@@ -83,35 +83,6 @@
   margin-top: map.get($spacing, 'md');
 }
 
-.competition-hero__tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: map.get($spacing, 'xs');
-}
-
-.competition-hero__tab {
-  padding: map.get($spacing, 'sm') map.get($spacing, 'md');
-  background: $color-white;
-  border: 1px solid rgba($color-blue-deep, 0.15);
-  color: $color-blue-deep;
-  border-radius: map.get($border-radius, 'lg');
-  cursor: pointer;
-  font-weight: map.get($font-weights, 'medium');
-  font-size: map.get($font-sizes, 'sm');
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: rgba($color-blue-secondary, 0.08);
-  }
-
-  &--active {
-    background: $color-blue-deep;
-    color: $color-white;
-    border-color: $color-blue-deep;
-    font-weight: map.get($font-weights, 'bold');
-  }
-}
-
 @media (max-width: 768px) {
   .competition-hero__banner {
     padding: map.get($spacing, 'md');

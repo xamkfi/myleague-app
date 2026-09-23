@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
+import UnderlineTabs from '../../components/UnderlineTabs/UnderlineTabs';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 import MatchesList from '../../components/MatchesList/MatchesList';
 import PlannedPlayoffSchedule from '../../components/PlannedPlayoffSchedule';
@@ -600,18 +601,12 @@ function FloorballTournamentPage() {
           }
         />
 
-        <nav className="tournament-page__tabs" aria-label={t('tournaments.tabsAria', 'Turnauksen välilehdet')}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`tournament-page__tab ${activeTab === tab.key ? 'tournament-page__tab--active' : ''}`}
-              onClick={() => handleTabChange(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
+        <UnderlineTabs
+          tabs={tabs.map((tab) => ({ id: tab.key, label: tab.label }))}
+          activeId={activeTab}
+          onChange={(id) => handleTabChange(id as TabType)}
+          ariaLabel={t('tournaments.tabsAria', 'Turnauksen välilehdet')}
+        />
 
         {renderTabContent()}
       </div>

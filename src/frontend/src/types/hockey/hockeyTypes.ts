@@ -742,6 +742,7 @@ export interface RecordHockeyShotRequest {
 export interface HockeyTeamCompetitionStatisticsDto {
   id: string;
   teamId: string;
+  teamName?: string;
   competitionId: string;
   gamesPlayed: number;
   regulationWins: number;

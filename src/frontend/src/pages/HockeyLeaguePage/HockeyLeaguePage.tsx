@@ -9,6 +9,7 @@ import SharedFixturesSection from '../../components/FixturesSection/FixturesSect
 import type { FixtureMatch } from '../../components/FixturesSection/FixturesSection';
 import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
 import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
+import UnderlineTabs from '../../components/UnderlineTabs/UnderlineTabs';
 import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
 import { hockeyMatchService } from '../../api/hockey/hockeyMatchService';
 import { hockeyStatisticsService } from '../../api/hockey/hockeyStatisticsService';
@@ -399,20 +400,13 @@ function HockeyLeaguePage() {
   return (
     <PageTemplate title={season?.name ?? t('leaguePage.defaultTitle')}>
       <div className="league-page">
-        <CompetitionHero title={season?.name ?? t('leaguePage.defaultTitle')} logoUrl={season?.logoUrl}>
-          <div className="competition-hero__tabs">
-            {tabs.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                className={`competition-hero__tab ${tab === item.key ? 'competition-hero__tab--active' : ''}`}
-                onClick={() => setTab(item.key)}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </CompetitionHero>
+        <CompetitionHero title={season?.name ?? t('leaguePage.defaultTitle')} logoUrl={season?.logoUrl} />
+        <UnderlineTabs
+          tabs={tabs.map((item) => ({ id: item.key, label: item.label }))}
+          activeId={tab}
+          onChange={(id) => setTab(id as HockeyLeagueTab)}
+          ariaLabel={t('leaguePage.defaultTitle')}
+        />
         <div className="league-content">
           {renderTabContent()}
         </div>

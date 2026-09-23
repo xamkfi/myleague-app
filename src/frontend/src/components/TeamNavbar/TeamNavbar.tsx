@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import './TeamNavbar.scss';
+import UnderlineTabs from '../UnderlineTabs/UnderlineTabs';
 
 interface TeamNavbarProps {
   currentTab: string;
@@ -18,21 +18,11 @@ export default function TeamNavbar({ currentTab, onTabChange }: TeamNavbarProps)
   ];
 
   return (
-    <div className="team-navigation-tabs" role="tablist" aria-label={t('teamUserPage.summary')}>
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          className={`team-nav-tab ${currentTab === tab.id ? 'active' : ''}`}
-          onClick={() => onTabChange?.(tab.id)}
-          role="tab"
-          aria-selected={currentTab === tab.id}
-          aria-controls={`tabpanel-${tab.id}`}
-          id={`tab-${tab.id}`}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
+    <UnderlineTabs
+      tabs={tabs}
+      activeId={currentTab}
+      onChange={(id) => onTabChange?.(id)}
+      ariaLabel={t('teamUserPage.summary')}
+    />
   );
 }
