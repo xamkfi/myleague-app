@@ -1,6 +1,6 @@
 import { useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { handleImageUploadService } from '../../../../api/admin/News/handleImageUploadService';
+import { handleImageUploadService } from '../../../../api/news/handleImageUploadService';
 import '../styles/NewsInputs.scss';
 import { TeamCategory } from '../../../../types/floorball/floorballTypes';
 import { NEWS_CATEGORY_OPTIONS, NEWS_SPORT_CATEGORY_OPTIONS } from '../Utils/NewsFilterContstants';

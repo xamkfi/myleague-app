@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyLeague.Infrastructure.Persistence.Configurations;
 
+using Domain.Entities.Hockey.Officials;
+
 namespace MyLeague.Infrastructure.Persistence.Configurations.Hockey;
 
 public class HockeyMatchOfficialConfiguration : BaseEntityConfiguration<HockeyMatchOfficial>

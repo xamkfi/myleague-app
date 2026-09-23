@@ -1,4 +1,4 @@
-using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Organization.Persons.DTOs;
 using Application.Features.Floorball.Referees.Queries;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Matches.DTOs;
@@ -17,7 +17,12 @@ using Application.Features.Floorball.Statistics.Mappings;
 using Application.Common;
 using Domain.Common;
 using Application.Services.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
 using Domain.Entities.Common;
@@ -27,11 +32,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Application.Features.Common.Users.Mappings;
-using Application.Features.Common.Persons.Mappings;
-using Application.Features.Common.Clubs.Mappings;
-using Application.Features.Common.Divisions.Mappings;
-using Application.Features.Common.News.Mappings;
+using Application.Features.Common.Organization.Users.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
+using Application.Features.Common.Organization.Clubs.Mappings;
+using Application.Features.Common.Organization.Divisions.Mappings;
+using Application.Features.Common.Content.News.Mappings;
 
 namespace Application.Features.Floorball.Referees.Handlers;
 

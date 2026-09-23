@@ -1,5 +1,5 @@
 using Application.Common;
-using Application.Features.Common.Deletion;
+using Application.Features.Common.Organization.Deletion;
 using Application.Features.Football.Teams.Commands;
 using Domain.Repositories.Football;
 using MediatR;

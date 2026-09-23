@@ -55,7 +55,7 @@ public class FootballMatchEventsController : BaseApiController
                 ApiResponse<FootballMatchDto>.ErrorResponse("Too many goal events; please wait a moment."));
         }
 
-        RecordGoalCommand command = new(
+        RecordFootballGoalCommand command = new(
             matchId,
             request.ScoringTeamId,
             request.ScoringPlayerId,
@@ -88,7 +88,7 @@ public class FootballMatchEventsController : BaseApiController
                 ApiResponse<FootballMatchDto>.ErrorResponse("Too many card events; please wait a moment."));
         }
 
-        RecordCardCommand command = new(
+        RecordFootballCardCommand command = new(
             matchId,
             request.TeamId,
             request.PlayerId,
@@ -111,7 +111,7 @@ public class FootballMatchEventsController : BaseApiController
         [FromBody] RecordSubstitutionEventRequest request,
         CancellationToken cancellationToken)
     {
-        RecordSubstitutionCommand command = new(
+        RecordFootballSubstitutionCommand command = new(
             matchId,
             request.TeamId,
             request.PlayerOffId,
@@ -134,7 +134,7 @@ public class FootballMatchEventsController : BaseApiController
         Guid goalEventId,
         CancellationToken cancellationToken)
     {
-        Result<FootballMatchDto> result = await _mediator.Send(new DeleteGoalCommand(matchId, goalEventId), cancellationToken);
+        Result<FootballMatchDto> result = await _mediator.Send(new DeleteFootballGoalCommand(matchId, goalEventId), cancellationToken);
         return HandleResult(result, "Goal deleted successfully", "Failed to delete goal");
     }
 
@@ -148,7 +148,7 @@ public class FootballMatchEventsController : BaseApiController
         Guid cardEventId,
         CancellationToken cancellationToken)
     {
-        Result<FootballMatchDto> result = await _mediator.Send(new DeleteCardCommand(matchId, cardEventId), cancellationToken);
+        Result<FootballMatchDto> result = await _mediator.Send(new DeleteFootballCardCommand(matchId, cardEventId), cancellationToken);
         return HandleResult(result, "Card deleted successfully", "Failed to delete card");
     }
 
@@ -163,7 +163,7 @@ public class FootballMatchEventsController : BaseApiController
         CancellationToken cancellationToken)
     {
         Result<FootballMatchDto> result =
-            await _mediator.Send(new DeleteSubstitutionCommand(matchId, substitutionEventId), cancellationToken);
+            await _mediator.Send(new DeleteFootballSubstitutionCommand(matchId, substitutionEventId), cancellationToken);
         return HandleResult(result, "Substitution deleted successfully", "Failed to delete substitution");
     }
 
@@ -176,7 +176,7 @@ public class FootballMatchEventsController : BaseApiController
         Guid matchId,
         CancellationToken cancellationToken)
     {
-        Result<FootballMatchDto> result = await _mediator.Send(new RecordExtraTimeCommand(matchId), cancellationToken);
+        Result<FootballMatchDto> result = await _mediator.Send(new RecordFootballExtraTimeCommand(matchId), cancellationToken);
         return HandleResult(result, "Extra time recorded successfully", "Failed to record extra time");
     }
 
@@ -189,7 +189,7 @@ public class FootballMatchEventsController : BaseApiController
         Guid matchId,
         CancellationToken cancellationToken)
     {
-        Result<FootballMatchDto> result = await _mediator.Send(new RecordPenaltyShootoutCommand(matchId), cancellationToken);
+        Result<FootballMatchDto> result = await _mediator.Send(new RecordFootballPenaltyShootoutCommand(matchId), cancellationToken);
         return HandleResult(result, "Penalty shootout recorded successfully", "Failed to record penalty shootout");
     }
 
@@ -203,7 +203,7 @@ public class FootballMatchEventsController : BaseApiController
         int periodNumber,
         CancellationToken cancellationToken)
     {
-        Result<FootballMatchDto> result = await _mediator.Send(new StartPeriodCommand(matchId, periodNumber), cancellationToken);
+        Result<FootballMatchDto> result = await _mediator.Send(new StartFootballPeriodCommand(matchId, periodNumber), cancellationToken);
         return HandleResult(result, "Period started successfully", "Failed to start period");
     }
 
@@ -217,7 +217,7 @@ public class FootballMatchEventsController : BaseApiController
         int periodNumber,
         CancellationToken cancellationToken)
     {
-        Result<FootballMatchDto> result = await _mediator.Send(new EndPeriodCommand(matchId, periodNumber), cancellationToken);
+        Result<FootballMatchDto> result = await _mediator.Send(new EndFootballPeriodCommand(matchId, periodNumber), cancellationToken);
         return HandleResult(result, "Period ended successfully", "Failed to end period");
     }
 

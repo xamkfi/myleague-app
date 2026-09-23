@@ -3,7 +3,12 @@ using Application.Features.Floorball.Statistics.DTOs;
 using Application.Features.Floorball.Statistics.Mappings;
 using Application.Features.Floorball.Statistics.Queries;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
@@ -14,7 +19,7 @@ namespace Application.Features.Floorball.Statistics.Handlers;
 /// <summary>
 /// Handler for retrieving all player statistics for a specific team in a season
 /// </summary>
-public class GetTeamPlayerStatisticsHandler : IRequestHandler<GetTeamPlayerStatisticsQuery, Result<List<FloorballPlayerSeasonStatisticsDto>>>
+public class GetTeamPlayerStatisticsHandler : IRequestHandler<GetFloorballTeamPlayerStatisticsQuery, Result<List<FloorballPlayerSeasonStatisticsDto>>>
 {
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IPersonRepository _personRepository;
@@ -30,7 +35,7 @@ public class GetTeamPlayerStatisticsHandler : IRequestHandler<GetTeamPlayerStati
         _logger = logger;
     }
 
-    public async Task<Result<List<FloorballPlayerSeasonStatisticsDto>>> Handle(GetTeamPlayerStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<FloorballPlayerSeasonStatisticsDto>>> Handle(GetFloorballTeamPlayerStatisticsQuery request, CancellationToken cancellationToken)
     {
         try
         {

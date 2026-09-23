@@ -3,9 +3,9 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.Common;
-using Application.Features.Common.Divisions.Commands;
-using Application.Features.Common.Divisions.DTOs;
-using Application.Features.Common.Divisions.Queries;
+using Application.Features.Common.Organization.Divisions.Commands;
+using Application.Features.Common.Organization.Divisions.DTOs;
+using Application.Features.Common.Organization.Divisions.Queries;
 using Domain.Enums.Common;
 using WebAPI.Models.Common;
 

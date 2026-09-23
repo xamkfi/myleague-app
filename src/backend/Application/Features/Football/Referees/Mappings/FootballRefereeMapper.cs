@@ -3,15 +3,17 @@ using Application.Features.Football.Teams.DTOs;
 using Application.Features.Football.Players.DTOs;
 using Application.Features.Football.Referees.DTOs;
 using Application.Features.Football.TeamManagers.DTOs;
-using Application.Features.Common.Users.Mappings;
-using Application.Features.Common.Persons.Mappings;
-using Application.Features.Common.Clubs.Mappings;
-using Application.Features.Common.Divisions.Mappings;
-using Application.Features.Common.News.Mappings;
+using Application.Features.Common.Organization.Users.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
+using Application.Features.Common.Organization.Clubs.Mappings;
+using Application.Features.Common.Organization.Divisions.Mappings;
+using Application.Features.Common.Content.News.Mappings;
 using Domain.Entities.Football.Teams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Domain.Entities.Football.Officials;
 
 namespace Application.Features.Football.Referees.Mappings;
 

@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Common;
-using Application.Features.Common.MatchTimer.Services;
+using Application.Features.Common.CrossCutting.MatchTimer.Services;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Teams.DTOs;
@@ -20,7 +20,12 @@ using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
 using Application.Services.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
@@ -31,7 +36,7 @@ namespace Application.Features.Floorball.Matches.Handlers
     /// <summary>
     /// Handler for starting a period in a floorball match
     /// </summary>
-    public class StartPeriodHandler : IRequestHandler<StartPeriodCommand, Result<FloorballMatchDto>>
+    public class StartPeriodHandler : IRequestHandler<StartFloorballPeriodCommand, Result<FloorballMatchDto>>
     {
         private readonly IFloorballMatchRepository _matchRepository;
         private readonly IFloorballUnitOfWork _unitOfWork;
@@ -54,9 +59,9 @@ namespace Application.Features.Floorball.Matches.Handlers
         }
 
         /// <summary>
-        /// Handles the StartPeriodCommand request
+        /// Handles the StartFloorballPeriodCommand request
         /// </summary>
-        public async Task<Result<FloorballMatchDto>> Handle(StartPeriodCommand request, CancellationToken cancellationToken)
+        public async Task<Result<FloorballMatchDto>> Handle(StartFloorballPeriodCommand request, CancellationToken cancellationToken)
         {
             try
             {

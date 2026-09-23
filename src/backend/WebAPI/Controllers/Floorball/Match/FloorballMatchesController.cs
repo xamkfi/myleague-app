@@ -152,7 +152,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Getting today's floorball match with team ID of: {teamId}", teamId);
 
             Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(
-                new GetTodaysMatchesByTeamQuery(teamId), cancellationToken);
+                new GetTodaysFloorballMatchesByTeamQuery(teamId), cancellationToken);
 
             return HandleListResult(result, "Retrieved today's floorball matches with team ID successfully", "Failed to retrieve today's floorball matches with team ID");
         }

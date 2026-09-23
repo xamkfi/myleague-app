@@ -1,4 +1,4 @@
-using Application.Features.Common.Persons.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
 using Application.Features.Football.Players.DTOs;
 using Application.Features.Football.Statistics.DTOs;
 using Application.Features.Football.Teams.DTOs;

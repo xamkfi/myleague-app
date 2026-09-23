@@ -5,7 +5,7 @@ import MatchRow from '../MatchRow';
 import FootballMatchRow from '../../pages/FootballLeaguePage/components/FootballMatchRow';
 import { FloorballMatchStatus } from '../../types/floorball/floorballTypes';
 import { getMatchPath, type SportKind } from '../../utils/sportRoutes';
-import '../../pages/LeaguePage/components/FixturesSection.scss';
+import '../../pages/FloorballLeaguePage/components/FixturesSection.scss';
 
 function toRowStatus(status: string): FloorballMatchStatus {
   if (status === 'InProgress') {

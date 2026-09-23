@@ -7,6 +7,8 @@ using Domain.ValueObjects.Hockey.Matches;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Configurations.Hockey;
 
+using Domain.Entities.Hockey.Officials;
+
 namespace MyLeague.Infrastructure.Persistence.Contexts;
 
 /// <summary>

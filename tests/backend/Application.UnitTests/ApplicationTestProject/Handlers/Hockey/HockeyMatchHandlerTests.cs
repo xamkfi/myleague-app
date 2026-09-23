@@ -20,6 +20,8 @@ using Domain.ValueObjects.Hockey.Rules;
 using Microsoft.Extensions.Logging;
 using Moq;
 
+using Domain.Entities.Hockey.Officials;
+
 namespace ApplicationTestProject.Handlers.Hockey;
 
 public class HockeyMatchHandlerTests

@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Application.Behaviors;
-using Application.Features.Common.Deletion;
-using Application.Features.Common.MatchTimer.Services;
+using Application.Features.Common.Organization.Deletion;
+using Application.Features.Common.CrossCutting.MatchTimer.Services;
 using Application.Services.Common;
 using MediatR;
 using FluentValidation;

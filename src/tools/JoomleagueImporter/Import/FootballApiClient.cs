@@ -8,6 +8,8 @@ using Application.Features.Football.Teams.DTOs;
 using Domain.Enums.Common;
 using Domain.Enums.Football;
 
+using Domain.Entities.Football.Officials;
+
 namespace JoomleagueImporter.Import;
 
 /// <summary>

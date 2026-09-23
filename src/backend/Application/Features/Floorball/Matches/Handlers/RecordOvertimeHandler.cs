@@ -14,7 +14,12 @@ using Application.Features.Floorball.Players.Mappings;
 using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -22,7 +27,7 @@ using MediatR;
 
 namespace Application.Features.Floorball.Matches.Handlers;
 
-public class RecordOvertimeHandler : IRequestHandler<RecordOvertimeCommand, Result<FloorballMatchDto>>
+public class RecordOvertimeHandler : IRequestHandler<RecordFloorballOvertimeCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
@@ -35,7 +40,7 @@ public class RecordOvertimeHandler : IRequestHandler<RecordOvertimeCommand, Resu
         _logger = logger;
     }
 
-    public async Task<Result<FloorballMatchDto>> Handle(RecordOvertimeCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballMatchDto>> Handle(RecordFloorballOvertimeCommand request, CancellationToken cancellationToken)
     {
         try
         {

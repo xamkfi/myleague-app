@@ -11,7 +11,7 @@ Dependency direction: **WebAPI / Frontend → Application → Domain**. Infrastr
 
 Put new work next to its sport or shared area:
 
-- `Application/Features/Common/` — clubs, persons, users, news, divisions, search, auth-adjacent shared types
+- `Application/Features/Common/Organization/` — clubs, persons, users, divisions; `Content/` — news and site pages; `CrossCutting/` — search and match timer
 - `Application/Features/{Floorball,Football,Hockey}/` — teams, players, officials, seasons, tournaments, matches, statistics
 - Mirror the same split in `Domain/Entities`, `WebAPI/Controllers`, and `src/frontend/src/{api,pages}`
 

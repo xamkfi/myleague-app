@@ -2,7 +2,12 @@ using Application.Features.Floorball.Tournaments.Commands;
 using Application.Features.Floorball.Tournaments.DTOs;
 using Application.Features.Floorball.Tournaments.Mappings;
 using Application.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
@@ -18,7 +23,7 @@ namespace Application.Features.Floorball.Tournaments.Handlers;
 /// <summary>
 /// Handler for completing a tournament
 /// </summary>
-public class CompleteTournamentHandler : IRequestHandler<CompleteTournamentCommand, Result<FloorballTournamentDto>>
+public class CompleteTournamentHandler : IRequestHandler<CompleteFloorballTournamentCommand, Result<FloorballTournamentDto>>
 {
     private readonly IFloorballTournamentRepository _tournamentRepository;
     private readonly IFloorballMatchRepository _matchRepository;
@@ -37,7 +42,7 @@ public class CompleteTournamentHandler : IRequestHandler<CompleteTournamentComma
         _logger = logger;
     }
 
-    public async Task<Result<FloorballTournamentDto>> Handle(CompleteTournamentCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballTournamentDto>> Handle(CompleteFloorballTournamentCommand request, CancellationToken cancellationToken)
     {
         try
         {

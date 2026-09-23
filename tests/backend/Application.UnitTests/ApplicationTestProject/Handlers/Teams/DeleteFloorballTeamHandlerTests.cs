@@ -1,5 +1,5 @@
 using Application.Common;
-using Application.Features.Common.Deletion;
+using Application.Features.Common.Organization.Deletion;
 using Application.Features.Floorball.Teams.Commands;
 using Application.Features.Floorball.Teams.Handlers;
 using Domain.Repositories.Floorball;

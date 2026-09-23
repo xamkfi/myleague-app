@@ -12,6 +12,8 @@ using Domain.Repositories.Hockey;
 using Microsoft.Extensions.Logging;
 using Moq;
 
+using Domain.Entities.Hockey.Officials;
+
 namespace ApplicationTestProject.Handlers.Hockey;
 
 public class HockeyOfficialHandlerTests

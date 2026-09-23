@@ -1,5 +1,5 @@
-using Application.Features.Common.Clubs.DTOs;
-using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.Organization.Clubs.DTOs;
+using Application.Features.Common.Organization.Divisions.DTOs;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Teams.DTOs;

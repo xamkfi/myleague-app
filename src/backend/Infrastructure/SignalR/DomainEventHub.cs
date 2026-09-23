@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using Application.Features.Common.MatchTimer.Services;
+using Application.Features.Common.CrossCutting.MatchTimer.Services;
 
 namespace MyLeague.Infrastructure.SignalR
 {

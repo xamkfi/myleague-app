@@ -63,7 +63,7 @@ namespace WebAPI.Controllers.Floorball
                     ApiResponse<FloorballMatchDto>.ErrorResponse("Too many goal events; please wait a moment."));
             }
 
-            RecordGoalCommand command = new RecordGoalCommand(
+            RecordFloorballGoalCommand command = new RecordFloorballGoalCommand(
                 matchId,
                 request.ScoringTeamId,
                 request.ScoringPlayerId,
@@ -109,7 +109,7 @@ namespace WebAPI.Controllers.Floorball
                     ApiResponse<FloorballMatchDto>.ErrorResponse("Too many penalty events; please wait a moment."));
             }
 
-            RecordPenaltyCommand command = new RecordPenaltyCommand(
+            RecordFloorballPenaltyCommand command = new RecordFloorballPenaltyCommand(
                 matchId,
                 request.TeamId,
                 request.PlayerId,
@@ -153,7 +153,7 @@ namespace WebAPI.Controllers.Floorball
                 }
             }
 
-            RecordSaveCommand command = new RecordSaveCommand(
+            RecordFloorballSaveCommand command = new RecordFloorballSaveCommand(
                 matchId,
                 request.TeamId,
                 request.PlayerId,
@@ -183,7 +183,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Deleting goal {goalEventId} for match ID: {matchId}", goalEventId, matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new DeleteGoalCommand(matchId, goalEventId), cancellationToken);
+                new DeleteFloorballGoalCommand(matchId, goalEventId), cancellationToken);
 
             return HandleResult(result, "Goal deleted successfully", "Failed to delete goal");
         }
@@ -203,7 +203,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Deleting penalty {penaltyEventId} for match ID: {matchId}", penaltyEventId, matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new DeletePenaltyCommand(matchId, penaltyEventId), cancellationToken);
+                new DeleteFloorballPenaltyCommand(matchId, penaltyEventId), cancellationToken);
 
             return HandleResult(result, "Penalty deleted successfully", "Failed to delete penalty");
         }
@@ -223,7 +223,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Deleting save {saveEventId} for match ID: {matchId}", saveEventId, matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new DeleteSaveCommand(matchId, saveEventId), cancellationToken);
+                new DeleteFloorballSaveCommand(matchId, saveEventId), cancellationToken);
 
             return HandleResult(result, "Save deleted successfully", "Failed to delete save");
         }
@@ -242,7 +242,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Recording overtime for match ID: {matchId}", matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new RecordOvertimeCommand(matchId), cancellationToken);
+                new RecordFloorballOvertimeCommand(matchId), cancellationToken);
 
             return HandleResult(result, "Overtime recorded successfully", "Failed to record overtime");
         }
@@ -261,7 +261,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Recording shootout for match ID: {matchId}", matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new RecordShootoutCommand(matchId), cancellationToken);
+                new RecordFloorballShootoutCommand(matchId), cancellationToken);
 
             return HandleResult(result, "Shootout recorded successfully", "Failed to record shootout");
         }
@@ -281,7 +281,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Starting period {period} for match ID: {matchId}", periodNumber, matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new StartPeriodCommand(matchId, periodNumber), cancellationToken);
+                new StartFloorballPeriodCommand(matchId, periodNumber), cancellationToken);
 
             return HandleResult(result, "Period started successfully", "Failed to start period");
         }
@@ -301,7 +301,7 @@ namespace WebAPI.Controllers.Floorball
             _logger.LogInformation("Ending period {period} for match ID: {matchId}", periodNumber, matchId);
 
             Result<FloorballMatchDto> result = await _mediator.Send(
-                new EndPeriodCommand(matchId, periodNumber), cancellationToken);
+                new EndFloorballPeriodCommand(matchId, periodNumber), cancellationToken);
 
             return HandleResult(result, "Period ended successfully", "Failed to end period");
         }

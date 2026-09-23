@@ -43,7 +43,7 @@ public class FootballMatchOfficialsController : BaseApiController
         CancellationToken cancellationToken)
     {
         Result<FootballMatchDto> result =
-            await _mediator.Send(new AddOfficialToMatchCommand(matchId, request.RefereeId), cancellationToken);
+            await _mediator.Send(new AddFootballOfficialToMatchCommand(matchId, request.RefereeId), cancellationToken);
         return HandleResult(result, "Official added successfully", "Failed to add official");
     }
 
@@ -58,7 +58,7 @@ public class FootballMatchOfficialsController : BaseApiController
         CancellationToken cancellationToken)
     {
         Result<FootballMatchDto> result = await _mediator.Send(
-            new UpdateMatchOfficialsCommand(matchId, request.Officials ?? Array.Empty<Guid>()),
+            new UpdateFootballMatchOfficialsCommand(matchId, request.Officials ?? Array.Empty<Guid>()),
             cancellationToken);
         return HandleResult(result, "Officials updated successfully", "Failed to update officials");
     }
@@ -74,7 +74,7 @@ public class FootballMatchOfficialsController : BaseApiController
         CancellationToken cancellationToken)
     {
         Result<FootballMatchDto> result =
-            await _mediator.Send(new RemoveOfficialFromMatchCommand(matchId, refereeId), cancellationToken);
+            await _mediator.Send(new RemoveFootballOfficialFromMatchCommand(matchId, refereeId), cancellationToken);
         return HandleResult(result, "Official removed successfully", "Failed to remove official");
     }
 
@@ -89,7 +89,7 @@ public class FootballMatchOfficialsController : BaseApiController
         CancellationToken cancellationToken)
     {
         Result<FootballMatchDto> result =
-            await _mediator.Send(new UpdateMatchOfficialsCommand(matchId, new[] { refereeId }), cancellationToken);
+            await _mediator.Send(new UpdateFootballMatchOfficialsCommand(matchId, new[] { refereeId }), cancellationToken);
         return HandleResult(result, "Referee set successfully", "Failed to set referee");
     }
 }

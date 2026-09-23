@@ -2,7 +2,12 @@ using Application.Common;
 using Application.Features.Floorball.Teams.Commands;
 using Application.Features.Floorball.Teams.DTOs;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
@@ -15,7 +20,7 @@ namespace Application.Features.Floorball.Teams.Handlers;
 /// Handler for updating only the jersey number of a player in a floorball team roster.
 /// The player's position and active status are preserved.
 /// </summary>
-public class UpdateTeamPlayerJerseyNumberHandler : IRequestHandler<UpdateTeamPlayerJerseyNumberCommand, Result<FloorballTeamPlayerDto>>
+public class UpdateTeamPlayerJerseyNumberHandler : IRequestHandler<UpdateFloorballTeamPlayerJerseyNumberCommand, Result<FloorballTeamPlayerDto>>
 {
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IFloorballPlayerRepository _playerRepository;
@@ -41,9 +46,9 @@ public class UpdateTeamPlayerJerseyNumberHandler : IRequestHandler<UpdateTeamPla
     }
 
     /// <summary>
-    /// Handles the UpdateTeamPlayerJerseyNumberCommand request
+    /// Handles the UpdateFloorballTeamPlayerJerseyNumberCommand request
     /// </summary>
-    public async Task<Result<FloorballTeamPlayerDto>> Handle(UpdateTeamPlayerJerseyNumberCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballTeamPlayerDto>> Handle(UpdateFloorballTeamPlayerJerseyNumberCommand request, CancellationToken cancellationToken)
     {
         try
         {

@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Application.Features.Common.Divisions.DTOs;
+using Application.Features.Common.Organization.Divisions.DTOs;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Referees.DTOs;
 using Application.Features.Floorball.Seasons.DTOs;

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getMatchesService, type FloorballMatch } from '../../../../api/admin/News/GetMatchesService';
+import { getMatchesService, type FloorballMatch } from '../../../../api/news/GetMatchesService';
 import Pagination from '../../../../components/Pagination';
 import '../styles/MatchBrowser.scss';
 

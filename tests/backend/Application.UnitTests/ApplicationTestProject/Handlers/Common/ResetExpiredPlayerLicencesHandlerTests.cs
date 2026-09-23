@@ -1,7 +1,7 @@
 using Application.Common;
-using Application.Features.Common.PlayerLicences.Commands;
-using Application.Features.Common.PlayerLicences.DTOs;
-using Application.Features.Common.PlayerLicences.Handlers;
+using Application.Features.Common.Organization.PlayerLicences.Commands;
+using Application.Features.Common.Organization.PlayerLicences.DTOs;
+using Application.Features.Common.Organization.PlayerLicences.Handlers;
 using Application.Interfaces.Common;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;

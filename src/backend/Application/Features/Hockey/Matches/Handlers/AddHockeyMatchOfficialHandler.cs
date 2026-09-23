@@ -7,6 +7,8 @@ using Domain.Repositories.Hockey;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
+using Domain.Entities.Hockey.Officials;
+
 namespace Application.Features.Hockey.Matches.Handlers;
 
 /// <summary>

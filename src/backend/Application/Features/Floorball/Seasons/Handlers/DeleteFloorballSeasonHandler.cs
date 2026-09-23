@@ -58,7 +58,7 @@ public class DeleteFloorballSeasonHandler : IRequestHandler<DeleteFloorballSeaso
             }
 
             // Check if there are any matches in this season
-            IEnumerable<Domain.Entities.Floorball.FloorballMatch> seasonMatches = await _matchRepository.GetByCompetitionIdAsync(request.Id);
+            IEnumerable<Domain.Entities.Floorball.Matches.FloorballMatch> seasonMatches = await _matchRepository.GetByCompetitionIdAsync(request.Id);
             bool hasMatches = seasonMatches.Any();
             if (hasMatches)
             {

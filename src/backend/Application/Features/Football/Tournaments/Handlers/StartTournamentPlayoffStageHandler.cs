@@ -29,7 +29,7 @@ namespace Application.Features.Football.Tournaments.Handlers;
 ///  - If the tournament is already in PlayoffStage and at least one playoff match exists, the existing
 ///    structure is returned (no duplicates created, no error).
 /// </summary>
-public class StartTournamentPlayoffStageHandler : IRequestHandler<StartTournamentPlayoffStageCommand, Result<FootballTournamentDto>>
+public class StartTournamentPlayoffStageHandler : IRequestHandler<StartFootballTournamentPlayoffStageCommand, Result<FootballTournamentDto>>
 {
     private readonly IFootballTournamentRepository _tournamentRepository;
     private readonly IFootballMatchRepository _matchRepository;
@@ -51,7 +51,7 @@ public class StartTournamentPlayoffStageHandler : IRequestHandler<StartTournamen
         _logger = logger;
     }
 
-    public async Task<Result<FootballTournamentDto>> Handle(StartTournamentPlayoffStageCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTournamentDto>> Handle(StartFootballTournamentPlayoffStageCommand request, CancellationToken cancellationToken)
     {
         try
         {

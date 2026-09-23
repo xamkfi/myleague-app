@@ -17,11 +17,11 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Repositories.Common;
-using Application.Features.Common.Users.Mappings;
-using Application.Features.Common.Persons.Mappings;
-using Application.Features.Common.Clubs.Mappings;
-using Application.Features.Common.Divisions.Mappings;
-using Application.Features.Common.News.Mappings;
+using Application.Features.Common.Organization.Users.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
+using Application.Features.Common.Organization.Clubs.Mappings;
+using Application.Features.Common.Organization.Divisions.Mappings;
+using Application.Features.Common.Content.News.Mappings;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -30,7 +30,7 @@ namespace Application.Features.Football.Teams.Handlers;
 /// <summary>
 /// Handler for adding a player to a football team
 /// </summary>
-public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Result<FootballTeamDto>>
+public class AddPlayerToTeamHandler : IRequestHandler<AddFootballPlayerToTeamCommand, Result<FootballTeamDto>>
 {
     private readonly IFootballTeamRepository _teamRepository;
     private readonly IFootballPlayerRepository _playerRepository;
@@ -65,12 +65,12 @@ public class AddPlayerToTeamHandler : IRequestHandler<AddPlayerToTeamCommand, Re
     }
 
     /// <summary>
-    /// Handles the AddPlayerToTeamCommand request
+    /// Handles the AddFootballPlayerToTeamCommand request
     /// </summary>
     /// <param name="request">The command containing player and team information</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated team as a DTO wrapped in a Result</returns>
-    public async Task<Result<FootballTeamDto>> Handle(AddPlayerToTeamCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTeamDto>> Handle(AddFootballPlayerToTeamCommand request, CancellationToken cancellationToken)
     {
         try
         {

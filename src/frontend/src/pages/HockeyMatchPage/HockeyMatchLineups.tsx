@@ -9,7 +9,7 @@ import {
   type HockeyTeamDto,
 } from '../../types/hockey/hockeyTypes';
 import { getPlayerPath } from '../../utils/sportRoutes';
-import '../MatchPage/components/MatchLineups.scss';
+import '../FloorballMatchPage/components/MatchLineups.scss';
 
 interface HockeyMatchLineupsProps {
   match: HockeyMatchDto;

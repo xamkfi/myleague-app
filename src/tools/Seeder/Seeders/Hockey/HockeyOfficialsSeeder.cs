@@ -5,6 +5,8 @@ using Domain.Enums.Hockey.Teams;
 using WebAPI.Models.Common;
 using WebAPI.Models.Hockey;
 
+using Domain.Entities.Hockey.Officials;
+
 namespace Seeder;
 
 /// <summary>

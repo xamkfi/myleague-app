@@ -14,7 +14,12 @@ using Application.Features.Floorball.Players.Mappings;
 using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -24,7 +29,7 @@ namespace Application.Features.Floorball.Matches.Handlers;
 /// <summary>
 /// Handler for deleting a save event from a match
 /// </summary>
-public class DeleteSaveHandler : IRequestHandler<DeleteSaveCommand, Result<FloorballMatchDto>>
+public class DeleteSaveHandler : IRequestHandler<DeleteFloorballSaveCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballPlayerRepository _playerRepository;
@@ -46,7 +51,7 @@ public class DeleteSaveHandler : IRequestHandler<DeleteSaveCommand, Result<Floor
         _logger = logger;
     }
 
-    public async Task<Result<FloorballMatchDto>> Handle(DeleteSaveCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballMatchDto>> Handle(DeleteFloorballSaveCommand request, CancellationToken cancellationToken)
     {
         try
         {

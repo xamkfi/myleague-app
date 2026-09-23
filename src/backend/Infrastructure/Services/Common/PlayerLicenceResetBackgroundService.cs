@@ -1,4 +1,4 @@
-using Application.Features.Common.PlayerLicences.Commands;
+using Application.Features.Common.Organization.PlayerLicences.Commands;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

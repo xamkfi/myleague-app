@@ -1,5 +1,5 @@
 using Application.Common;
-using Application.Features.Common.Deletion;
+using Application.Features.Common.Organization.Deletion;
 using Application.Features.Football.Players.Commands;
 using Application.Features.Football.Players.Handlers;
 using Domain.Entities.Football.Teams;

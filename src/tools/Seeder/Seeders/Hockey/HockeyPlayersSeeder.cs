@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Organization.Persons.DTOs;
 using Application.Features.Hockey.Players.DTOs;
 using Application.Features.Hockey.Teams.DTOs;
 using Domain.Enums.Hockey.Teams;

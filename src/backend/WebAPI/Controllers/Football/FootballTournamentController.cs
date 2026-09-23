@@ -241,7 +241,7 @@ public class FootballTournamentController : BaseApiController
     {
         _logger.LogInformation("Starting group stage for football tournament with ID: {competitionId}", competitionId);
 
-        StartTournamentGroupStageCommand command = new StartTournamentGroupStageCommand(competitionId);
+        StartFootballTournamentGroupStageCommand command = new StartFootballTournamentGroupStageCommand(competitionId);
         Result<FootballTournamentDto> result = await _mediator.Send(command);
 
         return HandleResult(result, "Tournament group stage started successfully", "Failed to start tournament group stage");
@@ -268,8 +268,8 @@ public class FootballTournamentController : BaseApiController
         IReadOnlyList<FootballPlayoffScheduleSlotInput> slots =
             MapPlayoffSchedule(request?.Slots) ?? Array.Empty<FootballPlayoffScheduleSlotInput>();
 
-        UpdateTournamentPlayoffScheduleCommand command =
-            new UpdateTournamentPlayoffScheduleCommand(competitionId, slots);
+        UpdateFootballTournamentPlayoffScheduleCommand command =
+            new UpdateFootballTournamentPlayoffScheduleCommand(competitionId, slots);
         Result<FootballTournamentDto> result = await _mediator.Send(command);
 
         return HandleResult(result, "Tournament playoff schedule updated successfully", "Failed to update tournament playoff schedule");
@@ -288,7 +288,7 @@ public class FootballTournamentController : BaseApiController
     {
         _logger.LogInformation("Starting playoff stage for football tournament with ID: {competitionId}", competitionId);
 
-        StartTournamentPlayoffStageCommand command = new StartTournamentPlayoffStageCommand(competitionId);
+        StartFootballTournamentPlayoffStageCommand command = new StartFootballTournamentPlayoffStageCommand(competitionId);
         Result<FootballTournamentDto> result = await _mediator.Send(command);
 
         return HandleResult(result, "Tournament playoff stage started successfully", "Failed to start tournament playoff stage");
@@ -305,7 +305,7 @@ public class FootballTournamentController : BaseApiController
     {
         _logger.LogInformation("Getting playoff bracket for tournament: {competitionId}", competitionId);
 
-        GetTournamentPlayoffBracketQuery query = new GetTournamentPlayoffBracketQuery(competitionId);
+        GetFootballTournamentPlayoffBracketQuery query = new GetFootballTournamentPlayoffBracketQuery(competitionId);
         Result<FootballPlayoffBracketDto> result = await _mediator.Send(query);
 
         return HandleResult(result, "Tournament playoff bracket retrieved successfully", "Failed to retrieve tournament playoff bracket");
@@ -324,7 +324,7 @@ public class FootballTournamentController : BaseApiController
     {
         _logger.LogInformation("Completing football tournament with ID: {competitionId}", competitionId);
 
-        CompleteTournamentCommand command = new CompleteTournamentCommand(competitionId);
+        CompleteFootballTournamentCommand command = new CompleteFootballTournamentCommand(competitionId);
         Result<FootballTournamentDto> result = await _mediator.Send(command);
 
         return HandleResult(result, "Football tournament completed successfully", "Failed to complete football tournament");
@@ -343,7 +343,7 @@ public class FootballTournamentController : BaseApiController
     {
         _logger.LogInformation("Cancelling football tournament with ID: {competitionId}", competitionId);
 
-        CancelTournamentCommand command = new CancelTournamentCommand(competitionId);
+        CancelFootballTournamentCommand command = new CancelFootballTournamentCommand(competitionId);
         Result<FootballTournamentDto> result = await _mediator.Send(command);
 
         return HandleResult(result, "Football tournament cancelled successfully", "Failed to cancel football tournament");
@@ -365,7 +365,7 @@ public class FootballTournamentController : BaseApiController
             SanitizeForLog(request.GroupName),
             competitionId);
 
-        AddGroupToTournamentCommand command = new AddGroupToTournamentCommand(competitionId, request.GroupName);
+        AddFootballGroupToTournamentCommand command = new AddFootballGroupToTournamentCommand(competitionId, request.GroupName);
         Result<FootballTournamentDto> result = await _mediator.Send(command);
 
         return HandleResult(result, "Group added to tournament successfully", "Failed to add group to tournament");
@@ -384,7 +384,7 @@ public class FootballTournamentController : BaseApiController
     {
         _logger.LogInformation("Removing group {groupId} from football tournament with ID: {competitionId}", groupId, competitionId);
 
-        RemoveGroupFromTournamentCommand command = new RemoveGroupFromTournamentCommand(competitionId, groupId);
+        RemoveFootballGroupFromTournamentCommand command = new RemoveFootballGroupFromTournamentCommand(competitionId, groupId);
         Result<FootballTournamentDto> result = await _mediator.Send(command);
 
         return HandleResult(result, "Group removed from tournament successfully", "Failed to remove group from tournament");
@@ -403,7 +403,7 @@ public class FootballTournamentController : BaseApiController
     {
         _logger.LogInformation("Adding team {teamId} to group {groupId} in tournament {competitionId}", request.TeamId, groupId, competitionId);
 
-        AddTeamToTournamentGroupCommand command = new AddTeamToTournamentGroupCommand(competitionId, groupId, request.TeamId, request.RosterMode);
+        AddFootballTeamToTournamentGroupCommand command = new AddFootballTeamToTournamentGroupCommand(competitionId, groupId, request.TeamId, request.RosterMode);
         Result<FootballTournamentDto> result = await _mediator.Send(command);
 
         return HandleResult(result, "Team added to tournament group successfully", "Failed to add team to tournament group");
@@ -422,7 +422,7 @@ public class FootballTournamentController : BaseApiController
     {
         _logger.LogInformation("Removing team {teamId} from group {groupId} in tournament {competitionId}", teamId, groupId, competitionId);
 
-        RemoveTeamFromTournamentGroupCommand command = new RemoveTeamFromTournamentGroupCommand(competitionId, groupId, teamId);
+        RemoveFootballTeamFromTournamentGroupCommand command = new RemoveFootballTeamFromTournamentGroupCommand(competitionId, groupId, teamId);
         Result<FootballTournamentDto> result = await _mediator.Send(command);
 
         return HandleResult(result, "Team removed from tournament group successfully", "Failed to remove team from tournament group");

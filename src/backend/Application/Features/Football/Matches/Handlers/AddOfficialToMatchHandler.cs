@@ -8,9 +8,11 @@ using Domain.Repositories.Football;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
+using Domain.Entities.Football.Officials;
+
 namespace Application.Features.Football.Matches.Handlers;
 
-public class AddOfficialToMatchHandler : IRequestHandler<AddOfficialToMatchCommand, Result<FootballMatchDto>>
+public class AddOfficialToMatchHandler : IRequestHandler<AddFootballOfficialToMatchCommand, Result<FootballMatchDto>>
 {
     private readonly IFootballMatchRepository _matchRepository;
     private readonly IFootballRefereeRepository _refereeRepository;
@@ -29,7 +31,7 @@ public class AddOfficialToMatchHandler : IRequestHandler<AddOfficialToMatchComma
         _logger = logger;
     }
 
-    public async Task<Result<FootballMatchDto>> Handle(AddOfficialToMatchCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballMatchDto>> Handle(AddFootballOfficialToMatchCommand request, CancellationToken cancellationToken)
     {
         try
         {

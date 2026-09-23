@@ -1,8 +1,13 @@
 using Application.Common;
-using Application.Features.Common.Deletion;
-using Application.Features.Common.Persons.Commands;
-using Application.Features.Common.Persons.Handlers;
-using Domain.Entities.Floorball;
+using Application.Features.Common.Organization.Deletion;
+using Application.Features.Common.Organization.Persons.Commands;
+using Application.Features.Common.Organization.Persons.Handlers;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Football;

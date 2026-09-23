@@ -18,7 +18,7 @@ namespace Application.Features.Football.Tournaments.Handlers;
 /// <summary>
 /// Handler for adding a team to a tournament group
 /// </summary>
-public class AddTeamToTournamentGroupHandler : IRequestHandler<AddTeamToTournamentGroupCommand, Result<FootballTournamentDto>>
+public class AddTeamToTournamentGroupHandler : IRequestHandler<AddFootballTeamToTournamentGroupCommand, Result<FootballTournamentDto>>
 {
     private readonly IFootballTournamentRepository _tournamentRepository;
     private readonly IFootballTeamRepository _teamRepository;
@@ -37,7 +37,7 @@ public class AddTeamToTournamentGroupHandler : IRequestHandler<AddTeamToTourname
         _logger = logger;
     }
 
-    public async Task<Result<FootballTournamentDto>> Handle(AddTeamToTournamentGroupCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballTournamentDto>> Handle(AddFootballTeamToTournamentGroupCommand request, CancellationToken cancellationToken)
     {
         try
         {

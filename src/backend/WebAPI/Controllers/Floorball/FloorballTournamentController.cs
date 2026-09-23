@@ -39,14 +39,14 @@ namespace WebAPI.Controllers.Floorball
         // Converts the WebAPI request shape into the application-layer input. Returns null when
         // the caller did not send a schedule field at all (so the update handler can distinguish
         // "no change" from "clear the schedule" — see UpdateFloorballTournamentHandler).
-        private static IReadOnlyList<PlayoffScheduleSlotInput>? MapPlayoffSchedule(List<PlayoffScheduleSlotRequest>? slots)
+        private static IReadOnlyList<FloorballPlayoffScheduleSlotInput>? MapPlayoffSchedule(List<PlayoffScheduleSlotRequest>? slots)
         {
             if (slots == null)
             {
                 return null;
             }
             return slots
-                .Select(s => new PlayoffScheduleSlotInput(s.Round, s.Order, s.ScheduledDateTime, s.Venue))
+                .Select(s => new FloorballPlayoffScheduleSlotInput(s.Round, s.Order, s.ScheduledDateTime, s.Venue))
                 .ToList();
         }
 
@@ -119,7 +119,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Creating floorball tournament: {name}", SanitizeForLog(request.Name));
 
-            IReadOnlyList<PlayoffScheduleSlotInput>? scheduleSlots = MapPlayoffSchedule(request.PlayoffSchedule);
+            IReadOnlyList<FloorballPlayoffScheduleSlotInput>? scheduleSlots = MapPlayoffSchedule(request.PlayoffSchedule);
 
             CreateFloorballTournamentCommand command = new CreateFloorballTournamentCommand(
                 request.Name,
@@ -175,7 +175,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Updating floorball tournament with ID: {competitionId}", competitionId);
 
-            IReadOnlyList<PlayoffScheduleSlotInput>? scheduleSlots = MapPlayoffSchedule(request.PlayoffSchedule);
+            IReadOnlyList<FloorballPlayoffScheduleSlotInput>? scheduleSlots = MapPlayoffSchedule(request.PlayoffSchedule);
 
             UpdateFloorballTournamentCommand command = new UpdateFloorballTournamentCommand(
                 competitionId,
@@ -243,7 +243,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Starting group stage for floorball tournament with ID: {competitionId}", competitionId);
 
-            StartTournamentGroupStageCommand command = new StartTournamentGroupStageCommand(competitionId);
+            StartFloorballTournamentGroupStageCommand command = new StartFloorballTournamentGroupStageCommand(competitionId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
             return HandleResult(result, "Tournament group stage started successfully", "Failed to start tournament group stage");
@@ -273,13 +273,13 @@ namespace WebAPI.Controllers.Floorball
                 competitionId,
                 request?.Slots?.Count ?? 0);
 
-            // Reuse the existing PlayoffScheduleSlotRequest → PlayoffScheduleSlotInput mapping
+            // Reuse the existing PlayoffScheduleSlotRequest → FloorballPlayoffScheduleSlotInput mapping
             // so the JSON shape stays consistent across create/update/schedule endpoints.
-            IReadOnlyList<PlayoffScheduleSlotInput> slots =
-                MapPlayoffSchedule(request?.Slots) ?? Array.Empty<PlayoffScheduleSlotInput>();
+            IReadOnlyList<FloorballPlayoffScheduleSlotInput> slots =
+                MapPlayoffSchedule(request?.Slots) ?? Array.Empty<FloorballPlayoffScheduleSlotInput>();
 
-            UpdateTournamentPlayoffScheduleCommand command =
-                new UpdateTournamentPlayoffScheduleCommand(competitionId, slots);
+            UpdateFloorballTournamentPlayoffScheduleCommand command =
+                new UpdateFloorballTournamentPlayoffScheduleCommand(competitionId, slots);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
             return HandleResult(result, "Tournament playoff schedule updated successfully", "Failed to update tournament playoff schedule");
@@ -300,7 +300,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Starting playoff stage for floorball tournament with ID: {competitionId}", competitionId);
 
-            StartTournamentPlayoffStageCommand command = new StartTournamentPlayoffStageCommand(competitionId);
+            StartFloorballTournamentPlayoffStageCommand command = new StartFloorballTournamentPlayoffStageCommand(competitionId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
             return HandleResult(result, "Tournament playoff stage started successfully", "Failed to start tournament playoff stage");
@@ -320,7 +320,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting playoff bracket for tournament: {competitionId}", competitionId);
 
-            GetTournamentPlayoffBracketQuery query = new GetTournamentPlayoffBracketQuery(competitionId);
+            GetFloorballTournamentPlayoffBracketQuery query = new GetFloorballTournamentPlayoffBracketQuery(competitionId);
             Result<FloorballPlayoffBracketDto> result = await _mediator.Send(query);
 
             return HandleResult(result, "Tournament playoff bracket retrieved successfully", "Failed to retrieve tournament playoff bracket");
@@ -341,7 +341,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Completing floorball tournament with ID: {competitionId}", competitionId);
 
-            CompleteTournamentCommand command = new CompleteTournamentCommand(competitionId);
+            CompleteFloorballTournamentCommand command = new CompleteFloorballTournamentCommand(competitionId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
             return HandleResult(result, "Floorball tournament completed successfully", "Failed to complete floorball tournament");
@@ -362,7 +362,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Cancelling floorball tournament with ID: {competitionId}", competitionId);
 
-            CancelTournamentCommand command = new CancelTournamentCommand(competitionId);
+            CancelFloorballTournamentCommand command = new CancelFloorballTournamentCommand(competitionId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
             return HandleResult(result, "Floorball tournament cancelled successfully", "Failed to cancel floorball tournament");
@@ -387,7 +387,7 @@ namespace WebAPI.Controllers.Floorball
                 SanitizeForLog(request.GroupName),
                 competitionId);
 
-            AddGroupToTournamentCommand command = new AddGroupToTournamentCommand(competitionId, request.GroupName);
+            AddFloorballGroupToTournamentCommand command = new AddFloorballGroupToTournamentCommand(competitionId, request.GroupName);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
             return HandleResult(result, "Group added to tournament successfully", "Failed to add group to tournament");
@@ -409,7 +409,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Removing group {groupId} from floorball tournament with ID: {competitionId}", groupId, competitionId);
 
-            RemoveGroupFromTournamentCommand command = new RemoveGroupFromTournamentCommand(competitionId, groupId);
+            RemoveFloorballGroupFromTournamentCommand command = new RemoveFloorballGroupFromTournamentCommand(competitionId, groupId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
             return HandleResult(result, "Group removed from tournament successfully", "Failed to remove group from tournament");
@@ -432,7 +432,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Adding team {teamId} to group {groupId} in tournament {competitionId}", request.TeamId, groupId, competitionId);
 
-            AddTeamToTournamentGroupCommand command = new AddTeamToTournamentGroupCommand(competitionId, groupId, request.TeamId, request.RosterMode);
+            AddFloorballTeamToTournamentGroupCommand command = new AddFloorballTeamToTournamentGroupCommand(competitionId, groupId, request.TeamId, request.RosterMode);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
             return HandleResult(result, "Team added to tournament group successfully", "Failed to add team to tournament group");
@@ -455,7 +455,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Removing team {teamId} from group {groupId} in tournament {competitionId}", teamId, groupId, competitionId);
 
-            RemoveTeamFromTournamentGroupCommand command = new RemoveTeamFromTournamentGroupCommand(competitionId, groupId, teamId);
+            RemoveFloorballTeamFromTournamentGroupCommand command = new RemoveFloorballTeamFromTournamentGroupCommand(competitionId, groupId, teamId);
             Result<FloorballTournamentDto> result = await _mediator.Send(command);
 
             return HandleResult(result, "Team removed from tournament group successfully", "Failed to remove team from tournament group");

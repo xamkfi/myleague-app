@@ -17,7 +17,12 @@ using Application.Features.Floorball.Statistics.Queries;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Domain.Enums.Floorball;
@@ -27,7 +32,7 @@ namespace Application.Features.Floorball.Statistics.Handlers;
 /// <summary>
 /// Handler for retrieving season statistics summary
 /// </summary>
-public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatisticsSummaryQuery, Result<FloorballSeasonStatisticsSummaryDto>>
+public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSeasonStatisticsSummaryQuery, Result<FloorballSeasonStatisticsSummaryDto>>
 {
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballPlayerRepository _floorballPlayerRepository;
@@ -61,31 +66,31 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
     }
 
     /// <summary>
-    /// Handles the GetSeasonStatisticsSummaryQuery request
+    /// Handles the GetFloorballSeasonStatisticsSummaryQuery request
     /// </summary>
     /// <param name="request">The query containing the season ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing season statistics summary DTO</returns>
-    public async Task<Result<FloorballSeasonStatisticsSummaryDto>> Handle(GetSeasonStatisticsSummaryQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballSeasonStatisticsSummaryDto>> Handle(GetFloorballSeasonStatisticsSummaryQuery request, CancellationToken cancellationToken)
     {
         try
         {
             _logger.LogInformation("Getting season statistics summary for Season: {SeasonId}", request.CompetitionId);
 
             // Get team standings
-            List<Domain.Entities.Floorball.FloorballTeamSeasonStatistics> teamStats = 
+            List<Domain.Entities.Floorball.Statistics.FloorballTeamSeasonStatistics> teamStats = 
                 (await _statisticsRepository.GetTeamStandingsAsync(request.CompetitionId, cancellationToken)).ToList();
 
             // Get top scorers
-            List<Domain.Entities.Floorball.FloorballPlayerSeasonStatistics> topScorers = 
+            List<Domain.Entities.Floorball.Statistics.FloorballPlayerSeasonStatistics> topScorers = 
                 (await _statisticsRepository.GetTopScorersAsync(request.CompetitionId, 10, cancellationToken)).ToList();
 
             // Get top assist leaders
-            List<Domain.Entities.Floorball.FloorballPlayerSeasonStatistics> topAssists = 
+            List<Domain.Entities.Floorball.Statistics.FloorballPlayerSeasonStatistics> topAssists = 
                 (await _statisticsRepository.GetTopAssistsAsync(request.CompetitionId, 10, cancellationToken)).ToList();
 
             // Get top goalies (minimum 5 games played)
-            List<Domain.Entities.Floorball.FloorballGoalieSeasonStatistics> topGoalies = 
+            List<Domain.Entities.Floorball.Statistics.FloorballGoalieSeasonStatistics> topGoalies = 
                 (await _statisticsRepository.GetTopGoaliesAsync(request.CompetitionId, 10, 1, cancellationToken)).ToList();
 
             if (teamStats.Count == 0)
@@ -96,8 +101,8 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             // For tournaments the team-standings table (W/L/T/Pts) must only reflect group-stage
             // matches — playoff results should not pollute the league-style table. Top scorers/
             // assists/goalies still cover the whole tournament span (those are individual awards).
-            bool isTournament = teamStats[0].Competition is Domain.Entities.Floorball.FloorballTournament;
-            List<Domain.Entities.Floorball.FloorballMatch> tournamentMatches = new List<Domain.Entities.Floorball.FloorballMatch>();
+            bool isTournament = teamStats[0].Competition is Domain.Entities.Floorball.Competitions.FloorballTournament;
+            List<Domain.Entities.Floorball.Matches.FloorballMatch> tournamentMatches = new List<Domain.Entities.Floorball.Matches.FloorballMatch>();
             Dictionary<Guid, TournamentTeamAggregate>? tournamentAggregates = null;
             if (isTournament)
             {
@@ -108,9 +113,9 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             // Build last-5 form per team. For tournaments we restrict to group-stage completed matches
             // so the badges on the standings table match the standings values themselves.
             Dictionary<Guid, FloorballGameResult[]> last5ByTeam = new Dictionary<Guid, FloorballGameResult[]>();
-            foreach (Domain.Entities.Floorball.FloorballTeamSeasonStatistics ts in teamStats)
+            foreach (Domain.Entities.Floorball.Statistics.FloorballTeamSeasonStatistics ts in teamStats)
             {
-                IEnumerable<Domain.Entities.Floorball.FloorballMatch> matches;
+                IEnumerable<Domain.Entities.Floorball.Matches.FloorballMatch> matches;
                 if (isTournament)
                 {
                     matches = tournamentMatches
@@ -153,10 +158,10 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
             if (playerIds.Any())
             {
                 // Get players to map player ID to person ID
-                List<Domain.Entities.Floorball.FloorballPlayer> players = new List<Domain.Entities.Floorball.FloorballPlayer>();
+                List<Domain.Entities.Floorball.Teams.FloorballPlayer> players = new List<Domain.Entities.Floorball.Teams.FloorballPlayer>();
                 foreach (Guid playerId in playerIds)
                 {
-                    Domain.Entities.Floorball.FloorballPlayer? player = await _floorballPlayerRepository.GetByIdAsync(playerId);
+                    Domain.Entities.Floorball.Teams.FloorballPlayer? player = await _floorballPlayerRepository.GetByIdAsync(playerId);
                     if (player != null)
                     {
                         players.Add(player);
@@ -173,7 +178,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
                     Dictionary<Guid, Person> personLookup = persons.ToDictionary(p => p.Id, p => p);
                     
                     // Create lookup from player ID to person
-                    foreach (Domain.Entities.Floorball.FloorballPlayer player in players)
+                    foreach (Domain.Entities.Floorball.Teams.FloorballPlayer player in players)
                     {
                         if (personLookup.TryGetValue(player.PersonId, out Person? person))
                         {
@@ -333,11 +338,11 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetSeasonStatis
     /// one row per team summing across all of its group-stage games.
     /// </summary>
     private static Dictionary<Guid, TournamentTeamAggregate> BuildTournamentGroupStageAggregates(
-        IEnumerable<Domain.Entities.Floorball.FloorballMatch> tournamentMatches)
+        IEnumerable<Domain.Entities.Floorball.Matches.FloorballMatch> tournamentMatches)
     {
         Dictionary<Guid, TournamentTeamAggregate> rows = new Dictionary<Guid, TournamentTeamAggregate>();
 
-        foreach (Domain.Entities.Floorball.FloorballMatch m in tournamentMatches)
+        foreach (Domain.Entities.Floorball.Matches.FloorballMatch m in tournamentMatches)
         {
             if (m.TournamentGroupId == null || m.Status != FloorballMatchStatus.Completed)
                 continue;

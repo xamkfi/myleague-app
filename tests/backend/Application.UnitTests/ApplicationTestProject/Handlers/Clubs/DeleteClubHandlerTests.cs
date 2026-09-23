@@ -1,7 +1,7 @@
 using Application.Common;
-using Application.Features.Common.Clubs.Commands;
-using Application.Features.Common.Clubs.Handlers;
-using Application.Features.Common.Deletion;
+using Application.Features.Common.Organization.Clubs.Commands;
+using Application.Features.Common.Organization.Clubs.Handlers;
+using Application.Features.Common.Organization.Deletion;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Football;

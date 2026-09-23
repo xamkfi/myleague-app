@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Application.Features.Common.Clubs.DTOs;
-using Application.Features.Common.Divisions.DTOs;
-using Application.Features.Common.Persons.DTOs;
+using Application.Features.Common.Organization.Clubs.DTOs;
+using Application.Features.Common.Organization.Divisions.DTOs;
+using Application.Features.Common.Organization.Persons.DTOs;
 using Application.Features.Football.Players.DTOs;
 using Application.Features.Football.Seasons.DTOs;
 using Application.Features.Football.Teams.DTOs;

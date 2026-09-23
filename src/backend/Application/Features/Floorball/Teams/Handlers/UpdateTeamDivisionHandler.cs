@@ -12,7 +12,12 @@ using Application.Features.Floorball.Statistics.DTOs;
 using Microsoft.Extensions.Logging;
 using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Entities.Common;
 using Application.Features.Floorball.Seasons.Mappings;
 using Application.Features.Floorball.Matches.Mappings;
@@ -27,7 +32,7 @@ namespace Application.Features.Floorball.Teams.Handlers
     /// <summary>
     /// Handler for updating a division of an existing team
     /// </summary>
-    public class UpdateTeamDivisionHandler : IRequestHandler<UpdateTeamDivisionCommand, Result<FloorballTeamDto>>
+    public class UpdateTeamDivisionHandler : IRequestHandler<UpdateFloorballTeamDivisionCommand, Result<FloorballTeamDto>>
     {
         private readonly ILogger<UpdateTeamDivisionHandler> _logger;
         private readonly IFloorballTeamRepository _floorballTeamRepository;
@@ -58,7 +63,7 @@ namespace Application.Features.Floorball.Teams.Handlers
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Result<FloorballTeamDto>> Handle(UpdateTeamDivisionCommand request, CancellationToken cancellationToken)
+        public async Task<Result<FloorballTeamDto>> Handle(UpdateFloorballTeamDivisionCommand request, CancellationToken cancellationToken)
         {
             try
             {

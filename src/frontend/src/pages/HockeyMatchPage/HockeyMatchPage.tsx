@@ -23,7 +23,7 @@ import {
 import { MatchPageShell, type MatchTabType } from '../../components/match';
 import { getTeamPath, getLeaguePath, getTournamentPath } from '../../utils/sportRoutes';
 import { getTeamSlug } from '../../utils/slugUtils';
-import '../MatchPage/MatchPage.scss';
+import '../FloorballMatchPage/FloorballMatchPage.scss';
 import '../../components/LeagueStanding/LeagueStanding.scss';
 
 function HockeyMatchPage() {

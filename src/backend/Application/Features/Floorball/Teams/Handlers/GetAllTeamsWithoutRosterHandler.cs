@@ -13,15 +13,20 @@ using Application.Features.Floorball.Players.Mappings;
 using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
-using Application.Features.Common.Users.Mappings;
-using Application.Features.Common.Persons.Mappings;
-using Application.Features.Common.Clubs.Mappings;
-using Application.Features.Common.Divisions.Mappings;
-using Application.Features.Common.News.Mappings;
+using Application.Features.Common.Organization.Users.Mappings;
+using Application.Features.Common.Organization.Persons.Mappings;
+using Application.Features.Common.Organization.Clubs.Mappings;
+using Application.Features.Common.Organization.Divisions.Mappings;
+using Application.Features.Common.Content.News.Mappings;
 using Application.Common;
 using Application.Services.Common;
 using Domain.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Floorball;
 using Domain.Enums.Common;
 using Domain.Repositories.Common;
@@ -40,8 +45,8 @@ namespace Application.Features.Floorball.Teams.Handlers;
 /// <summary>
 /// Handler for retrieving paginated floorball teams without roster with filtering support
 /// </summary>
-public class GetAllTeamsWithoutRosterHandler : BasePagedQueryHandler<GetAllTeamsWithoutRosterQuery, FloorballTeamSummaryDto>,
-    IRequestHandler<GetAllTeamsWithoutRosterQuery, Result<PagedResult<FloorballTeamSummaryDto>>>
+public class GetAllTeamsWithoutRosterHandler : BasePagedQueryHandler<GetAllFloorballTeamsWithoutRosterQuery, FloorballTeamSummaryDto>,
+    IRequestHandler<GetAllFloorballTeamsWithoutRosterQuery, Result<PagedResult<FloorballTeamSummaryDto>>>
 {
     private readonly IFloorballTeamRepository _teamRepository;
     private readonly IClubRepository _clubRepository;
@@ -64,12 +69,12 @@ public class GetAllTeamsWithoutRosterHandler : BasePagedQueryHandler<GetAllTeams
     }
 
     /// <summary>
-    /// Handles the GetAllTeamsWithoutRosterQuery request
+    /// Handles the GetAllFloorballTeamsWithoutRosterQuery request
     /// </summary>
     /// <param name="request">The query containing pagination and filtering parameters</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A paginated collection of floorball teams as summary DTOs wrapped in a Result</returns>
-    public async Task<Result<PagedResult<FloorballTeamSummaryDto>>> Handle(GetAllTeamsWithoutRosterQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<FloorballTeamSummaryDto>>> Handle(GetAllFloorballTeamsWithoutRosterQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -81,7 +86,7 @@ public class GetAllTeamsWithoutRosterHandler : BasePagedQueryHandler<GetAllTeams
 
             // Validate pagination parameters using base handler
             Result<PaginationValidationResult> validationResult = ValidatePaginationParameters(
-                request.Page, request.PageSize, GetAllTeamsWithoutRosterQuery.ResourceKey);
+                request.Page, request.PageSize, GetAllFloorballTeamsWithoutRosterQuery.ResourceKey);
             
             if (validationResult.IsFailure)
             {

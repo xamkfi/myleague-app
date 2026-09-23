@@ -2,7 +2,12 @@ using Application.Common;
 using Application.Features.Floorball.Tournaments.Commands;
 using Application.Features.Floorball.Tournaments.DTOs;
 using Application.Features.Floorball.Tournaments.Mappings;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Floorball;
 using Domain.ValueObjects.Floorball;
 using MediatR;
@@ -16,7 +21,7 @@ namespace Application.Features.Floorball.Tournaments.Handlers;
 /// targeted update. The domain entity enforces the lifecycle rule (no edits once the bracket
 /// has been generated) — see <see cref="FloorballTournament.SetPlayoffSchedule"/>.
 /// </summary>
-public class UpdateTournamentPlayoffScheduleHandler : IRequestHandler<UpdateTournamentPlayoffScheduleCommand, Result<FloorballTournamentDto>>
+public class UpdateTournamentPlayoffScheduleHandler : IRequestHandler<UpdateFloorballTournamentPlayoffScheduleCommand, Result<FloorballTournamentDto>>
 {
     private readonly IFloorballTournamentRepository _tournamentRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
@@ -32,7 +37,7 @@ public class UpdateTournamentPlayoffScheduleHandler : IRequestHandler<UpdateTour
         _logger = logger;
     }
 
-    public async Task<Result<FloorballTournamentDto>> Handle(UpdateTournamentPlayoffScheduleCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballTournamentDto>> Handle(UpdateFloorballTournamentPlayoffScheduleCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -48,7 +53,7 @@ public class UpdateTournamentPlayoffScheduleHandler : IRequestHandler<UpdateTour
             // SetPlayoffSchedule itself rejects duplicate (round, order) pairs and throws when the
             // tournament has already advanced past the planning window. Converting the inputs to
             // value objects first lets the domain run its own validation before we touch EF state.
-            List<PlayoffScheduleSlot> slots = (request.Slots ?? Array.Empty<PlayoffScheduleSlotInput>())
+            List<PlayoffScheduleSlot> slots = (request.Slots ?? Array.Empty<FloorballPlayoffScheduleSlotInput>())
                 .Select(s => new PlayoffScheduleSlot(s.Round, s.Order, s.ScheduledDateTime, s.Venue))
                 .ToList();
 

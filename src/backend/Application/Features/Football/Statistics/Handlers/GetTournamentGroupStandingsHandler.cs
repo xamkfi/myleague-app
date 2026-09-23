@@ -20,7 +20,7 @@ namespace Application.Features.Football.Statistics.Handlers;
 /// using the shared tournament standings calculator.
 /// </summary>
 public class GetTournamentGroupStandingsHandler
-    : IRequestHandler<GetTournamentGroupStandingsQuery, Result<List<FootballTournamentGroupStandingDto>>>
+    : IRequestHandler<GetFootballTournamentGroupStandingsQuery, Result<List<FootballTournamentGroupStandingDto>>>
 {
     private readonly IFootballTournamentRepository _tournamentRepository;
     private readonly IFootballMatchRepository _matchRepository;
@@ -40,7 +40,7 @@ public class GetTournamentGroupStandingsHandler
     }
 
     public async Task<Result<List<FootballTournamentGroupStandingDto>>> Handle(
-        GetTournamentGroupStandingsQuery request,
+        GetFootballTournamentGroupStandingsQuery request,
         CancellationToken cancellationToken)
     {
         try

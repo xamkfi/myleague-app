@@ -2,7 +2,12 @@ using Application.Features.Floorball.Tournaments.Commands;
 using Application.Features.Floorball.Tournaments.DTOs;
 using Application.Features.Floorball.Tournaments.Mappings;
 using Application.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Floorball;
 using Microsoft.Extensions.Logging;
 using MediatR;
@@ -15,7 +20,7 @@ namespace Application.Features.Floorball.Tournaments.Handlers;
 /// <summary>
 /// Handler for removing a group from a tournament
 /// </summary>
-public class RemoveGroupFromTournamentHandler : IRequestHandler<RemoveGroupFromTournamentCommand, Result<FloorballTournamentDto>>
+public class RemoveGroupFromTournamentHandler : IRequestHandler<RemoveFloorballGroupFromTournamentCommand, Result<FloorballTournamentDto>>
 {
     private readonly IFloorballTournamentRepository _tournamentRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
@@ -31,7 +36,7 @@ public class RemoveGroupFromTournamentHandler : IRequestHandler<RemoveGroupFromT
         _logger = logger;
     }
 
-    public async Task<Result<FloorballTournamentDto>> Handle(RemoveGroupFromTournamentCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballTournamentDto>> Handle(RemoveFloorballGroupFromTournamentCommand request, CancellationToken cancellationToken)
     {
         try
         {

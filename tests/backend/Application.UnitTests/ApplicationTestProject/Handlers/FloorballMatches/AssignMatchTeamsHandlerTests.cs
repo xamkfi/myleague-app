@@ -3,7 +3,12 @@ using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Matches.Handlers;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
@@ -89,7 +94,7 @@ public class AssignMatchTeamsHandlerTests
         _teamRepo.Setup(r => r.GetByIdAsync((Guid?)home.Id)).ReturnsAsync(home);
         _teamRepo.Setup(r => r.GetByIdAsync((Guid?)away.Id)).ReturnsAsync(away);
 
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(match.Id, home.Id, away.Id);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(match.Id, home.Id, away.Id);
 
         // Act
         Result<FloorballMatchDto> result = await _handler.Handle(command, CancellationToken.None);
@@ -114,7 +119,7 @@ public class AssignMatchTeamsHandlerTests
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
         _teamRepo.Setup(r => r.GetByIdAsync((Guid?)team.Id)).ReturnsAsync(team);
 
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(match.Id, team.Id, team.Id);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(match.Id, team.Id, team.Id);
 
         // Act
         Result<FloorballMatchDto> result = await _handler.Handle(command, CancellationToken.None);
@@ -142,7 +147,7 @@ public class AssignMatchTeamsHandlerTests
 
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
 
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(match.Id, away.Id, home.Id);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(match.Id, away.Id, home.Id);
 
         // Act
         Result<FloorballMatchDto> result = await _handler.Handle(command, CancellationToken.None);
@@ -159,7 +164,7 @@ public class AssignMatchTeamsHandlerTests
         Guid missingId = Guid.NewGuid();
         _matchRepo.Setup(r => r.GetByIdAsync(missingId)).ReturnsAsync((FloorballMatch?)null);
 
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(missingId, null, null);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(missingId, null, null);
 
         Result<FloorballMatchDto> result = await _handler.Handle(command, CancellationToken.None);
 
@@ -177,7 +182,7 @@ public class AssignMatchTeamsHandlerTests
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
         _teamRepo.Setup(r => r.GetByIdAsync((Guid?)missingTeamId)).ReturnsAsync((FloorballTeam?)null);
 
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(match.Id, missingTeamId, null);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(match.Id, missingTeamId, null);
 
         Result<FloorballMatchDto> result = await _handler.Handle(command, CancellationToken.None);
 
@@ -208,7 +213,7 @@ public class AssignMatchTeamsHandlerTests
         _matchRepo.Setup(r => r.GetByIdAsync(semiFinal.Id)).ReturnsAsync(semiFinal);
         _teamRepo.Setup(r => r.GetByIdAsync((Guid?)newHome.Id)).ReturnsAsync(newHome);
 
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(quarterFinal.Id, newHome.Id, null);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(quarterFinal.Id, newHome.Id, null);
 
         // Act
         Result<FloorballMatchDto> result = await _handler.Handle(command, CancellationToken.None);
@@ -250,7 +255,7 @@ public class AssignMatchTeamsHandlerTests
         _matchRepo.Setup(r => r.GetByIdAsync(semiFinal.Id)).ReturnsAsync(semiFinal);
         _teamRepo.Setup(r => r.GetByIdAsync((Guid?)newHome.Id)).ReturnsAsync(newHome);
 
-        AssignMatchTeamsCommand command = new AssignMatchTeamsCommand(quarterFinal.Id, newHome.Id, null);
+        AssignFloorballMatchTeamsCommand command = new AssignFloorballMatchTeamsCommand(quarterFinal.Id, newHome.Id, null);
 
         // Act
         Result<FloorballMatchDto> result = await _handler.Handle(command, CancellationToken.None);

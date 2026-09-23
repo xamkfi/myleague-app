@@ -10,7 +10,7 @@ namespace Application.Features.Floorball.Tournaments.Commands;
 /// shape mirrors the import JSON to keep validation simple; the handler converts each item
 /// to a <see cref="Domain.ValueObjects.Floorball.PlayoffScheduleSlot"/> before saving.
 /// </summary>
-public record PlayoffScheduleSlotInput(
+public record FloorballPlayoffScheduleSlotInput(
     FloorballPlayoffRound Round,
     int Order,
     DateTime ScheduledDateTime,
@@ -38,6 +38,6 @@ public record CreateFloorballTournamentCommand(
     int TeamsAdvancingPerGroup,
     bool HasPlayoffStage,
     bool HasThirdPlaceMatch,
-    IReadOnlyList<PlayoffScheduleSlotInput>? PlayoffSchedule = null,
+    IReadOnlyList<FloorballPlayoffScheduleSlotInput>? PlayoffSchedule = null,
     Domain.Enums.Common.TeamCategory TeamCategory = Domain.Enums.Common.TeamCategory.Adult,
     string? LogoUrl = null) : IRequest<Result<FloorballTournamentDto>>;

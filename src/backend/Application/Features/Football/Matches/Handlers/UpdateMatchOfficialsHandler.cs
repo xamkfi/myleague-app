@@ -8,9 +8,11 @@ using Domain.Repositories.Football;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
+using Domain.Entities.Football.Officials;
+
 namespace Application.Features.Football.Matches.Handlers;
 
-public class UpdateMatchOfficialsHandler : IRequestHandler<UpdateMatchOfficialsCommand, Result<FootballMatchDto>>
+public class UpdateMatchOfficialsHandler : IRequestHandler<UpdateFootballMatchOfficialsCommand, Result<FootballMatchDto>>
 {
     private readonly IFootballMatchRepository _matchRepository;
     private readonly IFootballRefereeRepository _refereeRepository;
@@ -29,7 +31,7 @@ public class UpdateMatchOfficialsHandler : IRequestHandler<UpdateMatchOfficialsC
         _logger = logger;
     }
 
-    public async Task<Result<FootballMatchDto>> Handle(UpdateMatchOfficialsCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FootballMatchDto>> Handle(UpdateFootballMatchOfficialsCommand request, CancellationToken cancellationToken)
     {
         try
         {

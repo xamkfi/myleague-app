@@ -18,9 +18,8 @@ using Application.Features.Floorball.Statistics.DTOs;
 
 namespace Application.Features.Floorball.Teams.Queries
 {
-    /// <summary>
-    /// Query for retrieving the names of floorball teams with an optional filter
-    /// </summary>
-    /// <param name="NameFilter"></param>
-    public record GetFloorballTeamNamesQuery(string? NameFilter = null) : IRequest<Result<List<FloorballTeamNameDto>>>;
+    public record GetFloorballTeamNamesQuery
+    (
+        string? NameFilter = null
+    ) : IRequest<Result<List<FloorballTeamNameDto>>>;
 }

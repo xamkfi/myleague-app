@@ -1,6 +1,8 @@
 using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Hockey.Teams;
 
+using Domain.Entities.Hockey.Officials;
+
 namespace Domain.Entities.Hockey.Matches;
 
 /// <summary>

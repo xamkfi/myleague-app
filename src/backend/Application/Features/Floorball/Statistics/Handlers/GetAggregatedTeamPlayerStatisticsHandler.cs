@@ -3,7 +3,12 @@ using Application.Features.Floorball.Statistics.DTOs;
 using Application.Features.Floorball.Statistics.Mappings;
 using Application.Features.Floorball.Statistics.Queries;
 using Domain.Entities.Common;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
@@ -17,7 +22,7 @@ namespace Application.Features.Floorball.Statistics.Handlers;
 /// tournament participation, etc. so the team page's player stats table shows the player's
 /// true totals — not just the slice from the current league season.
 /// </summary>
-public class GetAggregatedTeamPlayerStatisticsHandler : IRequestHandler<GetAggregatedTeamPlayerStatisticsQuery, Result<List<FloorballPlayerSeasonStatisticsDto>>>
+public class GetAggregatedTeamPlayerStatisticsHandler : IRequestHandler<GetAggregatedFloorballTeamPlayerStatisticsQuery, Result<List<FloorballPlayerSeasonStatisticsDto>>>
 {
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IPersonRepository _personRepository;
@@ -33,7 +38,7 @@ public class GetAggregatedTeamPlayerStatisticsHandler : IRequestHandler<GetAggre
         _logger = logger;
     }
 
-    public async Task<Result<List<FloorballPlayerSeasonStatisticsDto>>> Handle(GetAggregatedTeamPlayerStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<FloorballPlayerSeasonStatisticsDto>>> Handle(GetAggregatedFloorballTeamPlayerStatisticsQuery request, CancellationToken cancellationToken)
     {
         try
         {

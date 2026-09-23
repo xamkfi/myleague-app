@@ -1,7 +1,7 @@
 using Domain.Constants;
 using System;
 using System.Threading.Tasks;
-using Application.Features.Common.MatchTimer.Services;
+using Application.Features.Common.CrossCutting.MatchTimer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

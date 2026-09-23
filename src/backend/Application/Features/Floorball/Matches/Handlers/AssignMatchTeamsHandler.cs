@@ -2,7 +2,12 @@ using Application.Common;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Matches.Mappings;
-using Domain.Entities.Floorball;
+using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
+using Domain.Entities.Floorball.Matches.Events;
+using Domain.Entities.Floorball.Officials;
+using Domain.Entities.Floorball.Statistics;
+using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
 using MediatR;
@@ -11,7 +16,7 @@ using Microsoft.Extensions.Logging;
 namespace Application.Features.Floorball.Matches.Handlers;
 
 /// <summary>
-/// Handles <see cref="AssignMatchTeamsCommand"/> — sets or clears the home/away team slots on a
+/// Handles <see cref="AssignFloorballMatchTeamsCommand"/> — sets or clears the home/away team slots on a
 /// scheduled or postponed match, and propagates the change forward through the playoff bracket
 /// when applicable.
 /// </summary>
@@ -29,7 +34,7 @@ namespace Application.Features.Floorball.Matches.Handlers;
 ///         (defensive: the caller can run the command again after the missing match is created).</item>
 /// </list>
 /// </remarks>
-public class AssignMatchTeamsHandler : IRequestHandler<AssignMatchTeamsCommand, Result<FloorballMatchDto>>
+public class AssignMatchTeamsHandler : IRequestHandler<AssignFloorballMatchTeamsCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
@@ -48,7 +53,7 @@ public class AssignMatchTeamsHandler : IRequestHandler<AssignMatchTeamsCommand, 
         _logger = logger;
     }
 
-    public async Task<Result<FloorballMatchDto>> Handle(AssignMatchTeamsCommand request, CancellationToken cancellationToken)
+    public async Task<Result<FloorballMatchDto>> Handle(AssignFloorballMatchTeamsCommand request, CancellationToken cancellationToken)
     {
         try
         {
