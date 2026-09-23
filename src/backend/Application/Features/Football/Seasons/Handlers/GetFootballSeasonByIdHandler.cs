@@ -38,7 +38,7 @@ public class GetFootballSeasonByIdHandler : IRequestHandler<GetFootballSeasonByI
             _logger.LogInformation("Retrieving football season with ID: {SeasonId}", request.Id);
 
             FootballCompetition? season = await _seasonRepository.GetByIdAsync(request.Id);
-            if (season == null)
+            if (season == null || (season is FootballSeason footballSeason && !request.IncludeDrafts && !PublicCompetitionVisibility.IsPublicSeason(footballSeason)))
             {
                 _logger.LogWarning("Football season with ID {SeasonId} not found", request.Id);
                 return Result<FootballSeasonDto>.NotFound("FootballSeason", request.Id);

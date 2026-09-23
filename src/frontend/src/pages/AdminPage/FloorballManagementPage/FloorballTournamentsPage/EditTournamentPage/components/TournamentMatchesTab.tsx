@@ -79,17 +79,18 @@ const TournamentMatchesTab = ({ tournament, onTournamentUpdated }: TournamentMat
 
   const fetchStatusCounts = useCallback(async (): Promise<void> => {
     const baseFilters = {
+      includeDrafts: true,
       competitionId: tournamentId,
       competitionType: 'Tournament' as const,
       searchQuery: searchQuery.trim() || undefined,
     };
     try {
       const [totalRes, scheduledRes, inProgressRes, completedRes, cancelledRes] = await Promise.all([
-        floorballMatchService.getAll({ pageSize: 1, ...baseFilters }),
-        floorballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FloorballMatchStatus.Scheduled }),
-        floorballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FloorballMatchStatus.InProgress }),
-        floorballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FloorballMatchStatus.Completed }),
-        floorballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FloorballMatchStatus.Cancelled }),
+        floorballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters }),
+        floorballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FloorballMatchStatus.Scheduled }),
+        floorballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FloorballMatchStatus.InProgress }),
+        floorballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FloorballMatchStatus.Completed }),
+        floorballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FloorballMatchStatus.Cancelled }),
       ]);
 
       setStatusCounts({
@@ -109,7 +110,7 @@ const TournamentMatchesTab = ({ tournament, onTournamentUpdated }: TournamentMat
       setLoading(true);
       setError(null);
 
-      const response = await floorballMatchService.getAll({
+      const response = await floorballMatchService.getAll({ includeDrafts: true,
         page: 1,
         pageSize: PAGE_SIZE,
         competitionId: tournamentId,

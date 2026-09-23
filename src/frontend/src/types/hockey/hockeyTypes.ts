@@ -51,6 +51,7 @@ export interface GetPagedHockeyMatchesRequest {
   status?: HockeyMatchStatus | string;
   sortOrder?: 'asc' | 'desc' | string;
   searchQuery?: string;
+  includeDrafts?: boolean;
 }
 
 export interface GetHockeyMatchesRequest {

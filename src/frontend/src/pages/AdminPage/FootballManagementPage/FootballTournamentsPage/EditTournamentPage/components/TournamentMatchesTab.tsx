@@ -79,17 +79,18 @@ const TournamentMatchesTab = ({ tournament, onTournamentUpdated }: TournamentMat
 
   const fetchStatusCounts = useCallback(async (): Promise<void> => {
     const baseFilters = {
+      includeDrafts: true,
       competitionId: tournamentId,
       competitionType: 'Tournament' as const,
       searchQuery: searchQuery.trim() || undefined,
     };
     try {
       const [totalRes, scheduledRes, inProgressRes, completedRes, cancelledRes] = await Promise.all([
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Scheduled }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.InProgress }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Completed }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Cancelled }),
+        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters }),
+        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.Scheduled }),
+        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.InProgress }),
+        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.Completed }),
+        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.Cancelled }),
       ]);
 
       setStatusCounts({
@@ -109,7 +110,7 @@ const TournamentMatchesTab = ({ tournament, onTournamentUpdated }: TournamentMat
       setLoading(true);
       setError(null);
 
-      const response = await footballMatchService.getAll({
+      const response = await footballMatchService.getAll({ includeDrafts: true,
         page: 1,
         pageSize: PAGE_SIZE,
         competitionId: tournamentId,

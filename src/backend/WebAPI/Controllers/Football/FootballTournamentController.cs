@@ -48,11 +48,12 @@ public class FootballTournamentController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<List<FootballTournamentDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<List<FootballTournamentDto>>>> GetAllTournaments(
-        [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null)
+        [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null,
+        [FromQuery] bool includeDrafts = false)
     {
         _logger.LogInformation("Getting all football tournaments");
 
-        GetAllFootballTournamentsQuery query = new GetAllFootballTournamentsQuery(teamCategory);
+        GetAllFootballTournamentsQuery query = new GetAllFootballTournamentsQuery(teamCategory, IncludeDrafts(includeDrafts));
         Result<List<FootballTournamentDto>> result = await _mediator.Send(query);
 
         return HandleResult(result, "Football tournaments retrieved successfully", "Failed to retrieve football tournaments");
@@ -82,11 +83,13 @@ public class FootballTournamentController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<FootballTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ApiResponse<FootballTournamentDto>>> GetTournamentById(Guid competitionId)
+    public async Task<ActionResult<ApiResponse<FootballTournamentDto>>> GetTournamentById(
+        Guid competitionId,
+        [FromQuery] bool includeDrafts = false)
     {
         _logger.LogInformation("Getting football tournament with ID: {competitionId}", competitionId);
 
-        GetFootballTournamentByIdQuery query = new GetFootballTournamentByIdQuery(competitionId);
+        GetFootballTournamentByIdQuery query = new GetFootballTournamentByIdQuery(competitionId, IncludeDrafts(includeDrafts));
         Result<FootballTournamentDto> result = await _mediator.Send(query);
 
         return HandleResult(result, "Football tournament retrieved successfully", "Failed to retrieve football tournament");

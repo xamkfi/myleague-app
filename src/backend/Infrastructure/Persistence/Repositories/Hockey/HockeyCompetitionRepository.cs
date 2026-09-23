@@ -113,6 +113,7 @@ public class HockeyCompetitionRepository : IHockeyCompetitionRepository
         CancellationToken cancellationToken = default)
     {
         return await _dbContext.HockeySeasons
+            .Where(season => season.Status != HockeyCompetitionStatus.Draft)
             .Include(season => season.ContentBlocks)
             .OrderByDescending(season => season.Status == HockeyCompetitionStatus.Active)
             .ThenByDescending(season => season.StartDate)

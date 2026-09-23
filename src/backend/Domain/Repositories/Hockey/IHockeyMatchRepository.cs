@@ -58,5 +58,6 @@ public interface IHockeyMatchRepository
         string sortOrder = "desc",
         string? searchQuery = null,
         TeamCategory? teamCategory = null,
+        bool excludeDraftCompetitions = false,
         CancellationToken cancellationToken = default);
 }

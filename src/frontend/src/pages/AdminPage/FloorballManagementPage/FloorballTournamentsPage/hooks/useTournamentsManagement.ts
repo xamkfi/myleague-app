@@ -44,7 +44,7 @@ export const useTournamentsManagement = () => {
         setLoading(true);
       }
       setError(null);
-      const result = await floorballTournamentService.getAll();
+      const result = await floorballTournamentService.getAll(undefined, true);
       setTournaments(result.data ?? []);
     } catch (err) {
       setError(parseApiError(err));

@@ -54,11 +54,12 @@ namespace WebAPI.Controllers.Floorball
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<FloorballSeasonDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<List<FloorballSeasonDto>>>> GetAllSeasons()
+        public async Task<ActionResult<ApiResponse<List<FloorballSeasonDto>>>> GetAllSeasons(
+            [FromQuery] bool includeDrafts = false)
         {
             _logger.LogInformation("Getting all floorball seasons");
 
-            GetAllFloorballSeasonsQuery query = new GetAllFloorballSeasonsQuery();
+            GetAllFloorballSeasonsQuery query = new GetAllFloorballSeasonsQuery(IncludeDrafts(includeDrafts));
             Result<IEnumerable<FloorballSeasonDto>> result = await _mediator.Send(query);
 
             return HandleListResult(result, "Floorball seasons retrieved successfully", "Failed to retrieve floorball seasons");
@@ -72,12 +73,13 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse<List<FloorballSeasonYearDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<FloorballSeasonYearDto>>>> GetSeasonYears(
-            [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null)
+            [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null,
+            [FromQuery] bool includeDrafts = false)
         {
             _logger.LogInformation("Getting floorball season years for team category {TeamCategory}", teamCategory);
 
             Result<IEnumerable<FloorballSeasonYearDto>> result =
-                await _mediator.Send(new GetFloorballSeasonYearsQuery(teamCategory));
+                await _mediator.Send(new GetFloorballSeasonYearsQuery(teamCategory, IncludeDrafts(includeDrafts)));
 
             return HandleListResult(result, "Floorball season years retrieved successfully", "Failed to retrieve floorball season years");
         }
@@ -102,7 +104,8 @@ namespace WebAPI.Controllers.Floorball
                 request.Page,
                 request.PageSize,
                 request.SeasonYear,
-                request.TeamCategory);
+                request.TeamCategory,
+                IncludeDrafts(request.IncludeDrafts));
 
             Result<PagedResult<FloorballSeasonSummaryDto>> result = await _mediator.Send(query);
 
@@ -130,16 +133,19 @@ namespace WebAPI.Controllers.Floorball
         /// Gets a floorball season by ID
         /// </summary>
         /// <param name="id">Season ID</param>
+        /// <param name="includeDrafts">When true, a system administrator can load a season that is not publicly listed.</param>
         /// <returns>Season details</returns>
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<FloorballSeasonDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballSeasonDto>>> GetSeasonById(Guid id)
+        public async Task<ActionResult<ApiResponse<FloorballSeasonDto>>> GetSeasonById(
+            Guid id,
+            [FromQuery] bool includeDrafts = false)
         {
             _logger.LogInformation("Getting floorball season with ID: {id}", id);
 
-            GetFloorballSeasonByIdQuery query = new GetFloorballSeasonByIdQuery(id);
+            GetFloorballSeasonByIdQuery query = new GetFloorballSeasonByIdQuery(id, IncludeDrafts(includeDrafts));
             Result<FloorballSeasonDto> result = await _mediator.Send(query);
 
             return HandleResult(result, "Floorball season retrieved successfully", "Failed to retrieve floorball season");

@@ -51,7 +51,8 @@ public class HockeyMatchController : BaseApiController
                 request.EndDate,
                 request.Status,
                 request.SortOrder,
-                request.SearchQuery),
+                request.SearchQuery,
+                IncludeDrafts(request.IncludeDrafts)),
             cancellationToken);
         return HandlePaginatedResult(result, "Hockey matches retrieved successfully", "Failed to retrieve hockey matches");
     }
@@ -73,7 +74,8 @@ public class HockeyMatchController : BaseApiController
                 request.StartDate,
                 request.EndDate,
                 request.TeamCategory,
-                request.SortOrder),
+                request.SortOrder,
+                IncludeDrafts(request.IncludeDrafts)),
             cancellationToken);
         return HandlePaginatedResult(result, "Hockey matches retrieved successfully", "Failed to retrieve hockey matches");
     }
@@ -101,10 +103,11 @@ public class HockeyMatchController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<List<HockeyMatchDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<HockeyMatchDto>>>> GetByCompetition(
         Guid competitionId,
+        [FromQuery] bool includeDrafts = false,
         CancellationToken cancellationToken = default)
     {
         Result<IEnumerable<HockeyMatchDto>> result = await _mediator.Send(
-            new GetHockeyMatchesByCompetitionQuery(competitionId),
+            new GetHockeyMatchesByCompetitionQuery(competitionId, IncludeDrafts(includeDrafts)),
             cancellationToken);
         return HandleListResult(result, "Hockey matches retrieved successfully", "Failed to retrieve hockey matches");
     }

@@ -8,5 +8,5 @@ namespace Application.Features.Football.Seasons.Queries;
 /// <summary>
 /// Query for available football season years (newest first), optionally limited to one audience.
 /// </summary>
-public record GetFootballSeasonYearsQuery(TeamCategory? TeamCategory = null)
+public record GetFootballSeasonYearsQuery(TeamCategory? TeamCategory = null, bool IncludeDrafts = false)
     : IRequest<Result<IEnumerable<FootballSeasonYearDto>>>;

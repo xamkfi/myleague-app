@@ -34,6 +34,7 @@ export const hockeyMatchService = {
         status: params.status,
         sortOrder: params.sortOrder,
         searchQuery: params.searchQuery,
+        includeDrafts: params.includeDrafts ? true : undefined,
       })}`,
       'Failed to fetch hockey matches',
     ),
@@ -60,9 +61,9 @@ export const hockeyMatchService = {
   getById: (matchId: string): Promise<HockeyMatchDto> =>
     hockeyRequest<HockeyMatchDto>(`/HockeyMatch/${matchId}`, 'Failed to fetch hockey match'),
 
-  getByCompetition: (competitionId: string): Promise<HockeyMatchDto[]> =>
+  getByCompetition: (competitionId: string, includeDrafts = false): Promise<HockeyMatchDto[]> =>
     hockeyRequest<HockeyMatchDto[]>(
-      `/HockeyMatch/competition/${competitionId}`,
+      `/HockeyMatch/competition/${competitionId}${includeDrafts ? '?includeDrafts=true' : ''}`,
       'Failed to fetch hockey matches',
     ),
 

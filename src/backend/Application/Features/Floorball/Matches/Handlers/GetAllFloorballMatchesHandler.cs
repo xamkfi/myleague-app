@@ -106,6 +106,7 @@ public class GetAllFloorballMatchesHandler : BasePagedQueryHandler<GetAllFloorba
                 tournamentGroupId: request.TournamentGroupId,
                 competitionType: request.CompetitionType,
                 teamCategory: request.TeamCategory,
+                excludeDraftCompetitions: !request.IncludeDrafts,
                 cancellationToken: cancellationToken);
 
             // Check for cancellation after database operations

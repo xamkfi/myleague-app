@@ -301,6 +301,7 @@ export interface GetFootballMatchesRequest {
   tournamentGroupId?: string;
   competitionType?: FootballCompetitionType;
   teamCategory?: TeamCategory;
+  includeDrafts?: boolean;
 }
 
 export interface LineupPlayerRequest {

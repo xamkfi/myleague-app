@@ -97,6 +97,7 @@ public interface IFloorballCompetitionRepository
     /// </summary>
     Task<IReadOnlyList<FloorballSeasonDateSummary>> GetSeasonDateSummariesAsync(
         Domain.Enums.Common.TeamCategory? teamCategory = null,
+        bool includeDrafts = false,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -108,6 +109,7 @@ public interface IFloorballCompetitionRepository
         int? startYear,
         int? endYear,
         Domain.Enums.Common.TeamCategory? teamCategory = null,
+        bool includeDrafts = false,
         CancellationToken cancellationToken = default);
 
     Task<FloorballSeason?> GetSeasonWithContentBlocksAsync(

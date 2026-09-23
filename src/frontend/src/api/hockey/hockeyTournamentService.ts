@@ -2,7 +2,7 @@ import type {
   CreateHockeyTournamentRequest,
   HockeyTournamentDto,
 } from '../../types/hockey/hockeyTypes';
-import { hockeyRequest, jsonBody, withTeamCategory } from './hockeyApi';
+import { hockeyRequest, jsonBody, withIncludeDrafts, withTeamCategory } from './hockeyApi';
 
 const action = (
   tournamentId: string,
@@ -14,9 +14,9 @@ const action = (
   });
 
 export const hockeyTournamentService = {
-  getAll: (teamCategory?: string): Promise<HockeyTournamentDto[]> =>
+  getAll: (teamCategory?: string, includeDrafts = false): Promise<HockeyTournamentDto[]> =>
     hockeyRequest<HockeyTournamentDto[]>(
-      withTeamCategory('/HockeyTournament', teamCategory),
+      withIncludeDrafts(withTeamCategory('/HockeyTournament', teamCategory), includeDrafts),
       'Failed to fetch hockey tournaments',
     ),
 
@@ -26,8 +26,11 @@ export const hockeyTournamentService = {
       'Failed to fetch active hockey tournaments',
     ),
 
-  getById: (id: string): Promise<HockeyTournamentDto> =>
-    hockeyRequest<HockeyTournamentDto>(`/HockeyTournament/${id}`, 'Failed to fetch hockey tournament'),
+  getById: (id: string, includeDrafts = false): Promise<HockeyTournamentDto> =>
+    hockeyRequest<HockeyTournamentDto>(
+      withIncludeDrafts(`/HockeyTournament/${id}`, includeDrafts),
+      'Failed to fetch hockey tournament',
+    ),
 
   create: (data: CreateHockeyTournamentRequest): Promise<HockeyTournamentDto> =>
     hockeyRequest<HockeyTournamentDto>('/HockeyTournament', 'Failed to create hockey tournament', {

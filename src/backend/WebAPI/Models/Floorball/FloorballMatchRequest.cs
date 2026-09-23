@@ -59,6 +59,11 @@ public record GetFloorballMatchesRequest : PagedRequestBase
     /// Filters matches by the competition's TeamCategory.
     /// </summary>
     public Domain.Enums.Common.TeamCategory? TeamCategory { get; init; }
+
+    /// <summary>
+    /// When true, a system administrator also receives matches from draft competitions.
+    /// </summary>
+    public bool IncludeDrafts { get; init; }
 }
 
 /// <summary>

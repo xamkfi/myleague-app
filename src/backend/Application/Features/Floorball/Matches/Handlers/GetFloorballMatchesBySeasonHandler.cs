@@ -48,6 +48,10 @@ public class GetFloorballMatchesBySeasonHandler : IRequestHandler<GetFloorballMa
             _logger.LogInformation("Retrieving floorball matches for season: {SeasonId}", request.CompetitionId);
             
             IEnumerable<FloorballMatch> matches = await _matchRepository.GetByCompetitionIdAsync(request.CompetitionId);
+            if (!request.IncludeDrafts)
+            {
+                matches = matches.Where(match => PublicCompetitionVisibility.IsPublicMatch(match.Competition)).ToList();
+            }
             List<Guid> clubIds = FloorballMatchMapper.CollectClubIds(matches);
             Dictionary<Guid, Club> clubLookup = clubIds.Count == 0
                 ? new Dictionary<Guid, Club>()

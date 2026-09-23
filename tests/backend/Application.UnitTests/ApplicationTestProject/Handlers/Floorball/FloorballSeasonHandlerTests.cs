@@ -247,7 +247,7 @@ public class FloorballSeasonHandlerTests
     public async Task GetFloorballSeasonYears_WithTeamCategory_ReturnsOnlyThatAudiencesYears()
     {
         _competitionRepo
-            .Setup(r => r.GetSeasonDateSummariesAsync(TeamCategory.Youth, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetSeasonDateSummariesAsync(TeamCategory.Youth, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(
             [
                 new FloorballSeasonDateSummary(new DateTime(2025, 9, 1), new DateTime(2026, 4, 30), true),

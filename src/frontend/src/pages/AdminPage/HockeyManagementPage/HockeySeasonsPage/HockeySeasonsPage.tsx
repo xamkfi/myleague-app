@@ -32,7 +32,7 @@ function HockeySeasonsPage() {
       if (!options?.silent) {
         setLoading(true);
       }
-      setSeasons(await hockeySeasonService.getAll());
+      setSeasons(await hockeySeasonService.getAll(undefined, true));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('hockey.seasons.errors.loadFailed', 'Failed to load seasons'));

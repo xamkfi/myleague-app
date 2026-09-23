@@ -155,7 +155,7 @@ const EditTournamentPage = () => {
     if (!competitionId) return;
     try {
       setLoadingTournament(true);
-      const response = await floorballTournamentService.getById(competitionId);
+      const response = await floorballTournamentService.getById(competitionId, true);
       const data = response.data;
       setTournament(data);
       setFormData({
@@ -199,7 +199,7 @@ const EditTournamentPage = () => {
     try {
       setMatchesLoading(true);
       setMatchesError(null);
-      const response = await floorballMatchService.getBySeason(competitionId);
+      const response = await floorballMatchService.getBySeason(competitionId, true);
       setTournamentMatches(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       setTournamentMatches([]);

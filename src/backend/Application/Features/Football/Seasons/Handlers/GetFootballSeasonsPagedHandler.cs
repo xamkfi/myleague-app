@@ -54,6 +54,7 @@ public class GetFootballSeasonsPagedHandler
                 startYear,
                 endYear,
                 request.TeamCategory,
+                request.IncludeDrafts,
                 cancellationToken);
 
             List<FootballSeasonSummaryDto> items = paged.Items

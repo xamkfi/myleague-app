@@ -102,13 +102,13 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
         setLoadingCompetitions(true);
 
         if (isTournament) {
-          const response = await footballTournamentService.getAll();
+          const response = await footballTournamentService.getAll(undefined, true);
 
           if (response.success && response.data) {
             setTournaments(response.data);
           }
         } else {
-          const response = await footballSeasonService.getAll();
+          const response = await footballSeasonService.getAll(true);
 
           if (response.success && response.data) {
             setSeasons(response.data);
@@ -139,13 +139,13 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
         setLoadingCompetitionDetails(true);
 
         if (isTournament) {
-          const response = await footballTournamentService.getById(selectedCompetitionId);
+          const response = await footballTournamentService.getById(selectedCompetitionId, true);
 
           if (!cancelled && response.success && response.data) {
             setSelectedTournament(response.data);
           }
         } else {
-          const response = await footballSeasonService.getById(selectedCompetitionId);
+          const response = await footballSeasonService.getById(selectedCompetitionId, true);
 
           if (!cancelled && response.success && response.data) {
             setSelectedSeason(response.data);

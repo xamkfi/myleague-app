@@ -85,9 +85,9 @@ export const floorballSeasonService = {
   /**
    * Get all floorball seasons
    */
-  getAll: async (): Promise<ApiResponse<FloorballSeasonDto[]>> => {
+  getAll: async (includeDrafts = false): Promise<ApiResponse<FloorballSeasonDto[]>> => {
     try {
-      const url = `${API_URL}/FloorballSeason`;
+      const url = `${API_URL}/FloorballSeason${includeDrafts ? '?includeDrafts=true' : ''}`;
       
       const response = await authFetch(url);
       
@@ -195,9 +195,9 @@ export const floorballSeasonService = {
   /**
    * Get a floorball season by ID
    */
-  getById: async (id: string): Promise<ApiResponse<FloorballSeasonDto>> => {
+  getById: async (id: string, includeDrafts = false): Promise<ApiResponse<FloorballSeasonDto>> => {
     try {
-      const url = `${API_URL}/FloorballSeason/${id}`;
+      const url = `${API_URL}/FloorballSeason/${id}${includeDrafts ? '?includeDrafts=true' : ''}`;
       
       const response = await authFetch(url);
       

@@ -34,6 +34,7 @@ public class GetAllHockeyTournamentsHandler : IRequestHandler<GetAllHockeyTourna
                 await _competitionRepository.GetAllTournamentsAsync();
             IEnumerable<HockeyTournamentDto> dtos = tournaments
                 .Where(tournament => request.TeamCategory is null || tournament.TeamCategory == request.TeamCategory)
+                .Where(tournament => request.IncludeDrafts || PublicCompetitionVisibility.IsPublic(tournament))
                 .Select(HockeyCompetitionMapper.ToTournamentDto);
             return Result<IEnumerable<HockeyTournamentDto>>.Success(dtos);
         }

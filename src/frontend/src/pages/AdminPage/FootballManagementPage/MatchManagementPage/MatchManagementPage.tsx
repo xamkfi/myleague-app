@@ -138,15 +138,15 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
   const fetchStatusCounts = useCallback(async () => {
     const seasonFilter = selectedCompetitionId || undefined;
     const searchFilter = searchQuery.trim() || undefined;
-    const baseFilters = { competitionId: seasonFilter, searchQuery: searchFilter, competitionType };
+    const baseFilters = { includeDrafts: true, competitionId: seasonFilter, searchQuery: searchFilter, competitionType };
 
     try {
       const [totalRes, scheduledRes, inProgressRes, completedRes, cancelledRes] = await Promise.all([
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Scheduled }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.InProgress }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Completed }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Cancelled }),
+        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters }),
+        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.Scheduled }),
+        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.InProgress }),
+        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.Completed }),
+        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.Cancelled }),
       ]);
 
       setStatusCounts({
@@ -176,9 +176,9 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
       const statusFilter = TAB_TO_STATUS[activeTab];
 
       const [seasonsResponse, tournamentsResponse, matchesResponse] = await Promise.all([
-        isInitial && (mode === 'season' || mode === 'all') ? footballSeasonService.getAll() : Promise.resolve(null),
-        isInitial && (mode === 'tournament' || mode === 'all') ? footballTournamentService.getAll() : Promise.resolve(null),
-        footballMatchService.getAll({
+        isInitial && (mode === 'season' || mode === 'all') ? footballSeasonService.getAll(true) : Promise.resolve(null),
+        isInitial && (mode === 'tournament' || mode === 'all') ? footballTournamentService.getAll(undefined, true) : Promise.resolve(null),
+        footballMatchService.getAll({ includeDrafts: true,
           page: currentPage,
           pageSize,
           competitionId: seasonFilter,

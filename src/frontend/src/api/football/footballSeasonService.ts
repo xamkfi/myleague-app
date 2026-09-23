@@ -127,9 +127,9 @@ export const footballSeasonService = {
   /**
    * Get all Football seasons
    */
-  getAll: async (): Promise<ApiResponse<FootballSeasonDto[]>> => {
+  getAll: async (includeDrafts = false): Promise<ApiResponse<FootballSeasonDto[]>> => {
     try {
-      const url = `${API_URL}/FootballSeason`;
+      const url = `${API_URL}/FootballSeason${includeDrafts ? '?includeDrafts=true' : ''}`;
       
       const response = await authFetch(url);
       
@@ -237,9 +237,9 @@ export const footballSeasonService = {
   /**
    * Get a Football season by ID
    */
-  getById: async (id: string): Promise<ApiResponse<FootballSeasonDto>> => {
+  getById: async (id: string, includeDrafts = false): Promise<ApiResponse<FootballSeasonDto>> => {
     try {
-      const url = `${API_URL}/FootballSeason/${id}`;
+      const url = `${API_URL}/FootballSeason/${id}${includeDrafts ? '?includeDrafts=true' : ''}`;
       
       const response = await authFetch(url);
       

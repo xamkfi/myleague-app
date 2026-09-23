@@ -8,4 +8,4 @@ namespace Application.Features.Hockey.Tournaments.Queries;
 /// Query for retrieving a hockey tournament by id.
 /// </summary>
 /// <param name="Id">Tournament id</param>
-public record GetHockeyTournamentByIdQuery(Guid Id) : IRequest<Result<HockeyTournamentDto>>;
+public record GetHockeyTournamentByIdQuery(Guid Id, bool IncludeDrafts = false) : IRequest<Result<HockeyTournamentDto>>;

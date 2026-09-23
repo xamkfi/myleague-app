@@ -47,6 +47,7 @@ public class GetHockeyMatchesHandlerTests
                 "asc",
                 null,
                 TeamCategory.Youth,
+                It.IsAny<bool>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(PagedResult.Create(new List<HockeyMatch> { match }, 1, 1, 100));
 
@@ -89,6 +90,7 @@ public class GetHockeyMatchesHandlerTests
                 It.IsAny<string>(),
                 It.IsAny<string?>(),
                 It.IsAny<TeamCategory?>(),
+                It.IsAny<bool>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(PagedResult.Create(new List<HockeyMatch> { match }, 1, 1, 25));
 

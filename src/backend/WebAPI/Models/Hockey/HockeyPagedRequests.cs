@@ -84,6 +84,9 @@ public record GetPagedHockeyMatchesRequest : PagedRequestBase
 
     /// <summary>Optional venue search.</summary>
     public string? SearchQuery { get; init; }
+
+    /// <summary>When true, a system administrator also receives matches from draft competitions.</summary>
+    public bool IncludeDrafts { get; init; }
 }
 
 /// <summary>
@@ -102,4 +105,7 @@ public record GetHockeyMatchesRequest : PagedRequestBase
 
     /// <summary>Sort order for scheduled start time (<c>asc</c> or <c>desc</c>).</summary>
     public string SortOrder { get; init; } = "desc";
+
+    /// <summary>When true, a system administrator also receives matches from draft competitions.</summary>
+    public bool IncludeDrafts { get; init; }
 }

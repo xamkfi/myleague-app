@@ -30,7 +30,7 @@ public class GetHockeyTournamentByIdHandler : IRequestHandler<GetHockeyTournamen
         try
         {
             HockeyTournament? tournament = await _competitionRepository.GetTournamentByIdAsync(request.Id);
-            if (tournament is null)
+            if (tournament is null || (!request.IncludeDrafts && !PublicCompetitionVisibility.IsPublic(tournament)))
             {
                 return Result<HockeyTournamentDto>.NotFound("HockeyTournament", request.Id);
             }

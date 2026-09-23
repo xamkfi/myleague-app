@@ -54,7 +54,8 @@ public class FootballMatchesController : BaseApiController
             request.Status,
             request.TournamentGroupId,
             request.CompetitionType,
-            request.TeamCategory);
+            request.TeamCategory,
+            IncludeDrafts(request.IncludeDrafts));
 
         Result<PagedResult<FootballMatchDto>> result = await _mediator.Send(query, cancellationToken);
         return HandlePaginatedResult(result, "Football matches retrieved successfully", "Failed to retrieve football matches");
@@ -80,10 +81,13 @@ public class FootballMatchesController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<List<FootballMatchDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<FootballMatchDto>>>> GetMatchBySeason(
         Guid competitionId,
-        CancellationToken cancellationToken)
+        [FromQuery] bool includeDrafts = false,
+        CancellationToken cancellationToken = default)
     {
         Result<IEnumerable<FootballMatchDto>> result =
-            await _mediator.Send(new GetFootballMatchesBySeasonQuery(competitionId), cancellationToken);
+            await _mediator.Send(
+                new GetFootballMatchesBySeasonQuery(competitionId, IncludeDrafts(includeDrafts)),
+                cancellationToken);
         return HandleListResult(result, "Retrieved football matches with season ID successfully", "Failed to retrieve football matches");
     }
 

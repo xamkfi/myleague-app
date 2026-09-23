@@ -70,9 +70,9 @@ function EditHockeyTournamentPage() {
       return;
     }
     const [loaded, teamList, matchList, clubs] = await Promise.all([
-      hockeyTournamentService.getById(competitionId),
+      hockeyTournamentService.getById(competitionId, true),
       hockeyTeamService.getAll(),
-      hockeyMatchService.getByCompetition(competitionId).catch(() => [] as HockeyMatchDto[]),
+      hockeyMatchService.getByCompetition(competitionId, true).catch(() => [] as HockeyMatchDto[]),
       loadClubNameMap().catch(() => new Map<string, string>()),
     ]);
     setTournament(loaded);
@@ -474,12 +474,12 @@ function EditHockeyTournamentPage() {
                                 const ids = [...selectedTeamIds];
                                 setSelectedTeamIds(new Set());
                                 void run(async () => {
-                                  let latest = await hockeyTournamentService.getById(tournament.id);
+                                  let latest = await hockeyTournamentService.getById(tournament.id, true);
                                   for (const teamId of ids) {
                                     let competitionTeamId = latest.teams.find((item) => item.teamId === teamId)?.id;
                                     if (!competitionTeamId) {
                                       await hockeyTournamentService.addTeam(tournament.id, teamId);
-                                      latest = await hockeyTournamentService.getById(tournament.id);
+                                      latest = await hockeyTournamentService.getById(tournament.id, true);
                                       competitionTeamId = latest.teams.find((item) => item.teamId === teamId)?.id;
                                     }
                                     if (competitionTeamId && selectedGroupId) {
@@ -584,7 +584,7 @@ function EditHockeyTournamentPage() {
                                               onClick={() => {
                                                 void run(async () => {
                                                   await hockeyTournamentService.addTeam(tournament.id, team.id);
-                                                  const latest = await hockeyTournamentService.getById(tournament.id);
+                                                  const latest = await hockeyTournamentService.getById(tournament.id, true);
                                                   const competitionTeamId = latest.teams.find((item) => item.teamId === team.id)?.id;
                                                   if (competitionTeamId && selectedGroupId) {
                                                     await hockeyTournamentService.addTeamToGroup(tournament.id, selectedGroupId, competitionTeamId);

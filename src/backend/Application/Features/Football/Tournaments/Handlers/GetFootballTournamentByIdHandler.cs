@@ -38,7 +38,7 @@ public class GetFootballTournamentByIdHandler : IRequestHandler<GetFootballTourn
             _logger.LogInformation("Retrieving football tournament with ID: {TournamentId}", request.CompetitionId);
 
             FootballTournament? tournament = await _tournamentRepository.GetByIdWithGroupsAsync(request.CompetitionId);
-            if (tournament == null)
+            if (tournament == null || (!request.IncludeDrafts && !PublicCompetitionVisibility.IsPublicTournament(tournament)))
             {
                 _logger.LogWarning("Football tournament with ID {TournamentId} not found", request.CompetitionId);
                 return Result<FootballTournamentDto>.NotFound("FootballTournament", request.CompetitionId);

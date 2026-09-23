@@ -13,5 +13,5 @@ namespace Application.Features.Floorball.Seasons.Queries
     /// Query for retrieving a floorball season by id
     /// </summary>
     /// <param name="Id"></param>
-    public record GetFloorballSeasonByIdQuery(Guid Id) : IRequest<Result<FloorballSeasonDto>>;
+    public record GetFloorballSeasonByIdQuery(Guid Id, bool IncludeDrafts = false) : IRequest<Result<FloorballSeasonDto>>;
 }

@@ -12,5 +12,5 @@ namespace Application.Features.Floorball.Seasons.Queries
     /// <summary>
     /// Query for retrieving all floorball seasons
     /// </summary>
-    public record GetAllFloorballSeasonsQuery() : IRequest<Result<IEnumerable<FloorballSeasonDto>>>;
+    public record GetAllFloorballSeasonsQuery(bool IncludeDrafts = false) : IRequest<Result<IEnumerable<FloorballSeasonDto>>>;
 }

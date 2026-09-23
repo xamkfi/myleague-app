@@ -36,7 +36,7 @@ function CreateHockeyMatchPage({ mode = 'season' }: CreateHockeyMatchPageProps) 
     const load = async (): Promise<void> => {
       const [teamList, competitionList] = await Promise.all([
         hockeyTeamService.getAll(),
-        mode === 'tournament' ? hockeyTournamentService.getAll() : hockeySeasonService.getAll(),
+        mode === 'tournament' ? hockeyTournamentService.getAll(undefined, true) : hockeySeasonService.getAll(undefined, true),
       ]);
       setTeams(teamList.map((team) => ({ id: team.id, name: team.name })));
       setCompetitions(competitionList.map((item) => ({ id: item.id, name: item.name })));

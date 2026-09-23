@@ -62,6 +62,7 @@ public class GetFloorballSeasonsPagedHandler
                 startYear,
                 endYear,
                 request.TeamCategory,
+                request.IncludeDrafts,
                 cancellationToken);
 
             List<FloorballSeasonSummaryDto> items = paged.Items

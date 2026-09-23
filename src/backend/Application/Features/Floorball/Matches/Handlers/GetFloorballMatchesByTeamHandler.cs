@@ -67,6 +67,7 @@ namespace Application.Features.Floorball.Matches.Handlers
                     startDate: request.StartDate,
                     endDate: request.EndDate,
                     status: null,
+                    excludeDraftCompetitions: true,
                     cancellationToken: cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();

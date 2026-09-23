@@ -21,6 +21,7 @@ public interface IFootballCompetitionRepository
     Task<bool> ExistsAsync(Guid id);
     Task<IReadOnlyList<FootballSeasonDateSummary>> GetSeasonDateSummariesAsync(
         Domain.Enums.Common.TeamCategory? teamCategory = null,
+        bool includeDrafts = false,
         CancellationToken cancellationToken = default);
     Task<PagedResult<FootballSeason>> GetSeasonsPagedAsync(
         int page,
@@ -28,6 +29,7 @@ public interface IFootballCompetitionRepository
         int? startYear,
         int? endYear,
         Domain.Enums.Common.TeamCategory? teamCategory = null,
+        bool includeDrafts = false,
         CancellationToken cancellationToken = default);
 
     Task<FootballSeason?> GetSeasonWithContentBlocksAsync(

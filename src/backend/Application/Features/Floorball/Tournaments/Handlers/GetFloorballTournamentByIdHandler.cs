@@ -40,7 +40,7 @@ public class GetFloorballTournamentByIdHandler : IRequestHandler<GetFloorballTou
             _logger.LogInformation("Retrieving floorball tournament with ID: {TournamentId}", request.CompetitionId);
 
             FloorballTournament? tournament = await _tournamentRepository.GetByIdWithGroupsAsync(request.CompetitionId);
-            if (tournament == null)
+            if (tournament == null || (!request.IncludeDrafts && !PublicCompetitionVisibility.IsPublicTournament(tournament)))
             {
                 _logger.LogWarning("Floorball tournament with ID {TournamentId} not found", request.CompetitionId);
                 return Result<FloorballTournamentDto>.NotFound("FloorballTournament", request.CompetitionId);

@@ -40,8 +40,8 @@ function EditHockeyMatchPage() {
     const [loaded, teamList, seasons, tournaments] = await Promise.all([
       hockeyMatchService.getById(matchId),
       hockeyTeamService.getAll(),
-      hockeySeasonService.getAll(),
-      hockeyTournamentService.getAll(),
+      hockeySeasonService.getAll(undefined, true),
+      hockeyTournamentService.getAll(undefined, true),
     ]);
     setMatch(loaded);
     setTeams(teamList.map((team) => ({ id: team.id, name: team.name })));

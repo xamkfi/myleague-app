@@ -65,7 +65,8 @@ namespace WebAPI.Controllers.Floorball
                 request.Status,
                 request.TournamentGroupId,
                 request.CompetitionType,
-                request.TeamCategory
+                request.TeamCategory,
+                IncludeDrafts(request.IncludeDrafts)
             );
 
             Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query, cancellationToken);
@@ -101,12 +102,13 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetMatchBySeason(
             Guid competitionId,
-            CancellationToken cancellationToken)
+            [FromQuery] bool includeDrafts = false,
+            CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Getting floorball matches with season ID of: {competitionId}", competitionId);
 
             Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(
-                new GetFloorballMatchesBySeasonQuery(competitionId), cancellationToken);
+                new GetFloorballMatchesBySeasonQuery(competitionId, IncludeDrafts(includeDrafts)), cancellationToken);
 
             return HandleListResult(result, "Retrieved floorball matches with season ID successfully", "Failed to retrieve floorball matches");
         }

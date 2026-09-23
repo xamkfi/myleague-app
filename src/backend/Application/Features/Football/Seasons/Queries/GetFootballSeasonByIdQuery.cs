@@ -4,4 +4,4 @@ using MediatR;
 
 namespace Application.Features.Football.Seasons.Queries;
 
-public record GetFootballSeasonByIdQuery(Guid Id) : IRequest<Result<FootballSeasonDto>>;
+public record GetFootballSeasonByIdQuery(Guid Id, bool IncludeDrafts = false) : IRequest<Result<FootballSeasonDto>>;

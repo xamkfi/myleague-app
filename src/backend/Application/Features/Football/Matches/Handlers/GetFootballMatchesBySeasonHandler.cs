@@ -30,6 +30,10 @@ public class GetFootballMatchesBySeasonHandler
         try
         {
             IEnumerable<FootballMatch> matches = await _matchRepository.GetByCompetitionIdAsync(request.CompetitionId);
+            if (!request.IncludeDrafts)
+            {
+                matches = matches.Where(match => PublicCompetitionVisibility.IsPublicMatch(match.Competition)).ToList();
+            }
             IEnumerable<FootballMatchDto> matchDtos = FootballMatchMapper.ToDtos(matches);
             return Result<IEnumerable<FootballMatchDto>>.Success(matchDtos);
         }
