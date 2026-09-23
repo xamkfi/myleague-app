@@ -70,6 +70,30 @@ public class HockeyApiClient : ImportApiClient
         return await ReadDataOrNull<HockeyTeamDto>(resp, $"Create hockey team '{name}'");
     }
 
+    public async Task<bool> UpdateTeamPlacementAsync(
+        HockeyTeamDto team,
+        Guid divisionId,
+        TeamCategory teamCategory)
+    {
+        if (team.DivisionId == divisionId
+            && string.Equals(team.TeamCategory, teamCategory.ToString(), StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        HttpResponseMessage resp = await Http.PutAsJsonAsync($"api/HockeyTeam/{team.Id}", new
+        {
+            name = team.Name,
+            shortName = team.ShortName,
+            teamCategory = teamCategory.ToString(),
+            divisionId,
+            homeArena = team.HomeArena,
+            primaryJerseyColor = team.PrimaryJerseyColor,
+            secondaryJerseyColor = team.SecondaryJerseyColor,
+        });
+        return await ReadDataOrNull<HockeyTeamDto>(resp, $"Update hockey team '{team.Name}'") != null;
+    }
+
     public async Task<bool> AddPlayerToTeamAsync(
         Guid teamId,
         Guid playerId,
@@ -155,15 +179,34 @@ public class HockeyApiClient : ImportApiClient
         return await ReadDataOrNull<HockeySeasonDto>(resp, $"Get hockey season {seasonId}");
     }
 
-    public async Task<HockeySeasonDto?> CreateSeasonAsync(string name, DateTime startDate, DateTime endDate)
+    public async Task<HockeySeasonDto?> CreateSeasonAsync(
+        string name,
+        DateTime startDate,
+        DateTime endDate,
+        TeamCategory teamCategory = TeamCategory.Adult)
     {
         HttpResponseMessage resp = await Http.PostAsJsonAsync("api/HockeySeason", new
         {
             name,
             startDate = UtcDateTime(startDate),
             endDate = UtcDateTime(endDate),
+            teamCategory = teamCategory.ToString(),
         });
         return await ReadDataOrNull<HockeySeasonDto>(resp, $"Create hockey season '{name}'");
+    }
+
+    public async Task<HockeySeasonDto?> UpdateSeasonAsync(HockeySeasonDto season, TeamCategory teamCategory)
+    {
+        HttpResponseMessage resp = await Http.PutAsJsonAsync($"api/HockeySeason/{season.Id}", new
+        {
+            name = season.Name,
+            startDate = UtcDateTime(season.StartDate),
+            endDate = UtcDateTime(season.EndDate),
+            seasonCode = season.SeasonCode,
+            teamCategory = teamCategory.ToString(),
+            logoUrl = string.IsNullOrWhiteSpace(season.LogoUrl) ? null : season.LogoUrl,
+        });
+        return await ReadDataOrNull<HockeySeasonDto>(resp, $"Update hockey season '{season.Name}' category");
     }
 
     public async Task<bool> AddDivisionToSeasonAsync(Guid seasonId, Guid divisionId, string name)

@@ -21,18 +21,26 @@ import TeamNavbar from '../../components/TeamNavbar/TeamNavbar';
 import { isGuid } from '../../utils/sportRoutes';
 import { isNotFoundError } from '../../api/utils/isNotFoundError';
 
-function pickSeasonForDivision(
+function seasonIncludesTeam(season: FootballSeasonDto, teamId: string): boolean {
+  return season.seasonDivisions?.some((seasonDivision) => seasonDivision.teamIds?.includes(teamId)) ?? false;
+}
+
+function pickSeasonForTeam(
   seasons: FootballSeasonDto[],
-  divisionId: string,
+  teamId: string,
+  divisionId?: string | null,
   teamCategory?: string | null,
 ): FootballSeasonDto | null {
-  const inDivision = seasons.filter((season) =>
-    season.seasonDivisions?.some((seasonDivision) => seasonDivision.divisionId === divisionId),
-  );
-  const sameCategory = teamCategory
-    ? inDivision.filter((season) => season.teamCategory === teamCategory)
+  const memberOf = seasons.filter((season) => seasonIncludesTeam(season, teamId));
+  const inDivision = divisionId
+    ? seasons.filter((season) =>
+        season.seasonDivisions?.some((seasonDivision) => seasonDivision.divisionId === divisionId))
     : [];
-  const matching = sameCategory.length > 0 ? sameCategory : inDivision;
+  const pool = memberOf.length > 0 ? memberOf : inDivision;
+  const sameCategory = teamCategory
+    ? pool.filter((season) => season.teamCategory === teamCategory)
+    : [];
+  const matching = sameCategory.length > 0 ? sameCategory : pool;
   const active = matching.find((season) => season.isActive);
   if (active) {
     return active;
@@ -44,7 +52,8 @@ function pickSeasonForDivision(
 }
 
 async function getCurrentSeason(
-  divisionId: string,
+  teamId: string,
+  divisionId?: string | null,
   teamCategory?: string | null,
 ): Promise<FootballSeasonDto | null> {
   try {
@@ -53,8 +62,8 @@ async function getCurrentSeason(
       footballSeasonService.getAll(),
     ]);
 
-    return pickSeasonForDivision(activeSeasonsResponse.data ?? [], divisionId, teamCategory)
-      ?? pickSeasonForDivision(allSeasonsResponse.data ?? [], divisionId, teamCategory);
+    return pickSeasonForTeam(activeSeasonsResponse.data ?? [], teamId, divisionId, teamCategory)
+      ?? pickSeasonForTeam(allSeasonsResponse.data ?? [], teamId, divisionId, teamCategory);
   } catch (error) {
     console.error('Error fetching current season:', error);
     return null;
@@ -62,7 +71,8 @@ async function getCurrentSeason(
 }
 
 async function resolveSeason(
-  divisionId: string,
+  teamId: string,
+  divisionId: string | null | undefined,
   requestedSeasonId: string | null,
   teamCategory?: string | null,
 ): Promise<FootballSeasonDto | null> {
@@ -77,7 +87,7 @@ async function resolveSeason(
     }
   }
 
-  return getCurrentSeason(divisionId, teamCategory);
+  return getCurrentSeason(teamId, divisionId, teamCategory);
 }
 
 function FootballTeamPage() {
@@ -127,26 +137,22 @@ function FootballTeamPage() {
         if (foundTeam) {
           const teamResponse = await footballTeamService.getById(foundTeam.id);
 
-          if (teamResponse.divisionId) {
-            const currentSeasonData = await resolveSeason(
-              teamResponse.divisionId,
-              requestedSeasonId,
-              teamResponse.teamCategory,
-            );
-            setCurrentSeason(currentSeasonData);
-            setTeamStatistics(null);
-            setPlayerStatistics(null);
-            setSeasonSummary(null);
-            setFetchedTabs(new Set());
-            setTeam(
-              currentSeasonData
-                ? await footballTeamService.getById(foundTeam.id, currentSeasonData.id)
-                : teamResponse,
-            );
-          } else {
-            setCurrentSeason(null);
-            setTeam(teamResponse);
-          }
+          const currentSeasonData = await resolveSeason(
+            foundTeam.id,
+            teamResponse.divisionId,
+            requestedSeasonId,
+            teamResponse.teamCategory,
+          );
+          setCurrentSeason(currentSeasonData);
+          setTeamStatistics(null);
+          setPlayerStatistics(null);
+          setSeasonSummary(null);
+          setFetchedTabs(new Set());
+          setTeam(
+            currentSeasonData
+              ? await footballTeamService.getById(foundTeam.id, currentSeasonData.id)
+              : teamResponse,
+          );
         } else {
           setError('Team not found');
         }

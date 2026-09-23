@@ -51,6 +51,29 @@ public class FloorballApiClient : ImportApiClient
         return await ReadDataOrNull<FloorballTeamDto>(resp, $"Create team '{name}'");
     }
 
+    public async Task<bool> UpdateTeamPlacementAsync(
+        FloorballTeamDto team,
+        Guid divisionId,
+        TeamCategory teamCategory)
+    {
+        if (team.DivisionId == divisionId && team.TeamCategory == teamCategory)
+            return false;
+
+        HttpResponseMessage resp = await Http.PutAsJsonAsync($"api/floorballteam/{team.Id}", new
+        {
+            name = team.Name,
+            divisionId,
+            clubId = team.Club.Id,
+            homeArena = team.HomeArena,
+            primaryJerseyColor = team.PrimaryJerseyColor,
+            secondaryJerseyColor = team.SecondaryJerseyColor,
+            logoUrl = string.IsNullOrWhiteSpace(team.LogoUrl) ? null : team.LogoUrl,
+            category = teamCategory.ToString(),
+            shortName = team.ShortName,
+        });
+        return await ReadDataOrNull<FloorballTeamDto>(resp, $"Update team '{team.Name}'") != null;
+    }
+
     public Task<bool> AddPlayerToTeamAsync(
         Guid teamId,
         Guid playerId,
@@ -182,6 +205,14 @@ public class FloorballApiClient : ImportApiClient
             teamCategory = teamCategory.ToString(),
         });
         return await ReadDataOrNull<FloorballSeasonDto>(resp, $"Update season '{season.Name}' category");
+    }
+
+    public async Task<bool> AddDivisionToSeasonAsync(Guid seasonId, Guid divisionId)
+    {
+        HttpResponseMessage resp = await Http.PostAsync(
+            $"api/floorballseason/{seasonId}/divisions/{divisionId}",
+            null);
+        return await OkOrAlready(resp, "AddDivisionToSeason");
     }
 
     public async Task<bool> AddTeamToSeasonAsync(Guid seasonId, Guid teamId)

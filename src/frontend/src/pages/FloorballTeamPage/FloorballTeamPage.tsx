@@ -21,18 +21,26 @@ import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 import TeamNavbar from '../../components/TeamNavbar/TeamNavbar';
 import { isNotFoundError } from '../../api/utils/isNotFoundError';
 
-function pickSeasonForDivision(
+function seasonIncludesTeam(season: FloorballSeasonDto, teamId: string): boolean {
+  return season.seasonDivisions?.some((seasonDivision) => seasonDivision.teamIds?.includes(teamId)) ?? false;
+}
+
+function pickSeasonForTeam(
   seasons: FloorballSeasonDto[],
-  divisionId: string,
+  teamId: string,
+  divisionId?: string | null,
   teamCategory?: string | null,
 ): FloorballSeasonDto | null {
-  const inDivision = seasons.filter((season) =>
-    season.seasonDivisions?.some((seasonDivision) => seasonDivision.divisionId === divisionId),
-  );
-  const sameCategory = teamCategory
-    ? inDivision.filter((season) => season.teamCategory === teamCategory)
+  const memberOf = seasons.filter((season) => seasonIncludesTeam(season, teamId));
+  const inDivision = divisionId
+    ? seasons.filter((season) =>
+        season.seasonDivisions?.some((seasonDivision) => seasonDivision.divisionId === divisionId))
     : [];
-  const matching = sameCategory.length > 0 ? sameCategory : inDivision;
+  const pool = memberOf.length > 0 ? memberOf : inDivision;
+  const sameCategory = teamCategory
+    ? pool.filter((season) => season.teamCategory === teamCategory)
+    : [];
+  const matching = sameCategory.length > 0 ? sameCategory : pool;
   const active = matching.find((season) => season.isActive);
   if (active) {
     return active;
@@ -96,10 +104,18 @@ function FloorballTeamPage() {
             ? allSeasons.find((season) => season.id === requestedSeasonId) ?? null
             : null;
           const currentSeasonData = requestedSeason
-            ?? (foundTeam.divisionId
-              ? pickSeasonForDivision(activeSeasonsResponse.data ?? [], foundTeam.divisionId, teamDetails.teamCategory)
-                ?? pickSeasonForDivision(allSeasons, foundTeam.divisionId, teamDetails.teamCategory)
-              : null);
+            ?? pickSeasonForTeam(
+              activeSeasonsResponse.data ?? [],
+              foundTeam.id,
+              foundTeam.divisionId,
+              teamDetails.teamCategory,
+            )
+            ?? pickSeasonForTeam(
+              allSeasons,
+              foundTeam.id,
+              foundTeam.divisionId,
+              teamDetails.teamCategory,
+            );
           setCurrentSeason(currentSeasonData);
           setTeamStatistics(null);
           setPlayerStatistics(null);
