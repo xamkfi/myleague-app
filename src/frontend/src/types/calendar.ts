@@ -28,13 +28,10 @@ export interface CalendarSeasonOption {
 
 export interface CalendarFilters {
   sports: CalendarSport[];
-  statuses: string[];
   competitionId: string | null;
   teamSearch: string;
   selectedDay: number | null;
 }
-
-export const CALENDAR_STATUSES = ['scheduled', 'live', 'completed'] as const;
 
 export function calendarSportLabelKey(sport: string): string {
   if (sport === 'icehockey') {
@@ -45,7 +42,6 @@ export function calendarSportLabelKey(sport: string): string {
 
 export const DEFAULT_CALENDAR_FILTERS: CalendarFilters = {
   sports: [],
-  statuses: [],
   competitionId: null,
   teamSearch: '',
   selectedDay: null,

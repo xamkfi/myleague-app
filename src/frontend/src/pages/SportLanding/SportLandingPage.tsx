@@ -9,6 +9,7 @@ import SeasonStandingsCard, {
 } from '../../components/SeasonStandingsCard/SeasonStandingsCard';
 import SeasonInfoCards from '../../components/SeasonInfoCards/SeasonInfoCards';
 import { TeamLink } from '../../components/SportLinks';
+import TeamLogoMark from '../../components/TeamLogoMark/TeamLogoMark';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { getMatchPath, type SportKind } from '../../utils/sportRoutes';
 import SportIcon from '../../components/SportIcon/SportIcon';
@@ -96,21 +97,6 @@ interface SportLandingPageProps {
   onPageChange: (page: number) => void;
 }
 
-function TeamLogo({ logo }: { logo?: string | null }) {
-  return logo && logo.trim() !== '' ? (
-    <img
-      className="fb-team-logo"
-      src={logo}
-      alt=""
-      onError={(event) => {
-        (event.target as HTMLImageElement).style.visibility = 'hidden';
-      }}
-    />
-  ) : (
-    <span className="fb-team-logo fb-team-logo--empty" aria-hidden="true" />
-  );
-}
-
 export default function SportLandingPage({
   sport,
   title,
@@ -188,7 +174,12 @@ export default function SportLandingPage({
                 </span>
                 <span className="fb-upcoming-card__teams">
                   <span className="fb-upcoming-card__team">
-                    <TeamLogo logo={match.homeTeamLogo} />
+                    <TeamLogoMark
+                      logo={match.homeTeamLogo}
+                      name={match.homeTeamName ?? ''}
+                      imageClassName="fb-team-logo"
+                      fallbackClassName="fb-team-logo fb-team-logo--empty"
+                    />
                     {match.homeTeamId && match.homeTeamName ? (
                       <TeamLink
                         sport={sport}
@@ -200,7 +191,12 @@ export default function SportLandingPage({
                     )}
                   </span>
                   <span className="fb-upcoming-card__team">
-                    <TeamLogo logo={match.awayTeamLogo} />
+                    <TeamLogoMark
+                      logo={match.awayTeamLogo}
+                      name={match.awayTeamName ?? ''}
+                      imageClassName="fb-team-logo"
+                      fallbackClassName="fb-team-logo fb-team-logo--empty"
+                    />
                     {match.awayTeamId && match.awayTeamName ? (
                       <TeamLink
                         sport={sport}

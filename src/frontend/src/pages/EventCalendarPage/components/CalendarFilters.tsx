@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CalendarFilters as FiltersType, CalendarSeasonOption, CalendarSport } from '../../../types/calendar';
-import { CALENDAR_SPORTS, CALENDAR_STATUSES, calendarSportLabelKey } from '../../../types/calendar';
+import { CALENDAR_SPORTS, calendarSportLabelKey } from '../../../types/calendar';
 import SportIcon from '../../../components/SportIcon/SportIcon';
 import { seasonsMatchingSportFilter } from '../utils/applyCalendarFilters';
 import './CalendarFilters.scss';
@@ -19,7 +19,6 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
 
   const activeCount = [
     filters.sports.length > 0,
-    filters.statuses.length > 0,
     filters.competitionId !== null,
     filters.teamSearch.length > 0,
   ].filter(Boolean).length;
@@ -37,13 +36,6 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
     });
   };
 
-  const toggleStatus = (status: string) => {
-    const next = filters.statuses.includes(status)
-      ? filters.statuses.filter((s) => s !== status)
-      : [...filters.statuses, status];
-    onFiltersChange({ ...filters, statuses: next });
-  };
-
   const handleSeasonChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onFiltersChange({ ...filters, competitionId: e.target.value || null });
   };
@@ -56,19 +48,12 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
     onFiltersChange({
       ...filters,
       sports: [],
-      statuses: [],
       competitionId: null,
       teamSearch: '',
     });
   };
 
   const hasActiveFilters = activeCount > 0;
-
-  const statusLabels: Record<string, string> = {
-    scheduled: t('eventCalendarPage.status.scheduled'),
-    live: t('eventCalendarPage.status.live'),
-    completed: t('eventCalendarPage.status.completed'),
-  };
 
   return (
     <div className="calendar-filters">
@@ -109,28 +94,7 @@ export default function CalendarFilters({ filters, onFiltersChange, seasons }: C
           </div>
         </div>
 
-        <div className="calendar-filters__section">
-          <label className="calendar-filters__label">
-            {t('eventCalendarPage.filters.status')}
-          </label>
-          <div className="calendar-filters__chips">
-            {CALENDAR_STATUSES.map((status) => (
-              <button
-                key={status}
-                type="button"
-                className={`calendar-filters__chip ${
-                  filters.statuses.includes(status) ? 'calendar-filters__chip--active' : ''
-                }`}
-                onClick={() => toggleStatus(status)}
-              >
-                <span className={`calendar-filters__chip-dot calendar-filters__chip-dot--${status}`} />
-                {statusLabels[status]}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {visibleSeasons.length > 0 && (
+        {filters.sports.length > 0 && visibleSeasons.length > 0 && (
           <div className="calendar-filters__section">
             <label className="calendar-filters__label" htmlFor="calendar-season-filter">
               {t('eventCalendarPage.filters.season')}

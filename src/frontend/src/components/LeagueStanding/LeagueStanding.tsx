@@ -18,6 +18,7 @@ import { useFloorballTeamsData, useFootballTeamsData } from '../../hooks/useTeam
 import { createTeamSlug } from '../../utils/slugUtils';
 import { getPlayerPath, getTeamPath, type SportKind } from '../../utils/sportRoutes';
 import { TeamLink, PlayerLink } from '../SportLinks';
+import TeamLogoMark from '../TeamLogoMark/TeamLogoMark';
 
 type StandingView = 'standings' | 'scorers' | 'assists' | 'goalies';
 type LeagueSeasonSummary = FloorballSeasonStatisticsSummaryDto | FootballSeasonStatisticsSummaryDto;
@@ -229,19 +230,12 @@ export default function LeagueStanding({
                 <td className="rank-col">{rank}</td>
                 <td className="team-col">
                   <div className="team-info">
-                    {team.teamLogo && team.teamLogo.trim() !== '' ? (
-                      <img
-                        className="logo-image"
-                        src={team.teamLogo}
-                        alt={team.teamName}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <div className="logo-empty"></div>
-                    )}
+                    <TeamLogoMark
+                      logo={team.teamLogo}
+                      name={team.teamName}
+                      imageClassName="logo-image"
+                      fallbackClassName="logo-empty"
+                    />
                     <TeamLink
                       sport={sport}
                       teamId={team.teamId}

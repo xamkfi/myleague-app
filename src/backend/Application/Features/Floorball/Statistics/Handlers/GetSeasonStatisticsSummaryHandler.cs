@@ -112,6 +112,17 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
 
             // Build last-5 form per team. For tournaments we restrict to group-stage completed matches
             // so the badges on the standings table match the standings values themselves.
+            List<Domain.Entities.Floorball.Matches.FloorballMatch> seasonCompletedMatches =
+                new List<Domain.Entities.Floorball.Matches.FloorballMatch>();
+            if (!isTournament)
+            {
+                List<Guid> formTeamIds = teamStats.Select(ts => ts.TeamId).Distinct().ToList();
+                seasonCompletedMatches = (await _floorballMatchRepository.GetLastCompletedForTeamsAsync(
+                    request.CompetitionId,
+                    formTeamIds,
+                    cancellationToken)).ToList();
+            }
+
             Dictionary<Guid, FloorballGameResult[]> last5ByTeam = new Dictionary<Guid, FloorballGameResult[]>();
             foreach (Domain.Entities.Floorball.Statistics.FloorballTeamSeasonStatistics ts in teamStats)
             {
@@ -127,7 +138,9 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
                 }
                 else
                 {
-                    matches = await _floorballMatchRepository.GetLastCompletedByTeamAsync(ts.TeamId, request.CompetitionId, 5);
+                    matches = seasonCompletedMatches
+                        .Where(m => m.HomeTeamId == ts.TeamId || m.AwayTeamId == ts.TeamId)
+                        .Take(5);
                 }
 
                 FloorballGameResult[] form = matches.Select(m =>
@@ -149,24 +162,17 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
             Dictionary<Guid, Person> playerPersonLookup = new Dictionary<Guid, Person>();
             
             // Get all unique player IDs from top scorers, assists, and goalies
-            IEnumerable<Guid> playerIds = topScorers.Select(ps => ps.PlayerId)
+            List<Guid> playerIds = topScorers.Select(ps => ps.PlayerId)
                 .Concat(topAssists.Select(ps => ps.PlayerId))
                 .Concat(topGoalies.Select(gs => gs.PlayerId))
                 .Distinct()
                 .ToList();
 
-            if (playerIds.Any())
+            if (playerIds.Count > 0)
             {
-                // Get players to map player ID to person ID
-                List<Domain.Entities.Floorball.Teams.FloorballPlayer> players = new List<Domain.Entities.Floorball.Teams.FloorballPlayer>();
-                foreach (Guid playerId in playerIds)
-                {
-                    Domain.Entities.Floorball.Teams.FloorballPlayer? player = await _floorballPlayerRepository.GetByIdAsync(playerId);
-                    if (player != null)
-                    {
-                        players.Add(player);
-                    }
-                }
+                Dictionary<Guid, Domain.Entities.Floorball.Teams.FloorballPlayer> playersById =
+                    await _floorballPlayerRepository.GetByIdsAsync(playerIds, cancellationToken);
+                List<Domain.Entities.Floorball.Teams.FloorballPlayer> players = playersById.Values.ToList();
 
                 // Extract person IDs from players
                 List<Guid> personIds = players.Select(p => p.PersonId).Distinct().ToList();

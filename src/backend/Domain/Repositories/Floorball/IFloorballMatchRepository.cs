@@ -219,4 +219,13 @@ public interface IFloorballMatchRepository
     /// <param name="count"></param>
     /// <returns></returns>
     Task<IEnumerable<FloorballMatch>> GetLastCompletedByTeamAsync(Guid teamId, Guid? competitionId = null, int count = 5);
+
+    /// <summary>
+    /// Completed matches in one competition that involve any of the given teams, newest first.
+    /// Callers keep the latest matches per team.
+    /// </summary>
+    Task<IEnumerable<FloorballMatch>> GetLastCompletedForTeamsAsync(
+        Guid competitionId,
+        IEnumerable<Guid> teamIds,
+        CancellationToken cancellationToken = default);
 } 

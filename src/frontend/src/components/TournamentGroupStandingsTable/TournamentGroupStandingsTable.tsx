@@ -6,6 +6,7 @@ import { useFloorballTeamsData } from '../../hooks/useTeamsData';
 import { createTeamSlug } from '../../utils/slugUtils';
 import { getTeamPath, type SportKind } from '../../utils/sportRoutes';
 import { TeamLink } from '../SportLinks';
+import TeamLogoMark from '../TeamLogoMark/TeamLogoMark';
 import '../LeagueStanding/LeagueStanding.scss';
 import './TournamentGroupStandingsTable.scss';
 
@@ -156,19 +157,12 @@ export default function TournamentGroupStandingsTable({ groupId, groupName, spor
                   </td>
                   <td className="team-col">
                     <div className="team-info">
-                      {row.teamLogo && row.teamLogo.trim() !== '' ? (
-                        <img
-                          className="logo-image"
-                          src={row.teamLogo}
-                          alt={row.teamName}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="logo-empty"></div>
-                      )}
+                      <TeamLogoMark
+                        logo={row.teamLogo}
+                        name={row.teamName}
+                        imageClassName="logo-image"
+                        fallbackClassName="logo-empty"
+                      />
                       <TeamLink
                         sport={sport}
                         teamId={row.teamId}

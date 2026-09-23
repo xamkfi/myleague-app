@@ -5,24 +5,42 @@ import type { FootballMatchDto, FootballTeam } from '../../types/football/footba
 import { footballTeamNameSearchService } from '../../api/football/footballTeamNameSearchService';
 import { footballTeamService } from '../../api/football/footballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
-import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
+import { teamMarkLabel } from '../../utils/teamMarkLabel';
 import './FootballTeamPage.scss';
 import { footballMatchService } from '../../api/football/footballMatchService';
 import { footballStatisticsService, type FootballTeamSeasonStatisticsDto, type FootballSeasonStatisticsSummaryDto, type FootballPlayerSeasonStatisticsDto } from '../../api/football/footballStatistics';
 import { footballSeasonService, type FootballSeasonDto } from '../../api/football/footballSeasonService';
-import TeamNavbar from './components/TeamNavbar';
+import CompetitionHero from '../../components/CompetitionHero/CompetitionHero';
 import ResultsSection from './components/ResultsSection';
 import { useTranslation } from 'react-i18next';
 import RosterSection from './components/RosterSection';
 import SummarySection from './components/SummarySection';
 import Statistics from './components/Statistics';
 import FootballLeagueStanding from '../FootballLeaguePage/components/FootballLeagueStanding';
+import TeamNavbar from '../../components/TeamNavbar/TeamNavbar';
 import { isGuid } from '../../utils/sportRoutes';
+import { isNotFoundError } from '../../api/utils/isNotFoundError';
 
-function pickSeasonForDivision(seasons: FootballSeasonDto[], divisionId: string): FootballSeasonDto | null {
-  const matching = seasons.filter((season) =>
-    season.seasonDivisions?.some((seasonDivision) => seasonDivision.divisionId === divisionId),
-  );
+function seasonIncludesTeam(season: FootballSeasonDto, teamId: string): boolean {
+  return season.seasonDivisions?.some((seasonDivision) => seasonDivision.teamIds?.includes(teamId)) ?? false;
+}
+
+function pickSeasonForTeam(
+  seasons: FootballSeasonDto[],
+  teamId: string,
+  divisionId?: string | null,
+  teamCategory?: string | null,
+): FootballSeasonDto | null {
+  const memberOf = seasons.filter((season) => seasonIncludesTeam(season, teamId));
+  const inDivision = divisionId
+    ? seasons.filter((season) =>
+        season.seasonDivisions?.some((seasonDivision) => seasonDivision.divisionId === divisionId))
+    : [];
+  const pool = memberOf.length > 0 ? memberOf : inDivision;
+  const sameCategory = teamCategory
+    ? pool.filter((season) => season.teamCategory === teamCategory)
+    : [];
+  const matching = sameCategory.length > 0 ? sameCategory : pool;
   const active = matching.find((season) => season.isActive);
   if (active) {
     return active;
@@ -33,15 +51,19 @@ function pickSeasonForDivision(seasons: FootballSeasonDto[], divisionId: string)
     .sort((left, right) => new Date(right.startDate).getTime() - new Date(left.startDate).getTime())[0] ?? null;
 }
 
-async function getCurrentSeason(divisionId: string): Promise<FootballSeasonDto | null> {
+async function getCurrentSeason(
+  teamId: string,
+  divisionId?: string | null,
+  teamCategory?: string | null,
+): Promise<FootballSeasonDto | null> {
   try {
     const [activeSeasonsResponse, allSeasonsResponse] = await Promise.all([
       footballSeasonService.getActive(),
       footballSeasonService.getAll(),
     ]);
 
-    return pickSeasonForDivision(activeSeasonsResponse.data ?? [], divisionId)
-      ?? pickSeasonForDivision(allSeasonsResponse.data ?? [], divisionId);
+    return pickSeasonForTeam(activeSeasonsResponse.data ?? [], teamId, divisionId, teamCategory)
+      ?? pickSeasonForTeam(allSeasonsResponse.data ?? [], teamId, divisionId, teamCategory);
   } catch (error) {
     console.error('Error fetching current season:', error);
     return null;
@@ -49,8 +71,10 @@ async function getCurrentSeason(divisionId: string): Promise<FootballSeasonDto |
 }
 
 async function resolveSeason(
-  divisionId: string,
+  teamId: string,
+  divisionId: string | null | undefined,
   requestedSeasonId: string | null,
+  teamCategory?: string | null,
 ): Promise<FootballSeasonDto | null> {
   if (isGuid(requestedSeasonId)) {
     try {
@@ -63,7 +87,7 @@ async function resolveSeason(
     }
   }
 
-  return getCurrentSeason(divisionId);
+  return getCurrentSeason(teamId, divisionId, teamCategory);
 }
 
 function FootballTeamPage() {
@@ -113,18 +137,22 @@ function FootballTeamPage() {
         if (foundTeam) {
           const teamResponse = await footballTeamService.getById(foundTeam.id);
 
-          if (teamResponse.divisionId) {
-            const currentSeasonData = await resolveSeason(teamResponse.divisionId, requestedSeasonId);
-            setCurrentSeason(currentSeasonData);
-            setTeam(
-              currentSeasonData
-                ? await footballTeamService.getById(foundTeam.id, currentSeasonData.id)
-                : teamResponse,
-            );
-          } else {
-            setCurrentSeason(null);
-            setTeam(teamResponse);
-          }
+          const currentSeasonData = await resolveSeason(
+            foundTeam.id,
+            teamResponse.divisionId,
+            requestedSeasonId,
+            teamResponse.teamCategory,
+          );
+          setCurrentSeason(currentSeasonData);
+          setTeamStatistics(null);
+          setPlayerStatistics(null);
+          setSeasonSummary(null);
+          setFetchedTabs(new Set());
+          setTeam(
+            currentSeasonData
+              ? await footballTeamService.getById(foundTeam.id, currentSeasonData.id)
+              : teamResponse,
+          );
         } else {
           setError('Team not found');
         }
@@ -180,22 +208,18 @@ function FootballTeamPage() {
         const fetchTeamStats = tabId === 'stats' && !teamStatistics;
         const fetchPlayerStats = !playerStatistics;
 
-        // Both fetches aggregate across all competitions the team has played in (regular season +
-        // tournaments) so tournament games and points appear on the Statistics tab alongside the
-        // regular-season totals. Using the per-competition endpoints with currentSeason.id silently
-        // drops tournament rows because those are stored under the tournament's CompetitionId.
         if (fetchTeamStats && fetchPlayerStats) {
           const [teamStats, playerStats] = await Promise.all([
-            footballStatisticsService.getAggregatedTeamStatistics(team.id),
-            footballStatisticsService.getAggregatedTeamPlayerStatistics(team.id)
+            footballStatisticsService.getTeamStatistics(currentSeason.id, team.id),
+            footballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id),
           ]);
           setTeamStatistics(teamStats);
           setPlayerStatistics(playerStats);
         } else if (fetchTeamStats) {
-          const teamStats = await footballStatisticsService.getAggregatedTeamStatistics(team.id);
+          const teamStats = await footballStatisticsService.getTeamStatistics(currentSeason.id, team.id);
           setTeamStatistics(teamStats);
         } else if (fetchPlayerStats) {
-          const playerStats = await footballStatisticsService.getAggregatedTeamPlayerStatistics(team.id);
+          const playerStats = await footballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id);
           setPlayerStatistics(playerStats);
         }
       } else if (tabId === 'standings') {
@@ -209,7 +233,10 @@ function FootballTeamPage() {
       
     } catch (error) {
       console.error(`Failed to fetch ${tabId} data:`, error);
-      if (tabId === 'stats' || tabId === 'roster') {
+      if ((tabId === 'stats' || tabId === 'roster') && isNotFoundError(error)) {
+        setTeamStatistics(null);
+        setPlayerStatistics([]);
+      } else if (tabId === 'stats' || tabId === 'roster') {
         setStatisticsError('Failed to load team statistics');
       } else if (tabId === 'standings') {
         setSeasonSummaryError('Failed to load season summary');
@@ -326,11 +353,7 @@ function FootballTeamPage() {
             roster={team.roster}
             loading={statisticsLoading}
             error={statisticsError}
-            // Stats are aggregated across the season + every tournament the team played in, so
-            // labelling the block with just the season name (e.g. "2025-2026 SALIBANDY | LIIGA")
-            // would be misleading. The "all competitions" label makes it clear that tournament
-            // games / points are included.
-            seasonName={t('teamUserPage.stats.allCompetitions')}
+            seasonName={currentSeason?.name}
           />
         );
 
@@ -355,97 +378,39 @@ function FootballTeamPage() {
   return (
     <PageTemplate title={team.name}>
       <div className="football-team-page">
+        <nav className="football-team-page__crumb" aria-label={team.club.name}>
+          <button type="button" className="football-team-page__crumb-link" onClick={handleBackToClub}>
+            {team.club.name}
+          </button>
+          <span aria-hidden="true">›</span>
+          <span className="football-team-page__crumb-current">{team.name}</span>
+        </nav>
 
-        {/* Hero Image Background */}
-        <div className="hero-image-container">
-          <div className="hero-image"></div>
-          
+        <CompetitionHero
+          title={team.name}
+          logoUrl={team.logoUrl || team.club.logoUrl}
+          markLabel={teamMarkLabel(team.name)}
+          meta={currentSeason ? (
+            <button
+              type="button"
+              className="football-team-page__season"
+              onClick={() => navigate(`/football/league/${currentSeason.id}`)}
+            >
+              {currentSeason.name}
+            </button>
+          ) : null}
+        />
 
-
-          {/* Team Header */}
-          <div className="team-header">
-
-
-            {/* Breadcrumb Navigation */}
-            <div className="left-navigation-container">
-              <div className="breadcrumb">
-                <button onClick={handleBackToClub} className="club-link">
-                  {team.club.name}
-                </button>
-                <span className="separator">›</span>
-                <span className="current">{team.name}</span>
-              </div>
-            </div>
-            
-            <div className="header-content">
-              <div className="team-branding">
-                <div className="football-page-team-logo">
-                  {resolveLogoUrl(team.logoUrl) ? (
-                    <img
-                      src={resolveLogoUrl(team.logoUrl)}
-                      alt={`${team.name} logo`}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        const clubLogo = resolveLogoUrl(team.club.logoUrl);
-                        if (clubLogo && target.src !== clubLogo) {
-                          target.src = clubLogo;
-                        } else {
-                          target.style.display = 'none';
-                          const placeholder = target.nextElementSibling as HTMLElement;
-                          if (placeholder) {
-                            placeholder.style.display = 'flex';
-                          }
-                        }
-                      }}
-                    />
-                  ) : resolveLogoUrl(team.club.logoUrl) ? (
-                    <img
-                      src={resolveLogoUrl(team.club.logoUrl)}
-                      alt={`${team.club.name} logo`}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const placeholder = target.nextElementSibling as HTMLElement | null;
-                        if (placeholder) {
-                          placeholder.style.display = 'flex';
-                        }
-                      }}
-                    />
-                  ) : null}
-                  <div className="logo-placeholder" style={{ display: (resolveLogoUrl(team.logoUrl) || resolveLogoUrl(team.club.logoUrl)) ? 'none' : 'flex' }}>
-                    {team.name}
-                  </div>
-                </div>                
-              </div>
-
-              <div className="team-info">
-                <div className="team-info-container">
-                  <h1>{team.name}</h1>
-                  {currentSeason && (
-                    <button
-                      className="division-link"
-                      onClick={() => navigate(`/football/league/${currentSeason.id}`)}
-                    >
-                      {currentSeason.name}
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-            </div>
-
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
         <TeamNavbar currentTab={activeTab} onTabChange={handleTabChange} />
 
-        {/* Tab Content */}
-        <div className="tab-content-container">
-            {renderTabContent()}
+        <div
+          className="tab-content-container"
+          role="tabpanel"
+          id={`tabpanel-${activeTab}`}
+          aria-labelledby={`tab-${activeTab}`}
+        >
+          {renderTabContent()}
         </div>
-
-
       </div>
     </PageTemplate>
   );

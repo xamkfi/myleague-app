@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { TeamLink } from '../SportLinks';
+import TeamLogoMark from '../TeamLogoMark/TeamLogoMark';
 import { getLeaguePath, type SportKind } from '../../utils/sportRoutes';
 import './SeasonStandingsCard.scss';
 
@@ -35,21 +36,6 @@ interface SeasonStandingsCardProps {
   maxRows?: number;
   labels: SeasonStandingsCardLabels;
   navLinks?: SeasonStandingsNavLink[];
-}
-
-function TeamLogo({ logo }: { logo?: string | null }) {
-  return logo && logo.trim() !== '' ? (
-    <img
-      className="fb-team-logo"
-      src={logo}
-      alt=""
-      onError={(e) => {
-        (e.target as HTMLImageElement).style.visibility = 'hidden';
-      }}
-    />
-  ) : (
-    <span className="fb-team-logo fb-team-logo--empty" aria-hidden="true" />
-  );
 }
 
 export default function SeasonStandingsCard({
@@ -108,7 +94,12 @@ export default function SeasonStandingsCard({
             <div key={team.teamId} className="fb-standings-table__row">
               <span className="fb-standings-table__rank">{index + 1}.</span>
               <span className="fb-standings-table__team">
-                <TeamLogo logo={team.teamLogo} />
+                <TeamLogoMark
+                  logo={team.teamLogo}
+                  name={team.teamName}
+                  imageClassName="fb-team-logo"
+                  fallbackClassName="fb-team-logo fb-team-logo--empty"
+                />
                 <TeamLink
                   sport={sport}
                   teamId={team.teamId}
