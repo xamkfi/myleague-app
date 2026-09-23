@@ -142,11 +142,11 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
 
     try {
       const [totalRes, scheduledRes, inProgressRes, completedRes, cancelledRes] = await Promise.all([
-        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters }),
-        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.Scheduled }),
-        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.InProgress }),
-        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.Completed }),
-        footballMatchService.getAll({ includeDrafts: true, pageSize: 1, ...baseFilters, status: FootballMatchStatus.Cancelled }),
+        footballMatchService.getAll({ pageSize: 1, ...baseFilters }),
+        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Scheduled }),
+        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.InProgress }),
+        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Completed }),
+        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Cancelled }),
       ]);
 
       setStatusCounts({
