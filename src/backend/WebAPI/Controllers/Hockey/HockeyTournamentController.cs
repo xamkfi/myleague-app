@@ -40,9 +40,12 @@ public class HockeyTournamentController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<List<HockeyTournamentDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<HockeyTournamentDto>>>> GetAllTournaments(
         [FromQuery] TeamCategory? teamCategory = null,
+        [FromQuery] bool includeDrafts = false,
         CancellationToken cancellationToken = default)
     {
-        Result<IEnumerable<HockeyTournamentDto>> result = await _mediator.Send(new GetAllHockeyTournamentsQuery(teamCategory), cancellationToken);
+        Result<IEnumerable<HockeyTournamentDto>> result = await _mediator.Send(
+            new GetAllHockeyTournamentsQuery(teamCategory, IncludeDrafts(includeDrafts)),
+            cancellationToken);
         return HandleListResult(result, "Hockey tournaments retrieved successfully", "Failed to retrieve hockey tournaments");
     }
 
@@ -63,14 +66,19 @@ public class HockeyTournamentController : BaseApiController
     /// Gets a hockey tournament by id.
     /// </summary>
     /// <param name="id">Tournament id</param>
+    /// <param name="includeDrafts">When true, a system administrator can load a draft tournament.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyTournamentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> GetTournamentById(Guid id,
+    public async Task<ActionResult<ApiResponse<HockeyTournamentDto>>> GetTournamentById(
+        Guid id,
+        [FromQuery] bool includeDrafts = false,
         CancellationToken cancellationToken = default)
     {
-        Result<HockeyTournamentDto> result = await _mediator.Send(new GetHockeyTournamentByIdQuery(id), cancellationToken);
+        Result<HockeyTournamentDto> result = await _mediator.Send(
+            new GetHockeyTournamentByIdQuery(id, IncludeDrafts(includeDrafts)),
+            cancellationToken);
         return HandleResult(result, "Hockey tournament retrieved successfully", "Hockey tournament not found");
     }
 

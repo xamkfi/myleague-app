@@ -5,15 +5,15 @@ import type {
   UpdateHockeySeasonRequest,
 } from '../../types/hockey/hockeyTypes';
 import type { SeasonContentBlockItem, SeasonContentBlocksDto } from '../../types/common/seasonContent';
-import { hockeyRequest, jsonBody, withTeamCategory } from './hockeyApi';
+import { hockeyRequest, jsonBody, withIncludeDrafts, withTeamCategory } from './hockeyApi';
 
 const action = (seasonId: string, verb: string, fallback: string): Promise<HockeySeasonDto> =>
   hockeyRequest<HockeySeasonDto>(`/HockeySeason/${seasonId}/${verb}`, fallback, { method: 'POST' });
 
 export const hockeySeasonService = {
-  getAll: (teamCategory?: string): Promise<HockeySeasonDto[]> =>
+  getAll: (teamCategory?: string, includeDrafts = false): Promise<HockeySeasonDto[]> =>
     hockeyRequest<HockeySeasonDto[]>(
-      withTeamCategory('/HockeySeason', teamCategory),
+      withIncludeDrafts(withTeamCategory('/HockeySeason', teamCategory), includeDrafts),
       'Failed to fetch hockey seasons',
     ),
 
@@ -23,8 +23,11 @@ export const hockeySeasonService = {
       'Failed to fetch active hockey seasons',
     ),
 
-  getById: (id: string): Promise<HockeySeasonDto> =>
-    hockeyRequest<HockeySeasonDto>(`/HockeySeason/${id}`, 'Failed to fetch hockey season'),
+  getById: (id: string, includeDrafts = false): Promise<HockeySeasonDto> =>
+    hockeyRequest<HockeySeasonDto>(
+      withIncludeDrafts(`/HockeySeason/${id}`, includeDrafts),
+      'Failed to fetch hockey season',
+    ),
 
   create: (data: CreateHockeySeasonRequest): Promise<HockeySeasonDto> =>
     hockeyRequest<HockeySeasonDto>('/HockeySeason', 'Failed to create hockey season', {

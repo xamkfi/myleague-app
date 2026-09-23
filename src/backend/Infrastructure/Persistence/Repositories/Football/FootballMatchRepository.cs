@@ -92,6 +92,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
             Guid? tournamentGroupId = null,
             FootballCompetitionType? competitionType = null,
             Domain.Enums.Common.TeamCategory? teamCategory = null,
+            bool excludeDraftCompetitions = false,
             CancellationToken cancellationToken = default)
         {
             DateTime? startDateUtc = startDate.HasValue
@@ -155,6 +156,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
             if (teamCategory.HasValue)
             {
                 query = query.Where(m => m.Competition.TeamCategory == teamCategory.Value);
+            }
+
+            if (excludeDraftCompetitions)
+            {
+                query = query.Where(match =>
+                    (match.Competition is FootballSeason && (match.Competition.IsActive || match.Competition.IsCompleted))
+                    || (match.Competition is FootballTournament
+                        && ((FootballTournament)match.Competition).TournamentStatus != FootballTournamentStatus.Draft));
             }
 
             // Apply search query filter (team names)

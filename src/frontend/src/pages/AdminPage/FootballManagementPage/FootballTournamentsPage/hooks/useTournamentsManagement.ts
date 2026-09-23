@@ -42,7 +42,7 @@ export const useTournamentsManagement = () => {
         setLoading(true);
       }
       setError(null);
-      const result = await footballTournamentService.getAll();
+      const result = await footballTournamentService.getAll(undefined, true);
       setTournaments(result.data ?? []);
     } catch (err) {
       setError(parseApiError(err));

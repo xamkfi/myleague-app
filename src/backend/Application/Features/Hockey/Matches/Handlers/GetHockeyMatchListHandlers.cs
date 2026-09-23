@@ -36,8 +36,11 @@ public class GetHockeyMatchesByCompetitionHandler
         {
             IReadOnlyList<HockeyMatch> matches =
                 await _matchRepository.GetByCompetitionIdAsync(request.CompetitionId);
+            IEnumerable<HockeyMatch> visibleMatches = request.IncludeDrafts
+                ? matches
+                : matches.Where(match => match.Competition is null || PublicCompetitionVisibility.IsPublic(match.Competition));
             return Result<IEnumerable<HockeyMatchDto>>.Success(
-                matches.Select(HockeyMatchMapper.ToDto).ToList());
+                visibleMatches.Select(HockeyMatchMapper.ToDto).ToList());
         }
         catch (OperationCanceledException)
         {
@@ -81,8 +84,10 @@ public class GetHockeyMatchesByTeamHandler
         {
             IReadOnlyList<HockeyMatch> matches =
                 await _matchRepository.GetByTeamIdAsync(request.TeamId);
+            IEnumerable<HockeyMatch> visibleMatches = matches.Where(match =>
+                match.Competition is null || PublicCompetitionVisibility.IsPublic(match.Competition));
             return Result<IEnumerable<HockeyMatchDto>>.Success(
-                matches.Select(HockeyMatchMapper.ToDto).ToList());
+                visibleMatches.Select(HockeyMatchMapper.ToDto).ToList());
         }
         catch (OperationCanceledException)
         {
@@ -139,7 +144,8 @@ public class GetPagedHockeyMatchesHandler
                 request.SortOrder,
                 request.SearchQuery,
                 teamCategory: null,
-                cancellationToken);
+                excludeDraftCompetitions: !request.IncludeDrafts,
+                cancellationToken: cancellationToken);
 
             IReadOnlyList<HockeyMatchDto> items = pagedMatches.Items.Select(HockeyMatchMapper.ToDto).ToList();
             return Result<PagedResult<HockeyMatchDto>>.Success(
@@ -211,7 +217,8 @@ public class GetHockeyMatchesHandler
                 request.SortOrder,
                 searchQuery: null,
                 request.TeamCategory,
-                cancellationToken);
+                excludeDraftCompetitions: !request.IncludeDrafts,
+                cancellationToken: cancellationToken);
 
             IReadOnlyList<Guid> teamIds = pagedMatches.Items
                 .SelectMany(match => match.MatchTeams.Select(team => team.TeamId))

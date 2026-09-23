@@ -149,7 +149,7 @@ const EditTournamentPage = () => {
     if (!competitionId) return;
     try {
       setLoadingTournament(true);
-      const response = await footballTournamentService.getById(competitionId);
+      const response = await footballTournamentService.getById(competitionId, true);
       const data = response.data;
       setTournament(data);
       const groupRules = data.tournamentRules?.groupStageMatchRules;
@@ -205,7 +205,7 @@ const EditTournamentPage = () => {
     try {
       setMatchesLoading(true);
       setMatchesError(null);
-      const response = await footballMatchService.getBySeason(competitionId);
+      const response = await footballMatchService.getBySeason(competitionId, true);
       setTournamentMatches(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       setTournamentMatches([]);

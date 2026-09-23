@@ -4,4 +4,4 @@ using MediatR;
 
 namespace Application.Features.Football.Matches.Queries;
 
-public record GetFootballMatchesBySeasonQuery(Guid CompetitionId) : IRequest<Result<IEnumerable<FootballMatchDto>>>;
+public record GetFootballMatchesBySeasonQuery(Guid CompetitionId, bool IncludeDrafts = false) : IRequest<Result<IEnumerable<FootballMatchDto>>>;

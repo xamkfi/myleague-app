@@ -25,6 +25,7 @@ public interface IFootballMatchRepository
         Guid? tournamentGroupId = null,
         FootballCompetitionType? competitionType = null,
         Domain.Enums.Common.TeamCategory? teamCategory = null,
+        bool excludeDraftCompetitions = false,
         CancellationToken cancellationToken = default);
     Task<IEnumerable<FootballMatch>> GetByCompetitionIdAsync(Guid competitionId);
     Task<IEnumerable<FootballMatch>> GetByTournamentGroupAsync(

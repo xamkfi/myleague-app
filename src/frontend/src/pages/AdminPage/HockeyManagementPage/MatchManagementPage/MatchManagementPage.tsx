@@ -85,9 +85,9 @@ function HockeyMatchManagementPage({ mode = 'all' }: HockeyMatchManagementPagePr
       try {
         setInitialLoading(true);
         const [allMatches, seasonList, tournamentList, names] = await Promise.all([
-          hockeyMatchService.getAllPages(),
-          hockeySeasonService.getAll(),
-          hockeyTournamentService.getAll(),
+          hockeyMatchService.getAllPages({ includeDrafts: true }),
+          hockeySeasonService.getAll(undefined, true),
+          hockeyTournamentService.getAll(undefined, true),
           loadTeamNameMap(),
         ]);
         setMatches(allMatches);

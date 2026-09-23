@@ -39,6 +39,7 @@ export const floorballMatchService = {
       if (params?.tournamentGroupId) searchParams.append('tournamentGroupId', params.tournamentGroupId);
       if (params?.competitionType) searchParams.append('competitionType', params.competitionType);
       if (params?.teamCategory) searchParams.append('teamCategory', params.teamCategory);
+      if (params?.includeDrafts) searchParams.append('includeDrafts', 'true');
 
       const url = `${API_URL}/${MATCHES_PATH}?${searchParams.toString()}`;
       
@@ -119,9 +120,9 @@ export const floorballMatchService = {
   /**
    * Get matches by season ID
    */
-  getBySeason: async (competitionId: string): Promise<ApiResponse<FloorballMatchDto[]>> => {
+  getBySeason: async (competitionId: string, includeDrafts = false): Promise<ApiResponse<FloorballMatchDto[]>> => {
     try {
-      const url = `${API_URL}/${MATCHES_PATH}/by-competitionId/${competitionId}`;
+      const url = `${API_URL}/${MATCHES_PATH}/by-competitionId/${competitionId}${includeDrafts ? '?includeDrafts=true' : ''}`;
       console.log('Fetching matches by season from URL:', url);
       
       const response = await authFetch(url);

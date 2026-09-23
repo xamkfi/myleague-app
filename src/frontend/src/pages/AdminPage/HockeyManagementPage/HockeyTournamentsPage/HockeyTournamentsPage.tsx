@@ -23,7 +23,7 @@ function HockeyTournamentsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
   useEffect(() => {
-    hockeyTournamentService.getAll()
+    hockeyTournamentService.getAll(undefined, true)
       .then(setTournaments)
       .catch((err) => setError(err instanceof Error ? err.message : t('hockey.tournaments.errors.loadFailed', 'Failed to load tournaments')))
       .finally(() => setLoading(false));

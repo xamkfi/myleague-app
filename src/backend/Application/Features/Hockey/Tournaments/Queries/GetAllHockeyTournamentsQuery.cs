@@ -8,5 +8,5 @@ namespace Application.Features.Hockey.Tournaments.Queries;
 /// <summary>
 /// Query for retrieving all hockey tournaments.
 /// </summary>
-public record GetAllHockeyTournamentsQuery(TeamCategory? TeamCategory = null)
+public record GetAllHockeyTournamentsQuery(TeamCategory? TeamCategory = null, bool IncludeDrafts = false)
     : IRequest<Result<IEnumerable<HockeyTournamentDto>>>;

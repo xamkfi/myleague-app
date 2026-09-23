@@ -50,6 +50,7 @@ public class GetFootballMatchesByTeamHandler : BasePagedQueryHandler<GetFootball
                 startDate: request.StartDate,
                 endDate: request.EndDate,
                 status: null,
+                excludeDraftCompetitions: true,
                 cancellationToken: cancellationToken);
 
             IEnumerable<FootballMatchDto> matchDtos = FootballMatchMapper.ToDtos(pagedMatches.Items);

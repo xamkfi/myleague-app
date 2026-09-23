@@ -40,6 +40,11 @@ public class GetAllFootballTournamentsHandler : IRequestHandler<GetAllFootballTo
             _logger.LogInformation("Retrieving all football tournaments");
 
             IEnumerable<FootballTournament> tournaments = await _tournamentRepository.GetAllAsync(request.TeamCategory, cancellationToken);
+            if (!request.IncludeDrafts)
+            {
+                tournaments = tournaments.Where(PublicCompetitionVisibility.IsPublicTournament);
+            }
+
             List<FootballTournamentDto> tournamentDtos = tournaments
                 .Select(t => FootballTournamentMapper.ToDto(t))
                 .ToList();

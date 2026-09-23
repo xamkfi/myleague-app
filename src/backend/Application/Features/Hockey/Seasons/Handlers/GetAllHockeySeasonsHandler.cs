@@ -32,6 +32,7 @@ public class GetAllHockeySeasonsHandler : IRequestHandler<GetAllHockeySeasonsQue
                 await _competitionRepository.GetAllSeasonsAsync();
             IEnumerable<HockeySeasonDto> dtos = seasons
                 .Where(season => request.TeamCategory is null || season.TeamCategory == request.TeamCategory)
+                .Where(season => request.IncludeDrafts || PublicCompetitionVisibility.IsPublic(season))
                 .Select(HockeyCompetitionMapper.ToSeasonDto);
             return Result<IEnumerable<HockeySeasonDto>>.Success(dtos);
         }

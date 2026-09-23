@@ -80,8 +80,8 @@ export async function loadClubTeamCompetitions(
 ): Promise<ClubTeamCompetition[]> {
   if (sport === 'floorball') {
     const [seasonsResponse, tournamentsResponse] = await Promise.all([
-      floorballSeasonService.getAll(),
-      floorballTournamentService.getAll(),
+      floorballSeasonService.getAll(true),
+      floorballTournamentService.getAll(undefined, true),
     ]);
     return sortCompetitions([
       ...toSeasonRows(seasonsResponse.data ?? [], teamId),
@@ -91,8 +91,8 @@ export async function loadClubTeamCompetitions(
 
   if (sport === 'football') {
     const [seasonsResponse, tournamentsResponse] = await Promise.all([
-      footballSeasonService.getAll(),
-      footballTournamentService.getAll(),
+      footballSeasonService.getAll(true),
+      footballTournamentService.getAll(undefined, true),
     ]);
     return sortCompetitions([
       ...toSeasonRows(seasonsResponse.data ?? [], teamId),
@@ -101,8 +101,8 @@ export async function loadClubTeamCompetitions(
   }
 
   const [seasons, tournaments] = await Promise.all([
-    hockeySeasonService.getAll(),
-    hockeyTournamentService.getAll(),
+    hockeySeasonService.getAll(undefined, true),
+    hockeyTournamentService.getAll(undefined, true),
   ]);
 
   const seasonRows = seasons

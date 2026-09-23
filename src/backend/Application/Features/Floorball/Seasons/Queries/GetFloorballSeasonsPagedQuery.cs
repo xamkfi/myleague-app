@@ -13,5 +13,6 @@ public record GetFloorballSeasonsPagedQuery(
     int Page,
     int PageSize,
     string? SeasonYear,
-    TeamCategory? TeamCategory = null
+    TeamCategory? TeamCategory = null,
+    bool IncludeDrafts = false
 ) : IRequest<Result<PagedResult<FloorballSeasonSummaryDto>>>;

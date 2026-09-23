@@ -8,5 +8,6 @@ namespace Application.Features.Football.Tournaments.Queries;
 /// Query for retrieving all football tournaments
 /// </summary>
 public record GetAllFootballTournamentsQuery(
-    Domain.Enums.Common.TeamCategory? TeamCategory = null
+    Domain.Enums.Common.TeamCategory? TeamCategory = null,
+    bool IncludeDrafts = false
 ) : IRequest<Result<List<FootballTournamentDto>>>;

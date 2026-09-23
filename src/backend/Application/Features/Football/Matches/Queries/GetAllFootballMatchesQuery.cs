@@ -19,7 +19,8 @@ public record GetAllFootballMatchesQuery(
     FootballMatchStatus? Status = null,
     Guid? TournamentGroupId = null,
     FootballCompetitionType? CompetitionType = null,
-    TeamCategory? TeamCategory = null) : IRequest<Result<PagedResult<FootballMatchDto>>>
+    TeamCategory? TeamCategory = null,
+    bool IncludeDrafts = false) : IRequest<Result<PagedResult<FootballMatchDto>>>
 {
     public const string ResourceKey = "FootballMatches";
 }

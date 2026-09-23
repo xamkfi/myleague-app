@@ -59,6 +59,11 @@ public record GetFootballMatchesRequest : PagedRequestBase
     /// Optional audience / age-group category filter
     /// </summary>
     public TeamCategory? TeamCategory { get; init; }
+
+    /// <summary>
+    /// When true, a system administrator also receives matches from draft competitions.
+    /// </summary>
+    public bool IncludeDrafts { get; init; }
 }
 
 /// <summary>

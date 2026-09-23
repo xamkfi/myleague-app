@@ -10,7 +10,7 @@ namespace Application.Features.Hockey.Matches.Queries;
 /// <summary>
 /// Gets hockey matches for a competition (season or tournament).
 /// </summary>
-public record GetHockeyMatchesByCompetitionQuery(Guid CompetitionId)
+public record GetHockeyMatchesByCompetitionQuery(Guid CompetitionId, bool IncludeDrafts = false)
     : IRequest<Result<IEnumerable<HockeyMatchDto>>>;
 
 /// <summary>
@@ -31,7 +31,8 @@ public record GetPagedHockeyMatchesQuery(
     DateTime? EndDate = null,
     HockeyMatchStatus? Status = null,
     string SortOrder = "desc",
-    string? SearchQuery = null) : IRequest<Result<PagedResult<HockeyMatchDto>>>
+    string? SearchQuery = null,
+    bool IncludeDrafts = false) : IRequest<Result<PagedResult<HockeyMatchDto>>>
 {
     public const string ResourceKey = "HockeyMatches";
 }
@@ -45,7 +46,8 @@ public record GetHockeyMatchesQuery(
     DateTime? StartDate = null,
     DateTime? EndDate = null,
     TeamCategory? TeamCategory = null,
-    string SortOrder = "desc") : IRequest<Result<PagedResult<HockeyMatchListDto>>>
+    string SortOrder = "desc",
+    bool IncludeDrafts = false) : IRequest<Result<PagedResult<HockeyMatchListDto>>>
 {
     public const string ResourceKey = "HockeyMatches";
 }

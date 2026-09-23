@@ -39,6 +39,7 @@ export const footballMatchService = {
       if (params?.tournamentGroupId) searchParams.append('tournamentGroupId', params.tournamentGroupId);
       if (params?.competitionType) searchParams.append('competitionType', params.competitionType);
       if (params?.teamCategory) searchParams.append('teamCategory', params.teamCategory);
+      if (params?.includeDrafts) searchParams.append('includeDrafts', 'true');
 
       const url = `${API_URL}/${MATCHES_PATH}?${searchParams.toString()}`;
       
@@ -105,9 +106,9 @@ export const footballMatchService = {
   /**
    * Get matches by season ID
    */
-  getBySeason: async (competitionId: string): Promise<ApiResponse<FootballMatchDto[]>> => {
+  getBySeason: async (competitionId: string, includeDrafts = false): Promise<ApiResponse<FootballMatchDto[]>> => {
     try {
-      const url = `${API_URL}/${MATCHES_PATH}/by-competitionId/${competitionId}`;
+      const url = `${API_URL}/${MATCHES_PATH}/by-competitionId/${competitionId}${includeDrafts ? '?includeDrafts=true' : ''}`;
       
       const response = await authFetch(url);
       const apiResponse: ApiResponse<FootballMatchDto[]> = await response.json();

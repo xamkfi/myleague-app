@@ -40,9 +40,12 @@ public class HockeySeasonController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<List<HockeySeasonDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<HockeySeasonDto>>>> GetAllSeasons(
         [FromQuery] TeamCategory? teamCategory = null,
+        [FromQuery] bool includeDrafts = false,
         CancellationToken cancellationToken = default)
     {
-        Result<IEnumerable<HockeySeasonDto>> result = await _mediator.Send(new GetAllHockeySeasonsQuery(teamCategory), cancellationToken);
+        Result<IEnumerable<HockeySeasonDto>> result = await _mediator.Send(
+            new GetAllHockeySeasonsQuery(teamCategory, IncludeDrafts(includeDrafts)),
+            cancellationToken);
         return HandleListResult(result, "Hockey seasons retrieved successfully", "Failed to retrieve hockey seasons");
     }
 
@@ -63,14 +66,19 @@ public class HockeySeasonController : BaseApiController
     /// Gets a hockey season by id.
     /// </summary>
     /// <param name="id">Season id</param>
+    /// <param name="includeDrafts">When true, a system administrator can load a draft season.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeySeasonDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> GetSeasonById(Guid id,
+    public async Task<ActionResult<ApiResponse<HockeySeasonDto>>> GetSeasonById(
+        Guid id,
+        [FromQuery] bool includeDrafts = false,
         CancellationToken cancellationToken = default)
     {
-        Result<HockeySeasonDto> result = await _mediator.Send(new GetHockeySeasonByIdQuery(id), cancellationToken);
+        Result<HockeySeasonDto> result = await _mediator.Send(
+            new GetHockeySeasonByIdQuery(id, IncludeDrafts(includeDrafts)),
+            cancellationToken);
         return HandleResult(result, "Hockey season retrieved successfully", "Hockey season not found");
     }
 

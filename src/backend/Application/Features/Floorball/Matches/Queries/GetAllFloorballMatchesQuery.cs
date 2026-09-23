@@ -32,7 +32,8 @@ namespace Application.Features.Floorball.Matches.Queries
         FloorballMatchStatus? Status = null,
         Guid? TournamentGroupId = null,
         FloorballCompetitionType? CompetitionType = null,
-        Domain.Enums.Common.TeamCategory? TeamCategory = null
+        Domain.Enums.Common.TeamCategory? TeamCategory = null,
+        bool IncludeDrafts = false
     ) : IRequest<Result<PagedResult<FloorballMatchDto>>>
     {
         /// <summary>
