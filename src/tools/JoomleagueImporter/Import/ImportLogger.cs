@@ -16,7 +16,7 @@ public class ImportLogger : IDisposable
     {
         Directory.CreateDirectory(logDirectory);
         string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        _logPath = Path.Combine(logDirectory, $"import_errors_{timestamp}.log");
+        _logPath = Path.Combine(logDirectory, $"import_errors_{timestamp}_{Environment.ProcessId}.log");
         _writer = new StreamWriter(_logPath, append: false) { AutoFlush = true };
         _writer.WriteLine($"JoomLeague Import Error Log - {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
         _writer.WriteLine(new string('=', 80));

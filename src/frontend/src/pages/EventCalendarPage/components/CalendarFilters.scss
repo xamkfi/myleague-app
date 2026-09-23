@@ -100,48 +100,12 @@
         background: $color-blue-deep;
         border-color: $color-blue-deep;
       }
-
-      .calendar-filters__chip-dot {
-        border-color: $color-white;
-      }
     }
   }
 
   &__sport-icon {
     width: 16px;
     height: 16px;
-  }
-
-  &__chip-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-
-    &--scheduled {
-      background: $color-blue-medium;
-    }
-
-    &--live {
-      background: $color-red-primary;
-    }
-
-    &--completed {
-      background: $color-text-muted;
-    }
-  }
-
-  &__chip--active &__chip-dot {
-    &--scheduled {
-      background: $color-white;
-    }
-
-    &--live {
-      background: $color-red-light;
-    }
-
-    &--completed {
-      background: rgba($color-white, 0.7);
-    }
   }
 
   &__select {

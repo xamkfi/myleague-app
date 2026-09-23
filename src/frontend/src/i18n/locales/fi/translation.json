@@ -166,7 +166,7 @@
   },
   "eventCalendarPage": {
     "title": "Tapahtumakalenteri",
-    "description": "Selaa otteluita kuukausittain. Valitse päivä tai suodata kauden, tilan ja joukkueen mukaan.",
+    "description": "Selaa otteluita kuukausittain. Valitse laji, niin voit rajata kauden ja joukkueen mukaan.",
     "noEvents": "Ei tapahtumia",
     "prevMonth": "Edellinen kuukausi",
     "nextMonth": "Seuraava kuukausi",
@@ -179,14 +179,11 @@
     "eventSingular": "tapahtuma",
     "eventPlural": "tapahtumaa",
     "status": {
-      "scheduled": "Tuleva",
-      "live": "Käynnissä",
-      "completed": "Päättynyt"
+      "live": "Käynnissä"
     },
     "filters": {
       "showFilters": "Suodattimet",
       "sport": "Laji",
-      "status": "Tila",
       "season": "Kausi",
       "allSeasons": "Kaikki kaudet",
       "team": "Joukkue",

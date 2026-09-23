@@ -11,11 +11,7 @@ export function applyCalendarFilters(
     result = result.filter((event) => filters.sports.includes(event.sport));
   }
 
-  if (filters.statuses.length > 0) {
-    result = result.filter((event) => event.status !== undefined && filters.statuses.includes(event.status));
-  }
-
-  if (filters.competitionId) {
+  if (filters.sports.length > 0 && filters.competitionId) {
     const seasonName = seasons.find((season) => season.id === filters.competitionId)?.name;
     if (seasonName) {
       result = result.filter((event) => event.subtitle === seasonName);
@@ -35,7 +31,7 @@ export function seasonsMatchingSportFilter(
   selectedSports: CalendarFilters['sports'],
 ): CalendarSeasonOption[] {
   if (selectedSports.length === 0) {
-    return seasons;
+    return [];
   }
   return seasons.filter((season) => selectedSports.includes(season.sport));
 }
