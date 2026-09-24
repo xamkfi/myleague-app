@@ -215,7 +215,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
 
             if (!includeDrafts)
             {
-                query = query.Where(season => season.IsActive || season.IsCompleted);
+                query = query.Where(season => season.IsActive || season.IsCompleted || season.EndDate < DateTime.UtcNow);
             }
 
             return await query
@@ -251,7 +251,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
 
             if (!includeDrafts)
             {
-                query = query.Where(season => season.IsActive || season.IsCompleted);
+                query = query.Where(season => season.IsActive || season.IsCompleted || season.EndDate < DateTime.UtcNow);
             }
 
             int totalCount = await query.CountAsync(cancellationToken);
@@ -284,7 +284,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballSeason> query = _entities.OfType<FloorballSeason>()
-                .Where(season => season.IsActive || season.IsCompleted);
+                .Where(season => season.IsActive || season.IsCompleted || season.EndDate < DateTime.UtcNow);
 
             if (startYear.HasValue && endYear.HasValue)
             {
