@@ -2,7 +2,7 @@
 
 Concrete implementations for Domain and Application abstractions: persistence, auth delivery, image storage, SignalR, health checks, and startup seeding.
 
-See the [root README](../../../README.md) and [InfrastructureDevelopmentGuide.md](./InfrastructureDevelopmentGuide.md).
+See the [root README](../../../README.md). [InfrastructureDevelopmentGuide.md](./InfrastructureDevelopmentGuide.md) still describes event sourcing and domain-event handlers. Follow this README, `.cursor/rules/backend.mdc`, and `.cursor/rules/database.mdc`.
 
 ## Technology
 
@@ -32,7 +32,7 @@ Infrastructure/
 ├── HealthChecks/
 ├── DependencyInjections/
 ├── DTOs/
-└── Migrations/              # Per-context migration folders
+└── Migrations/              # CommonDb, FloorBallDb, FootballDb, HockeyDb
 ```
 
 ## Persistence
@@ -45,6 +45,8 @@ Four DbContexts share one PostgreSQL database and one connection string (`Defaul
 | `FloorballDbContext` | Floorball competitions (TPH), teams, matches, stats |
 | `FootballDbContext` | Football competitions (TPH), teams, matches, stats |
 | `HockeyDbContext` | Hockey competitions (TPH), teams, matches, stats |
+
+`/health/ready` probes the Npgsql connection and all four DbContexts (`ready` tag). That is the check Azure and deploy smoke tests use. `/health` also reports memory, disk, `database-operations` (row counts, including football teams), and `application-services` (common and floorball repositories plus `IUnitOfWork`). Those diagnostic checks do not affect readiness.
 
 The API applies pending migrations at startup. Manual update:
 

@@ -15,7 +15,7 @@ import type { HockeyPosition, HockeyTeamDto } from '../../../../types/hockey/hoc
 import type { ActivePlayerLicence } from '../../../../types/activePlayerLicence';
 import PlayersTable, { type HockeyPlayerListRow } from './components/PlayersTable';
 import PlayerLicenceFilter from '../../../../components/admin/PlayerLicenceFilter';
-import type { LicenceFilterValue } from '../../../../components/admin/playerLicenceFilter';
+import type { LicenceFilterValue } from '../../../../components/admin/licenceFilterUtils';
 import AssignToTeamModal from './components/AssignToTeamModal';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import '../../../../styles/AdminTable.scss';

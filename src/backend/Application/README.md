@@ -2,7 +2,7 @@
 
 CQRS orchestration for MyLeague. This layer sits between WebAPI and Domain: it validates input, runs commands and queries through MediatR, and returns `Result<T>` / `PagedResult<T>`.
 
-See the [root README](../../../README.md) and [ApplicationDevelopmentGuide.md](./ApplicationDevelopmentGuide.md).
+See the [root README](../../../README.md). [ApplicationDevelopmentGuide.md](./ApplicationDevelopmentGuide.md) still shows old namespaces (`Application.Commands`, `Application.DTOs`). Follow this README and `.cursor/rules/backend.mdc`.
 
 ## Design
 
@@ -80,6 +80,7 @@ Controllers send requests through `IMediator`; they do not call repositories.
 | `VerifyLoginCodeCommand` | Validate code (max 5 attempts) and issue JWT + refresh token |
 | `RefreshTokenCommand` | Rotate refresh token; reuse of a revoked token revokes all tokens for the user |
 | `RevokeTokenCommand` | Logout |
+| `VerifyAdminEmailCommand` | Activate an invited admin from the email token |
 
 Configuration types: `JwtConfiguration`, `LoginCodeConfiguration`, `AzureCommunicationServicesConfiguration`, `SeedConfiguration`.
 

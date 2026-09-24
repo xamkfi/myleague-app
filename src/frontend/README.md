@@ -5,8 +5,8 @@ React SPA for MyLeague: public league pages and an admin console. Full stack set
 ## Stack
 
 - React 18.3 + TypeScript 5.8
-- Vite 6.3
-- Tailwind CSS 4.1 (Vite plugin; no `tailwind.config.js`) and SCSS
+- Vite 6.4
+- Tailwind CSS 4.3 (Vite plugin; no `tailwind.config.js`) and SCSS
 - React Router 7
 - i18next (Finnish default, English)
 - SignalR (`@microsoft/signalr`) for live match updates
@@ -33,9 +33,9 @@ src/
   └── utils/
 ```
 
-Public pages cover floorball, football, and ice hockey (home, clubs, leagues, teams, players, matches, tournaments, news, calendar, rules). Hockey live pages poll REST instead of SignalR.
+Public pages cover floorball, football, and ice hockey (home, clubs, leagues, teams, players, matches, tournaments, news, calendar, rules, age groups, MAHL info, registration). Floorball and football match pages subscribe to SignalR. The hockey match page polls REST every 3 seconds while the match is live or upcoming.
 
-Admin covers clubs, divisions, persons, users, news, rules, info pages, and floorball/football/hockey management (including live match control and floorball tournament JSON import). Club admins have a narrower roster / match-day area.
+Admin covers clubs, divisions, persons, users, site settings, news, rules, info pages, footer contacts, and floorball/football/hockey management (including live match control). Season JSON import exists for all three sports. Tournament JSON import is floorball only. Club admins have a narrower roster / match-day area.
 
 ## Run
 

@@ -1,3 +1,5 @@
+> **Out of date in places.** Examples still use namespaces such as `Application.Commands` and `Application.DTOs`. Current slices live under `Features/<Area>/<Feature>/`. Follow [README.md](./README.md) and `.cursor/rules/backend.mdc`.
+
 # Application Development Guide - League Management System
 
 ## Overview

@@ -99,6 +99,13 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.footer-privacy-link {
+  color: inherit;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
 .footer-version__meta {
   margin: 0 0 0 auto;
   text-align: right;
@@ -123,12 +130,17 @@
   font-size: 0.85rem;
 }
 
-.footer-credits__logo {
+.footer-credits__logo-link {
   grid-column: 2;
   grid-row: 1;
+  justify-self: center;
+  display: inline-flex;
+  line-height: 0;
+}
+
+.footer-credits__logo {
   height: 30px;
   width: auto;
-  justify-self: center;
   filter: brightness(0) invert(1);
 }
 
@@ -208,7 +220,7 @@
   }
 
   .footer-credits__made-by,
-  .footer-credits__logo,
+  .footer-credits__logo-link,
   .footer-credits__programme,
   .footer-credits__source {
     grid-column: 1;

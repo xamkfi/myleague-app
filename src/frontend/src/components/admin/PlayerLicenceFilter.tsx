@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { LicenceFilterValue } from './playerLicenceFilter';
+import type { LicenceFilterValue } from './licenceFilterUtils';
 
 interface PlayerLicenceFilterProps {
   id: string;

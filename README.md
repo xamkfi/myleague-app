@@ -13,17 +13,17 @@ League management for floorball, football, and ice hockey.
 
 ## Overview
 
-MyLeague is a sports league management system for clubs, teams, players, matches, seasons, and tournaments. The public site and admin tools are built around **floorball** and **football**. **Ice hockey** has a full backend and seeder; the public hockey UI is not enabled yet.
+MyLeague is a sports league management system for clubs, teams, players, matches, seasons, and tournaments. The public site and admin tools cover **floorball**, **football**, and **ice hockey**. Floorball and football live pages use SignalR. The public hockey match page polls the REST API.
 
 The backend follows Clean Architecture with CQRS (MediatR). Seasons and tournaments share a sport-specific `*Competition` base and are stored with EF Core Table-Per-Hierarchy (TPH), so matches, statistics, and standings use the same `competitionId` for both league seasons and tournaments.
 
 ### Key features
 
-- **Multi-sport** — Floorball and football in the UI; ice hockey API and seed data
+- **Multi-sport** — Floorball, football, and ice hockey in the public site and admin tools
 - **Seasons and tournaments** — Groups, playoffs, lifecycle (draft → registration → group stage → playoff → completed)
 - **Live matches** — Goals, penalties, saves/lineups, match timer, and SignalR updates
 - **Statistics** — Standings, top scorers, team/player season stats
-- **News and info pages** — Hero carousel, tagged articles, editable rules/info content
+- **News and info pages** — Hero carousel, tagged articles, editable rules/info content, MAHL pages, age groups
 - **Event calendar** — Upcoming and past matches across sports
 - **Club admin** — Club-scoped roster and match-day tools
 - **Passwordless auth** — Email login code, JWT access token, refresh-token rotation
@@ -66,7 +66,7 @@ Azure hosting (staging + prod) is described in [`infra/README.md`](infra/README.
 | Area | Stack |
 |------|--------|
 | Backend | .NET 10, ASP.NET Core 10, EF Core 10, MediatR 12.5, FluentValidation 12, Serilog 10, Scalar/OpenAPI |
-| Frontend | React 18.3, TypeScript 5.8, Vite 6.3, Tailwind CSS 4.1, SCSS, React Router 7, i18next, SignalR client |
+| Frontend | React 18.3, TypeScript 5.8, Vite 6.4, Tailwind CSS 4.3, SCSS, React Router 7, i18next, SignalR client |
 | Data | PostgreSQL 16 |
 | Local ops | Docker Compose, Seq, pnpm 10, Node 22 |
 | Cloud | Azure App Service, Static Web Apps, PostgreSQL Flexible Server, Blob Storage, ACS Email, Application Insights |
@@ -141,7 +141,7 @@ Layer guides: [Domain](src/backend/Domain/README.md) · [Application](src/backen
    | Frontend | http://localhost:5173 |
    | API docs (Scalar) | http://localhost:8080/scalar/v1 |
    | Health | http://localhost:8080/health |
-   | Health UI | http://localhost:8080/health-ui |
+   | Health dashboard | http://localhost:8080/health-ui (redirects to `/health-test.html`) |
    | Seq | http://localhost:5341 |
    | PostgreSQL | `localhost:5432` — database `myleague`, user/password `postgres` / `postgres` |
 
@@ -189,6 +189,7 @@ Interactive docs: `/scalar/v1` (Development). OpenAPI JSON: `/swagger/v1/swagger
 | POST | `/api/auth/verify` | Exchange email + code for JWT + refresh token |
 | POST | `/api/auth/refresh` | Rotate refresh token |
 | POST | `/api/auth/logout` | Revoke refresh token |
+| POST | `/api/auth/verify-admin-email` | Activate an invited admin from the email token |
 | GET | `/api/auth/me` | Current user |
 
 ### Common
@@ -205,15 +206,16 @@ Interactive docs: `/scalar/v1` (Development). OpenAPI JSON: `/swagger/v1/swagger
 | Rules | `/api/rulessection` |
 | Info pages | `/api/infopagecontent` |
 | Footer contacts | `/api/FooterContact` |
+| Site settings | `/api/site-settings` (admin; includes `POST …/player-licence-reset`) |
 | Match timer | `/api/matches/{matchId}/timer` |
 
 ### Sports
 
 | Sport | Teams / people | Competitions | Matches | Statistics |
 |-------|----------------|--------------|---------|------------|
-| Floorball | `/api/floorballteam`, `/api/floorballplayer`, `/api/floorballreferee` | `/api/floorballseason`, `/api/floorballtournament` | `/api/floorball-matches` | `/api/floorball/statistics` |
-| Football | `/api/footballteam`, `/api/footballplayer`, `/api/footballreferee` | `/api/footballseason`, `/api/footballtournament` | `/api/football-matches` | `/api/football/statistics` |
-| Hockey | `/api/hockeyteam`, `/api/hockeyplayer`, `/api/hockeyofficial` | `/api/hockeyseason`, `/api/hockeytournament` | `/api/hockeymatch` | `/api/HockeyStatistics` |
+| Floorball | `/api/floorballteam`, `/api/floorballplayer`, `/api/floorballreferee`, `/api/floorballteammanager` | `/api/floorballseason`, `/api/floorballtournament` | `/api/floorball-matches` | `/api/floorball/statistics` |
+| Football | `/api/footballteam`, `/api/footballplayer`, `/api/footballreferee`, `/api/footballteammanager` | `/api/footballseason`, `/api/footballtournament` | `/api/football-matches` | `/api/football/statistics` |
+| Hockey | `/api/hockeyteam`, `/api/hockeyplayer`, `/api/hockeyofficial` | `/api/hockeyseason`, `/api/hockeytournament`, `/api/hockeycompetition` | `/api/hockeymatch` | `/api/HockeyStatistics` |
 
 Match events, officials, lineups/rosters, and lifecycle sit under the match routes (for example `/api/floorball-matches/{id}/events`).
 
@@ -222,9 +224,9 @@ Match events, officials, lineups/rosters, and lifecycle sit under the match rout
 | Endpoint | Description |
 |----------|-------------|
 | `/health` | Detailed health (JSON) |
-| `/health/ready` | Readiness (includes database) |
+| `/health/ready` | Readiness: PostgreSQL and the four DbContexts |
 | `/health/live` | Liveness |
-| `/health-ui` | Health Checks UI |
+| `/health-ui` | Redirects to the static dashboard `/health-test.html` |
 | `/api/version` | Build date + git SHA |
 | `/api/hubs/domainevent` | SignalR hub (JWT via `access_token` query) |
 
@@ -245,7 +247,7 @@ dotnet run --project src/tools/Seeder/Seeder.csproj -- --scope=hockey
 
 Without `--scope`, the tool prompts for phases (persons, clubs, teams, seasons, matches, tournaments, …) and resolves dependencies. It authenticates through the Development login flow.
 
-Single-tournament import in production (no console tool): **Admin → Floorball → Tournaments → Import from JSON**.
+Admin JSON import (no console tool): **Seasons → Import from JSON** for floorball, football, and hockey. **Admin → Floorball → Tournaments → Import from JSON** imports one tournament per file.
 
 ### Other tools
 
@@ -326,7 +328,7 @@ Frontend locales: **Finnish** (default) and **English** under `src/frontend/src/
 ## Contributing
 
 1. Branch from `development`.
-2. Follow the layer development guides next to each backend README.
+2. Follow the layer READMEs and `.cursor/rules/`. The `*DevelopmentGuide.md` files next to the backend READMEs still describe event sourcing and old namespaces; do not follow those parts.
 3. Keep new work in the existing feature-slice folders.
 4. Add tests for domain rules and handlers.
 5. Open a PR into `development`.
@@ -336,7 +338,7 @@ Frontend locales: **Finnish** (default) and **English** under `src/frontend/src/
 Done:
 
 - Clean Architecture backend with CQRS
-- Floorball and football public + admin UI
+- Floorball, football, and ice hockey public + admin UI
 - Hockey domain, API, and seeder
 - Passwordless auth and refresh-token rotation
 - Live match flow with SignalR
@@ -345,7 +347,6 @@ Done:
 
 Next:
 
-- Public ice hockey UI
 - Scale-out SignalR (Redis or Azure SignalR) if the App Service plan goes beyond one instance
 - Richer reporting / analytics
 - Rate limiting beyond match-event limits

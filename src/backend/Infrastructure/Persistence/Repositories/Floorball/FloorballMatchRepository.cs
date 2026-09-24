@@ -488,6 +488,17 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <inheritdoc />
+        public Task<bool> HasMatchThatBlocksSeasonDeleteAsync(Guid competitionId, CancellationToken cancellationToken = default)
+        {
+            return _entities
+                .AsNoTracking()
+                .AnyAsync(
+                    match => match.CompetitionId == competitionId
+                        && match.Status != FloorballMatchStatus.Scheduled
+                        && match.Status != FloorballMatchStatus.Postponed,
+                    cancellationToken);
+        }
+
         public async Task<int> DeleteAllByCompetitionIdAsync(Guid competitionId, CancellationToken cancellationToken = default)
         {
             // Snapshot the match ids once so all the follow-up cleanups operate on the same set,

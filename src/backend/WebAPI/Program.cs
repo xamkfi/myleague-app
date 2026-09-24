@@ -2,6 +2,7 @@ using System.Text;
 using Application.Configuration;
 using Application.DependencyInjections;
 using MyLeague.Infrastructure.DependencyInjections;
+using MyLeague.Infrastructure.HealthChecks;
 using MyLeague.Infrastructure.SignalR;
 using WebAPI.Middlewares;
 using WebAPI.DependencyInjections;
@@ -235,10 +236,11 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
     }
 });
 
-// Map simple health check for load balancers
+// Azure healthCheckPath and deploy smoke tests call this. Memory, disk, and
+// service-resolution checks stay on /health so they cannot pull the instance out.
 app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
-    Predicate = _ => true,
+    Predicate = registration => registration.Tags.Contains(HealthCheckExtensions.ReadyTag),
     ResponseWriter = async (context, report) =>
     {
         context.Response.ContentType = "text/plain";

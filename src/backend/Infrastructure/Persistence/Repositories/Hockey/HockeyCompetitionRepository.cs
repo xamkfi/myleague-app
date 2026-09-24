@@ -61,6 +61,12 @@ public class HockeyCompetitionRepository : IHockeyCompetitionRepository
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
+    public async Task<HockeySeason?> GetSeasonByNameAsync(string name)
+    {
+        return await _dbContext.HockeySeasons
+            .FirstOrDefaultAsync(season => season.Name == name);
+    }
+
     public async Task<HockeyTournament?> GetTournamentByIdAsync(Guid id)
     {
         return await _dbContext.HockeyTournaments
@@ -118,6 +124,37 @@ public class HockeyCompetitionRepository : IHockeyCompetitionRepository
             .OrderByDescending(season => season.Status == HockeyCompetitionStatus.Active)
             .ThenByDescending(season => season.StartDate)
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.HockeySeasons.AnyAsync(season => season.Id == id, cancellationToken);
+    }
+
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        // Division teams restrict the competition team, while both the division and the
+        // competition team cascade from the competition. Remove the division-team rows first
+        // so the season delete can cascade the rest.
+        List<Guid> divisionIds = await _dbContext.HockeyCompetitionDivisions
+            .Where(division => division.CompetitionId == id)
+            .Select(division => division.Id)
+            .ToListAsync(cancellationToken);
+
+        if (divisionIds.Count > 0)
+        {
+            List<HockeyCompetitionDivisionTeam> divisionTeams = await _dbContext.HockeyCompetitionDivisionTeams
+                .Where(team => divisionIds.Contains(team.CompetitionDivisionId))
+                .ToListAsync(cancellationToken);
+            _dbContext.HockeyCompetitionDivisionTeams.RemoveRange(divisionTeams);
+        }
+
+        HockeySeason? season = await _dbContext.HockeySeasons
+            .FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+        if (season != null)
+        {
+            _dbContext.HockeySeasons.Remove(season);
+        }
     }
 
     public void MarkNewContentBlocksAdded(HockeySeason season, IReadOnlyCollection<Guid> existingBlockIds)

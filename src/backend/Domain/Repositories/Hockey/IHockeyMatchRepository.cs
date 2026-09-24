@@ -21,6 +21,19 @@ public interface IHockeyMatchRepository
     Task<IReadOnlyList<HockeyMatch>> GetByCompetitionIdAsync(Guid competitionId);
 
     /// <summary>
+    /// True when the competition has a match that has started, finished, or been cancelled.
+    /// Scheduled and postponed matches do not block season deletion. Does not track entities.
+    /// </summary>
+    Task<bool> HasMatchThatBlocksSeasonDeleteAsync(Guid competitionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes every match of a competition after clearing rows that restrict the match,
+    /// its teams, or the playoff <c>NextMatchId</c> self-reference.
+    /// Persists immediately via <c>ExecuteDelete</c>.
+    /// </summary>
+    Task<int> DeleteAllByCompetitionIdAsync(Guid competitionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Loads matches where the given career team appears as home or away.
     /// </summary>
     Task<IReadOnlyList<HockeyMatch>> GetByTeamIdAsync(Guid teamId);

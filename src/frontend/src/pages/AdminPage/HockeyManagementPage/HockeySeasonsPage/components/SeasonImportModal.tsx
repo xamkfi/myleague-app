@@ -8,6 +8,7 @@ import {
 } from '../../../../../api/hockey/seasonImportService';
 import type { HockeySeasonImportPayload } from '../../../../../types/hockey/seasonImportTypes';
 import type { SeasonTeamCategory } from '../../../../../types/common/seasonImportTypes';
+import { buildSeasonImportPreview } from '../../../../../api/common/seasonImportShared';
 import { HOCKEY_SEASON_IMPORT_AI_PROMPT, buildHockeySeasonPromptFileName } from './seasonImportPrompt';
 
 const SAMPLE_HREF = new URL('../../../../../types/hockey/seasonImport.sample.json', import.meta.url).href;
@@ -30,6 +31,7 @@ export function SeasonImportModal({ onClose, onImported }: SeasonImportModalProp
       editPath={(seasonId) => `/admin/hockey/seasons/${seasonId}/edit`}
       validatePayload={validatePayload}
       getDryRunCounts={getDryRunCounts}
+      getPreview={buildSeasonImportPreview}
       inferTeamCategory={inferTeamCategory}
       getSeasonName={(payload) => payload.season.name}
       getDefaultVenue={(payload) => payload.season.defaultVenue?.trim() ?? ''}

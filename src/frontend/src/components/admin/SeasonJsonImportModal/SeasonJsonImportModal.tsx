@@ -6,6 +6,7 @@ import type {
   SeasonImportCreatedRecord,
   SeasonImportDryRunCounts,
   SeasonImportError,
+  SeasonImportPreview,
   SeasonImportStep,
   SeasonImportSummary,
   SeasonTeamCategory,
@@ -25,6 +26,7 @@ export interface SeasonJsonImportModalProps<TPayload> {
   editPath: (seasonId: string) => string;
   validatePayload: (parsed: unknown) => { valid: true; payload: TPayload } | { valid: false; errors: string[] };
   getDryRunCounts: (payload: TPayload) => SeasonImportDryRunCounts;
+  getPreview: (payload: TPayload) => SeasonImportPreview;
   inferTeamCategory: (payload: TPayload) => SeasonTeamCategory;
   getSeasonName: (payload: TPayload) => string;
   getDefaultVenue: (payload: TPayload) => string;
@@ -69,6 +71,7 @@ export function SeasonJsonImportModal<TPayload>({
   editPath,
   validatePayload,
   getDryRunCounts,
+  getPreview,
   inferTeamCategory,
   getSeasonName,
   getDefaultVenue,
@@ -76,7 +79,7 @@ export function SeasonJsonImportModal<TPayload>({
   importSeason,
   revertImport,
 }: SeasonJsonImportModalProps<TPayload>) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const [state, setState] = useState<ModalState<TPayload>>({ kind: 'idle' });
@@ -504,6 +507,14 @@ export function SeasonJsonImportModal<TPayload>({
                 </tr>
               </tbody>
             </table>
+            <SeasonImportPreviewPanel
+              preview={getPreview(state.payload)}
+              seasonName={seasonNameOverride.trim() || getSeasonName(state.payload)}
+              hasDefaultVenue={venueOverride.trim().length > 0}
+              language={i18n.language}
+              t={t}
+              i18nPrefix={i18nPrefix}
+            />
             <p className="import-modal__note">
               {t(
                 `${i18nPrefix}.previewNote`,
@@ -680,6 +691,145 @@ export function SeasonJsonImportModal<TPayload>({
     </div>
   );
 }
+
+function formatPreviewDate(value: string, language: string, withTime: boolean): string {
+  const locale = language.toLowerCase().startsWith('fi') ? 'fi-FI' : 'en-GB';
+  const parsed = new Date(withTime ? value : `${value}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+  }).format(parsed);
+}
+
+const SeasonImportPreviewPanel = ({
+  preview,
+  seasonName,
+  hasDefaultVenue,
+  language,
+  t,
+  i18nPrefix,
+}: {
+  preview: SeasonImportPreview;
+  seasonName: string;
+  hasDefaultVenue: boolean;
+  language: string;
+  t: ReturnType<typeof useTranslation>['t'];
+  i18nPrefix: string;
+}): ReactElement => {
+  const checks: string[] = [];
+  if (preview.teamsWithoutMatches.length > 0) {
+    checks.push(
+      t(`${i18nPrefix}.previewCheckTeamsWithoutMatches`, 'Teams with no matches: {{teams}}', {
+        teams: preview.teamsWithoutMatches.join(', '),
+      }),
+    );
+  }
+  if (preview.matchesOutsideSeason > 0) {
+    checks.push(
+      t(`${i18nPrefix}.previewCheckMatchesOutsideSeason`, '{{count}} matches fall outside the season dates.', {
+        count: preview.matchesOutsideSeason,
+      }),
+    );
+  }
+  if (preview.matchesWithoutOwnVenue > 0 && !hasDefaultVenue) {
+    checks.push(
+      t(
+        `${i18nPrefix}.previewCheckMissingVenue`,
+        '{{count}} matches have no venue and no default venue is set.',
+        { count: preview.matchesWithoutOwnVenue },
+      ),
+    );
+  }
+
+  const rangeLabel =
+    preview.firstMatchAt && preview.lastMatchAt
+      ? t(`${i18nPrefix}.previewMatchWindow`, 'Matches {{first}} – {{last}}', {
+          first: formatPreviewDate(preview.firstMatchAt, language, true),
+          last: formatPreviewDate(preview.lastMatchAt, language, true),
+        })
+      : t(`${i18nPrefix}.previewNoMatches`, 'The file has no matches.');
+
+  return (
+    <section className="import-modal__checklist" aria-label={t(`${i18nPrefix}.previewHeading`, 'Review before import')}>
+      <h4 className="import-modal__checklist-title">{t(`${i18nPrefix}.previewHeading`, 'Review before import')}</h4>
+      <p className="import-modal__checklist-season">
+        <strong>{seasonName}</strong>
+        {' · '}
+        {t(`${i18nPrefix}.previewSeasonRange`, '{{start}} – {{end}}', {
+          start: formatPreviewDate(preview.startDate, language, false),
+          end: formatPreviewDate(preview.endDate, language, false),
+        })}
+        {' · '}
+        {rangeLabel}
+      </p>
+      {preview.venues.length > 0 ? (
+        <p className="import-modal__checklist-meta">
+          {t(`${i18nPrefix}.previewVenues`, 'Venues: {{venues}}', { venues: preview.venues.join(', ') })}
+        </p>
+      ) : (
+        <p className="import-modal__checklist-meta">
+          {t(`${i18nPrefix}.previewNoVenue`, 'No venue is set on the matches.')}
+        </p>
+      )}
+      <ul className="import-modal__divisions">
+        {preview.divisions.map((division) => (
+          <li key={division.name} className="import-modal__division">
+            <p className="import-modal__division-title">
+              {t(`${i18nPrefix}.previewDivisionTeams`, '{{division}} · {{count}} teams', {
+                division: division.name,
+                count: division.teams.length,
+              })}
+            </p>
+            {division.teams.length > 0 ? (
+              <ul className="import-modal__teams">
+                {division.teams.map((team) => {
+                  const showClub = team.clubName.trim().toLowerCase() !== team.name.trim().toLowerCase();
+                  const players =
+                    team.playerCount > 0
+                      ? ` · ${t(`${i18nPrefix}.previewPlayers`, '{{count}} players', { count: team.playerCount })}`
+                      : '';
+                  return (
+                    <li key={team.name}>
+                      {showClub
+                        ? t(`${i18nPrefix}.previewTeamLineWithClub`, '{{name}} ({{club}}) · {{matches}} matches', {
+                            name: team.name,
+                            club: team.clubName,
+                            matches: team.matchCount,
+                          })
+                        : t(`${i18nPrefix}.previewTeamLine`, '{{name}} · {{matches}} matches', {
+                            name: team.name,
+                            matches: team.matchCount,
+                          })}
+                      {players}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="import-modal__checklist-meta">
+                {t(`${i18nPrefix}.previewDivisionEmpty`, 'No teams in this division.')}
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+      {checks.length > 0 ? (
+        <ul className="import-modal__checks">
+          {checks.map((check) => (
+            <li key={check}>{check}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="import-modal__note import-modal__note--ok">
+          {t(`${i18nPrefix}.previewCheckOk`, 'Teams, divisions, and match times look consistent.')}
+        </p>
+      )}
+    </section>
+  );
+};
 
 const ImportSummaryView = ({
   summary,

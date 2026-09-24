@@ -337,6 +337,66 @@
       color: $color-yellow-muted;
       font-weight: map.get($font-weights, 'medium');
     }
+
+    &--ok {
+      color: $color-green-muted;
+    }
+  }
+
+  &__checklist {
+    margin-top: map.get($spacing, 'base');
+    padding: map.get($spacing, 'base');
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'sm');
+    background: $color-neutral-light-grey;
+  }
+
+  &__checklist-title {
+    margin: 0 0 map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'base');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-text-primary;
+  }
+
+  &__checklist-season {
+    margin: 0 0 map.get($spacing, 'xs');
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  &__checklist-meta {
+    margin: 0 0 map.get($spacing, 'sm');
+    color: $color-text-muted;
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  &__divisions,
+  &__teams,
+  &__checks {
+    margin: 0;
+    padding-left: map.get($spacing, 'lg');
+  }
+
+  &__division {
+    margin-bottom: map.get($spacing, 'sm');
+  }
+
+  &__division-title {
+    margin: 0 0 map.get($spacing, 'xxs');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-text-primary;
+  }
+
+  &__teams li,
+  &__checks li {
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+    margin-bottom: map.get($spacing, 'xxs');
+  }
+
+  &__checks {
+    margin-top: map.get($spacing, 'sm');
+    color: $color-yellow-muted;
   }
 
   &__checkbox {

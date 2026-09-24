@@ -1,0 +1,70 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.privacy-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: map.get($spacing, 'lg') map.get($spacing, 'md') map.get($spacing, 'xl');
+  line-height: 1.6;
+}
+
+.privacy-page__title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: map.get($spacing, 'md');
+}
+
+.privacy-page__intro {
+  font-size: 1.05rem;
+  margin-bottom: map.get($spacing, 'lg');
+}
+
+.privacy-page__section {
+  margin-bottom: map.get($spacing, 'lg');
+
+  p {
+    margin: 0 0 map.get($spacing, 'sm');
+  }
+
+  ul {
+    margin: 0 0 map.get($spacing, 'sm');
+    padding-left: 1.4rem;
+    list-style: disc;
+
+    li {
+      margin-bottom: map.get($spacing, 'xxs');
+    }
+  }
+}
+
+.privacy-page__section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: map.get($spacing, 'sm');
+  padding-bottom: map.get($spacing, 'xs');
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.privacy-page__todo {
+  background: #fff7e0;
+  border-left: 4px solid #e0a800;
+  border-radius: 4px;
+  padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+  margin: map.get($spacing, 'sm') 0 map.get($spacing, 'md');
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .privacy-page {
+    padding: map.get($spacing, 'md') map.get($spacing, 'sm') map.get($spacing, 'lg');
+  }
+
+  .privacy-page__title {
+    font-size: 1.6rem;
+  }
+
+  .privacy-page__section-title {
+    font-size: 1.1rem;
+  }
+}

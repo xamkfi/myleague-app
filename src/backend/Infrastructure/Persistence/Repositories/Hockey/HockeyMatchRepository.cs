@@ -41,6 +41,99 @@ public class HockeyMatchRepository : IHockeyMatchRepository
             .ToListAsync();
     }
 
+    public Task<bool> HasMatchThatBlocksSeasonDeleteAsync(Guid competitionId, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.HockeyMatches
+            .AsNoTracking()
+            .AnyAsync(
+                match => match.CompetitionId == competitionId
+                    && match.Status != HockeyMatchStatus.Scheduled
+                    && match.Status != HockeyMatchStatus.Postponed,
+                cancellationToken);
+    }
+
+    public async Task<int> DeleteAllByCompetitionIdAsync(Guid competitionId, CancellationToken cancellationToken = default)
+    {
+        List<Guid> matchIds = await _dbContext.HockeyMatches
+            .AsNoTracking()
+            .Where(match => match.CompetitionId == competitionId)
+            .Select(match => match.Id)
+            .ToListAsync(cancellationToken);
+
+        if (matchIds.Count == 0)
+        {
+            return 0;
+        }
+
+        // Match statistics restrict the match row. Drop them before the matches.
+        await _dbContext.HockeyGoaliePeriodStatistics
+            .Where(stat => matchIds.Contains(stat.MatchId))
+            .ExecuteDeleteAsync(cancellationToken);
+        await _dbContext.HockeyGoalieMatchStatistics
+            .Where(stat => matchIds.Contains(stat.MatchId))
+            .ExecuteDeleteAsync(cancellationToken);
+        await _dbContext.HockeyMatchPlayerStatistics
+            .Where(stat => matchIds.Contains(stat.MatchId))
+            .ExecuteDeleteAsync(cancellationToken);
+        await _dbContext.HockeyMatchTeamStatistics
+            .Where(stat => matchIds.Contains(stat.MatchId))
+            .ExecuteDeleteAsync(cancellationToken);
+
+        await _dbContext.HockeyMatches
+            .Where(match => match.CompetitionId == competitionId && match.NextMatchId != null)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(match => match.NextMatchId, _ => (Guid?)null),
+                cancellationToken);
+
+        // Events restrict the match team and the active player. Remove them before those parents.
+        await _dbContext.HockeyMatchEvents
+            .Where(matchEvent => matchIds.Contains(matchEvent.MatchId))
+            .ExecuteDeleteAsync(cancellationToken);
+
+        List<Guid> matchTeamIds = await _dbContext.HockeyMatchTeams
+            .Where(matchTeam => matchIds.Contains(matchTeam.MatchId))
+            .Select(matchTeam => matchTeam.Id)
+            .ToListAsync(cancellationToken);
+
+        if (matchTeamIds.Count > 0)
+        {
+            List<Guid> onIceStateIds = await _dbContext.HockeyOnIceStates
+                .Where(state => matchTeamIds.Contains(state.MatchTeamId))
+                .Select(state => state.Id)
+                .ToListAsync(cancellationToken);
+            if (onIceStateIds.Count > 0)
+            {
+                await _dbContext.HockeyOnIceChanges
+                    .Where(change => onIceStateIds.Contains(change.OnIceStateId))
+                    .ExecuteDeleteAsync(cancellationToken);
+                await _dbContext.HockeyOnIcePlayers
+                    .Where(player => onIceStateIds.Contains(player.OnIceStateId))
+                    .ExecuteDeleteAsync(cancellationToken);
+            }
+
+            List<Guid> lineIds = await _dbContext.HockeyMatchLines
+                .Where(line => matchTeamIds.Contains(line.MatchTeamId))
+                .Select(line => line.Id)
+                .ToListAsync(cancellationToken);
+            if (lineIds.Count > 0)
+            {
+                await _dbContext.HockeyMatchLinePlayers
+                    .Where(player => lineIds.Contains(player.MatchLineId))
+                    .ExecuteDeleteAsync(cancellationToken);
+            }
+
+            await _dbContext.HockeyMatchTeams
+                .Where(matchTeam => matchTeamIds.Contains(matchTeam.Id) && matchTeam.ActiveGoalieMatchPlayerId != null)
+                .ExecuteUpdateAsync(
+                    setters => setters.SetProperty(matchTeam => matchTeam.ActiveGoalieMatchPlayerId, _ => (Guid?)null),
+                    cancellationToken);
+        }
+
+        return await _dbContext.HockeyMatches
+            .Where(match => match.CompetitionId == competitionId)
+            .ExecuteDeleteAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<HockeyMatch>> GetByTeamIdAsync(Guid teamId)
     {
         return await BuildDetailQuery()

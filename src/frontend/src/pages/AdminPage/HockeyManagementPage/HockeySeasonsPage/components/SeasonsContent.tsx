@@ -7,6 +7,7 @@ interface SeasonsContentProps {
   onEdit: (season: HockeySeasonDto) => void;
   onActivateToggle: (season: HockeySeasonDto) => void;
   onComplete: (season: HockeySeasonDto) => void;
+  onDelete: (season: HockeySeasonDto) => void;
   operationLoading?: string | null;
 }
 
@@ -15,6 +16,7 @@ export function SeasonsContent({
   onEdit,
   onActivateToggle,
   onComplete,
+  onDelete,
   operationLoading,
 }: SeasonsContentProps) {
   const { t } = useTranslation();
@@ -31,6 +33,7 @@ export function SeasonsContent({
           onEdit={onEdit}
           onActivateToggle={onActivateToggle}
           onComplete={onComplete}
+          onDelete={onDelete}
           operationLoading={operationLoading}
         />
       )}

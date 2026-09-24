@@ -10,6 +10,7 @@ import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { LoadingState } from './components/LoadingState';
 import { SeasonsContent } from './components/SeasonsContent';
 import { ConfirmCompleteSeasonModal } from './components/ConfirmCompleteSeasonModal';
+import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
 import { SeasonImportModal } from './components/SeasonImportModal';
 import { hockeySeasonService } from '../../../../api/hockey/hockeySeasonService';
 import type { HockeySeasonDto } from '../../../../types/hockey/hockeyTypes';
@@ -25,6 +26,7 @@ function HockeySeasonsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [operationLoading, setOperationLoading] = useState<string | null>(null);
   const [seasonToComplete, setSeasonToComplete] = useState<HockeySeasonDto | null>(null);
+  const [seasonToDelete, setSeasonToDelete] = useState<HockeySeasonDto | null>(null);
   const [showImportModal, setShowImportModal] = useState<boolean>(false);
 
   const loadSeasons = useCallback(async (options?: { silent?: boolean }): Promise<void> => {
@@ -86,6 +88,30 @@ function HockeySeasonsPage() {
     }
   };
 
+  const confirmDeleteSeason = async (): Promise<void> => {
+    if (!seasonToDelete) {
+      return;
+    }
+    setOperationLoading(seasonToDelete.id);
+    try {
+      await hockeySeasonService.deleteSeason(seasonToDelete.id);
+      setSeasons((prev) => prev.filter((item) => item.id !== seasonToDelete.id));
+      setSeasonToDelete(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('hockey.seasons.errors.deleteFailed', 'Failed to delete season');
+      if (message.includes('Cannot delete a season that has a match that has started')) {
+        setError(t(
+          'hockey.seasons.errors.hasMatches',
+          'Cannot delete a season that has a match that has started, finished, or been cancelled.',
+        ));
+      } else {
+        setError(message);
+      }
+    } finally {
+      setOperationLoading(null);
+    }
+  };
+
   const confirmCompleteSeason = async (): Promise<void> => {
     if (!seasonToComplete) {
       return;
@@ -139,9 +165,22 @@ function HockeySeasonsPage() {
                 setSeasonToComplete(season);
               }
             }}
+            onDelete={setSeasonToDelete}
             operationLoading={operationLoading}
           />
         </div>
+        {seasonToDelete && (
+          <ConfirmDeleteModal
+            season={seasonToDelete}
+            loading={operationLoading === seasonToDelete.id}
+            onConfirm={confirmDeleteSeason}
+            onCancel={() => {
+              if (operationLoading !== seasonToDelete.id) {
+                setSeasonToDelete(null);
+              }
+            }}
+          />
+        )}
         {seasonToComplete && (
           <ConfirmCompleteSeasonModal
             season={seasonToComplete}

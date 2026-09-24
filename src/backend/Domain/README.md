@@ -2,7 +2,7 @@
 
 Core business model for MyLeague. This project has no infrastructure or UI dependencies. It defines entities, value objects, enums, and repository contracts used by Application and Infrastructure.
 
-See the [root README](../../../README.md) for how this layer fits the solution, and [FeatureDevelopmentGuide.md](./FeatureDevelopmentGuide.md) when adding a feature.
+See the [root README](../../../README.md) for how this layer fits the solution. [FeatureDevelopmentGuide.md](./FeatureDevelopmentGuide.md) still describes event sourcing and domain-event aggregates; the code does not. Follow this README and `.cursor/rules/backend.mdc` when adding a feature.
 
 ## Design
 
@@ -26,14 +26,14 @@ Match **events** (goals, penalties, cards, shots, and so on) are persisted entit
 ```
 Domain/
 ├── Entities/
-│   ├── Common/          # Person, Club, User, Division, News, Rules, Info pages, FooterContact, …
+│   ├── Common/          # Person, Club, ClubManager, User, RefreshToken, Division, News, Rules, Info pages, FooterContact, SiteSettings, TimerState
 │   ├── Floorball/       # Competitions, Matches/Events, Teams, Statistics, Officials
 │   ├── Football/        # Competitions, Matches, Teams, Statistics, Officials
 │   └── Hockey/          # Competitions, Matches/Events, Teams, Statistics, Officials
 ├── ValueObjects/        # Common + per-sport (rules, addresses, match values)
 ├── Enums/               # Common + per-sport
 ├── Repositories/        # Interfaces only
-├── Services/            # Domain service contracts (hockey and shared)
+├── Services/            # Hockey validation/statistics services; floorball statistic contract
 ├── Constants/
 └── DomainGlossary.md    # Ubiquitous language
 ```
@@ -46,7 +46,7 @@ Hockey types use the `Hockey` prefix (`HockeyTeam`, `HockeyMatchStatus`). Namesp
 |-------|------------------|--------|
 | Floorball | Primary | Full match events, periods, referees, TPH competitions |
 | Football | Hobby / complete slice | Configurable half length and players-on-field (5v5–11v11); cards, substitutions, extra time, shootouts; `FootballStandingRules` (default 3–1–0) |
-| Ice hockey | Complete backend model | Lines, on-ice, faceoffs, shots, penalties, goalie tracking; public UI is not enabled yet |
+| Ice hockey | Complete model and public UI | Lines, on-ice, faceoffs, shots, penalties, goalie tracking. Public pages are routed; the live match page polls REST |
 
 ### Typical aggregate roots
 

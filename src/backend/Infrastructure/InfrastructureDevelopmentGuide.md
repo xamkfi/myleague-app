@@ -1,3 +1,5 @@
+> **Out of date.** This guide still describes event sourcing and domain-event handlers. Persistence is four EF Core contexts with ordinary entities. Follow [README.md](./README.md), `.cursor/rules/database.mdc`, and `.cursor/skills/ef-migration/SKILL.md`.
+
 # Infrastructure Development Guide - League Management System
 
 ## Overview
