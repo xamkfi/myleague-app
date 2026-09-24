@@ -72,6 +72,18 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
+        /// Gets a league season by its exact name. Tournaments are excluded.
+        /// </summary>
+        /// <param name="name">The season name</param>
+        /// <returns>The season if found, null otherwise</returns>
+        public async Task<FloorballSeason?> GetSeasonByNameAsync(string name)
+        {
+            return await _entities
+                .OfType<FloorballSeason>()
+                .FirstOrDefaultAsync(season => season.Name == name);
+        }
+
+        /// <summary>
         /// Gets active floorball competitions
         /// </summary>
         /// <returns>A collection of active floorball competitions</returns>

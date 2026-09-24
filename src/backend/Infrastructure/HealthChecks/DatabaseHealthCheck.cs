@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ namespace MyLeague.Infrastructure.HealthChecks
     {
         private readonly CommonDbContext _commonDbContext;
         private readonly FloorballDbContext _floorballDbContext;
+        private readonly FootballDbContext _footballDbContext;
         private readonly HockeyDbContext _hockeyDbContext;
         private readonly ILogger<DatabaseHealthCheck> _logger;
 
@@ -20,16 +22,19 @@ namespace MyLeague.Infrastructure.HealthChecks
         /// </summary>
         /// <param name="commonDbContext">The common database context</param>
         /// <param name="floorballDbContext">The floorball database context</param>
+        /// <param name="footballDbContext">The football database context</param>
         /// <param name="hockeyDbContext">The hockey database context</param>
         /// <param name="logger">The logger instance</param>
         public DatabaseHealthCheck(
             CommonDbContext commonDbContext,
             FloorballDbContext floorballDbContext,
+            FootballDbContext footballDbContext,
             HockeyDbContext hockeyDbContext,
             ILogger<DatabaseHealthCheck> logger)
         {
             _commonDbContext = commonDbContext ?? throw new ArgumentNullException(nameof(commonDbContext));
             _floorballDbContext = floorballDbContext ?? throw new ArgumentNullException(nameof(floorballDbContext));
+            _footballDbContext = footballDbContext ?? throw new ArgumentNullException(nameof(footballDbContext));
             _hockeyDbContext = hockeyDbContext ?? throw new ArgumentNullException(nameof(hockeyDbContext));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -64,6 +69,14 @@ namespace MyLeague.Infrastructure.HealthChecks
                     return HealthCheckResult.Unhealthy("Floorball database is not accessible");
                 }
 
+                // Check Football database connectivity
+                bool footballDbCanConnect = await _footballDbContext.Database.CanConnectAsync(cancellationToken);
+                if (!footballDbCanConnect)
+                {
+                    _logger.LogWarning("Football database connection failed");
+                    return HealthCheckResult.Unhealthy("Football database is not accessible");
+                }
+
                 // Check Hockey database connectivity
                 bool hockeyDbCanConnect = await _hockeyDbContext.Database.CanConnectAsync(cancellationToken);
                 if (!hockeyDbCanConnect)
@@ -75,6 +88,7 @@ namespace MyLeague.Infrastructure.HealthChecks
                 // Perform basic query operations to ensure databases are functional
                 int commonClubCount = 0;
                 int floorballPlayerCount = 0;
+                int footballTeamCount = 0;
                 int hockeyTeamCount = 0;
                 var warnings = new List<string>();
 
@@ -102,6 +116,25 @@ namespace MyLeague.Infrastructure.HealthChecks
 
                 try
                 {
+                    footballTeamCount = await _footballDbContext.FootballTeams.CountAsync(cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (DbException ex)
+                {
+                    _logger.LogWarning(ex, "Failed to count teams in football database - this may be normal if migrations haven't run yet");
+                    warnings.Add("Football database tables may not exist yet");
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.LogWarning(ex, "Failed to count teams in football database - this may be normal if migrations haven't run yet");
+                    warnings.Add("Football database tables may not exist yet");
+                }
+
+                try
+                {
                     hockeyTeamCount = await _hockeyDbContext.HockeyTeams.CountAsync(cancellationToken);
                 }
                 catch (Exception ex)
@@ -114,9 +147,11 @@ namespace MyLeague.Infrastructure.HealthChecks
                 {
                     { "CommonDatabase", "Connected" },
                     { "FloorballDatabase", "Connected" },
+                    { "FootballDatabase", "Connected" },
                     { "HockeyDatabase", "Connected" },
                     { "ClubCount", commonClubCount },
                     { "PlayerCount", floorballPlayerCount },
+                    { "FootballTeamCount", footballTeamCount },
                     { "HockeyTeamCount", hockeyTeamCount },
                     { "CheckedAt", DateTime.UtcNow }
                 };

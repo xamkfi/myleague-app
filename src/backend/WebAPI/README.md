@@ -2,7 +2,7 @@
 
 ASP.NET Core 10 host for MyLeague. Controllers translate HTTP to MediatR requests and wrap results in a consistent `ApiResponse` / paged envelope.
 
-See the [root README](../../../README.md) for ports, auth, and Docker, and [WebAPIDevelopmentGuide.md](./WebAPIDevelopmentGuide.md) for endpoint conventions.
+See the [root README](../../../README.md) for ports, auth, and Docker. [WebAPIDevelopmentGuide.md](./WebAPIDevelopmentGuide.md) still imports `Application.Commands` / `Application.DTOs`, which are not the current namespaces. Follow this README and `.cursor/skills/create-api-endpoint/SKILL.md`.
 
 ## Responsibilities
 
@@ -12,7 +12,7 @@ See the [root README](../../../README.md) for ports, auth, and Docker, and [WebA
 - CORS (Development only; Azure sets CORS in Bicep)
 - Serilog request logging; Application Insights when a connection string is present
 - Scalar / OpenAPI in Development
-- Health endpoints and Health Checks UI
+- Health endpoints and a static dashboard (`/health-test.html`; `/health-ui` redirects there)
 - Match-event rate limiting (`IMatchEventRateLimiter`)
 
 ## Technology
@@ -23,7 +23,7 @@ See the [root README](../../../README.md) for ports, auth, and Docker, and [WebA
 - JWT Bearer 10.0
 - Scalar.AspNetCore 1.2
 - Serilog (console, file, Seq, Application Insights)
-- Health Checks UI 8
+- Static health dashboard in `wwwroot/health-test.html` (the Xabaril HealthChecks.UI package is not referenced)
 
 ## Structure
 
@@ -32,9 +32,10 @@ WebAPI/
 ├── Controllers/
 │   ├── Auth/
 │   ├── Common/              # Clubs, ClubAdmin, Divisions, Persons, Users,
-│   │                        # News, Search, Rules, Info pages, Footer contacts, MatchTimer
-│   ├── Floorball/           # Teams, players, referees, seasons, tournaments,
-│   │   └── Match/           #   matches, events, officials, roster, lifecycle
+│   │                        # News, Search, Rules, Info pages, Footer contacts,
+│   │                        # Site settings, MatchTimer
+│   ├── Floorball/           # Teams, players, referees, team managers, seasons,
+│   │   └── Match/           #   tournaments, matches, events, officials, roster, lifecycle
 │   ├── Football/            # Parallel to floorball
 │   ├── Hockey/
 │   └── Health/
@@ -54,14 +55,14 @@ Full route tables live in the [root README](../../../README.md#api-overview). Hi
 | Area | Examples |
 |------|----------|
 | Auth | `/api/auth/login`, `/verify`, `/refresh`, `/logout`, `/me` |
-| Common | `/api/clubs`, `/api/club-admin`, `/api/news`, `/api/search` |
+| Common | `/api/clubs`, `/api/club-admin`, `/api/news`, `/api/search`, `/api/site-settings` |
 | Floorball | `/api/floorballteam`, `/api/floorball-matches`, `/api/floorball/statistics` |
 | Football | `/api/footballteam`, `/api/football-matches`, `/api/football/statistics` |
 | Hockey | `/api/hockeyteam`, `/api/hockeymatch`, `/api/HockeyStatistics` |
 | Real-time | `/api/hubs/domainevent` |
-| Ops | `/health`, `/health/ready`, `/health/live`, `/health-ui`, `/api/version` |
+| Ops | `/health`, `/health/ready`, `/health/live`, `/health-ui` → `/health-test.html`, `/api/health`, `/api/version` |
 
-Scalar UI: `/scalar/v1` (Development). OpenAPI: `/swagger/v1/swagger.json`.
+Scalar UI: `/scalar/v1` (Development). OpenAPI: `/swagger/v1/swagger.json`. Health check names and gaps: [HealthChecks-README.md](./HealthChecks-README.md).
 
 ### Response shape
 

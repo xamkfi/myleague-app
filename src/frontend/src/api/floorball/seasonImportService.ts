@@ -23,6 +23,7 @@ import {
   getSeasonDryRunCounts,
   inferSeasonTeamCategory,
   importClubs,
+  reportDuplicateSeasonName,
   importDivisions,
   importTeamPlayers,
   matchLabel,
@@ -66,6 +67,25 @@ export async function importSeason(
   const summary = emptySeasonImportSummary();
   const { reportFatal, checkAbort } = createImportRuntime(summary, callbacks);
   const defaultCategory = options.defaultTeamCategory ?? inferSeasonTeamCategory(payload);
+
+  if (checkAbort()) return summary;
+  try {
+    const existing = await floorballSeasonService.getAll(true);
+    const existingNames = existing.data.map((season) => season.name);
+    if (
+      reportDuplicateSeasonName(
+        payload.season.name,
+        existingNames,
+        'floorball.seasons.import.duplicateName',
+        reportFatal,
+      )
+    ) {
+      return summary;
+    }
+  } catch (err) {
+    reportFatal('season', `Season "${payload.season.name}"`, err);
+    return summary;
+  }
 
   const clubByName = await importClubs(payload.clubs, summary, callbacks, checkAbort, reportFatal);
   if (!clubByName || summary.fatal || summary.aborted) return summary;

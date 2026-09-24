@@ -9,6 +9,7 @@ interface SeasonsTableProps {
   onEdit: (season: HockeySeasonDto) => void;
   onActivateToggle: (season: HockeySeasonDto) => void;
   onComplete: (season: HockeySeasonDto) => void;
+  onDelete: (season: HockeySeasonDto) => void;
   operationLoading?: string | null;
 }
 
@@ -17,6 +18,7 @@ export function SeasonsTable({
   onEdit,
   onActivateToggle,
   onComplete,
+  onDelete,
   operationLoading,
 }: SeasonsTableProps) {
   const { t } = useTranslation();
@@ -76,6 +78,10 @@ export function SeasonsTable({
       onComplete={(seasonId) => {
         const season = byId.get(seasonId);
         if (season) onComplete(season);
+      }}
+      onDelete={(seasonId) => {
+        const season = byId.get(seasonId);
+        if (season) onDelete(season);
       }}
       operationLoading={operationLoading}
     />

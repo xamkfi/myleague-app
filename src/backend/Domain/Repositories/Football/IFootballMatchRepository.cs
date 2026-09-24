@@ -43,6 +43,12 @@ public interface IFootballMatchRepository
     Task AddAsync(FootballMatch match);
     Task UpdateAsync(FootballMatch match);
     Task DeleteAsync(Guid id);
+    /// <summary>
+    /// True when the competition has a match that has started, finished, or been cancelled.
+    /// Scheduled and postponed matches do not block season deletion. Does not track entities.
+    /// </summary>
+    Task<bool> HasMatchThatBlocksSeasonDeleteAsync(Guid competitionId, CancellationToken cancellationToken = default);
+
     Task<int> DeleteAllByCompetitionIdAsync(Guid competitionId, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(Guid id);
     void MarkEventAsAdded(FootballMatchEvent matchEvent);

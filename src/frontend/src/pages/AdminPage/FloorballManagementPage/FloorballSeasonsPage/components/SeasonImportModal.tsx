@@ -8,6 +8,7 @@ import {
 } from '../../../../../api/floorball/seasonImportService';
 import type { FloorballSeasonImportPayload } from '../../../../../types/floorball/seasonImportTypes';
 import type { SeasonTeamCategory } from '../../../../../types/common/seasonImportTypes';
+import { buildSeasonImportPreview } from '../../../../../api/common/seasonImportShared';
 import { FLOORBALL_SEASON_IMPORT_AI_PROMPT, buildFloorballSeasonPromptFileName } from './seasonImportPrompt';
 
 const SAMPLE_HREF = new URL('../../../../../types/floorball/seasonImport.sample.json', import.meta.url).href;
@@ -30,6 +31,7 @@ export function SeasonImportModal({ onClose, onImported }: SeasonImportModalProp
       editPath={(seasonId) => `/admin/floorball/seasons/${seasonId}/edit`}
       validatePayload={validatePayload}
       getDryRunCounts={getDryRunCounts}
+      getPreview={buildSeasonImportPreview}
       inferTeamCategory={inferTeamCategory}
       getSeasonName={(payload) => payload.season.name}
       getDefaultVenue={(payload) => payload.season.defaultVenue?.trim() ?? ''}

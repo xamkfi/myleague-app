@@ -1,3 +1,5 @@
+> **Out of date in places.** Controller examples still import `Application.Commands` and `Application.DTOs`. Current controllers use `Application.Features` and `BaseApiController`. Follow [README.md](./README.md) and `.cursor/skills/create-api-endpoint/SKILL.md`.
+
 # WebAPI Development Guide - League Management System
 
 ## Overview

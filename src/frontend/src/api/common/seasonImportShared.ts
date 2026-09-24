@@ -1,3 +1,4 @@
+import i18n from '../../i18n/i18n';
 import type { Club } from './clubService';
 import { clubService } from './clubService';
 import { divisionService } from './divisionService';
@@ -15,6 +16,7 @@ import type {
   SeasonImportMatch,
   SeasonImportPayloadBase,
   SeasonImportPhase,
+  SeasonImportPreview,
   SeasonImportPlayerAdapters,
   SeasonImportSummary,
   SeasonImportTeamPlayer,
@@ -67,6 +69,89 @@ export function getSeasonDryRunCounts(payload: SeasonImportPayloadBase): SeasonI
   };
 }
 
+export function buildSeasonImportPreview(payload: SeasonImportPayloadBase): SeasonImportPreview {
+  const matchCountByTeam = new Map<string, number>();
+  for (const team of payload.teams) {
+    matchCountByTeam.set(team.name, 0);
+  }
+  for (const match of payload.matches) {
+    matchCountByTeam.set(match.homeTeamName, (matchCountByTeam.get(match.homeTeamName) ?? 0) + 1);
+    matchCountByTeam.set(match.awayTeamName, (matchCountByTeam.get(match.awayTeamName) ?? 0) + 1);
+  }
+
+  const teamsByDivision = new Map<string, SeasonImportPreview['divisions'][number]['teams']>();
+  for (const team of payload.teams) {
+    const list = teamsByDivision.get(team.divisionName) ?? [];
+    list.push({
+      name: team.name,
+      clubName: team.clubName,
+      matchCount: matchCountByTeam.get(team.name) ?? 0,
+      playerCount: team.players?.length ?? 0,
+    });
+    teamsByDivision.set(team.divisionName, list);
+  }
+
+  const divisions: SeasonImportPreview['divisions'] = payload.divisions.map((division) => ({
+    name: division.name,
+    level: typeof division.level === 'number' ? division.level : null,
+    teams: teamsByDivision.get(division.name) ?? [],
+  }));
+
+  const knownDivisionNames = new Set(payload.divisions.map((division) => division.name));
+  for (const [divisionName, teams] of teamsByDivision) {
+    if (!knownDivisionNames.has(divisionName)) {
+      divisions.push({ name: divisionName, level: null, teams });
+    }
+  }
+
+  let firstMatchAt: string | null = null;
+  let lastMatchAt: string | null = null;
+  let firstMs = Number.POSITIVE_INFINITY;
+  let lastMs = Number.NEGATIVE_INFINITY;
+  const venues = new Set<string>();
+  let matchesOutsideSeason = 0;
+  let matchesWithoutOwnVenue = 0;
+  const seasonStart = payload.season.startDate;
+  const seasonEnd = payload.season.endDate;
+
+  for (const match of payload.matches) {
+    const parsed = Date.parse(match.scheduledDateTime);
+    if (!Number.isNaN(parsed)) {
+      if (parsed < firstMs) {
+        firstMs = parsed;
+        firstMatchAt = match.scheduledDateTime;
+      }
+      if (parsed > lastMs) {
+        lastMs = parsed;
+        lastMatchAt = match.scheduledDateTime;
+      }
+    }
+    const matchDay = match.scheduledDateTime.slice(0, 10);
+    if (matchDay < seasonStart || matchDay > seasonEnd) {
+      matchesOutsideSeason += 1;
+    }
+    const venue = (match.venue ?? '').trim();
+    if (venue.length > 0) {
+      venues.add(venue);
+    } else {
+      matchesWithoutOwnVenue += 1;
+    }
+  }
+
+  return {
+    startDate: seasonStart,
+    endDate: seasonEnd,
+    divisions,
+    matchCount: payload.matches.length,
+    firstMatchAt,
+    lastMatchAt,
+    venues: [...venues].sort((left, right) => left.localeCompare(right, 'fi')),
+    teamsWithoutMatches: payload.teams.filter((team) => (matchCountByTeam.get(team.name) ?? 0) === 0).map((team) => team.name),
+    matchesOutsideSeason,
+    matchesWithoutOwnVenue,
+  };
+}
+
 export function inferSeasonTeamCategory(payload: SeasonImportPayloadBase): SeasonTeamCategory {
   const fromSeason = payload.season.teamCategory;
   if (fromSeason && isSeasonTeamCategory(fromSeason)) {
@@ -77,6 +162,29 @@ export function inferSeasonTeamCategory(payload: SeasonImportPayloadBase): Seaso
     return fromTeam;
   }
   return 'Adult';
+}
+
+export function reportDuplicateSeasonName(
+  seasonName: string,
+  existingNames: readonly string[],
+  i18nKey: string,
+  reportFatal: (phase: SeasonImportPhase, label: string, err: unknown) => void,
+): boolean {
+  if (!existingNames.some((existing) => existing === seasonName)) {
+    return false;
+  }
+
+  reportFatal(
+    'season',
+    `Season "${seasonName}"`,
+    new Error(
+      i18n.t(i18nKey, {
+        name: seasonName,
+        defaultValue: `A season with the name '${seasonName}' already exists.`,
+      }),
+    ),
+  );
+  return true;
 }
 
 export function isSeasonTeamCategory(value: string | undefined): value is SeasonTeamCategory {

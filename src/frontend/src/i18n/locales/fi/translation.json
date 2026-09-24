@@ -1105,7 +1105,7 @@
         "serverError": "Palvelinvirhe. Yritä myöhemmin uudelleen.",
         "overlappingDates": "Kausi on jo olemassa, joka menee päällekkäin määritettyjen päivämäärien kanssa.",
         "cannotUpdateCompleted": "Päätettyä kautta ei voi päivittää.",
-        "hasMatches": "Kautta ei voi poistaa, koska sillä on otteluita. Poista ottelut ensin.",
+        "hasMatches": "Kautta ei voi poistaa, koska jokin ottelu on alkanut, päättynyt tai peruttu.",
         "detailsSaveFailed": "Kauden tietoja ei voitu tallentaa: {{reason}}",
         "updateFailed": "Toiminto epäonnistui. Yritä uudelleen."
       },
@@ -1131,7 +1131,23 @@
         "seasonVenueHint": "Täytetään JSONista jos saatavilla. Käytetään otteluiden oletuspaikkana, jos ottelulla ei ole omaa paikkaa.",
         "seasonCategory": "Kauden tyyppi",
         "seasonCategoryHint": "Sovelletaan kauteen ja uusiin joukkueisiin (olemassa olevat joukkueet säilyttävät kategoriansa).",
+        "duplicateName": "Kausi nimellä '{{name}}' on jo olemassa.",
         "previewNote": "Olemassa olevat seurat/joukkueet (nimen perusteella) käytetään uudelleen. Vain puuttuvat luodaan.",
+        "previewHeading": "Tarkista ennen tuontia",
+        "previewSeasonRange": "{{start}} – {{end}}",
+        "previewDivisionTeams": "{{division}} · {{count}} joukkuetta",
+        "previewDivisionEmpty": "Tässä sarjassa ei ole joukkueita.",
+        "previewTeamLine": "{{name}} · {{matches}} ottelua",
+        "previewTeamLineWithClub": "{{name}} ({{club}}) · {{matches}} ottelua",
+        "previewPlayers": "{{count}} pelaajaa",
+        "previewMatchWindow": "Ottelut {{first}} – {{last}}",
+        "previewNoMatches": "Tiedostossa ei ole otteluita.",
+        "previewVenues": "Pelipaikat: {{venues}}",
+        "previewNoVenue": "Otteluille ei ole asetettu pelipaikkaa.",
+        "previewCheckTeamsWithoutMatches": "Joukkueet ilman otteluita: {{teams}}",
+        "previewCheckMatchesOutsideSeason": "{{count}} ottelua on kauden päivien ulkopuolella.",
+        "previewCheckMissingVenue": "{{count}} ottelulla ei ole pelipaikkaa eikä oletuspaikkaa.",
+        "previewCheckOk": "Joukkueet, sarjat ja otteluajat näyttävät ehjiltä.",
         "autoRevert": "Peruuta automaattisesti, jos jokin vaihe epäonnistuu",
         "startImport": "Aloita tuonti",
         "starting": "Aloitetaan...",
@@ -2165,7 +2181,23 @@
         "seasonVenueHint": "Täytetään JSONista jos saatavilla. Käytetään otteluiden oletuspaikkana, jos ottelulla ei ole omaa paikkaa.",
         "seasonCategory": "Kauden tyyppi",
         "seasonCategoryHint": "Sovelletaan kauteen ja uusiin joukkueisiin (olemassa olevat joukkueet säilyttävät kategoriansa).",
+        "duplicateName": "Kausi nimellä '{{name}}' on jo olemassa.",
         "previewNote": "Olemassa olevat seurat/joukkueet (nimen perusteella) käytetään uudelleen. Vain puuttuvat luodaan.",
+        "previewHeading": "Tarkista ennen tuontia",
+        "previewSeasonRange": "{{start}} – {{end}}",
+        "previewDivisionTeams": "{{division}} · {{count}} joukkuetta",
+        "previewDivisionEmpty": "Tässä sarjassa ei ole joukkueita.",
+        "previewTeamLine": "{{name}} · {{matches}} ottelua",
+        "previewTeamLineWithClub": "{{name}} ({{club}}) · {{matches}} ottelua",
+        "previewPlayers": "{{count}} pelaajaa",
+        "previewMatchWindow": "Ottelut {{first}} – {{last}}",
+        "previewNoMatches": "Tiedostossa ei ole otteluita.",
+        "previewVenues": "Pelipaikat: {{venues}}",
+        "previewNoVenue": "Otteluille ei ole asetettu pelipaikkaa.",
+        "previewCheckTeamsWithoutMatches": "Joukkueet ilman otteluita: {{teams}}",
+        "previewCheckMatchesOutsideSeason": "{{count}} ottelua on kauden päivien ulkopuolella.",
+        "previewCheckMissingVenue": "{{count}} ottelulla ei ole pelipaikkaa eikä oletuspaikkaa.",
+        "previewCheckOk": "Joukkueet, sarjat ja otteluajat näyttävät ehjiltä.",
         "autoRevert": "Peruuta automaattisesti, jos jokin vaihe epäonnistuu",
         "startImport": "Aloita tuonti",
         "starting": "Aloitetaan...",
@@ -2202,6 +2234,9 @@
           "downloadedToast": "Prompti ladattiin .txt-tiedostona. Avaa se, kopioi sisältö ja liitä tekoälychattiin.",
           "errorToast": "Promptia ei voitu kopioida eikä ladata. Kokeile \"Lataa\"-painiketta uudelleen."
         }
+      },
+      "errors": {
+        "hasMatches": "Kautta ei voi poistaa, koska jokin ottelu on alkanut, päättynyt tai peruttu."
       }
     }
   },
@@ -2456,13 +2491,19 @@
         "confirmButton": "Päätä kausi",
         "warning": "Kauden päättäminen on pysyvä toimenpide."
       },
+      "deleteConfirm": {
+        "title": "Poistetaanko kausi?",
+        "message": "Pelaamattomat ottelut poistuvat kauden mukana. Seuran joukkueet säilyvät.",
+        "warning": "Tätä toimintoa ei voi perua."
+      },
       "errors": {
         "completeFailed": "Kauden päättäminen epäonnistui",
+        "deleteFailed": "Kauden poisto epäonnistui",
         "loadFailed": "Kauden lataus epäonnistui",
         "notFound": "Kautta ei löytynyt",
         "updateFailed": "Kauden päivitys epäonnistui",
         "cannotUpdateCompleted": "Päätettyä kautta ei voi päivittää.",
-        "hasMatches": "Kautta ei voi poistaa, koska sillä on otteluita. Poista ottelut ensin.",
+        "hasMatches": "Kautta ei voi poistaa, koska jokin ottelu on alkanut, päättynyt tai peruttu.",
         "detailsSaveFailed": "Kauden tietoja ei voitu tallentaa: {{reason}}"
       },
       "import": {
@@ -2480,7 +2521,23 @@
         "seasonVenueHint": "Täytetään JSONista jos saatavilla. Käytetään otteluiden oletuspaikkana, jos ottelulla ei ole omaa paikkaa.",
         "seasonCategory": "Kauden tyyppi",
         "seasonCategoryHint": "Sovelletaan kauteen ja uusiin joukkueisiin (olemassa olevat joukkueet säilyttävät kategoriansa).",
+        "duplicateName": "Kausi nimellä '{{name}}' on jo olemassa.",
         "previewNote": "Olemassa olevat seurat/joukkueet (nimen perusteella) käytetään uudelleen. Vain puuttuvat luodaan.",
+        "previewHeading": "Tarkista ennen tuontia",
+        "previewSeasonRange": "{{start}} – {{end}}",
+        "previewDivisionTeams": "{{division}} · {{count}} joukkuetta",
+        "previewDivisionEmpty": "Tässä sarjassa ei ole joukkueita.",
+        "previewTeamLine": "{{name}} · {{matches}} ottelua",
+        "previewTeamLineWithClub": "{{name}} ({{club}}) · {{matches}} ottelua",
+        "previewPlayers": "{{count}} pelaajaa",
+        "previewMatchWindow": "Ottelut {{first}} – {{last}}",
+        "previewNoMatches": "Tiedostossa ei ole otteluita.",
+        "previewVenues": "Pelipaikat: {{venues}}",
+        "previewNoVenue": "Otteluille ei ole asetettu pelipaikkaa.",
+        "previewCheckTeamsWithoutMatches": "Joukkueet ilman otteluita: {{teams}}",
+        "previewCheckMatchesOutsideSeason": "{{count}} ottelua on kauden päivien ulkopuolella.",
+        "previewCheckMissingVenue": "{{count}} ottelulla ei ole pelipaikkaa eikä oletuspaikkaa.",
+        "previewCheckOk": "Joukkueet, sarjat ja otteluajat näyttävät ehjiltä.",
         "autoRevert": "Peruuta automaattisesti, jos jokin vaihe epäonnistuu",
         "startImport": "Aloita tuonti",
         "starting": "Aloitetaan...",
@@ -3340,8 +3397,75 @@
     },
     "credits": {
       "madeBy": "Sivuston tehnyt",
+      "xamkLogo": "XAMK, insinööri (AMK), ohjelmistotekniikka",
       "programme": "Ohjelmistotekniikka",
       "source": "Lähdekoodit täällä"
+    },
+    "privacyPolicy": "Tietosuojaseloste"
+  },
+  "privacyPage": {
+    "title": "Tietosuojaseloste",
+    "intro": "Tämä on EU:n yleisen tietosuoja-asetuksen (GDPR, 2016/679) mukainen tietosuojaseloste, joka koskee MAHL-harrastesarjojen verkkopalvelua. Selosteessa kerrotaan, mitä henkilötietoja palvelussa käsitellään, mihin tarkoituksiin ja mitkä ovat rekisteröidyn oikeudet.",
+    "updatedTodo": "TODO (ylläpito): Lisää selosteen laatimispäivä ja viimeisin päivityspäivämäärä.",
+    "sections": {
+      "controller": {
+        "title": "Rekisterinpitäjä",
+        "body": "Rekisterinpitäjä on tätä verkkopalvelua ylläpitävä organisaatio.",
+        "todo": "TODO (ylläpito): Lisää rekisterinpitäjän virallinen nimi, Y-tunnus, postiosoite ja sähköpostiosoite."
+      },
+      "contact": {
+        "title": "Yhteyshenkilö tietosuoja-asioissa",
+        "body": "Tietosuojaan liittyvissä kysymyksissä ja rekisteröidyn oikeuksia koskevissa pyynnöissä voit olla yhteydessä rekisterinpitäjän yhteyshenkilöön.",
+        "todo": "TODO (ylläpito): Lisää yhteyshenkilön nimi, sähköpostiosoite ja tarvittaessa puhelinnumero."
+      },
+      "scope": {
+        "title": "Rekisterin nimi ja selosteen soveltamisala",
+        "body": "MAHL-harrastesarjojen verkkopalvelun käyttäjä- ja pelaajarekisteri. Seloste kattaa julkisen sivuston, sarjatoiminnan hallinnan (ylläpito- ja seurakäyttäjät) sekä ilmoittautumislomakkeen kautta kerättävät tiedot."
+      },
+      "purposes": {
+        "title": "Henkilötietojen käsittelyn tarkoitukset ja oikeusperusteet",
+        "body": "Henkilötietoja käsitellään seuraaviin tarkoituksiin:\n\n- Harrastesarjatoiminnan järjestäminen: joukkueiden, kokoonpanojen, otteluiden, tulosten ja tilastojen hallinta ja julkaisu (oikeusperuste: rekisterinpitäjän oikeutettu etu ja sopimus sarjatoimintaan osallistumisesta)\n- Ylläpito- ja seurakäyttäjien tunnistautuminen ja käyttöoikeuksien hallinta (oikeusperuste: sopimus ja oikeutettu etu)\n- Ilmoittautumisten vastaanotto ja käsittely (oikeusperuste: sopimusta edeltävät toimenpiteet ja suostumus)\n- Palvelun tietoturvasta huolehtiminen ja väärinkäytösten selvittäminen (oikeusperuste: oikeutettu etu)"
+      },
+      "data": {
+        "title": "Käsiteltävät henkilötiedot",
+        "body": "Palvelussa käsitellään seuraavia henkilötietoryhmiä:\n\n- Pelaajat ja toimihenkilöt: etu- ja sukunimi, syntymäaika, seura- ja joukkuetiedot, pelinumero ja rooli sekä ottelutapahtumat ja tilastot (esimerkiksi maalit, syötöt ja rangaistukset)\n- Ylläpito- ja seurakäyttäjät: nimi, sähköpostiosoite, käyttäjärooli, viimeisin kirjautumisaika sekä kirjautumiseen liittyvät kertakäyttökoodit ja istuntotunnisteet\n- Ilmoittautujat: nimi, sähköpostiosoite, puhelinnumero, ikäryhmä, kokemustaso ja vapaamuotoiset lisätiedot\n- Tekniset tiedot: palvelinlokeihin tallentuvat IP-osoitteet ja tapahtuma-ajat"
+      },
+      "sources": {
+        "title": "Tietolähteet",
+        "body": "Tiedot saadaan pääsääntöisesti rekisteröidyltä itseltään (esimerkiksi ilmoittautumislomakkeen kautta), seurojen ja joukkueiden yhteyshenkilöiltä sekä sarjatoiminnan yhteydessä kirjattavista ottelutapahtumista."
+      },
+      "disclosure": {
+        "title": "Tietojen luovutukset ja julkisuus",
+        "body": "Sarjatoiminnan luonteen vuoksi pelaajien nimet, joukkue- ja seuratiedot, ottelutapahtumat ja tilastot ovat julkisesti nähtävillä sivustolla. Muita henkilötietoja (esimerkiksi sähköpostiosoitteita, puhelinnumeroita tai syntymäaikoja) ei julkaista eikä luovuteta säännönmukaisesti kolmansille osapuolille.\n\nTietojen teknisessä käsittelyssä käytetään palveluntarjoajia (esimerkiksi palvelin- ja sähköpostipalvelut), jotka käsittelevät tietoja rekisterinpitäjän lukuun.",
+        "todo": "TODO (ylläpito): Lisää käytettävät palveluntarjoajat (esim. hosting- ja sähköpostipalvelu) sekä tieto siitä, käsitelläänkö tietoja EU-/ETA-alueen ulkopuolella."
+      },
+      "storage": {
+        "title": "Evästeet ja paikallinen tallennustila",
+        "body": "Sivusto ei käytä kolmannen osapuolen seuranta- tai markkinointievästeitä.\n\nSelaimen paikalliseen tallennustilaan (localStorage) tallennetaan:\n\n- Kielivalinta (kaikki kävijät)\n- Kirjautumisen istuntotunnisteet (vain kirjautuneet ylläpito- ja seurakäyttäjät)"
+      },
+      "retention": {
+        "title": "Tietojen säilytysajat",
+        "body": "Henkilötietoja säilytetään vain niin kauan kuin se on käsittelyn tarkoituksen kannalta tarpeen. Vanhentuneet kirjautumiskoodit ja istuntotunnisteet mitätöityvät automaattisesti.",
+        "todo": "TODO (ylläpito): Määrittele ja kirjaa tarkat säilytysajat pelaaja- ja käyttäjätiedoille, ilmoittautumisille sekä palvelinlokeille."
+      },
+      "security": {
+        "title": "Tietojen suojauksen periaatteet",
+        "body": "Tiedot on tallennettu tietokantaan, johon on pääsy vain rajatulla ylläpidolla. Pääsyä hallintatoimintoihin rajataan käyttäjärooleilla, ja kirjautuminen tapahtuu sähköpostiin lähetettävällä kertakäyttökoodilla ilman salasanoja. Liikenne käyttäjän ja palvelun välillä on salattu (HTTPS), ja istuntotunnisteet säilytetään tietokannassa tiivisteinä."
+      },
+      "rights": {
+        "title": "Rekisteröidyn oikeudet",
+        "body": "Rekisteröidyllä on oikeus:\n\n- saada tieto siitä, käsitelläänkö hänen henkilötietojaan, ja saada jäljennös tiedoista\n- vaatia virheellisen tai puutteellisen tiedon oikaisua\n- vaatia tietojensa poistamista siltä osin kuin käsittelylle ei ole enää perustetta\n- vaatia käsittelyn rajoittamista ja vastustaa käsittelyä oikeutetun edun osalta\n- siirtää itse toimittamansa tiedot järjestelmästä toiseen, kun käsittely perustuu suostumukseen tai sopimukseen\n\nPyynnöt osoitetaan kohdassa 2 mainitulle yhteyshenkilölle. Pyynnön esittäjän henkilöllisyys varmistetaan ennen pyynnön käsittelyä.",
+        "todo": "TODO (ylläpito): Lisää sähköpostiosoite tai muu kanava, johon rekisteröidyn oikeuksia koskevat pyynnöt lähetetään."
+      },
+      "complaints": {
+        "title": "Oikeus tehdä valitus valvontaviranomaiselle",
+        "body": "Jos katsot, että henkilötietojesi käsittelyssä rikotaan tietosuojalainsäädäntöä, sinulla on oikeus tehdä valitus valvontaviranomaiselle. Suomessa valvontaviranomainen on Tietosuojavaltuutetun toimisto (tietosuoja.fi)."
+      },
+      "changes": {
+        "title": "Muutokset tähän selosteeseen",
+        "body": "Selostetta päivitetään, jos palvelun toiminnot tai henkilötietojen käsittely muuttuvat. Ajantasainen versio on aina saatavilla tällä sivulla.",
+        "todo": "TODO (ylläpito): Päivitä selosteen päivämäärä aina muutosten yhteydessä."
+      }
     }
   },
   "clubsPage": {

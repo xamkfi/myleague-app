@@ -57,6 +57,13 @@ public class CreateFloorballSeasonHandler : IRequestHandler<CreateFloorballSeaso
     {
         try
         {
+            FloorballSeason? seasonWithSameName = await _seasonRepository.GetSeasonByNameAsync(request.Name);
+            if (seasonWithSameName is not null)
+            {
+                _logger.LogWarning("Attempt to create floorball season with existing name: {Name}", request.Name);
+                return Result<FloorballSeasonDto>.Failure($"A season with the name '{request.Name}' already exists.");
+            }
+
             // Create the season entity
             FloorballSeason season = FloorballSeasonMapper.ToEntity(request);
 

@@ -32,6 +32,13 @@ public class CreateFootballSeasonHandler : IRequestHandler<CreateFootballSeasonC
     {
         try
         {
+            FootballSeason? seasonWithSameName = await _seasonRepository.GetSeasonByNameAsync(request.Name);
+            if (seasonWithSameName is not null)
+            {
+                _logger.LogWarning("Attempt to create football season with existing name: {Name}", request.Name);
+                return Result<FootballSeasonDto>.Failure($"A season with the name '{request.Name}' already exists.");
+            }
+
             FootballSeason season = FootballSeasonMapper.ToEntity(request);
 
             _logger.LogInformation("Creating new football season: {Name}", request.Name);

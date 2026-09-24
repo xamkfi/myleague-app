@@ -1098,7 +1098,7 @@
         "serverError": "Server error. Please try again later.",
         "overlappingDates": "A season already exists that overlaps with the specified dates.",
         "cannotUpdateCompleted": "Cannot update a completed season.",
-        "hasMatches": "Cannot delete a season that has matches. Delete the matches first.",
+        "hasMatches": "Cannot delete a season that has a match that has started, finished, or been cancelled.",
         "detailsSaveFailed": "Season details could not be saved: {{reason}}",
         "updateFailed": "Operation failed. Please try again."
       },
@@ -1124,7 +1124,23 @@
         "seasonVenueHint": "Pre-filled from the JSON when available. Used as the default location for matches that omit a venue.",
         "seasonCategory": "Season type",
         "seasonCategoryHint": "Applied to the season and to newly created teams (existing teams keep their category).",
+        "duplicateName": "A season with the name '{{name}}' already exists.",
         "previewNote": "Existing clubs/teams (matched by name) are reused. Only missing ones are created.",
+        "previewHeading": "Review before import",
+        "previewSeasonRange": "{{start}} – {{end}}",
+        "previewDivisionTeams": "{{division}} · {{count}} teams",
+        "previewDivisionEmpty": "No teams in this division.",
+        "previewTeamLine": "{{name}} · {{matches}} matches",
+        "previewTeamLineWithClub": "{{name}} ({{club}}) · {{matches}} matches",
+        "previewPlayers": "{{count}} players",
+        "previewMatchWindow": "Matches {{first}} – {{last}}",
+        "previewNoMatches": "The file has no matches.",
+        "previewVenues": "Venues: {{venues}}",
+        "previewNoVenue": "No venue is set on the matches.",
+        "previewCheckTeamsWithoutMatches": "Teams with no matches: {{teams}}",
+        "previewCheckMatchesOutsideSeason": "{{count}} matches fall outside the season dates.",
+        "previewCheckMissingVenue": "{{count}} matches have no venue and no default venue is set.",
+        "previewCheckOk": "Teams, divisions, and match times look consistent.",
         "autoRevert": "Automatically revert if any step fails",
         "startImport": "Start import",
         "starting": "Starting...",
@@ -2157,7 +2173,23 @@
         "seasonVenueHint": "Pre-filled from the JSON when available. Used as the default location for matches that omit a venue.",
         "seasonCategory": "Season type",
         "seasonCategoryHint": "Applied to the season and to newly created teams (existing teams keep their category).",
+        "duplicateName": "A season with the name '{{name}}' already exists.",
         "previewNote": "Existing clubs/teams (matched by name) are reused. Only missing ones are created.",
+        "previewHeading": "Review before import",
+        "previewSeasonRange": "{{start}} – {{end}}",
+        "previewDivisionTeams": "{{division}} · {{count}} teams",
+        "previewDivisionEmpty": "No teams in this division.",
+        "previewTeamLine": "{{name}} · {{matches}} matches",
+        "previewTeamLineWithClub": "{{name}} ({{club}}) · {{matches}} matches",
+        "previewPlayers": "{{count}} players",
+        "previewMatchWindow": "Matches {{first}} – {{last}}",
+        "previewNoMatches": "The file has no matches.",
+        "previewVenues": "Venues: {{venues}}",
+        "previewNoVenue": "No venue is set on the matches.",
+        "previewCheckTeamsWithoutMatches": "Teams with no matches: {{teams}}",
+        "previewCheckMatchesOutsideSeason": "{{count}} matches fall outside the season dates.",
+        "previewCheckMissingVenue": "{{count}} matches have no venue and no default venue is set.",
+        "previewCheckOk": "Teams, divisions, and match times look consistent.",
         "autoRevert": "Automatically revert if any step fails",
         "startImport": "Start import",
         "starting": "Starting...",
@@ -2194,6 +2226,9 @@
           "downloadedToast": "Prompt downloaded as a .txt file. Open it, copy the contents, and paste them into your AI chat.",
           "errorToast": "Could not copy or download the prompt. Please try the \"Download\" button again."
         }
+      },
+      "errors": {
+        "hasMatches": "Cannot delete a season that has a match that has started, finished, or been cancelled."
       }
     }
   },
@@ -2448,13 +2483,19 @@
         "confirmButton": "Complete Season",
         "warning": "Completing a season is a permanent action."
       },
+      "deleteConfirm": {
+        "title": "Delete season?",
+        "message": "Unplayed matches are removed with the season. Club teams stay.",
+        "warning": "This action cannot be undone."
+      },
       "errors": {
         "completeFailed": "Failed to complete season",
+        "deleteFailed": "Failed to delete season",
         "loadFailed": "Failed to load season data",
         "notFound": "Season not found",
         "updateFailed": "Failed to update season",
         "cannotUpdateCompleted": "Cannot update a completed season.",
-        "hasMatches": "Cannot delete a season that has matches. Delete the matches first.",
+        "hasMatches": "Cannot delete a season that has a match that has started, finished, or been cancelled.",
         "detailsSaveFailed": "Season details could not be saved: {{reason}}"
       },
       "import": {
@@ -2472,7 +2513,23 @@
         "seasonVenueHint": "Pre-filled from the JSON when available. Used as the default location for matches that omit a venue.",
         "seasonCategory": "Season type",
         "seasonCategoryHint": "Applied to the season and to newly created teams (existing teams keep their category).",
+        "duplicateName": "A season with the name '{{name}}' already exists.",
         "previewNote": "Existing clubs/teams (matched by name) are reused. Only missing ones are created.",
+        "previewHeading": "Review before import",
+        "previewSeasonRange": "{{start}} – {{end}}",
+        "previewDivisionTeams": "{{division}} · {{count}} teams",
+        "previewDivisionEmpty": "No teams in this division.",
+        "previewTeamLine": "{{name}} · {{matches}} matches",
+        "previewTeamLineWithClub": "{{name}} ({{club}}) · {{matches}} matches",
+        "previewPlayers": "{{count}} players",
+        "previewMatchWindow": "Matches {{first}} – {{last}}",
+        "previewNoMatches": "The file has no matches.",
+        "previewVenues": "Venues: {{venues}}",
+        "previewNoVenue": "No venue is set on the matches.",
+        "previewCheckTeamsWithoutMatches": "Teams with no matches: {{teams}}",
+        "previewCheckMatchesOutsideSeason": "{{count}} matches fall outside the season dates.",
+        "previewCheckMissingVenue": "{{count}} matches have no venue and no default venue is set.",
+        "previewCheckOk": "Teams, divisions, and match times look consistent.",
         "autoRevert": "Automatically revert if any step fails",
         "startImport": "Start import",
         "starting": "Starting...",
@@ -3352,8 +3409,75 @@
     },
     "credits": {
       "madeBy": "Site by",
+      "xamkLogo": "XAMK, Bachelor of Engineering, Software Engineering",
       "programme": "Software Engineering",
       "source": "Source code here"
+    },
+    "privacyPolicy": "Privacy policy"
+  },
+  "privacyPage": {
+    "title": "Privacy policy",
+    "intro": "This is a privacy policy in accordance with the EU General Data Protection Regulation (GDPR, 2016/679) for the MAHL recreational leagues web service. It describes what personal data is processed in the service, for what purposes, and what rights data subjects have.",
+    "updatedTodo": "TODO (admin): Add the date this policy was created and the date of the latest update.",
+    "sections": {
+      "controller": {
+        "title": "Data controller",
+        "body": "The data controller is the organisation that operates this web service.",
+        "todo": "TODO (admin): Add the controller's official name, business ID, postal address and email address."
+      },
+      "contact": {
+        "title": "Contact person for data protection matters",
+        "body": "For questions about data protection and requests concerning your rights as a data subject, you can contact the controller's designated contact person.",
+        "todo": "TODO (admin): Add the contact person's name, email address and, if needed, phone number."
+      },
+      "scope": {
+        "title": "Name of the register and scope of this policy",
+        "body": "The user and player register of the MAHL recreational leagues web service. This policy covers the public website, league administration (site and club administrators) and data collected through the registration form."
+      },
+      "purposes": {
+        "title": "Purposes and legal bases of processing",
+        "body": "Personal data is processed for the following purposes:\n\n- Organising recreational league activities: managing and publishing teams, rosters, matches, results and statistics (legal basis: the controller's legitimate interest and the agreement to participate in league activities)\n- Authentication and access management of site and club administrators (legal basis: contract and legitimate interest)\n- Receiving and processing registrations (legal basis: pre-contractual measures and consent)\n- Ensuring the security of the service and investigating misuse (legal basis: legitimate interest)"
+      },
+      "data": {
+        "title": "Categories of personal data processed",
+        "body": "The service processes the following categories of personal data:\n\n- Players and officials: first and last name, date of birth, club and team details, jersey number and role, as well as match events and statistics (for example goals, assists and penalties)\n- Site and club administrators: name, email address, user role, time of last login, and login-related one-time codes and session tokens\n- Registrants: name, email address, phone number, age group, experience level and free-form additional information\n- Technical data: IP addresses and timestamps stored in server logs"
+      },
+      "sources": {
+        "title": "Data sources",
+        "body": "Data is primarily obtained from the data subjects themselves (for example via the registration form), from club and team contact persons, and from match events recorded as part of league activities."
+      },
+      "disclosure": {
+        "title": "Disclosure and public visibility of data",
+        "body": "Due to the nature of league activities, player names, team and club details, match events and statistics are publicly visible on the website. Other personal data (for example email addresses, phone numbers or dates of birth) is not published and is not regularly disclosed to third parties.\n\nService providers (for example hosting and email services) are used for the technical processing of data and process data on behalf of the controller.",
+        "todo": "TODO (admin): List the service providers used (e.g. hosting and email service) and state whether data is processed outside the EU/EEA."
+      },
+      "storage": {
+        "title": "Cookies and local storage",
+        "body": "The website does not use third-party tracking or marketing cookies.\n\nThe browser's local storage (localStorage) is used to store:\n\n- Language preference (all visitors)\n- Login session tokens (only signed-in site and club administrators)"
+      },
+      "retention": {
+        "title": "Data retention periods",
+        "body": "Personal data is retained only for as long as necessary for the purposes of processing. Expired login codes and session tokens are invalidated automatically.",
+        "todo": "TODO (admin): Define and document the exact retention periods for player and user data, registrations and server logs."
+      },
+      "security": {
+        "title": "Principles of data protection",
+        "body": "Data is stored in a database accessible only to a limited group of administrators. Access to administrative functions is restricted by user roles, and sign-in uses a one-time code sent by email, without passwords. Traffic between the user and the service is encrypted (HTTPS), and session tokens are stored in the database as hashes."
+      },
+      "rights": {
+        "title": "Rights of the data subject",
+        "body": "The data subject has the right to:\n\n- know whether their personal data is being processed and receive a copy of the data\n- request the rectification of inaccurate or incomplete data\n- request the erasure of their data insofar as there is no longer a basis for processing\n- request the restriction of processing and object to processing based on legitimate interest\n- transfer data they have provided to another system when processing is based on consent or a contract\n\nRequests should be addressed to the contact person mentioned in section 2. The identity of the requester is verified before the request is processed.",
+        "todo": "TODO (admin): Add the email address or other channel where data subject requests should be sent."
+      },
+      "complaints": {
+        "title": "Right to lodge a complaint with a supervisory authority",
+        "body": "If you consider that the processing of your personal data violates data protection legislation, you have the right to lodge a complaint with a supervisory authority. In Finland, the supervisory authority is the Office of the Data Protection Ombudsman (tietosuoja.fi)."
+      },
+      "changes": {
+        "title": "Changes to this policy",
+        "body": "This policy is updated if the features of the service or the processing of personal data change. The current version is always available on this page.",
+        "todo": "TODO (admin): Update the date of this policy whenever changes are made."
+      }
     }
   },
   "clubsPage": {

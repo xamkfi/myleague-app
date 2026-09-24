@@ -42,4 +42,28 @@ public class CreateHockeySeasonHandlerTests
         _competitionRepo.Verify(r => r.AddAsync(It.IsAny<HockeySeason>()), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task Handle_WhenNameAlreadyExists_ReturnsFailure()
+    {
+        HockeySeason existing = new(
+            "Liiga 2026-27",
+            new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2027, 4, 30, 0, 0, 0, DateTimeKind.Utc),
+            "2026-27");
+        _competitionRepo.Setup(r => r.GetSeasonByNameAsync("Liiga 2026-27")).ReturnsAsync(existing);
+
+        CreateHockeySeasonCommand command = new(
+            "Liiga 2026-27",
+            new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2027, 4, 30, 0, 0, 0, DateTimeKind.Utc),
+            "2026-27");
+
+        Result<HockeySeasonDto> result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Contain("already exists");
+        _competitionRepo.Verify(r => r.AddAsync(It.IsAny<HockeySeason>()), Times.Never);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
 }

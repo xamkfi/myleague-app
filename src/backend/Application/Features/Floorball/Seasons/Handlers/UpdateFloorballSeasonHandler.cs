@@ -65,6 +65,16 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
                 return Result<FloorballSeasonDto>.NotFound("FloorballSeason", request.Id);
             }
 
+            FloorballSeason? seasonWithSameName = await _seasonRepository.GetSeasonByNameAsync(request.Name);
+            if (seasonWithSameName is not null && seasonWithSameName.Id != request.Id)
+            {
+                _logger.LogWarning(
+                    "Attempt to rename floorball season {SeasonId} to existing name: {Name}",
+                    request.Id,
+                    request.Name);
+                return Result<FloorballSeasonDto>.Failure($"A season with the name '{request.Name}' already exists.");
+            }
+
             // Update the season
             FloorballSeasonMapper.UpdateFromCommand(existingSeason, request);
             

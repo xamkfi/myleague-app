@@ -1,3 +1,5 @@
+> **Out of date.** This guide still describes event sourcing, domain events, and `AggregateRoot` types the code does not use. Follow [README.md](./README.md) and `.cursor/rules/backend.mdc`.
+
 # Feature Development Guide - Domain Layer
 
 ## Overview

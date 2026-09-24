@@ -40,6 +40,16 @@ public class UpdateHockeySeasonHandler : IRequestHandler<UpdateHockeySeasonComma
                 return Result<HockeySeasonDto>.NotFound("HockeySeason", request.SeasonId);
             }
 
+            HockeySeason? seasonWithSameName = await _competitionRepository.GetSeasonByNameAsync(request.Name);
+            if (seasonWithSameName is not null && seasonWithSameName.Id != request.SeasonId)
+            {
+                _logger.LogWarning(
+                    "Attempt to rename hockey season {SeasonId} to existing name: {Name}",
+                    request.SeasonId,
+                    request.Name);
+                return Result<HockeySeasonDto>.Failure($"A season with the name '{request.Name}' already exists.");
+            }
+
             season.UpdateDetails(
                 request.Name,
                 DateTimeUtc.Normalize(request.StartDate),

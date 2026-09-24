@@ -65,6 +65,18 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         }
 
         /// <summary>
+        /// Gets a league season by its exact name. Tournaments are excluded.
+        /// </summary>
+        /// <param name="name">The season name</param>
+        /// <returns>The season if found, null otherwise</returns>
+        public async Task<FootballSeason?> GetSeasonByNameAsync(string name)
+        {
+            return await _entities
+                .OfType<FootballSeason>()
+                .FirstOrDefaultAsync(season => season.Name == name);
+        }
+
+        /// <summary>
         /// Gets active football competitions
         /// </summary>
         /// <returns>A collection of active football competitions</returns>

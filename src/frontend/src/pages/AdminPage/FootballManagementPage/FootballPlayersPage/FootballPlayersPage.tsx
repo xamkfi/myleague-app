@@ -13,7 +13,7 @@ import Pagination from '../../../../components/Pagination';
 import SearchField from '../../../../components/SearchField';
 import BulkActionsBar from '../../../../components/BulkActionsBar/BulkActionsBar';
 import PlayerLicenceFilter from '../../../../components/admin/PlayerLicenceFilter';
-import { licenceFilterToHasActive, type LicenceFilterValue } from '../../../../components/admin/playerLicenceFilter';
+import { licenceFilterToHasActive, type LicenceFilterValue } from '../../../../components/admin/licenceFilterUtils';
 import '../../../../styles/AdminTable.scss';
 import './FootballPlayersPage.scss';
 import Button from '../../../../components/Button/Button';

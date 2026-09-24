@@ -71,6 +71,66 @@ public class HockeySeasonLifecycleHandlerTests
     }
 
     [Fact]
+    public async Task Update_WhenNameBelongsToAnotherSeason_ReturnsFailure()
+    {
+        HockeySeason season = CreateSeason();
+        HockeySeason other = new(
+            "Taken Liiga",
+            new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 4, 30, 0, 0, 0, DateTimeKind.Utc),
+            "2025-26");
+        _competitionRepo.Setup(r => r.GetSeasonByIdAsync(season.Id)).ReturnsAsync(season);
+        _competitionRepo.Setup(r => r.GetSeasonByNameAsync("Taken Liiga")).ReturnsAsync(other);
+
+        UpdateHockeySeasonHandler handler = new(
+            _competitionRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<UpdateHockeySeasonHandler>>());
+
+        Result<HockeySeasonDto> result = await handler.Handle(
+            new UpdateHockeySeasonCommand(
+                season.Id,
+                "Taken Liiga",
+                new DateTime(2026, 9, 15, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2027, 5, 1, 0, 0, 0, DateTimeKind.Utc),
+                "26-27",
+                TeamCategory.Adult),
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Contain("already exists");
+        season.Name.Should().Be("Liiga 2026-27");
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Update_WhenNameUnchanged_Saves()
+    {
+        HockeySeason season = CreateSeason();
+        _competitionRepo.Setup(r => r.GetSeasonByIdAsync(season.Id)).ReturnsAsync(season);
+        _competitionRepo.Setup(r => r.GetSeasonByNameAsync(season.Name)).ReturnsAsync(season);
+
+        UpdateHockeySeasonHandler handler = new(
+            _competitionRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<UpdateHockeySeasonHandler>>());
+
+        Result<HockeySeasonDto> result = await handler.Handle(
+            new UpdateHockeySeasonCommand(
+                season.Id,
+                season.Name,
+                new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2027, 4, 30, 0, 0, 0, DateTimeKind.Utc),
+                "2026-27",
+                TeamCategory.Adult),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Name.Should().Be("Liiga 2026-27");
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task SetChampion_WhenNotCompleted_Fails()
     {
         HockeySeason season = CreateSeason();

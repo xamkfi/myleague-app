@@ -508,4 +508,22 @@ public class HockeySeasonController : BaseApiController
 
         return HandleResult(result, "Playoff schedule set successfully", "Failed to set playoff schedule");
     }
+
+    /// <summary>
+    /// Deletes a hockey season when every match is still unplayed.
+    /// Teams that belong to the club are kept. Season membership, unplayed matches, and season statistics are removed.
+    /// </summary>
+    /// <param name="id">Season id</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse>> DeleteSeason(Guid id, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Deleting hockey season with ID: {SeasonId}", id);
+        Result result = await _mediator.Send(new DeleteHockeySeasonCommand(id), cancellationToken);
+        return HandleVoidResult(result, "Hockey season deleted successfully", "Failed to delete hockey season");
+    }
 }
