@@ -1,4 +1,5 @@
 using Domain.Common;
+using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Matches.Events;
 using Domain.Enums.Common;
@@ -128,7 +129,8 @@ public class HockeyMatchRepository : IHockeyMatchRepository
         {
             query = query.Where(match =>
                 match.CompetitionId == null
-                || (match.Competition != null && match.Competition.Status != HockeyCompetitionStatus.Draft));
+                || (match.Competition != null && match.Competition.Status != HockeyCompetitionStatus.Draft)
+                || (match.Competition is HockeySeason && match.Competition.EndDate < DateTime.UtcNow));
         }
 
         if (!string.IsNullOrWhiteSpace(searchQuery))

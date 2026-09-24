@@ -165,7 +165,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             if (excludeDraftCompetitions)
             {
                 query = query.Where(match =>
-                    (match.Competition is FloorballSeason && (match.Competition.IsActive || match.Competition.IsCompleted))
+                    (match.Competition is FloorballSeason && (match.Competition.IsActive || match.Competition.IsCompleted || match.Competition.EndDate < DateTime.UtcNow))
                     || (match.Competition is FloorballTournament
                         && ((FloorballTournament)match.Competition).TournamentStatus != FloorballTournamentStatus.Draft));
             }
