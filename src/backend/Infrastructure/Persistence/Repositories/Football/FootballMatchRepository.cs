@@ -161,7 +161,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
             if (excludeDraftCompetitions)
             {
                 query = query.Where(match =>
-                    (match.Competition is FootballSeason && (match.Competition.IsActive || match.Competition.IsCompleted))
+                    (match.Competition is FootballSeason && (match.Competition.IsActive || match.Competition.IsCompleted || match.Competition.EndDate < DateTime.UtcNow))
                     || (match.Competition is FootballTournament
                         && ((FootballTournament)match.Competition).TournamentStatus != FootballTournamentStatus.Draft));
             }

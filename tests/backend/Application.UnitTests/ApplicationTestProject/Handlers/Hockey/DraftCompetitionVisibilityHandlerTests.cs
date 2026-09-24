@@ -75,4 +75,30 @@ public class DraftCompetitionVisibilityHandlerTests
         adminResult.IsSuccess.Should().BeTrue();
         adminResult.Data!.Id.Should().Be(draft.Id);
     }
+
+    [Fact]
+    public async Task GetAll_ShowsEndedDraftSeasonAsHistory()
+    {
+        HockeySeason history = new(
+            "Imported 2015-2016",
+            new DateTime(2015, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2016, 4, 7, 0, 0, 0, DateTimeKind.Utc),
+            "2015-2016");
+        HockeySeason futureDraft = CreateSeason("Draft 2026-2027");
+
+        _competitionRepo
+            .Setup(repository => repository.GetAllSeasonsAsync())
+            .ReturnsAsync(new List<HockeySeason> { history, futureDraft });
+
+        GetAllHockeySeasonsHandler handler = new(
+            _competitionRepo.Object,
+            Mock.Of<ILogger<GetAllHockeySeasonsHandler>>());
+
+        Result<IEnumerable<HockeySeasonDto>> publicResult = await handler.Handle(
+            new GetAllHockeySeasonsQuery(),
+            CancellationToken.None);
+
+        publicResult.IsSuccess.Should().BeTrue();
+        publicResult.Data!.Select(season => season.Id).Should().Equal(history.Id);
+    }
 }
