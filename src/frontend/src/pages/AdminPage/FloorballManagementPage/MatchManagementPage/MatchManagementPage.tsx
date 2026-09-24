@@ -138,7 +138,7 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
   const fetchStatusCounts = useCallback(async () => {
     const seasonFilter = selectedCompetitionId || undefined;
     const searchFilter = searchQuery.trim() || undefined;
-    const baseFilters = { competitionId: seasonFilter, searchQuery: searchFilter, competitionType };
+    const baseFilters = { includeDrafts: true, competitionId: seasonFilter, searchQuery: searchFilter, competitionType };
 
     try {
       const [totalRes, scheduledRes, inProgressRes, completedRes, cancelledRes] = await Promise.all([
@@ -176,9 +176,9 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
       const statusFilter = TAB_TO_STATUS[activeTab];
 
       const [seasonsResponse, tournamentsResponse, matchesResponse] = await Promise.all([
-        isInitial && (mode === 'season' || mode === 'all') ? floorballSeasonService.getAll() : Promise.resolve(null),
-        isInitial && (mode === 'tournament' || mode === 'all') ? floorballTournamentService.getAll() : Promise.resolve(null),
-        floorballMatchService.getAll({
+        isInitial && (mode === 'season' || mode === 'all') ? floorballSeasonService.getAll(true) : Promise.resolve(null),
+        isInitial && (mode === 'tournament' || mode === 'all') ? floorballTournamentService.getAll(undefined, true) : Promise.resolve(null),
+        floorballMatchService.getAll({ includeDrafts: true,
           page: currentPage,
           pageSize,
           competitionId: seasonFilter,

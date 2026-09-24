@@ -203,7 +203,7 @@ public class FootballSeasonHandlerTests
     public async Task GetFootballSeasonYears_WithTeamCategory_ReturnsOnlyThatAudiencesYears()
     {
         _competitionRepo
-            .Setup(r => r.GetSeasonDateSummariesAsync(TeamCategory.Women, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetSeasonDateSummariesAsync(TeamCategory.Women, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(
             [
                 new FootballSeasonDateSummary(new DateTime(2014, 1, 1), new DateTime(2014, 12, 31), false),

@@ -60,7 +60,7 @@ public class GetFloorballSeasonByIdHandler : IRequestHandler<GetFloorballSeasonB
             _logger.LogInformation("Retrieving floorball season with ID: {SeasonId}", request.Id);
             
             FloorballCompetition? season = await _seasonRepository.GetByIdAsync(request.Id);
-            if (season == null)
+            if (season == null || (season is FloorballSeason floorballSeason && !request.IncludeDrafts && !PublicCompetitionVisibility.IsPublicSeason(floorballSeason)))
             {
                 _logger.LogWarning("Floorball season with ID {SeasonId} not found", request.Id);
                 return Result<FloorballSeasonDto>.NotFound("FloorballSeason", request.Id);

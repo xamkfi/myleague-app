@@ -375,4 +375,5 @@ export interface GetFloorballMatchesRequest {
   tournamentGroupId?: string;
   competitionType?: FloorballCompetitionType;
   teamCategory?: TeamCategory;
+  includeDrafts?: boolean;
 } 

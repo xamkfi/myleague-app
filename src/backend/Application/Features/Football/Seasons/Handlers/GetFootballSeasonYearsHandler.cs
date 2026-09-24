@@ -31,6 +31,7 @@ public class GetFootballSeasonYearsHandler
             IReadOnlyList<FootballSeasonDateSummary> summaries =
                 await _competitionRepository.GetSeasonDateSummariesAsync(
                     request.TeamCategory,
+                    request.IncludeDrafts,
                     cancellationToken);
 
             List<FootballSeasonYearDto> years = summaries

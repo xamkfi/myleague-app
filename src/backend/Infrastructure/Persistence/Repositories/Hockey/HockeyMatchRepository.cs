@@ -2,6 +2,7 @@ using Domain.Common;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Matches.Events;
 using Domain.Enums.Common;
+using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Matches;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
@@ -86,6 +87,7 @@ public class HockeyMatchRepository : IHockeyMatchRepository
         string sortOrder = "desc",
         string? searchQuery = null,
         TeamCategory? teamCategory = null,
+        bool excludeDraftCompetitions = false,
         CancellationToken cancellationToken = default)
     {
         IQueryable<HockeyMatch> query = BuildListQuery();
@@ -120,6 +122,13 @@ public class HockeyMatchRepository : IHockeyMatchRepository
         if (teamCategory is TeamCategory categoryFilter)
         {
             query = query.Where(m => m.Competition != null && m.Competition.TeamCategory == categoryFilter);
+        }
+
+        if (excludeDraftCompetitions)
+        {
+            query = query.Where(match =>
+                match.CompetitionId == null
+                || (match.Competition != null && match.Competition.Status != HockeyCompetitionStatus.Draft));
         }
 
         if (!string.IsNullOrWhiteSpace(searchQuery))

@@ -39,9 +39,11 @@ public class FootballSeasonController : BaseApiController
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<FootballSeasonDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ApiResponse<List<FootballSeasonDto>>>> GetAllSeasons()
+    public async Task<ActionResult<ApiResponse<List<FootballSeasonDto>>>> GetAllSeasons(
+        [FromQuery] bool includeDrafts = false)
     {
-        Result<IEnumerable<FootballSeasonDto>> result = await _mediator.Send(new GetAllFootballSeasonsQuery());
+        Result<IEnumerable<FootballSeasonDto>> result = await _mediator.Send(
+            new GetAllFootballSeasonsQuery(IncludeDrafts(includeDrafts)));
         return HandleListResult(result, "Football seasons retrieved successfully", "Failed to retrieve football seasons");
     }
 
@@ -52,10 +54,11 @@ public class FootballSeasonController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<List<FootballSeasonYearDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<List<FootballSeasonYearDto>>>> GetSeasonYears(
-        [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null)
+        [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null,
+        [FromQuery] bool includeDrafts = false)
     {
         Result<IEnumerable<FootballSeasonYearDto>> result =
-            await _mediator.Send(new GetFootballSeasonYearsQuery(teamCategory));
+            await _mediator.Send(new GetFootballSeasonYearsQuery(teamCategory, IncludeDrafts(includeDrafts)));
         return HandleListResult(result, "Football season years retrieved successfully", "Failed to retrieve football season years");
     }
 
@@ -73,7 +76,8 @@ public class FootballSeasonController : BaseApiController
             request.Page,
             request.PageSize,
             request.SeasonYear,
-            request.TeamCategory);
+            request.TeamCategory,
+            IncludeDrafts(request.IncludeDrafts));
 
         Result<PagedResult<FootballSeasonSummaryDto>> result = await _mediator.Send(query);
         return HandlePaginatedResult(result, "Football seasons retrieved successfully", "Failed to retrieve football seasons");
@@ -98,9 +102,12 @@ public class FootballSeasonController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ApiResponse<FootballSeasonDto>>> GetSeasonById(Guid id)
+    public async Task<ActionResult<ApiResponse<FootballSeasonDto>>> GetSeasonById(
+        Guid id,
+        [FromQuery] bool includeDrafts = false)
     {
-        Result<FootballSeasonDto> result = await _mediator.Send(new GetFootballSeasonByIdQuery(id));
+        Result<FootballSeasonDto> result = await _mediator.Send(
+            new GetFootballSeasonByIdQuery(id, IncludeDrafts(includeDrafts)));
         return HandleResult(result, "Football season retrieved successfully", "Failed to retrieve football season");
     }
 

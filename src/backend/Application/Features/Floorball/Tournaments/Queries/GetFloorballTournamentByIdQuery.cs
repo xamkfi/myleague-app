@@ -7,4 +7,4 @@ namespace Application.Features.Floorball.Tournaments.Queries;
 /// <summary>
 /// Query for retrieving a floorball tournament by ID
 /// </summary>
-public record GetFloorballTournamentByIdQuery(Guid CompetitionId) : IRequest<Result<FloorballTournamentDto>>;
+public record GetFloorballTournamentByIdQuery(Guid CompetitionId, bool IncludeDrafts = false) : IRequest<Result<FloorballTournamentDto>>;

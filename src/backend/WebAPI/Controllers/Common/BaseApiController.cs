@@ -1,5 +1,6 @@
 using Application.Common;
 using Domain.Common;
+using Domain.Constants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using WebAPI.Models.Common;
@@ -17,6 +18,13 @@ namespace WebAPI.Controllers.Common;
 [Produces("application/json")]
 public abstract class BaseApiController : ControllerBase
 {
+    /// <summary>
+    /// Honours <paramref name="requested"/> only for a signed-in system administrator.
+    /// Public callers and other roles always receive the filtered catalogue.
+    /// </summary>
+    protected bool IncludeDrafts(bool requested) =>
+        requested && User.IsInRole(AuthRoles.SystemAdmin);
+
     /// <summary>
     /// Returns 200 OK with a success envelope when <paramref name="result"/> succeeded and
     /// carries a non-null payload, otherwise delegates to <see cref="ToErrorResponse{T}"/>.

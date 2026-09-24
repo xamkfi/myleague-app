@@ -79,6 +79,7 @@ const TournamentMatchesTab = ({ tournament, onTournamentUpdated }: TournamentMat
 
   const fetchStatusCounts = useCallback(async (): Promise<void> => {
     const baseFilters = {
+      includeDrafts: true,
       competitionId: tournamentId,
       competitionType: 'Tournament' as const,
       searchQuery: searchQuery.trim() || undefined,
@@ -109,7 +110,7 @@ const TournamentMatchesTab = ({ tournament, onTournamentUpdated }: TournamentMat
       setLoading(true);
       setError(null);
 
-      const response = await floorballMatchService.getAll({
+      const response = await floorballMatchService.getAll({ includeDrafts: true,
         page: 1,
         pageSize: PAGE_SIZE,
         competitionId: tournamentId,

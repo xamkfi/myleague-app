@@ -201,6 +201,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         /// <inheritdoc />
         public async Task<IReadOnlyList<FloorballSeasonDateSummary>> GetSeasonDateSummariesAsync(
             Domain.Enums.Common.TeamCategory? teamCategory = null,
+            bool includeDrafts = false,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballSeason> query = _entities
@@ -210,6 +211,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             if (teamCategory is Domain.Enums.Common.TeamCategory category)
             {
                 query = query.Where(s => s.TeamCategory == category);
+            }
+
+            if (!includeDrafts)
+            {
+                query = query.Where(season => season.IsActive || season.IsCompleted);
             }
 
             return await query
@@ -224,6 +230,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             int? startYear,
             int? endYear,
             Domain.Enums.Common.TeamCategory? teamCategory = null,
+            bool includeDrafts = false,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FloorballSeason> query = _entities
@@ -240,6 +247,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             if (teamCategory is Domain.Enums.Common.TeamCategory category)
             {
                 query = query.Where(s => s.TeamCategory == category);
+            }
+
+            if (!includeDrafts)
+            {
+                query = query.Where(season => season.IsActive || season.IsCompleted);
             }
 
             int totalCount = await query.CountAsync(cancellationToken);
@@ -271,7 +283,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             int? endYear,
             CancellationToken cancellationToken = default)
         {
-            IQueryable<FloorballSeason> query = _entities.OfType<FloorballSeason>();
+            IQueryable<FloorballSeason> query = _entities.OfType<FloorballSeason>()
+                .Where(season => season.IsActive || season.IsCompleted);
 
             if (startYear.HasValue && endYear.HasValue)
             {

@@ -57,7 +57,7 @@ function EditHockeySeasonPage() {
       return;
     }
     const [loaded, teamList, divisionsResponse, clubs, content] = await Promise.all([
-      hockeySeasonService.getById(competitionId),
+      hockeySeasonService.getById(competitionId, true),
       hockeyTeamService.getAll(),
       divisionService.getBySportType(SportsCategory.Icehockey, true).catch(() => ({ data: [] as Array<{ id: string; name: string }> })),
       loadClubNameMap().catch(() => new Map<string, string>()),
@@ -485,12 +485,12 @@ function EditHockeySeasonPage() {
                                 const ids = [...selectedTeamIds];
                                 setSelectedTeamIds(new Set());
                                 void run(async () => {
-                                  let latest = await hockeySeasonService.getById(season.id);
+                                  let latest = await hockeySeasonService.getById(season.id, true);
                                   for (const teamId of ids) {
                                     let competitionTeamId = latest.teams.find((item) => item.teamId === teamId)?.id;
                                     if (!competitionTeamId) {
                                       await hockeySeasonService.addTeam(season.id, teamId);
-                                      latest = await hockeySeasonService.getById(season.id);
+                                      latest = await hockeySeasonService.getById(season.id, true);
                                       competitionTeamId = latest.teams.find((item) => item.teamId === teamId)?.id;
                                     }
                                     if (competitionTeamId && selectedDivisionId) {
@@ -595,7 +595,7 @@ function EditHockeySeasonPage() {
                                               onClick={() => {
                                                 void run(async () => {
                                                   await hockeySeasonService.addTeam(season.id, team.id);
-                                                  const latest = await hockeySeasonService.getById(season.id);
+                                                  const latest = await hockeySeasonService.getById(season.id, true);
                                                   const competitionTeamId = latest.teams.find((item) => item.teamId === team.id)?.id;
                                                   if (competitionTeamId && selectedDivisionId) {
                                                     await hockeySeasonService.addTeamToDivision(season.id, selectedDivisionId, competitionTeamId);

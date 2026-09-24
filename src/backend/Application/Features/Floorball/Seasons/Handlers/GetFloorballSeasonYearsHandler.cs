@@ -39,6 +39,7 @@ public class GetFloorballSeasonYearsHandler
             IReadOnlyList<FloorballSeasonDateSummary> summaries =
                 await _competitionRepository.GetSeasonDateSummariesAsync(
                     request.TeamCategory,
+                    request.IncludeDrafts,
                     cancellationToken);
 
             List<FloorballSeasonYearDto> years = summaries

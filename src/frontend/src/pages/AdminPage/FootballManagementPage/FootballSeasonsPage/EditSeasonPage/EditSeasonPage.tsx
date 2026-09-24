@@ -87,7 +87,7 @@ const EditSeasonPage = () => {
     try {
       setLoadingSeason(true);
       const [seasonData, content] = await Promise.all([
-        footballSeasonService.getById(competitionId),
+        footballSeasonService.getById(competitionId, true),
         footballSeasonService.getContentBlocks(competitionId),
       ]);
       setSeason(seasonData.data);

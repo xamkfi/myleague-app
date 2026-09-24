@@ -20,6 +20,11 @@ namespace WebAPI.Models.Floorball
         /// Optional audience / age-group category filter.
         /// </summary>
         public Domain.Enums.Common.TeamCategory? TeamCategory { get; init; }
+
+        /// <summary>
+        /// When true, a system administrator also receives draft competitions.
+        /// </summary>
+        public bool IncludeDrafts { get; init; }
     }
 
     /// <summary>

@@ -4,6 +4,14 @@ import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import type { ApiResponse } from '../../types/common/apiResponseType';
 import type { PaginatedApiResponse } from '../../types/hockey/hockeyTypes';
 
+export function withIncludeDrafts(path: string, includeDrafts?: boolean): string {
+  if (!includeDrafts) {
+    return path;
+  }
+  const separator = path.includes('?') ? '&' : '?';
+  return `${path}${separator}includeDrafts=true`;
+}
+
 export function withTeamCategory(path: string, teamCategory?: string): string {
   if (!teamCategory) {
     return path;

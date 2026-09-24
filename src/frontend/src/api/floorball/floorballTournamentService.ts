@@ -10,11 +10,14 @@ import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
 
 export const floorballTournamentService = {
-  getAll: async (teamCategory?: string): Promise<ApiResponse<FloorballTournamentDto[]>> => {
+  getAll: async (teamCategory?: string, includeDrafts = false): Promise<ApiResponse<FloorballTournamentDto[]>> => {
     try {
       const searchParams = new URLSearchParams();
       if (teamCategory) {
         searchParams.set('teamCategory', teamCategory);
+      }
+      if (includeDrafts) {
+        searchParams.set('includeDrafts', 'true');
       }
       const query = searchParams.toString();
       const response = await authFetch(
@@ -68,9 +71,11 @@ export const floorballTournamentService = {
     }
   },
 
-  getById: async (id: string): Promise<ApiResponse<FloorballTournamentDto>> => {
+  getById: async (id: string, includeDrafts = false): Promise<ApiResponse<FloorballTournamentDto>> => {
     try {
-      const response = await authFetch(`${API_URL}/FloorballTournament/${id}`);
+      const response = await authFetch(
+        `${API_URL}/FloorballTournament/${id}${includeDrafts ? '?includeDrafts=true' : ''}`,
+      );
 
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch tournament');

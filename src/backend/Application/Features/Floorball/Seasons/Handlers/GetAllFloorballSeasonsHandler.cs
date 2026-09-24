@@ -67,6 +67,12 @@ public class GetAllFloorballSeasonsHandler : IRequestHandler<GetAllFloorballSeas
             // FloorballCompetition uses Table-Per-Hierarchy; only return league seasons here,
             // not tournaments (which are managed via FloorballTournamentController).
             List<FloorballCompetition> seasonList = competitions.OfType<FloorballSeason>().Cast<FloorballCompetition>().ToList();
+            if (!request.IncludeDrafts)
+            {
+                seasonList = seasonList
+                    .Where(season => PublicCompetitionVisibility.IsPublicSeason((FloorballSeason)season))
+                    .ToList();
+            }
 
             HashSet<Guid> allClubIds = seasonList
                 .SelectMany(s => s.Teams)

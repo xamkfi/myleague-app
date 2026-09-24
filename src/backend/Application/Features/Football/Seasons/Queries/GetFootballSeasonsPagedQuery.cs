@@ -10,4 +10,5 @@ public record GetFootballSeasonsPagedQuery(
     int Page,
     int PageSize,
     string? SeasonYear,
-    TeamCategory? TeamCategory) : IRequest<Result<PagedResult<FootballSeasonSummaryDto>>>;
+    TeamCategory? TeamCategory,
+    bool IncludeDrafts = false) : IRequest<Result<PagedResult<FootballSeasonSummaryDto>>>;

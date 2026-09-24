@@ -58,11 +58,12 @@ namespace WebAPI.Controllers.Floorball
         [ProducesResponseType(typeof(ApiResponse<List<FloorballTournamentDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse<List<FloorballTournamentDto>>>> GetAllTournaments(
-            [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null)
+            [FromQuery] Domain.Enums.Common.TeamCategory? teamCategory = null,
+            [FromQuery] bool includeDrafts = false)
         {
             _logger.LogInformation("Getting all floorball tournaments");
 
-            GetAllFloorballTournamentsQuery query = new GetAllFloorballTournamentsQuery(teamCategory);
+            GetAllFloorballTournamentsQuery query = new GetAllFloorballTournamentsQuery(teamCategory, IncludeDrafts(includeDrafts));
             Result<List<FloorballTournamentDto>> result = await _mediator.Send(query);
 
             return HandleResult(result, "Floorball tournaments retrieved successfully", "Failed to retrieve floorball tournaments");
@@ -90,16 +91,19 @@ namespace WebAPI.Controllers.Floorball
         /// Gets a floorball tournament by ID
         /// </summary>
         /// <param name="competitionId">Tournament ID</param>
+        /// <param name="includeDrafts">When true, a system administrator can load a draft tournament.</param>
         /// <returns>Tournament details</returns>
         [HttpGet("{competitionId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<FloorballTournamentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<FloorballTournamentDto>>> GetTournamentById(Guid competitionId)
+        public async Task<ActionResult<ApiResponse<FloorballTournamentDto>>> GetTournamentById(
+            Guid competitionId,
+            [FromQuery] bool includeDrafts = false)
         {
             _logger.LogInformation("Getting floorball tournament with ID: {competitionId}", competitionId);
 
-            GetFloorballTournamentByIdQuery query = new GetFloorballTournamentByIdQuery(competitionId);
+            GetFloorballTournamentByIdQuery query = new GetFloorballTournamentByIdQuery(competitionId, IncludeDrafts(includeDrafts));
             Result<FloorballTournamentDto> result = await _mediator.Send(query);
 
             return HandleResult(result, "Floorball tournament retrieved successfully", "Failed to retrieve floorball tournament");

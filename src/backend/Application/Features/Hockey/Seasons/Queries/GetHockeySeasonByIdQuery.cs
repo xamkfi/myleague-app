@@ -8,4 +8,4 @@ namespace Application.Features.Hockey.Seasons.Queries;
 /// Query for retrieving a hockey season by id.
 /// </summary>
 /// <param name="Id">Season id</param>
-public record GetHockeySeasonByIdQuery(Guid Id) : IRequest<Result<HockeySeasonDto>>;
+public record GetHockeySeasonByIdQuery(Guid Id, bool IncludeDrafts = false) : IRequest<Result<HockeySeasonDto>>;

@@ -84,7 +84,7 @@ export const useSeasonsManagement = () => {
       setError(null);
       
       // Always load all seasons, we'll filter them locally
-      const result = await floorballSeasonService.getAll();
+      const result = await floorballSeasonService.getAll(true);
       setSeasons(result.data || []);
     } catch (err) {
       setError(parseApiError(err));

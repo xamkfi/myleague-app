@@ -41,6 +41,12 @@ public class GetAllFootballSeasonsHandler : IRequestHandler<GetAllFootballSeason
 
             IEnumerable<FootballCompetition> competitions = await _seasonRepository.GetAllAsync();
             List<FootballCompetition> seasonList = competitions.OfType<FootballSeason>().Cast<FootballCompetition>().ToList();
+            if (!request.IncludeDrafts)
+            {
+                seasonList = seasonList
+                    .Where(season => PublicCompetitionVisibility.IsPublicSeason((FootballSeason)season))
+                    .ToList();
+            }
             List<FootballSeasonDto> seasonDtos = await MapSeasonsAsync(seasonList, cancellationToken);
 
             _logger.LogInformation("Successfully retrieved {SeasonCount} football seasons", seasonDtos.Count);

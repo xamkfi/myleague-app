@@ -96,6 +96,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             Guid? tournamentGroupId = null,
             FloorballCompetitionType? competitionType = null,
             Domain.Enums.Common.TeamCategory? teamCategory = null,
+            bool excludeDraftCompetitions = false,
             CancellationToken cancellationToken = default)
         {
             DateTime? startDateUtc = startDate.HasValue
@@ -159,6 +160,14 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             if (teamCategory.HasValue)
             {
                 query = query.Where(m => m.Competition.TeamCategory == teamCategory.Value);
+            }
+
+            if (excludeDraftCompetitions)
+            {
+                query = query.Where(match =>
+                    (match.Competition is FloorballSeason && (match.Competition.IsActive || match.Competition.IsCompleted))
+                    || (match.Competition is FloorballTournament
+                        && ((FloorballTournament)match.Competition).TournamentStatus != FloorballTournamentStatus.Draft));
             }
 
             // Apply search query filter (team names)

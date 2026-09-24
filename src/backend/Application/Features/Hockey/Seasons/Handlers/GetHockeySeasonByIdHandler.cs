@@ -30,7 +30,7 @@ public class GetHockeySeasonByIdHandler : IRequestHandler<GetHockeySeasonByIdQue
         try
         {
             HockeySeason? season = await _competitionRepository.GetSeasonByIdAsync(request.Id);
-            if (season is null)
+            if (season is null || (!request.IncludeDrafts && !PublicCompetitionVisibility.IsPublic(season)))
             {
                 return Result<HockeySeasonDto>.NotFound("HockeySeason", request.Id);
             }

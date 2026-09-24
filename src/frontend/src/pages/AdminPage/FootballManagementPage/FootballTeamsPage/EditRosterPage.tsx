@@ -59,8 +59,8 @@ const EditRosterPage = () => {
     const loadCompetitions = async () => {
       try {
         const [seasonsResponse, tournamentsResponse] = await Promise.all([
-          footballSeasonService.getAll(),
-          footballTournamentService.getAll(),
+          footballSeasonService.getAll(true),
+          footballTournamentService.getAll(undefined, true),
         ]);
 
         const seasonOptions = (seasonsResponse.data ?? [])
