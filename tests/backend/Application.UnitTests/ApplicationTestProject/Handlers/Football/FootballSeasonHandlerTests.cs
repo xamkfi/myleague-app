@@ -7,7 +7,6 @@ using Application.Features.Football.Seasons.Handlers;
 using Application.Features.Football.Seasons.Queries;
 using Domain.Entities.Common;
 using Domain.Entities.Football.Competitions;
-using Domain.Entities.Football.Matches;
 using Domain.Entities.Football.Statistics;
 using Domain.Entities.Football.Teams;
 using Domain.Enums.Common;
@@ -76,6 +75,91 @@ public class FootballSeasonHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Data!.Name.Should().Be("Football 2026");
         _competitionRepo.Verify(r => r.AddAsync(It.IsAny<FootballSeason>()), Times.Once);
+        _footballUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateFootballSeason_WhenNameAlreadyExists_ReturnsFailure()
+    {
+        CreateFootballSeasonHandler handler = new(
+            _competitionRepo.Object,
+            _divisionRepo.Object,
+            _footballUow.Object,
+            Mock.Of<ILogger<CreateFootballSeasonHandler>>());
+
+        FootballSeason existing = CreateSeason("Football 2026");
+        _competitionRepo.Setup(r => r.GetSeasonByNameAsync("Football 2026")).ReturnsAsync(existing);
+
+        CreateFootballSeasonCommand command = new(
+            "Football 2026",
+            [Guid.NewGuid()],
+            new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc),
+            PlayersOnField: 5);
+
+        Result<FootballSeasonDto> result = await handler.Handle(command, CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Contain("already exists");
+        _competitionRepo.Verify(r => r.AddAsync(It.IsAny<FootballSeason>()), Times.Never);
+        _footballUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateFootballSeason_WhenNameBelongsToAnotherSeason_ReturnsFailure()
+    {
+        UpdateFootballSeasonHandler handler = new(
+            _competitionRepo.Object,
+            _divisionRepo.Object,
+            _footballUow.Object,
+            Mock.Of<ILogger<UpdateFootballSeasonHandler>>());
+
+        FootballSeason season = CreateSeason("Own Season");
+        FootballSeason other = CreateSeason("Taken Season");
+        _competitionRepo.Setup(r => r.GetByIdAsync(season.Id)).ReturnsAsync(season);
+        _competitionRepo.Setup(r => r.GetSeasonByNameAsync("Taken Season")).ReturnsAsync(other);
+
+        Result<FootballSeasonDto> result = await handler.Handle(
+            new UpdateFootballSeasonCommand(
+                season.Id,
+                "Taken Season",
+                new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc)),
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Contain("already exists");
+        season.Name.Should().Be("Own Season");
+        _competitionRepo.Verify(r => r.UpdateAsync(It.IsAny<FootballCompetition>()), Times.Never);
+        _footballUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateFootballSeason_WhenNameUnchanged_Saves()
+    {
+        UpdateFootballSeasonHandler handler = new(
+            _competitionRepo.Object,
+            _divisionRepo.Object,
+            _footballUow.Object,
+            Mock.Of<ILogger<UpdateFootballSeasonHandler>>());
+
+        FootballSeason season = CreateSeason("Own Season");
+        _competitionRepo.Setup(r => r.GetByIdAsync(season.Id)).ReturnsAsync(season);
+        _competitionRepo.Setup(r => r.GetSeasonByNameAsync(season.Name)).ReturnsAsync(season);
+        _divisionRepo
+            .Setup(r => r.GetCompetitionDivisionsAsync(season.Id))
+            .ReturnsAsync(Enumerable.Empty<FootballCompetitionDivision>());
+
+        Result<FootballSeasonDto> result = await handler.Handle(
+            new UpdateFootballSeasonCommand(
+                season.Id,
+                season.Name,
+                new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc)),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Name.Should().Be("Own Season");
         _footballUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -170,33 +254,56 @@ public class FootballSeasonHandlerTests
     }
 
     [Fact]
-    public async Task DeleteFootballSeason_WhenHasMatches_ReturnsFailure()
+    public async Task DeleteFootballSeason_WhenMatchesAreUnplayed_DeletesMatchesStatsAndSeason()
     {
         DeleteFootballSeasonHandler handler = new(
             _competitionRepo.Object,
             _matchRepo.Object,
+            _statsRepo.Object,
             _footballUow.Object,
             Mock.Of<ILogger<DeleteFootballSeasonHandler>>());
 
         Guid id = Guid.NewGuid();
         _competitionRepo.Setup(r => r.ExistsAsync(id)).ReturnsAsync(true);
-        FootballSeason season = CreateSeason();
-        FootballTeam home = CreateTeam("Home");
-        FootballTeam away = CreateTeam("Away");
-        season.AddTeam(home);
-        season.AddTeam(away);
-        FootballMatch match = new(
-            season,
-            home,
-            away,
-            new DateTime(2027, 1, 1, 18, 0, 0, DateTimeKind.Utc),
-            "Pitch");
-        _matchRepo.Setup(r => r.GetByCompetitionIdAsync(id)).ReturnsAsync([match]);
+        _matchRepo
+            .Setup(r => r.HasMatchThatBlocksSeasonDeleteAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _matchRepo
+            .Setup(r => r.DeleteAllByCompetitionIdAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        Result result = await handler.Handle(new DeleteFootballSeasonCommand(id), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        _matchRepo.Verify(r => r.DeleteAllByCompetitionIdAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+        _statsRepo.Verify(r => r.ResetCompetitionStatisticsAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+        _competitionRepo.Verify(r => r.DeleteAsync(id), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteFootballSeason_WhenMatchHasBeenRecorded_ReturnsFailure()
+    {
+        DeleteFootballSeasonHandler handler = new(
+            _competitionRepo.Object,
+            _matchRepo.Object,
+            _statsRepo.Object,
+            _footballUow.Object,
+            Mock.Of<ILogger<DeleteFootballSeasonHandler>>());
+
+        Guid id = Guid.NewGuid();
+        _competitionRepo.Setup(r => r.ExistsAsync(id)).ReturnsAsync(true);
+        _matchRepo
+            .Setup(r => r.HasMatchThatBlocksSeasonDeleteAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
         Result result = await handler.Handle(new DeleteFootballSeasonCommand(id), CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
+        result.Error.Should().Contain("started, finished, or been cancelled");
         _competitionRepo.Verify(r => r.DeleteAsync(id), Times.Never);
+        _statsRepo.Verify(
+            r => r.ResetCompetitionStatisticsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]

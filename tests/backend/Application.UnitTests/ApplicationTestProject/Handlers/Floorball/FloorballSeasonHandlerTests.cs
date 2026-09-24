@@ -7,7 +7,6 @@ using Application.Features.Floorball.Seasons.Handlers;
 using Application.Features.Floorball.Seasons.Queries;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball.Competitions;
-using Domain.Entities.Floorball.Matches;
 using Domain.Entities.Floorball.Matches.Events;
 using Domain.Entities.Floorball.Officials;
 using Domain.Entities.Floorball.Statistics;
@@ -76,6 +75,90 @@ public class FloorballSeasonHandlerTests
         _competitionRepo.Verify(r => r.AddAsync(It.IsAny<FloorballSeason>()), Times.Once);
         _floorballUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         _divisionRepo.Verify(r => r.AddCompetitionDivisionAsync(It.IsAny<Guid>(), divisionId), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateFloorballSeason_WhenNameAlreadyExists_ReturnsFailure()
+    {
+        CreateFloorballSeasonHandler handler = new(
+            _competitionRepo.Object,
+            _divisionRepo.Object,
+            _floorballUow.Object,
+            Mock.Of<ILogger<CreateFloorballSeasonHandler>>());
+
+        FloorballSeason existing = CreateSeason("Championship 2026");
+        _competitionRepo.Setup(r => r.GetSeasonByNameAsync("Championship 2026")).ReturnsAsync(existing);
+
+        CreateFloorballSeasonCommand command = new(
+            "Championship 2026",
+            [Guid.NewGuid()],
+            new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc));
+
+        Result<FloorballSeasonDto> result = await handler.Handle(command, CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Contain("already exists");
+        _competitionRepo.Verify(r => r.AddAsync(It.IsAny<FloorballSeason>()), Times.Never);
+        _floorballUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateFloorballSeason_WhenNameBelongsToAnotherSeason_ReturnsFailure()
+    {
+        UpdateFloorballSeasonHandler handler = new(
+            _competitionRepo.Object,
+            _divisionRepo.Object,
+            _floorballUow.Object,
+            Mock.Of<ILogger<UpdateFloorballSeasonHandler>>());
+
+        FloorballSeason season = CreateSeason("Own Season");
+        FloorballSeason other = CreateSeason("Taken Season");
+        _competitionRepo.Setup(r => r.GetByIdAsync(season.Id)).ReturnsAsync(season);
+        _competitionRepo.Setup(r => r.GetSeasonByNameAsync("Taken Season")).ReturnsAsync(other);
+
+        Result<FloorballSeasonDto> result = await handler.Handle(
+            new UpdateFloorballSeasonCommand(
+                season.Id,
+                "Taken Season",
+                new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc)),
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Contain("already exists");
+        season.Name.Should().Be("Own Season");
+        _competitionRepo.Verify(r => r.UpdateAsync(It.IsAny<FloorballCompetition>()), Times.Never);
+        _floorballUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateFloorballSeason_WhenNameUnchanged_Saves()
+    {
+        UpdateFloorballSeasonHandler handler = new(
+            _competitionRepo.Object,
+            _divisionRepo.Object,
+            _floorballUow.Object,
+            Mock.Of<ILogger<UpdateFloorballSeasonHandler>>());
+
+        FloorballSeason season = CreateSeason("Own Season");
+        _competitionRepo.Setup(r => r.GetByIdAsync(season.Id)).ReturnsAsync(season);
+        _competitionRepo.Setup(r => r.GetSeasonByNameAsync(season.Name)).ReturnsAsync(season);
+        _divisionRepo
+            .Setup(r => r.GetCompetitionDivisionsAsync(season.Id))
+            .ReturnsAsync(Enumerable.Empty<FloorballCompetitionDivision>());
+
+        Result<FloorballSeasonDto> result = await handler.Handle(
+            new UpdateFloorballSeasonCommand(
+                season.Id,
+                season.Name,
+                new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc)),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Name.Should().Be("Own Season");
+        _floorballUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -200,7 +283,7 @@ public class FloorballSeasonHandlerTests
     }
 
     [Fact]
-    public async Task DeleteFloorballSeason_WhenHasMatches_ReturnsFailure()
+    public async Task DeleteFloorballSeason_WhenMatchesAreUnplayed_DeletesMatchesAndSeason()
     {
         DeleteFloorballSeasonHandler handler = new(
             _competitionRepo.Object,
@@ -211,13 +294,42 @@ public class FloorballSeasonHandlerTests
         Guid id = Guid.NewGuid();
         _competitionRepo.Setup(r => r.ExistsAsync(id)).ReturnsAsync(true);
         _matchRepo
-            .Setup(r => r.GetByCompetitionIdAsync(id))
-            .ReturnsAsync([CreateMatchStub()]);
+            .Setup(r => r.HasMatchThatBlocksSeasonDeleteAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _matchRepo
+            .Setup(r => r.DeleteAllByCompetitionIdAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(2);
+
+        Result result = await handler.Handle(new DeleteFloorballSeasonCommand(id), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        _matchRepo.Verify(r => r.DeleteAllByCompetitionIdAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+        _competitionRepo.Verify(r => r.DeleteAsync(id), Times.Once);
+        _floorballUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteFloorballSeason_WhenMatchHasBeenRecorded_ReturnsFailure()
+    {
+        DeleteFloorballSeasonHandler handler = new(
+            _competitionRepo.Object,
+            _matchRepo.Object,
+            _floorballUow.Object,
+            Mock.Of<ILogger<DeleteFloorballSeasonHandler>>());
+
+        Guid id = Guid.NewGuid();
+        _competitionRepo.Setup(r => r.ExistsAsync(id)).ReturnsAsync(true);
+        _matchRepo
+            .Setup(r => r.HasMatchThatBlocksSeasonDeleteAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
         Result result = await handler.Handle(new DeleteFloorballSeasonCommand(id), CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().Contain("matches");
+        result.Error.Should().Contain("started, finished, or been cancelled");
+        _matchRepo.Verify(
+            r => r.DeleteAllByCompetitionIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never);
         _competitionRepo.Verify(r => r.DeleteAsync(id), Times.Never);
     }
 
@@ -233,8 +345,8 @@ public class FloorballSeasonHandlerTests
         Guid id = Guid.NewGuid();
         _competitionRepo.Setup(r => r.ExistsAsync(id)).ReturnsAsync(true);
         _matchRepo
-            .Setup(r => r.GetByCompetitionIdAsync(id))
-            .ReturnsAsync(Enumerable.Empty<FloorballMatch>());
+            .Setup(r => r.HasMatchThatBlocksSeasonDeleteAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
         Result result = await handler.Handle(new DeleteFloorballSeasonCommand(id), CancellationToken.None);
 
@@ -271,20 +383,5 @@ public class FloorballSeasonHandlerTests
         years[0].HasActiveSeason.Should().BeTrue();
         years[1].Year.Should().Be("2024-2025");
         years[1].HasActiveSeason.Should().BeFalse();
-    }
-
-    private static FloorballMatch CreateMatchStub()
-    {
-        FloorballSeason season = CreateSeason();
-        FloorballTeam home = CreateTeam("Home");
-        FloorballTeam away = CreateTeam("Away");
-        season.AddTeam(home);
-        season.AddTeam(away);
-        return new FloorballMatch(
-            season,
-            home,
-            away,
-            new DateTime(2027, 1, 1, 18, 0, 0, DateTimeKind.Utc),
-            "Arena");
     }
 }

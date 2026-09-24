@@ -152,6 +152,34 @@ export interface SeasonImportDryRunCounts {
   matches: number;
 }
 
+export interface SeasonImportPreviewTeam {
+  name: string;
+  clubName: string;
+  matchCount: number;
+  playerCount: number;
+}
+
+export interface SeasonImportPreviewDivision {
+  name: string;
+  level: number | null;
+  teams: SeasonImportPreviewTeam[];
+}
+
+/** Read-only summary shown after a JSON file is loaded, before import starts. */
+export interface SeasonImportPreview {
+  startDate: string;
+  endDate: string;
+  divisions: SeasonImportPreviewDivision[];
+  matchCount: number;
+  firstMatchAt: string | null;
+  lastMatchAt: string | null;
+  venues: string[];
+  teamsWithoutMatches: string[];
+  matchesOutsideSeason: number;
+  /** Matches that have no venue of their own. A default venue can still cover them. */
+  matchesWithoutOwnVenue: number;
+}
+
 export class SeasonImportAbortedError extends Error {
   constructor() {
     super('Import was aborted by the user.');

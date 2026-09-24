@@ -32,6 +32,13 @@ public class CreateHockeySeasonHandler : IRequestHandler<CreateHockeySeasonComma
     {
         try
         {
+            HockeySeason? seasonWithSameName = await _competitionRepository.GetSeasonByNameAsync(request.Name);
+            if (seasonWithSameName is not null)
+            {
+                _logger.LogWarning("Attempt to create hockey season with existing name: {Name}", request.Name);
+                return Result<HockeySeasonDto>.Failure($"A season with the name '{request.Name}' already exists.");
+            }
+
             HockeySeason season = new(
                 request.Name,
                 DateTimeUtc.Normalize(request.StartDate),

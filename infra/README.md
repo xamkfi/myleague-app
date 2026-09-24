@@ -85,7 +85,7 @@ Deployed by [provision/modules/monitoring-alerts.bicep](provision/modules/monito
 | Failure Anomalies | App Insights Smart Detection (ML-based) | automatic | 3 |
 | Cost budget | Resource group spend | 80% and 100% of $35/month | notification |
 
-Additional useful metrics with no extra setup: the App Insights dashboards (Failures, Performance, Live Metrics) and the health check UI at `https://myleague-{env}-api.azurewebsites.net/health-ui`.
+Additional useful metrics with no extra setup: the App Insights dashboards (Failures, Performance, Live Metrics) and the health dashboard at `https://myleague-{env}-api.azurewebsites.net/health-ui` (redirects to the static page `/health-test.html`).
 
 Alert costs: metric alert rules ~$0.10/month each, availability test pennies at 5-min frequency, smart detection and budgets free. Total ~$1-2/month.
 

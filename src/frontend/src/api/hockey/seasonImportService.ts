@@ -29,6 +29,7 @@ import {
   getSeasonDryRunCounts,
   inferSeasonTeamCategory,
   importClubs,
+  reportDuplicateSeasonName,
   importDivisions,
   importTeamPlayers,
   matchLabel,
@@ -70,6 +71,25 @@ export async function importSeason(
   const summary = emptySeasonImportSummary();
   const { reportFatal, checkAbort } = createImportRuntime(summary, callbacks);
   const defaultCategory = options.defaultTeamCategory ?? inferSeasonTeamCategory(payload);
+
+  if (checkAbort()) return summary;
+  try {
+    const existing = await hockeySeasonService.getAll(undefined, true);
+    const existingNames = existing.map((season) => season.name);
+    if (
+      reportDuplicateSeasonName(
+        payload.season.name,
+        existingNames,
+        'hockey.seasons.import.duplicateName',
+        reportFatal,
+      )
+    ) {
+      return summary;
+    }
+  } catch (err) {
+    reportFatal('season', `Season "${payload.season.name}"`, err);
+    return summary;
+  }
 
   const clubByName = await importClubs(payload.clubs, summary, callbacks, checkAbort, reportFatal);
   if (!clubByName || summary.fatal || summary.aborted) return summary;

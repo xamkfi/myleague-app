@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchBackendVersion } from '../../api/version/versionService';
 import { footerContactService } from '../../api/common/footerContactService';
@@ -9,6 +10,7 @@ import xamkLogo from '../../assets/logos/xamk-logo.png';
 import './Footer.scss';
 
 const SOURCE_REPO_URL = 'https://github.com/xamkfi/myleague-app';
+const XAMK_PROGRAMME_URL = 'https://www.xamk.fi/koulutukset/insinoori-amk-ohjelmistotekniikka/';
 
 function GitHubIcon() {
   return (
@@ -92,7 +94,18 @@ export default function Footer() {
           <span className="footer-credits__made-by">
             {t('footer.credits.madeBy', 'Sivuston tehnyt')}
           </span>
-          <img src={xamkLogo} alt="XAMK" className="footer-credits__logo" />
+          <a
+            className="footer-credits__logo-link"
+            href={XAMK_PROGRAMME_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src={xamkLogo}
+              alt={t('footer.credits.xamkLogo', 'XAMK, insinööri (AMK), ohjelmistotekniikka')}
+              className="footer-credits__logo"
+            />
+          </a>
           <span className="footer-credits__programme">
             {t('footer.credits.programme', 'Ohjelmistotekniikka')}
           </span>
@@ -106,6 +119,9 @@ export default function Footer() {
             <span>{t('footer.credits.source', 'Lähdekoodit täällä')}</span>
           </a>
         </div>
+        <Link className="footer-privacy-link" to="/tietosuojaseloste">
+          {t('footer.privacyPolicy', 'Tietosuojaseloste')}
+        </Link>
         <p className="footer-version__meta">
           Frontend: {__APP_VERSION__} | Backend: {backendVersion}
         </p>

@@ -50,6 +50,10 @@ export const hockeySeasonService = {
   complete: (id: string): Promise<HockeySeasonDto> => action(id, 'complete', 'Failed to complete season'),
   cancel: (id: string): Promise<HockeySeasonDto> => action(id, 'cancel', 'Failed to cancel season'),
 
+  deleteSeason: async (id: string): Promise<void> => {
+    await hockeyRequest<unknown>(`/HockeySeason/${id}`, 'Failed to delete hockey season', { method: 'DELETE' });
+  },
+
   addTeam: (seasonId: string, teamId: string, seed?: number): Promise<HockeyCompetitionTeamDto> =>
     hockeyRequest<HockeyCompetitionTeamDto>(`/HockeySeason/${seasonId}/teams`, 'Failed to add team to season', {
       method: 'POST',

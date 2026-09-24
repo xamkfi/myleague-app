@@ -10,6 +10,7 @@ public interface IFootballCompetitionRepository
 {
     Task<FootballCompetition?> GetByIdAsync(Guid? id);
     Task<FootballCompetition?> GetByNameAsync(string name);
+    Task<FootballSeason?> GetSeasonByNameAsync(string name);
     Task<IEnumerable<FootballCompetition>> GetAllAsync();
     Task<IEnumerable<FootballCompetition>> GetActiveAsync();
     Task<IEnumerable<FootballCompetition>> GetCompletedAsync();

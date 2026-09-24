@@ -12,6 +12,12 @@ namespace MyLeague.Infrastructure.HealthChecks
     public static class HealthCheckExtensions
     {
         /// <summary>
+        /// Tag for checks that <c>/health/ready</c> runs. Azure App Service and deploy
+        /// smoke tests call that path, so only PostgreSQL and the four DbContexts use it.
+        /// </summary>
+        public const string ReadyTag = "ready";
+
+        /// <summary>
         /// Adds comprehensive health checks to the service collection
         /// </summary>
         /// <param name="services">The service collection</param>
@@ -31,20 +37,25 @@ namespace MyLeague.Infrastructure.HealthChecks
                 .AddNpgSql(
                     connectionString,
                     name: "postgresql-connection",
-                    tags: new[] { "database", "postgresql" })
-                
-                // Entity Framework context checks
+                    tags: new[] { "database", "postgresql", ReadyTag })
+
+                // Entity Framework context checks. These share one database; each
+                // context still has to connect so a broken sport model fails readiness.
                 .AddDbContextCheck<CommonDbContext>(
                     name: "common-database",
-                    tags: new[] { "database", "ef-core", "common" })
-                
+                    tags: new[] { "database", "ef-core", "common", ReadyTag })
+
                 .AddDbContextCheck<FloorballDbContext>(
                     name: "floorball-database",
-                    tags: new[] { "database", "ef-core", "floorball" })
+                    tags: new[] { "database", "ef-core", "floorball", ReadyTag })
+
+                .AddDbContextCheck<FootballDbContext>(
+                    name: "football-database",
+                    tags: new[] { "database", "ef-core", "football", ReadyTag })
 
                 .AddDbContextCheck<HockeyDbContext>(
                     name: "hockey-database",
-                    tags: new[] { "database", "ef-core", "hockey" })
+                    tags: new[] { "database", "ef-core", "hockey", ReadyTag })
 
                 // Custom database health check
                 .AddCheck<DatabaseHealthCheck>(

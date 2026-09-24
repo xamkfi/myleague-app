@@ -143,13 +143,12 @@
                 try {
                     console.log(`Trying endpoint: ${endpoint}`);
                     const response = await fetch(endpoint);
-                    
-                    if (!response.ok) {
-                        console.log(`Endpoint ${endpoint} returned ${response.status}: ${response.statusText}`);
+                    const data = await response.json();
+
+                    if (!data || !Array.isArray(data.checks)) {
+                        console.log(`Endpoint ${endpoint} returned ${response.status} without a health report`);
                         continue;
                     }
-                    
-                    const data = await response.json();
                     
                     loadingDiv.style.display = 'none';
                     

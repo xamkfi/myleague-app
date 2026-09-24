@@ -200,6 +200,12 @@ public interface IFloorballMatchRepository
     Task<int> DeleteAllByCompetitionIdAsync(Guid competitionId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// True when the competition has a match that has started, finished, or been cancelled.
+    /// Scheduled and postponed matches do not block season deletion. Does not track entities.
+    /// </summary>
+    Task<bool> HasMatchThatBlocksSeasonDeleteAsync(Guid competitionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if a floorball match exists
     /// </summary>
     /// <param name="id">The match ID</param>

@@ -64,8 +64,11 @@ export const useSeasonsManagement = () => {
       return t('floorball.seasons.errors.cannotUpdateCompleted', 'Cannot update a completed season.');
     }
 
-    if (errorMessage.includes('Cannot delete a season that has matches')) {
-      return t('floorball.seasons.errors.hasMatches', 'Cannot delete a season that has matches. Delete the matches first.');
+    if (errorMessage.includes('Cannot delete a season that has a match that has started')) {
+      return t(
+        'floorball.seasons.errors.hasMatches',
+        'Cannot delete a season that has a match that has started, finished, or been cancelled.',
+      );
     }
     
     if (errorMessage.includes('overlapping dates') || errorMessage.includes('overlaps with')) {

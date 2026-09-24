@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using MyLeague.Infrastructure.HealthChecks;
 using System.Net;
 using WebAPI.Controllers.Common;
 
@@ -133,7 +134,8 @@ namespace WebAPI.Controllers.Health
         {
             try
             {
-                HealthReport healthReport = await _healthCheckService.CheckHealthAsync();
+                HealthReport healthReport = await _healthCheckService.CheckHealthAsync(
+                    check => check.Tags.Contains(HealthCheckExtensions.ReadyTag));
                 
                 return healthReport.Status == HealthStatus.Healthy 
                     ? Ok("Healthy") 

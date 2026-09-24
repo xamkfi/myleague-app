@@ -27,6 +27,13 @@ public interface IFloorballCompetitionRepository
     /// <param name="name">The competition name</param>
     /// <returns>The competition if found, null otherwise</returns>
     Task<FloorballCompetition?> GetByNameAsync(string name);
+
+    /// <summary>
+    /// Gets a league season by its exact name. Tournaments are excluded.
+    /// </summary>
+    /// <param name="name">The season name</param>
+    /// <returns>The season if found, null otherwise</returns>
+    Task<FloorballSeason?> GetSeasonByNameAsync(string name);
     
     /// <summary>
     /// Gets all floorball competitions

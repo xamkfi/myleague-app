@@ -9,7 +9,7 @@ The MyLeague API implements comprehensive health checks following Clean Architec
 ### 1. Detailed Health Check
 - **URL**: `/health`
 - **Method**: GET
-- **Description**: Returns detailed health information for all registered health checks
+- **Description**: Returns every check, including memory, disk, row counts, and service resolution. A failing diagnostic check makes this endpoint non-200. It does not remove the App Service instance from traffic.
 - **Response Format**: JSON with detailed status, duration, and data for each check
 
 ```json
@@ -41,8 +41,9 @@ The MyLeague API implements comprehensive health checks following Clean Architec
 ### 2. Readiness Check
 - **URL**: `/health/ready`
 - **Method**: GET
-- **Description**: Simple endpoint for load balancers and orchestrators
-- **Response**: "Healthy" or "Unhealthy" (text/plain)
+- **Description**: Checks tagged `ready` only: raw PostgreSQL plus `CommonDbContext`, `FloorballDbContext`, `FootballDbContext`, and `HockeyDbContext`
+- **Used by**: App Service `healthCheckPath`, the production availability test, and deploy smoke tests
+- **Response**: "Healthy" or "Unhealthy" (text/plain). HTTP 503 when any ready check fails
 
 ### 3. Liveness Check
 - **URL**: `/health/live`
@@ -58,34 +59,22 @@ The MyLeague API implements comprehensive health checks following Clean Architec
   - `GET /api/health/ready` - Readiness check
   - `GET /api/health/live` - Liveness check
 
-### 5. Health Check UI
-- **URL**: `/health-ui`
-- **Description**: Web-based dashboard for monitoring health checks
-- **Features**: Real-time monitoring, historical data, visual status indicators
-
-### 6. Custom Health Dashboard
-- **URL**: `/health-test.html`
-- **Description**: Enhanced custom dashboard with detailed health check visualization
-- **Features**: 
-  - Beautiful, modern UI with color-coded status indicators
-  - Detailed information for each health check including descriptions, durations, and data
-  - Tag-based categorization
-  - Auto-refresh every 30 seconds
-  - Multi-endpoint support with automatic fallback
-  - Enhanced error handling and troubleshooting information
+### 5. Health dashboard
+- **URL**: `/health-test.html` (static file in `wwwroot`)
+- **Alias**: `/health-ui` redirects to `/health-test.html`
+- The Xabaril HealthChecks.UI package is not referenced. There is no history store or separate UI host.
+- The page shows the current `/health` JSON: status, duration, description, and tags, and refreshes on a timer.
 
 ## Access URLs
 
 ### Development (Visual Studio / dotnet run)
-- **Health Check UI**: `http://localhost:65533/health-ui`
-- **Custom Health Dashboard**: `http://localhost:65533/health-test.html`
+- **Dashboard**: `http://localhost:65533/health-test.html` (`/health-ui` redirects here)
 - **Direct Health Endpoint**: `http://localhost:65533/health`
 - **API Documentation**: `http://localhost:65533/scalar/v1`
 - **HTTPS versions**: Replace `65533` with `65532`
 
 ### Docker Environment
-- **Health Check UI**: `http://localhost:8080/health-ui`
-- **Custom Health Dashboard**: `http://localhost:8080/health-test.html`
+- **Dashboard**: `http://localhost:8080/health-test.html` (`/health-ui` redirects here)
 - **Direct Health Endpoint**: `http://localhost:8080/health`
 - **API Documentation**: `http://localhost:8080/scalar/v1`
 
@@ -100,61 +89,74 @@ The MyLeague API implements comprehensive health checks following Clean Architec
 ### 2. PostgreSQL Connection
 - **Name**: `postgresql-connection`
 - **Description**: Tests raw PostgreSQL database connectivity
-- **Tags**: `database`, `postgresql`
+- **Tags**: `database`, `postgresql`, `ready`
 - **Common Issues**: "Name or service not known" when PostgreSQL is not running
 
 ### 3. Common Database Context
 - **Name**: `common-database`
 - **Description**: Entity Framework Core health check for CommonDbContext
-- **Tags**: `database`, `ef-core`, `common`
+- **Tags**: `database`, `ef-core`, `common`, `ready`
 - **Dependencies**: Requires PostgreSQL connection
 
 ### 4. Floorball Database Context
 - **Name**: `floorball-database`
 - **Description**: Entity Framework Core health check for FloorballDbContext
-- **Tags**: `database`, `ef-core`, `floorball`
+- **Tags**: `database`, `ef-core`, `floorball`, `ready`
 - **Dependencies**: Requires PostgreSQL connection
 
-### 5. Database Operations
+### 5. Football Database Context
+- **Name**: `football-database`
+- **Description**: Entity Framework Core health check for FootballDbContext
+- **Tags**: `database`, `ef-core`, `football`, `ready`
+- **Dependencies**: Requires PostgreSQL connection
+
+### 6. Hockey Database Context
+- **Name**: `hockey-database`
+- **Description**: Entity Framework Core health check for HockeyDbContext
+- **Tags**: `database`, `ef-core`, `hockey`, `ready`
+- **Dependencies**: Requires PostgreSQL connection
+
+### 7. Database Operations
 - **Name**: `database-operations`
-- **Description**: Custom health check that performs actual database queries
+- **Description**: Diagnostic count queries. Not included in `/health/ready`
 - **Tags**: `database`, `custom`
-- **Checks**: 
-  - Database connectivity for both contexts
-  - Basic query operations (count queries)
-  - Returns entity counts as additional data
+- **Checks**:
+  - Connectivity for Common, Floorball, Football, and Hockey contexts
+  - Club count, floorball player count, football team count, hockey team count
 - **Common Issues**: "Common database is not accessible" when PostgreSQL is down
 
-### 6. Application Services
+### 8. Application Services
 - **Name**: `application-services`
-- **Description**: Verifies critical application services are registered and accessible
+- **Description**: Diagnostic service resolution. Not included in `/health/ready`
 - **Tags**: `services`, `dependencies`
 - **Checks**:
-  - Repository services (Club, Person, Player, Team, Match, Season)
-  - Unit of Work service
+  - `IClubRepository`, `IPersonRepository`
+  - Floorball player, team, match, and competition repositories
+  - `IUnitOfWork`
+  - Football and hockey repositories are not part of this check
   - Service resolution and instantiation
 - **Data Returned**:
   - ServicesChecked: Number of services verified
   - ServicesHealthy: Number of healthy services
   - Individual service status for each repository
 
-### 7. Disk Storage
+### 9. Disk Storage
 - **Name**: `disk-storage`
-- **Description**: Monitors available disk space
+- **Description**: Diagnostic disk space check. Not included in `/health/ready`
 - **Tags**: `system`, `storage`
 - **Threshold**: 1000 MB minimum free space
 - **Platform**: Checks C:\ on Windows, / on Linux/Docker
 
-### 8. Memory Usage
+### 10. Memory Usage
 - **Name**: `memory-usage`
-- **Description**: Monitors process allocated memory
+- **Description**: Diagnostic process-memory check. Not included in `/health/ready`
 - **Tags**: `system`, `memory`
 - **Threshold**: 1000 MB maximum allocated memory
 - **Data**: Shows allocated megabytes in description
 
-### 9. Private Memory
+### 11. Private Memory
 - **Name**: `private-memory`
-- **Description**: Monitors private memory usage
+- **Description**: Diagnostic private-memory check. Not included in `/health/ready`
 - **Tags**: `system`, `memory`
 - **Threshold**: 1.5 GB maximum private memory
 
@@ -167,6 +169,9 @@ Health checks are organized using tags for easy filtering:
 - **`ef-core`**: Entity Framework Core checks
 - **`common`**: Common database context checks
 - **`floorball`**: Floorball database context checks
+- **`football`**: Football database context checks
+- **`hockey`**: Hockey database context checks
+- **`ready`**: Checks that `/health/ready` and `/api/health/ready` run
 - **`custom`**: Custom implementation checks
 - **`services`**: Application service checks
 - **`dependencies`**: Dependency injection checks
@@ -176,60 +181,26 @@ Health checks are organized using tags for easy filtering:
 
 ## Configuration
 
-Health checks are configured in `appsettings.json` with environment-specific overrides:
+Thresholds are hardcoded in `Infrastructure/HealthChecks/HealthCheckExtensions.cs` (disk 1000 MB free, process memory 1000 MB, private memory 1.5 GB). `appsettings.json` has a `HealthChecks` section, but nothing reads it.
 
-### Base Configuration (appsettings.json)
-```json
-{
-  "HealthChecks": {
-    "UI": {
-      "EvaluationTimeInSeconds": 30,
-      "MaximumHistoryEntriesPerEndpoint": 50,
-      "Endpoint": "http://localhost:65533/health"
-    },
-    "Database": {
-      "TimeoutSeconds": 30
-    },
-    "System": {
-      "DiskStorage": {
-        "MinimumFreeMegabytes": 1000
-      },
-      "Memory": {
-        "MaximumMegabytesAllocated": 1000,
-        "MaximumPrivateMemoryBytes": 1500000000
-      }
-    }
-  }
-}
-```
+Endpoints:
 
-### Environment-Specific Endpoints
 - **Development**: `http://localhost:65533/health`
-- **Docker**: `http://webapi:8080/health`
-- **Production**: `http://localhost:65533/health` (adjust as needed)
+- **Docker**: `http://localhost:8080/health`
 
 ## Architecture
-
-The health check implementation follows Clean Architecture principles:
 
 ### Infrastructure Layer
 - **Location**: `src/backend/Infrastructure/HealthChecks/`
 - **Components**:
-  - `DatabaseHealthCheck.cs` - Custom database operations check
-  - `ApplicationServicesHealthCheck.cs` - Service registration verification
-  - `HealthCheckExtensions.cs` - Registration extension methods
+  - `DatabaseHealthCheck.cs` — connectivity and count queries
+  - `ApplicationServicesHealthCheck.cs` — service resolution
+  - `HealthCheckExtensions.cs` — registration (`AddMyLeagueHealthChecks`)
 
 ### WebAPI Layer
-- **Location**: `src/backend/WebAPI/Controllers/`
-- **Components**:
-  - `HealthController.cs` - RESTful health check endpoints
-  - `Program.cs` - Health check middleware configuration
-  - `wwwroot/health-test.html` - Custom health dashboard
-
-### Configuration
-- **Location**: `src/backend/WebAPI/DependencyInjections/`
-- **Components**:
-  - `ServiceCollectionExtensions.cs` - Health Check UI configuration with environment-specific endpoints
+- `Controllers/Health/HealthController.cs` — `/api/health`
+- `Program.cs` — `/health`, `/health/ready`, `/health/live`, and the `/health-ui` redirect
+- `wwwroot/health-test.html` — static dashboard
 
 ## Usage Examples
 
@@ -253,13 +224,9 @@ curl -X GET "http://localhost:65533/api/health/tag/database" -H "accept: applica
 curl -X GET "http://localhost:65533/health/ready"
 ```
 
-### Monitoring with Health Check UI
-- **Development**: Navigate to `http://localhost:65533/health-ui`
-- **Docker**: Navigate to `http://localhost:8080/health-ui`
-
-### Custom Health Dashboard
-- **Development**: Navigate to `http://localhost:65533/health-test.html`
-- **Docker**: Navigate to `http://localhost:8080/health-test.html`
+### Dashboard
+- **Development**: `http://localhost:65533/health-test.html` (`/health-ui` redirects here)
+- **Docker**: `http://localhost:8080/health-test.html`
 
 ## Monitoring and Alerting
 
@@ -303,12 +270,9 @@ Configure load balancers to use `/health/ready` for health checks.
      - Check network connectivity
      - For local development, ensure PostgreSQL is accessible on the configured host
 
-2. **Health Check UI Not Showing Details**
-   - **Error**: UI shows basic status but no individual check details
-   - **Solution**: 
-     - Verify the Health Check UI endpoint configuration matches the running application port
-     - Check that the application is running on the expected port
-     - Review browser console for CORS or network errors
+2. **Dashboard shows no checks**
+   - Open `/health` directly and confirm it returns JSON
+   - Confirm `app.UseStaticFiles()` runs so `/health-test.html` is served
 
 3. **Service Registration Issues**
    - **Error**: Application services health check fails
@@ -336,22 +300,12 @@ Enable detailed logging for health checks by setting log level to Debug:
   "Serilog": {
     "MinimumLevel": {
       "Override": {
-        "MyLeague.Infrastructure.HealthChecks": "Debug",
-        "HealthChecks.UI.Core": "Debug"
+        "MyLeague.Infrastructure.HealthChecks": "Debug"
       }
     }
   }
 }
 ```
-
-### Health Check UI Configuration Issues
-
-If the Health Check UI is not displaying individual check details:
-
-1. **Check the endpoint configuration** in appsettings files
-2. **Verify the application is running** on the configured port
-3. **Check browser developer tools** for network errors
-4. **Review application logs** for Health Check UI errors
 
 ## Best Practices
 
@@ -360,8 +314,7 @@ If the Health Check UI is not displaying individual check details:
 3. **Alerting**: Set up alerts for health check failures
 4. **Documentation**: Keep health check documentation updated
 5. **Testing**: Include health checks in integration tests
-6. **Environment Configuration**: Use environment-specific health check endpoints
-7. **Custom Dashboards**: Utilize the custom health dashboard for enhanced monitoring
+6. **Dashboard**: Use `/health-test.html` for a visual check; use `/health/ready` and `/health/live` for probes
 
 ## Security Considerations
 
@@ -371,16 +324,7 @@ If the Health Check UI is not displaying individual check details:
 - Limit detailed information exposure in production environments
 - The custom health dashboard provides detailed system information - secure appropriately
 
-## Recent Updates
+## Gaps
 
-### Health Check UI Improvements
-- **Fixed endpoint configuration**: Now uses environment-specific endpoints
-- **Enhanced error handling**: Better error messages when health checks fail
-- **Custom dashboard**: Added beautiful, detailed health check visualization
-- **Multi-endpoint support**: Custom dashboard tries multiple endpoints automatically
-- **Static file serving**: Enabled serving of custom health dashboard
-
-### Configuration Enhancements
-- **Environment-specific endpoints**: Different ports for development vs Docker
-- **Configurable health check endpoints**: No longer hardcoded
-- **Improved error reporting**: Better visibility into health check failures 
+- `application-services` resolves common and floorball repositories only.
+- Disk and memory thresholds are hardcoded; the `HealthChecks` appsettings section is unused. 
