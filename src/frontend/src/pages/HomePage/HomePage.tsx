@@ -13,7 +13,7 @@ function unwrapNewsList(response: PaginatedNewsResponse | NewsArticleDto[]): New
     return response.data;
   }
 
-  return response.slice(0, 10);
+  return response.slice(0, 24);
 }
 
 function HomePage() {
@@ -29,9 +29,8 @@ function HomePage() {
       setNewsError(null);
       const response = await newsService({
         page: 1,
-        pageSize: 10,
+        pageSize: 24,
         includeArchived: false,
-        teamCategory: audience.teamCategory,
       });
       setNewsArticles(unwrapNewsList(response));
     } catch (error) {
@@ -41,13 +40,16 @@ function HomePage() {
     } finally {
       setIsLoadingNews(false);
     }
-  }, [audience.teamCategory, t]);
+  }, [t]);
 
   useEffect(() => {
     void fetchNews();
   }, [fetchNews]);
 
-  const heroNews = newsArticles.slice(0, 5);
+  const audienceHeroNews = newsArticles.filter(
+    (article) => !article.teamCategory || article.teamCategory === audience.teamCategory,
+  );
+  const heroNews = (audienceHeroNews.length > 0 ? audienceHeroNews : newsArticles).slice(0, 5);
 
   return (
     <div className="home-page-wrapper">

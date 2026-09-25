@@ -1,8 +1,10 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import './MatchRow.scss';
 import { formatMatchDateTime } from '../../utils/helpers';
 import { FloorballMatchStatus } from '../../types/floorball/floorballTypes';
 import { useNavigate } from 'react-router-dom';
+import TeamLogoMark from '../TeamLogoMark/TeamLogoMark';
+import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 
 export interface MatchRowProps {
   id: string;
@@ -15,7 +17,7 @@ export interface MatchRowProps {
   awayScore?: number;
   periodCount?: number;
   periodScores?: Record<number, { homeScore: number; awayScore: number }>;
-  statusComponent?: React.ReactNode;
+  statusComponent?: ReactNode;
   onClick?: () => void;
   /** Override the default floorball match URL (`/match/:id`). */
   href?: string;
@@ -95,28 +97,22 @@ export default function MatchRow({
       {/* Teams */}
       <div className="match-row-teams-container">
         <div className={`match-row-home-team ${homeWon ? 'match-row-winner' : ''}`}>
-          {homeTeamLogo && (
-            <img
-              src={homeTeamLogo}
-              alt={`${homeTeamName} logo`}
-              onError={(event) => {
-                event.currentTarget.remove();
-              }}
-            />
-          )}
+          <TeamLogoMark
+            logo={resolveLogoUrl(homeTeamLogo)}
+            name={homeTeamName}
+            imageClassName="match-row-team-logo"
+            fallbackClassName="match-row-team-logo match-row-team-logo--empty"
+          />
           {homeTeamName}
         </div>
 
         <div className={`match-row-away-team ${awayWon ? 'match-row-winner' : ''}`}>
-          {awayTeamLogo && (
-            <img
-              src={awayTeamLogo}
-              alt={`${awayTeamName} logo`}
-              onError={(event) => {
-                event.currentTarget.remove();
-              }}
-            />
-          )}
+          <TeamLogoMark
+            logo={resolveLogoUrl(awayTeamLogo)}
+            name={awayTeamName}
+            imageClassName="match-row-team-logo"
+            fallbackClassName="match-row-team-logo match-row-team-logo--empty"
+          />
           {awayTeamName}
         </div>
       </div>

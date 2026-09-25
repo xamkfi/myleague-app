@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import SportIcon from '../../components/SportIcon/SportIcon';
+import UnderlineTabs from '../../components/UnderlineTabs/UnderlineTabs';
 import { FloorballPlayerProfile } from '../FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage';
 import { FootballPlayerProfile } from '../FootballPlayerPage/FootballPlayerPage';
 import { HockeyPlayerProfile } from '../HockeyPlayerPage/HockeyPlayerPage';
@@ -214,28 +215,20 @@ function PlayerPage() {
     <PageTemplate title={title}>
       <div className="player-page player-page--shell">
         {availableSports.length > 1 && activeSport && (
-          <div className="player-sport-tabs" role="tablist" aria-label={t('playerPage.sportsLabel')}>
-            <div className="player-sport-tabs__group">
-              {availableSports.map((sport) => (
-                <button
-                  key={sport}
-                  type="button"
-                  role="tab"
-                  aria-selected={sport === activeSport}
-                  className={`tab-button${sport === activeSport ? ' active' : ''}`}
-                  onClick={() => handleSportChange(sport)}
-                >
-                  <SportIcon
-                    sport={sport}
-                    size="sm"
-                    inverted={sport === activeSport}
-                    decorative
-                  />
-                  <span>{t(`playerPage.sports.${sport}`)}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <UnderlineTabs
+            tabs={availableSports.map((sport) => ({
+              id: sport,
+              label: t(`playerPage.sports.${sport}`),
+              icon: <SportIcon sport={sport} size="sm" decorative />,
+            }))}
+            activeId={activeSport}
+            onChange={(id) => {
+              if (isPersonSportKind(id)) {
+                handleSportChange(id);
+              }
+            }}
+            ariaLabel={t('playerPage.sportsLabel')}
+          />
         )}
 
         {availableSports.length === 0 && (
@@ -244,27 +237,33 @@ function PlayerPage() {
           </div>
         )}
 
-        {activeSport === 'floorball' && activePlayerId && (
-          <FloorballPlayerProfile
-            playerId={activePlayerId}
-            embedded
-            licenceSummary={<PlayerLicenceSummary licences={licences.filter((licence) => licence.sport === 'floorball')} />}
-          />
-        )}
-        {activeSport === 'football' && activePlayerId && (
-          <FootballPlayerProfile
-            playerId={activePlayerId}
-            embedded
-            licenceSummary={<PlayerLicenceSummary licences={licences.filter((licence) => licence.sport === 'football')} />}
-          />
-        )}
-        {activeSport === 'hockey' && activePlayerId && (
-          <HockeyPlayerProfile
-            playerId={activePlayerId}
-            embedded
-            licenceSummary={<PlayerLicenceSummary licences={licences.filter((licence) => licence.sport === 'hockey')} />}
-          />
-        )}
+        <div
+          role={availableSports.length > 1 ? 'tabpanel' : undefined}
+          id={availableSports.length > 1 && activeSport ? `tabpanel-${activeSport}` : undefined}
+          aria-labelledby={availableSports.length > 1 && activeSport ? `tab-${activeSport}` : undefined}
+        >
+          {activeSport === 'floorball' && activePlayerId && (
+            <FloorballPlayerProfile
+              playerId={activePlayerId}
+              embedded
+              licenceSummary={<PlayerLicenceSummary licences={licences.filter((licence) => licence.sport === 'floorball')} />}
+            />
+          )}
+          {activeSport === 'football' && activePlayerId && (
+            <FootballPlayerProfile
+              playerId={activePlayerId}
+              embedded
+              licenceSummary={<PlayerLicenceSummary licences={licences.filter((licence) => licence.sport === 'football')} />}
+            />
+          )}
+          {activeSport === 'hockey' && activePlayerId && (
+            <HockeyPlayerProfile
+              playerId={activePlayerId}
+              embedded
+              licenceSummary={<PlayerLicenceSummary licences={licences.filter((licence) => licence.sport === 'hockey')} />}
+            />
+          )}
+        </div>
       </div>
     </PageTemplate>
   );

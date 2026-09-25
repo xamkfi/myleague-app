@@ -11,8 +11,12 @@
   .filters-row {
     display: flex;
     gap: map.get($spacing, 'lg');
-    align-items: center;
+    align-items: flex-end;
     flex-wrap: wrap;
+
+    .filter-group--audience {
+      flex: 1 1 100%;
+    }
 
     .filter-group {
       display: flex;

@@ -115,6 +115,14 @@ const administrationCards: AdminHomeCard[] = [
     iconSrc: PersonIcon,
   },
   {
+    to: '/admin/data-subject-rights',
+    titleKey: 'admin.dataSubjectRights.nav',
+    titleFallback: 'Data subject rights',
+    subtitleKey: 'admin.actions.manageDataSubjectRights',
+    subtitleFallback: 'Access, correct, export, restrict, or erase personal data',
+    iconSrc: PersonIcon,
+  },
+  {
     to: '/admin/settings',
     titleKey: 'admin.settings.nav',
     titleFallback: 'Settings',
@@ -257,8 +265,11 @@ function AdminPage() {
     setSearchParams({ sport });
   };
 
-  const renderCards = (cards: AdminHomeCard[]): ReactNode => (
-    <div className="admin-actions">
+  const renderCards = (cards: AdminHomeCard[], sport?: SportKind): ReactNode => (
+    <div
+      className={sport ? 'admin-actions admin-actions--sport' : 'admin-actions'}
+      data-sport={sport}
+    >
       {cards.map((card) => (
         <AdminHomeCardLink
           key={card.to}
@@ -280,7 +291,12 @@ function AdminPage() {
 
         <section className="admin-section">
           <h2 className="admin-section-title">{t('admin.sportsTitle', 'Sports')}</h2>
-          <div className="admin-sport-tabs" role="tablist" aria-label={t('admin.sportsTitle', 'Sports')}>
+          <div
+            className="admin-sport-tabs"
+            data-sport={activeSport}
+            role="tablist"
+            aria-label={t('admin.sportsTitle', 'Sports')}
+          >
             <div className="admin-sport-tabs__group">
               {sportGroups.map((group) => (
                 <button
@@ -302,7 +318,7 @@ function AdminPage() {
               ))}
             </div>
           </div>
-          {renderCards(activeGroup.cards)}
+          {renderCards(activeGroup.cards, activeSport)}
         </section>
 
         <section className="admin-section">

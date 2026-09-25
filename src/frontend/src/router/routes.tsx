@@ -47,6 +47,7 @@ const FooterContactsManagementPage = lazyWithRetry(
   () => import('../pages/AdminPage/FooterContactsPage/FooterContactsManagementPage')
 );
 const SettingsPage = lazyWithRetry(() => import('../pages/AdminPage/SettingsPage/SettingsPage'));
+const DataSubjectRightsPage = lazyWithRetry(() => import('../pages/AdminPage/DataSubjectRightsPage/DataSubjectRightsPage'));
 const PersonForm = lazyWithRetry(() =>
   import('../pages/AdminPage/PersonsPage/components/PersonForm/PersonForm').then((m) => ({ default: m.default as ComponentType<unknown> }))
 );
@@ -294,6 +295,16 @@ export const routes: RouteObject[] = [
       <ProtectedRoute>
         <SuspenseWrapper>
           <SettingsPage />
+        </SuspenseWrapper>
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/admin/data-subject-rights',
+    element: (
+      <ProtectedRoute>
+        <SuspenseWrapper>
+          <DataSubjectRightsPage />
         </SuspenseWrapper>
       </ProtectedRoute>
     )

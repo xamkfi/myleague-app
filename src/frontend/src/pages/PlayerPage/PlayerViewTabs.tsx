@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import UnderlineTabs from '../../components/UnderlineTabs/UnderlineTabs';
 import {
   countDistinctCompetitions,
   type GoalieSeasonInput,
@@ -29,35 +30,32 @@ export function PlayerViewTabs({
     countDistinctCompetitions(goalieSeasons),
   );
 
+  const selectTab = (id: string): void => {
+    if (id === 'numbers' || id === 'development') {
+      setTab(id);
+    }
+  };
+
   return (
     <div className="player-view">
-      <div className="player-view-tabs" role="tablist" aria-label={t('playerPage.charts.tabsLabel')}>
-        <div className="player-view-tabs__group">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'numbers'}
-            className={`tab-button${tab === 'numbers' ? ' active' : ''}`}
-            onClick={() => setTab('numbers')}
-          >
-            {t('playerPage.charts.numbers')}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'development'}
-            className={`tab-button${tab === 'development' ? ' active' : ''}`}
-            onClick={() => setTab('development')}
-          >
-            {t('playerPage.charts.development')}
-          </button>
-        </div>
-      </div>
+      <UnderlineTabs
+        tabs={[
+          { id: 'numbers', label: t('playerPage.charts.numbers') },
+          { id: 'development', label: t('playerPage.charts.development') },
+        ]}
+        activeId={tab}
+        onChange={selectTab}
+        ariaLabel={t('playerPage.charts.tabsLabel')}
+      />
 
-      {tab === 'numbers' && <div role="tabpanel">{numbers}</div>}
+      {tab === 'numbers' && (
+        <div role="tabpanel" id="tabpanel-numbers" aria-labelledby="tab-numbers">
+          {numbers}
+        </div>
+      )}
 
       {tab === 'development' && (
-        <div className="player-container" role="tabpanel">
+        <div className="player-container" role="tabpanel" id="tabpanel-development" aria-labelledby="tab-development">
           {seasonCount < 2 ? (
             <p className="no-data-message">{t('playerPage.charts.needMoreSeasons')}</p>
           ) : (

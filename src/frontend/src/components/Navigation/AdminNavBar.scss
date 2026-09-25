@@ -7,6 +7,22 @@ $sidebar-collapsed-width: 68px;
 $sidebar-transition: width 0.25s ease, padding 0.25s ease;
 
 .admin-navbar {
+  &[data-sport='floorball'] {
+    --sport-accent: #{$color-sport-floorball};
+  }
+
+  &[data-sport='football'] {
+    --sport-accent: #{$color-sport-football};
+  }
+
+  &[data-sport='hockey'] {
+    --sport-accent: #{$color-sport-hockey};
+  }
+
+  &[data-sport] {
+    box-shadow: inset 0 4px 0 var(--sport-accent);
+  }
+
   display: flex;
   flex-direction: column;
   width: $sidebar-width;
@@ -437,6 +453,75 @@ $sidebar-transition: width 0.25s ease, padding 0.25s ease;
         }
       }
     }
+  }
+
+  &-item--sport {
+    &:not(.active) {
+      > a,
+      .admin-navbar-dropdown-trigger-content {
+        box-shadow: inset 3px 0 0 var(--sport-accent);
+      }
+    }
+
+    &.active {
+      > a {
+        background-color: var(--sport-accent);
+        color: $color-white;
+
+        &:hover {
+          background-color: color-mix(in srgb, var(--sport-accent) 86%, white);
+          color: $color-white;
+        }
+
+        .icon {
+          filter: brightness(0) invert(1);
+          opacity: 1;
+        }
+      }
+
+      .admin-navbar-dropdown-trigger-content {
+        background-color: var(--sport-accent);
+        color: $color-white;
+
+        &:hover {
+          background-color: color-mix(in srgb, var(--sport-accent) 86%, white);
+          color: $color-white;
+        }
+
+        .icon {
+          filter: brightness(0) invert(1);
+          opacity: 1;
+        }
+      }
+
+      .admin-navbar-dropdown-arrow {
+        background-color: var(--sport-accent);
+        color: rgba(255, 255, 255, 0.92);
+
+        &:hover {
+          background-color: color-mix(in srgb, var(--sport-accent) 86%, white);
+          color: $color-white;
+        }
+      }
+
+      .admin-navbar-submenu-item.active > a {
+        background-color: color-mix(in srgb, var(--sport-accent) 42%, transparent);
+        box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.9);
+        color: $color-white;
+      }
+    }
+  }
+
+  &-item--floorball {
+    --sport-accent: #{$color-sport-floorball};
+  }
+
+  &-item--football {
+    --sport-accent: #{$color-sport-football};
+  }
+
+  &-item--hockey {
+    --sport-accent: #{$color-sport-hockey};
   }
 
   // Live indicator dot — used to mark items with matches currently in progress.

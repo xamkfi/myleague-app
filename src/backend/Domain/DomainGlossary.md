@@ -5,7 +5,7 @@ This glossary defines the key terms in the MyLeague domain model for floorball, 
 ## Core Entities
 
 ### Person
-A physical person in the system. A Person can have multiple roles (Player, Referee, Coach, etc.). Person stores basic identity information and contact details.
+A physical person in the system. A Person can have multiple roles (Player, Referee, Coach, etc.). Person stores basic identity information and contact details. Data-subject flags record a processing restriction, an objection to legitimate interest, and the UTC time identity data was anonymized.
 
 ### Club
 An organization that manages and sponsors floorball teams. A Club typically has multiple teams, possibly in different divisions.

@@ -76,7 +76,7 @@ export function TournamentsFilters({
             ))}
           </select>
         </div>
-        <div className="filter-group">
+        <div className="filter-group filter-group--audience">
           <TeamCategoryFilter selected={categoryFilter} onChange={onCategoryFilterChange} />
         </div>
       </div>

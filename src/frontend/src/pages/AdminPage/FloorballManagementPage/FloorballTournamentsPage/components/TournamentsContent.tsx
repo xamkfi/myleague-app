@@ -5,11 +5,13 @@ import type { FloorballTournamentDto } from '../../../../../types/floorball/tour
 interface TournamentsContentProps {
   tournaments: FloorballTournamentDto[];
   onEdit: (tournament: FloorballTournamentDto) => void;
+  onDelete: (tournament: FloorballTournamentDto) => void;
 }
 
 export const TournamentsContent = ({
   tournaments,
   onEdit,
+  onDelete,
 }: TournamentsContentProps) => {
   const { t } = useTranslation();
 
@@ -20,7 +22,7 @@ export const TournamentsContent = ({
           <p>{t('floorball.tournaments.noTournaments', 'No tournaments found')}</p>
         </div>
       ) : (
-        <TournamentsTable tournaments={tournaments} onEdit={onEdit} />
+        <TournamentsTable tournaments={tournaments} onEdit={onEdit} onDelete={onDelete} />
       )}
     </div>
   );

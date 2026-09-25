@@ -81,12 +81,6 @@
   grid-area: homeTeam;
   text-align: left;
 
-  img {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    border-radius: 50%;
-  }
 }
 
 .match-row-away-team {
@@ -96,12 +90,28 @@
   gap: map.get($spacing, "sm");
   justify-content: flex-start;
   grid-area: awayTeam;
+}
 
-  img {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    border-radius: 50%;
+.match-row-team-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid $color-neutral-medium-grey;
+  background-color: $color-neutral-light-grey;
+
+  &--empty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-family-display;
+    font-size: 0.6rem;
+    font-weight: map.get($font-weights, "extrabold");
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    color: $color-neutral-dark-grey;
+    line-height: 1;
   }
 }
 

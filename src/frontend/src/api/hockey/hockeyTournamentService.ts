@@ -2,7 +2,7 @@ import type {
   CreateHockeyTournamentRequest,
   HockeyTournamentDto,
 } from '../../types/hockey/hockeyTypes';
-import { hockeyRequest, jsonBody, withIncludeDrafts, withTeamCategory } from './hockeyApi';
+import { hockeyRequest, hockeyRequestVoid, jsonBody, withIncludeDrafts, withTeamCategory } from './hockeyApi';
 
 const action = (
   tournamentId: string,
@@ -110,6 +110,9 @@ export const hockeyTournamentService = {
       'Failed to add team to group',
       { method: 'POST', ...jsonBody({ competitionTeamId, seed }) },
     ),
+
+  delete: (id: string): Promise<void> =>
+    hockeyRequestVoid(`/HockeyTournament/${id}`, 'Failed to delete tournament', { method: 'DELETE' }),
 
   removeTeamFromGroup: (
     tournamentId: string,
