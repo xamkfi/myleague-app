@@ -12,6 +12,7 @@ import { TeamLink } from '../../components/SportLinks';
 import TeamLogoMark from '../../components/TeamLogoMark/TeamLogoMark';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { getMatchPath, type SportKind } from '../../utils/sportRoutes';
+import bannerImage from '../../assets/floorball-banner.png';
 import SportIcon from '../../components/SportIcon/SportIcon';
 import { formatMatchDateTime } from '../../utils/helpers';
 import { formatSeasonYearLabel } from '../../utils/seasonYear';
@@ -75,7 +76,6 @@ const MAX_STANDINGS_PREVIEW = 10;
 interface SportLandingPageProps {
   sport: SportKind;
   title: string;
-  bannerImage: string;
   labels: SportLandingLabels;
   extraNavLinks?: SeasonStandingsNavLink[];
   years: SportLandingYear[];
@@ -100,7 +100,6 @@ interface SportLandingPageProps {
 export default function SportLandingPage({
   sport,
   title,
-  bannerImage,
   labels,
   extraNavLinks,
   years,

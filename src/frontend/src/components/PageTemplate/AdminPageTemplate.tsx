@@ -7,7 +7,21 @@ import { rememberAdminLocation } from '../../utils/adminReturnTo';
 import { InProgressMatchesProvider } from '../../hooks/InProgressMatchesProvider';
 import { InProgressFootballMatchesProvider } from '../../hooks/InProgressFootballMatchesProvider';
 import { InProgressHockeyMatchesProvider } from '../../hooks/InProgressHockeyMatchesProvider';
+import type { SportKind } from '../../utils/sportRoutes';
 import './AdminPageTemplate.scss';
+
+function contentSport(pathname: string): SportKind | null {
+  if (pathname.startsWith('/admin/floorball')) {
+    return 'floorball';
+  }
+  if (pathname.startsWith('/admin/football')) {
+    return 'football';
+  }
+  if (pathname.startsWith('/admin/hockey')) {
+    return 'hockey';
+  }
+  return null;
+}
 
 const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed';
 
@@ -18,6 +32,7 @@ interface AdminPageTemplateProps {
 
 function AdminPageTemplate({ title, children }: AdminPageTemplateProps) {
   const location = useLocation();
+  const sport = contentSport(location.pathname);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
       return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
@@ -52,7 +67,7 @@ function AdminPageTemplate({ title, children }: AdminPageTemplateProps) {
           <div className={`admin-page-container ${sidebarCollapsed ? 'admin-page-container--collapsed' : ''}`}>
             <AdminNavBar collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
             <div className="admin-page-content">
-              <div className="admin-page-body">
+              <div className="admin-page-body" data-sport={sport ?? undefined}>
                 <AdminBackButton />
                 {children || (
                   <p className="placeholder-text">This admin page is under construction.</p>

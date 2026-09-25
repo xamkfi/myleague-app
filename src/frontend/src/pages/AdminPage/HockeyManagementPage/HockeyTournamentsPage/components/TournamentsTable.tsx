@@ -7,6 +7,7 @@ import { formatHockeyDate } from '../../../../../utils/hockeyLookups';
 interface TournamentsTableProps {
   tournaments: HockeyTournamentDto[];
   onEdit: (tournament: HockeyTournamentDto) => void;
+  onDelete: (tournament: HockeyTournamentDto) => void;
 }
 
 const getStatusBadgeClass = (status: string): string => {
@@ -25,7 +26,7 @@ const getStatusBadgeClass = (status: string): string => {
   }
 };
 
-export function TournamentsTable({ tournaments, onEdit }: TournamentsTableProps) {
+export function TournamentsTable({ tournaments, onEdit, onDelete }: TournamentsTableProps) {
   const { t } = useTranslation();
   const { countByCompetitionId } = useHockeyInProgressMatches();
   const byId = new Map(tournaments.map((tournament) => [tournament.id, tournament]));
@@ -99,6 +100,10 @@ export function TournamentsTable({ tournaments, onEdit }: TournamentsTableProps)
       onEdit={(tournamentId) => {
         const tournament = byId.get(tournamentId);
         if (tournament) onEdit(tournament);
+      }}
+      onDelete={(tournamentId) => {
+        const tournament = byId.get(tournamentId);
+        if (tournament) onDelete(tournament);
       }}
     />
   );

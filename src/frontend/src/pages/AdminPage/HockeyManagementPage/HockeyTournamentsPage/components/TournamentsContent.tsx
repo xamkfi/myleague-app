@@ -5,9 +5,10 @@ import type { HockeyTournamentDto } from '../../../../../types/hockey/hockeyType
 interface TournamentsContentProps {
   tournaments: HockeyTournamentDto[];
   onEdit: (tournament: HockeyTournamentDto) => void;
+  onDelete: (tournament: HockeyTournamentDto) => void;
 }
 
-export function TournamentsContent({ tournaments, onEdit }: TournamentsContentProps) {
+export function TournamentsContent({ tournaments, onEdit, onDelete }: TournamentsContentProps) {
   const { t } = useTranslation();
 
   return (
@@ -17,7 +18,7 @@ export function TournamentsContent({ tournaments, onEdit }: TournamentsContentPr
           <p>{t('hockey.tournaments.noTournaments', 'No tournaments found')}</p>
         </div>
       ) : (
-        <TournamentsTable tournaments={tournaments} onEdit={onEdit} />
+        <TournamentsTable tournaments={tournaments} onEdit={onEdit} onDelete={onDelete} />
       )}
     </div>
   );

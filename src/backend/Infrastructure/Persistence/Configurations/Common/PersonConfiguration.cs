@@ -36,6 +36,17 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Common
                 .HasDefaultValue(false)
                 .IsRequired();
 
+            builder.Property(x => x.IsProcessingRestricted)
+                .HasDefaultValue(false)
+                .IsRequired();
+
+            builder.Property(x => x.HasObjectedToLegitimateInterest)
+                .HasDefaultValue(false)
+                .IsRequired();
+
+            builder.Property(x => x.AnonymizedAt)
+                .IsRequired(false);
+
             // Configure owned types for value objects
             builder.OwnsOne(p => p.Address, addressBuilder =>
             {

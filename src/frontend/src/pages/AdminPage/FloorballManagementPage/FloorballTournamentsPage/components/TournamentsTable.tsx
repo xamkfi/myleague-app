@@ -6,6 +6,7 @@ import { useInProgressMatches } from '../../../../../hooks/useInProgressMatches'
 interface TournamentsTableProps {
   tournaments: FloorballTournamentDto[];
   onEdit: (tournament: FloorballTournamentDto) => void;
+  onDelete: (tournament: FloorballTournamentDto) => void;
 }
 
 const getStatusBadgeClass = (status: string): string => {
@@ -22,6 +23,7 @@ const getStatusBadgeClass = (status: string): string => {
 export const TournamentsTable = ({
   tournaments,
   onEdit,
+  onDelete,
 }: TournamentsTableProps) => {
   const { t } = useTranslation();
   const { countByCompetitionId } = useInProgressMatches();
@@ -77,6 +79,10 @@ export const TournamentsTable = ({
       onEdit={(tournamentId) => {
         const tournament = byId.get(tournamentId);
         if (tournament) onEdit(tournament);
+      }}
+      onDelete={(tournamentId) => {
+        const tournament = byId.get(tournamentId);
+        if (tournament) onDelete(tournament);
       }}
     />
   );

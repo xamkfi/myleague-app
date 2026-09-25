@@ -343,6 +343,9 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasColumnType("uuid")
                         .HasComment("Unique identifier for the entity");
 
+                    b.Property<DateTime?>("AnonymizedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("BirthDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -354,6 +357,16 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("HasObjectedToLegitimateInterest")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsProcessingRestricted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("IsRegistered")
                         .ValueGeneratedOnAdd()

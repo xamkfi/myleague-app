@@ -170,5 +170,28 @@ namespace Domain.Entities.Common
             EmailVerificationToken = null;
             EmailVerificationTokenExpiresAt = null;
         }
+
+        /// <summary>
+        /// Deactivates the account and clears a pending login code.
+        /// </summary>
+        public void SuspendAccess()
+        {
+            IsActive = false;
+            ClearLoginCode();
+        }
+
+        /// <summary>
+        /// Replaces the login email with a non-identifying address and ends the session.
+        /// </summary>
+        /// <param name="replacementEmail">Address that does not identify the person.</param>
+        public void EraseAccount(string replacementEmail)
+        {
+            ChangeEmail(replacementEmail);
+            IsActive = false;
+            ClearLoginCode();
+            EmailVerificationToken = null;
+            EmailVerificationTokenExpiresAt = null;
+            IsEmailVerified = false;
+        }
     }
 }

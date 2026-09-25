@@ -41,6 +41,18 @@ $color-blue-medium: #2A4A63;
 $color-blue-light: #4A679F;
 $color-blue-background: #CFDAEF;
 
+// Admin sport accents. Same depth as the navy theme, different hues so the
+// selected sport stays obvious in the dashboard and the sidebar.
+$color-sport-floorball: #1E4E96;
+$color-sport-floorball-soft: #E8EFF8;
+$color-sport-floorball-ink: #163A72;
+$color-sport-football: #157347;
+$color-sport-football-soft: #E6F4EC;
+$color-sport-football-ink: #0F5534;
+$color-sport-hockey: #0F667C;
+$color-sport-hockey-soft: #E5F3F6;
+$color-sport-hockey-ink: #0C4E60;
+
 $color-gradient-blue: linear-gradient(270deg, var(--Colour-Medium, #2A4A83) 0%, var(--Colour-Light, #4A679F) 100%);
 
 // Banner / section-header design tokens (audience-aware via CSS custom properties).

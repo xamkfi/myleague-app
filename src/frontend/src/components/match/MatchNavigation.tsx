@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import UnderlineTabs from '../UnderlineTabs/UnderlineTabs';
 import type { MatchTabType, TableTabVariant } from './matchPageTypes';
 
 interface MatchNavigationProps {
@@ -25,33 +26,30 @@ export default function MatchNavigation({
     tableLabel = t('matchPage.navigation.playoffBracket');
   }
 
-  const tabs: { key: MatchTabType; label: string }[] = [
-    { key: 'summary', label: t('matchPage.navigation.summary') },
-    { key: 'lineups', label: t('matchPage.navigation.lineups') },
+  const tabs: { id: MatchTabType; label: string }[] = [
+    { id: 'summary', label: t('matchPage.navigation.summary') },
+    { id: 'lineups', label: t('matchPage.navigation.lineups') },
   ];
   if (showStatsTab) {
-    tabs.push({ key: 'stats', label: t('matchPage.navigation.stats') });
+    tabs.push({ id: 'stats', label: t('matchPage.navigation.stats') });
   }
   if (showTableTab) {
-    tabs.push({ key: 'table', label: tableLabel });
+    tabs.push({ id: 'table', label: tableLabel });
   }
 
+  const selectTab = (id: string): void => {
+    const match = tabs.find((tab) => tab.id === id);
+    if (match) {
+      onTabChange(match.id);
+    }
+  };
+
   return (
-    <div className="navigation-tabs" role="tablist" aria-label={t('matchPage.pageTitle')}>
-      {tabs.map((tab) => (
-        <button
-          key={tab.key}
-          type="button"
-          className={`nav-tab ${activeTab === tab.key ? 'active' : ''}`}
-          onClick={() => onTabChange(tab.key)}
-          role="tab"
-          aria-selected={activeTab === tab.key}
-          aria-controls={`tabpanel-${tab.key}`}
-          id={`tab-${tab.key}`}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
+    <UnderlineTabs
+      tabs={tabs}
+      activeId={activeTab}
+      onChange={selectTab}
+      ariaLabel={t('matchPage.pageTitle')}
+    />
   );
 }

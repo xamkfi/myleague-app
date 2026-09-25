@@ -14,6 +14,7 @@ interface AdminTournamentsTableProps {
   labels: AdminTournamentTableLabels;
   liveCounts: Map<string, number>;
   onEdit: (tournamentId: string) => void;
+  onDelete: (tournamentId: string) => void;
   showMatchCount?: boolean;
   formatDate?: (value: string) => string;
 }
@@ -32,6 +33,7 @@ export default function AdminTournamentsTable({
   labels,
   liveCounts,
   onEdit,
+  onDelete,
   showMatchCount = true,
   formatDate = defaultFormatDate,
 }: AdminTournamentsTableProps) {
@@ -73,20 +75,22 @@ export default function AdminTournamentsTable({
               }}
             >
               <td className="admin-table__name">
-                <span className="admin-table__name-inner">
-                  {liveCount > 0 && (
-                    <LiveDot
-                      tone="light"
-                      count={liveCount}
-                      ariaLabel={labels.matchesInProgress(liveCount)}
-                    />
-                  )}
-                  <AdminNameLink to={publicPath}>{tournament.name}</AdminNameLink>
+                <div className="admin-table__identity">
+                  <div className="admin-table__identity-line">
+                    {liveCount > 0 && (
+                      <LiveDot
+                        tone="light"
+                        count={liveCount}
+                        ariaLabel={labels.matchesInProgress(liveCount)}
+                      />
+                    )}
+                    <AdminNameLink to={publicPath}>{tournament.name}</AdminNameLink>
+                  </div>
                   <TeamCategoryBadge category={tournament.teamCategory} />
-                </span>
+                </div>
               </td>
               <td>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+                <div className="admin-table__tags">
                   {tournament.groups.length > 0 ? (
                     tournament.groups.map((group) => (
                       <span key={group.id} className="admin-tag admin-tag--blue">
@@ -125,8 +129,17 @@ export default function AdminTournamentsTable({
                 <ActionsDropdown
                   actions={[
                     {
+                      label: t('common.edit'),
+                      onClick: () => onEdit(tournament.id),
+                    },
+                    {
                       label: t('common.viewPublic'),
                       onClick: () => navigate(publicPath),
+                    },
+                    {
+                      label: t('common.delete'),
+                      onClick: () => onDelete(tournament.id),
+                      variant: 'danger',
                     },
                   ]}
                   ariaLabel={labels.actionsMenu}

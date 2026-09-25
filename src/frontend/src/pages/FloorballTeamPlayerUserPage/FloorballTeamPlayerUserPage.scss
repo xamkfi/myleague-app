@@ -396,50 +396,6 @@
   white-space: nowrap;
 }
 
-// ── Numbers / development tabs ──
-
-.player-view-tabs {
-  width: 100%;
-  max-width: $max-width-container;
-  margin: 0 auto map.get($spacing, 'md');
-
-  &__group {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: map.get($spacing, 'xxs');
-    padding: map.get($spacing, 'xxs');
-    background: $color-white;
-    border: 1px solid rgba($color-blue-deep, 0.15);
-    border-radius: map.get($border-radius, 'xl');
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  }
-
-  .tab-button {
-    display: inline-flex;
-    align-items: center;
-    padding: map.get($spacing, 'xs') map.get($spacing, 'md');
-    background: transparent;
-    border: none;
-    color: $color-blue-deep;
-    border-radius: map.get($border-radius, 'xl');
-    cursor: pointer;
-    font-family: $font-family-body;
-    font-weight: map.get($font-weights, 'medium');
-    font-size: map.get($font-sizes, 'sm');
-    line-height: 1;
-
-    &:hover {
-      background: rgba($color-blue-deep, 0.08);
-    }
-
-    &.active {
-      background: $color-blue-deep;
-      color: $color-white;
-      font-weight: map.get($font-weights, 'bold');
-    }
-  }
-}
-
 .player-charts {
   display: flex;
   flex-direction: column;
@@ -585,17 +541,6 @@
     &.player-avatar--creator {
       width: 88px;
       height: 88px;
-    }
-  }
-
-  .player-view-tabs {
-    &__group {
-      width: 100%;
-    }
-
-    .tab-button {
-      flex: 1;
-      justify-content: center;
     }
   }
 

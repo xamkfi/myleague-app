@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 import mahlLogo from '../../assets/logos/Mahl_primary_V3.svg';
+import bannerImage from '../../assets/floorball-banner.png';
 import './CompetitionHero.scss';
 
 interface CompetitionHeroProps {
@@ -19,12 +20,20 @@ export default function CompetitionHero({ title, logoUrl, markLabel, meta, child
   return (
     <header className="competition-hero">
       <div className="competition-hero__banner">
-        <div className="competition-hero__mark">
-          {mark ? <img src={mark} alt="" /> : <span className="competition-hero__mark-label">{label}</span>}
-        </div>
-        <div className="competition-hero__heading">
-          <h1 className="competition-hero__title">{title}</h1>
-          {meta}
+        <img
+          className="competition-hero__photo"
+          src={bannerImage}
+          alt=""
+          aria-hidden="true"
+        />
+        <div className="competition-hero__content">
+          <div className="competition-hero__mark">
+            {mark ? <img src={mark} alt="" /> : <span className="competition-hero__mark-label">{label}</span>}
+          </div>
+          <div className="competition-hero__heading">
+            <h1 className="competition-hero__title">{title}</h1>
+            {meta}
+          </div>
         </div>
       </div>
       {children ? <div className="competition-hero__below">{children}</div> : null}

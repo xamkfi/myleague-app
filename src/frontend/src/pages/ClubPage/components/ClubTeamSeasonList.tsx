@@ -33,14 +33,14 @@ export function ClubTeamSeasonList({
   }
 
   return (
-    <div className="team-card__seasons">
+    <div className="club-page-team__seasons">
       <TeamLink
         sport={sport}
         teamId={teamId}
         teamName={teamName}
         teams={teams}
         seasonId={latest.id}
-        className="team-card__season team-card__season--latest"
+        className="club-page-team__season club-page-team__season--latest"
       >
         {latest.name}
       </TeamLink>
@@ -49,7 +49,7 @@ export function ClubTeamSeasonList({
         <>
           <button
             type="button"
-            className="team-card__history-toggle"
+            className="club-page-team__history-toggle"
             aria-expanded={historyOpen}
             onClick={() => setHistoryOpen((open) => !open)}
           >
@@ -58,7 +58,7 @@ export function ClubTeamSeasonList({
               : t('clubPage.showEarlierSeasons', { count: history.length })}
           </button>
           {historyOpen && (
-            <div className="team-card__history">
+            <div className="club-page-team__history">
               {history.map((season) => (
                 <TeamLink
                   key={season.id}
@@ -67,7 +67,7 @@ export function ClubTeamSeasonList({
                   teamName={teamName}
                   teams={teams}
                   seasonId={season.id}
-                  className="team-card__season"
+                  className="club-page-team__season"
                 >
                   {season.name}
                 </TeamLink>
