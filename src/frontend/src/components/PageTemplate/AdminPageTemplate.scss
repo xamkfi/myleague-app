@@ -38,6 +38,26 @@ $sidebar-collapsed-width: 68px;
     border-radius: 16px;
     padding: map.get($spacing, 'xl');
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    &[data-sport='floorball'] {
+      --sport-accent: #{$color-sport-floorball};
+      --sport-soft: #{$color-sport-floorball-soft};
+    }
+
+    &[data-sport='football'] {
+      --sport-accent: #{$color-sport-football};
+      --sport-soft: #{$color-sport-football-soft};
+    }
+
+    &[data-sport='hockey'] {
+      --sport-accent: #{$color-sport-hockey};
+      --sport-soft: #{$color-sport-hockey-soft};
+    }
+
+    &[data-sport] {
+      background-color: color-mix(in srgb, var(--sport-soft) 55%, #{$color-white});
+      box-shadow: inset 0 4px 0 var(--sport-accent), 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
     
     > * {
       width: 100%;

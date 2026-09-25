@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import ConfirmDeleteTournamentDialog from '../../../../components/admin/ConfirmDeleteTournamentDialog';
 import '../../../../styles/AdminTable.scss';
 import './HockeyTournamentsPage.scss';
 import { TournamentsPageHeader } from './components/TournamentsPageHeader';
@@ -21,13 +22,37 @@ function HockeyTournamentsPage() {
   const [showOngoingOnly, setShowOngoingOnly] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const [pendingDelete, setPendingDelete] = useState<HockeyTournamentDto | null>(null);
+  const [deleting, setDeleting] = useState<boolean>(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadTournaments = useCallback((): void => {
     hockeyTournamentService.getAll(undefined, true)
       .then(setTournaments)
       .catch((err) => setError(err instanceof Error ? err.message : t('hockey.tournaments.errors.loadFailed', 'Failed to load tournaments')))
       .finally(() => setLoading(false));
   }, [t]);
+
+  useEffect(() => {
+    loadTournaments();
+  }, [loadTournaments]);
+
+  const confirmDelete = async (): Promise<void> => {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await hockeyTournamentService.delete(pendingDelete.id);
+      setPendingDelete(null);
+      setLoading(false);
+      loadTournaments();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('hockey.tournaments.errors.loadFailed', 'Failed to load tournaments');
+      setDeleteError(message);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const uniqueStatuses = useMemo(() => {
     const values = new Set<string>();
@@ -85,8 +110,30 @@ function HockeyTournamentsPage() {
           <TournamentsContent
             tournaments={filtered}
             onEdit={(tournament) => navigate(`/admin/hockey/tournaments/${tournament.id}/edit`)}
+            onDelete={(tournament) => {
+              setDeleteError(null);
+              setPendingDelete(tournament);
+            }}
           />
         </div>
+        {pendingDelete && (
+          <ConfirmDeleteTournamentDialog
+            tournament={{
+              id: pendingDelete.id,
+              name: pendingDelete.name,
+              status: pendingDelete.status,
+              teamCount: pendingDelete.teams.length,
+              matchCount: 0,
+              groups: pendingDelete.groups ?? [],
+            }}
+            deleting={deleting}
+            error={deleteError}
+            onConfirm={() => { void confirmDelete(); }}
+            onCancel={() => {
+              if (!deleting) setPendingDelete(null);
+            }}
+          />
+        )}
       </div>
     </PageTemplate>
   );

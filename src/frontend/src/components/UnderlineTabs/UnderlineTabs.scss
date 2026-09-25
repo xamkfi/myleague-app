@@ -13,6 +13,10 @@
 }
 
 .underline-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background: none;
   border: none;
   padding: 0.875rem 1.5rem;
@@ -43,6 +47,12 @@
       border-radius: 3px 3px 0 0;
     }
   }
+}
+
+.underline-tabs__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  text-transform: none;
 }
 
 @media (max-width: 768px) {

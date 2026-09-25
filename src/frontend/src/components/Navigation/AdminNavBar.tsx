@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useInProgressMatches } from '../../hooks/useInProgressMatches';
@@ -19,6 +19,11 @@ import RefereesIcon from '../../assets/adminIcons/Referees.svg';
 import ClubsIcon from '../../assets/adminIcons/Clubs.svg';
 import LeaguesIcon from '../../assets/adminIcons/Leagues.svg';
 import SportIcon from '../SportIcon/SportIcon';
+import type { SportKind } from '../../utils/sportRoutes';
+
+function isSportKind(value: string | null): value is SportKind {
+  return value === 'floorball' || value === 'football' || value === 'hockey';
+}
 
 interface AdminNavBarProps {
   collapsed: boolean;
@@ -28,6 +33,7 @@ interface AdminNavBarProps {
 function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
   const { t } = useTranslation();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -68,6 +74,31 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
     return location.pathname.startsWith('/admin/hockey');
   };
 
+  const routeSport: SportKind | null = isFloorballActive()
+    ? 'floorball'
+    : isFootballActive()
+      ? 'football'
+      : isHockeyActive()
+        ? 'hockey'
+        : null;
+
+  const requestedSport = searchParams.get('sport');
+  const homeSport: SportKind | null = location.pathname === '/admin'
+    ? (isSportKind(requestedSport) ? requestedSport : 'floorball')
+    : null;
+
+  const contextSport: SportKind | null = routeSport ?? homeSport;
+
+  const sportItemClass = (sport: SportKind): string => {
+    const selected = contextSport === sport;
+    return [
+      'admin-navbar-item',
+      'admin-navbar-item--sport',
+      `admin-navbar-item--${sport}`,
+      selected ? 'active' : '',
+    ].filter(Boolean).join(' ');
+  };
+
   const isSiteContentActive = () => {
     return location.pathname.startsWith('/admin/site-content');
   };
@@ -76,7 +107,10 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
   const userInitial = userLabel.charAt(0).toUpperCase();
 
   return (
-    <nav className={`admin-navbar ${collapsed ? 'admin-navbar--collapsed' : ''}`}>
+    <nav
+      className={`admin-navbar ${collapsed ? 'admin-navbar--collapsed' : ''}`}
+      data-sport={contextSport ?? undefined}
+    >
       <div className="admin-navbar-header">
         <div className="admin-navbar-header-row">
           <Link to="/admin" className="admin-navbar-brand">
@@ -141,7 +175,7 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
             <h3 className="admin-navbar-section-title">{t('admin.sportsTitle', 'Sports')}</h3>
           )}
           <ul className="admin-navbar-menu">
-            <li className={`admin-navbar-item ${isFloorballActive() ? 'active' : ''}`}>
+            <li className={sportItemClass('floorball')}>
               {collapsed ? (
                 <Link to="/admin/floorball" title={t('admin.actions.floorball', 'Floorball')}>
                   <span className="admin-navbar-icon-wrapper">
@@ -244,7 +278,7 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                 </ul>
               )}
             </li>
-            <li className={`admin-navbar-item ${isFootballActive() ? 'active' : ''}`}>
+            <li className={sportItemClass('football')}>
               {collapsed ? (
                 <Link to="/admin/football" title={t('admin.actions.football', 'Football')}>
                   <span className="admin-navbar-icon-wrapper">
@@ -347,7 +381,7 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                 </ul>
               )}
             </li>
-            <li className={`admin-navbar-item ${isHockeyActive() ? 'active' : ''}`}>
+            <li className={sportItemClass('hockey')}>
               {collapsed ? (
                 <Link to="/admin/hockey" title={t('admin.actions.hockey', 'Ice hockey')}>
                   <span className="admin-navbar-icon-wrapper">
@@ -518,6 +552,12 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
               <Link to="/admin/users" title={collapsed ? t('admin.actions.users', 'System Users') : undefined}>
                 <img src={PersonsIcon} alt="Users" className="icon" />
                 {!collapsed && <span>{t('admin.actions.users', 'System Users')}</span>}
+              </Link>
+            </li>
+            <li className={`admin-navbar-item ${isActive('/admin/data-subject-rights') ? 'active' : ''}`}>
+              <Link to="/admin/data-subject-rights" title={collapsed ? t('admin.dataSubjectRights.nav', 'Data subject rights') : undefined}>
+                <img src={PersonsIcon} alt="" className="icon" />
+                {!collapsed && <span>{t('admin.dataSubjectRights.nav', 'Data subject rights')}</span>}
               </Link>
             </li>
             <li className={`admin-navbar-item ${isActive('/admin/settings') ? 'active' : ''}`}>

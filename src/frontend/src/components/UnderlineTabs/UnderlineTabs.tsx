@@ -1,8 +1,10 @@
+import type { ReactNode } from 'react';
 import './UnderlineTabs.scss';
 
 export interface UnderlineTab {
   id: string;
   label: string;
+  icon?: ReactNode;
 }
 
 interface UnderlineTabsProps {
@@ -28,7 +30,8 @@ export default function UnderlineTabs({ tabs, activeId, onChange, ariaLabel }: U
             aria-controls={`tabpanel-${tab.id}`}
             id={`tab-${tab.id}`}
           >
-            {tab.label}
+            {tab.icon && <span className="underline-tabs__icon">{tab.icon}</span>}
+            <span>{tab.label}</span>
           </button>
         );
       })}

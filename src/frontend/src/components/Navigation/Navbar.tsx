@@ -124,12 +124,11 @@ function Navbar() {
                 <li>
                   <Link to="/saannot" onClick={() => setActiveDropdown(null)}>{t('nav.rules')}</Link>
                 </li>
+                <li>
+                  <Link to="/ikaryhmat" onClick={() => setActiveDropdown(null)}>{t('nav.ageGroups')}</Link>
+                </li>
               </ul>
             )}
-          </li>
-          <li className="navbar-item dropdown">
-            <Link to="/ikaryhmat">{t('nav.ageGroups')}</Link>
-            <span className="dropdown-icon">▼</span>
           </li>
           <li className="navbar-item dropdown">
             <Link to="/turnaukset">{t('nav.tournaments')}</Link>
@@ -222,10 +221,10 @@ function Navbar() {
                 <li>
                   <Link to="/saannot" onClick={closeMobileMenu}>{t('nav.rules')}</Link>
                 </li>
+                <li>
+                  <Link to="/ikaryhmat" onClick={closeMobileMenu}>{t('nav.ageGroups')}</Link>
+                </li>
               </ul>
-            </li>
-            <li className="mobile-navbar-item">
-              <Link to="/ikaryhmat" onClick={closeMobileMenu}>{t('nav.ageGroups')}</Link>
             </li>
             <li className="mobile-navbar-item">
               <Link to="/turnaukset" onClick={closeMobileMenu}>{t('nav.tournaments')}</Link>

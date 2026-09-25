@@ -2,16 +2,30 @@
 @use '@variables' as *;
 
 .competition-hero {
-  width: 100%;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   margin-bottom: map.get($spacing, 'xl');
+}
+
+.competition-hero__photo {
+  position: absolute;
+  width: 154.25%;
+  height: 365.22%;
+  max-width: none;
+  left: -54.28%;
+  top: -265.15%;
+  object-fit: cover;
+  opacity: 0.2;
+  pointer-events: none;
 }
 
 .competition-hero__banner {
   background: $color-banner-bg;
-  border-radius: map.get($border-radius, 'lg');
+  min-height: 220px;
   padding: map.get($spacing, 'lg');
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: map.get($spacing, 'md');
   color: $color-white;
   position: relative;
@@ -27,6 +41,16 @@
     background: radial-gradient(circle, rgba($color-blue-secondary, 0.18) 0%, transparent 70%);
     pointer-events: none;
   }
+}
+
+.competition-hero__content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: $max-width-page;
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'md');
 }
 
 .competition-hero__mark {

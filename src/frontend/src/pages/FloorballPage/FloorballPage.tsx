@@ -17,8 +17,6 @@ import SportLandingPage, {
   type SportLandingUpcomingMatch,
 } from '../SportLanding/SportLandingPage';
 import { filterPublicSportYears, formatSeasonYearLabel, pickDefaultSportYear } from '../../utils/seasonYear';
-import bannerImage from '../../assets/floorball-banner.png';
-
 const MAX_UPCOMING_MATCHES = 6;
 
 function FloorballPage() {
@@ -334,7 +332,6 @@ function FloorballPage() {
     <SportLandingPage
       sport="floorball"
       title={t('sports.floorball')}
-      bannerImage={bannerImage}
       labels={labels}
       years={years}
       selectedYear={selectedYear}

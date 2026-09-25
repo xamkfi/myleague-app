@@ -17,8 +17,6 @@ import SportLandingPage, {
   type SportLandingUpcomingMatch,
   type SportLandingYear,
 } from '../SportLanding/SportLandingPage';
-import bannerImage from '../../assets/floorball-banner.png';
-
 const MAX_UPCOMING_MATCHES = 6;
 
 function toYearList(seasons: HockeySeasonDto[]): SportLandingYear[] {
@@ -351,7 +349,6 @@ function HockeyPage() {
     <SportLandingPage
       sport="hockey"
       title={t('sports.iceHockey')}
-      bannerImage={bannerImage}
       labels={labels}
       extraNavLinks={[{ tab: 'players', label: t('hockeyPage.playerStats') }]}
       years={years}

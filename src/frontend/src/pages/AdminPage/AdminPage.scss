@@ -20,9 +20,22 @@
 }
 
 .admin-sport-tabs {
+  --sport-accent: #{$color-sport-floorball};
   display: flex;
   width: 100%;
   margin-bottom: map.get($spacing, 'md');
+
+  &[data-sport='floorball'] {
+    --sport-accent: #{$color-sport-floorball};
+  }
+
+  &[data-sport='football'] {
+    --sport-accent: #{$color-sport-football};
+  }
+
+  &[data-sport='hockey'] {
+    --sport-accent: #{$color-sport-hockey};
+  }
 
   &__group {
     display: inline-flex;
@@ -30,9 +43,10 @@
     gap: map.get($spacing, 'xxs');
     padding: map.get($spacing, 'xxs');
     background: $color-white;
-    border: 1px solid rgba($color-blue-deep, 0.15);
+    border: 1px solid color-mix(in srgb, var(--sport-accent) 28%, transparent);
     border-radius: map.get($border-radius, 'xl');
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: border-color $transition-default;
   }
 
   .tab-button {
@@ -60,15 +74,15 @@
     }
 
     &:focus-visible {
-      outline: 2px solid $color-blue-secondary;
+      outline: 2px solid var(--sport-accent);
       outline-offset: 2px;
     }
 
     &.active {
-      background: $color-blue-deep;
+      background: var(--sport-accent);
       color: $color-white;
       font-weight: map.get($font-weights, 'bold');
-      box-shadow: 0 2px 6px rgba($color-blue-deep, 0.35);
+      box-shadow: 0 2px 6px color-mix(in srgb, var(--sport-accent) 40%, transparent);
     }
   }
 }
@@ -157,4 +171,45 @@
   font-size: 0.9rem;
   font-weight: 400;
   color: #6b7684;
+}
+
+.admin-actions--sport {
+  --sport-accent: #{$color-sport-floorball};
+  --sport-soft: #{$color-sport-floorball-soft};
+  --sport-ink: #{$color-sport-floorball-ink};
+
+  &[data-sport='floorball'] {
+    --sport-accent: #{$color-sport-floorball};
+    --sport-soft: #{$color-sport-floorball-soft};
+    --sport-ink: #{$color-sport-floorball-ink};
+  }
+
+  &[data-sport='football'] {
+    --sport-accent: #{$color-sport-football};
+    --sport-soft: #{$color-sport-football-soft};
+    --sport-ink: #{$color-sport-football-ink};
+  }
+
+  &[data-sport='hockey'] {
+    --sport-accent: #{$color-sport-hockey};
+    --sport-soft: #{$color-sport-hockey-soft};
+    --sport-ink: #{$color-sport-hockey-ink};
+  }
+
+  .admin-action-button {
+    background-color: var(--sport-soft);
+    border-color: color-mix(in srgb, var(--sport-accent) 22%, #e0e4e9);
+    box-shadow: inset 4px 0 0 var(--sport-accent), 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    .button-title {
+      color: var(--sport-ink);
+    }
+
+    &:hover {
+      background-color: $color-white;
+      border-color: var(--sport-accent);
+      color: var(--sport-ink);
+      box-shadow: inset 4px 0 0 var(--sport-accent), 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+  }
 }
