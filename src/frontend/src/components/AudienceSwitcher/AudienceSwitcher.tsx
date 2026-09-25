@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AUDIENCE_REGISTRY, type AudienceThemeId } from '../../audience/audienceRegistry';
 import { useAudience } from '../../context/AudienceContext';
@@ -11,6 +12,7 @@ interface AudienceSwitcherProps {
 
 function AudienceSwitcher({ variant = 'brand' }: AudienceSwitcherProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { audience, selectedAudienceId, setAudience } = useAudience();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,8 +41,12 @@ function AudienceSwitcher({ variant = 'brand' }: AudienceSwitcherProps) {
   }, [isOpen]);
 
   const handleSelect = (id: AudienceThemeId) => {
+    const changed = id !== selectedAudienceId;
     setAudience(id);
     setIsOpen(false);
+    if (changed) {
+      navigate('/');
+    }
   };
 
   return (

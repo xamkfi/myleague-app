@@ -30,12 +30,12 @@
 }
 
 [data-audience='women'] {
-  /* Primary: magenta (Naiset) */
-  --brand-darkest: #dd1e84;
-  --brand-deep: #dd1e84;
-  --brand-medium: #e564aa;
-  --brand-light: #e871a4;
-  --brand-bg: #f9d6e8;
-  --banner-bg: #dd1e84;
+  /* Primary: wine (Naiset) */
+  --brand-darkest: #6e2238;
+  --brand-deep: #6e2238;
+  --brand-medium: #8c4558;
+  --brand-light: #b07a8c;
+  --brand-bg: #f3e6ea;
+  --banner-bg: #6e2238;
   --banner-text: #ffffff;
 }
