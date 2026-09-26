@@ -105,6 +105,8 @@ public class GetAllFootballTeamsHandler : BasePagedQueryHandler<GetAllFootballTe
                 clubId: request.ClubId,
                 divisionId: divisionId,
                 teamCategories: request.TeamCategories,
+                competitionId: request.CompetitionId,
+                competitionDivisionId: request.CompetitionDivisionId,
                 cancellationToken: cancellationToken);
             
             // Load all clubs for DTO mapping (since Club navigation is ignored in FootballTeam)

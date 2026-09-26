@@ -133,7 +133,6 @@ public class FootballStatisticsController : BaseApiController
     /// </summary>
     [HttpGet("match/{matchId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<List<FootballMatchTeamStatisticsDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<List<FootballMatchTeamStatisticsDto>>>> GetMatchStatistics(Guid matchId)
     {

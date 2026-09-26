@@ -6,6 +6,7 @@ interface SeasonsPageHeaderProps {
   onCreateSeason: () => void;
   onManageMatches: () => void;
   onImportSeason: () => void;
+  onImportRoster: () => void;
 }
 
 export const SeasonsPageHeader = ({
@@ -13,6 +14,7 @@ export const SeasonsPageHeader = ({
   onCreateSeason,
   onManageMatches,
   onImportSeason,
+  onImportRoster,
 }: SeasonsPageHeaderProps) => {
   const { t } = useTranslation();
 
@@ -38,6 +40,16 @@ export const SeasonsPageHeader = ({
           <i className="fas fa-file-import"></i>
           {' '}
           {t('floorball.seasons.import.button', 'Import from JSON')}
+        </button>
+        <button
+          type="button"
+          className="import-season-button"
+          onClick={onImportRoster}
+          title={t('common.rosterImport.buttonTooltip', 'Import a team roster from an Excel file into a season.')}
+        >
+          <i className="fas fa-file-excel"></i>
+          {' '}
+          {t('common.rosterImport.button', 'Import roster')}
         </button>
         <button
           type="button"

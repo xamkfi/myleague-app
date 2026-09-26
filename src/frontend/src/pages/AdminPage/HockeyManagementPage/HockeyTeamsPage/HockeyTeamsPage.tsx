@@ -1,203 +1,131 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
+import AdminTeamsBrowser from '../../../../components/admin/teams/AdminTeamsBrowser';
+import type {
+  AdminSeasonChoice,
+  AdminTeamListPage,
+  AdminTeamListQuery,
+  NamedOption,
+} from '../../../../components/admin/teams/adminTeamListTypes';
 import { hockeyTeamService } from '../../../../api/hockey/hockeyTeamService';
+import { hockeySeasonService } from '../../../../api/hockey/hockeySeasonService';
+import { clubService } from '../../../../api/common/clubService';
+import { divisionService } from '../../../../api/common/divisionService';
+import { SportsCategory } from '../../../../types/common/sports';
 import type { HockeyTeamCategory, HockeyTeamDto } from '../../../../types/hockey/hockeyTypes';
 import TeamsTable from './components/TeamsTable';
-import TeamCategoryFilter from '../../../../components/TeamCategoryFilter/TeamCategoryFilter';
-import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
-import { loadClubNameMap } from '../../../../utils/hockeyLookups';
 import './HockeyTeamsPage.scss';
 
 function HockeyTeamsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [teams, setTeams] = useState<HockeyTeamDto[]>([]);
-  const [clubNames, setClubNames] = useState<Map<string, string>>(new Map());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<HockeyTeamCategory[]>([]);
-  const [reloadToken, setReloadToken] = useState(0);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      const nextSearch = searchTerm.trim();
-      setDebouncedSearch((previous) => {
-        if (previous !== nextSearch) {
-          setCurrentPage(1);
-        }
-        return nextSearch;
-      });
-    }, 300);
-    return () => window.clearTimeout(timeoutId);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const loadTeams = async (): Promise<void> => {
-      try {
-        setLoading(true);
-        setError(null);
-        const [teamList, clubs] = await Promise.all([hockeyTeamService.getAll(), loadClubNameMap()]);
-        if (cancelled) {
-          return;
-        }
-        setTeams(teamList);
-        setClubNames(clubs);
-      } catch (err) {
-        if (!cancelled) {
-          setTeams([]);
-          setError(err instanceof Error ? err.message : t('hockey.teams.errors.loadFailed', 'Failed to fetch teams'));
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-    void loadTeams();
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadToken, t]);
-
-  const filtered = useMemo(() => {
-    const needle = debouncedSearch.toLowerCase();
-    return teams.filter((team) => {
-      const categoryMatch = categoryFilter.length === 0 || categoryFilter.includes(team.teamCategory);
-      if (!categoryMatch) {
-        return false;
-      }
-      if (!needle) {
-        return true;
-      }
-      return `${team.name} ${clubNames.get(team.clubId) ?? ''}`.toLowerCase().includes(needle);
+  const loadSeasons = useCallback(async (): Promise<AdminSeasonChoice[]> => {
+    const seasons = await hockeySeasonService.getAll(undefined, true);
+    return seasons.map((season) => {
+      const teamIdByCompetitionTeam = new Map((season.teams ?? []).map((team) => [team.id, team.teamId]));
+      const divisionNameByTeamId = new Map<string, string>();
+      const divisions = (season.divisions ?? [])
+        .filter((division) => division.isActive)
+        .map((division) => {
+          division.teams.forEach((membership) => {
+            if (!membership.isActive) {
+              return;
+            }
+            const teamId = teamIdByCompetitionTeam.get(membership.competitionTeamId);
+            if (teamId) {
+              divisionNameByTeamId.set(teamId, division.name);
+            }
+          });
+          return { id: division.divisionId, name: division.name };
+        });
+      return {
+        id: season.id,
+        name: season.name,
+        isActive: season.isActive,
+        startDate: season.startDate,
+        divisions,
+        divisionNameByTeamId,
+      };
     });
-  }, [teams, debouncedSearch, categoryFilter, clubNames]);
+  }, []);
 
-  const totalCount = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const pagedTeams = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const loadClubs = useCallback(async (): Promise<NamedOption[]> => {
+    const clubs = await clubService.getAll();
+    return clubs.map((club) => ({ id: club.id, name: club.name }));
+  }, []);
 
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+  const loadHomeDivisions = useCallback(async (): Promise<NamedOption[]> => {
+    const divisions = await divisionService.getAll();
+    return divisions.data
+      .filter((division) => division.sportType === SportsCategory.Icehockey)
+      .map((division) => ({ id: division.id, name: division.name }));
+  }, []);
 
-  const handleDelete = async (teamId: string, teamName: string): Promise<void> => {
-    if (!window.confirm(t('hockey.teams.confirmDeactivate', 'Deactivate team "{{name}}"?', { name: teamName }))) {
-      return;
-    }
-    try {
-      await hockeyTeamService.setActive(teamId, false);
-      setSelectedIds((prev) => {
-        const updated = new Set(prev);
-        updated.delete(teamId);
-        return updated;
-      });
-      setReloadToken((token) => token + 1);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to deactivate team');
-    }
-  };
-
-  const handleBulkDelete = async (): Promise<void> => {
-    if (selectedIds.size === 0) {
-      return;
-    }
-    if (!window.confirm(t('hockey.teams.confirmBulkDeactivate', 'Deactivate {{count}} teams?', { count: selectedIds.size }))) {
-      return;
-    }
-    try {
-      for (const id of selectedIds) {
-        await hockeyTeamService.setActive(id, false);
-      }
-      setSelectedIds(new Set());
-      setReloadToken((token) => token + 1);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to deactivate teams');
-    }
-  };
-
-  const toggleSelect = (id: string): void => {
-    setSelectedIds((prev) => {
-      const updated = new Set(prev);
-      if (updated.has(id)) {
-        updated.delete(id);
-      } else {
-        updated.add(id);
-      }
-      return updated;
+  const loadTeams = useCallback(async (query: AdminTeamListQuery): Promise<AdminTeamListPage<HockeyTeamDto>> => {
+    const response = await hockeyTeamService.getPaged({
+      page: query.page,
+      pageSize: query.pageSize,
+      searchTerm: query.searchTerm,
+      clubId: query.clubId,
+      competitionId: query.competitionId,
+      competitionDivisionId: query.competitionDivisionId,
+      divisionId: query.homeDivisionId,
+      teamCategories: query.categories.length > 0 ? query.categories as HockeyTeamCategory[] : undefined,
     });
-  };
+    return {
+      items: response.data ?? [],
+      totalCount: response.pagination?.totalCount ?? 0,
+      totalPages: response.pagination?.totalPages ?? 1,
+    };
+  }, []);
+
+  const onRemoveFromSeason = useCallback(async (seasonId: string, teamId: string): Promise<void> => {
+    await hockeySeasonService.removeTeam(seasonId, teamId);
+  }, []);
+
+  const onDeleteTeam = useCallback(async (teamId: string): Promise<void> => {
+    await hockeyTeamService.setActive(teamId, false);
+  }, []);
 
   return (
-    <PageTemplate title={t('hockey.teams.title', 'Manage Teams')}>
-      <div className="floorball-teams-container">
-        <h2 className="floorball-teams-title">{t('hockey.teams.title', 'MANAGE TEAMS')}</h2>
-        <div className="floorball-teams-header">
-          <div className="teams-count">
-            <span>{t('hockey.teams.totalCount', { count: totalCount, defaultValue: 'Total: {{count}} teams' })}</span>
-          </div>
-          <div className="teams-actions">
-            <button className="create-team-button" onClick={() => navigate('/admin/hockey/teams/new')}>
-              {t('hockey.teams.createNew', 'Create New Team')}
-            </button>
-          </div>
-        </div>
-        <div className="teams-search-bar">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder={t('hockey.teams.searchPlaceholder', 'Search teams by name...')}
-            className="teams-search-input"
-          />
-        </div>
-        <div className="teams-category-filter">
-          <TeamCategoryFilter
-            selected={categoryFilter}
-            onChange={(categories) => {
-              setCategoryFilter(categories as HockeyTeamCategory[]);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
-        <ErrorPopup message={error} />
+    <AdminTeamsBrowser
+      title={t('hockey.teams.title', 'Manage Teams')}
+      sportPath="/admin/hockey"
+      loadSeasons={loadSeasons}
+      loadClubs={loadClubs}
+      loadHomeDivisions={loadHomeDivisions}
+      loadTeams={loadTeams}
+      onRemoveFromSeason={onRemoveFromSeason}
+      onDeleteTeam={onDeleteTeam}
+      confirmDelete={(name) => t('hockey.teams.confirmDeactivate', 'Deactivate team "{{name}}"?', { name })}
+      confirmBulkDelete={(count) => t('hockey.teams.confirmBulkDeactivate', 'Deactivate {{count}} teams?', { count })}
+      deleteFailed={t('hockey.teams.errors.deactivateFailed', 'Failed to deactivate team')}
+      bulkDeleteFailed={t('hockey.teams.errors.bulkDeactivateFailed', 'Failed to deactivate teams')}
+      renderTable={(slot) => (
         <TeamsTable
-          teams={pagedTeams}
-          clubNames={clubNames}
-          onEdit={(teamId) => navigate(`/admin/hockey/teams/${teamId}/edit`)}
-          onEditRoster={(teamId) => navigate(`/admin/hockey/teams/${teamId}/roster`)}
+          teams={slot.teams}
+          clubNames={slot.clubNameById}
+          loading={slot.loading}
+          viewMode={slot.viewMode}
+          divisionNameByTeamId={slot.divisionNameByTeamId}
+          bulkActionLabel={slot.bulkActionLabel}
+          selectedIds={slot.selectedIds}
+          onToggleSelect={slot.onToggleSelect}
+          onSelectAll={slot.onSelectAll}
+          onClearSelection={slot.onClearSelection}
+          onBulkDelete={slot.onBulkDelete}
+          onEdit={slot.onEdit}
+          onEditRoster={slot.onEditRoster}
           onEditLines={(teamId) => navigate(`/admin/hockey/teams/${teamId}/lines`)}
-          onDelete={(teamId, teamName) => void handleDelete(teamId, teamName)}
-          loading={loading}
-          selectedIds={selectedIds}
-          onToggleSelect={toggleSelect}
-          onSelectAll={() => setSelectedIds(new Set(pagedTeams.map((team) => team.id)))}
-          onClearSelection={() => setSelectedIds(new Set())}
-          onBulkDelete={() => void handleBulkDelete()}
-          pagination={{
-            currentPage,
-            totalPages,
-            totalCount,
-            pageSize,
-          }}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={(next) => {
-            setPageSize(next);
-            setCurrentPage(1);
-          }}
+          onDelete={slot.onDelete}
+          pagination={slot.pagination}
+          onPageChange={slot.onPageChange}
+          onPageSizeChange={slot.onPageSizeChange}
         />
-      </div>
-    </PageTemplate>
+      )}
+    />
   );
 }
 

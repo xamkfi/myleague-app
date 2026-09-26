@@ -139,6 +139,8 @@ export interface GetFootballTeamsRequest {
   division?: string;
   teamCategories?: TeamCategory[];
   searchTerm?: string;
+  competitionId?: string;
+  competitionDivisionId?: string;
 }
 
 export interface FootballTeamRequest {

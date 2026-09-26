@@ -63,6 +63,8 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
             Guid? clubId = null,
             Guid? divisionId = null,
             IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? teamCategories = null,
+            Guid? competitionId = null,
+            Guid? competitionDivisionId = null,
             CancellationToken cancellationToken = default)
         {
             IQueryable<FootballTeam> query = _entities.AsQueryable();
@@ -83,6 +85,27 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                 query = query.Where(t => teamCategories.Contains(t.TeamCategory));
             }
 
+            if (competitionId is Guid competitionFilter)
+            {
+                query = query.Where(team =>
+                    _dbContext.Set<FootballCompetition>()
+                        .Where(competition => competition.Id == competitionFilter)
+                        .SelectMany(competition => competition.Teams)
+                        .Any(member => member.Id == team.Id)
+                    || _dbContext.Set<FootballCompetitionDivisionTeam>()
+                        .Any(link => link.TeamId == team.Id && link.CompetitionId == competitionFilter));
+            }
+
+            if (competitionId is Guid competitionForDivision && competitionDivisionId is Guid seasonDivisionId)
+            {
+                query = query.Where(team =>
+                    _dbContext.Set<FootballCompetitionDivisionTeam>()
+                        .Any(link =>
+                            link.TeamId == team.Id
+                            && link.CompetitionId == competitionForDivision
+                            && link.CompetitionDivision.DivisionId == seasonDivisionId));
+            }
+
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 string loweredSearchTerm = searchTerm.ToLower();
@@ -95,12 +118,15 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
             // Get total count before pagination
             int totalCount = await query.CountAsync(cancellationToken);
 
-            // Apply pagination and include roster
-            List<FootballTeam> items = await query
-                .Include(t => t.Roster)
+            IQueryable<FootballTeam> pageQuery = query
                 .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
+                .Take(pageSize);
+
+            pageQuery = competitionId is Guid rosterCompetitionId
+                ? pageQuery.Include(team => team.Roster.Where(player => player.CompetitionId == rosterCompetitionId))
+                : pageQuery.Include(team => team.Roster);
+
+            List<FootballTeam> items = await pageQuery.ToListAsync(cancellationToken);
 
             return PagedResult.Create(items, totalCount, page, pageSize);
         }

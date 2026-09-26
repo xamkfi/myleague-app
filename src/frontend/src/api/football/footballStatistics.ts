@@ -239,6 +239,10 @@ export const footballStatisticsService = {
   getMatchStatistics: async (matchId: string): Promise<FootballMatchTeamStatisticsDto[]> => {
     try {
       const response = await fetch(`${API_URL}/football/statistics/match/${matchId}`);
+
+      if (response.status === 404) {
+        return [];
+      }
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch match statistics');

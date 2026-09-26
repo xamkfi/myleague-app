@@ -30,10 +30,11 @@ interface AdminTeamsTableProps {
   pagination?: AdminTablePagination;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
+  viewMode?: 'season' | 'catalog';
+  bulkActionLabel?: string;
 }
 
 const ANIMATION_DURATION_MS = 350;
-const TOTAL_COLUMNS = 7;
 
 export default function AdminTeamsTable({
   sport,
@@ -53,6 +54,8 @@ export default function AdminTeamsTable({
   pagination,
   onPageChange,
   onPageSizeChange,
+  viewMode = 'catalog',
+  bulkActionLabel,
 }: AdminTeamsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -87,6 +90,7 @@ export default function AdminTeamsTable({
   const slugById = new Map(
     teams.map((team) => [team.id, createTeamSlug({ id: team.id, name: team.name }, teams)]),
   );
+  const columnCount = viewMode === 'season' ? 6 : 7;
 
   return (
     <>
@@ -97,7 +101,7 @@ export default function AdminTeamsTable({
         onClearSelection={onClearSelection}
         actions={[
           {
-            label: t('common.bulk.delete', 'Delete ({{count}})', { count: selectedIds.size }),
+            label: bulkActionLabel ?? t('common.bulk.delete', 'Delete ({{count}})', { count: selectedIds.size }),
             onClick: onBulkDelete,
             variant: 'danger',
           },
@@ -130,8 +134,14 @@ export default function AdminTeamsTable({
                 <th>{labels.teamName}</th>
                 <th>{labels.club}</th>
                 <th>{labels.division}</th>
-                <th>{labels.homeArena}</th>
-                <th>{labels.activeMembers}</th>
+                {viewMode === 'season' ? (
+                  <th>{labels.activeMembers}</th>
+                ) : (
+                  <>
+                    <th>{labels.homeArena}</th>
+                    <th>{labels.activeMembers}</th>
+                  </>
+                )}
                 <th className="admin-table__actions-col">{labels.actions}</th>
               </tr>
             </thead>
@@ -187,41 +197,72 @@ export default function AdminTeamsTable({
                       </td>
                       <td>{team.clubName}</td>
                       <td>{team.divisionName}</td>
-                      <td>{team.homeArena}</td>
-                      <td>
-                        <span className={`admin-badge ${team.hasActiveMembers ? 'admin-badge--active' : 'admin-badge--inactive'}`}>
-                          {team.hasActiveMembers ? labels.hasMembers : labels.noMembers}
-                        </span>
-                      </td>
+                      {viewMode === 'season' ? (
+                        <td>
+                          {team.rosterCount && team.rosterCount > 0
+                            ? t('admin.teams.rosterCount', { count: team.rosterCount })
+                            : labels.noRoster}
+                        </td>
+                      ) : (
+                        <>
+                          <td>{team.homeArena}</td>
+                          <td>
+                            <span className={`admin-badge ${team.hasActiveMembers ? 'admin-badge--active' : 'admin-badge--inactive'}`}>
+                              {team.hasActiveMembers ? labels.hasMembers : labels.noMembers}
+                            </span>
+                          </td>
+                        </>
+                      )}
                       <td className="admin-table__actions-col" onClick={(event) => event.stopPropagation()}>
                         <ActionsDropdown
-                          actions={[
-                            {
-                              label: labels.editTeamInfo,
-                              onClick: () => onEdit(team.id),
-                            },
-                            {
-                              label: labels.editRoster,
-                              onClick: () => onEditRoster(team.id),
-                            },
-                            {
-                              label: t('common.viewPublic'),
-                              onClick: () => navigate(publicPath),
-                            },
-                            ...(extraActions ? extraActions(team) : []),
-                            {
-                              label: labels.delete,
-                              onClick: () => onDelete(team.id, team.name),
-                              variant: 'danger',
-                            },
-                          ]}
+                          actions={viewMode === 'season'
+                            ? [
+                                {
+                                  label: labels.editRoster,
+                                  onClick: () => onEditRoster(team.id),
+                                },
+                                {
+                                  label: labels.editTeamInfo,
+                                  onClick: () => onEdit(team.id),
+                                },
+                                {
+                                  label: t('common.viewPublic'),
+                                  onClick: () => navigate(publicPath),
+                                },
+                                ...(extraActions ? extraActions(team) : []),
+                                {
+                                  label: labels.removeFromSeason,
+                                  onClick: () => onDelete(team.id, team.name),
+                                  variant: 'danger' as const,
+                                },
+                              ]
+                            : [
+                                {
+                                  label: labels.editTeamInfo,
+                                  onClick: () => onEdit(team.id),
+                                },
+                                {
+                                  label: labels.editRoster,
+                                  onClick: () => onEditRoster(team.id),
+                                },
+                                {
+                                  label: t('common.viewPublic'),
+                                  onClick: () => navigate(publicPath),
+                                },
+                                ...(extraActions ? extraActions(team) : []),
+                                {
+                                  label: labels.delete,
+                                  onClick: () => onDelete(team.id, team.name),
+                                  variant: 'danger' as const,
+                                },
+                              ]}
                           ariaLabel={labels.actionsMenu}
                         />
                       </td>
                     </tr>
                     {expandedTeams.has(team.id) && (
                       <tr className="teams-table__expanded-row">
-                        <td colSpan={TOTAL_COLUMNS} className="teams-table__expanded-cell">
+                        <td colSpan={columnCount} className="teams-table__expanded-cell">
                           {renderExpandedRow(team, !closingTeams.has(team.id), closingTeams.has(team.id))}
                         </td>
                       </tr>

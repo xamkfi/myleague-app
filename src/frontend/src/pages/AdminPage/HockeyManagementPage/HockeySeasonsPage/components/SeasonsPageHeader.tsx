@@ -6,6 +6,7 @@ interface SeasonsPageHeaderProps {
   onCreateSeason: () => void;
   onManageMatches: () => void;
   onImportSeason: () => void;
+  onImportRoster: () => void;
 }
 
 export function SeasonsPageHeader({
@@ -13,6 +14,7 @@ export function SeasonsPageHeader({
   onCreateSeason,
   onManageMatches,
   onImportSeason,
+  onImportRoster,
 }: SeasonsPageHeaderProps) {
   const { t } = useTranslation();
 
@@ -34,6 +36,16 @@ export function SeasonsPageHeader({
           <i className="fas fa-file-import"></i>
           {' '}
           {t('hockey.seasons.import.button', 'Import from JSON')}
+        </button>
+        <button
+          type="button"
+          className="import-season-button"
+          onClick={onImportRoster}
+          title={t('common.rosterImport.buttonTooltip', 'Import a team roster from an Excel file into a season.')}
+        >
+          <i className="fas fa-file-excel"></i>
+          {' '}
+          {t('common.rosterImport.button', 'Import roster')}
         </button>
         <button type="button" className="create-season-button" onClick={onCreateSeason}>
           {t('hockey.seasons.create', 'Create New Season')}

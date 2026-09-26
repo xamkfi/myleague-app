@@ -9,7 +9,7 @@ import type {
   PaginatedApiResponse,
   UpdateHockeyTeamRequest,
 } from '../../types/hockey/hockeyTypes';
-import { hockeyPagedRequest, hockeyRequest, jsonBody, toQueryString, withTeamCategory } from './hockeyApi';
+import { hockeyPagedRequest, hockeyRequest, jsonBody, withTeamCategory } from './hockeyApi';
 
 function uniqueById<T extends { id: string }>(items: T[]): T[] {
   const seen = new Set<string>();
@@ -25,17 +25,23 @@ function uniqueById<T extends { id: string }>(items: T[]): T[] {
 }
 
 export const hockeyTeamService = {
-  getPaged: (params: GetPagedHockeyTeamsRequest = {}): Promise<PaginatedApiResponse<HockeyTeamDto>> =>
-    hockeyPagedRequest<HockeyTeamDto>(
-      `/HockeyTeam/paged${toQueryString({
-        page: params.page,
-        pageSize: params.pageSize,
-        searchTerm: params.searchTerm,
-        clubId: params.clubId,
-        teamCategory: params.teamCategory,
-      })}`,
+  getPaged: (params: GetPagedHockeyTeamsRequest = {}): Promise<PaginatedApiResponse<HockeyTeamDto>> => {
+    const searchParams = new URLSearchParams();
+    if (params.page) searchParams.set('page', String(params.page));
+    if (params.pageSize) searchParams.set('pageSize', String(params.pageSize));
+    if (params.searchTerm) searchParams.set('searchTerm', params.searchTerm);
+    if (params.clubId) searchParams.set('clubId', params.clubId);
+    if (params.competitionId) searchParams.set('competitionId', params.competitionId);
+    if (params.competitionDivisionId) searchParams.set('competitionDivisionId', params.competitionDivisionId);
+    if (params.divisionId) searchParams.set('divisionId', params.divisionId);
+    if (params.teamCategory) searchParams.append('teamCategory', params.teamCategory);
+    params.teamCategories?.forEach((category) => searchParams.append('teamCategory', category));
+    const query = searchParams.toString();
+    return hockeyPagedRequest<HockeyTeamDto>(
+      `/HockeyTeam/paged${query ? `?${query}` : ''}`,
       'Failed to fetch hockey teams',
-    ),
+    );
+  },
 
   getAll: async (teamCategory?: string): Promise<HockeyTeamDto[]> =>
     uniqueById(
@@ -89,6 +95,8 @@ export const hockeyTeamService = {
     position: HockeyPosition,
     jerseyNumber?: number,
     rosterStatus: HockeyRosterStatus = 'Active',
+    competitionId?: string | null,
+    requestedJerseyNumber?: number,
   ): Promise<HockeyTeamDto> =>
     hockeyRequest<HockeyTeamDto>(`/HockeyTeam/${teamId}/players`, 'Failed to add player to team', {
       method: 'POST',
@@ -97,6 +105,11 @@ export const hockeyTeamService = {
         position,
         jerseyNumber,
         rosterStatus,
+        competitionId: competitionId || null,
+        requestedJerseyNumber:
+          requestedJerseyNumber !== undefined && requestedJerseyNumber !== jerseyNumber
+            ? requestedJerseyNumber
+            : undefined,
       }),
     }),
 
@@ -116,9 +129,11 @@ export const hockeyTeamService = {
       { method: 'PUT', ...jsonBody(data) },
     ),
 
-  removePlayer: (teamId: string, playerId: string): Promise<HockeyTeamDto> =>
+  removePlayer: (teamId: string, playerId: string, competitionId?: string | null): Promise<HockeyTeamDto> =>
     hockeyRequest<HockeyTeamDto>(
-      `/HockeyTeam/${teamId}/players/${playerId}`,
+      `/HockeyTeam/${teamId}/players/${playerId}${
+        competitionId ? `?competitionId=${encodeURIComponent(competitionId)}` : ''
+      }`,
       'Failed to remove player from team',
       { method: 'DELETE' },
     ),
