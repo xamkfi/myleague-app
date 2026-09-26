@@ -27,6 +27,9 @@ interface TeamsTableProps {
   };
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
+  viewMode?: 'season' | 'catalog';
+  divisionNameByTeamId?: Map<string, string>;
+  bulkActionLabel?: string;
 }
 
 function TeamsTable({
@@ -45,6 +48,9 @@ function TeamsTable({
   pagination,
   onPageChange,
   onPageSizeChange,
+  viewMode = 'catalog',
+  divisionNameByTeamId,
+  bulkActionLabel,
 }: TeamsTableProps) {
   const { t } = useTranslation();
   const [divisions, setDivisions] = useState<DivisionType[]>([]);
@@ -66,28 +72,37 @@ function TeamsTable({
         name: team.name,
         teamCategory: team.teamCategory,
         clubName: clubNames.get(team.clubId) ?? '—',
-        divisionName: divisions.find((division) => division.id === team.divisionId)?.name ?? '—',
+        divisionName: viewMode === 'season'
+          ? (divisionNameByTeamId?.get(team.id) ?? '—')
+          : (divisions.find((division) => division.id === team.divisionId)?.name ?? '—'),
         homeArena: team.homeArena,
-        hasActiveMembers: team.roster.some((row) => row.isActive),
+        hasActiveMembers: team.hasActiveRoster ?? team.roster.some((row) => row.isActive),
         primaryJerseyColor: team.primaryJerseyColor,
         secondaryJerseyColor: team.secondaryJerseyColor,
+        rosterCount: viewMode === 'season' ? (team.competitionRosterCount ?? 0) : undefined,
       }))}
       labels={{
         noTeams: t('hockey.teams.noTeams', 'No teams found'),
         selectAll: t('hockey.teams.selectAll', 'Select all teams'),
         teamName: t('hockey.teams.table.name', 'Team Name'),
         club: t('hockey.teams.table.club', 'Club'),
-        division: t('hockey.teams.table.division', 'Division'),
+        division: viewMode === 'season'
+          ? t('admin.teams.division')
+          : t('admin.teams.homeDivision'),
         homeArena: t('hockey.teams.table.homeArena', 'Home Arena'),
-        activeMembers: t('hockey.teams.table.activeMembers', 'Active Members'),
+        activeMembers: viewMode === 'season'
+          ? t('admin.teams.roster')
+          : t('hockey.teams.table.activeMembers', 'Active Members'),
         actions: t('hockey.teams.table.actions', 'Actions'),
         primary: t('hockey.teams.primary', 'Primary'),
         secondary: t('hockey.teams.secondary', 'Secondary'),
         hasMembers: t('hockey.teams.hasMembers', 'Yes'),
         noMembers: t('hockey.teams.noMembers', 'No'),
-        editTeamInfo: t('hockey.teams.editTeamInfo', 'Edit Team Information'),
-        editRoster: t('hockey.teams.editRoster', 'Edit Roster'),
+        editTeamInfo: t('admin.teams.editTeam'),
+        editRoster: t('admin.teams.editRoster'),
         delete: t('common.deactivate', 'Deactivate'),
+        removeFromSeason: t('admin.teams.removeFromSeason'),
+        noRoster: t('admin.teams.noRoster'),
         actionsMenu: t('hockey.teams.actions.menu', 'Team actions menu'),
       }}
       loading={loading}
@@ -108,6 +123,8 @@ function TeamsTable({
       pagination={pagination}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
+      viewMode={viewMode}
+      bulkActionLabel={bulkActionLabel}
       renderExpandedRow={(row, isExpanded, isClosing) => (
         <TeamPlayersRow
           teamId={row.id}

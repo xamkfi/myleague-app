@@ -86,6 +86,7 @@ export interface AdminTeamRow {
   hasActiveMembers: boolean;
   primaryJerseyColor: string;
   secondaryJerseyColor?: string | null;
+  rosterCount?: number | null;
 }
 
 export interface AdminTeamTableLabels {
@@ -104,6 +105,8 @@ export interface AdminTeamTableLabels {
   editTeamInfo: string;
   editRoster: string;
   delete: string;
+  removeFromSeason: string;
+  noRoster: string;
   actionsMenu: string;
 }
 

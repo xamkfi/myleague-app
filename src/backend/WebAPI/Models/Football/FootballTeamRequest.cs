@@ -34,6 +34,17 @@ namespace WebAPI.Models.Football
         /// Optional team name search filter
         /// </summary>
         public string? SearchTerm { get; init; }
+
+        /// <summary>
+        /// Optional competition (season or tournament) membership filter.
+        /// </summary>
+        public Guid? CompetitionId { get; init; }
+
+        /// <summary>
+        /// Optional division inside <see cref="CompetitionId"/>. This is the shared division id,
+        /// the same value as a season division's division id.
+        /// </summary>
+        public Guid? CompetitionDivisionId { get; init; }
     }
 
     /// <summary>

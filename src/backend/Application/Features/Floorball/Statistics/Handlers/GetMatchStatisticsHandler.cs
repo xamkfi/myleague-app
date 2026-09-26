@@ -49,30 +49,15 @@ public class GetMatchStatisticsHandler : IRequestHandler<GetFloorballMatchStatis
     /// <returns>Result containing list of match team statistics DTOs</returns>
     public async Task<Result<List<FloorballMatchTeamStatisticsDto>>> Handle(GetFloorballMatchStatisticsQuery request, CancellationToken cancellationToken)
     {
-        try
-        {
-            _logger.LogInformation("Getting match statistics for Match: {MatchId}", request.MatchId);
+        _logger.LogInformation("Getting match statistics for Match: {MatchId}", request.MatchId);
 
-            List<Domain.Entities.Floorball.Statistics.FloorballMatchTeamStatistics> matchStats = 
-                (await _statisticsRepository.GetMatchStatisticsAsync(request.MatchId, cancellationToken)).ToList();
+        List<Domain.Entities.Floorball.Statistics.FloorballMatchTeamStatistics> matchStats = 
+            (await _statisticsRepository.GetMatchStatisticsAsync(request.MatchId, cancellationToken)).ToList();
 
-            if (matchStats == null || matchStats.Count == 0)
-            {
-                _logger.LogWarning("Match statistics not found for Match: {MatchId}", request.MatchId);
-                return Result<List<FloorballMatchTeamStatisticsDto>>.NotFound("Match statistics", request.MatchId.ToString());
-            }
+        List<FloorballMatchTeamStatisticsDto> dtos = matchStats
+            .Select(ms => FloorballStatisticsMapper.ToDto(ms))
+            .ToList();
 
-            List<FloorballMatchTeamStatisticsDto> dtos = matchStats
-                .Select(ms => FloorballStatisticsMapper.ToDto(ms))
-                .ToList();
-            
-            _logger.LogInformation("Successfully retrieved match statistics for Match: {MatchId} - {Count} team statistics", request.MatchId, dtos.Count);
-            return Result<List<FloorballMatchTeamStatisticsDto>>.Success(dtos);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while getting match statistics for Match: {MatchId}", request.MatchId);
-            return Result<List<FloorballMatchTeamStatisticsDto>>.Failure("An error occurred while retrieving match statistics.");
-        }
+        return Result<List<FloorballMatchTeamStatisticsDto>>.Success(dtos);
     }
 }

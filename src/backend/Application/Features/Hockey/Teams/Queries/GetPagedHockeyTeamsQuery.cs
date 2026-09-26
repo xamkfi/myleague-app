@@ -14,7 +14,10 @@ public record GetPagedHockeyTeamsQuery(
     int PageSize = 0,
     string? SearchTerm = null,
     Guid? ClubId = null,
-    TeamCategory? TeamCategory = null) : IRequest<Result<PagedResult<HockeyTeamDto>>>
+    IReadOnlyCollection<TeamCategory>? TeamCategories = null,
+    Guid? CompetitionId = null,
+    Guid? CompetitionDivisionId = null,
+    Guid? DivisionId = null) : IRequest<Result<PagedResult<HockeyTeamDto>>>
 {
     public const string ResourceKey = "HockeyTeams";
 }

@@ -116,6 +116,8 @@ public class GetAllFloorballTeamsHandler : BasePagedQueryHandler<GetAllFloorball
                 clubId: request.ClubId,
                 divisionId: divisionId,
                 teamCategories: request.TeamCategories,
+                competitionId: request.CompetitionId,
+                competitionDivisionId: request.CompetitionDivisionId,
                 cancellationToken: cancellationToken);
             
             HashSet<Guid> clubIds = pagedTeams.Items.Select(team => team.ClubId).ToHashSet();

@@ -54,7 +54,9 @@ namespace WebAPI.Controllers.Football
                 request.ClubId,
                 request.Division,
                 request.TeamCategories,
-                request.SearchTerm));
+                request.SearchTerm,
+                request.CompetitionId,
+                request.CompetitionDivisionId));
 
             return HandlePaginatedResult(result, "Football teams retrieved successfully", "Failed to retrieve football teams");
         }

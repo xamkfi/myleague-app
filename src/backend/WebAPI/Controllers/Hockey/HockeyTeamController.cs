@@ -61,7 +61,10 @@ public class HockeyTeamController : BaseApiController
                 request.PageSize,
                 request.SearchTerm,
                 request.ClubId,
-                request.TeamCategory),
+                request.TeamCategories,
+                request.CompetitionId,
+                request.CompetitionDivisionId,
+                request.DivisionId),
             cancellationToken);
         return HandlePaginatedResult(result, "Hockey teams retrieved successfully", "Failed to retrieve hockey teams");
     }

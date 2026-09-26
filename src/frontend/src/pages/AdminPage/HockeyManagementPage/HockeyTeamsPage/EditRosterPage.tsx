@@ -18,6 +18,7 @@ import {
 } from '../../../../types/hockey/hockeyTypes';
 import { loadPersonNameMap } from '../../../../utils/hockeyLookups';
 import JerseyNumberSelect, { collectJerseyNumbers } from '../../../../components/JerseyNumberSelect';
+import { HockeyRosterImportModal } from '../HockeySeasonsPage/components/RosterImportModal';
 import './EditRosterPage.scss';
 
 function EditHockeyRosterPage() {
@@ -33,6 +34,7 @@ function EditHockeyRosterPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [updatingPlayer, setUpdatingPlayer] = useState<string | null>(null);
+  const [showRosterImport, setShowRosterImport] = useState(false);
 
   const loadTeamData = useCallback(async (): Promise<void> => {
     if (!teamId) {
@@ -174,6 +176,9 @@ function EditHockeyRosterPage() {
             >
               {t('hockey.teams.addPlayerToTeam', 'Add New Player to Team')}
             </Button>
+            <Button onClick={() => setShowRosterImport(true)}>
+              {t('common.rosterImport.button', 'Import roster')}
+            </Button>
             <Button onClick={() => navigate(`/admin/hockey/teams/${teamId}/lines`)}>
               {t('hockey.teams.lines', 'Lines')}
             </Button>
@@ -278,6 +283,17 @@ function EditHockeyRosterPage() {
           </table>
         </div>
       </div>
+      {showRosterImport && teamId && (
+        <HockeyRosterImportModal
+          onClose={() => setShowRosterImport(false)}
+          onImported={() => {
+            void loadTeamData();
+          }}
+          preferredTeamId={teamId}
+          preferredTeamName={currentTeam.name}
+          presetSeasonId={selectedCompetitionId || undefined}
+        />
+      )}
     </PageTemplate>
   );
 }

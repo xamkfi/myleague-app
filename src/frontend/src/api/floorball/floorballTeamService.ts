@@ -25,6 +25,8 @@ export const floorballTeamService = {
     if (params?.clubId) searchParams.append('clubId', params.clubId);
     if (params?.division) searchParams.append('division', params.division);
     if (params?.searchTerm) searchParams.append('searchTerm', params.searchTerm);
+    if (params?.competitionId) searchParams.append('competitionId', params.competitionId);
+    if (params?.competitionDivisionId) searchParams.append('competitionDivisionId', params.competitionDivisionId);
     params?.teamCategories?.forEach(category => searchParams.append('teamCategory', category));
 
     const url = `${API_URL}/FloorballTeam${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;

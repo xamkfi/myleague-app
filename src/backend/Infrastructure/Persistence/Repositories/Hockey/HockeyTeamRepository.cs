@@ -79,7 +79,10 @@ public class HockeyTeamRepository : IHockeyTeamRepository
         int pageSize,
         string searchTerm = "",
         Guid? clubId = null,
-        TeamCategory? teamCategory = null,
+        IReadOnlyCollection<TeamCategory>? teamCategories = null,
+        Guid? competitionId = null,
+        Guid? competitionDivisionId = null,
+        Guid? divisionId = null,
         CancellationToken cancellationToken = default)
     {
         IQueryable<HockeyTeam> query = _dbContext.HockeyTeams.AsQueryable();
@@ -89,9 +92,35 @@ public class HockeyTeamRepository : IHockeyTeamRepository
             query = query.Where(t => t.ClubId == clubFilter);
         }
 
-        if (teamCategory is TeamCategory categoryFilter)
+        if (divisionId is Guid homeDivisionId)
         {
-            query = query.Where(t => t.TeamCategory == categoryFilter);
+            query = query.Where(team => team.DivisionId == homeDivisionId);
+        }
+
+        if (teamCategories is { Count: > 0 })
+        {
+            query = query.Where(t => teamCategories.Contains(t.TeamCategory));
+        }
+
+        if (competitionId is Guid competitionFilter)
+        {
+            query = query.Where(team =>
+                _dbContext.HockeyCompetitionTeams.Any(membership =>
+                    membership.TeamId == team.Id
+                    && membership.CompetitionId == competitionFilter
+                    && membership.LeftAt == null));
+        }
+
+        if (competitionId is Guid competitionForDivision && competitionDivisionId is Guid seasonDivisionId)
+        {
+            query = query.Where(team =>
+                _dbContext.HockeyCompetitionDivisionTeams.Any(membership =>
+                    membership.IsActive
+                    && membership.CompetitionTeam.TeamId == team.Id
+                    && membership.CompetitionTeam.LeftAt == null
+                    && membership.CompetitionTeam.CompetitionId == competitionForDivision
+                    && membership.CompetitionDivision.DivisionId == seasonDivisionId
+                    && membership.CompetitionDivision.CompetitionId == competitionForDivision));
         }
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -110,6 +139,46 @@ public class HockeyTeamRepository : IHockeyTeamRepository
             .ToListAsync(cancellationToken);
 
         return PagedResult.Create(items, totalCount, page, pageSize);
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, int>> CountCompetitionRostersAsync(
+        IReadOnlyCollection<Guid> teamIds,
+        Guid competitionId,
+        CancellationToken cancellationToken = default)
+    {
+        if (teamIds.Count == 0)
+        {
+            return new Dictionary<Guid, int>();
+        }
+
+        List<Guid> ids = teamIds.ToList();
+        var rows = await _dbContext.HockeyTeamPlayers
+            .Where(player =>
+                player.CompetitionId == competitionId
+                && player.LeftAt == null
+                && ids.Contains(player.TeamId))
+            .GroupBy(player => player.TeamId)
+            .Select(group => new { TeamId = group.Key, Count = group.Count() })
+            .ToListAsync(cancellationToken);
+
+        return rows.ToDictionary(row => row.TeamId, row => row.Count);
+    }
+
+    public async Task<IReadOnlyCollection<Guid>> GetTeamIdsWithOpenRosterAsync(
+        IReadOnlyCollection<Guid> teamIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (teamIds.Count == 0)
+        {
+            return Array.Empty<Guid>();
+        }
+
+        List<Guid> ids = teamIds.ToList();
+        return await _dbContext.HockeyTeamPlayers
+            .Where(player => player.LeftAt == null && ids.Contains(player.TeamId))
+            .Select(player => player.TeamId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default)
