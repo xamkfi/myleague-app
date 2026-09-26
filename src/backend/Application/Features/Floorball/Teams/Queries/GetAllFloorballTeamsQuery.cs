@@ -25,7 +25,9 @@ namespace Application.Features.Floorball.Teams.Queries
         Guid? ClubId = null,
         string? Division = null,
         IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? TeamCategories = null,
-        string? SearchTerm = null
+        string? SearchTerm = null,
+        Guid? CompetitionId = null,
+        Guid? CompetitionDivisionId = null
     ) : IRequest<Result<PagedResult<FloorballTeamDto>>>
     {
         /// <summary>

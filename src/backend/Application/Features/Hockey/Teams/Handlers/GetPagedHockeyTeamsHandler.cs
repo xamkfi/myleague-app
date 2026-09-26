@@ -46,10 +46,46 @@ public class GetPagedHockeyTeamsHandler
                 pageSize,
                 request.SearchTerm ?? string.Empty,
                 request.ClubId,
-                request.TeamCategory,
+                request.TeamCategories,
+                request.CompetitionId,
+                request.CompetitionDivisionId,
+                request.DivisionId,
                 cancellationToken);
 
-            IReadOnlyList<HockeyTeamDto> items = pagedTeams.Items.Select(HockeyTeamMapper.ToDto).ToList();
+            Dictionary<Guid, int> rosterCounts = new Dictionary<Guid, int>();
+            if (request.CompetitionId is Guid competitionId)
+            {
+                IReadOnlyDictionary<Guid, int> counts = await _teamRepository.CountCompetitionRostersAsync(
+                    pagedTeams.Items.Select(team => team.Id).ToArray(),
+                    competitionId,
+                    cancellationToken);
+                foreach (KeyValuePair<Guid, int> entry in counts)
+                {
+                    rosterCounts[entry.Key] = entry.Value;
+                }
+            }
+
+            IReadOnlyCollection<Guid> teamsWithRoster = await _teamRepository.GetTeamIdsWithOpenRosterAsync(
+                pagedTeams.Items.Select(team => team.Id).ToArray(),
+                cancellationToken);
+            HashSet<Guid> openRosterIds = teamsWithRoster.ToHashSet();
+
+            IReadOnlyList<HockeyTeamDto> items = pagedTeams.Items
+                .Select(team =>
+                {
+                    HockeyTeamDto dto = HockeyTeamMapper.ToDto(team) with
+                    {
+                        HasActiveRoster = openRosterIds.Contains(team.Id),
+                    };
+                    if (request.CompetitionId is null)
+                    {
+                        return dto;
+                    }
+
+                    int count = rosterCounts.TryGetValue(team.Id, out int rosterCount) ? rosterCount : 0;
+                    return dto with { CompetitionRosterCount = count };
+                })
+                .ToList();
             return Result<PagedResult<HockeyTeamDto>>.Success(
                 PagedResult.Create(items, pagedTeams.TotalCount, pagedTeams.Page, pagedTeams.PageSize));
         }

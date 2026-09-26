@@ -18,6 +18,8 @@ public interface IFootballTeamRepository
         Guid? clubId = null,
         Guid? divisionId = null,
         IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? teamCategories = null,
+        Guid? competitionId = null,
+        Guid? competitionDivisionId = null,
         CancellationToken cancellationToken = default);
     Task<int> GetCountAsync(
         Guid? clubId = null,

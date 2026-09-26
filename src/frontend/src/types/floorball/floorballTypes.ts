@@ -138,6 +138,8 @@ export interface GetFloorballTeamsRequest {
   division?: string;
   teamCategories?: TeamCategory[];
   searchTerm?: string;
+  competitionId?: string;
+  competitionDivisionId?: string;
 }
 
 export interface FloorballTeamRequest {

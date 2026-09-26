@@ -16,6 +16,7 @@ import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import JerseyNumberSelect, { collectJerseyNumbers } from '../../../../components/JerseyNumberSelect';
+import { FloorballRosterImportModal } from '../FloorballSeasonsPage/components/RosterImportModal';
 import './EditRosterPage.scss';
 
 const EditRosterPage = () => {
@@ -31,6 +32,7 @@ const EditRosterPage = () => {
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [updatingPlayer, setUpdatingPlayer] = useState<string | null>(null);
   const [competitions, setCompetitions] = useState<Array<{ id: string; name: string }>>([]);
+  const [showRosterImport, setShowRosterImport] = useState(false);
   const selectedCompetitionId = searchParams.get('competitionId') ?? '';
 
   const loadTeamData = useCallback(async () => {
@@ -283,6 +285,9 @@ const EditRosterPage = () => {
             >
               {t('floorball.teams.addPlayerToTeam', 'Add New Player to Team')}
             </Button>
+            <Button onClick={() => setShowRosterImport(true)}>
+              {t('common.rosterImport.button', 'Import roster')}
+            </Button>
           </div>
         </div>
 
@@ -422,6 +427,28 @@ const EditRosterPage = () => {
           </table>
         </div>
       </div>
+      {showRosterImport && teamId && (
+        <FloorballRosterImportModal
+          onClose={() => setShowRosterImport(false)}
+          onImported={() => {
+            void loadTeamData();
+          }}
+          lockedSelection={
+            selectedCompetitionId
+              ? {
+                  competitionId: selectedCompetitionId,
+                  competitionName:
+                    competitions.find((competition) => competition.id === selectedCompetitionId)?.name
+                    ?? selectedCompetitionId,
+                  teamId,
+                  teamName: currentTeam.name,
+                }
+              : null
+          }
+          preferredTeamId={teamId}
+          preferredTeamName={currentTeam.name}
+        />
+      )}
     </PageTemplate>
   );
 };

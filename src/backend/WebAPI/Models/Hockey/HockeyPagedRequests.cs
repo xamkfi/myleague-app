@@ -1,6 +1,7 @@
 using Domain.Enums.Common;
 using Domain.Enums.Hockey.Matches;
 using Domain.Enums.Hockey.Teams;
+using Microsoft.AspNetCore.Mvc;
 using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Models.Hockey;
@@ -16,8 +17,23 @@ public record GetPagedHockeyTeamsRequest : PagedRequestBase
     /// <summary>Optional club filter.</summary>
     public Guid? ClubId { get; init; }
 
-    /// <summary>Optional audience category filter.</summary>
-    public TeamCategory? TeamCategory { get; init; }
+    /// <summary>
+    /// Optional audience category filter. Accepts one or more values
+    /// (for example ?teamCategory=Adult&amp;teamCategory=Women).
+    /// </summary>
+    [FromQuery(Name = "teamCategory")]
+    public List<TeamCategory>? TeamCategories { get; init; }
+
+    /// <summary>Optional competition membership filter.</summary>
+    public Guid? CompetitionId { get; init; }
+
+    /// <summary>
+    /// Optional division inside <see cref="CompetitionId"/>. This is the shared division id.
+    /// </summary>
+    public Guid? CompetitionDivisionId { get; init; }
+
+    /// <summary>Optional home division on the team itself.</summary>
+    public Guid? DivisionId { get; init; }
 }
 
 /// <summary>

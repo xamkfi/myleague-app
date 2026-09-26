@@ -12,6 +12,7 @@ import { SeasonsContent } from './components/SeasonsContent';
 import { ConfirmCompleteSeasonModal } from './components/ConfirmCompleteSeasonModal';
 import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
 import { SeasonImportModal } from './components/SeasonImportModal';
+import { HockeyRosterImportModal } from './components/RosterImportModal';
 import { hockeySeasonService } from '../../../../api/hockey/hockeySeasonService';
 import type { HockeySeasonDto } from '../../../../types/hockey/hockeyTypes';
 
@@ -28,6 +29,7 @@ function HockeySeasonsPage() {
   const [seasonToComplete, setSeasonToComplete] = useState<HockeySeasonDto | null>(null);
   const [seasonToDelete, setSeasonToDelete] = useState<HockeySeasonDto | null>(null);
   const [showImportModal, setShowImportModal] = useState<boolean>(false);
+  const [showRosterImportModal, setShowRosterImportModal] = useState<boolean>(false);
 
   const loadSeasons = useCallback(async (options?: { silent?: boolean }): Promise<void> => {
     try {
@@ -128,7 +130,7 @@ function HockeySeasonsPage() {
     }
   };
 
-  if (loading && !showImportModal) {
+  if (loading && !showImportModal && !showRosterImportModal) {
     return (
       <PageTemplate title={t('hockey.seasons.title', 'Manage Seasons')}>
         <LoadingState />
@@ -144,6 +146,7 @@ function HockeySeasonsPage() {
           onCreateSeason={() => navigate('/admin/hockey/seasons/create')}
           onManageMatches={() => navigate('/admin/hockey/seasons/matches')}
           onImportSeason={() => setShowImportModal(true)}
+          onImportRoster={() => setShowRosterImportModal(true)}
         />
         <ErrorPopup message={error} />
         <SeasonsFilters
@@ -196,6 +199,14 @@ function HockeySeasonsPage() {
         {showImportModal && (
           <SeasonImportModal
             onClose={() => setShowImportModal(false)}
+            onImported={() => {
+              void loadSeasons({ silent: true });
+            }}
+          />
+        )}
+        {showRosterImportModal && (
+          <HockeyRosterImportModal
+            onClose={() => setShowRosterImportModal(false)}
             onImported={() => {
               void loadSeasons({ silent: true });
             }}

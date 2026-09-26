@@ -96,6 +96,10 @@ export interface GetPagedHockeyTeamsRequest {
   searchTerm?: string;
   clubId?: string;
   teamCategory?: HockeyTeamCategory;
+  teamCategories?: HockeyTeamCategory[];
+  competitionId?: string;
+  competitionDivisionId?: string;
+  divisionId?: string;
 }
 
 export interface GetPagedHockeyOfficialsRequest {
@@ -310,6 +314,8 @@ export interface HockeyTeamDto {
   roster: HockeyTeamPlayerDto[];
   lines: HockeyLineDto[];
   staffMembers: HockeyTeamStaffDto[];
+  competitionRosterCount?: number | null;
+  hasActiveRoster?: boolean | null;
 }
 
 export interface CreateHockeyTeamRequest {

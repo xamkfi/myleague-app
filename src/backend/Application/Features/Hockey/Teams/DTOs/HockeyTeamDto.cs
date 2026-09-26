@@ -17,4 +17,6 @@ public record HockeyTeamDto(
     bool IsActive,
     IReadOnlyCollection<HockeyTeamPlayerDto> Roster,
     IReadOnlyCollection<HockeyLineDto> Lines,
-    IReadOnlyCollection<HockeyTeamStaffDto> StaffMembers);
+    IReadOnlyCollection<HockeyTeamStaffDto> StaffMembers,
+    int? CompetitionRosterCount = null,
+    bool? HasActiveRoster = null);

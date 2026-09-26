@@ -27,30 +27,15 @@ public class GetMatchStatisticsHandler : IRequestHandler<GetFootballMatchStatist
 
     public async Task<Result<List<FootballMatchTeamStatisticsDto>>> Handle(GetFootballMatchStatisticsQuery request, CancellationToken cancellationToken)
     {
-        try
-        {
-            _logger.LogInformation("Getting match statistics for Match: {MatchId}", request.MatchId);
+        _logger.LogInformation("Getting match statistics for Match: {MatchId}", request.MatchId);
 
-            List<FootballMatchTeamStatistics> matchStats =
-                (await _statisticsRepository.GetMatchStatisticsAsync(request.MatchId, cancellationToken)).ToList();
+        List<FootballMatchTeamStatistics> matchStats =
+            (await _statisticsRepository.GetMatchStatisticsAsync(request.MatchId, cancellationToken)).ToList();
 
-            if (matchStats.Count == 0)
-            {
-                _logger.LogWarning("Match statistics not found for Match: {MatchId}", request.MatchId);
-                return Result<List<FootballMatchTeamStatisticsDto>>.NotFound("Match statistics", request.MatchId.ToString());
-            }
+        List<FootballMatchTeamStatisticsDto> dtos = matchStats
+            .Select(ms => FootballStatisticsMapper.ToDto(ms))
+            .ToList();
 
-            List<FootballMatchTeamStatisticsDto> dtos = matchStats
-                .Select(ms => FootballStatisticsMapper.ToDto(ms))
-                .ToList();
-
-            _logger.LogInformation("Successfully retrieved match statistics for Match: {MatchId} - {Count} team statistics", request.MatchId, dtos.Count);
-            return Result<List<FootballMatchTeamStatisticsDto>>.Success(dtos);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while getting match statistics for Match: {MatchId}", request.MatchId);
-            return Result<List<FootballMatchTeamStatisticsDto>>.Failure("An error occurred while retrieving match statistics.");
-        }
+        return Result<List<FootballMatchTeamStatisticsDto>>.Success(dtos);
     }
 }

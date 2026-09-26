@@ -28,7 +28,19 @@ public interface IHockeyTeamRepository
         int pageSize,
         string searchTerm = "",
         Guid? clubId = null,
-        TeamCategory? teamCategory = null,
+        IReadOnlyCollection<TeamCategory>? teamCategories = null,
+        Guid? competitionId = null,
+        Guid? competitionDivisionId = null,
+        Guid? divisionId = null,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyDictionary<Guid, int>> CountCompetitionRostersAsync(
+        IReadOnlyCollection<Guid> teamIds,
+        Guid competitionId,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<Guid>> GetTeamIdsWithOpenRosterAsync(
+        IReadOnlyCollection<Guid> teamIds,
         CancellationToken cancellationToken = default);
 
     Task<bool> HasAnyForClubAsync(Guid clubId, CancellationToken cancellationToken = default);

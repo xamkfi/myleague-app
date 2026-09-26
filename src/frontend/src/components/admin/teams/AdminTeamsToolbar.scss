@@ -1,0 +1,145 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.admin-teams-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-teams-toolbar__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: map.get($spacing, 'base');
+  margin-bottom: map.get($spacing, 'lg');
+  padding: map.get($spacing, 'base');
+  background-color: $color-neutral-light-grey;
+  border-radius: $border-radius-default;
+  border: 1px solid $color-border;
+}
+
+.admin-teams-toolbar__count {
+  flex: 1;
+  min-width: 12rem;
+  font-size: map.get($font-sizes, 'md');
+  font-weight: map.get($font-weights, 'medium');
+  color: $color-text-primary;
+}
+
+.admin-teams-toolbar__actions {
+  display: flex;
+  gap: map.get($spacing, 'base');
+  flex-wrap: wrap;
+}
+
+.admin-teams-toolbar__primary,
+.admin-teams-toolbar__secondary {
+  padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+  border-radius: map.get($border-radius, 'sm');
+  font-size: map.get($font-sizes, 'base');
+  font-weight: map.get($font-weights, 'medium');
+  cursor: pointer;
+  white-space: nowrap;
+  @include transition(all);
+}
+
+.admin-teams-toolbar__primary {
+  background-color: $color-blue-light;
+  color: $color-white;
+  border: none;
+
+  &:hover {
+    background-color: $color-blue-medium;
+    transform: translateY(-1px);
+    box-shadow: $box-shadow-drop-1;
+  }
+}
+
+.admin-teams-toolbar__secondary {
+  background-color: $color-white;
+  color: $color-blue-light;
+  border: 1px solid $color-blue-light;
+
+  &:hover {
+    background-color: $color-blue-light;
+    color: $color-white;
+    transform: translateY(-1px);
+    box-shadow: $box-shadow-drop-1;
+  }
+}
+
+.admin-teams-toolbar__filters {
+  margin-bottom: map.get($spacing, 'lg');
+  padding: map.get($spacing, 'base');
+  background-color: $color-neutral-light-grey;
+  border-radius: $border-radius-default;
+  border: 1px solid $color-border;
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'base');
+}
+
+.admin-teams-toolbar__row {
+  display: flex;
+  gap: map.get($spacing, 'base');
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.admin-teams-toolbar__field {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'xxs');
+  min-width: 160px;
+
+  span {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-text-primary;
+  }
+
+  select,
+  input {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border: 1px solid $color-border;
+    border-radius: map.get($border-radius, 'sm');
+    background-color: $color-white;
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+    min-width: 160px;
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-light;
+      box-shadow: 0 0 0 2px rgba(74, 103, 159, 0.15);
+    }
+  }
+
+  &--search {
+    flex: 1;
+    min-width: 220px;
+
+    input {
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .admin-teams-toolbar__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-teams-toolbar__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-teams-toolbar__field,
+  .admin-teams-toolbar__field select,
+  .admin-teams-toolbar__field input {
+    width: 100%;
+    min-width: 0;
+  }
+}

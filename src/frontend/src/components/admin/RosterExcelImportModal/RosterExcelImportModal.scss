@@ -1,0 +1,42 @@
+.roster-import-modal__setup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.roster-import-modal__mode,
+.roster-import-modal__teams {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.roster-import-modal__mode {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.roster-import-modal__teams {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.roster-import-modal__auto-revert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: auto;
+  font-size: 0.875rem;
+}
+
+.modal-content.roster-import-modal .modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}

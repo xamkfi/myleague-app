@@ -13,6 +13,7 @@ import { SeasonsContent } from './components/SeasonsContent';
 import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
 import { ConfirmCompleteSeasonModal } from './components/ConfirmCompleteSeasonModal';
 import { SeasonImportModal } from './components/SeasonImportModal';
+import { FootballRosterImportModal } from './components/RosterImportModal';
 import type { FootballSeasonDto } from '../../../../api/football/footballSeasonService';
 
 const FootballSeasonsPage = () => {
@@ -49,6 +50,7 @@ const FootballSeasonsPage = () => {
   } = useSeasonsManagement();
 
   const [showImportModal, setShowImportModal] = useState<boolean>(false);
+  const [showRosterImportModal, setShowRosterImportModal] = useState<boolean>(false);
 
   /**
    * Tämä state pitää muistissa kauden, jota käyttäjä yrittää päättää.
@@ -107,7 +109,7 @@ const FootballSeasonsPage = () => {
     }
   };
 
-  if (loading && !showImportModal) {
+  if (loading && !showImportModal && !showRosterImportModal) {
     return (
       <PageTemplate title={t('football.seasons.title', 'Manage Seasons')}>
         <LoadingState />
@@ -123,6 +125,7 @@ const FootballSeasonsPage = () => {
           onCreateSeason={() => navigate('/admin/football/seasons/create')}
           onManageMatches={() => navigate('/admin/football/seasons/matches')}
           onImportSeason={() => setShowImportModal(true)}
+          onImportRoster={() => setShowRosterImportModal(true)}
         />
 
         <ErrorPopup message={error} />
@@ -172,6 +175,12 @@ const FootballSeasonsPage = () => {
         {showImportModal && (
           <SeasonImportModal
             onClose={() => setShowImportModal(false)}
+            onImported={() => void loadSeasons({ silent: true })}
+          />
+        )}
+        {showRosterImportModal && (
+          <FootballRosterImportModal
+            onClose={() => setShowRosterImportModal(false)}
             onImported={() => void loadSeasons({ silent: true })}
           />
         )}

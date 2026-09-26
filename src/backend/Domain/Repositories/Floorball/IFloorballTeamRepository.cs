@@ -51,6 +51,8 @@ public interface IFloorballTeamRepository
         Guid? clubId = null,
         Guid? divisionId = null,
         IReadOnlyCollection<Domain.Enums.Common.TeamCategory>? teamCategories = null,
+        Guid? competitionId = null,
+        Guid? competitionDivisionId = null,
         CancellationToken cancellationToken = default);
         
     /// <summary>
