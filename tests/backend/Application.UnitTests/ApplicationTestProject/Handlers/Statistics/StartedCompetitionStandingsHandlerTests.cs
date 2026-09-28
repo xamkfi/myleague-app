@@ -60,6 +60,46 @@ public class StartedCompetitionStandingsHandlerTests
     }
 
     [Fact]
+    public async Task Handle_StartedFloorballSeason_UsesTeamLogoOrClubLogoAndShortName()
+    {
+        FloorballSeason season = CreateFloorballSeason();
+        FloorballTeam bears = CreateFloorballTeam("Bears");
+        FloorballTeam wolves = CreateFloorballTeam("Wolves");
+        Uri teamLogo = new("https://cdn.example.test/bears.png");
+        Uri clubLogo = new("https://cdn.example.test/wolves.png");
+        bears.UpdateLogo(teamLogo);
+        wolves.UpdateLogo(null);
+        wolves.Club.UpdateOnlinePresence(null, clubLogo, null);
+        season.AddTeam(bears);
+        season.AddTeam(wolves);
+        season.Activate();
+
+        Mock<IClubRepository> clubs = new();
+        clubs
+            .Setup(repository => repository.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, Club>
+            {
+                [bears.ClubId] = bears.Club,
+                [wolves.ClubId] = wolves.Club
+            });
+
+        FloorballStandingsHandler handler = CreateFloorballStandingsHandler(season, clubs: clubs.Object);
+
+        Result<List<FloorballTeamSeasonStatisticsDto>> result = await handler.Handle(
+            new GetFloorballTeamStandingsQuery(season.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        List<FloorballTeamSeasonStatisticsDto> rows = result.Data ?? throw new InvalidOperationException("Standings were empty.");
+        FloorballTeamSeasonStatisticsDto bearsRow = rows.Single(row => row.TeamId == bears.Id);
+        FloorballTeamSeasonStatisticsDto wolvesRow = rows.Single(row => row.TeamId == wolves.Id);
+        bearsRow.TeamLogo.Should().Be(teamLogo);
+        bearsRow.TeamShortName.Should().Be("BEA");
+        wolvesRow.TeamLogo.Should().Be(clubLogo);
+        wolvesRow.TeamShortName.Should().Be("WOL");
+    }
+
+    [Fact]
     public async Task Handle_CompletedFloorballSeasonWithoutStatistics_ReturnsTeamsAtZero()
     {
         FloorballSeason season = CreateFloorballSeason();
@@ -402,7 +442,8 @@ public class StartedCompetitionStandingsHandlerTests
     private static FloorballStandingsHandler CreateFloorballStandingsHandler(
         FloorballCompetition competition,
         FloorballTournament? withGroups = null,
-        IFloorballTeamRepository? teams = null)
+        IFloorballTeamRepository? teams = null,
+        IClubRepository? clubs = null)
     {
         Mock<IFloorballStatisticsRepository> statistics = new();
         statistics
@@ -417,11 +458,18 @@ public class StartedCompetitionStandingsHandlerTests
             .Setup(repository => repository.GetByIdWithGroupsAsNoTrackingAsync(competition.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(withGroups);
 
+        Mock<IFloorballMatchRepository> matches = new();
+        matches
+            .Setup(repository => repository.GetByCompetitionIdAsync(competition.Id))
+            .ReturnsAsync(Array.Empty<Domain.Entities.Floorball.Matches.FloorballMatch>());
+
         return new FloorballStandingsHandler(
             statistics.Object,
             competitions.Object,
             tournaments.Object,
             teams ?? new Mock<IFloorballTeamRepository>().Object,
+            clubs ?? EmptyClubs(),
+            matches.Object,
             Mock.Of<ILogger<FloorballStandingsHandler>>());
     }
 
@@ -442,11 +490,18 @@ public class StartedCompetitionStandingsHandlerTests
             .Setup(repository => repository.GetByIdWithGroupsAsNoTrackingAsync(competition.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(withGroups);
 
+        Mock<IFootballMatchRepository> matches = new();
+        matches
+            .Setup(repository => repository.GetByCompetitionIdAsync(competition.Id))
+            .ReturnsAsync(Array.Empty<Domain.Entities.Football.Matches.FootballMatch>());
+
         return new FootballStandingsHandler(
             statistics.Object,
             competitions.Object,
             tournaments.Object,
             new Mock<IFootballTeamRepository>().Object,
+            EmptyClubs(),
+            matches.Object,
             Mock.Of<ILogger<FootballStandingsHandler>>());
     }
 
@@ -477,14 +532,20 @@ public class StartedCompetitionStandingsHandlerTests
             .Setup(repository => repository.GetByIdWithGroupsAsNoTrackingAsync(competition.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(withGroups);
 
+        Mock<IFloorballMatchRepository> matches = new();
+        matches
+            .Setup(repository => repository.GetByCompetitionIdAsync(competition.Id))
+            .ReturnsAsync(Array.Empty<Domain.Entities.Floorball.Matches.FloorballMatch>());
+
         return new FloorballSummaryHandler(
             statistics.Object,
             new Mock<IFloorballPlayerRepository>().Object,
             teams ?? new Mock<IFloorballTeamRepository>().Object,
-            new Mock<IFloorballMatchRepository>().Object,
+            matches.Object,
             competitions.Object,
             tournaments.Object,
             new Mock<IPersonRepository>().Object,
+            EmptyClubs(),
             Mock.Of<ILogger<FloorballSummaryHandler>>());
     }
 
@@ -512,15 +573,30 @@ public class StartedCompetitionStandingsHandlerTests
             .Setup(repository => repository.GetByIdWithGroupsAsNoTrackingAsync(competition.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(withGroups);
 
+        Mock<IFootballMatchRepository> matches = new();
+        matches
+            .Setup(repository => repository.GetByCompetitionIdAsync(competition.Id))
+            .ReturnsAsync(Array.Empty<Domain.Entities.Football.Matches.FootballMatch>());
+
         return new FootballSummaryHandler(
             statistics.Object,
             new Mock<IFootballPlayerRepository>().Object,
-            new Mock<IFootballMatchRepository>().Object,
+            matches.Object,
             competitions.Object,
             tournaments.Object,
             teams ?? new Mock<IFootballTeamRepository>().Object,
             new Mock<IPersonRepository>().Object,
+            EmptyClubs(),
             Mock.Of<ILogger<FootballSummaryHandler>>());
+    }
+
+    private static IClubRepository EmptyClubs()
+    {
+        Mock<IClubRepository> clubs = new();
+        clubs
+            .Setup(repository => repository.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, Club>());
+        return clubs.Object;
     }
 
     private static GetHockeyCompetitionStandingsHandler CreateHockeyCompetitionHandler(
@@ -545,10 +621,16 @@ public class StartedCompetitionStandingsHandlerTests
             .Setup(repository => repository.GetNamesByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(names);
 
+        Mock<IHockeyMatchRepository> matches = new();
+        matches
+            .Setup(repository => repository.GetByCompetitionIdAsync(competition.Id))
+            .ReturnsAsync(Array.Empty<Domain.Entities.Hockey.Matches.HockeyMatch>());
+
         return new GetHockeyCompetitionStandingsHandler(
             statistics.Object,
             competitions.Object,
             teams.Object,
+            matches.Object,
             Mock.Of<ILogger<GetHockeyCompetitionStandingsHandler>>());
     }
 
@@ -578,6 +660,7 @@ public class StartedCompetitionStandingsHandlerTests
             statistics.Object,
             competitions.Object,
             teams.Object,
+            new Mock<IHockeyMatchRepository>().Object,
             Mock.Of<ILogger<GetHockeyTournamentGroupStandingsHandler>>());
     }
 }

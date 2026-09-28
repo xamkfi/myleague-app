@@ -138,27 +138,6 @@ export async function importSeason(
     }
   }
 
-  const totalPlayerOps = payload.teams.reduce((sum, team) => sum + (team.players?.length ?? 0), 0);
-  if (totalPlayerOps > 0) {
-    let playerIndex = 0;
-    for (const team of payload.teams) {
-      const teamId = teamIdByName.get(team.name);
-      if (!teamId || !team.players?.length) continue;
-      playerIndex = await importTeamPlayers(
-        team.name,
-        teamId,
-        team.players,
-        hockeyPlayerAdapters,
-        summary,
-        callbacks,
-        playerIndex,
-        totalPlayerOps,
-        checkAbort,
-      );
-      if (summary.aborted) return summary;
-    }
-  }
-
   if (checkAbort()) return summary;
   let season: HockeySeasonDto;
   try {
@@ -235,6 +214,28 @@ export async function importSeason(
     }
   }
 
+  const totalPlayerOps = payload.teams.reduce((sum, team) => sum + (team.players?.length ?? 0), 0);
+  if (totalPlayerOps > 0) {
+    const playerAdapters = createHockeySeasonPlayerAdapters(season.id);
+    let playerIndex = 0;
+    for (const team of payload.teams) {
+      const teamId = teamIdByName.get(team.name);
+      if (!teamId || !team.players?.length) continue;
+      playerIndex = await importTeamPlayers(
+        team.name,
+        teamId,
+        team.players,
+        playerAdapters,
+        summary,
+        callbacks,
+        playerIndex,
+        totalPlayerOps,
+        checkAbort,
+      );
+      if (summary.aborted) return summary;
+    }
+  }
+
   for (let index = 0; index < payload.matches.length; index += 1) {
     if (checkAbort()) return summary;
     const match = payload.matches[index];
@@ -287,7 +288,7 @@ export async function revertImport(
   records: SeasonImportCreatedRecord[],
   callbacks: Pick<SeasonImportCallbacks, 'onStep' | 'onError'>,
 ): Promise<{ deleted: number; failed: number }> {
-  return revertCreatedRecords(records, deleteHockeyRecord, callbacks);
+  return revertCreatedRecords(records, (record) => deleteHockeyRecord(record, records), callbacks);
 }
 
 function toIsoDateTime(dateOnly: string): string {
@@ -341,7 +342,8 @@ async function findExistingTeam(name: string): Promise<{ id: string; name: strin
   }
 }
 
-const hockeyPlayerAdapters: SeasonImportPlayerAdapters = {
+function createHockeySeasonPlayerAdapters(competitionId: string): SeasonImportPlayerAdapters {
+  return {
   defaultPosition: 'Center',
   normalizePosition: (position) => {
     if (position && HOCKEY_POSITION_SET.has(position)) return position;
@@ -352,7 +354,7 @@ const hockeyPlayerAdapters: SeasonImportPlayerAdapters = {
   },
   loadRoster: async (teamId) => {
     try {
-      const team = await hockeyTeamService.getById(teamId);
+      const team = await hockeyTeamService.getById(teamId, competitionId);
       const snapshot = emptyRosterSnapshot();
       for (const player of team.roster ?? []) {
         snapshot.playerIds.add(player.playerId);
@@ -360,7 +362,9 @@ const hockeyPlayerAdapters: SeasonImportPlayerAdapters = {
       }
       const players = await hockeyPlayerService.getAllPages({ teamId });
       for (const player of players) {
-        if (player.personId) snapshot.personIds.add(player.personId);
+        if (snapshot.playerIds.has(player.id) && player.personId) {
+          snapshot.personIds.add(player.personId);
+        }
       }
       return snapshot;
     } catch {
@@ -393,11 +397,22 @@ const hockeyPlayerAdapters: SeasonImportPlayerAdapters = {
     }
   },
   addPlayerToTeam: async (teamId, playerId, position, jerseyNumber) => {
-    await hockeyTeamService.addPlayer(teamId, playerId, position as HockeyPosition, jerseyNumber);
+    await hockeyTeamService.addPlayer(
+      teamId,
+      playerId,
+      position as HockeyPosition,
+      jerseyNumber,
+      'Active',
+      competitionId,
+    );
   },
-};
+  };
+}
 
-async function deleteHockeyRecord(record: SeasonImportCreatedRecord): Promise<void> {
+async function deleteHockeyRecord(
+  record: SeasonImportCreatedRecord,
+  records: SeasonImportCreatedRecord[],
+): Promise<void> {
   switch (record.kind) {
     case 'match':
       await hockeyMatchService.setStatus(record.id, 'Cancelled');
@@ -405,9 +420,11 @@ async function deleteHockeyRecord(record: SeasonImportCreatedRecord): Promise<vo
     case 'season':
       await hockeySeasonService.cancel(record.id);
       return;
-    case 'team-player':
-      await hockeyTeamService.removePlayer(record.teamId, record.playerId);
+    case 'team-player': {
+      const season = records.find((item) => item.kind === 'season');
+      await hockeyTeamService.removePlayer(record.teamId, record.playerId, season?.id ?? null);
       return;
+    }
     case 'player':
       await hockeyPlayerService.delete(record.id);
       return;

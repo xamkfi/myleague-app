@@ -57,6 +57,13 @@ public class HockeyCompetitionRules : IEquatable<HockeyCompetitionRules>
             StandingRules, RosterRules, VideoReviewRules, ContactRules);
     }
 
+    public HockeyCompetitionRules WithStandingRules(HockeyStandingRules standingRules)
+    {
+        ArgumentNullException.ThrowIfNull(standingRules);
+        return new HockeyCompetitionRules(Name, RuleBookVersion, RuleBookSource, MatchRules,
+            standingRules, RosterRules, VideoReviewRules, ContactRules);
+    }
+
     public override bool Equals(object? obj) => Equals(obj as HockeyCompetitionRules);
 
     public bool Equals(HockeyCompetitionRules? other)

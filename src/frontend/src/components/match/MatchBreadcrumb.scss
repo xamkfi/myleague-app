@@ -11,6 +11,11 @@
   gap: 0.5rem;
   border-radius: map.get($border-radius, 'lg') map.get($border-radius, 'lg') 0 0;
 
+  @media (max-width: 480px) {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.75rem;
+  }
+
   .season-link {
     color: rgba(255, 255, 255, 0.75);
     text-decoration: none;

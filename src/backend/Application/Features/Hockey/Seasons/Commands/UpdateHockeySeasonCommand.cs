@@ -15,4 +15,6 @@ public record UpdateHockeySeasonCommand(
     DateTime EndDate,
     string? SeasonCode,
     TeamCategory TeamCategory,
-    string? LogoUrl = null) : IRequest<Result<HockeySeasonDto>>;
+    string? LogoUrl = null,
+    int TeamsAdvancing = 0,
+    IReadOnlyList<StandingSortCriterion>? RankingCriteria = null) : IRequest<Result<HockeySeasonDto>>;

@@ -37,6 +37,7 @@ function HockeyTeamPage() {
   const [clubLogo, setClubLogo] = useState<string | null>(null);
   const [competitionLink, setCompetitionLink] = useState<{ name: string; path: string } | null>(null);
   const [matches, setMatches] = useState<HockeyMatchDto[]>([]);
+  const [competitionId, setCompetitionId] = useState<string | null>(null);
   const [teamNames, setTeamNames] = useState<Map<string, string>>(new Map());
   const [playerNames, setPlayerNames] = useState<Map<string, string>>(new Map());
   const [playerStats, setPlayerStats] = useState<HockeyPlayerCompetitionStatisticsDto[]>([]);
@@ -54,7 +55,6 @@ function HockeyTeamPage() {
         return;
       }
       const matchList = await hockeyMatchService.getByTeam(selected.id);
-      setMatches(matchList);
       const latestCompetitionId = matchList
         .filter((match) => match.competitionId)
         .slice()
@@ -62,6 +62,8 @@ function HockeyTeamPage() {
           new Date(right.scheduledStartTime).getTime() - new Date(left.scheduledStartTime).getTime(),
         )[0]?.competitionId ?? null;
       const seasonId = isGuid(requestedSeasonId) ? requestedSeasonId : latestCompetitionId;
+      setCompetitionId(seasonId);
+      setMatches(seasonId ? matchList.filter((match) => match.competitionId === seasonId) : matchList);
       let scoped = selected;
       if (seasonId) {
         try {
@@ -117,11 +119,12 @@ function HockeyTeamPage() {
       return;
     }
     try {
-      setMatches(await hockeyMatchService.getByTeam(team.id));
+      const matchList = await hockeyMatchService.getByTeam(team.id);
+      setMatches(competitionId ? matchList.filter((match) => match.competitionId === competitionId) : matchList);
     } catch {
       /* keep last known scores */
     }
-  }, [team]);
+  }, [team, competitionId]);
 
   const hasLiveMatches = shouldRefreshHockeyMatches(matches);
   useIntervalWhen(hasLiveMatches, () => {

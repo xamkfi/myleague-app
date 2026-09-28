@@ -1,4 +1,5 @@
 import './LeagueStanding.scss';
+import '../TournamentGroupStandingsTable/TournamentGroupStandingsTable.scss';
 import type {
   FloorballPlayerSeasonStatisticsDto,
   FloorballGoalieSeasonStatisticsDto,
@@ -190,6 +191,7 @@ export default function LeagueStanding({
 
   const renderStandingsTable = () => {
     const data: LeagueTeamStanding[] = seasonSummary?.teamStandings || [];
+    const teamsAdvancing = seasonSummary?.teamsAdvancing ?? 0;
 
     if (!seasonSummary || data.length === 0) {
       return (
@@ -201,6 +203,7 @@ export default function LeagueStanding({
     }
 
     return (
+      <>
       <table className="standing-table">
         <colgroup>
           <col className="rank-col" />
@@ -220,19 +223,25 @@ export default function LeagueStanding({
           {data.map((team, index) => {
             const form = Array.isArray(team.lastFiveForm) ? team.lastFiveForm : [];
             const rank = index + 1;
+            const isQualifying = teamsAdvancing > 0 && rank <= teamsAdvancing;
 
             return (
               <tr
                 key={team.id}
-                className="clickable-row"
+                className={`clickable-row${isQualifying ? ' qualifying-row' : ''}`}
                 onClick={() => navigateToTeam(team.teamId)}
+                title={isQualifying ? t('seasonStandings.qualifyingHint') : undefined}
               >
-                <td className="rank-col">{rank}</td>
+                <td className="rank-col">
+                  {isQualifying && <span className="qualifying-marker" aria-hidden="true" />}
+                  {rank}
+                </td>
                 <td className="team-col">
                   <div className="team-info">
                     <TeamLogoMark
                       logo={team.teamLogo}
                       name={team.teamName}
+                      mark={team.teamShortName}
                       imageClassName="logo-image"
                       fallbackClassName="logo-empty"
                     />
@@ -272,6 +281,13 @@ export default function LeagueStanding({
           })}
         </tbody>
       </table>
+      {teamsAdvancing > 0 && (
+        <div className="qualifying-legend">
+          <span className="qualifying-legend__swatch" aria-hidden="true" />
+          <span>{t('seasonStandings.qualifyingLegend', { count: teamsAdvancing })}</span>
+        </div>
+      )}
+      </>
     );
   };
 

@@ -15,6 +15,7 @@ using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
 using Application.Features.Floorball.Statistics.Queries;
 using Domain.Entities.Floorball.Statistics;
+using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -30,6 +31,8 @@ public class GetTeamStandingsHandler : IRequestHandler<GetFloorballTeamStandings
     private readonly IFloorballCompetitionRepository _competitionRepository;
     private readonly IFloorballTournamentRepository _tournamentRepository;
     private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IClubRepository _clubRepository;
+    private readonly IFloorballMatchRepository _matchRepository;
     private readonly ILogger<GetTeamStandingsHandler> _logger;
 
     /// <summary>
@@ -39,18 +42,23 @@ public class GetTeamStandingsHandler : IRequestHandler<GetFloorballTeamStandings
     /// <param name="competitionRepository">The competition repository</param>
     /// <param name="tournamentRepository">The tournament repository</param>
     /// <param name="teamRepository">The team repository</param>
+    /// <param name="clubRepository">The club repository</param>
     /// <param name="logger">The logger</param>
     public GetTeamStandingsHandler(
         IFloorballStatisticsRepository statisticsRepository,
         IFloorballCompetitionRepository competitionRepository,
         IFloorballTournamentRepository tournamentRepository,
         IFloorballTeamRepository teamRepository,
+        IClubRepository clubRepository,
+        IFloorballMatchRepository matchRepository,
         ILogger<GetTeamStandingsHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
         _competitionRepository = competitionRepository;
         _tournamentRepository = tournamentRepository;
         _teamRepository = teamRepository;
+        _clubRepository = clubRepository;
+        _matchRepository = matchRepository;
         _logger = logger;
     }
 
@@ -79,6 +87,8 @@ public class GetTeamStandingsHandler : IRequestHandler<GetFloorballTeamStandings
                 _competitionRepository,
                 _tournamentRepository,
                 _teamRepository,
+                _clubRepository,
+                _matchRepository,
                 cancellationToken);
 
             _logger.LogInformation("Successfully retrieved team standings for Season: {SeasonId} - {Count} teams", request.CompetitionId, standingsDtos.Count);

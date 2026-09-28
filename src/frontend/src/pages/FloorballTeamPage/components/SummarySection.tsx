@@ -10,7 +10,15 @@ import { useNavigate } from 'react-router-dom'
 interface SummarySectionProps {
    team: FloorballTeam
    matches: FloorballMatchDto[]
+   seasonId?: string | null
+}
 
+function matchesInSeason(matches: FloorballMatchDto[], seasonId?: string | null): FloorballMatchDto[] {
+   if (!seasonId) {
+      return matches;
+   }
+
+   return matches.filter((match) => match.competitionId === seasonId);
 }
 
 function selectUpcomingMatches(
@@ -30,7 +38,7 @@ function selectUpcomingMatches(
    });
 }
 
-export default function SummarySection({ team, matches }: SummarySectionProps) {
+export default function SummarySection({ team, matches, seasonId }: SummarySectionProps) {
    const { t } = useTranslation();
    const [seasons, setSeasons] = useState<FloorballSeasonDto[] | null>(null);
    const navigate = useNavigate();
@@ -58,9 +66,11 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
       }
    }, [todaysMatches, fetchTodaysMatches, fetchSeasons]);
 
-   const hasTodaysMatches = (todaysMatches?.length ?? 0) > 0;
-   const upcomingMatches = selectUpcomingMatches(matches, todaysMatches);
-   const finishedMatches = matches
+   const seasonMatches = matchesInSeason(matches, seasonId);
+   const seasonTodaysMatches = todaysMatches ? matchesInSeason(todaysMatches, seasonId) : todaysMatches;
+   const hasTodaysMatches = (seasonTodaysMatches?.length ?? 0) > 0;
+   const upcomingMatches = selectUpcomingMatches(seasonMatches, seasonTodaysMatches);
+   const finishedMatches = seasonMatches
       .filter((match) => match.status === 'Completed')
       .sort((left, right) => new Date(right.scheduledDateTime).getTime() - new Date(left.scheduledDateTime).getTime())
       .slice(0, 5);
@@ -69,14 +79,14 @@ export default function SummarySection({ team, matches }: SummarySectionProps) {
       <div>
          {(hasTodaysMatches || upcomingMatches.length > 0) && (
          <div className="summary-container">
-            {hasTodaysMatches && todaysMatches && (
+            {hasTodaysMatches && seasonTodaysMatches && (
                <div>
                   <div className="summary-header">
                      {t('teamUserPage.todaysMatches')}
                   </div>
                   
                   {seasons?.map((season) => {
-                     const todaysSeasonMatches = todaysMatches.filter(match => match.competitionId === season.id);
+                     const todaysSeasonMatches = seasonTodaysMatches.filter(match => match.competitionId === season.id);
                      
                      if (todaysSeasonMatches.length === 0) return null;
                      

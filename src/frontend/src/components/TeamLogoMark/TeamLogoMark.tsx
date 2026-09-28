@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 import { teamMarkLabel } from '../../utils/teamMarkLabel';
 
 interface TeamLogoMarkProps {
   logo?: string | null;
   name: string;
+  mark?: string | null;
   imageClassName: string;
   fallbackClassName: string;
 }
@@ -11,11 +13,12 @@ interface TeamLogoMarkProps {
 export default function TeamLogoMark({
   logo,
   name,
+  mark,
   imageClassName,
   fallbackClassName,
 }: TeamLogoMarkProps) {
   const [failed, setFailed] = useState(false);
-  const trimmedLogo = logo?.trim() ?? '';
+  const trimmedLogo = resolveLogoUrl(logo) ?? '';
 
   useEffect(() => {
     setFailed(false);
@@ -32,9 +35,11 @@ export default function TeamLogoMark({
     );
   }
 
+  const shortName = mark?.trim() ?? '';
+
   return (
     <span className={fallbackClassName} aria-hidden="true">
-      {teamMarkLabel(name) || '·'}
+      {shortName || teamMarkLabel(name) || '·'}
     </span>
   );
 }

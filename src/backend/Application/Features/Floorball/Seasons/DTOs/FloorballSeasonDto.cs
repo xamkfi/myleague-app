@@ -42,5 +42,7 @@ namespace Application.Features.Floorball.Seasons.DTOs
         IReadOnlyCollection<FloorballMatchDto> Matches,
         FloorballMatchRulesDto MatchRules,
         TeamCategory TeamCategory,
-        string? LogoUrl);
+        string? LogoUrl,
+        int TeamsAdvancing = 0,
+        IReadOnlyList<StandingSortCriterion>? RankingCriteria = null);
 }

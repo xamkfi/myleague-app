@@ -3,6 +3,8 @@ using Application.Features.Football.Seasons.Commands;
 using Application.Features.Football.Seasons.DTOs;
 using Application.Features.Football.Seasons.Mappings;
 using Domain.Entities.Football.Competitions;
+using Domain.Entities.Football.Matches;
+using Domain.Entities.Football.Teams;
 using Domain.Repositories.Football;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -63,7 +65,8 @@ public class UpdateFootballSeasonHandler : IRequestHandler<UpdateFootballSeasonC
             FootballSeasonDto seasonDto = FootballSeasonMapper.ToDto(
                 existingSeason,
                 seasonDivisionDtos,
-                seasonMatches: Array.Empty<Domain.Entities.Football.Matches.FootballMatch>());
+                seasonTeams: Array.Empty<FootballTeam>(),
+                seasonMatches: Array.Empty<FootballMatch>());
             _logger.LogInformation("Successfully updated football season with ID: {SeasonId}", existingSeason.Id);
 
             return Result<FootballSeasonDto>.Success(seasonDto);

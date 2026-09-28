@@ -15,4 +15,9 @@ public class FootballSeasonStatisticsSummaryDto
     public int TotalGames { get; set; }
     public int TotalGoals { get; set; }
     public decimal AverageGoalsPerGame { get; set; }
+
+    /// <summary>
+    /// How many teams at the top of the table advance. Zero means no highlight.
+    /// </summary>
+    public int TeamsAdvancing { get; set; }
 }

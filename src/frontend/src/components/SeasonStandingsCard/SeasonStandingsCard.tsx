@@ -8,6 +8,7 @@ export interface SeasonStandingsRow {
   teamId: string;
   teamName: string;
   teamLogo?: string | null;
+  teamShortName?: string | null;
   goalDifference: number;
   points: number;
 }
@@ -32,6 +33,7 @@ interface SeasonStandingsCardProps {
   seasonName: string;
   standings: SeasonStandingsRow[];
   standingsLoading: boolean;
+  teamsAdvancing?: number;
   isDark?: boolean;
   maxRows?: number;
   labels: SeasonStandingsCardLabels;
@@ -44,6 +46,7 @@ export default function SeasonStandingsCard({
   seasonName,
   standings,
   standingsLoading,
+  teamsAdvancing = 0,
   isDark = false,
   maxRows = 10,
   labels,
@@ -91,12 +94,16 @@ export default function SeasonStandingsCard({
             </span>
           </div>
           {displayStandings.map((team, index) => (
-            <div key={team.teamId} className="fb-standings-table__row">
+            <div
+              key={team.teamId}
+              className={`fb-standings-table__row${teamsAdvancing > 0 && index < teamsAdvancing ? ' fb-standings-table__row--qualifying' : ''}`}
+            >
               <span className="fb-standings-table__rank">{index + 1}.</span>
               <span className="fb-standings-table__team">
                 <TeamLogoMark
                   logo={team.teamLogo}
                   name={team.teamName}
+                  mark={team.teamShortName}
                   imageClassName="fb-team-logo"
                   fallbackClassName="fb-team-logo fb-team-logo--empty"
                 />

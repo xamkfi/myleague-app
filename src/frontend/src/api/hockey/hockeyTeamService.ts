@@ -121,6 +121,7 @@ export const hockeyTeamService = {
       jerseyNumber?: number | null;
       rosterStatus: string;
       captainRole: string;
+      competitionId?: string | null;
     },
   ): Promise<HockeyTeamPlayerDto> =>
     hockeyRequest<HockeyTeamPlayerDto>(

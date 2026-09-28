@@ -51,6 +51,7 @@ export interface FootballTournamentGroupStandingDto {
   teamId: string;
   teamName: string;
   teamLogo: string | null;
+  teamShortName?: string | null;
   gamesPlayed: number;
   wins: number;
   draws: number;

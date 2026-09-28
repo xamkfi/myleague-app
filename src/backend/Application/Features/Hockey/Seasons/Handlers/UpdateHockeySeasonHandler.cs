@@ -57,6 +57,7 @@ public class UpdateHockeySeasonHandler : IRequestHandler<UpdateHockeySeasonComma
             season.UpdateSeasonCode(request.SeasonCode);
             season.UpdateTeamCategory(request.TeamCategory);
             season.UpdateLogo(CompetitionLogoUrl.Parse(request.LogoUrl));
+            season.UpdateStandingsSettings(request.TeamsAdvancing, request.RankingCriteria);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("UpdateHockeySeason completed for season {SeasonId}", request.SeasonId);

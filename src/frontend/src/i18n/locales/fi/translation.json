@@ -1,4 +1,28 @@
 {
+  "seasonStandings": {
+    "title": "Sarjataulukko",
+    "teamsAdvancing": "Jatkoon pääsevät joukkueet",
+    "teamsAdvancingHint": "Taulukon kärki näkyy vihreänä. Nolla ei korosta rivejä.",
+    "ranking": "Järjestysperusteet",
+    "rankingHint": "Ylin peruste ratkaisee ensin. Tasatilanteessa käytetään seuraavaa.",
+    "moveUp": "Siirrä ylös",
+    "moveDown": "Siirrä alas",
+    "add": "Lisää",
+    "remove": "Poista",
+    "qualifyingLegend": "Vihreällä korostetut joukkueet etenevät jatkoon ({{count}}).",
+    "qualifyingHint": "Etenee jatkoon",
+    "criteria": {
+      "Points": "Pisteet",
+      "GoalDifference": "Koko sarjan maaliero",
+      "GoalsFor": "Koko sarjan tehdyt maalit",
+      "GoalsAgainst": "Päästetyt maalit",
+      "HeadToHeadPoints": "Keskinäinen ottelu",
+      "HeadToHeadGoalDifference": "Keskinäinen ottelu, maaliero",
+      "HeadToHeadGoalsFor": "Keskinäisissä otteluissa tehdyt maalit",
+      "PenaltyMinutes": "Jäähyt, vähemmän ottaneen eduksi",
+      "Draw": "Arpa"
+    }
+  },
   "matchPage": {
     "navigation": {
       "summary": "Yhteenveto",

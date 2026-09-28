@@ -1,0 +1,44 @@
+.season-standings-settings {
+  &__hint,
+  &__label {
+    display: block;
+    margin: 0 0 0.35rem;
+    color: #4b5563;
+    font-size: 0.875rem;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.25rem;
+
+    button {
+      min-width: 2rem;
+    }
+  }
+
+  &__add {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+}

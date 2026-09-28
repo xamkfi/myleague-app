@@ -192,7 +192,7 @@ function FootballPage() {
               setSeasonsData((prev) =>
                 prev.map((item) =>
                   item.season.id === season.id
-                    ? { ...item, standings, standingsLoading: false }
+                    ? { ...item, standings, standingsLoading: false, teamsAdvancing: season.teamsAdvancing ?? 0 }
                     : item,
                 ),
               );

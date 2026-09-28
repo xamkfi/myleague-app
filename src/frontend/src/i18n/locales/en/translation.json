@@ -1,4 +1,28 @@
 {
+  "seasonStandings": {
+    "title": "League table",
+    "teamsAdvancing": "Teams advancing",
+    "teamsAdvancingHint": "The top of the table is shown in green. Zero hides the highlight.",
+    "ranking": "Ranking criteria",
+    "rankingHint": "The first criterion decides the order. The next one breaks ties.",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "add": "Add",
+    "remove": "Remove",
+    "qualifyingLegend": "Teams highlighted in green advance ({{count}}).",
+    "qualifyingHint": "Advances",
+    "criteria": {
+      "Points": "Points",
+      "GoalDifference": "Overall goal difference",
+      "GoalsFor": "Overall goals scored",
+      "GoalsAgainst": "Goals conceded",
+      "HeadToHeadPoints": "Head-to-head",
+      "HeadToHeadGoalDifference": "Head-to-head goal difference",
+      "HeadToHeadGoalsFor": "Goals scored in head-to-head matches",
+      "PenaltyMinutes": "Penalty minutes, fewer is better",
+      "Draw": "Drawing of lots"
+    }
+  },
   "nav": {
     "news": "News",
     "eventCalendar": "Event calendar",

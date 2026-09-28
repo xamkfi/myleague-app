@@ -7,6 +7,8 @@ using Domain.Entities.Common;
 using Domain.Entities.Football.Competitions;
 using Domain.Entities.Football.Matches;
 using Domain.Entities.Football.Teams;
+using Domain.Enums.Common;
+using Domain.Services.Common;
 using Domain.ValueObjects.Football;
 
 namespace Application.Features.Football.Seasons.Mappings;
@@ -60,6 +62,14 @@ public static class FootballSeasonMapper
             season.StandingRules.DrawPoints,
             season.StandingRules.LossPoints);
 
+        int teamsAdvancing = 0;
+        IReadOnlyList<StandingSortCriterion> rankingCriteria = StandingSortCriteria.Default;
+        if (season is FootballSeason footballSeason)
+        {
+            teamsAdvancing = footballSeason.TeamsAdvancing;
+            rankingCriteria = footballSeason.RankingCriteria;
+        }
+
         return new FootballSeasonDto(
             season.Id,
             season.Name,
@@ -73,7 +83,9 @@ public static class FootballSeasonMapper
             matchRulesDto,
             standingRulesDto,
             season.TeamCategory,
-            CompetitionLogoUrl.ToPublicString(season.LogoUrl));
+            CompetitionLogoUrl.ToPublicString(season.LogoUrl),
+            teamsAdvancing,
+            rankingCriteria);
     }
 
     public static FootballSeason ToEntity(CreateFootballSeasonCommand command)
@@ -108,6 +120,7 @@ public static class FootballSeasonMapper
             standingRules,
             command.TeamCategory);
         season.UpdateLogo(CompetitionLogoUrl.Parse(command.LogoUrl));
+        season.UpdateStandingsSettings(command.TeamsAdvancing, command.RankingCriteria);
         return season;
     }
 
@@ -142,6 +155,10 @@ public static class FootballSeasonMapper
         }
 
         season.UpdateLogo(CompetitionLogoUrl.Parse(command.LogoUrl));
+        if (season is FootballSeason footballSeason)
+        {
+            footballSeason.UpdateStandingsSettings(command.TeamsAdvancing, command.RankingCriteria);
+        }
     }
 
     private static IEnumerable<FootballTeamSummaryDto> ToTeamSummaryDtos(

@@ -39,7 +39,8 @@ export interface FloorballTeamSeasonStatisticsDto {
   teamId: string;
   competitionId: string;
   teamName: string;
-  teamLogo: string;
+  teamLogo: string | null;
+  teamShortName?: string | null;
   seasonName: string;
   gamesPlayed: number;
   wins: number;
@@ -133,6 +134,7 @@ export interface FloorballSeasonStatisticsSummaryDto {
   totalGames: number;
   totalGoals: number;
   averageGoalsPerGame: number;
+  teamsAdvancing?: number;
 }
 
 export enum FloorballGameResult {

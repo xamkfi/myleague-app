@@ -32,6 +32,39 @@ public class HockeyDomainBehaviorTests
     }
 
     [Fact]
+    public void Activate_FromDraft_SetsActive()
+    {
+        HockeySeason season = HockeyTestHelpers.CreateSeason();
+
+        season.Activate();
+
+        season.Status.Should().Be(HockeyCompetitionStatus.Active);
+        season.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void UpdateTeamPlayer_OnDraftCompetitionRoster_UpdatesPositionAndJersey()
+    {
+        HockeySeason season = HockeyTestHelpers.CreateSeason();
+        HockeyTeam team = HockeyTestHelpers.CreateTeam();
+        HockeyPlayer player = HockeyTestHelpers.CreatePlayer();
+        team.AddPlayer(player, HockeyPosition.Center, season.Id, jerseyNumber: 10);
+
+        team.UpdateTeamPlayer(
+            player.Id,
+            HockeyPosition.Goalie,
+            31,
+            HockeyRosterStatus.Active,
+            HockeyCaptainRole.None,
+            season.Id);
+
+        HockeyTeamPlayer rosterRow = team.GetActiveRoster(season.Id).Single();
+        rosterRow.Position.Should().Be(HockeyPosition.Goalie);
+        rosterRow.JerseyNumber.Should().Be(31);
+        season.Status.Should().Be(HockeyCompetitionStatus.Draft);
+    }
+
+    [Fact]
     public void CannotModifyCompletedCompetition()
     {
         HockeySeason season = HockeyTestHelpers.CreateSeason();

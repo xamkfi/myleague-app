@@ -138,6 +138,7 @@ function HockeyPlayersPage() {
       jerseyNumber: row.jerseyNumber,
       rosterStatus: isActive ? 'Active' : 'Inactive',
       captainRole: row.captainRole,
+      competitionId: row.competitionId,
     });
     await load();
   };
