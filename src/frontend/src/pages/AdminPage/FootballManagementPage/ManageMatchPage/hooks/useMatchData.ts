@@ -1,9 +1,47 @@
 import { useState, useCallback } from 'react';
 import { footballTeamService } from '../../../../../api/football/footballTeamService';
-import { footballPlayerService, type FootballPlayerDto } from '../../../../../api/football/footballPlayerService';
+import type { FootballPlayerDto } from '../../../../../api/football/footballPlayerService';
 import { footballMatchService } from '../../../../../api/football/footballMatchService';
-import type { FootballMatchDto, FootballTeam } from '../../../../../types/football/footballTypes';
+import type { FootballMatchDto, FootballTeam, FootballTeamPlayer } from '../../../../../types/football/footballTypes';
 import type { StateUpdate } from '../components/types';
+
+function splitPlayerName(fullName: string): { firstName: string; lastName: string } {
+  const trimmed = fullName.trim();
+  const spaceIndex = trimmed.indexOf(' ');
+  if (spaceIndex === -1) {
+    return { firstName: trimmed, lastName: '' };
+  }
+  return {
+    firstName: trimmed.slice(0, spaceIndex),
+    lastName: trimmed.slice(spaceIndex + 1),
+  };
+}
+
+/** Players on this competition's active roster, not earlier seasons of the same team. */
+function rosterToPlayers(roster: FootballTeamPlayer[]): FootballPlayerDto[] {
+  return roster
+    .filter((row) => row.isActive)
+    .map((row) => {
+      const { firstName, lastName } = splitPlayerName(row.playerName);
+      return {
+        id: row.playerId,
+        personId: '',
+        person: {
+          id: '',
+          firstName,
+          lastName,
+          birthDate: '',
+          fullName: row.playerName,
+          isRegistered: false,
+        },
+        isActive: true,
+        position: row.position,
+        careerGoals: row.goals,
+        careerAssists: row.assists,
+        jerseyNumber: row.jerseyNumber,
+      };
+    });
+}
 
 interface UseMatchDataProps {
   match: FootballMatchDto;
@@ -35,32 +73,21 @@ export const useMatchData = ({
       }
 
       const [homeTeamData, awayTeamData] = await Promise.all([
-        footballTeamService.getById(match.homeTeamId),
-        footballTeamService.getById(match.awayTeamId),
+        footballTeamService.getById(match.homeTeamId, match.competitionId),
+        footballTeamService.getById(match.awayTeamId, match.competitionId),
       ]);
 
       setHomeTeam(homeTeamData);
       setAwayTeam(awayTeamData);
-
-      const [homePlayersDataRaw, awayPlayersDataRaw] = await Promise.all([
-        footballPlayerService.getByTeamId(match.homeTeamId),
-        footballPlayerService.getByTeamId(match.awayTeamId),
-      ]);
-
-      const homeRosterMap = new Map(homeTeamData?.roster?.map((tp) => [tp.playerId, tp.jerseyNumber]) || []);
-      const awayRosterMap = new Map(awayTeamData?.roster?.map((tp) => [tp.playerId, tp.jerseyNumber]) || []);
-      const homePlayersData = homePlayersDataRaw.map((p) => ({ ...p, jerseyNumber: homeRosterMap.get(p.id) }));
-      const awayPlayersData = awayPlayersDataRaw.map((p) => ({ ...p, jerseyNumber: awayRosterMap.get(p.id) }));
-
-      setHomePlayers(homePlayersData);
-      setAwayPlayers(awayPlayersData);
+      setHomePlayers(rosterToPlayers(homeTeamData.roster ?? []));
+      setAwayPlayers(rosterToPlayers(awayTeamData.roster ?? []));
     } catch (loadError) {
       console.error('Error loading team data:', loadError);
       setError('Failed to load team data');
     } finally {
       setLoading(false);
     }
-  }, [match.homeTeamId, match.awayTeamId]);
+  }, [match.homeTeamId, match.awayTeamId, match.competitionId]);
 
   const loadCurrentMatchStatus = useCallback(async () => {
     try {
