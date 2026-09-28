@@ -227,6 +227,11 @@
       "matchEnd": "Match Ended",
       "periodStart": "Period Started",
       "periodEnd": "Period Ended",
+      "periodName": "Period {{number}}",
+      "overtimeName": "Overtime",
+      "shootoutName": "Penalty shootout",
+      "overtimeShort": "OT",
+      "shootoutShort": "SO",
       "timeout": "Timeout",
       "noEvents": "No match events yet"
     },

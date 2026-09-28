@@ -1,4 +1,5 @@
 using Domain.Entities.Floorball.Competitions;
+using Domain.Services.Floorball;
 using Domain.Entities.Floorball.Matches;
 using Domain.Entities.Floorball.Matches.Events;
 using Domain.Entities.Floorball.Officials;
@@ -32,15 +33,15 @@ public static class TournamentStandingsCalculator
         public int GoalDifference => GoalsFor - GoalsAgainst;
         public int Points { get; private set; }
 
-        internal void AddResult(int scoredFor, int scoredAgainst)
+        internal void AddResult(int scoredFor, int scoredAgainst, bool wentToShootout)
         {
             GamesPlayed++;
             GoalsFor += scoredFor;
             GoalsAgainst += scoredAgainst;
+            Points += FloorballStandingPoints.ForScore(scoredFor, scoredAgainst, wentToShootout);
             if (scoredFor > scoredAgainst)
             {
                 Wins++;
-                Points += 3;
             }
             else if (scoredFor < scoredAgainst)
             {
@@ -49,7 +50,6 @@ public static class TournamentStandingsCalculator
             else
             {
                 Draws++;
-                Points += 1;
             }
         }
     }
@@ -88,11 +88,11 @@ public static class TournamentStandingsCalculator
             }
             if (homeKnown && home != null)
             {
-                home.AddResult(match.HomeScore, match.AwayScore);
+                home.AddResult(match.HomeScore, match.AwayScore, match.WentToShootout);
             }
             if (awayKnown && away != null)
             {
-                away.AddResult(match.AwayScore, match.HomeScore);
+                away.AddResult(match.AwayScore, match.HomeScore, match.WentToShootout);
             }
         }
 

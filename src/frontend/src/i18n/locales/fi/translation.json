@@ -88,6 +88,11 @@
       "matchEnd": "Ottelu päättyi",
       "periodStart": "Erä alkoi",
       "periodEnd": "Erä päättyi",
+      "periodName": "{{number}}. erä",
+      "overtimeName": "Jatkoaika",
+      "shootoutName": "Voittomaalikilpailu",
+      "overtimeShort": "JA",
+      "shootoutShort": "VM",
       "timeout": "Aikalisä",
       "noEvents": "Ei ottelutapahtumia"
     },

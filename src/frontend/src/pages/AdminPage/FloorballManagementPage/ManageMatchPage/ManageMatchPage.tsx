@@ -5,6 +5,7 @@ import { floorballMatchEventService, type RecordSaveEventRequest } from '../../.
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { timerService } from '../../../../api/common/timerService';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
+import { isFloorballOvertimePeriod, isFloorballShootoutPeriod } from '../../../../utils/floorballPeriod';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 
 // Components
@@ -389,6 +390,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
 
     try {
       setSaveLoading(true);
+      const regularPeriods: number = matchData.currentMatch.matchRules?.numberOfPeriods ?? 2;
       const payload: RecordSaveEventRequest = {
         goalieId,
         matchId: match.id,
@@ -396,8 +398,8 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         playerId: goalieId,
         periodNumber: timerContext.currentPeriod,
         timeInSeconds: currentElapsedSeconds,
-        wasInOvertime: matchWentToOvertime || timerContext.currentPeriod > 2,
-        wasInShootout: matchWentToShootout || timerContext.currentPeriod > 3,
+        wasInOvertime: matchWentToOvertime || isFloorballOvertimePeriod(timerContext.currentPeriod, regularPeriods),
+        wasInShootout: matchWentToShootout || isFloorballShootoutPeriod(timerContext.currentPeriod, regularPeriods),
       };
       await floorballMatchEventService.recordSave(payload);
       await matchEvents.loadMatchEvents();
@@ -444,8 +446,8 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         playerId: goalieId,
         periodNumber: payload.periodNumber,
         timeInSeconds: payload.timeInSeconds,
-        wasInOvertime: matchWentToOvertime || payload.periodNumber > 2,
-        wasInShootout: matchWentToShootout || payload.periodNumber > 3,
+        wasInOvertime: matchWentToOvertime || isFloorballOvertimePeriod(payload.periodNumber, matchData.currentMatch.matchRules?.numberOfPeriods ?? 2),
+        wasInShootout: matchWentToShootout || isFloorballShootoutPeriod(payload.periodNumber, matchData.currentMatch.matchRules?.numberOfPeriods ?? 2),
         count: payload.count,
       };
       await floorballMatchEventService.recordSave(request);

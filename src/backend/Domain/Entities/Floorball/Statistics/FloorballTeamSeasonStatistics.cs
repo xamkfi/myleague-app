@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Domain.Enums.Floorball;
+using Domain.Services.Floorball;
 using System.Globalization;
 
 using Domain.Entities.Floorball.Competitions;
@@ -233,6 +234,7 @@ public class FloorballTeamSeasonStatistics : BaseEntity
     /// <param name="penaltyMinutes">Penalty minutes taken</param>
     /// <param name="faceoffWins">Faceoffs won</param>
     /// <param name="faceoffAttempts">Total faceoffs taken</param>
+    /// <param name="wentToShootout">Whether the match was decided in a penalty shootout</param>
     public void UpdateAfterMatch(
         FloorballGameResult gameResult,
         bool isHomeGame,
@@ -246,7 +248,8 @@ public class FloorballTeamSeasonStatistics : BaseEntity
         int penaltyKillOpportunities = 0,
         int penaltyMinutes = 0,
         int faceoffWins = 0,
-        int faceoffAttempts = 0)
+        int faceoffAttempts = 0,
+        bool wentToShootout = false)
     {
                 GamesPlayed++;
         
@@ -259,7 +262,6 @@ public class FloorballTeamSeasonStatistics : BaseEntity
         {
             case FloorballGameResult.Win:
                 Wins++;
-                Points += 3;
                 if (isHomeGame) HomeWins++;
                 else AwayWins++;
                 break;
@@ -270,11 +272,12 @@ public class FloorballTeamSeasonStatistics : BaseEntity
                 break;
             case FloorballGameResult.Tie:
                 Ties++;
-                Points += 1;
                 break;
             default:
                 throw new ArgumentException($"Invalid game result: {gameResult}", nameof(gameResult));
         }
+
+        Points += FloorballStandingPoints.For(gameResult, wentToShootout);
 
         // Update scoring statistics
         GoalsFor += goalsFor;
@@ -355,7 +358,7 @@ public class FloorballTeamSeasonStatistics : BaseEntity
     /// </summary>
     /// <param name="gameResult">The result that was applied when the match was completed.</param>
     /// <param name="isHomeGame">Whether this team was the home team for the match being undone.</param>
-    public void UndoMatchResult(FloorballGameResult gameResult, bool isHomeGame)
+    public void UndoMatchResult(FloorballGameResult gameResult, bool isHomeGame, bool wentToShootout = false)
     {
         if (GamesPlayed > 0) GamesPlayed--;
 
@@ -363,7 +366,6 @@ public class FloorballTeamSeasonStatistics : BaseEntity
         {
             case FloorballGameResult.Win:
                 if (Wins > 0) Wins--;
-                Points = Math.Max(0, Points - 3);
                 if (isHomeGame)
                 {
                     if (HomeWins > 0) HomeWins--;
@@ -386,10 +388,11 @@ public class FloorballTeamSeasonStatistics : BaseEntity
                 break;
             case FloorballGameResult.Tie:
                 if (Ties > 0) Ties--;
-                Points = Math.Max(0, Points - 1);
                 break;
             default:
                 throw new ArgumentException($"Invalid game result: {gameResult}", nameof(gameResult));
         }
+
+        Points = Math.Max(0, Points - FloorballStandingPoints.For(gameResult, wentToShootout));
     }
 }

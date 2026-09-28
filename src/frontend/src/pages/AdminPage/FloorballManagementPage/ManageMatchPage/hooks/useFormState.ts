@@ -5,6 +5,7 @@ import {
   type RecordPenaltyEventRequest 
 } from '../../../../../api/floorball/floorballMatchEventService';
 import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
+import { isFloorballOvertimePeriod, isFloorballShootoutPeriod } from '../../../../../utils/floorballPeriod';
 import type { GoalForm, PenaltyForm, LocalClock } from '../components/types';
 
 interface UseFormStateProps {
@@ -125,8 +126,8 @@ export const useFormState = ({
         assisterId: goalForm.assisterId || undefined,
         periodNumber: clock.period,
         timeInSeconds: timeInSeconds,
-        wasInOvertime: currentMatch.wentToOvertime || clock.period > 2,
-        wasInShootout: currentMatch.wentToShootout || clock.period > 3,
+        wasInOvertime: currentMatch.wentToOvertime || isFloorballOvertimePeriod(clock.period, currentMatch.matchRules?.numberOfPeriods ?? 2),
+        wasInShootout: currentMatch.wentToShootout || isFloorballShootoutPeriod(clock.period, currentMatch.matchRules?.numberOfPeriods ?? 2),
         goalType: goalForm.goalType ?? undefined,
       };
       
