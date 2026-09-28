@@ -122,12 +122,12 @@ public class ReopenFloorballMatchHandler : IRequestHandler<ReopenFloorballMatchC
         // A reopened match was previously Completed, which means Start() succeeded and both
         // team IDs are populated. Skip the undo gracefully if a slot somehow ended up null.
         if (match.HomeTeamId.HasValue)
-            await UndoSingleTeamSeasonStatistics(match.HomeTeamId.Value, match.CompetitionId, homeResult, isHomeGame: true, cancellationToken);
+            await UndoSingleTeamSeasonStatistics(match.HomeTeamId.Value, match.CompetitionId, homeResult, isHomeGame: true, match.WentToShootout, cancellationToken);
         if (match.AwayTeamId.HasValue)
-            await UndoSingleTeamSeasonStatistics(match.AwayTeamId.Value, match.CompetitionId, awayResult, isHomeGame: false, cancellationToken);
+            await UndoSingleTeamSeasonStatistics(match.AwayTeamId.Value, match.CompetitionId, awayResult, isHomeGame: false, match.WentToShootout, cancellationToken);
     }
 
-    private async Task UndoSingleTeamSeasonStatistics(Guid teamId, Guid competitionId, FloorballGameResult result, bool isHomeGame, CancellationToken cancellationToken)
+    private async Task UndoSingleTeamSeasonStatistics(Guid teamId, Guid competitionId, FloorballGameResult result, bool isHomeGame, bool wentToShootout, CancellationToken cancellationToken)
     {
         FloorballTeamSeasonStatistics? teamStats = await _statisticsRepository.GetTeamSeasonStatisticsAsync(teamId, competitionId, cancellationToken);
         if (teamStats == null)
@@ -136,7 +136,7 @@ public class ReopenFloorballMatchHandler : IRequestHandler<ReopenFloorballMatchC
             return;
         }
 
-        teamStats.UndoMatchResult(result, isHomeGame);
+        teamStats.UndoMatchResult(result, isHomeGame, wentToShootout);
         await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
     }
 

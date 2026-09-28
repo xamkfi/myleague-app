@@ -40,8 +40,3 @@ export function getTeamName(teamId: string, match: FloorballMatchDto): string {
   if (teamId === match.awayTeamId) return match.awayTeamName ?? 'TBD';
   return 'Unknown Team';
 }
-
-export function getPeriodName(period: number): string {
-  if (period <= 3) return `${period}${period === 1 ? 'ST' : period === 2 ? 'ND' : 'RD'} PERIOD`;
-  return `${period === 4 ? 'OVERTIME' : `PERIOD ${period}`}`;
-} 

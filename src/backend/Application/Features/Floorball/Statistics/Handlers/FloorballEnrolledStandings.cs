@@ -9,6 +9,7 @@ using Domain.Enums.Floorball;
 using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Domain.Services.Common;
+using Domain.Services.Floorball;
 
 namespace Application.Features.Floorball.Statistics.Handlers;
 
@@ -53,6 +54,7 @@ internal static class FloorballEnrolledStandings
         }
 
         await ApplyMarksAsync(rows, knownTeams, teams, clubs, cancellationToken);
+        await ApplyMatchPointsAsync(rows, competitionId, matches);
         IReadOnlyList<StandingSortCriterion> criteria = CriteriaFor(competition);
         IReadOnlyList<StandingMatchResult> played = await LoadResultsAsync(competitionId, criteria, matches);
         return StandingTableOrder.Sort(
@@ -67,6 +69,39 @@ internal static class FloorballEnrolledStandings
                 row.PenaltyMinutes,
                 row.TeamName),
             played);
+    }
+
+    /// <summary>
+    /// Replaces stored points with the current match-point rules so already finished
+    /// matches follow regulation 3, shootout win 2, shootout loss 1, and draw 1.
+    /// Playoff matches stay out of the league table.
+    /// </summary>
+    private static async Task ApplyMatchPointsAsync(
+        List<FloorballTeamSeasonStatisticsDto> rows,
+        Guid competitionId,
+        IFloorballMatchRepository matches)
+    {
+        if (rows.Count == 0)
+            return;
+
+        Dictionary<Guid, int> pointsByTeam = new();
+        IEnumerable<FloorballMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
+            .Where(match => match.Status == FloorballMatchStatus.Completed
+                && match.PlayoffRound is null
+                && match.HomeTeamId is Guid
+                && match.AwayTeamId is Guid);
+        foreach (FloorballMatch match in validMatches)
+        {
+            Guid homeId = match.HomeTeamId!.Value;
+            Guid awayId = match.AwayTeamId!.Value;
+            pointsByTeam[homeId] = pointsByTeam.GetValueOrDefault(homeId)
+                + FloorballStandingPoints.ForScore(match.HomeScore, match.AwayScore, match.WentToShootout);
+            pointsByTeam[awayId] = pointsByTeam.GetValueOrDefault(awayId)
+                + FloorballStandingPoints.ForScore(match.AwayScore, match.HomeScore, match.WentToShootout);
+        }
+
+        foreach (FloorballTeamSeasonStatisticsDto row in rows)
+            row.Points = pointsByTeam.GetValueOrDefault(row.TeamId);
     }
 
     private static async Task<IReadOnlyList<StandingMatchResult>> LoadResultsAsync(
@@ -87,8 +122,8 @@ internal static class FloorballEnrolledStandings
         {
             Guid homeId = match.HomeTeamId!.Value;
             Guid awayId = match.AwayTeamId!.Value;
-            int homePoints = match.HomeScore > match.AwayScore ? 3 : match.HomeScore == match.AwayScore ? 1 : 0;
-            int awayPoints = match.AwayScore > match.HomeScore ? 3 : match.HomeScore == match.AwayScore ? 1 : 0;
+            int homePoints = FloorballStandingPoints.ForScore(match.HomeScore, match.AwayScore, match.WentToShootout);
+            int awayPoints = FloorballStandingPoints.ForScore(match.AwayScore, match.HomeScore, match.WentToShootout);
             results.Add(new StandingMatchResult(homeId, awayId, match.HomeScore, match.AwayScore, homePoints, awayPoints));
         }
 

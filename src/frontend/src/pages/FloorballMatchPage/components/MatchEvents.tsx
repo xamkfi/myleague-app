@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type {
   FloorballMatchDto,
   FloorballGoalEventDto,
   FloorballPenaltyEventDto,
   FloorballTeamPlayer,
 } from '../../../types/floorball/floorballTypes';
-import { getPeriodName, getTeamInitials } from './matchUtils';
-import { formatMatchEventTime } from '../../../utils/matchEventFormat';
+import { getTeamInitials } from './matchUtils';
+import { formatEventTimeMmSs, formatMatchEventTime } from '../../../utils/matchEventFormat';
+import { getFloorballPeriodKind, type FloorballPeriodKind } from '../../../utils/floorballPeriod';
 import { getFloorballGoalTypeInfo } from '../../../utils/floorballGoalType';
 import { floorballTeamService } from '../../../api/floorball/floorballTeamService';
 import { getPlayerPath } from '../../../utils/sportRoutes';
@@ -24,7 +26,27 @@ interface MatchEventsProps {
 }
 
 export default function MatchEvents({ match }: MatchEventsProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const numberOfPeriods: number = match.matchRules?.numberOfPeriods ?? 2;
+
+  const periodKind = (period: number): FloorballPeriodKind =>
+    getFloorballPeriodKind(period, numberOfPeriods, match.wentToOvertime, match.wentToShootout);
+
+  const periodTitle = (period: number): string => {
+    const kind: FloorballPeriodKind = periodKind(period);
+    if (kind === 'shootout') return t('matchPage.events.shootoutName');
+    if (kind === 'overtime') return t('matchPage.events.overtimeName');
+    return t('matchPage.events.periodName', { number: period });
+  };
+
+  const eventClock = (period: number, timeInSeconds: number): string => {
+    const kind: FloorballPeriodKind = periodKind(period);
+    const clock: string = formatEventTimeMmSs(timeInSeconds);
+    if (kind === 'shootout') return `${t('matchPage.events.shootoutShort')} - ${clock}`;
+    if (kind === 'overtime') return `${t('matchPage.events.overtimeShort')} - ${clock}`;
+    return formatMatchEventTime(period, timeInSeconds);
+  };
   const [homeRoster, setHomeRoster] = useState<FloorballTeamPlayer[]>([]);
   const [awayRoster, setAwayRoster] = useState<FloorballTeamPlayer[]>([]);
 
@@ -239,8 +261,8 @@ export default function MatchEvents({ match }: MatchEventsProps) {
     const goalTypeInfo = getFloorballGoalTypeInfo(event.goalType);
     return (
       <div className={`event-row ${home ? 'home-event' : 'away-event'} goal`}>
-        <span className="event-time" title={`Period ${event.periodNumber}`}>
-          {formatMatchEventTime(event.periodNumber, event.timeInSeconds)}
+        <span className="event-time" title={periodTitle(event.periodNumber)}>
+          {eventClock(event.periodNumber, event.timeInSeconds)}
         </span>
         <span className="event-type-badge goal" aria-label="Goal" title="Goal">
           <span className="badge-letter" aria-hidden>G</span>
@@ -282,8 +304,8 @@ export default function MatchEvents({ match }: MatchEventsProps) {
     const description: string = (event.description ?? '').trim();
     return (
       <div className={`event-row ${home ? 'home-event' : 'away-event'} penalty`}>
-        <span className="event-time" title={`Period ${event.periodNumber}`}>
-          {formatMatchEventTime(event.periodNumber, event.timeInSeconds)}
+        <span className="event-time" title={periodTitle(event.periodNumber)}>
+          {eventClock(event.periodNumber, event.timeInSeconds)}
         </span>
         <span className="event-type-badge penalty" aria-label="Penalty" title="Penalty">
           <span className="badge-letter" aria-hidden>P</span>
@@ -318,7 +340,7 @@ export default function MatchEvents({ match }: MatchEventsProps) {
         .map((period) => (
           <div key={period} className="period-section">
             <div className="period-header">
-              <span className="period-name">{getPeriodName(period)}</span>
+              <span className="period-name">{periodTitle(period)}</span>
             </div>
             <div className="period-events">
               {eventsByPeriod[period].map((eventItem, index) => (
