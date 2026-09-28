@@ -4,14 +4,13 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { hockeyTeamService } from '../../../../api/hockey/hockeyTeamService';
-import { hockeyPlayerService } from '../../../../api/hockey/hockeyPlayerService';
 import {
   HOCKEY_LINE_TYPES,
   type HockeyLineType,
   type HockeyTeamDto,
   type HockeyTeamPlayerDto,
 } from '../../../../types/hockey/hockeyTypes';
-import { loadPersonNameMap } from '../../../../utils/hockeyLookups';
+import { loadHockeyRosterNameMaps } from '../../../../utils/hockeyLookups';
 import './EditRosterPage.scss';
 
 function EditHockeyLinesPage() {
@@ -42,18 +41,8 @@ function EditHockeyLinesPage() {
       if (!selectedLineId && loaded.lines.length > 0) {
         setSelectedLineId(loaded.lines[0].id);
       }
-      const people = await Promise.all(
-        loaded.roster.map(async (row) => {
-          try {
-            const player = await hockeyPlayerService.getById(row.playerId);
-            const names = await loadPersonNameMap([player.personId]);
-            return [row.playerId, names.get(player.personId) ?? row.playerId.slice(0, 8)] as const;
-          } catch {
-            return [row.playerId, row.playerId.slice(0, 8)] as const;
-          }
-        }),
-      );
-      setPlayerNames(new Map(people));
+      const rosterNames = await loadHockeyRosterNameMaps([loaded]);
+      setPlayerNames(rosterNames.byPlayerId);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load lines');

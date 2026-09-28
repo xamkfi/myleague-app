@@ -11,6 +11,7 @@ import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { hockeyTeamService } from '../../../../api/hockey/hockeyTeamService';
 import { hockeyPlayerService } from '../../../../api/hockey/hockeyPlayerService';
 import { personApi } from '../../../../api/admin/personApi';
+import { mapWithConcurrency } from '../../../../utils/mapWithConcurrency';
 import type { HockeyPosition, HockeyTeamDto } from '../../../../types/hockey/hockeyTypes';
 import type { ActivePlayerLicence } from '../../../../types/activePlayerLicence';
 import PlayersTable, { type HockeyPlayerListRow } from './components/PlayersTable';
@@ -294,16 +295,14 @@ async function loadPersonNames(
   personIds: string[],
 ): Promise<Map<string, { firstName: string; lastName: string }>> {
   const unique = [...new Set(personIds.filter(Boolean))];
-  const entries = await Promise.all(
-    unique.map(async (personId) => {
-      try {
-        const person = await personApi.getById(personId);
-        return [personId, { firstName: person.firstName, lastName: person.lastName }] as const;
-      } catch {
-        return [personId, { firstName: personId.slice(0, 8), lastName: '' }] as const;
-      }
-    }),
-  );
+  const entries = await mapWithConcurrency(unique, async (personId) => {
+    try {
+      const person = await personApi.getById(personId);
+      return [personId, { firstName: person.firstName, lastName: person.lastName }] as const;
+    } catch {
+      return [personId, { firstName: personId.slice(0, 8), lastName: '' }] as const;
+    }
+  });
   return new Map(entries);
 }
 

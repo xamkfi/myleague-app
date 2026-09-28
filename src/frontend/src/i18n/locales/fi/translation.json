@@ -297,7 +297,7 @@
       "rule": "Sääntö",
       "subtitle": "Hallitse sääntöjä",
       "confirmPublish": "Haluatko varmasti julkaista säännöt?",
-      "confirmDiscardChanges": "Sinulla on tallentamattomia muutoksia.",
+      "confirmDiscardChanges": "Haluatko hylätä tallentamattomat muutokset?",
       "section": "Sääntöosio",
       "allSections": "Kaikki osiot",
       "unknownSection": "Tuntematon osio",
@@ -3746,5 +3746,8 @@
     "codeSent": "Kirjautumiskoodi on lähetetty sähköpostiisi.",
     "unexpectedError": "Odottamaton virhe tapahtui.",
     "logout": "Kirjaudu ulos"
+  },
+  "seasonImport": {
+    "existingCount": "(+{{count}} olemassa)"
   }
 }

@@ -69,6 +69,40 @@ export function getSeasonDryRunCounts(payload: SeasonImportPayloadBase): SeasonI
   };
 }
 
+export interface SeasonImportContents {
+  clubs: string[];
+  divisions: string[];
+  teams: string[];
+  players: string[];
+  season: string[];
+  assignments: string[];
+  matches: string[];
+}
+
+export function listSeasonImportContents(payload: SeasonImportPayloadBase): SeasonImportContents {
+  const players: string[] = [];
+  for (const team of payload.teams) {
+    for (const player of team.players ?? []) {
+      const name = `${player.firstName ?? ''} ${player.lastName ?? ''}`.trim() || player.personEmail || team.name;
+      players.push(`${name} · ${team.name}`);
+    }
+  }
+
+  return {
+    clubs: payload.clubs.map((club) => (club.city ? `${club.name} · ${club.city}` : club.name)),
+    divisions: payload.divisions.map((division) => division.name),
+    teams: payload.teams.map((team) => {
+      const sameName = team.clubName.trim().toLowerCase() === team.name.trim().toLowerCase();
+      const identity = sameName ? team.name : `${team.name} (${team.clubName})`;
+      return `${identity} · ${team.divisionName}`;
+    }),
+    players,
+    season: [`${payload.season.name} · ${payload.season.startDate} – ${payload.season.endDate}`],
+    assignments: payload.teams.map((team) => `${team.name} → ${team.divisionName}`),
+    matches: payload.matches.map((match) => matchLabel(match)),
+  };
+}
+
 export function buildSeasonImportPreview(payload: SeasonImportPayloadBase): SeasonImportPreview {
   const matchCountByTeam = new Map<string, number>();
   for (const team of payload.teams) {

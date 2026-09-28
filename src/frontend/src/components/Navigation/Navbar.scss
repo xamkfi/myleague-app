@@ -93,33 +93,63 @@
     gap: map.get($spacing, 'base');
   }
 
-  // Mobile hamburger button
+  // Mobile hamburger button. Bars share one center so the open state is a true X.
   &-mobile-toggle {
     display: none;
-    flex-direction: column;
+    position: relative;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.5rem;
+    padding: 0;
     z-index: 1001;
+    color: $color-white;
 
     .hamburger-line {
-      width: 25px;
-      height: 3px;
-      background: $color-white;
-      margin: 3px 0;
-      transition: 0.3s;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 22px;
+      height: 2px;
+      margin: 0;
+      border-radius: 999px;
+      background: currentColor;
       transform-origin: center;
+      transition:
+        transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.2s ease;
 
-      &.open {
+      &:nth-child(1) {
+        transform: translate(-50%, -50%) translateY(-7px) rotate(0deg);
+      }
+
+      &:nth-child(2) {
+        opacity: 1;
+        transform: translate(-50%, -50%) scaleX(1);
+      }
+
+      &:nth-child(3) {
+        transform: translate(-50%, -50%) translateY(7px) rotate(0deg);
+      }
+    }
+
+    &.is-open {
+      .hamburger-line {
         &:nth-child(1) {
-          transform: rotate(45deg) translate(5px, 5px);
+          transform: translate(-50%, -50%) translateY(0) rotate(45deg);
         }
+
         &:nth-child(2) {
           opacity: 0;
+          transform: translate(-50%, -50%) scaleX(0);
         }
+
         &:nth-child(3) {
-          transform: rotate(-45deg) translate(7px, -6px);
+          transform: translate(-50%, -50%) translateY(0) rotate(-45deg);
         }
       }
     }
@@ -134,7 +164,7 @@
     height: calc(100vh - #{$navbar-height});
     background: var(--brand-darkest, #{$color-blue-darkest});
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 999;
     overflow-y: auto;
 
@@ -403,5 +433,12 @@
     &-mobile-menu {
       display: none;
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar-mobile-toggle .hamburger-line,
+  .navbar-mobile-menu {
+    transition: none;
   }
 } 

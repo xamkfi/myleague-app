@@ -506,10 +506,7 @@
     overflow: hidden;
   }
 
-  &__summary-row {
-    display: flex;
-    justify-content: space-between;
-    padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+  &__summary-group {
     border-bottom: 1px solid $color-border;
 
     &:last-child {
@@ -517,9 +514,55 @@
     }
   }
 
+  &__summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: map.get($spacing, 'sm');
+    width: 100%;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'base');
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: default;
+    }
+
+    &:not(:disabled):hover {
+      background: $color-neutral-light-grey;
+    }
+  }
+
   &__summary-label {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
     color: $color-text-muted;
     font-size: map.get($font-sizes, 'sm');
+
+    i {
+      width: 0.75rem;
+      font-size: 0.7rem;
+      color: $color-text-muted;
+    }
+  }
+
+  &__summary-details {
+    margin: 0;
+    padding: 0.15rem map.get($spacing, 'base') map.get($spacing, 'sm') 2rem;
+    max-height: 14rem;
+    overflow-y: auto;
+    list-style: disc;
+    color: $color-text-primary;
+    font-size: map.get($font-sizes, 'sm');
+
+    li + li {
+      margin-top: 0.2rem;
+    }
   }
 
   &__summary-value {

@@ -53,6 +53,23 @@ export default function RuleForm({
         sectionId,
         order,
     });
+    const contentEditedByUserRef = useRef(false);
+
+    const handleContentChange = (
+        value: string,
+        source?: "user" | "api" | "silent",
+    ): void => {
+        if (source !== "user" && !contentEditedByUserRef.current) {
+            initialFormRef.current = {
+                ...initialFormRef.current,
+                contentHtml: value,
+            };
+        } else if (source === "user") {
+            contentEditedByUserRef.current = true;
+        }
+
+        onContentChange(value);
+    };
 
     const hasChanges =
         contentHtml !== initialFormRef.current.contentHtml ||
@@ -185,7 +202,7 @@ export default function RuleForm({
                         <div className="rules-management-page__quill-wrapper">
                             <RichTextEditor
                                 value={contentHtml}
-                                onChange={onContentChange}
+                                onChange={handleContentChange}
                                 showMatchInsert={false}
                                 placeholder={t(
                                     "rules.admin.typeRulePlaceholder",

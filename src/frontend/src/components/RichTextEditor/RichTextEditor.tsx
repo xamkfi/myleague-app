@@ -35,8 +35,11 @@ export type RichTextEditorVariant = 'default' | 'compact';
 export interface RichTextEditorProps {
   /** Current HTML content. */
   value: string;
-  /** Called with the updated HTML whenever the user edits the content. */
-  onChange: (value: string) => void;
+  /**
+   * Called with the updated HTML. The second argument is Quill's change
+   * source: `user` for typing, `api` / `silent` for programmatic updates.
+   */
+  onChange: (value: string, source?: QuillChangeSource) => void;
   /** Optional callback fired while an image is being uploaded. */
   onUploadingChange?: (uploading: boolean) => void;
   /** Show the "Lisää otteluita / Add matches" button above the editor. */
@@ -194,7 +197,7 @@ const RichTextEditor = ({
       // 'api' and must not trigger a destructive confirm dialog.
       if (source !== 'user') {
         lastUserHtmlRef.current = content;
-        onChange(content);
+        onChange(content, source);
         return;
       }
 
@@ -210,7 +213,7 @@ const RichTextEditor = ({
 
       if (deletedImages.length === 0 && deletedMatches.length === 0) {
         lastUserHtmlRef.current = content;
-        onChange(content);
+        onChange(content, source);
         return;
       }
 
@@ -220,13 +223,13 @@ const RichTextEditor = ({
         // because Quill has already applied the deletion internally; the
         // re-insert call below puts the embeds back in.
         lastUserHtmlRef.current = content;
-        onChange(content);
+        onChange(content, source);
         reinsertElements(deletedImages, deletedMatches);
         return;
       }
 
       lastUserHtmlRef.current = content;
-      onChange(content);
+      onChange(content, source);
     },
     [confirmDeletions, onChange, reinsertElements]
   );

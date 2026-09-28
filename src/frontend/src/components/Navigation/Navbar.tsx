@@ -180,14 +180,14 @@ function Navbar() {
       </div>
 
       <button
-        className="navbar-mobile-toggle"
+        className={`navbar-mobile-toggle${isMobileMenuOpen ? ' is-open' : ''}`}
         onClick={toggleMobileMenu}
         aria-label="Toggle mobile menu"
         aria-expanded={isMobileMenuOpen}
       >
-        <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
-        <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
-        <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
       </button>
 
       <div className={`navbar-mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>

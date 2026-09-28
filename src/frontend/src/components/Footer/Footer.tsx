@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { fetchBackendVersion } from '../../api/version/versionService';
-import { footerContactService } from '../../api/common/footerContactService';
+import { fetchBackendVersion, peekBackendVersion } from '../../api/version/versionService';
+import { footerContactService, peekFooterContacts } from '../../api/common/footerContactService';
 import type { FooterContact } from '../../types/admin/footerContactTypes';
 import FooterLinkList from './FooterLinkList';
 import mahlLogo from '../../assets/logos/Mahl_primary_V3.svg';
@@ -30,15 +30,40 @@ function GitHubIcon() {
 
 export default function Footer() {
   const { t } = useTranslation();
-  const [backendVersion, setBackendVersion] = useState<string>('...');
-  const [entries, setEntries] = useState<FooterContact[]>([]);
+  const [backendVersion, setBackendVersion] = useState<string>(
+    () => peekBackendVersion() ?? '...',
+  );
+  const [entries, setEntries] = useState<FooterContact[]>(() => peekFooterContacts() ?? []);
 
   useEffect(() => {
-    fetchBackendVersion().then(setBackendVersion);
-    footerContactService
-      .getAll()
-      .then(setEntries)
-      .catch(() => setEntries([]));
+    let active = true;
+
+    if (!peekBackendVersion()) {
+      void fetchBackendVersion().then((version) => {
+        if (active) {
+          setBackendVersion(version);
+        }
+      });
+    }
+
+    if (!peekFooterContacts()) {
+      footerContactService
+        .getAll()
+        .then((items) => {
+          if (active) {
+            setEntries(items);
+          }
+        })
+        .catch(() => {
+          if (active) {
+            setEntries([]);
+          }
+        });
+    }
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const sports = entries.filter((item) => item.section === 'SeasonalSports');

@@ -8,6 +8,7 @@ import type {
 import { HOCKEY_POSITIONS, type HockeyPosition } from '../../types/hockey/hockeyTypes';
 import type { RosterAssignment, RosterTeamOption } from '../common/rosterExcelParser';
 import { importRosterAssignments, revertRosterRecords, snapshotFromRosterRows } from '../common/rosterImportRunner';
+import { loadHockeyPlayersById } from '../../utils/hockeyLookups';
 import { hockeyPlayerService } from './hockeyPlayerService';
 import { hockeySeasonService } from './hockeySeasonService';
 import { hockeyTeamService } from './hockeyTeamService';
@@ -66,20 +67,16 @@ function createHockeyRosterAdapters(competitionId: string): SeasonImportPlayerAd
     loadRoster: async (teamId) => {
       try {
         const team = await hockeyTeamService.getById(teamId, competitionId);
-        const rows = await Promise.all(
-          (team.roster ?? []).map(async (player) => {
-            try {
-              const profile = await hockeyPlayerService.getById(player.playerId);
-              return {
-                playerId: player.playerId,
-                jerseyNumber: player.jerseyNumber,
-                personId: profile.personId,
-              };
-            } catch {
-              return { playerId: player.playerId, jerseyNumber: player.jerseyNumber };
-            }
-          }),
+        const roster = team.roster ?? [];
+        const profiles = await loadHockeyPlayersById(roster.map((player) => player.playerId));
+        const personIdByPlayerId = new Map(
+          profiles.flatMap((profile) => (profile ? [[profile.id, profile.personId] as const] : [])),
         );
+        const rows = roster.map((player) => ({
+          playerId: player.playerId,
+          jerseyNumber: player.jerseyNumber,
+          personId: personIdByPlayerId.get(player.playerId),
+        }));
         return snapshotFromRosterRows(rows);
       } catch {
         return snapshotFromRosterRows([]);
