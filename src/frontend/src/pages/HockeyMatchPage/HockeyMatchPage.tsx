@@ -70,7 +70,10 @@ function HockeyMatchPage() {
       setMatch(loaded);
       setTeams(teamList);
       setTeamNames(await loadTeamNameMap(teamList));
-      const names = await loadHockeyRosterNameMaps(teamList);
+      const participating = teamList.filter(
+        (team) => team.id === loaded.homeTeamId || team.id === loaded.awayTeamId,
+      );
+      const names = await loadHockeyRosterNameMaps(participating);
       setPlayerNames(names.byTeamPlayerId);
       setCareerPlayerNames(names.byPlayerId);
       const box = await hockeyStatisticsService.getMatchStats(id).catch(() => null);

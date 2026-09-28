@@ -7,7 +7,6 @@ import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { hockeyTeamService } from '../../../../api/hockey/hockeyTeamService';
-import { hockeyPlayerService } from '../../../../api/hockey/hockeyPlayerService';
 import {
   HOCKEY_CAPTAIN_ROLES,
   HOCKEY_POSITIONS,
@@ -16,7 +15,7 @@ import {
   type HockeyTeamDto,
   type HockeyTeamPlayerDto,
 } from '../../../../types/hockey/hockeyTypes';
-import { loadPersonNameMap } from '../../../../utils/hockeyLookups';
+import { loadHockeyRosterNameMaps } from '../../../../utils/hockeyLookups';
 import JerseyNumberSelect, { collectJerseyNumbers } from '../../../../components/JerseyNumberSelect';
 import { HockeyRosterImportModal } from '../HockeySeasonsPage/components/RosterImportModal';
 import './EditRosterPage.scss';
@@ -44,18 +43,8 @@ function EditHockeyRosterPage() {
       setLoading(true);
       const team = await hockeyTeamService.getById(teamId, selectedCompetitionId || null);
       setCurrentTeam(team);
-      const nameEntries = await Promise.all(
-        team.roster.map(async (row) => {
-          try {
-            const player = await hockeyPlayerService.getById(row.playerId);
-            const people = await loadPersonNameMap([player.personId]);
-            return [row.playerId, people.get(player.personId) ?? row.playerId.slice(0, 8)] as const;
-          } catch {
-            return [row.playerId, row.playerId.slice(0, 8)] as const;
-          }
-        }),
-      );
-      setNames(new Map(nameEntries));
+      const rosterNames = await loadHockeyRosterNameMaps([team]);
+      setNames(rosterNames.byPlayerId);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load team data');

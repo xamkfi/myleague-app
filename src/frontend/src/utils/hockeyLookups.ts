@@ -2,28 +2,39 @@ import { personApi } from '../api/admin/personApi';
 import { clubService } from '../api/common/clubService';
 import { hockeyPlayerService } from '../api/hockey/hockeyPlayerService';
 import { hockeyTeamService } from '../api/hockey/hockeyTeamService';
+import { mapWithConcurrency } from './mapWithConcurrency';
 import type {
   HockeyMatchDto,
   HockeyMatchEventDto,
   HockeyMatchStatisticsDto,
   HockeyPlayerCompetitionStatisticsDto,
+  HockeyPlayerDto,
   HockeyTeamCompetitionStatisticsDto,
   HockeyTeamDto,
 } from '../types/hockey/hockeyTypes';
 
 export async function loadPersonNameMap(personIds: string[]): Promise<Map<string, string>> {
   const unique = [...new Set(personIds.filter(Boolean))];
-  const entries = await Promise.all(
-    unique.map(async (personId) => {
-      try {
-        const person = await personApi.getById(personId);
-        return [personId, person.fullName || `${person.firstName} ${person.lastName}`.trim()] as const;
-      } catch {
-        return [personId, personId.slice(0, 8)] as const;
-      }
-    }),
-  );
+  const entries = await mapWithConcurrency(unique, async (personId) => {
+    try {
+      const person = await personApi.getById(personId);
+      return [personId, person.fullName || `${person.firstName} ${person.lastName}`.trim()] as const;
+    } catch {
+      return [personId, personId.slice(0, 8)] as const;
+    }
+  });
   return new Map(entries);
+}
+
+export async function loadHockeyPlayersById(playerIds: string[]): Promise<Array<HockeyPlayerDto | null>> {
+  const unique = [...new Set(playerIds.filter(Boolean))];
+  return mapWithConcurrency(unique, async (playerId) => {
+    try {
+      return await hockeyPlayerService.getById(playerId);
+    } catch {
+      return null;
+    }
+  });
 }
 
 export async function loadClubNameMap(): Promise<Map<string, string>> {
@@ -75,15 +86,7 @@ export async function loadHockeyRosterNameMaps(teams: HockeyTeamDto[]): Promise<
   byTeamPlayerId: Map<string, string>;
 }> {
   const playerIds = [...new Set(teams.flatMap((team) => team.roster.map((row) => row.playerId)))];
-  const profiles = await Promise.all(
-    playerIds.map(async (playerId) => {
-      try {
-        return await hockeyPlayerService.getById(playerId);
-      } catch {
-        return null;
-      }
-    }),
-  );
+  const profiles = await loadHockeyPlayersById(playerIds);
   const valid = profiles.filter((player) => player !== null);
   const people = await loadPersonNameMap(valid.map((player) => player.personId));
   const byPlayerId = new Map<string, string>();

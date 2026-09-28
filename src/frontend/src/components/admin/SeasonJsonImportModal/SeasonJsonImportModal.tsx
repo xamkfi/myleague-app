@@ -1,11 +1,13 @@
 import { useCallback, useMemo, useRef, useState, type ChangeEvent, type DragEvent, type ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { listSeasonImportContents } from '../../../api/common/seasonImportShared';
 import type {
   SeasonImportCallbacks,
   SeasonImportCreatedRecord,
   SeasonImportDryRunCounts,
   SeasonImportError,
+  SeasonImportPayloadBase,
   SeasonImportPreview,
   SeasonImportStep,
   SeasonImportSummary,
@@ -50,8 +52,8 @@ type ModalState<TPayload> =
   | { kind: 'invalid'; errors: string[] }
   | { kind: 'preview'; payload: TPayload; counts: SeasonImportDryRunCounts; fileName: string }
   | { kind: 'running'; payload: TPayload; counts: SeasonImportDryRunCounts; fileName: string }
-  | { kind: 'success'; summary: SeasonImportSummary }
-  | { kind: 'failed'; summary: SeasonImportSummary; fatalMessage: string }
+  | { kind: 'success'; summary: SeasonImportSummary; payload: TPayload }
+  | { kind: 'failed'; summary: SeasonImportSummary; fatalMessage: string; payload: TPayload }
   | { kind: 'reverting'; records: SeasonImportCreatedRecord[] }
   | { kind: 'reverted'; deleted: number; failed: number };
 
@@ -60,7 +62,7 @@ interface LogLine {
   status: 'created' | 'existing' | 'skipped' | 'info' | 'error';
 }
 
-export function SeasonJsonImportModal<TPayload>({
+export function SeasonJsonImportModal<TPayload extends SeasonImportPayloadBase>({
   onClose,
   onImported,
   i18nPrefix,
@@ -241,12 +243,12 @@ export function SeasonJsonImportModal<TPayload>({
           ? t(`${i18nPrefix}.aborted`, 'Import was cancelled by the user.')
           : summary.errors.find((item) => item.fatal)?.message ??
             t(`${i18nPrefix}.unknownError`, 'Import failed for an unknown reason.');
-        setState({ kind: 'failed', summary, fatalMessage });
+        setState({ kind: 'failed', summary, fatalMessage, payload: effectivePayload });
         if (autoRevertRef.current && summary.created.length > 0) {
           await runRevert(summary.created);
         }
       } else {
-        setState({ kind: 'success', summary });
+        setState({ kind: 'success', summary, payload: effectivePayload });
         onImported();
       }
     },
@@ -479,34 +481,7 @@ export function SeasonJsonImportModal<TPayload>({
                 )}
               </span>
             </label>
-            <table className="import-modal__counts">
-              <tbody>
-                <tr>
-                  <th>{t(`${i18nPrefix}.counts.clubs`, 'Clubs')}</th>
-                  <td>{state.counts.clubs}</td>
-                </tr>
-                <tr>
-                  <th>{t(`${i18nPrefix}.counts.divisions`, 'Divisions')}</th>
-                  <td>{state.counts.divisions}</td>
-                </tr>
-                <tr>
-                  <th>{t(`${i18nPrefix}.counts.teams`, 'Teams')}</th>
-                  <td>{state.counts.teams}</td>
-                </tr>
-                <tr>
-                  <th>{t(`${i18nPrefix}.counts.players`, 'Players')}</th>
-                  <td>{state.counts.players}</td>
-                </tr>
-                <tr>
-                  <th>{t(`${i18nPrefix}.counts.assignments`, 'Season assignments')}</th>
-                  <td>{state.counts.assignments}</td>
-                </tr>
-                <tr>
-                  <th>{t(`${i18nPrefix}.counts.matches`, 'Matches')}</th>
-                  <td>{state.counts.matches}</td>
-                </tr>
-              </tbody>
-            </table>
+            <ImportCountList rows={planCountRows(state.payload, state.counts, t, i18nPrefix)} />
             <SeasonImportPreviewPanel
               preview={getPreview(state.payload)}
               seasonName={seasonNameOverride.trim() || getSeasonName(state.payload)}
@@ -545,7 +520,7 @@ export function SeasonJsonImportModal<TPayload>({
               <i className="fas fa-check-circle"></i>
             </div>
             <h4>{t(`${i18nPrefix}.successTitle`, 'Import complete')}</h4>
-            <ImportSummaryView summary={state.summary} t={t} i18nPrefix={i18nPrefix} />
+            <ImportSummaryView summary={state.summary} payload={state.payload} t={t} i18nPrefix={i18nPrefix} />
             {renderLog()}
           </div>
         );
@@ -557,7 +532,7 @@ export function SeasonJsonImportModal<TPayload>({
             </div>
             <h4>{t(`${i18nPrefix}.failedTitle`, 'Import failed')}</h4>
             <p className="warning-text">{state.fatalMessage}</p>
-            <ImportSummaryView summary={state.summary} t={t} i18nPrefix={i18nPrefix} />
+            <ImportSummaryView summary={state.summary} payload={state.payload} t={t} i18nPrefix={i18nPrefix} />
             {state.summary.created.length > 0 && (
               <p className="import-modal__note">
                 {t(
@@ -831,63 +806,156 @@ const SeasonImportPreviewPanel = ({
   );
 };
 
+type ImportTranslate = ReturnType<typeof useTranslation>['t'];
+
+interface ImportCountRow {
+  id: string;
+  label: string;
+  value: ReactElement;
+  lines: string[];
+}
+
+function resultValue(created: number, existing: number, t: ImportTranslate): ReactElement {
+  return (
+    <>
+      <strong>{created}</strong>
+      {existing > 0 && (
+        <span className="import-modal__summary-existing">
+          {' '}
+          {t('seasonImport.existingCount', '(+{{count}} existing)', { count: existing })}
+        </span>
+      )}
+    </>
+  );
+}
+
+function planCountRows(
+  payload: SeasonImportPayloadBase,
+  counts: SeasonImportDryRunCounts,
+  t: ImportTranslate,
+  i18nPrefix: string,
+): ImportCountRow[] {
+  const contents = listSeasonImportContents(payload);
+  return [
+    countRow('clubs', t(`${i18nPrefix}.counts.clubs`, 'Clubs'), counts.clubs, contents.clubs),
+    countRow('divisions', t(`${i18nPrefix}.counts.divisions`, 'Divisions'), counts.divisions, contents.divisions),
+    countRow('teams', t(`${i18nPrefix}.counts.teams`, 'Teams'), counts.teams, contents.teams),
+    countRow('players', t(`${i18nPrefix}.counts.players`, 'Players'), counts.players, contents.players),
+    countRow('assignments', t(`${i18nPrefix}.counts.assignments`, 'Season assignments'), counts.assignments, contents.assignments),
+    countRow('matches', t(`${i18nPrefix}.counts.matches`, 'Matches'), counts.matches, contents.matches),
+  ];
+}
+
+function countRow(id: string, label: string, count: number, lines: string[]): ImportCountRow {
+  return {
+    id,
+    label,
+    value: <strong>{count}</strong>,
+    lines,
+  };
+}
+
 const ImportSummaryView = ({
   summary,
+  payload,
   t,
   i18nPrefix,
 }: {
   summary: SeasonImportSummary;
-  t: ReturnType<typeof useTranslation>['t'];
+  payload: SeasonImportPayloadBase;
+  t: ImportTranslate;
   i18nPrefix: string;
-}) => (
-  <div className="import-modal__summary">
-    <SummaryRow
-      label={t(`${i18nPrefix}.counts.clubs`, 'Clubs')}
-      created={summary.clubsCreated}
-      existing={summary.clubsExisting}
-    />
-    <SummaryRow
-      label={t(`${i18nPrefix}.counts.divisions`, 'Divisions')}
-      created={summary.divisionsCreated}
-      existing={summary.divisionsExisting}
-    />
-    <SummaryRow
-      label={t(`${i18nPrefix}.counts.teams`, 'Teams')}
-      created={summary.teamsCreated}
-      existing={summary.teamsExisting}
-    />
-    <SummaryRow
-      label={t(`${i18nPrefix}.counts.players`, 'Players')}
-      created={summary.playersCreated}
-      existing={summary.playersExisting}
-    />
-    <SummaryRow
-      label={t(`${i18nPrefix}.counts.season`, 'Season')}
-      created={summary.seasonId ? 1 : 0}
-      existing={0}
-    />
-    <SummaryRow
-      label={t(`${i18nPrefix}.counts.assignments`, 'Season assignments')}
-      created={summary.seasonAssignments}
-      existing={0}
-    />
-    <SummaryRow
-      label={t(`${i18nPrefix}.counts.matches`, 'Matches')}
-      created={summary.matchesCreated}
-      existing={0}
-    />
-  </div>
-);
+}): ReactElement => {
+  const contents = listSeasonImportContents(payload);
+  const rows: ImportCountRow[] = [
+    {
+      id: 'clubs',
+      label: t(`${i18nPrefix}.counts.clubs`, 'Clubs'),
+      value: resultValue(summary.clubsCreated, summary.clubsExisting, t),
+      lines: contents.clubs,
+    },
+    {
+      id: 'divisions',
+      label: t(`${i18nPrefix}.counts.divisions`, 'Divisions'),
+      value: resultValue(summary.divisionsCreated, summary.divisionsExisting, t),
+      lines: contents.divisions,
+    },
+    {
+      id: 'teams',
+      label: t(`${i18nPrefix}.counts.teams`, 'Teams'),
+      value: resultValue(summary.teamsCreated, summary.teamsExisting, t),
+      lines: contents.teams,
+    },
+    {
+      id: 'players',
+      label: t(`${i18nPrefix}.counts.players`, 'Players'),
+      value: resultValue(summary.playersCreated, summary.playersExisting, t),
+      lines: contents.players,
+    },
+    {
+      id: 'season',
+      label: t(`${i18nPrefix}.counts.season`, 'Season'),
+      value: resultValue(summary.seasonId ? 1 : 0, 0, t),
+      lines: contents.season,
+    },
+    {
+      id: 'assignments',
+      label: t(`${i18nPrefix}.counts.assignments`, 'Season assignments'),
+      value: resultValue(summary.seasonAssignments, 0, t),
+      lines: contents.assignments,
+    },
+    {
+      id: 'matches',
+      label: t(`${i18nPrefix}.counts.matches`, 'Matches'),
+      value: resultValue(summary.matchesCreated, 0, t),
+      lines: contents.matches,
+    },
+  ];
 
-const SummaryRow = ({ label, created, existing }: { label: string; created: number; existing: number }) => (
-  <div className="import-modal__summary-row">
-    <span className="import-modal__summary-label">{label}</span>
-    <span className="import-modal__summary-value">
-      <strong>{created}</strong>
-      {existing > 0 && <span className="import-modal__summary-existing"> (+{existing} existing)</span>}
-    </span>
-  </div>
-);
+  return <ImportCountList rows={rows} />;
+};
+
+function ImportCountList({ rows }: { rows: ImportCountRow[] }): ReactElement {
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+
+  return (
+    <div className="import-modal__summary">
+      {rows.map((row) => {
+        const expanded = open[row.id] === true;
+        const canExpand = row.lines.length > 0;
+        return (
+          <div key={row.id} className="import-modal__summary-group">
+            <button
+              type="button"
+              className="import-modal__summary-row"
+              aria-expanded={canExpand ? expanded : undefined}
+              disabled={!canExpand}
+              onClick={() => {
+                if (!canExpand) return;
+                setOpen((current) => ({ ...current, [row.id]: !expanded }));
+              }}
+            >
+              <span className="import-modal__summary-label">
+                {canExpand && (
+                  <i className={`fas fa-chevron-${expanded ? 'down' : 'right'}`} aria-hidden="true" />
+                )}
+                {row.label}
+              </span>
+              <span className="import-modal__summary-value">{row.value}</span>
+            </button>
+            {expanded && (
+              <ul className="import-modal__summary-details">
+                {row.lines.map((line, index) => (
+                  <li key={`${row.id}-${index}`}>{line}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function glyph(status: LogLine['status']): string {
   switch (status) {

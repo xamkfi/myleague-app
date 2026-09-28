@@ -337,7 +337,7 @@ public class HockeyTournamentController : BaseApiController
         }
 
         return HandleResult(
-            await _mediator.Send(new GetHockeyTournamentByIdQuery(tournamentId), cancellationToken),
+            await _mediator.Send(new GetHockeyTournamentByIdQuery(tournamentId, IncludeDrafts: true), cancellationToken),
             "Team removed from hockey tournament successfully",
             "Failed to remove team from hockey tournament");
     }

@@ -2,13 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
-import { hockeyPlayerService } from '../../../../api/hockey/hockeyPlayerService';
 import { hockeyTeamService } from '../../../../api/hockey/hockeyTeamService';
 import type { HockeyPosition, HockeyTeamDto } from '../../../../types/hockey/hockeyTypes';
 import SearchField from '../../../../components/SearchField';
 import Button from '../../../../components/Button/Button';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
-import { loadPersonNameMap } from '../../../../utils/hockeyLookups';
+import { loadHockeyPlayersById, loadPersonNameMap } from '../../../../utils/hockeyLookups';
 import './AddPlayerToRosterPage.scss';
 
 interface AvailableHockeyPlayerRow {
@@ -58,15 +57,7 @@ function AddHockeyPlayerToRosterPage() {
       }
 
       const playerIds = [...unique.keys()];
-      const profiles = await Promise.all(
-        playerIds.map(async (playerId) => {
-          try {
-            return await hockeyPlayerService.getById(playerId);
-          } catch {
-            return null;
-          }
-        }),
-      );
+      const profiles = await loadHockeyPlayersById(playerIds);
       const valid = profiles.filter((player) => player !== null);
       const people = await loadPersonNameMap(valid.map((player) => player.personId));
       const rows: AvailableHockeyPlayerRow[] = [];
