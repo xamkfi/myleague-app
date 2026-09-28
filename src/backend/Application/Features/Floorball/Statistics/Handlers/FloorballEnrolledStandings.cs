@@ -78,15 +78,15 @@ internal static class FloorballEnrolledStandings
             return [];
 
         List<StandingMatchResult> results = new();
-        foreach (FloorballMatch match in await matches.GetByCompetitionIdAsync(competitionId))
+        IEnumerable<FloorballMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
+            .Where(match => match.Status == FloorballMatchStatus.Completed
+                && match.PlayoffRound is null
+                && match.HomeTeamId is Guid homeId && homeId != Guid.Empty
+                && match.AwayTeamId is Guid awayId && awayId != Guid.Empty);
+        foreach (FloorballMatch match in validMatches)
         {
-            if (match.Status != FloorballMatchStatus.Completed || match.PlayoffRound is not null)
-                continue;
-            if (match.HomeTeamId is not Guid homeId || match.AwayTeamId is not Guid awayId)
-                continue;
-            if (homeId == Guid.Empty || awayId == Guid.Empty)
-                continue;
-
+            Guid homeId = match.HomeTeamId!.Value;
+            Guid awayId = match.AwayTeamId!.Value;
             int homePoints = match.HomeScore > match.AwayScore ? 3 : match.HomeScore == match.AwayScore ? 1 : 0;
             int awayPoints = match.AwayScore > match.HomeScore ? 3 : match.HomeScore == match.AwayScore ? 1 : 0;
             results.Add(new StandingMatchResult(homeId, awayId, match.HomeScore, match.AwayScore, homePoints, awayPoints));
@@ -179,11 +179,8 @@ internal static class FloorballEnrolledStandings
         foreach (FloorballTeam team in knownTeams)
             byId[team.Id] = team;
 
-        foreach (Guid teamId in rows.Select(row => row.TeamId).Distinct())
+        foreach (Guid teamId in rows.Select(row => row.TeamId).Distinct().Where(teamId => !byId.ContainsKey(teamId)))
         {
-            if (byId.ContainsKey(teamId))
-                continue;
-
             FloorballTeam? loaded = await teams.GetByIdAsync(teamId);
             if (loaded is not null)
                 byId[loaded.Id] = loaded;
@@ -194,11 +191,9 @@ internal static class FloorballEnrolledStandings
             ? new Dictionary<Guid, Club>()
             : await clubs.GetByIdsAsync(clubIds, cancellationToken);
 
-        foreach (FloorballTeamSeasonStatisticsDto row in rows)
+        foreach (FloorballTeamSeasonStatisticsDto row in rows.Where(row => byId.ContainsKey(row.TeamId)))
         {
-            if (!byId.TryGetValue(row.TeamId, out FloorballTeam? team))
-                continue;
-
+            FloorballTeam team = byId[row.TeamId];
             clubLookup.TryGetValue(team.ClubId, out Club? club);
             row.TeamLogo = PublicLogoUrl.OmitPlaceholder(team.GetEffectiveLogoUrl(club?.LogoUrl));
             row.TeamShortName = team.ShortName;

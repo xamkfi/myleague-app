@@ -198,17 +198,16 @@ internal static class HockeyStatisticsHandlerSupport
             return [];
 
         List<StandingMatchResult> results = new();
-        foreach (HockeyMatch match in await matches.GetByCompetitionIdAsync(competitionId))
+        IEnumerable<HockeyMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
+            .Where(match => match.PlayoffSeriesId is null
+                && match.CountsTowardStandings
+                && match.Status is HockeyMatchStatus.Finished or HockeyMatchStatus.Forfeit
+                && match.HomeTeamId is Guid homeId && homeId != Guid.Empty
+                && match.AwayTeamId is Guid awayId && awayId != Guid.Empty);
+        foreach (HockeyMatch match in validMatches)
         {
-            if (match.PlayoffSeriesId is not null || !match.CountsTowardStandings)
-                continue;
-            if (match.Status is not HockeyMatchStatus.Finished and not HockeyMatchStatus.Forfeit)
-                continue;
-            if (match.HomeTeamId is not Guid homeId || match.AwayTeamId is not Guid awayId)
-                continue;
-            if (homeId == Guid.Empty || awayId == Guid.Empty)
-                continue;
-
+            Guid homeId = match.HomeTeamId!.Value;
+            Guid awayId = match.AwayTeamId!.Value;
             (int homePoints, int awayPoints) = PointsFor(match, rules);
             results.Add(new StandingMatchResult(homeId, awayId, match.HomeScore, match.AwayScore, homePoints, awayPoints));
         }

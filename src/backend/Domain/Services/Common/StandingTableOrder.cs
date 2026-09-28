@@ -106,9 +106,8 @@ public static class StandingTableOrder
         }
 
         Dictionary<Guid, int> keys = new();
-        foreach (T row in rows)
+        foreach (StandingSortSnapshot item in rows.Select(snapshot))
         {
-            StandingSortSnapshot item = snapshot(row);
             keys[item.TeamId] = criterion switch
             {
                 StandingSortCriterion.Points => item.Points,
@@ -134,13 +133,11 @@ public static class StandingTableOrder
             id => id,
             _ => (0, 0, 0));
 
-        foreach (StandingMatchResult match in matches)
+        foreach (StandingMatchResult match in matches.Where(match =>
+            match.HomeTeamId != match.AwayTeamId
+            && tied.Contains(match.HomeTeamId)
+            && tied.Contains(match.AwayTeamId)))
         {
-            if (match.HomeTeamId == match.AwayTeamId)
-                continue;
-            if (!tied.Contains(match.HomeTeamId) || !tied.Contains(match.AwayTeamId))
-                continue;
-
             (int Points, int GoalsFor, int GoalsAgainst) home = table[match.HomeTeamId];
             table[match.HomeTeamId] = (
                 home.Points + match.HomePoints,

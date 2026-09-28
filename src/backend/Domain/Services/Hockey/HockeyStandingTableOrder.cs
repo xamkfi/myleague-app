@@ -50,20 +50,18 @@ public static class HockeyStandingTableOrder
 
         public int Compare(HockeyStandingSortSnapshot x, HockeyStandingSortSnapshot y)
         {
-            foreach (HockeyTieBreakerRule criterion in _criteria)
+            foreach (int comparison in _criteria.Select(criterion => criterion switch
             {
-                int comparison = criterion switch
-                {
-                    HockeyTieBreakerRule.Points => y.Points.CompareTo(x.Points),
-                    HockeyTieBreakerRule.RegulationWins => y.RegulationWins.CompareTo(x.RegulationWins),
-                    HockeyTieBreakerRule.Wins => y.Wins.CompareTo(x.Wins),
-                    HockeyTieBreakerRule.GoalDifference => y.GoalDifference.CompareTo(x.GoalDifference),
-                    HockeyTieBreakerRule.GoalsFor => y.GoalsFor.CompareTo(x.GoalsFor),
-                    HockeyTieBreakerRule.GoalsAgainst => x.GoalsAgainst.CompareTo(y.GoalsAgainst),
-                    HockeyTieBreakerRule.FewestPenaltyMinutes => x.PenaltyMinutes.CompareTo(y.PenaltyMinutes),
-                    _ => 0
-                };
-
+                HockeyTieBreakerRule.Points => y.Points.CompareTo(x.Points),
+                HockeyTieBreakerRule.RegulationWins => y.RegulationWins.CompareTo(x.RegulationWins),
+                HockeyTieBreakerRule.Wins => y.Wins.CompareTo(x.Wins),
+                HockeyTieBreakerRule.GoalDifference => y.GoalDifference.CompareTo(x.GoalDifference),
+                HockeyTieBreakerRule.GoalsFor => y.GoalsFor.CompareTo(x.GoalsFor),
+                HockeyTieBreakerRule.GoalsAgainst => x.GoalsAgainst.CompareTo(y.GoalsAgainst),
+                HockeyTieBreakerRule.FewestPenaltyMinutes => x.PenaltyMinutes.CompareTo(y.PenaltyMinutes),
+                _ => 0
+            }))
+            {
                 if (comparison != 0)
                     return comparison;
             }
