@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './LiveMatchTimer.scss';
 import { MatchTimer } from '../../../../../components/MatchTimer';
 import { useMatchTimerContext } from '../context';
@@ -50,6 +51,7 @@ const LiveMatchTimer = ({
   shootoutPeriodNumber,
   startDisabledReason,
 }: LiveMatchTimerProps) => {
+  const { t } = useTranslation();
   const {
     currentPeriod,
     elapsedTimeSeconds,
@@ -71,10 +73,10 @@ const LiveMatchTimer = ({
   // Build dynamic period labels
   const periodLabels: Record<number, string> = {};
   for (let i = 1; i <= numberOfPeriods; i++) {
-    periodLabels[i] = `Period ${i}`;
+    periodLabels[i] = t('matchPage.events.periodName', { number: i });
   }
-  periodLabels[overtimePeriodNumber] = 'Overtime';
-  periodLabels[shootoutPeriodNumber] = 'Shootout';
+  periodLabels[overtimePeriodNumber] = t('matchPage.events.overtimeName');
+  periodLabels[shootoutPeriodNumber] = t('matchPage.events.shootoutName');
 
   // The clock display is continuous across periods, so the "should this period end now"
   // alert has to compare the in-period elapsed time (total elapsed minus the current

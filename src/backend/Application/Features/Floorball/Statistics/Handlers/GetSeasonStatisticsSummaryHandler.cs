@@ -26,6 +26,7 @@ using Domain.Entities.Floorball.Teams;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Domain.Enums.Floorball;
+using Domain.Services.Floorball;
 
 namespace Application.Features.Floorball.Statistics.Handlers;
 
@@ -388,8 +389,8 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
                 ? a
                 : rows[awayId] = new TournamentTeamAggregate();
 
-            home.Apply(m.HomeScore, m.AwayScore);
-            away.Apply(m.AwayScore, m.HomeScore);
+            home.Apply(m.HomeScore, m.AwayScore, m.WentToShootout);
+            away.Apply(m.AwayScore, m.HomeScore, m.WentToShootout);
         }
 
         return rows;
@@ -405,15 +406,15 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
         public int GoalsAgainst { get; private set; }
         public int Points { get; private set; }
 
-        public void Apply(int scoredFor, int scoredAgainst)
+        public void Apply(int scoredFor, int scoredAgainst, bool wentToShootout)
         {
             GamesPlayed++;
             GoalsFor += scoredFor;
             GoalsAgainst += scoredAgainst;
+            Points += FloorballStandingPoints.ForScore(scoredFor, scoredAgainst, wentToShootout);
             if (scoredFor > scoredAgainst)
             {
                 Wins++;
-                Points += 3;
             }
             else if (scoredFor < scoredAgainst)
             {
@@ -422,7 +423,6 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
             else
             {
                 Draws++;
-                Points += 1;
             }
         }
     }

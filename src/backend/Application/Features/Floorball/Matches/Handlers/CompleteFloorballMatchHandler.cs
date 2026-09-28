@@ -197,7 +197,8 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             gameResult: gameResult,
             isHomeGame: isHomeGame,
             goalsFor: 0,
-            goalsAgainst: 0);
+            goalsAgainst: 0,
+            wentToShootout: match.WentToShootout);
 
         await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
     }
