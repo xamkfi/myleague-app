@@ -1,9 +1,47 @@
 import { useState, useCallback } from 'react';
 import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
-import { floorballPlayerService, type FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
+import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import { floorballMatchService } from '../../../../../api/floorball/floorballMatchService';
-import type { FloorballMatchDto, FloorballTeam } from '../../../../../types/floorball/floorballTypes';
+import type { FloorballMatchDto, FloorballTeam, FloorballTeamPlayer } from '../../../../../types/floorball/floorballTypes';
 import type { StateUpdate } from '../components/types';
+
+function splitPlayerName(fullName: string): { firstName: string; lastName: string } {
+  const trimmed = fullName.trim();
+  const spaceIndex = trimmed.indexOf(' ');
+  if (spaceIndex === -1) {
+    return { firstName: trimmed, lastName: '' };
+  }
+  return {
+    firstName: trimmed.slice(0, spaceIndex),
+    lastName: trimmed.slice(spaceIndex + 1),
+  };
+}
+
+/** Players on this competition's active roster, not earlier seasons of the same team. */
+function rosterToPlayers(roster: FloorballTeamPlayer[]): FloorballPlayerDto[] {
+  return roster
+    .filter((row) => row.isActive)
+    .map((row) => {
+      const { firstName, lastName } = splitPlayerName(row.playerName);
+      return {
+        id: row.playerId,
+        personId: '',
+        person: {
+          id: '',
+          firstName,
+          lastName,
+          birthDate: '',
+          fullName: row.playerName,
+          isRegistered: false,
+        },
+        isActive: true,
+        position: row.position,
+        careerGoals: row.goals,
+        careerAssists: row.assists,
+        jerseyNumber: row.jerseyNumber,
+      };
+    });
+}
 
 interface UseMatchDataProps {
   match: FloorballMatchDto;
@@ -43,26 +81,14 @@ export const useMatchData = ({
       }
 
       const [homeTeamData, awayTeamData] = await Promise.all([
-        floorballTeamService.getById(match.homeTeamId),
-        floorballTeamService.getById(match.awayTeamId)
+        floorballTeamService.getById(match.homeTeamId, match.competitionId),
+        floorballTeamService.getById(match.awayTeamId, match.competitionId)
       ]);
 
       setHomeTeam(homeTeamData);
       setAwayTeam(awayTeamData);
-
-      // Load players for both teams
-      const [homePlayersDataRaw, awayPlayersDataRaw] = await Promise.all([
-        floorballPlayerService.getByTeamId(match.homeTeamId),
-        floorballPlayerService.getByTeamId(match.awayTeamId)
-      ]);
-
-      const homeRosterMap = new Map(homeTeamData?.roster?.map(tp => [tp.playerId, tp.jerseyNumber]) || []);
-      const awayRosterMap = new Map(awayTeamData?.roster?.map(tp => [tp.playerId, tp.jerseyNumber]) || []);
-      const homePlayersData = homePlayersDataRaw.map(p => ({ ...p, jerseyNumber: homeRosterMap.get(p.id) }));
-      const awayPlayersData = awayPlayersDataRaw.map(p => ({ ...p, jerseyNumber: awayRosterMap.get(p.id) }));
-
-      setHomePlayers(homePlayersData);
-      setAwayPlayers(awayPlayersData);
+      setHomePlayers(rosterToPlayers(homeTeamData.roster ?? []));
+      setAwayPlayers(rosterToPlayers(awayTeamData.roster ?? []));
       
     } catch (error) {
       console.error('Error loading team data:', error);
@@ -70,7 +96,7 @@ export const useMatchData = ({
     } finally {
       setLoading(false);
     }
-  }, [match.homeTeamId, match.awayTeamId]);
+  }, [match.homeTeamId, match.awayTeamId, match.competitionId]);
 
   /**
    * Loads the current match status from the backend
