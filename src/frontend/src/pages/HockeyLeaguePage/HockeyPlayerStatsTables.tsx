@@ -33,7 +33,8 @@ function HockeyPlayerStatsTables({
             <span className="league-title">{t('hockeyPage.playerStats', 'Player Statistics')}</span>
           </div>
         </div>
-        <table className="standing-table">
+        <div className="table-wrapper">
+        <table className="standing-table standing-table--wide">
           <thead>
             <tr className="header-row">
               <th className="rank-col">#</th>
@@ -76,6 +77,7 @@ function HockeyPlayerStatsTables({
             ))}
           </tbody>
         </table>
+        </div>
       </div>
       {rankedGoalies.length > 0 && (
         <div className="standing-container">
@@ -84,7 +86,8 @@ function HockeyPlayerStatsTables({
               <span className="league-title">{t('hockeyPage.goalieStats', 'Goalie statistics')}</span>
             </div>
           </div>
-          <table className="standing-table">
+          <div className="table-wrapper">
+          <table className="standing-table standing-table--wide">
             <thead>
               <tr className="header-row">
                 <th className="rank-col">#</th>
@@ -123,6 +126,7 @@ function HockeyPlayerStatsTables({
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </>

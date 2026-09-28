@@ -124,5 +124,31 @@
 
   .competition-hero__title {
     font-size: map.get($font-sizes, 'lg');
+    overflow-wrap: break-word;
+  }
+}
+
+@media (max-width: 480px) {
+  .competition-hero__banner {
+    padding: map.get($spacing, 'sm');
+  }
+
+  .competition-hero__content {
+    gap: map.get($spacing, 'sm');
+  }
+
+  .competition-hero__mark {
+    width: 52px;
+    height: 52px;
+
+    img {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  .competition-hero__title {
+    font-size: 1.2rem;
+    letter-spacing: 0.02em;
   }
 }

@@ -234,6 +234,13 @@
 }
 
 @media (max-width: 480px) {
+  .footer-version__meta {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+    min-width: 0;
+  }
+
   .footer {
     padding: map.get($spacing, 'md') 0;
     font-size: 0.85rem;
