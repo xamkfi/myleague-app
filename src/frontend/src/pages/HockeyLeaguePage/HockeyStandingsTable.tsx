@@ -21,7 +21,8 @@ function HockeyStandingsTable({ standings, teamNames, competitionId, previewLimi
   const rows = previewLimit ? uniqueStandings.slice(0, previewLimit) : uniqueStandings;
 
   return (
-    <table className="standing-table">
+    <div className="table-wrapper">
+    <table className="standing-table standing-table--wide">
       <thead>
         <tr className="header-row">
           <th className="rank-col">#</th>
@@ -62,6 +63,7 @@ function HockeyStandingsTable({ standings, teamNames, competitionId, previewLimi
         })}
       </tbody>
     </table>
+    </div>
   );
 }
 

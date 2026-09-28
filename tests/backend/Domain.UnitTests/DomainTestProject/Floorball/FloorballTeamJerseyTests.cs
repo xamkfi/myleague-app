@@ -27,4 +27,26 @@ public class FloorballTeamJerseyTests
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*7*already used*");
     }
+
+    [Fact]
+    public void UpdateTeamPlayer_WithoutJerseyNumber_TogglesActiveStatusOnly()
+    {
+        FloorballTeam team = FloorballTestHelpers.CreateTeam();
+        Guid competitionId = Guid.NewGuid();
+        FloorballPlayer player = FloorballTestHelpers.CreatePlayer();
+        team.AddPlayer(player, FloorballPosition.Forward, jerseyNumber: null, competitionId: competitionId);
+
+        team.UpdateTeamPlayer(player.Id, FloorballPosition.Forward, jerseyNumber: null, isActive: false, competitionId);
+
+        FloorballTeamPlayer roster = team.Roster.Single();
+        roster.IsActive.Should().BeFalse();
+        roster.JerseyNumber.Should().BeNull();
+        roster.Position.Should().Be(FloorballPosition.Forward);
+
+        team.UpdateTeamPlayer(player.Id, FloorballPosition.Forward, jerseyNumber: null, isActive: true, competitionId);
+
+        roster.IsActive.Should().BeTrue();
+        roster.JerseyNumber.Should().BeNull();
+        roster.Position.Should().Be(FloorballPosition.Forward);
+    }
 }

@@ -346,10 +346,10 @@
     padding: 0 1rem;
     overflow-x: auto;
     flex-wrap: nowrap;
-    scrollbar-width: none;
+    scrollbar-width: thin;
 
     &::-webkit-scrollbar {
-      display: none;
+      height: 4px;
     }
   }
 

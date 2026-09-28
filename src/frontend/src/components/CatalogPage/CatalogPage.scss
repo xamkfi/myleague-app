@@ -83,8 +83,10 @@
     }
 
     &__title {
-      font-size: 32px;
-      line-height: 44px;
+      font-size: clamp(1.25rem, 6.4vw, 2rem);
+      line-height: 1.2;
+      letter-spacing: 0.04em;
+      overflow-wrap: anywhere;
     }
 
     &__content {

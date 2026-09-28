@@ -111,6 +111,9 @@
       &--next {
         right: map.get($spacing, 'sm');
       }
+
+      // Stacked card: keep arrows on the photo, not over the text.
+      top: 7.25rem;
     }
 
     &__dots {
@@ -143,6 +146,8 @@
       &--next {
         right: map.get($spacing, 'xs');
       }
+
+      top: 5.75rem;
     }
 
     &__dots {

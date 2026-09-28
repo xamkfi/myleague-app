@@ -146,11 +146,11 @@
   .mahl-info-layout__nav {
     flex-wrap: nowrap;
     overflow-x: auto;
-    padding-bottom: 0.25rem;
-    scrollbar-width: none;
+    padding-bottom: 0.35rem;
+    scrollbar-width: thin;
 
     &::-webkit-scrollbar {
-      display: none;
+      height: 4px;
     }
   }
 

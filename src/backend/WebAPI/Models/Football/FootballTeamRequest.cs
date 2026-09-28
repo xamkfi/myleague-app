@@ -138,11 +138,10 @@ namespace WebAPI.Models.Football
         public FootballPosition Position { get; set; }
         
         /// <summary>
-        /// The jersey number of the player
+        /// The jersey number of the player. Null when the player has no number yet.
         /// </summary>
-        [Required(ErrorMessage = "Jersey number is required")]
-        [Range(0, 99, ErrorMessage = "Jersey number must be between 0 and 99")]
-        public int JerseyNumber { get; set; }
+        [Range(1, 99, ErrorMessage = "Jersey number must be between 1 and 99")]
+        public int? JerseyNumber { get; set; }
 
         /// <summary>
         /// Whether the player is active
