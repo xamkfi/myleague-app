@@ -99,6 +99,7 @@ function FootballTeamPage() {
 
   const [team, setTeam] = useState<FootballTeam | null>(null);
   const [matches, setMatches] = useState<FootballMatchDto[] | null>(null);
+  const [summaryMatches, setSummaryMatches] = useState<FootballMatchDto[] | null>(null);
   const [teamStatistics, setTeamStatistics] = useState<FootballTeamSeasonStatisticsDto | null>(null);
   const [seasonSummary, setSeasonSummary] = useState<FootballSeasonStatisticsSummaryDto | null>(null);
   const [currentSeason, setCurrentSeason] = useState<FootballSeasonDto | null>(null);
@@ -144,6 +145,8 @@ function FootballTeamPage() {
             teamResponse.teamCategory,
           );
           setCurrentSeason(currentSeasonData);
+          setCurrentPage(1);
+          setSummaryMatches(null);
           setTeamStatistics(null);
           setPlayerStatistics(null);
           setSeasonSummary(null);
@@ -177,6 +180,7 @@ function FootballTeamPage() {
 
         const response = await footballMatchService.getAll({
           teamId: team.id,
+          competitionId: currentSeason?.id,
           page: currentPage,
           pageSize: 10,
           sortOrder: 'asc'
@@ -193,7 +197,28 @@ function FootballTeamPage() {
       }
     };
     fetchMatches();
-  }, [team, currentPage]);
+  }, [team, currentPage, currentSeason?.id]);
+
+  useEffect(() => {
+    const fetchSummaryMatches = async () => {
+      if (!team) return;
+
+      try {
+        const response = await footballMatchService.getAll({
+          teamId: team.id,
+          competitionId: currentSeason?.id,
+          page: 1,
+          pageSize: 100,
+          sortOrder: 'desc',
+        });
+        setSummaryMatches(response.data || []);
+      } catch (error) {
+        console.error('Failed to fetch summary matches:', error);
+        setSummaryMatches([]);
+      }
+    };
+    fetchSummaryMatches();
+  }, [team, currentSeason?.id]);
 
   // Function to fetch data for specific tabs
   const fetchTabData = async (tabId: string) => {
@@ -318,7 +343,8 @@ function FootballTeamPage() {
         return (
           <SummarySection
             team={team}
-            matches={matches || []}
+            matches={summaryMatches || []}
+            seasonId={currentSeason?.id}
           ></SummarySection>
         );
 

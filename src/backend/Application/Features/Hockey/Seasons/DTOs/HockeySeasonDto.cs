@@ -1,5 +1,6 @@
 using Application.Features.Hockey.Competitions.DTOs;
 using Application.Features.Hockey.Tournaments.DTOs;
+using Domain.Enums.Common;
 
 namespace Application.Features.Hockey.Seasons.DTOs;
 
@@ -34,4 +35,6 @@ public record HockeySeasonDto(
     IReadOnlyCollection<HockeyCompetitionDivisionDto> Divisions,
     IReadOnlyCollection<HockeyPlayoffSeriesDto> PlayoffSeries,
     IReadOnlyCollection<HockeyPlayoffScheduleSlotDto> PlayoffSchedule,
-    string? LogoUrl);
+    string? LogoUrl,
+    int TeamsAdvancing = 0,
+    IReadOnlyList<StandingSortCriterion>? RankingCriteria = null);

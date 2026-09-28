@@ -135,7 +135,10 @@ public abstract class HockeyCompetition : BaseEntity
     {
         if (Status is HockeyCompetitionStatus.Completed or HockeyCompetitionStatus.Cancelled)
             throw new InvalidOperationException($"Cannot activate a competition in status {Status}.");
-        if (Status is not (HockeyCompetitionStatus.Published or HockeyCompetitionStatus.RegistrationOpen))
+        if (Status is not (
+            HockeyCompetitionStatus.Draft
+            or HockeyCompetitionStatus.Published
+            or HockeyCompetitionStatus.RegistrationOpen))
             throw new InvalidOperationException($"Cannot activate a competition in status {Status}.");
 
         Status = HockeyCompetitionStatus.Active;

@@ -261,7 +261,9 @@ namespace WebAPI.Controllers.Floorball
                 request.OvertimeDurationMinutes,
                 request.AllowShootout,
                 request.TeamCategory,
-                request.LogoUrl
+                request.LogoUrl,
+                request.TeamsAdvancing,
+                request.RankingCriteria
             );
 
             Result<FloorballSeasonDto> result = await _mediator.Send(command);
@@ -310,7 +312,9 @@ namespace WebAPI.Controllers.Floorball
                 request.OvertimeDurationMinutes,
                 request.AllowShootout,
                 request.TeamCategory,
-                request.LogoUrl
+                request.LogoUrl,
+                request.TeamsAdvancing,
+                request.RankingCriteria
             );
 
             Result<FloorballSeasonDto> result = await _mediator.Send(command);

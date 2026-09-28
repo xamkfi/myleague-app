@@ -16,6 +16,7 @@ namespace Application.Features.Floorball.Statistics.DTOs;
 /// <param name="GoalsAgainst">Total goals conceded by the team in this group</param>
 /// <param name="GoalDifference">GoalsFor minus GoalsAgainst</param>
 /// <param name="Points">Standings points (3 for a win, 1 for a draw, 0 for a loss)</param>
+/// <param name="TeamShortName">Short name shown when the team has no logo</param>
 public record FloorballTournamentGroupStandingDto(
     Guid TeamId,
     string TeamName,
@@ -27,4 +28,5 @@ public record FloorballTournamentGroupStandingDto(
     int GoalsFor,
     int GoalsAgainst,
     int GoalDifference,
-    int Points);
+    int Points,
+    string TeamShortName);

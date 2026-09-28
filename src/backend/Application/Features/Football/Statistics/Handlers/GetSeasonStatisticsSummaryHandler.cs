@@ -29,6 +29,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
     private readonly IFootballTournamentRepository _tournamentRepository;
     private readonly IFootballTeamRepository _teamRepository;
     private readonly IPersonRepository _personRepository;
+    private readonly IClubRepository _clubRepository;
     private readonly ILogger<GetSeasonStatisticsSummaryHandler> _logger;
 
     public GetSeasonStatisticsSummaryHandler(
@@ -39,6 +40,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
         IFootballTournamentRepository tournamentRepository,
         IFootballTeamRepository teamRepository,
         IPersonRepository personRepository,
+        IClubRepository clubRepository,
         ILogger<GetSeasonStatisticsSummaryHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
@@ -48,6 +50,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
         _tournamentRepository = tournamentRepository;
         _teamRepository = teamRepository;
         _personRepository = personRepository;
+        _clubRepository = clubRepository;
         _logger = logger;
     }
 
@@ -167,11 +170,15 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
                 totalGoals = teamStats.Sum(ts => ts.GoalsFor);
             }
             decimal averageGoalsPerGame = totalGames > 0 ? (decimal)totalGoals / totalGames : 0;
+            int teamsAdvancing = teamStats[0].Competition is FootballSeason footballSeason
+                ? footballSeason.TeamsAdvancing
+                : 0;
 
             FootballSeasonStatisticsSummaryDto summaryDto = new FootballSeasonStatisticsSummaryDto
             {
                 CompetitionId = request.CompetitionId,
                 SeasonName = seasonName,
+                TeamsAdvancing = teamsAdvancing,
                 TeamStandings = teamStats.Select(ts => FootballStatisticsMapper.ToDto(ts)).ToList(),
                 TopScorers = topScorers.Select(ps =>
                 {
@@ -242,6 +249,8 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
                 _competitionRepository,
                 _tournamentRepository,
                 _teamRepository,
+                _clubRepository,
+                _footballMatchRepository,
                 cancellationToken);
 
             _logger.LogInformation("Successfully retrieved season statistics summary for Season: {SeasonId}", request.CompetitionId);
@@ -277,13 +286,16 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
             _competitionRepository,
             _tournamentRepository,
             _teamRepository,
+            _clubRepository,
+            _footballMatchRepository,
             cancellationToken);
 
         return Result<FootballSeasonStatisticsSummaryDto>.Success(new FootballSeasonStatisticsSummaryDto
         {
             CompetitionId = competition.Id,
             SeasonName = seasonName,
-            TeamStandings = standings
+            TeamStandings = standings,
+            TeamsAdvancing = competition is FootballSeason footballSeason ? footballSeason.TeamsAdvancing : 0
         });
     }
 

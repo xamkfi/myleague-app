@@ -5,15 +5,17 @@ import type { HockeyTeamCompetitionStatisticsDto } from '../../types/hockey/hock
 import { uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
 import { getTeamSlug } from '../../utils/slugUtils';
 import { getTeamPath } from '../../utils/sportRoutes';
+import '../../components/TournamentGroupStandingsTable/TournamentGroupStandingsTable.scss';
 
 interface HockeyStandingsTableProps {
   standings: HockeyTeamCompetitionStatisticsDto[];
   teamNames: Map<string, string>;
   competitionId?: string | null;
   previewLimit?: number;
+  teamsAdvancing?: number;
 }
 
-function HockeyStandingsTable({ standings, teamNames, competitionId, previewLimit }: HockeyStandingsTableProps) {
+function HockeyStandingsTable({ standings, teamNames, competitionId, previewLimit, teamsAdvancing = 0 }: HockeyStandingsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const namedTeams = [...teamNames.entries()].map(([id, name]) => ({ id, name }));
@@ -21,7 +23,7 @@ function HockeyStandingsTable({ standings, teamNames, competitionId, previewLimi
   const rows = previewLimit ? uniqueStandings.slice(0, previewLimit) : uniqueStandings;
 
   return (
-    <div className="table-wrapper">
+    <div className="table-wrapper standing-container">
     <table className="standing-table standing-table--wide">
       <thead>
         <tr className="header-row">
@@ -39,15 +41,20 @@ function HockeyStandingsTable({ standings, teamNames, competitionId, previewLimi
         </tr>
       </thead>
       <tbody>
-        {rows.map((row) => {
+        {rows.map((row, index) => {
           const name = teamNames.get(row.teamId) || row.teamName || row.teamId.slice(0, 8);
+          const isQualifying = teamsAdvancing > 0 && index < teamsAdvancing;
           return (
             <tr
               key={row.teamId}
-              className="clickable-row"
+              className={`clickable-row${isQualifying ? ' qualifying-row' : ''}`}
+              title={isQualifying ? t('seasonStandings.qualifyingHint') : undefined}
               onClick={() => navigate(getTeamPath('hockey', getTeamSlug({ id: row.teamId, name }, namedTeams), competitionId))}
             >
-              <td className="rank-col">{row.standingRank}</td>
+              <td className="rank-col">
+                {isQualifying && <span className="qualifying-marker" aria-hidden="true" />}
+                {row.standingRank || index + 1}
+              </td>
               <td className="team-col">{name}</td>
               <td className="stats-col">{row.gamesPlayed}</td>
               <td className="stats-col">{row.regulationWins}</td>
@@ -63,6 +70,12 @@ function HockeyStandingsTable({ standings, teamNames, competitionId, previewLimi
         })}
       </tbody>
     </table>
+    {teamsAdvancing > 0 && rows.length > 0 && (
+      <div className="qualifying-legend">
+        <span className="qualifying-legend__swatch" aria-hidden="true" />
+        <span>{t('seasonStandings.qualifyingLegend', { count: teamsAdvancing })}</span>
+      </div>
+    )}
     </div>
   );
 }

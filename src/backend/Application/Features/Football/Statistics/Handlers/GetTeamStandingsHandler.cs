@@ -3,6 +3,7 @@ using Application.Features.Football.Statistics.Mappings;
 using Application.Features.Football.Statistics.Queries;
 using Application.Features.Football.Teams.DTOs;
 using Domain.Entities.Football.Statistics;
+using Domain.Repositories.Common;
 using Domain.Repositories.Football;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,8 @@ public class GetTeamStandingsHandler : IRequestHandler<GetFootballTeamStandingsQ
     private readonly IFootballCompetitionRepository _competitionRepository;
     private readonly IFootballTournamentRepository _tournamentRepository;
     private readonly IFootballTeamRepository _teamRepository;
+    private readonly IClubRepository _clubRepository;
+    private readonly IFootballMatchRepository _matchRepository;
     private readonly ILogger<GetTeamStandingsHandler> _logger;
 
     public GetTeamStandingsHandler(
@@ -25,12 +28,16 @@ public class GetTeamStandingsHandler : IRequestHandler<GetFootballTeamStandingsQ
         IFootballCompetitionRepository competitionRepository,
         IFootballTournamentRepository tournamentRepository,
         IFootballTeamRepository teamRepository,
+        IClubRepository clubRepository,
+        IFootballMatchRepository matchRepository,
         ILogger<GetTeamStandingsHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
         _competitionRepository = competitionRepository;
         _tournamentRepository = tournamentRepository;
         _teamRepository = teamRepository;
+        _clubRepository = clubRepository;
+        _matchRepository = matchRepository;
         _logger = logger;
     }
 
@@ -53,6 +60,8 @@ public class GetTeamStandingsHandler : IRequestHandler<GetFootballTeamStandingsQ
                 _competitionRepository,
                 _tournamentRepository,
                 _teamRepository,
+                _clubRepository,
+                _matchRepository,
                 cancellationToken);
 
             _logger.LogInformation("Successfully retrieved team standings for Season: {SeasonId} - {Count} teams", request.CompetitionId, standingsDtos.Count);

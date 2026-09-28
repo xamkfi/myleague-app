@@ -7,6 +7,8 @@ import { hockeySeasonService } from '../../../../api/hockey/hockeySeasonService'
 import { divisionService } from '../../../../api/common/divisionService';
 import { SportsCategory } from '../../../../types/common/sports';
 import { HOCKEY_TEAM_CATEGORIES, type HockeyTeamCategory } from '../../../../types/hockey/hockeyTypes';
+import SeasonStandingsSettings from '../../../../components/SeasonStandingsSettings/SeasonStandingsSettings';
+import { DEFAULT_STANDING_SORT, STANDING_SORT_OPTIONS } from '../../../../components/SeasonStandingsSettings/standingSort';
 import '../HockeyTeamsPage/CreateTeamPage.scss';
 
 function CreateHockeySeasonPage() {
@@ -19,6 +21,8 @@ function CreateHockeySeasonPage() {
   const [logoUrl, setLogoUrl] = useState('');
   const [teamCategory, setTeamCategory] = useState<HockeyTeamCategory>('Adult');
   const [selectedDivisionIds, setSelectedDivisionIds] = useState<string[]>([]);
+  const [teamsAdvancing, setTeamsAdvancing] = useState(0);
+  const [rankingCriteria, setRankingCriteria] = useState<string[]>([...DEFAULT_STANDING_SORT]);
   const [divisions, setDivisions] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +49,8 @@ function CreateHockeySeasonPage() {
         seasonCode: seasonCode || undefined,
         teamCategory,
         logoUrl: logoUrl || undefined,
+        teamsAdvancing,
+        rankingCriteria,
       });
       for (const [index, divisionId] of selectedDivisionIds.entries()) {
         const division = divisions.find((item) => item.id === divisionId);
@@ -111,6 +117,16 @@ function CreateHockeySeasonPage() {
               </label>
             ))}
           </div>
+          <SeasonStandingsSettings
+            idPrefix="create-hockey"
+            teamsAdvancing={teamsAdvancing}
+            criteria={rankingCriteria}
+            options={STANDING_SORT_OPTIONS}
+            allowAddRemove
+            disabled={loading}
+            onTeamsAdvancingChange={setTeamsAdvancing}
+            onCriteriaChange={setRankingCriteria}
+          />
           <div className="form-actions">
             <button type="button" className="cancel-button" onClick={() => navigate('/admin/hockey/seasons')}>
               {t('common.cancel', 'Cancel')}

@@ -74,7 +74,8 @@ public class GetFloorballSeasonsPagedHandler
                     s.IsActive,
                     s.IsCompleted,
                     FloorballSeasonYear.FromDates(s.StartDate, s.EndDate),
-                    s.TeamCategory))
+                    s.TeamCategory,
+                    s.TeamsAdvancing))
                 .ToList();
 
             PagedResult<FloorballSeasonSummaryDto> result = PagedResult.Create(

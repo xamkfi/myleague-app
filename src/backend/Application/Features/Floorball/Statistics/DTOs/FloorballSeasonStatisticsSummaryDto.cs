@@ -51,4 +51,9 @@ public class FloorballSeasonStatisticsSummaryDto
     /// Gets or sets average goals per game
     /// </summary>
     public decimal AverageGoalsPerGame { get; set; }
+
+    /// <summary>
+    /// How many teams at the top of the table advance. Zero means no highlight.
+    /// </summary>
+    public int TeamsAdvancing { get; set; }
 }

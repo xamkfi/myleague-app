@@ -12,6 +12,8 @@ import { useDivisions } from '../../../../../hooks/useDivisions';
 import { SportsCategory } from '../../../../../types/common/sports';
 import '../EditSeasonPage/EditSeasonPage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import SeasonStandingsSettings from '../../../../../components/SeasonStandingsSettings/SeasonStandingsSettings';
+import { DEFAULT_STANDING_SORT, STANDING_SORT_OPTIONS } from '../../../../../components/SeasonStandingsSettings/standingSort';
 
 export const CreateSeasonPage = () => {
   const { t } = useTranslation();
@@ -28,6 +30,8 @@ export const CreateSeasonPage = () => {
     divisionIds: [],
     ...FOOTBALL_HOBBY_MATCH_RULE_DEFAULTS,
     ...FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS,
+    teamsAdvancing: 0,
+    rankingCriteria: [...DEFAULT_STANDING_SORT],
   });
   const [isActive, setIsActive] = useState(false);
 
@@ -591,6 +595,17 @@ export const CreateSeasonPage = () => {
                 {t('football.seasons.create.info', 'The season will be created as inactive by default')}
               </div>
             </div>
+
+            <SeasonStandingsSettings
+              idPrefix="create-football"
+              teamsAdvancing={formData.teamsAdvancing ?? 0}
+              criteria={formData.rankingCriteria ?? [...DEFAULT_STANDING_SORT]}
+              options={STANDING_SORT_OPTIONS}
+              allowAddRemove
+              disabled={loading}
+              onTeamsAdvancingChange={(value) => setFormData((prev) => ({ ...prev, teamsAdvancing: value }))}
+              onCriteriaChange={(rankingCriteria) => setFormData((prev) => ({ ...prev, rankingCriteria }))}
+            />
 
             <div className="form-actions">
               <button

@@ -44,6 +44,7 @@ export interface SportLandingSeasonData {
   season: SportLandingSeason;
   standings: SeasonStandingsRow[];
   standingsLoading: boolean;
+  teamsAdvancing?: number;
 }
 
 export interface SportLandingLabels {
@@ -136,6 +137,7 @@ export default function SportLandingPage({
       seasonName={data.season.name}
       standings={data.standings}
       standingsLoading={data.standingsLoading}
+      teamsAdvancing={data.teamsAdvancing}
       isDark={isDark}
       maxRows={MAX_STANDINGS_PREVIEW}
       labels={{

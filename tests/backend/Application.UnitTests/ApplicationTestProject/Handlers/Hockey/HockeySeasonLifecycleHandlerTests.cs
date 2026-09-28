@@ -24,6 +24,27 @@ public class HockeySeasonLifecycleHandlerTests
             "2026-27");
 
     [Fact]
+    public async Task Activate_FromDraft_SetsActive()
+    {
+        HockeySeason season = CreateSeason();
+        _competitionRepo.Setup(r => r.GetSeasonByIdAsync(season.Id)).ReturnsAsync(season);
+
+        ActivateHockeySeasonHandler handler = new(
+            _competitionRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<ActivateHockeySeasonHandler>>());
+
+        Result<HockeySeasonDto> result = await handler.Handle(
+            new ActivateHockeySeasonCommand(season.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Status.Should().Be(HockeyCompetitionStatus.Active.ToString());
+        result.Data.IsActive.Should().BeTrue();
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task Publish_ValidDraft_Saves()
     {
         HockeySeason season = CreateSeason();

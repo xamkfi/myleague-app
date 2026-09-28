@@ -1,5 +1,6 @@
 using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
+using Domain.Services.Common;
 using Domain.ValueObjects.Hockey.Rules;
 
 namespace Domain.Entities.Hockey.Competitions;
@@ -10,9 +11,20 @@ namespace Domain.Entities.Hockey.Competitions;
 public class HockeySeason : HockeyCompetition
 {
     private readonly List<HockeySeasonContentBlock> _contentBlocks = new();
+    private readonly List<StandingSortCriterion> _rankingCriteria = new(StandingSortCriteria.Default);
 
     public string? SeasonCode { get; private set; }
     public Guid? ChampionCompetitionTeamId { get; private set; }
+
+    /// <summary>
+    /// How many teams at the top of the table advance. Zero means no highlight.
+    /// </summary>
+    public int TeamsAdvancing { get; private set; }
+
+    /// <summary>
+    /// Ordered criteria used to rank the season table.
+    /// </summary>
+    public IReadOnlyList<StandingSortCriterion> RankingCriteria => _rankingCriteria;
     public IReadOnlyCollection<HockeySeasonContentBlock> ContentBlocks => _contentBlocks.AsReadOnly();
 
     private HockeySeason() : base() { }
@@ -30,6 +42,24 @@ public class HockeySeason : HockeyCompetition
     }
 
     public void UpdateSeasonCode(string? seasonCode) => SeasonCode = seasonCode;
+
+    /// <summary>
+    /// Sets how many teams advance and the order used to rank the table.
+    /// A null criteria list keeps the current order. Point rules are left unchanged.
+    /// </summary>
+    public void UpdateStandingsSettings(int teamsAdvancing, IEnumerable<StandingSortCriterion>? rankingCriteria)
+    {
+        if (teamsAdvancing < 0)
+            throw new ArgumentOutOfRangeException(nameof(teamsAdvancing), "Teams advancing cannot be negative.");
+
+        TeamsAdvancing = teamsAdvancing;
+        if (rankingCriteria is null)
+            return;
+
+        List<StandingSortCriterion> resolved = StandingSortCriteria.Resolve(rankingCriteria);
+        _rankingCriteria.Clear();
+        _rankingCriteria.AddRange(resolved);
+    }
 
     public void SetChampion(Guid championCompetitionTeamId)
     {

@@ -98,6 +98,10 @@
           background-color: rgba($color-blue-background, 0.3);
         }
 
+        &.qualifying-row {
+          background-color: rgba(34, 197, 94, 0.12);
+        }
+
         &:last-child {
           border-bottom: none;
         }

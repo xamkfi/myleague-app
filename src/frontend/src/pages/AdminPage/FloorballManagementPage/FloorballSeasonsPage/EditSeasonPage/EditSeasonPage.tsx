@@ -16,6 +16,8 @@ import { clubService, type Club } from '../../../../../api/common/clubService';
 import { useDivisions } from '../../../../../hooks/useDivisions';
 import './EditSeasonPage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import SeasonStandingsSettings from '../../../../../components/SeasonStandingsSettings/SeasonStandingsSettings';
+import { DEFAULT_STANDING_SORT, STANDING_SORT_OPTIONS, normalizeStandingCriteria } from '../../../../../components/SeasonStandingsSettings/standingSort';
 import SeasonContentBlocksEditor from '../../../../../components/SeasonContentBlocksEditor/SeasonContentBlocksEditor';
 import {
   toContentBlockDrafts,
@@ -102,6 +104,8 @@ const EditSeasonPage = () => {
         overtimeDurationMinutes: seasonData.data.matchRules?.overtimeDurationMinutes ?? 5,
         allowShootout: seasonData.data.matchRules?.allowShootout ?? true,
         logoUrl: seasonData.data.logoUrl ?? '',
+        teamsAdvancing: seasonData.data.teamsAdvancing ?? 0,
+        rankingCriteria: normalizeStandingCriteria(seasonData.data.rankingCriteria),
       });
     } catch {
       setError(t('floorball.seasons.errors.loadFailed', 'Failed to load season data'));
@@ -595,6 +599,17 @@ const EditSeasonPage = () => {
                   disabled={loading}
                 />
               </div>
+
+              <SeasonStandingsSettings
+                idPrefix="edit-floorball"
+                teamsAdvancing={formData.teamsAdvancing ?? 0}
+                criteria={formData.rankingCriteria ?? [...DEFAULT_STANDING_SORT]}
+                options={STANDING_SORT_OPTIONS}
+                allowAddRemove
+                disabled={loading}
+                onTeamsAdvancingChange={(value) => setFormData((prev) => ({ ...prev, teamsAdvancing: value }))}
+                onCriteriaChange={(rankingCriteria) => setFormData((prev) => ({ ...prev, rankingCriteria }))}
+              />
 
               <div className="form-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => navigate('/admin/floorball/seasons')} disabled={loading}>{t('common.cancel', 'Cancel')}</button>

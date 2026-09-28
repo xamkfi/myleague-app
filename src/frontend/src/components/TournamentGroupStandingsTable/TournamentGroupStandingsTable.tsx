@@ -14,6 +14,7 @@ export interface TournamentGroupStandingRow {
   teamId: string;
   teamName: string;
   teamLogo: string | null;
+  teamShortName?: string | null;
   gamesPlayed: number;
   wins: number;
   draws: number;
@@ -160,6 +161,7 @@ export default function TournamentGroupStandingsTable({ groupId, groupName, spor
                       <TeamLogoMark
                         logo={row.teamLogo}
                         name={row.teamName}
+                        mark={row.teamShortName}
                         imageClassName="logo-image"
                         fallbackClassName="logo-empty"
                       />

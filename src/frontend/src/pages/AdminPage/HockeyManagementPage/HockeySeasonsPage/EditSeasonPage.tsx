@@ -22,6 +22,12 @@ import {
   type SeasonContentBlockDraft,
 } from '../../../../types/common/seasonContent';
 import './EditSeasonPage.scss';
+import SeasonStandingsSettings from '../../../../components/SeasonStandingsSettings/SeasonStandingsSettings';
+import {
+  DEFAULT_STANDING_SORT,
+  STANDING_SORT_OPTIONS,
+  normalizeStandingCriteria,
+} from '../../../../components/SeasonStandingsSettings/standingSort';
 
 type SeasonTab = 'details' | 'divisions' | 'teams';
 
@@ -51,6 +57,8 @@ function EditHockeySeasonPage() {
   const [teamsPage, setTeamsPage] = useState(1);
   const [teamsPageSize, setTeamsPageSize] = useState(10);
   const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDraft[]>([]);
+  const [teamsAdvancing, setTeamsAdvancing] = useState(0);
+  const [rankingCriteria, setRankingCriteria] = useState<string[]>([...DEFAULT_STANDING_SORT]);
 
   const load = useCallback(async (): Promise<void> => {
     if (!competitionId) {
@@ -74,6 +82,8 @@ function EditHockeySeasonPage() {
     setSeasonCode(loaded.seasonCode ?? '');
     setLogoUrl(loaded.logoUrl ?? '');
     setCompetitionCategory(loaded.teamCategory ?? 'Adult');
+    setTeamsAdvancing(loaded.teamsAdvancing ?? 0);
+    setRankingCriteria(normalizeStandingCriteria(loaded.rankingCriteria));
   }, [competitionId]);
 
   useEffect(() => {
@@ -206,6 +216,8 @@ function EditHockeySeasonPage() {
                       seasonCode: seasonCode || null,
                       teamCategory: competitionCategory,
                       logoUrl: logoUrl || null,
+                      teamsAdvancing,
+                      rankingCriteria,
                     });
                     await hockeySeasonService.replaceContentBlocks(
                       season.id,
@@ -266,6 +278,16 @@ function EditHockeySeasonPage() {
                   </div>
                 </div>
               </div>
+              <SeasonStandingsSettings
+                idPrefix="edit-hockey"
+                teamsAdvancing={teamsAdvancing}
+                criteria={rankingCriteria}
+                options={STANDING_SORT_OPTIONS}
+                allowAddRemove
+                disabled={saving}
+                onTeamsAdvancingChange={setTeamsAdvancing}
+                onCriteriaChange={setRankingCriteria}
+              />
               <div className="form-section">
                 <h3 className="form-section__title">
                   <i className="fas fa-flag"></i>

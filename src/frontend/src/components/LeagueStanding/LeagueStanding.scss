@@ -356,30 +356,39 @@
 
 @media (max-width: 768px) {
   .standing-container {
-    margin: map.get($spacing, "xs");
-    padding: 0 map.get($spacing, "xs"); // reduce side padding to 8px
+    margin: 0 0 map.get($spacing, "xs");
+    padding: 0;
   }
 
   .standing-header {
     flex-direction: column;
-    gap: map.get($spacing, "sm");
-    padding: map.get($spacing, "sm");
+    gap: 0.4rem;
+    padding: 0.55rem 0.6rem;
 
     .header-top-row {
       flex-direction: column;
-      gap: map.get($spacing, "sm");
-      align-items: flex-start;
+      gap: 0.4rem;
+      align-items: stretch;
+    }
+
+    .league-title {
+      font-size: map.get($font-sizes, "sm");
+      line-height: 1.2;
     }
 
     .view-buttons {
       width: 100%;
-      flex-wrap: wrap;
-      
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.3rem;
+
       .view-button {
-        padding: map.get($spacing, "2xs") map.get($spacing, "xs");
-        font-size: map.get($font-sizes, "xs");
-        flex: 1;
-        min-width: 80px;
+        min-width: 0;
+        padding: 0.32rem 0.35rem;
+        font-size: 0.7rem;
+        line-height: 1.15;
+        text-align: center;
+        white-space: nowrap;
       }
     }
 
@@ -410,14 +419,26 @@
   }
 
   .standing-table {
+    min-width: 0;
+    col.rank-col { width: 1.75rem; }
     col.team-col { width: 35%; }
     col.stats-col { width: 6%; }
     col.goals-col { width: 8%; }
     col.points-col { width: 6%; }
     col.form-col { width: 15%; }
 
+    thead th,
     tbody tr td {
-      padding: map.get($spacing, "xs");
+      padding: 0.3rem 0.2rem;
+    }
+
+    thead th.rank-col,
+    tbody tr td.rank-col {
+      overflow: visible;
+      text-overflow: clip;
+      white-space: nowrap;
+      padding-left: 0.15rem;
+      padding-right: 0.15rem;
     }
   }
 
@@ -450,17 +471,17 @@
 
 @media (max-width: 480px) {
   .standing-container {
-    margin: map.get($spacing, "xs");
-    padding: 0 map.get($spacing, "xs"); // ensure side padding is 8px on small phones
+    margin: 0 0 map.get($spacing, "xxs");
+    padding: 0;
   }
 
   .standing-header {
-    padding: map.get($spacing, "xs");
+    padding: 0.45rem 0.5rem;
     .view-buttons {
-      gap: map.get($spacing, "2xs");
+      gap: 0.25rem;
       .view-button {
-        padding: map.get($spacing, "2xs") map.get($spacing, "xs");
-        font-size: map.get($font-sizes, "xs");
+        padding: 0.28rem 0.25rem;
+        font-size: 0.68rem;
         line-height: 1.1;
       }
     }
@@ -486,7 +507,7 @@
   }
 
   .standing-table {
-    min-width: 400px; // Reduced minimum width for very small screens
+    min-width: 0;
 
     &--wide {
       min-width: 820px;
@@ -497,7 +518,7 @@
     th.spacer-col, td.spacer-col { display: none; }
 
     // Re-balance widths to fit the screen when spacer is hidden
-    col.rank-col { width: 6%; }
+    col.rank-col { width: 1.6rem; }
     col.team-col { width: 34%; }
     col.stats-col { width: 5%; } // MP, W, D, L, GD reuse
     col.goals-col { width: 8%; }
@@ -505,11 +526,11 @@
     col.form-col { width: 18%; }
 
     thead th { 
-      padding: map.get($spacing, "2xs") map.get($spacing, "xs");
+      padding: map.get($spacing, "xxs") 0.15rem;
       font-size: map.get($font-sizes, "xs");
     }
     tbody tr td {
-      padding: map.get($spacing, "2xs") map.get($spacing, "xs");
+      padding: map.get($spacing, "xxs") 0.15rem;
       font-size: map.get($font-sizes, "xs");
     }
 

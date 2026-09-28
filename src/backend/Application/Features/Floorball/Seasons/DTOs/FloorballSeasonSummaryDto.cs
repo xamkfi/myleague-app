@@ -13,4 +13,5 @@ public record FloorballSeasonSummaryDto(
     bool IsActive,
     bool IsCompleted,
     string SeasonYear,
-    TeamCategory TeamCategory);
+    TeamCategory TeamCategory,
+    int TeamsAdvancing = 0);

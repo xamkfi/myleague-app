@@ -103,13 +103,17 @@ export default function SummarySection({ seasonSummary, loading, error }: Summar
             </thead>
             <tbody>
               {standings.map((team, index) => (
-                <tr key={team.teamId}>
+                <tr
+                  key={team.teamId}
+                  className={(seasonSummary.teamsAdvancing ?? 0) > 0 && index < (seasonSummary.teamsAdvancing ?? 0) ? 'qualifying-row' : undefined}
+                >
                   <td className="summary-section__col-rank">{index + 1}</td>
                   <td className="summary-section__col-team">
                     <div className="summary-section__team-info">
                       <TeamLogoMark
                         logo={team.teamLogo}
                         name={team.teamName}
+                        mark={team.teamShortName}
                         imageClassName="summary-section__team-logo"
                         fallbackClassName="summary-section__team-logo-empty"
                       />

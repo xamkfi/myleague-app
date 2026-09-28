@@ -148,7 +148,9 @@ public static class HockeyCompetitionMapper
             season.Divisions.Select(ToDivisionDto).ToList(),
             season.PlayoffSeries.Select(series => ToPlayoffSeriesDto(series, season.Matches)).ToList(),
             season.PlayoffSchedule.Select(ToPlayoffScheduleSlotDto).ToList(),
-            CompetitionLogoUrl.ToPublicString(season.LogoUrl));
+            CompetitionLogoUrl.ToPublicString(season.LogoUrl),
+            season.TeamsAdvancing,
+            season.RankingCriteria);
     }
 
     /// <summary>

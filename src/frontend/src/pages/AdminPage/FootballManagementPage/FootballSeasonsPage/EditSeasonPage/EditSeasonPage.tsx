@@ -12,6 +12,8 @@ import {
   type UpdateFootballSeasonRequest,
 } from '../../../../../api/football/footballSeasonService';
 import { unwrapApiErrorMessage } from '../../../../../api/utils/ParseErrorResponse';
+import SeasonStandingsSettings from '../../../../../components/SeasonStandingsSettings/SeasonStandingsSettings';
+import { DEFAULT_STANDING_SORT, STANDING_SORT_OPTIONS, normalizeStandingCriteria } from '../../../../../components/SeasonStandingsSettings/standingSort';
 import { footballTeamService } from '../../../../../api/football/footballTeamService';
 import { type FootballTeam, TeamCategory } from '../../../../../types/football/footballTypes';
 import { clubService, type Club } from '../../../../../api/common/clubService';
@@ -113,6 +115,8 @@ const EditSeasonPage = () => {
         lossPoints: standing?.lossPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.lossPoints,
         teamCategory: seasonData.data.teamCategory,
         logoUrl: seasonData.data.logoUrl ?? '',
+        teamsAdvancing: seasonData.data.teamsAdvancing ?? 0,
+        rankingCriteria: normalizeStandingCriteria(seasonData.data.rankingCriteria),
       });
     } catch {
       setError(t('football.seasons.errors.loadFailed', 'Failed to load season data'));
@@ -650,6 +654,17 @@ const EditSeasonPage = () => {
                   disabled={loading}
                 />
               </div>
+
+              <SeasonStandingsSettings
+                idPrefix="edit-football"
+                teamsAdvancing={formData.teamsAdvancing ?? 0}
+                criteria={formData.rankingCriteria ?? [...DEFAULT_STANDING_SORT]}
+                options={STANDING_SORT_OPTIONS}
+                allowAddRemove
+                disabled={loading}
+                onTeamsAdvancingChange={(value) => setFormData((prev) => ({ ...prev, teamsAdvancing: value }))}
+                onCriteriaChange={(rankingCriteria) => setFormData((prev) => ({ ...prev, rankingCriteria }))}
+              />
 
               <div className="form-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => navigate('/admin/football/seasons')} disabled={loading}>{t('common.cancel', 'Cancel')}</button>

@@ -28,7 +28,8 @@ export interface FootballTeamSeasonStatisticsDto {
   teamId: string;
   competitionId: string;
   teamName: string;
-  teamLogo: string;
+  teamLogo: string | null;
+  teamShortName?: string | null;
   seasonName: string;
   gamesPlayed: number;
   wins: number;
@@ -69,6 +70,7 @@ export interface FootballSeasonStatisticsSummaryDto {
   totalGames: number;
   totalGoals: number;
   averageGoalsPerGame: number;
+  teamsAdvancing?: number;
 }
 
 export enum FootballGameResult {

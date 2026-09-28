@@ -28,6 +28,8 @@ export interface FloorballSeasonDto {
   matchRules: FloorballMatchRules;
   teamCategory?: string;
   logoUrl?: string | null;
+  teamsAdvancing?: number;
+  rankingCriteria?: string[];
 }
 
 export interface FloorballSeasonSummaryDto {
@@ -39,6 +41,7 @@ export interface FloorballSeasonSummaryDto {
   isCompleted: boolean;
   seasonYear: string;
   teamCategory?: string;
+  teamsAdvancing?: number;
 }
 
 export interface FloorballSeasonYearDto {
@@ -66,6 +69,8 @@ export interface CreateFloorballSeasonRequest {
   allowShootout: boolean;
   teamCategory?: string;
   logoUrl?: string | null;
+  teamsAdvancing?: number;
+  rankingCriteria?: string[];
 }
 
 export interface UpdateFloorballSeasonRequest {
@@ -79,6 +84,8 @@ export interface UpdateFloorballSeasonRequest {
   allowShootout: boolean;
   teamCategory?: string;
   logoUrl?: string | null;
+  teamsAdvancing?: number;
+  rankingCriteria?: string[];
 }
 
 export const floorballSeasonService = {

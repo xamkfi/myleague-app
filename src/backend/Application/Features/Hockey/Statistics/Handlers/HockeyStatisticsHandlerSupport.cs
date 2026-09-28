@@ -2,8 +2,14 @@ using Application.Features.Hockey.Statistics.DTOs;
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Teams;
+using Domain.Enums.Common;
+using Domain.Enums.Hockey.Competitions;
+using Domain.Enums.Hockey.Matches;
 using Domain.Enums.Hockey.Statistics;
 using Domain.Repositories.Hockey;
+using Domain.Services.Common;
+using Domain.Services.Hockey;
+using Domain.ValueObjects.Hockey.Rules;
 
 namespace Application.Features.Hockey.Statistics.Handlers;
 
@@ -90,14 +96,22 @@ internal static class HockeyStatisticsHandlerSupport
         }
     }
 
-    public static void AssignStandingRanks(IList<Domain.Entities.Hockey.Statistics.HockeyTeamCompetitionStatistics> teams)
+    public static void AssignStandingRanks(
+        IList<Domain.Entities.Hockey.Statistics.HockeyTeamCompetitionStatistics> teams,
+        IReadOnlyList<HockeyTieBreakerRule> tieBreakers)
     {
-        List<Domain.Entities.Hockey.Statistics.HockeyTeamCompetitionStatistics> ordered = teams
-            .OrderByDescending(t => t.Points)
-            .ThenByDescending(t => t.RegulationWins)
-            .ThenByDescending(t => t.GoalDifference)
-            .ThenByDescending(t => t.GoalsFor)
-            .ToList();
+        List<Domain.Entities.Hockey.Statistics.HockeyTeamCompetitionStatistics> ordered = HockeyStandingTableOrder.Sort(
+            teams,
+            tieBreakers,
+            team => new HockeyStandingSortSnapshot(
+                team.Points,
+                team.RegulationWins,
+                team.Wins,
+                team.GoalDifference,
+                team.GoalsFor,
+                team.GoalsAgainst,
+                team.PenaltyMinutes,
+                team.Team?.Name ?? string.Empty));
 
         for (int i = 0; i < ordered.Count; i++)
             ordered[i].SetStandingRank(i + 1);
@@ -134,6 +148,7 @@ internal static class HockeyStatisticsHandlerSupport
         IReadOnlyList<HockeyTeamCompetitionStatisticsDto> existing,
         IReadOnlyList<Guid> enrolledTeamIds,
         IHockeyTeamRepository teams,
+        IHockeyMatchRepository matches,
         Guid competitionId,
         HockeyStatisticsScope scope,
         Guid? tournamentGroupId,
@@ -150,10 +165,141 @@ internal static class HockeyStatisticsHandlerSupport
             ? new Dictionary<Guid, string>()
             : await teams.GetNamesByIdsAsync(nameIds.ToList(), cancellationToken);
 
-        return MergeZeros(existing, enrolledTeamIds, names, competitionId, scope, tournamentGroupId);
+        if (competition is HockeySeason season)
+        {
+            IReadOnlyList<StandingSortCriterion> criteria = season.RankingCriteria.Count > 0
+                ? season.RankingCriteria
+                : StandingSortCriteria.Default;
+            IReadOnlyList<StandingMatchResult> played = await LoadResultsAsync(
+                competitionId,
+                criteria,
+                season.GetEffectiveRules().StandingRules,
+                matches);
+            return SortSeason(existing, enrolledTeamIds, names, competitionId, scope, tournamentGroupId, criteria, played);
+        }
+
+        return MergeZeros(
+            existing,
+            enrolledTeamIds,
+            names,
+            competitionId,
+            scope,
+            tournamentGroupId,
+            competition.GetEffectiveRules().StandingRules.TieBreakers);
+    }
+
+    private static async Task<IReadOnlyList<StandingMatchResult>> LoadResultsAsync(
+        Guid competitionId,
+        IReadOnlyList<StandingSortCriterion> criteria,
+        HockeyStandingRules rules,
+        IHockeyMatchRepository matches)
+    {
+        if (!StandingSortCriteria.UsesHeadToHead(criteria))
+            return [];
+
+        List<StandingMatchResult> results = new();
+        foreach (HockeyMatch match in await matches.GetByCompetitionIdAsync(competitionId))
+        {
+            if (match.PlayoffSeriesId is not null || !match.CountsTowardStandings)
+                continue;
+            if (match.Status is not HockeyMatchStatus.Finished and not HockeyMatchStatus.Forfeit)
+                continue;
+            if (match.HomeTeamId is not Guid homeId || match.AwayTeamId is not Guid awayId)
+                continue;
+            if (homeId == Guid.Empty || awayId == Guid.Empty)
+                continue;
+
+            (int homePoints, int awayPoints) = PointsFor(match, rules);
+            results.Add(new StandingMatchResult(homeId, awayId, match.HomeScore, match.AwayScore, homePoints, awayPoints));
+        }
+
+        return results;
+    }
+
+    private static (int HomePoints, int AwayPoints) PointsFor(HockeyMatch match, HockeyStandingRules rules)
+    {
+        return match.ResultType switch
+        {
+            HockeyMatchResultType.HomeWin or HockeyMatchResultType.ForfeitHomeWin => (rules.RegulationWinPoints, 0),
+            HockeyMatchResultType.AwayWin or HockeyMatchResultType.ForfeitAwayWin => (0, rules.RegulationWinPoints),
+            HockeyMatchResultType.Draw => (rules.TiePoints, rules.TiePoints),
+            HockeyMatchResultType.OvertimeHomeWin => (rules.OvertimeWinPoints, rules.OvertimeLossPoints),
+            HockeyMatchResultType.OvertimeAwayWin => (rules.OvertimeLossPoints, rules.OvertimeWinPoints),
+            HockeyMatchResultType.ShootoutHomeWin => (rules.ShootoutWinPoints, rules.ShootoutLossPoints),
+            HockeyMatchResultType.ShootoutAwayWin => (rules.ShootoutLossPoints, rules.ShootoutWinPoints),
+            _ when match.HomeScore > match.AwayScore => (rules.RegulationWinPoints, 0),
+            _ when match.AwayScore > match.HomeScore => (0, rules.RegulationWinPoints),
+            _ => (rules.TiePoints, rules.TiePoints)
+        };
+    }
+
+    private static List<HockeyTeamCompetitionStatisticsDto> SortSeason(
+        IReadOnlyList<HockeyTeamCompetitionStatisticsDto> existing,
+        IReadOnlyList<Guid> enrolledTeamIds,
+        IReadOnlyDictionary<Guid, string> names,
+        Guid competitionId,
+        HockeyStatisticsScope scope,
+        Guid? tournamentGroupId,
+        IReadOnlyList<StandingSortCriterion> criteria,
+        IReadOnlyList<StandingMatchResult> matches)
+    {
+        List<HockeyTeamCompetitionStatisticsDto> merged = MergeRows(existing, enrolledTeamIds, names, competitionId, scope, tournamentGroupId);
+        List<HockeyTeamCompetitionStatisticsDto> ordered = StandingTableOrder.Sort(
+            merged,
+            criteria,
+            row => new StandingSortSnapshot(
+                row.TeamId,
+                row.Points,
+                row.GoalDifference,
+                row.GoalsFor,
+                row.GoalsAgainst,
+                row.PenaltyMinutes,
+                row.TeamName),
+            matches);
+
+        for (int index = 0; index < ordered.Count; index++)
+            ordered[index].StandingRank = index + 1;
+
+        return ordered;
     }
 
     private static List<HockeyTeamCompetitionStatisticsDto> MergeZeros(
+        IReadOnlyList<HockeyTeamCompetitionStatisticsDto> existing,
+        IReadOnlyList<Guid> enrolledTeamIds,
+        IReadOnlyDictionary<Guid, string> names,
+        Guid competitionId,
+        HockeyStatisticsScope scope,
+        Guid? tournamentGroupId,
+        IReadOnlyList<HockeyTieBreakerRule> tieBreakers)
+    {
+        List<HockeyTeamCompetitionStatisticsDto> merged = MergeRows(
+            existing,
+            enrolledTeamIds,
+            names,
+            competitionId,
+            scope,
+            tournamentGroupId);
+
+        List<HockeyTeamCompetitionStatisticsDto> ordered = HockeyStandingTableOrder.Sort(
+            merged,
+            tieBreakers,
+            row => new HockeyStandingSortSnapshot(
+                row.Points,
+                row.RegulationWins,
+                row.Wins,
+                row.GoalDifference,
+                row.GoalsFor,
+                row.GoalsAgainst,
+                row.PenaltyMinutes,
+                row.TeamName));
+
+        for (int index = 0; index < ordered.Count; index++)
+            ordered[index].StandingRank = index + 1;
+
+        return ordered;
+    }
+
+    private static List<HockeyTeamCompetitionStatisticsDto> MergeRows(
         IReadOnlyList<HockeyTeamCompetitionStatisticsDto> existing,
         IReadOnlyList<Guid> enrolledTeamIds,
         IReadOnlyDictionary<Guid, string> names,
@@ -178,18 +324,7 @@ internal static class HockeyStatisticsHandlerSupport
             });
         }
 
-        List<HockeyTeamCompetitionStatisticsDto> ordered = merged
-            .OrderByDescending(row => row.Points)
-            .ThenByDescending(row => row.RegulationWins)
-            .ThenByDescending(row => row.GoalDifference)
-            .ThenByDescending(row => row.GoalsFor)
-            .ThenBy(row => row.TeamName, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        for (int index = 0; index < ordered.Count; index++)
-            ordered[index].StandingRank = index + 1;
-
-        return ordered;
+        return merged;
     }
 
     public static List<HockeyTeamCompetitionStatisticsDto> DistinctStandings(

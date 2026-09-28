@@ -34,5 +34,7 @@ namespace Application.Features.Floorball.Seasons.Commands
         int OvertimeDurationMinutes = 5,
         bool AllowShootout = true,
         TeamCategory? TeamCategory = null,
-        string? LogoUrl = null) : IRequest<Result<FloorballSeasonDto>>;
+        string? LogoUrl = null,
+        int TeamsAdvancing = 0,
+        IReadOnlyList<StandingSortCriterion>? RankingCriteria = null) : IRequest<Result<FloorballSeasonDto>>;
 }
