@@ -241,16 +241,6 @@ export default function RulesManagementPage() {
             return;
         }
 
-        const confirmed = window.confirm(
-            ruleFormState.id
-                ? t("rules.admin.confirmUpdateRule")
-                : t("rules.admin.confirmPublishSingleRule"),
-        );
-
-        if (!confirmed) {
-            return;
-        }
-
         try {
             setIsSaving(true);
             setErrorMessage(null);

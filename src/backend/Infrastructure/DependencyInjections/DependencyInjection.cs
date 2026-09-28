@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using MyLeague.Infrastructure.HealthChecks;
 using MyLeague.Infrastructure.Persistence.Contexts;
 using MyLeague.Infrastructure.Persistence.Repositories.Common;
@@ -46,32 +47,25 @@ namespace MyLeague.Infrastructure.DependencyInjections
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            string connectionString = configuration.GetConnectionString("DefaultConnection") ?? "";
+            string connectionString = LimitPostgresPool(
+                configuration.GetConnectionString("DefaultConnection") ?? "");
 
             services.AddDbContext<CommonDbContext>(options =>
-                options.UseNpgsql(
-                    connectionString,
-                    b => b.MigrationsAssembly(typeof(CommonDbContext).Assembly.FullName)));
+                UseLeaguePostgres(options, connectionString, typeof(CommonDbContext).Assembly.FullName));
 
             services.AddDbContext<FloorballDbContext>(options =>
-                options.UseNpgsql(
-                    connectionString,
-                    b => b.MigrationsAssembly(typeof(FloorballDbContext).Assembly.FullName)));
+                UseLeaguePostgres(options, connectionString, typeof(FloorballDbContext).Assembly.FullName));
 
             services.AddDbContext<HockeyDbContext>(options =>
             {
-                options.UseNpgsql(
-                    connectionString,
-                    b => b.MigrationsAssembly(typeof(HockeyDbContext).Assembly.FullName));
+                UseLeaguePostgres(options, connectionString, typeof(HockeyDbContext).Assembly.FullName);
                 // Nested owned HockeyCoachChallengeRules generates truncated Postgres identifiers that
                 // leave a permanent model/snapshot drift in EF tooling; do not block startup migrate.
                 options.ConfigureWarnings(w =>
                     w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
             });
             services.AddDbContext<FootballDbContext>(options =>
-                options.UseNpgsql(
-                    connectionString,
-                    b => b.MigrationsAssembly(typeof(FootballDbContext).Assembly.FullName)));
+                UseLeaguePostgres(options, connectionString, typeof(FootballDbContext).Assembly.FullName));
 
             // Add repositories
             services.AddScoped<IClubRepository, ClubRepository>();
@@ -207,6 +201,44 @@ namespace MyLeague.Infrastructure.DependencyInjections
             }
 
             return services;
+        }
+
+        /// <summary>
+        /// Azure Database for PostgreSQL Burstable B1ms allows about 50 connections.
+        /// Npgsql's default pool of 100 opens connections until Postgres rejects them
+        /// (53300), which then fails unrelated reads such as news and matches.
+        /// </summary>
+        private const int PostgresMaxPoolSize = 20;
+
+        private static string LimitPostgresPool(string connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                return connectionString;
+            }
+
+            NpgsqlConnectionStringBuilder builder = new NpgsqlConnectionStringBuilder(connectionString);
+            if (builder.MaxPoolSize > PostgresMaxPoolSize)
+            {
+                builder.MaxPoolSize = PostgresMaxPoolSize;
+            }
+
+            return builder.ConnectionString;
+        }
+
+        private static void UseLeaguePostgres(
+            DbContextOptionsBuilder options,
+            string connectionString,
+            string? migrationsAssembly)
+        {
+            options.UseNpgsql(connectionString, npgsql =>
+            {
+                npgsql.MigrationsAssembly(migrationsAssembly);
+                npgsql.EnableRetryOnFailure(
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(2),
+                    errorCodesToAdd: null);
+            });
         }
     }
 }

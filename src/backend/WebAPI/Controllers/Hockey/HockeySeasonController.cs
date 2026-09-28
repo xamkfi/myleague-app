@@ -326,7 +326,7 @@ public class HockeySeasonController : BaseApiController
         }
 
         return HandleResult(
-            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId), cancellationToken),
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId, IncludeDrafts: true), cancellationToken),
             "Team removed from hockey season successfully",
             "Failed to remove team from hockey season");
     }
@@ -356,7 +356,7 @@ public class HockeySeasonController : BaseApiController
         }
 
         return HandleResult(
-            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId), cancellationToken),
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId, IncludeDrafts: true), cancellationToken),
             "Division added to hockey season successfully",
             "Failed to add division to hockey season");
     }
@@ -383,7 +383,7 @@ public class HockeySeasonController : BaseApiController
         }
 
         return HandleResult(
-            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId), cancellationToken),
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId, IncludeDrafts: true), cancellationToken),
             "Division removed from hockey season successfully",
             "Failed to remove division from hockey season");
     }
@@ -414,7 +414,7 @@ public class HockeySeasonController : BaseApiController
         }
 
         return HandleResult(
-            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId), cancellationToken),
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId, IncludeDrafts: true), cancellationToken),
             "Team added to hockey season division successfully",
             "Failed to add team to hockey season division");
     }
@@ -445,7 +445,7 @@ public class HockeySeasonController : BaseApiController
         }
 
         return HandleResult(
-            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId), cancellationToken),
+            await _mediator.Send(new GetHockeySeasonByIdQuery(seasonId, IncludeDrafts: true), cancellationToken),
             "Team removed from hockey season division successfully",
             "Failed to remove team from hockey season division");
     }

@@ -44,18 +44,19 @@ export default function AdminSeasonsTable({
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const getStatusBadge = (season: AdminSeasonRow) => {
-    if (season.isCompleted) {
-      return <span className="admin-badge admin-badge--completed">{labels.completed}</span>;
-    }
-    if (season.isActive) {
-      return <span className="admin-badge admin-badge--active">{labels.active}</span>;
-    }
-    return <span className="admin-badge admin-badge--inactive">{labels.inactive}</span>;
+  const getStatusMark = (season: AdminSeasonRow) => {
+    const kind = season.isCompleted ? 'completed' : season.isActive ? 'active' : 'inactive';
+    const label = season.isCompleted ? labels.completed : season.isActive ? labels.active : labels.inactive;
+    return (
+      <span className={`admin-season-status admin-season-status--${kind}`} title={label}>
+        <span className="admin-season-status__dot" aria-hidden="true" />
+        <span className="admin-season-status__label">{label}</span>
+      </span>
+    );
   };
 
   return (
-    <table className="admin-table">
+    <table className="admin-table admin-seasons-table">
       <thead>
         <tr>
           <th>{labels.name}</th>
@@ -63,8 +64,10 @@ export default function AdminSeasonsTable({
           <th>{labels.startDate}</th>
           <th>{labels.endDate}</th>
           <th>{labels.teams}</th>
-          <th>{labels.status}</th>
-          <th className="admin-table__actions-col">{t('common.actions')}</th>
+          <th className="admin-seasons-table__status">{labels.status}</th>
+          <th className="admin-table__actions-col">
+            <span className="admin-table__visually-hidden">{t('common.actions')}</span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -121,7 +124,7 @@ export default function AdminSeasonsTable({
                   {season.teamCount} {labels.teamsCount}
                 </span>
               </td>
-              <td>{getStatusBadge(season)}</td>
+              <td className="admin-seasons-table__status">{getStatusMark(season)}</td>
               <td
                 className="admin-table__actions-col"
                 onClick={(event) => event.stopPropagation()}

@@ -172,29 +172,8 @@
   color: white;
 }
 
-.rules-page__sport-filter {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.rules-page__content-section .underline-tabs {
   margin-bottom: 1.75rem;
-  max-width: 320px;
-}
-
-.rules-page__sport-filter-label {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #334155;
-}
-
-.rules-page__sport-select {
-  min-height: 44px;
-  padding: 0 0.9rem;
-  border-radius: 0.75rem;
-  border: 1px solid #d9e0ea;
-  background: white;
-  color: #172033;
-  font-size: 0.95rem;
-  font-weight: 600;
 }
 
 .rules-page__alert,

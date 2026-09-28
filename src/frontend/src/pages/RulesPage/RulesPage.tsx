@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
 import MahlInfoLayout from "../../components/MahlInfoLayout/MahlInfoLayout";
+import SportIcon from "../../components/SportIcon/SportIcon";
+import UnderlineTabs from "../../components/UnderlineTabs/UnderlineTabs";
 import type { RulesSection } from "../../types/admin/ruleTypes";
 import { rulesSectionService } from "../../services/rulesSectionService";
 import { parseRulesFromHtml } from "../../utils/helpers";
@@ -12,6 +14,31 @@ import {
     sortRulesByOrder,
 } from "../../utils/rulesSectionUtils";
 import "./RulesPage.scss";
+
+function sportFromSectionTitle(title: string): string {
+    const normalized = title
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    if (normalized.includes("salibandy") || normalized.includes("floorball")) {
+        return "floorball";
+    }
+
+    if (
+        normalized.includes("jalkapallo") ||
+        normalized.includes("football") ||
+        normalized.includes("soccer")
+    ) {
+        return "football";
+    }
+
+    if (normalized.includes("jaakiekko") || normalized.includes("hockey")) {
+        return "hockey";
+    }
+
+    return title;
+}
 
 export default function RulesPage() {
     const { t } = useTranslation();
@@ -183,37 +210,27 @@ export default function RulesPage() {
 
                     {activeTopSection?.sectionType === "SportGroup" &&
                         sportSections.length > 0 && (
-                            <div className="rules-page__sport-filter">
-                                <label
-                                    htmlFor="rules-sport-select"
-                                    className="rules-page__sport-filter-label"
-                                >
-                                    {t(
-                                        "rules.selectSport",
-                                        "Valitse laji",
-                                    )}
-                                </label>
-
-                                <select
-                                    id="rules-sport-select"
-                                    className="rules-page__sport-select"
-                                    value={activeSportSectionId}
-                                    onChange={(event) =>
-                                        setActiveSportSectionId(
-                                            event.target.value,
-                                        )
-                                    }
-                                >
-                                    {sportSections.map((section) => (
-                                        <option
-                                            key={section.id}
-                                            value={section.id}
-                                        >
-                                            {section.title}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            <UnderlineTabs
+                                tabs={sportSections.map((section) => ({
+                                    id: section.id,
+                                    label: section.title,
+                                    icon: (
+                                        <SportIcon
+                                            sport={sportFromSectionTitle(
+                                                section.title,
+                                            )}
+                                            size="sm"
+                                            decorative
+                                        />
+                                    ),
+                                }))}
+                                activeId={activeSportSectionId}
+                                onChange={setActiveSportSectionId}
+                                ariaLabel={t(
+                                    "rules.selectSport",
+                                    "Valitse laji",
+                                )}
+                            />
                         )}
 
                     {error && (
@@ -222,40 +239,60 @@ export default function RulesPage() {
                         </div>
                     )}
 
-                    {isLoading ? (
-                        <div className="rules-page__loading">
-                            {t("rules.loading", "Ladataan sääntöjä...")}
-                        </div>
-                    ) : displayedRules.length === 0 ? (
-                        <div className="rules-page__empty">
-                            {t(
-                                "rules.noRules",
-                                "Sääntöjä ei ole vielä lisätty.",
-                            )}
-                        </div>
-                    ) : (
-                        <div className="rules-page__rules-list">
-                            {displayedRules.map((rule) => (
-                                <article
-                                    key={rule.id}
-                                    className="rules-page__rule-card"
-                                >
-                                    <div className="rules-page__rule-number">
-                                        {formatRuleNumber(rule.order)}
-                                    </div>
+                    <div
+                        role={
+                            activeTopSection?.sectionType === "SportGroup"
+                                ? "tabpanel"
+                                : undefined
+                        }
+                        id={
+                            activeTopSection?.sectionType === "SportGroup" &&
+                            activeSportSectionId
+                                ? `tabpanel-${activeSportSectionId}`
+                                : undefined
+                        }
+                        aria-labelledby={
+                            activeTopSection?.sectionType === "SportGroup" &&
+                            activeSportSectionId
+                                ? `tab-${activeSportSectionId}`
+                                : undefined
+                        }
+                    >
+                        {isLoading ? (
+                            <div className="rules-page__loading">
+                                {t("rules.loading", "Ladataan sääntöjä...")}
+                            </div>
+                        ) : displayedRules.length === 0 ? (
+                            <div className="rules-page__empty">
+                                {t(
+                                    "rules.noRules",
+                                    "Sääntöjä ei ole vielä lisätty.",
+                                )}
+                            </div>
+                        ) : (
+                            <div className="rules-page__rules-list">
+                                {displayedRules.map((rule) => (
+                                    <article
+                                        key={rule.id}
+                                        className="rules-page__rule-card"
+                                    >
+                                        <div className="rules-page__rule-number">
+                                            {formatRuleNumber(rule.order)}
+                                        </div>
 
-                                    <div className="rules-page__rule-content">
-                                        <div
-                                            className="rules-page__rule-html"
-                                            dangerouslySetInnerHTML={{
-                                                __html: rule.html,
-                                            }}
-                                        />
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    )}
+                                        <div className="rules-page__rule-content">
+                                            <div
+                                                className="rules-page__rule-html"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: rule.html,
+                                                }}
+                                            />
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </section>
             </MahlInfoLayout>
         </PageTemplate>

@@ -297,7 +297,7 @@
       "rule": "Rule",
       "subtitle": "Manage Rules",
       "confirmPublish": "Are you sure you want to publish the rules?",
-      "confirmDiscardChanges": "You have unsaved changes.",
+      "confirmDiscardChanges": "Do you want to discard unsaved changes?",
       "section": "Rule section",
       "allSections": "All sections",
       "unknownSection": "Unknown section",
@@ -3757,5 +3757,8 @@
     "codeSent": "A login code has been sent to your email.",
     "unexpectedError": "An unexpected error occurred.",
     "logout": "Log out"
+  },
+  "seasonImport": {
+    "existingCount": "(+{{count}} existing)"
   }
 }
