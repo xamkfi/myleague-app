@@ -86,23 +86,26 @@ public class GetTournamentGroupStandingsHandler
                 TournamentStandingsCalculator.Compute(group, completedMatches);
 
             // Map each ranked row to a DTO (with team-logo enrichment).
-            Dictionary<Guid, Uri?> teamLogos = group.Teams.ToDictionary(
-                gt => gt.TeamId,
-                gt => ResolveLogo(gt.Team, clubLookup));
+            Dictionary<Guid, FloorballTeam> teamsById = group.Teams.ToDictionary(gt => gt.TeamId, gt => gt.Team);
 
             List<FloorballTournamentGroupStandingDto> standings = rankedRows
-                .Select(r => new FloorballTournamentGroupStandingDto(
-                    r.TeamId,
-                    r.TeamName,
-                    teamLogos.TryGetValue(r.TeamId, out Uri? logo) ? logo : null,
-                    r.GamesPlayed,
-                    r.Wins,
-                    r.Draws,
-                    r.Losses,
-                    r.GoalsFor,
-                    r.GoalsAgainst,
-                    r.GoalDifference,
-                    r.Points))
+                .Select(r =>
+                {
+                    teamsById.TryGetValue(r.TeamId, out FloorballTeam? team);
+                    return new FloorballTournamentGroupStandingDto(
+                        r.TeamId,
+                        r.TeamName,
+                        team is null ? null : ResolveLogo(team, clubLookup),
+                        r.GamesPlayed,
+                        r.Wins,
+                        r.Draws,
+                        r.Losses,
+                        r.GoalsFor,
+                        r.GoalsAgainst,
+                        r.GoalDifference,
+                        r.Points,
+                        team?.ShortName ?? string.Empty);
+                })
                 .ToList();
 
             _logger.LogInformation(
@@ -123,6 +126,6 @@ public class GetTournamentGroupStandingsHandler
     private static Uri? ResolveLogo(FloorballTeam team, Dictionary<Guid, Club> clubLookup)
     {
         clubLookup.TryGetValue(team.ClubId, out Club? club);
-        return team.GetEffectiveLogoUrl(club?.LogoUrl);
+        return PublicLogoUrl.OmitPlaceholder(team.GetEffectiveLogoUrl(club?.LogoUrl));
     }
 }

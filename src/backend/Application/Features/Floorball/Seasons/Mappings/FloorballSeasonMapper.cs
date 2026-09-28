@@ -15,12 +15,14 @@ using Application.Features.Floorball.Referees.Mappings;
 using Application.Features.Floorball.TeamManagers.Mappings;
 using Application.Features.Floorball.Statistics.Mappings;
 using Domain.Entities.Common;
+using Domain.Enums.Common;
 using Domain.Entities.Floorball.Competitions;
 using Domain.Entities.Floorball.Matches;
 using Domain.Entities.Floorball.Matches.Events;
 using Domain.Entities.Floorball.Officials;
 using Domain.Entities.Floorball.Statistics;
 using Domain.Entities.Floorball.Teams;
+using Domain.Services.Common;
 using Domain.ValueObjects.Floorball;
 using System;
 using System.Collections.Generic;
@@ -91,6 +93,14 @@ public static class FloorballSeasonMapper
             season.MatchRules.OvertimeDurationMinutes,
             season.MatchRules.AllowShootout);
 
+        int teamsAdvancing = 0;
+        IReadOnlyList<StandingSortCriterion> rankingCriteria = StandingSortCriteria.Default;
+        if (season is FloorballSeason floorballSeason)
+        {
+            teamsAdvancing = floorballSeason.TeamsAdvancing;
+            rankingCriteria = floorballSeason.RankingCriteria;
+        }
+
         return new FloorballSeasonDto(
             season.Id,
             season.Name,
@@ -103,7 +113,9 @@ public static class FloorballSeasonMapper
             FloorballMatchMapper.ToDtos(matchesToMap).ToList().AsReadOnly(),
             matchRulesDto,
             season.TeamCategory,
-            CompetitionLogoUrl.ToPublicString(season.LogoUrl)
+            CompetitionLogoUrl.ToPublicString(season.LogoUrl),
+            teamsAdvancing,
+            rankingCriteria
         );
     }
 
@@ -151,6 +163,7 @@ public static class FloorballSeasonMapper
          command.TeamCategory
      );
         season.UpdateLogo(CompetitionLogoUrl.Parse(command.LogoUrl));
+        season.UpdateStandingsSettings(command.TeamsAdvancing, command.RankingCriteria);
         return season;
     }
 
@@ -205,5 +218,9 @@ public static class FloorballSeasonMapper
         }
 
         season.UpdateLogo(CompetitionLogoUrl.Parse(command.LogoUrl));
+        if (season is FloorballSeason floorballSeason)
+        {
+            floorballSeason.UpdateStandingsSettings(command.TeamsAdvancing, command.RankingCriteria);
+        }
     }
 } 

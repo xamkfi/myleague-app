@@ -66,7 +66,8 @@ public class GetFootballSeasonsPagedHandler
                     s.IsActive,
                     s.IsCompleted,
                     FootballSeasonYear.FromDates(s.StartDate, s.EndDate),
-                    s.TeamCategory))
+                    s.TeamCategory,
+                    s.TeamsAdvancing))
                 .ToList();
 
             PagedResult<FootballSeasonSummaryDto> result = PagedResult.Create(

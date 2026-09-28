@@ -59,7 +59,8 @@ function FloorballTeamPage() {
   const { t } = useTranslation();
 
   const [team, setTeam] = useState<FloorballTeam | null>(null);
-  const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null)
+  const [matches, setMatches] = useState<FloorballMatchDto[] | null>(null);
+  const [summaryMatches, setSummaryMatches] = useState<FloorballMatchDto[] | null>(null);
   const [teamStatistics, setTeamStatistics] = useState<FloorballTeamSeasonStatisticsDto | null>(null);
   const [seasonSummary, setSeasonSummary] = useState<FloorballSeasonStatisticsSummaryDto | null>(null);
   const [currentSeason, setCurrentSeason] = useState<FloorballSeasonDto | null>(null);
@@ -117,6 +118,8 @@ function FloorballTeamPage() {
               teamDetails.teamCategory,
             );
           setCurrentSeason(currentSeasonData);
+          setCurrentPage(1);
+          setSummaryMatches(null);
           setTeamStatistics(null);
           setPlayerStatistics(null);
           setSeasonSummary(null);
@@ -150,6 +153,7 @@ function FloorballTeamPage() {
 
         const response = await floorballMatchService.getAll({
           teamId: team.id,
+          competitionId: currentSeason?.id,
           page: currentPage,
           pageSize: 10,
           sortOrder: 'asc'
@@ -166,7 +170,28 @@ function FloorballTeamPage() {
       }
     };
     fetchMatches();
-  }, [team, currentPage]);
+  }, [team, currentPage, currentSeason?.id]);
+
+  useEffect(() => {
+    const fetchSummaryMatches = async () => {
+      if (!team) return;
+
+      try {
+        const response = await floorballMatchService.getAll({
+          teamId: team.id,
+          competitionId: currentSeason?.id,
+          page: 1,
+          pageSize: 100,
+          sortOrder: 'desc',
+        });
+        setSummaryMatches(response.data || []);
+      } catch (error) {
+        console.error('Failed to fetch summary matches:', error);
+        setSummaryMatches([]);
+      }
+    };
+    fetchSummaryMatches();
+  }, [team, currentSeason?.id]);
 
   // Function to fetch data for specific tabs
   const fetchTabData = async (tabId: string) => {
@@ -291,7 +316,8 @@ function FloorballTeamPage() {
         return (
           <SummarySection
             team={team}
-            matches={matches || []}
+            matches={summaryMatches || []}
+            seasonId={currentSeason?.id}
           ></SummarySection>
         );
 

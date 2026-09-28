@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import { hockeyTeamService } from '../../../../api/hockey/hockeyTeamService';
@@ -23,6 +23,8 @@ function AddHockeyPlayerToRosterPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id: teamId } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const competitionId = searchParams.get('competitionId') ?? '';
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -40,7 +42,7 @@ function AddHockeyPlayerToRosterPage() {
     try {
       setLoading(true);
       const [team, allTeams] = await Promise.all([
-        hockeyTeamService.getById(teamId),
+        hockeyTeamService.getById(teamId, competitionId || null),
         hockeyTeamService.getAll(),
       ]);
       setCurrentTeam(team);
@@ -82,7 +84,7 @@ function AddHockeyPlayerToRosterPage() {
     } finally {
       setLoading(false);
     }
-  }, [teamId, t]);
+  }, [teamId, competitionId, t]);
 
   useEffect(() => {
     void loadData();
@@ -143,12 +145,20 @@ function AddHockeyPlayerToRosterPage() {
       for (const playerId of selectedPlayers) {
         const row = availablePlayers.find((player) => player.playerId === playerId);
         try {
-          await hockeyTeamService.addPlayer(teamId, playerId, row?.position ?? 'Center');
+          await hockeyTeamService.addPlayer(
+            teamId,
+            playerId,
+            row?.position ?? 'Center',
+            undefined,
+            'Active',
+            competitionId || null,
+          );
         } catch (err) {
           console.error(`Failed to add player ${playerId}:`, err);
         }
       }
-      navigate(`/admin/hockey/teams/${teamId}/roster`);
+      const query = competitionId ? `?competitionId=${encodeURIComponent(competitionId)}` : '';
+      navigate(`/admin/hockey/teams/${teamId}/roster${query}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('hockey.teams.errors.addPlayersFailed', 'Failed to add players to team'));
       setSaving(false);

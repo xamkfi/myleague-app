@@ -90,6 +90,7 @@ public class UpdateFloorballSeasonHandler : IRequestHandler<UpdateFloorballSeaso
             FloorballSeasonDto seasonDto = FloorballSeasonMapper.ToDto(
                 existingSeason,
                 seasonDivisionDtos,
+                seasonTeams: Array.Empty<FloorballTeam>(),
                 seasonMatches: Array.Empty<FloorballMatch>());
             _logger.LogInformation("Successfully updated floorball season with ID: {SeasonId}", existingSeason.Id);
 

@@ -93,6 +93,17 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [StringLength(500)]
         public string? LogoUrl { get; set; }
+
+        /// <summary>
+        /// How many teams advance. Zero hides the highlight.
+        /// </summary>
+        [Range(0, 999)]
+        public int TeamsAdvancing { get; set; }
+
+        /// <summary>
+        /// Ordered ranking criteria. Omitted values use the default order.
+        /// </summary>
+        public List<Domain.Enums.Common.StandingSortCriterion>? RankingCriteria { get; set; }
     }
 
     /// <summary>
@@ -154,6 +165,17 @@ namespace WebAPI.Models.Floorball
         /// </summary>
         [StringLength(500)]
         public string? LogoUrl { get; set; }
+
+        /// <summary>
+        /// How many teams advance. Zero hides the highlight.
+        /// </summary>
+        [Range(0, 999)]
+        public int TeamsAdvancing { get; set; }
+
+        /// <summary>
+        /// Ordered ranking criteria. Omitted values use the default order.
+        /// </summary>
+        public List<Domain.Enums.Common.StandingSortCriterion>? RankingCriteria { get; set; }
     }
 
     /// <summary>

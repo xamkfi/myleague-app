@@ -117,7 +117,7 @@ public class RecalculateHockeyCompetitionStatisticsHandler
                     request.PlayoffSeriesId))
                 .ToList();
 
-            HockeyStatisticsHandlerSupport.AssignStandingRanks(teamAggregates);
+            HockeyStatisticsHandlerSupport.AssignStandingRanks(teamAggregates, standingRules.TieBreakers);
 
             List<HockeyPlayerCompetitionStatistics> playerAggregates = matchPlayerStats
                 .GroupBy(s => new { s.PlayerId, s.TeamId, s.TeamPlayerId })

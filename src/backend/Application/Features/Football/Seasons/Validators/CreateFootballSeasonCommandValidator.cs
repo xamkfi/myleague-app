@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.Features.Football.Seasons.Commands;
+using Domain.Services.Common;
 using FluentValidation;
 
 namespace Application.Features.Football.Seasons.Validators;
@@ -52,6 +53,13 @@ public class CreateFootballSeasonCommandValidator : AbstractValidator<CreateFoot
         RuleFor(x => x.LogoUrl)
             .Must(CompetitionLogoUrl.IsValidOptional)
             .WithMessage("Logo url must be an http or https address under 500 characters");
+
+        RuleFor(x => x.TeamsAdvancing)
+            .GreaterThanOrEqualTo(0).WithMessage("Teams advancing cannot be negative");
+
+        RuleFor(x => x.RankingCriteria)
+            .Must(StandingSortCriteria.IsValid)
+            .WithMessage("Ranking criteria must be a non-empty list of unique values");
     }
 
     private static bool BeValidDate(DateTime date) => date != default;

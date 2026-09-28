@@ -174,6 +174,10 @@
       background: rgba($color-blue-secondary, 0.06);
     }
 
+    &--qualifying {
+      background: rgba(34, 197, 94, 0.12);
+    }
+
     &:last-child {
       border-bottom: none;
     }

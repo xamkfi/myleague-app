@@ -1,4 +1,5 @@
 using Domain.Enums.Common;
+using Domain.Services.Common;
 using Domain.ValueObjects.Football;
 
 namespace Domain.Entities.Football.Competitions;
@@ -9,6 +10,17 @@ namespace Domain.Entities.Football.Competitions;
 public class FootballSeason : FootballCompetition
 {
     private readonly List<FootballSeasonContentBlock> _contentBlocks = new();
+    private readonly List<StandingSortCriterion> _rankingCriteria = new(StandingSortCriteria.Default);
+
+    /// <summary>
+    /// How many teams at the top of the table advance. Zero means no highlight.
+    /// </summary>
+    public int TeamsAdvancing { get; private set; }
+
+    /// <summary>
+    /// Ordered criteria used to rank the season table.
+    /// </summary>
+    public IReadOnlyList<StandingSortCriterion> RankingCriteria => _rankingCriteria;
 
     public IReadOnlyCollection<FootballSeasonContentBlock> ContentBlocks => _contentBlocks.AsReadOnly();
 
@@ -22,6 +34,21 @@ public class FootballSeason : FootballCompetition
         FootballStandingRules? standingRules = null,
         TeamCategory teamCategory = TeamCategory.Adult)
         : base(name, startDate, endDate, matchRules, standingRules, teamCategory) { }
+
+    /// <summary>
+    /// Sets how many teams advance and the order used to rank the table.
+    /// A null criteria list keeps the default order.
+    /// </summary>
+    public void UpdateStandingsSettings(int teamsAdvancing, IEnumerable<StandingSortCriterion>? rankingCriteria)
+    {
+        if (teamsAdvancing < 0)
+            throw new ArgumentOutOfRangeException(nameof(teamsAdvancing), "Teams advancing cannot be negative.");
+
+        TeamsAdvancing = teamsAdvancing;
+        List<StandingSortCriterion> resolved = StandingSortCriteria.Resolve(rankingCriteria);
+        _rankingCriteria.Clear();
+        _rankingCriteria.AddRange(resolved);
+    }
 
     /// <summary>
     /// Replaces intro blocks. List order becomes <see cref="FootballSeasonContentBlock.SortOrder"/>.

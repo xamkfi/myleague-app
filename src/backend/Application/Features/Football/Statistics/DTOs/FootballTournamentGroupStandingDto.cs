@@ -14,4 +14,5 @@ public record FootballTournamentGroupStandingDto(
     int GoalsFor,
     int GoalsAgainst,
     int GoalDifference,
-    int Points);
+    int Points,
+    string TeamShortName);

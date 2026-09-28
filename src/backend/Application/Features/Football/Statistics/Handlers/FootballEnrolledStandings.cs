@@ -1,8 +1,15 @@
+using Application.Common;
 using Application.Features.Football.Teams.DTOs;
+using Domain.Entities.Common;
 using Domain.Entities.Football.Competitions;
+using Domain.Entities.Football.Matches;
 using Domain.Entities.Football.Teams;
+using Domain.Enums.Common;
 using Domain.Enums.Football;
+using Domain.Repositories.Common;
 using Domain.Repositories.Football;
+using Domain.Services.Common;
+using Domain.ValueObjects.Football;
 
 namespace Application.Features.Football.Statistics.Handlers;
 
@@ -29,14 +36,77 @@ internal static class FootballEnrolledStandings
         IFootballCompetitionRepository competitions,
         IFootballTournamentRepository tournaments,
         IFootballTeamRepository teams,
+        IClubRepository clubs,
+        IFootballMatchRepository matches,
         CancellationToken cancellationToken)
     {
         FootballCompetition? competition = await competitions.GetByIdAsync(competitionId);
+        List<FootballTeam> knownTeams = new();
+        List<FootballTeamSeasonStatisticsDto> rows;
         if (competition is null || !IsStarted(competition))
-            return existing.ToList();
+        {
+            rows = existing.ToList();
+        }
+        else
+        {
+            knownTeams = await LoadEnrolledTeamsAsync(competition, tournaments, teams, cancellationToken);
+            rows = Merge(existing, knownTeams, competition.Id, competition.Name ?? string.Empty);
+        }
 
-        List<FootballTeam> enrolled = await LoadEnrolledTeamsAsync(competition, tournaments, teams, cancellationToken);
-        return Merge(existing, enrolled, competition.Id, competition.Name ?? string.Empty);
+        await ApplyMarksAsync(rows, knownTeams, teams, clubs, cancellationToken);
+        IReadOnlyList<StandingSortCriterion> criteria = CriteriaFor(competition);
+        IReadOnlyList<StandingMatchResult> played = await LoadResultsAsync(competition, criteria, matches);
+        return StandingTableOrder.Sort(
+            rows,
+            criteria,
+            row => new StandingSortSnapshot(
+                row.TeamId,
+                row.Points,
+                row.GoalDifference,
+                row.GoalsFor,
+                row.GoalsAgainst,
+                0,
+                row.TeamName),
+            played);
+    }
+
+    private static async Task<IReadOnlyList<StandingMatchResult>> LoadResultsAsync(
+        FootballCompetition? competition,
+        IReadOnlyList<StandingSortCriterion> criteria,
+        IFootballMatchRepository matches)
+    {
+        if (competition is null || !StandingSortCriteria.UsesHeadToHead(criteria))
+            return [];
+
+        FootballStandingRules rules = competition.StandingRules;
+        List<StandingMatchResult> results = new();
+        IEnumerable<FootballMatch> validMatches = (await matches.GetByCompetitionIdAsync(competition.Id))
+            .Where(match => match.Status == FootballMatchStatus.Completed
+                && match.PlayoffRound is null
+                && match.HomeTeamId is Guid homeId && homeId != Guid.Empty
+                && match.AwayTeamId is Guid awayId && awayId != Guid.Empty);
+        foreach (FootballMatch match in validMatches)
+        {
+            Guid homeId = match.HomeTeamId!.Value;
+            Guid awayId = match.AwayTeamId!.Value;
+            int homePoints = match.HomeScore > match.AwayScore
+                ? rules.WinPoints
+                : match.HomeScore == match.AwayScore ? rules.DrawPoints : rules.LossPoints;
+            int awayPoints = match.AwayScore > match.HomeScore
+                ? rules.WinPoints
+                : match.HomeScore == match.AwayScore ? rules.DrawPoints : rules.LossPoints;
+            results.Add(new StandingMatchResult(homeId, awayId, match.HomeScore, match.AwayScore, homePoints, awayPoints));
+        }
+
+        return results;
+    }
+
+    private static IReadOnlyList<StandingSortCriterion> CriteriaFor(FootballCompetition? competition)
+    {
+        if (competition is FootballSeason season && season.RankingCriteria.Count > 0)
+            return season.RankingCriteria;
+
+        return StandingSortCriteria.LegacyWithoutGoalsAgainst;
     }
 
     private static async Task<List<FootballTeam>> LoadEnrolledTeamsAsync(
@@ -98,11 +168,41 @@ internal static class FootballEnrolledStandings
             });
         }
 
-        return merged
-            .OrderByDescending(row => row.Points)
-            .ThenByDescending(row => row.GoalDifference)
-            .ThenByDescending(row => row.GoalsFor)
-            .ThenBy(row => row.TeamName, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        return merged;
+    }
+
+    private static async Task ApplyMarksAsync(
+        List<FootballTeamSeasonStatisticsDto> rows,
+        IReadOnlyList<FootballTeam> knownTeams,
+        IFootballTeamRepository teams,
+        IClubRepository clubs,
+        CancellationToken cancellationToken)
+    {
+        if (rows.Count == 0)
+            return;
+
+        Dictionary<Guid, FootballTeam> byId = new();
+        foreach (FootballTeam team in knownTeams)
+            byId[team.Id] = team;
+
+        foreach (Guid teamId in rows.Select(row => row.TeamId).Distinct().Where(teamId => !byId.ContainsKey(teamId)))
+        {
+            FootballTeam? loaded = await teams.GetByIdAsync(teamId);
+            if (loaded is not null)
+                byId[loaded.Id] = loaded;
+        }
+
+        List<Guid> clubIds = byId.Values.Select(team => team.ClubId).Distinct().ToList();
+        Dictionary<Guid, Club> clubLookup = clubIds.Count == 0
+            ? new Dictionary<Guid, Club>()
+            : await clubs.GetByIdsAsync(clubIds, cancellationToken);
+
+        foreach (FootballTeamSeasonStatisticsDto row in rows.Where(row => byId.ContainsKey(row.TeamId)))
+        {
+            FootballTeam team = byId[row.TeamId];
+            clubLookup.TryGetValue(team.ClubId, out Club? club);
+            row.TeamLogo = PublicLogoUrl.OmitPlaceholder(team.GetEffectiveLogoUrl(club?.LogoUrl));
+            row.TeamShortName = team.ShortName;
+        }
     }
 }

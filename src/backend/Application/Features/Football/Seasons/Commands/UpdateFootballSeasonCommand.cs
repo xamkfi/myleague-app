@@ -27,4 +27,6 @@ public record UpdateFootballSeasonCommand(
     int DrawPoints = 1,
     int LossPoints = 0,
     TeamCategory? TeamCategory = null,
-    string? LogoUrl = null) : IRequest<Result<FootballSeasonDto>>;
+    string? LogoUrl = null,
+    int TeamsAdvancing = 0,
+    IReadOnlyList<StandingSortCriterion>? RankingCriteria = null) : IRequest<Result<FootballSeasonDto>>;

@@ -49,6 +49,17 @@ public class CreateHockeySeasonRequest
     /// </summary>
     [StringLength(500)]
     public string? LogoUrl { get; set; }
+
+    /// <summary>
+    /// How many teams advance. Zero hides the highlight.
+    /// </summary>
+    [Range(0, 999)]
+    public int TeamsAdvancing { get; set; }
+
+    /// <summary>
+    /// Ordered ranking criteria. Omitted values keep the default order.
+    /// </summary>
+    public List<StandingSortCriterion>? RankingCriteria { get; set; }
 }
 
 /// <summary>
@@ -79,6 +90,17 @@ public class UpdateHockeySeasonRequest
     /// <summary>Optional public logo URL for the season hero.</summary>
     [StringLength(500)]
     public string? LogoUrl { get; set; }
+
+    /// <summary>
+    /// How many teams advance. Zero hides the highlight.
+    /// </summary>
+    [Range(0, 999)]
+    public int TeamsAdvancing { get; set; }
+
+    /// <summary>
+    /// Ordered ranking criteria. Omitted values keep the current order.
+    /// </summary>
+    public List<StandingSortCriterion>? RankingCriteria { get; set; }
 }
 
 /// <summary>

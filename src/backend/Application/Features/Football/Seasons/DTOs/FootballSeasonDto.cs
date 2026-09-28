@@ -19,4 +19,6 @@ public record FootballSeasonDto(
     FootballMatchRulesDto MatchRules,
     FootballStandingRulesDto StandingRules,
     TeamCategory TeamCategory,
-    string? LogoUrl);
+    string? LogoUrl,
+    int TeamsAdvancing = 0,
+    IReadOnlyList<StandingSortCriterion>? RankingCriteria = null);

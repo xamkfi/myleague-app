@@ -28,9 +28,15 @@ public class FootballTeamSeasonStatisticsDto
     public string TeamName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets team logo
+    /// Gets or sets team logo. Team logo, or the club logo when the team has none.
+    /// Placeholder hosts such as example.com are omitted.
     /// </summary>
     public Uri? TeamLogo { get; set; }
+
+    /// <summary>
+    /// Gets or sets the team short name shown when no logo is available.
+    /// </summary>
+    public string TeamShortName { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets season name

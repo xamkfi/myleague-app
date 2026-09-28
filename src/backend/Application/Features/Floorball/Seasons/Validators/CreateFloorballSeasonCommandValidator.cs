@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.Features.Floorball.Seasons.Commands;
+using Domain.Services.Common;
 using Domain.Enums.Floorball;
 using FluentValidation;
 using System;
@@ -45,6 +46,13 @@ public class CreateFloorballSeasonCommandValidator : AbstractValidator<CreateFlo
         RuleFor(x => x.LogoUrl)
             .Must(CompetitionLogoUrl.IsValidOptional)
             .WithMessage("Logo url must be an http or https address under 500 characters");
+
+        RuleFor(x => x.TeamsAdvancing)
+            .GreaterThanOrEqualTo(0).WithMessage("Teams advancing cannot be negative");
+
+        RuleFor(x => x.RankingCriteria)
+            .Must(StandingSortCriteria.IsValid)
+            .WithMessage("Ranking criteria must be a non-empty list of unique values");
 
     }
 

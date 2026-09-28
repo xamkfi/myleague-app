@@ -76,6 +76,7 @@ function EditHockeyRosterPage() {
         jerseyNumber: patch.jerseyNumber === undefined ? player.jerseyNumber : patch.jerseyNumber,
         rosterStatus: patch.rosterStatus ?? player.rosterStatus,
         captainRole: patch.captainRole ?? player.captainRole,
+        competitionId: selectedCompetitionId || player.competitionId || null,
       });
       await loadTeamData();
     } catch (err) {
@@ -85,7 +86,11 @@ function EditHockeyRosterPage() {
     }
   };
 
-  const handleRemovePlayer = async (playerId: string): Promise<void> => {
+  const rosterQuery = selectedCompetitionId
+    ? `?competitionId=${encodeURIComponent(selectedCompetitionId)}`
+    : '';
+
+  const handleRemovePlayer = async (player: HockeyTeamPlayerDto): Promise<void> => {
     if (!teamId) {
       return;
     }
@@ -94,7 +99,11 @@ function EditHockeyRosterPage() {
     }
     try {
       setError(null);
-      await hockeyTeamService.removePlayer(teamId, playerId);
+      await hockeyTeamService.removePlayer(
+        teamId,
+        player.playerId,
+        selectedCompetitionId || player.competitionId || null,
+      );
       await loadTeamData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove player');
@@ -161,7 +170,7 @@ function EditHockeyRosterPage() {
             <Button
               className="add-player-button"
               iconLeft={AddIcon}
-              onClick={() => navigate(`/admin/hockey/teams/${teamId}/roster/add`)}
+              onClick={() => navigate(`/admin/hockey/teams/${teamId}/roster/add${rosterQuery}`)}
             >
               {t('hockey.teams.addPlayerToTeam', 'Add New Player to Team')}
             </Button>
@@ -258,7 +267,7 @@ function EditHockeyRosterPage() {
                                 ))}
                               </select>
                             </div>
-                            <button type="button" className="dropdown-item delete-item" onClick={() => void handleRemovePlayer(player.playerId)}>
+                            <button type="button" className="dropdown-item delete-item" onClick={() => void handleRemovePlayer(player)}>
                               {t('hockey.teams.removeFromTeam', 'Remove from Team')}
                             </button>
                           </div>

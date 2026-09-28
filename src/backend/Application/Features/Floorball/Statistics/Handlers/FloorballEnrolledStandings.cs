@@ -1,8 +1,14 @@
+using Application.Common;
 using Application.Features.Floorball.Teams.DTOs;
+using Domain.Entities.Common;
 using Domain.Entities.Floorball.Competitions;
+using Domain.Entities.Floorball.Matches;
 using Domain.Entities.Floorball.Teams;
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
+using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
+using Domain.Services.Common;
 
 namespace Application.Features.Floorball.Statistics.Handlers;
 
@@ -29,14 +35,72 @@ internal static class FloorballEnrolledStandings
         IFloorballCompetitionRepository competitions,
         IFloorballTournamentRepository tournaments,
         IFloorballTeamRepository teams,
+        IClubRepository clubs,
+        IFloorballMatchRepository matches,
         CancellationToken cancellationToken)
     {
         FloorballCompetition? competition = await competitions.GetByIdAsync(competitionId);
+        List<FloorballTeam> knownTeams = new();
+        List<FloorballTeamSeasonStatisticsDto> rows;
         if (competition is null || !IsStarted(competition))
-            return existing.ToList();
+        {
+            rows = existing.ToList();
+        }
+        else
+        {
+            knownTeams = await LoadEnrolledTeamsAsync(competition, tournaments, teams, cancellationToken);
+            rows = Merge(existing, knownTeams, competition.Id, competition.Name ?? string.Empty);
+        }
 
-        List<FloorballTeam> enrolled = await LoadEnrolledTeamsAsync(competition, tournaments, teams, cancellationToken);
-        return Merge(existing, enrolled, competition.Id, competition.Name ?? string.Empty);
+        await ApplyMarksAsync(rows, knownTeams, teams, clubs, cancellationToken);
+        IReadOnlyList<StandingSortCriterion> criteria = CriteriaFor(competition);
+        IReadOnlyList<StandingMatchResult> played = await LoadResultsAsync(competitionId, criteria, matches);
+        return StandingTableOrder.Sort(
+            rows,
+            criteria,
+            row => new StandingSortSnapshot(
+                row.TeamId,
+                row.Points,
+                row.GoalDifference,
+                row.GoalsFor,
+                row.GoalsAgainst,
+                row.PenaltyMinutes,
+                row.TeamName),
+            played);
+    }
+
+    private static async Task<IReadOnlyList<StandingMatchResult>> LoadResultsAsync(
+        Guid competitionId,
+        IReadOnlyList<StandingSortCriterion> criteria,
+        IFloorballMatchRepository matches)
+    {
+        if (!StandingSortCriteria.UsesHeadToHead(criteria))
+            return [];
+
+        List<StandingMatchResult> results = new();
+        IEnumerable<FloorballMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
+            .Where(match => match.Status == FloorballMatchStatus.Completed
+                && match.PlayoffRound is null
+                && match.HomeTeamId is Guid homeId && homeId != Guid.Empty
+                && match.AwayTeamId is Guid awayId && awayId != Guid.Empty);
+        foreach (FloorballMatch match in validMatches)
+        {
+            Guid homeId = match.HomeTeamId!.Value;
+            Guid awayId = match.AwayTeamId!.Value;
+            int homePoints = match.HomeScore > match.AwayScore ? 3 : match.HomeScore == match.AwayScore ? 1 : 0;
+            int awayPoints = match.AwayScore > match.HomeScore ? 3 : match.HomeScore == match.AwayScore ? 1 : 0;
+            results.Add(new StandingMatchResult(homeId, awayId, match.HomeScore, match.AwayScore, homePoints, awayPoints));
+        }
+
+        return results;
+    }
+
+    private static IReadOnlyList<StandingSortCriterion> CriteriaFor(FloorballCompetition? competition)
+    {
+        if (competition is FloorballSeason season && season.RankingCriteria.Count > 0)
+            return season.RankingCriteria;
+
+        return StandingSortCriteria.LegacyWithoutGoalsAgainst;
     }
 
     private static async Task<List<FloorballTeam>> LoadEnrolledTeamsAsync(
@@ -98,11 +162,41 @@ internal static class FloorballEnrolledStandings
             });
         }
 
-        return merged
-            .OrderByDescending(row => row.Points)
-            .ThenByDescending(row => row.GoalDifference)
-            .ThenByDescending(row => row.GoalsFor)
-            .ThenBy(row => row.TeamName, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        return merged;
+    }
+
+    private static async Task ApplyMarksAsync(
+        List<FloorballTeamSeasonStatisticsDto> rows,
+        IReadOnlyList<FloorballTeam> knownTeams,
+        IFloorballTeamRepository teams,
+        IClubRepository clubs,
+        CancellationToken cancellationToken)
+    {
+        if (rows.Count == 0)
+            return;
+
+        Dictionary<Guid, FloorballTeam> byId = new();
+        foreach (FloorballTeam team in knownTeams)
+            byId[team.Id] = team;
+
+        foreach (Guid teamId in rows.Select(row => row.TeamId).Distinct().Where(teamId => !byId.ContainsKey(teamId)))
+        {
+            FloorballTeam? loaded = await teams.GetByIdAsync(teamId);
+            if (loaded is not null)
+                byId[loaded.Id] = loaded;
+        }
+
+        List<Guid> clubIds = byId.Values.Select(team => team.ClubId).Distinct().ToList();
+        Dictionary<Guid, Club> clubLookup = clubIds.Count == 0
+            ? new Dictionary<Guid, Club>()
+            : await clubs.GetByIdsAsync(clubIds, cancellationToken);
+
+        foreach (FloorballTeamSeasonStatisticsDto row in rows.Where(row => byId.ContainsKey(row.TeamId)))
+        {
+            FloorballTeam team = byId[row.TeamId];
+            clubLookup.TryGetValue(team.ClubId, out Club? club);
+            row.TeamLogo = PublicLogoUrl.OmitPlaceholder(team.GetEffectiveLogoUrl(club?.LogoUrl));
+            row.TeamShortName = team.ShortName;
+        }
     }
 }

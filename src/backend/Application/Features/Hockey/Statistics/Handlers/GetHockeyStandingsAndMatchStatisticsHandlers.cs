@@ -69,17 +69,20 @@ public class GetHockeyCompetitionStandingsHandler
     private readonly IHockeyStatisticsRepository _statisticsRepository;
     private readonly IHockeyCompetitionRepository _competitionRepository;
     private readonly IHockeyTeamRepository _teamRepository;
+    private readonly IHockeyMatchRepository _matchRepository;
     private readonly ILogger<GetHockeyCompetitionStandingsHandler> _logger;
 
     public GetHockeyCompetitionStandingsHandler(
         IHockeyStatisticsRepository statisticsRepository,
         IHockeyCompetitionRepository competitionRepository,
         IHockeyTeamRepository teamRepository,
+        IHockeyMatchRepository matchRepository,
         ILogger<GetHockeyCompetitionStandingsHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
         _competitionRepository = competitionRepository;
         _teamRepository = teamRepository;
+        _matchRepository = matchRepository;
         _logger = logger;
     }
 
@@ -107,6 +110,7 @@ public class GetHockeyCompetitionStandingsHandler
                 standings,
                 enrolled,
                 _teamRepository,
+                _matchRepository,
                 request.CompetitionId,
                 HockeyStatisticsScope.Competition,
                 tournamentGroupId: null,
@@ -175,17 +179,20 @@ public class GetHockeyTournamentGroupStandingsHandler
     private readonly IHockeyStatisticsRepository _statisticsRepository;
     private readonly IHockeyCompetitionRepository _competitionRepository;
     private readonly IHockeyTeamRepository _teamRepository;
+    private readonly IHockeyMatchRepository _matchRepository;
     private readonly ILogger<GetHockeyTournamentGroupStandingsHandler> _logger;
 
     public GetHockeyTournamentGroupStandingsHandler(
         IHockeyStatisticsRepository statisticsRepository,
         IHockeyCompetitionRepository competitionRepository,
         IHockeyTeamRepository teamRepository,
+        IHockeyMatchRepository matchRepository,
         ILogger<GetHockeyTournamentGroupStandingsHandler> logger)
     {
         _statisticsRepository = statisticsRepository;
         _competitionRepository = competitionRepository;
         _teamRepository = teamRepository;
+        _matchRepository = matchRepository;
         _logger = logger;
     }
 
@@ -219,6 +226,7 @@ public class GetHockeyTournamentGroupStandingsHandler
                 standings,
                 enrolled,
                 _teamRepository,
+                _matchRepository,
                 request.CompetitionId,
                 HockeyStatisticsScope.TournamentGroup,
                 request.TournamentGroupId,

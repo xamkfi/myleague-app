@@ -35,6 +35,8 @@ export interface FootballSeasonDto {
   standingRules?: FootballStandingRulesDto;
   teamCategory?: string;
   logoUrl?: string | null;
+  teamsAdvancing?: number;
+  rankingCriteria?: string[];
 }
 
 export interface FootballSeasonSummaryDto {
@@ -46,6 +48,7 @@ export interface FootballSeasonSummaryDto {
   isCompleted: boolean;
   seasonYear: string;
   teamCategory?: string;
+  teamsAdvancing?: number;
 }
 
 export interface FootballSeasonYearDto {
@@ -81,6 +84,8 @@ export interface CreateFootballSeasonRequest {
   lossPoints: number;
   teamCategory?: string;
   logoUrl?: string | null;
+  teamsAdvancing?: number;
+  rankingCriteria?: string[];
 }
 
 export const FOOTBALL_HOBBY_MATCH_RULE_DEFAULTS = {
@@ -121,6 +126,8 @@ export interface UpdateFootballSeasonRequest {
   lossPoints: number;
   teamCategory?: string;
   logoUrl?: string | null;
+  teamsAdvancing?: number;
+  rankingCriteria?: string[];
 }
 
 export const footballSeasonService = {
