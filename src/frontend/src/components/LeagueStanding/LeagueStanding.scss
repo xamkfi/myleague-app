@@ -93,6 +93,10 @@
   max-width: 100%;
   min-width: 600px; // Ensure table has minimum width for readability
 
+  &--wide {
+    min-width: 820px;
+  }
+
   // Use colgroup-driven widths to ensure th/td alignment
   col.rank-col { width: 8%; }
   col.team-col { width: 25%; }
@@ -483,6 +487,10 @@
 
   .standing-table {
     min-width: 400px; // Reduced minimum width for very small screens
+
+    &--wide {
+      min-width: 820px;
+    }
     
     // Hide spacer column entirely on very small screens
     col.spacer-col { display: none; }
@@ -543,6 +551,17 @@
       width: 12px;
       height: 12px;
     }
+  }
+}
+
+.standing-table--wide {
+  table-layout: auto;
+
+  thead th,
+  tbody tr td {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
   }
 }
 
