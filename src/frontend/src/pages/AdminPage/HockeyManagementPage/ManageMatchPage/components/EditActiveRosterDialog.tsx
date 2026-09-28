@@ -73,9 +73,10 @@ const splitName = (fullName: string): { firstName: string; lastName: string } =>
 const toLineupPlayers = (
   roster: HockeyTeamPlayerDto[],
   playerNames: Map<string, string>,
+  competitionId: string | null,
 ): HockeyLineupPlayer[] => {
   return roster
-    .filter((row) => row.isActive)
+    .filter((row) => row.isActive && row.competitionId === competitionId)
     .map((row) => {
       const fullName = playerNames.get(row.id) ?? row.playerId.slice(0, 8);
       const { firstName, lastName } = splitName(fullName);
@@ -431,12 +432,12 @@ function EditActiveRosterDialog({
   }, [isOpen, match]);
 
   const homePlayers = useMemo(
-    () => toLineupPlayers(homeTeam?.roster ?? [], playerNames),
-    [homeTeam, playerNames],
+    () => toLineupPlayers(homeTeam?.roster ?? [], playerNames, match.competitionId),
+    [homeTeam, playerNames, match.competitionId],
   );
   const awayPlayers = useMemo(
-    () => toLineupPlayers(awayTeam?.roster ?? [], playerNames),
-    [awayTeam, playerNames],
+    () => toLineupPlayers(awayTeam?.roster ?? [], playerNames, match.competitionId),
+    [awayTeam, playerNames, match.competitionId],
   );
 
   const updateTeamState = useCallback(

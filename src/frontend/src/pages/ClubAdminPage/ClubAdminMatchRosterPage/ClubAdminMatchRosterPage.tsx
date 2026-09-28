@@ -105,10 +105,8 @@ function ClubAdminMatchRosterPage() {
     if (!sport || !teamId || !matchId) return;
     try {
       if (isHockey) {
-        const [team, match] = await Promise.all([
-          hockeyTeamService.getById(teamId),
-          hockeyMatchService.getById(matchId),
-        ]);
+        const match = await hockeyMatchService.getById(matchId);
+        const team = await hockeyTeamService.getById(teamId, match.competitionId);
         const teamNames = await loadTeamNameMap();
         const names = await loadHockeyRosterNameMaps([team]);
         const matchTeam = match.matchTeams.find((side) => side.teamId === teamId);
@@ -142,11 +140,9 @@ function ClubAdminMatchRosterPage() {
         setSelections(initialSelections);
         setHasExistingRoster(Boolean(matchTeam?.isConfirmedRoster || dressed.length > 0));
       } else if (isFloorball) {
-        const [team, matchResponse] = await Promise.all([
-          floorballTeamService.getById(teamId),
-          floorballMatchService.getById(matchId),
-        ]);
+        const matchResponse = await floorballMatchService.getById(matchId);
         const match = matchResponse.data;
+        const team = await floorballTeamService.getById(teamId, match.competitionId);
         const isHome = match.homeTeamId === teamId;
         const activePlayers = (isHome ? match.homeActivePlayers : match.awayActivePlayers) ?? [];
         const activeGoalie = isHome ? match.homeActiveGoalieId : match.awayActiveGoalieId;
@@ -180,11 +176,9 @@ function ClubAdminMatchRosterPage() {
         setGoalieId(activeGoalie ?? '');
         setHasExistingRoster(activePlayers.length > 0);
       } else {
-        const [team, matchResponse] = await Promise.all([
-          footballTeamService.getById(teamId),
-          footballMatchService.getById(matchId),
-        ]);
+        const matchResponse = await footballMatchService.getById(matchId);
         const match = matchResponse.data;
+        const team = await footballTeamService.getById(teamId, match.competitionId);
         const isHome = match.homeTeamId === teamId;
         const lineup = (isHome ? match.homeLineup : match.awayLineup) ?? [];
 
