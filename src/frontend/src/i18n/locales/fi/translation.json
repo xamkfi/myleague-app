@@ -3579,17 +3579,14 @@
   "privacyPage": {
     "title": "Tietosuojaseloste",
     "intro": "Tämä on EU:n yleisen tietosuoja-asetuksen (GDPR, 2016/679) mukainen tietosuojaseloste, joka koskee MAHL-harrastesarjojen verkkopalvelua. Selosteessa kerrotaan, mitä henkilötietoja palvelussa käsitellään, mihin tarkoituksiin ja mitkä ovat rekisteröidyn oikeudet.",
-    "updatedTodo": "TODO (ylläpito): Lisää selosteen laatimispäivä ja viimeisin päivityspäivämäärä.",
     "sections": {
       "controller": {
         "title": "Rekisterinpitäjä",
-        "body": "Rekisterinpitäjä on tätä verkkopalvelua ylläpitävä organisaatio.",
-        "todo": "TODO (ylläpito): Lisää rekisterinpitäjän virallinen nimi, Y-tunnus, postiosoite ja sähköpostiosoite."
+        "body": "Rekisterinpitäjä:\n\n- Virallinen nimi: Mikkelin alueen harrasteliigat ry\n- Y-tunnus: 2570128-4\n- Postiosoite: Savilahdenkatu 2 B 23, 50100 Mikkeli\n- Sähköpostiosoite: toimisto@mahl.fi"
       },
       "contact": {
         "title": "Yhteyshenkilö tietosuoja-asioissa",
-        "body": "Tietosuojaan liittyvissä kysymyksissä ja rekisteröidyn oikeuksia koskevissa pyynnöissä voit olla yhteydessä rekisterinpitäjän yhteyshenkilöön.",
-        "todo": "TODO (ylläpito): Lisää yhteyshenkilön nimi, sähköpostiosoite ja tarvittaessa puhelinnumero."
+        "body": "Tietosuojaan liittyvissä kysymyksissä ja rekisteröidyn oikeuksia koskevissa pyynnöissä voit olla yhteydessä rekisterinpitäjän yhteyshenkilöön.\n\n- Mikko Luukkonen\n- Sähköpostiosoite: mikko@mahl.fi\n- Puhelinnumero: 044 209 9199"
       },
       "scope": {
         "title": "Rekisterin nimi ja selosteen soveltamisala",
@@ -3609,8 +3606,7 @@
       },
       "disclosure": {
         "title": "Tietojen luovutukset ja julkisuus",
-        "body": "Sarjatoiminnan luonteen vuoksi pelaajien nimet, joukkue- ja seuratiedot, ottelutapahtumat ja tilastot ovat julkisesti nähtävillä sivustolla. Muita henkilötietoja (esimerkiksi sähköpostiosoitteita, puhelinnumeroita tai syntymäaikoja) ei julkaista eikä luovuteta säännönmukaisesti kolmansille osapuolille.\n\nTietojen teknisessä käsittelyssä käytetään palveluntarjoajia (esimerkiksi palvelin- ja sähköpostipalvelut), jotka käsittelevät tietoja rekisterinpitäjän lukuun.",
-        "todo": "TODO (ylläpito): Lisää käytettävät palveluntarjoajat (esim. hosting- ja sähköpostipalvelu) sekä tieto siitä, käsitelläänkö tietoja EU-/ETA-alueen ulkopuolella."
+        "body": "Sarjatoiminnan luonteen vuoksi pelaajien nimet, joukkue- ja seuratiedot, ottelutapahtumat ja tilastot ovat julkisesti nähtävillä sivustolla. Muita henkilötietoja (esimerkiksi sähköpostiosoitteita, puhelinnumeroita tai syntymäaikoja) ei julkaista eikä luovuteta säännönmukaisesti kolmansille osapuolille.\n\nTietojen teknisessä käsittelyssä käytetään palveluntarjoajia (esimerkiksi palvelin- ja sähköpostipalvelut), jotka käsittelevät tietoja rekisterinpitäjän lukuun.\n\nPalvelun hosting- ja sähköpostipalveluina käytetään luotettavia kotimaisia ja eurooppalaisia kumppaneita. Tietoja käsitellään ainoastaan EU- ja ETA-alueen sisäpuolella sijaitsevissa turvallisissa konesaleissa, eikä niitä siirretä EU/ETA-alueen ulkopuolelle."
       },
       "storage": {
         "title": "Evästeet ja paikallinen tallennustila",
@@ -3618,8 +3614,7 @@
       },
       "retention": {
         "title": "Tietojen säilytysajat",
-        "body": "Henkilötietoja säilytetään vain niin kauan kuin se on käsittelyn tarkoituksen kannalta tarpeen. Vanhentuneet kirjautumiskoodit ja istuntotunnisteet mitätöityvät automaattisesti.",
-        "todo": "TODO (ylläpito): Määrittele ja kirjaa tarkat säilytysajat pelaaja- ja käyttäjätiedoille, ilmoittautumisille sekä palvelinlokeille."
+        "body": "Henkilötietoja säilytetään vain niin kauan kuin se on käsittelyn tarkoituksen kannalta tarpeen. Vanhentuneet kirjautumiskoodit ja istuntotunnisteet mitätöityvät automaattisesti.\n\n- Pelaaja- ja tilastotiedot: Säilytetään historiallisista syistä toistaiseksi osana urheilutilastoja ja harrastesarjahistoriaa, ellei pelaaja itse pyydä tietojensa poistamista.\n- Käyttäjätunnukset ja yhteystiedot: Poistetaan tai anonymisoidaan, kun käyttäjä on ollut passiivinen kaksi (2) vuotta.\n- Ilmoittautumistiedot: Säilytetään kyseisen sarjakauden ajan ja poistetaan kuusi (6) kuukautta kauden päättymisen jälkeen.\n- Palvelinloki- ja tekniset tiedot: Säilytetään automaattisesti kuusi (6) kuukautta, minkä jälkeen ne ylikirjoitetaan."
       },
       "security": {
         "title": "Tietojen suojauksen periaatteet",
@@ -3627,8 +3622,7 @@
       },
       "rights": {
         "title": "Rekisteröidyn oikeudet",
-        "body": "Rekisteröidyllä on oikeus:\n\n- saada tieto siitä, käsitelläänkö hänen henkilötietojaan, ja saada jäljennös tiedoista\n- vaatia virheellisen tai puutteellisen tiedon oikaisua\n- vaatia tietojensa poistamista siltä osin kuin käsittelylle ei ole enää perustetta\n- vaatia käsittelyn rajoittamista ja vastustaa käsittelyä oikeutetun edun osalta\n- siirtää itse toimittamansa tiedot järjestelmästä toiseen, kun käsittely perustuu suostumukseen tai sopimukseen\n\nPyynnöt osoitetaan kohdassa 2 mainitulle yhteyshenkilölle. Pyynnön esittäjän henkilöllisyys varmistetaan ennen pyynnön käsittelyä.",
-        "todo": "TODO (ylläpito): Lisää sähköpostiosoite tai muu kanava, johon rekisteröidyn oikeuksia koskevat pyynnöt lähetetään."
+        "body": "Rekisteröidyllä on oikeus:\n\n- saada tieto siitä, käsitelläänkö hänen henkilötietojaan, ja saada jäljennös tiedoista\n- vaatia virheellisen tai puutteellisen tiedon oikaisua\n- vaatia tietojensa poistamista siltä osin kuin käsittelylle ei ole enää perustetta\n- vaatia käsittelyn rajoittamista ja vastustaa käsittelyä oikeutetun edun osalta\n- siirtää itse toimittamansa tiedot järjestelmästä toiseen, kun käsittely perustuu suostumukseen tai sopimukseen\n\nPyynnöt osoitetaan sähköpostitse osoitteeseen mikko@mahl.fi. Pyynnön esittäjän henkilöllisyys varmistetaan ennen pyynnön käsittelyä."
       },
       "complaints": {
         "title": "Oikeus tehdä valitus valvontaviranomaiselle",
@@ -3636,8 +3630,7 @@
       },
       "changes": {
         "title": "Muutokset tähän selosteeseen",
-        "body": "Selostetta päivitetään, jos palvelun toiminnot tai henkilötietojen käsittely muuttuvat. Ajantasainen versio on aina saatavilla tällä sivulla.",
-        "todo": "TODO (ylläpito): Päivitä selosteen päivämäärä aina muutosten yhteydessä."
+        "body": "Selostetta päivitetään, jos palvelun toiminnot tai henkilötietojen käsittely muuttuvat. Ajantasainen versio on aina saatavilla tällä sivulla. Tämä seloste on tarkistettu ja päivitetty viimeksi 28.9.2026."
       }
     }
   },

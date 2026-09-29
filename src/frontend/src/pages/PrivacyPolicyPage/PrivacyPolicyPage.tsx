@@ -18,19 +18,6 @@ const SECTION_IDS = [
   'changes',
 ] as const;
 
-/**
- * Sections that contain a highlighted TODO note reminding the site
- * administrator to fill in organisation-specific details.
- */
-const SECTIONS_WITH_TODO: ReadonlySet<string> = new Set([
-  'controller',
-  'contact',
-  'disclosure',
-  'retention',
-  'rights',
-  'changes',
-]);
-
 interface BodyBlocksProps {
   body: string;
 }
@@ -76,8 +63,6 @@ export default function PrivacyPolicyPage() {
 
         <p className="privacy-page__intro">{t('privacyPage.intro')}</p>
 
-        <div className="privacy-page__todo">{t('privacyPage.updatedTodo')}</div>
-
         {SECTION_IDS.map((sectionId, index) => (
           <section key={sectionId} className="privacy-page__section">
             <h2 className="privacy-page__section-title">
@@ -85,12 +70,6 @@ export default function PrivacyPolicyPage() {
             </h2>
 
             <BodyBlocks body={t(`privacyPage.sections.${sectionId}.body`)} />
-
-            {SECTIONS_WITH_TODO.has(sectionId) && (
-              <div className="privacy-page__todo">
-                {t(`privacyPage.sections.${sectionId}.todo`)}
-              </div>
-            )}
           </section>
         ))}
       </div>
