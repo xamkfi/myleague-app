@@ -32,6 +32,7 @@ import {
   mergeHockeyPlayerFaceoffWins,
   uniqueHockeyStandingsByTeamId,
 } from '../../utils/hockeyLookups';
+import { activeHockeyDivisionGroups, splitStandingsByDivision } from '../../utils/hockeyDivisionStandings';
 import { useAudience } from '../../context/AudienceContext';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
@@ -116,6 +117,20 @@ function HockeyLeaguePage() {
   const teamLogos = useMemo(
     () => new Map(teams.map((team) => [team.id, team.logoUrl])),
     [teams],
+  );
+  const teamMarks = useMemo(
+    () => new Map(teams.map((team) => [team.id, team.shortName || null])),
+    [teams],
+  );
+  const teamDivisionIds = useMemo(
+    () => new Map(teams.map((team) => [team.id, team.divisionId])),
+    [teams],
+  );
+  const divisionTables = useMemo(
+    () => (season
+      ? splitStandingsByDivision(standings, activeHockeyDivisionGroups(season, teamDivisionIds))
+      : null),
+    [season, standings, teamDivisionIds],
   );
 
   useEffect(() => {
@@ -279,13 +294,32 @@ function HockeyLeaguePage() {
                         {t('leaguePage.summary.standingsPreview')}
                       </h3>
                     </div>
-                    <HockeyStandingsTable
-                      standings={standings}
-                      teamNames={teamNames}
-                      competitionId={season?.id}
-                      previewLimit={STANDINGS_PREVIEW}
-                      teamsAdvancing={season?.teamsAdvancing ?? 0}
-                    />
+                    {divisionTables ? (
+                      divisionTables.map((group) => (
+                        <div key={group.id}>
+                          <h4 className="summary-section__standings-title">{group.name}</h4>
+                          <HockeyStandingsTable
+                            standings={group.rows}
+                            teamNames={teamNames}
+                            teamLogos={teamLogos}
+                            teamMarks={teamMarks}
+                            competitionId={season?.id}
+                            previewLimit={STANDINGS_PREVIEW}
+                            teamsAdvancing={season?.teamsAdvancing ?? 0}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <HockeyStandingsTable
+                        standings={standings}
+                        teamNames={teamNames}
+                        teamLogos={teamLogos}
+                        teamMarks={teamMarks}
+                        competitionId={season?.id}
+                        previewLimit={STANDINGS_PREVIEW}
+                        teamsAdvancing={season?.teamsAdvancing ?? 0}
+                      />
+                    )}
                     <button
                       type="button"
                       className="summary-section__view-full"
@@ -326,12 +360,34 @@ function HockeyLeaguePage() {
                 </span>
               </div>
             </div>
-            <HockeyStandingsTable
-              standings={standings}
-              teamNames={teamNames}
-              competitionId={season?.id}
-              teamsAdvancing={season?.teamsAdvancing ?? 0}
-            />
+            {divisionTables ? (
+              divisionTables.map((group) => (
+                <section key={group.id}>
+                  <div className="standing-header">
+                    <div className="header-top-row">
+                      <span className="league-title">{group.name}</span>
+                    </div>
+                  </div>
+                  <HockeyStandingsTable
+                    standings={group.rows}
+                    teamNames={teamNames}
+                    teamLogos={teamLogos}
+                    teamMarks={teamMarks}
+                    competitionId={season?.id}
+                    teamsAdvancing={season?.teamsAdvancing ?? 0}
+                  />
+                </section>
+              ))
+            ) : (
+              <HockeyStandingsTable
+                standings={standings}
+                teamNames={teamNames}
+                teamLogos={teamLogos}
+                teamMarks={teamMarks}
+                competitionId={season?.id}
+                teamsAdvancing={season?.teamsAdvancing ?? 0}
+              />
+            )}
           </div>
         );
       case 'players':
@@ -356,7 +412,7 @@ function HockeyLeaguePage() {
               <>
                 <div className="matches-grid">
                   {resultsMatches.items.map((match) => (
-                    <HockeyMatchRow key={match.id} match={match} teamNames={teamNames} />
+                    <HockeyMatchRow key={match.id} match={match} teamNames={teamNames} teamLogos={teamLogos} />
                   ))}
                 </div>
                 {resultsMatches.totalPages > 1 && (

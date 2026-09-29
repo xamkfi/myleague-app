@@ -117,14 +117,18 @@ function HockeyMatchPage() {
           ? {
               home: {
                 name: homeName,
-                logo: null,
+                logo: match.homeTeamId
+                  ? teams.find((team) => team.id === match.homeTeamId)?.logoUrl ?? null
+                  : null,
                 href: match.homeTeamId
                   ? getTeamPath('hockey', getTeamSlug({ id: match.homeTeamId, name: homeName }, namedTeams))
                   : null,
               },
               away: {
                 name: awayName,
-                logo: null,
+                logo: match.awayTeamId
+                  ? teams.find((team) => team.id === match.awayTeamId)?.logoUrl ?? null
+                  : null,
                 href: match.awayTeamId
                   ? getTeamPath('hockey', getTeamSlug({ id: match.awayTeamId, name: awayName }, namedTeams))
                   : null,

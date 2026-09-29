@@ -45,16 +45,6 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.privacy-page__todo {
-  background: #fff7e0;
-  border-left: 4px solid #e0a800;
-  border-radius: 4px;
-  padding: map.get($spacing, 'sm') map.get($spacing, 'md');
-  margin: map.get($spacing, 'sm') 0 map.get($spacing, 'md');
-  font-size: 0.95rem;
-  font-style: italic;
-}
-
 @media (max-width: 768px) {
   .privacy-page {
     padding: map.get($spacing, 'md') map.get($spacing, 'sm') map.get($spacing, 'lg');

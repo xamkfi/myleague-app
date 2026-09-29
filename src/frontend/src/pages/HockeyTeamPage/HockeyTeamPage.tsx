@@ -39,6 +39,7 @@ function HockeyTeamPage() {
   const [matches, setMatches] = useState<HockeyMatchDto[]>([]);
   const [competitionId, setCompetitionId] = useState<string | null>(null);
   const [teamNames, setTeamNames] = useState<Map<string, string>>(new Map());
+  const [teamLogos, setTeamLogos] = useState<Map<string, string | null>>(new Map());
   const [playerNames, setPlayerNames] = useState<Map<string, string>>(new Map());
   const [playerStats, setPlayerStats] = useState<HockeyPlayerCompetitionStatisticsDto[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +75,7 @@ function HockeyTeamPage() {
       }
       setTeam(scoped);
       setTeamNames(await loadTeamNameMap(teams));
+      setTeamLogos(new Map(teams.map((item) => [item.id, item.logoUrl])));
       const names = await loadHockeyRosterNameMaps([scoped]);
       setPlayerNames(names.byPlayerId);
       const competitionIds = seasonId ? [seasonId] : [];
@@ -211,7 +213,7 @@ function HockeyTeamPage() {
             <div className="results-section">
               <div className="matches-grid">
                 {matches.map((match) => (
-                  <HockeyMatchRow key={match.id} match={match} teamNames={teamNames} />
+                  <HockeyMatchRow key={match.id} match={match} teamNames={teamNames} teamLogos={teamLogos} />
                 ))}
               </div>
             </div>

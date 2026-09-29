@@ -4,7 +4,9 @@ using Application.Features.Hockey.Teams.Mappings;
 using Application.Features.Hockey.Teams.Queries;
 using Application.Services.Common;
 using Domain.Common;
+using Domain.Entities.Common;
 using Domain.Entities.Hockey.Teams;
+using Domain.Repositories.Common;
 using Domain.Repositories.Hockey;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -18,15 +20,18 @@ public class GetPagedHockeyTeamsHandler
     : IRequestHandler<GetPagedHockeyTeamsQuery, Result<PagedResult<HockeyTeamDto>>>
 {
     private readonly IHockeyTeamRepository _teamRepository;
+    private readonly IClubRepository _clubRepository;
     private readonly IPaginationService _paginationService;
     private readonly ILogger<GetPagedHockeyTeamsHandler> _logger;
 
     public GetPagedHockeyTeamsHandler(
         IHockeyTeamRepository teamRepository,
+        IClubRepository clubRepository,
         IPaginationService paginationService,
         ILogger<GetPagedHockeyTeamsHandler> logger)
     {
         _teamRepository = teamRepository;
+        _clubRepository = clubRepository;
         _paginationService = paginationService;
         _logger = logger;
     }
@@ -69,11 +74,15 @@ public class GetPagedHockeyTeamsHandler
                 pagedTeams.Items.Select(team => team.Id).ToArray(),
                 cancellationToken);
             HashSet<Guid> openRosterIds = teamsWithRoster.ToHashSet();
+            Dictionary<Guid, Club> clubs = await _clubRepository.GetByIdsAsync(
+                pagedTeams.Items.Select(team => team.ClubId),
+                cancellationToken);
 
             IReadOnlyList<HockeyTeamDto> items = pagedTeams.Items
                 .Select(team =>
                 {
-                    HockeyTeamDto dto = HockeyTeamMapper.ToDto(team) with
+                    clubs.TryGetValue(team.ClubId, out Club? club);
+                    HockeyTeamDto dto = HockeyTeamMapper.ToDto(team, clubLogoUrl: club?.LogoUrl) with
                     {
                         HasActiveRoster = openRosterIds.Contains(team.Id),
                     };

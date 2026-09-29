@@ -1,21 +1,33 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StatAbbr from '../../components/StatAbbr/StatAbbr';
+import TeamLogoMark from '../../components/TeamLogoMark/TeamLogoMark';
 import type { HockeyTeamCompetitionStatisticsDto } from '../../types/hockey/hockeyTypes';
 import { uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
 import { getTeamSlug } from '../../utils/slugUtils';
 import { getTeamPath } from '../../utils/sportRoutes';
 import '../../components/TournamentGroupStandingsTable/TournamentGroupStandingsTable.scss';
+import '../../components/LeagueStanding/LeagueStanding.scss';
 
 interface HockeyStandingsTableProps {
   standings: HockeyTeamCompetitionStatisticsDto[];
   teamNames: Map<string, string>;
+  teamLogos?: Map<string, string | null>;
+  teamMarks?: Map<string, string | null>;
   competitionId?: string | null;
   previewLimit?: number;
   teamsAdvancing?: number;
 }
 
-function HockeyStandingsTable({ standings, teamNames, competitionId, previewLimit, teamsAdvancing = 0 }: HockeyStandingsTableProps) {
+function HockeyStandingsTable({
+  standings,
+  teamNames,
+  teamLogos,
+  teamMarks,
+  competitionId,
+  previewLimit,
+  teamsAdvancing = 0,
+}: HockeyStandingsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const namedTeams = [...teamNames.entries()].map(([id, name]) => ({ id, name }));
@@ -55,7 +67,18 @@ function HockeyStandingsTable({ standings, teamNames, competitionId, previewLimi
                 {isQualifying && <span className="qualifying-marker" aria-hidden="true" />}
                 {row.standingRank || index + 1}
               </td>
-              <td className="team-col">{name}</td>
+              <td className="team-col">
+                <div className="team-info">
+                  <TeamLogoMark
+                    logo={teamLogos?.get(row.teamId)}
+                    name={name}
+                    mark={teamMarks?.get(row.teamId)}
+                    imageClassName="logo-image"
+                    fallbackClassName="logo-empty"
+                  />
+                  <span className="team-name">{name}</span>
+                </div>
+              </td>
               <td className="stats-col">{row.gamesPlayed}</td>
               <td className="stats-col">{row.regulationWins}</td>
               <td className="stats-col">{row.overtimeWins + row.shootoutWins}</td>

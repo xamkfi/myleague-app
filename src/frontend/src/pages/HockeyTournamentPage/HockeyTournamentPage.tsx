@@ -56,6 +56,8 @@ function HockeyTournamentPage() {
   const [tournament, setTournament] = useState<HockeyTournamentDto | null>(null);
   const [matches, setMatches] = useState<HockeyMatchDto[]>([]);
   const [teamNames, setTeamNames] = useState<Map<string, string>>(new Map());
+  const [teamLogos, setTeamLogos] = useState<Map<string, string | null>>(new Map());
+  const [teamMarks, setTeamMarks] = useState<Map<string, string | null>>(new Map());
   const [groupStandings, setGroupStandings] = useState<Map<string, HockeyTeamCompetitionStatisticsDto[]>>(new Map());
   const [error, setError] = useState<string | null>(null);
 
@@ -72,6 +74,8 @@ function HockeyTournamentPage() {
       setTournament(loaded);
       setMatches(matchList);
       setTeamNames(await loadTeamNameMap(teams));
+      setTeamLogos(new Map(teams.map((team) => [team.id, team.logoUrl])));
+      setTeamMarks(new Map(teams.map((team) => [team.id, team.shortName || null])));
       const standingsEntries = await Promise.all(
         loaded.groups.map(async (group) => {
           const rows = await hockeyStatisticsService.getGroupStandings(id, group.id).catch(() => []);
@@ -138,7 +142,7 @@ function HockeyTournamentPage() {
       <div className="results-section">
         <div className="matches-grid">
           {items.map((match) => (
-            <HockeyMatchRow key={match.id} match={match} teamNames={teamNames} />
+            <HockeyMatchRow key={match.id} match={match} teamNames={teamNames} teamLogos={teamLogos} />
           ))}
         </div>
       </div>
@@ -220,7 +224,13 @@ function HockeyTournamentPage() {
             <section key={group.id} className="tournament-page__card">
               <h2>{group.name}</h2>
               {standings.length > 0 ? (
-                <HockeyStandingsTable standings={standings} teamNames={teamNames} competitionId={tournament.id} />
+                <HockeyStandingsTable
+                  standings={standings}
+                  teamNames={teamNames}
+                  teamLogos={teamLogos}
+                  teamMarks={teamMarks}
+                  competitionId={tournament.id}
+                />
               ) : (
                 <ul>
                   {group.teams.map((member) => {
