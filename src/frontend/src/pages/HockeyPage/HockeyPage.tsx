@@ -9,6 +9,7 @@ import type { HockeySeasonDto, HockeyTeamDto } from '../../types/hockey/hockeyTy
 import { useAudience } from '../../context/AudienceContext';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
+import { activeHockeyDivisionGroups } from '../../utils/hockeyDivisionStandings';
 import { filterPublicSportYears, formatSeasonYearLabel, pickDefaultSportYear, seasonYearFromDates } from '../../utils/seasonYear';
 import SportLandingPage, {
   PAGE_SIZE,
@@ -18,6 +19,33 @@ import SportLandingPage, {
   type SportLandingYear,
 } from '../SportLanding/SportLandingPage';
 const MAX_UPCOMING_MATCHES = 6;
+
+interface HockeyLandingCard extends SportLandingSeasonData {
+  divisionTeamIds: string[] | null;
+}
+
+function landingCardsForSeason(
+  season: HockeySeasonDto,
+  teamDivisionIds: Map<string, string | null>,
+): HockeyLandingCard[] {
+  const groups = activeHockeyDivisionGroups(season, teamDivisionIds);
+  const sources = groups.length >= 2
+    ? groups.map((group) => ({
+        key: `${season.id}:${group.id}`,
+        name: `${season.name} · ${group.name}`,
+        teamIds: [...group.teamIds],
+      }))
+    : [{ key: season.id, name: season.name, teamIds: null }];
+
+  return sources.map((source) => ({
+    cardKey: source.key,
+    divisionTeamIds: source.teamIds,
+    season: { id: season.id, name: source.name, isActive: season.isActive },
+    standings: [],
+    standingsLoading: true,
+    teamsAdvancing: season.teamsAdvancing ?? 0,
+  }));
+}
 
 function toYearList(seasons: HockeySeasonDto[]): SportLandingYear[] {
   const byYear = new Map<string, SportLandingYear>();
@@ -50,7 +78,7 @@ function HockeyPage() {
   const [years, setYears] = useState<SportLandingYear[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [seasonsData, setSeasonsData] = useState<SportLandingSeasonData[]>([]);
+  const [seasonsData, setSeasonsData] = useState<HockeyLandingCard[]>([]);
   const [upcomingMatches, setUpcomingMatches] = useState<SportLandingUpcomingMatch[]>([]);
   const [isLoadingYears, setIsLoadingYears] = useState(true);
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(false);
@@ -89,6 +117,10 @@ function HockeyPage() {
   );
   const teamLogos = useMemo(
     () => new Map(teams.map((team) => [team.id, team.logoUrl])),
+    [teams],
+  );
+  const teamMarks = useMemo(
+    () => new Map(teams.map((team) => [team.id, team.shortName || null])),
     [teams],
   );
 
@@ -186,13 +218,8 @@ function HockeyPage() {
         setIsLoadingSeasons(true);
         setError(null);
         setUpcomingMatches([]);
-        setSeasonsData(
-          pagedSeasons.map((season) => ({
-            season: { id: season.id, name: season.name, isActive: season.isActive },
-            standings: [],
-            standingsLoading: true,
-          })),
-        );
+        const teamDivisionIds = new Map(teams.map((team) => [team.id, team.divisionId]));
+        setSeasonsData(pagedSeasons.flatMap((season) => landingCardsForSeason(season, teamDivisionIds)));
         setIsLoadingSeasons(false);
 
         const standingsTask = Promise.all(
@@ -204,6 +231,7 @@ function HockeyPage() {
                 teamId: row.teamId,
                 teamName: teamNames.get(row.teamId) ?? row.teamId.slice(0, 8),
                 teamLogo: teamLogos.get(row.teamId),
+                teamShortName: teamMarks.get(row.teamId),
                 goalDifference: row.goalDifference,
                 points: row.points,
               }));
@@ -211,11 +239,21 @@ function HockeyPage() {
                 return;
               }
               setSeasonsData((prev) =>
-                prev.map((item) =>
-                  item.season.id === season.id
-                    ? { ...item, standings, standingsLoading: false, teamsAdvancing: season.teamsAdvancing ?? 0 }
-                    : item,
-                ),
+                prev.map((item) => {
+                  if (item.season.id !== season.id) {
+                    return item;
+                  }
+                  const allowed = item.divisionTeamIds;
+                  const rows = allowed
+                    ? standings.filter((row) => allowed.includes(row.teamId))
+                    : standings;
+                  return {
+                    ...item,
+                    standings: rows,
+                    standingsLoading: false,
+                    teamsAdvancing: season.teamsAdvancing ?? 0,
+                  };
+                }),
               );
             } catch {
               if (cancelled) {

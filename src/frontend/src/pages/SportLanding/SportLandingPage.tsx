@@ -45,6 +45,7 @@ export interface SportLandingSeasonData {
   standings: SeasonStandingsRow[];
   standingsLoading: boolean;
   teamsAdvancing?: number;
+  cardKey?: string;
 }
 
 export interface SportLandingLabels {
@@ -131,7 +132,7 @@ export default function SportLandingPage({
 
   const renderStandingsCard = (data: SportLandingSeasonData, isDark: boolean) => (
     <SeasonStandingsCard
-      key={data.season.id}
+      key={data.cardKey ?? data.season.id}
       sport={sport}
       seasonId={data.season.id}
       seasonName={data.season.name}

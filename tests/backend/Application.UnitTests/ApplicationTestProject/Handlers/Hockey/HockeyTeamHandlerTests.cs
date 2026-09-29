@@ -2,6 +2,7 @@ using Application.Common;
 using Application.Features.Hockey.Teams.Commands;
 using Application.Features.Hockey.Teams.DTOs;
 using Application.Features.Hockey.Teams.Handlers;
+using Application.Features.Hockey.Teams.Queries;
 using Domain.Entities.Common;
 using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Common;
@@ -225,5 +226,78 @@ public class HockeyTeamHandlerTests
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Contain("not in the team roster");
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetAll_TeamWithoutLogo_UsesClubLogo()
+    {
+        Club club = new("Test HC", logoUrl: new Uri("https://cdn.myleague.test/hc.png"));
+        HockeyTeam team = CreateTeam(club);
+        team.UpdateLogo(null);
+        _teamRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<HockeyTeam> { team });
+        _clubRepo.Setup(r => r.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, Club> { [club.Id] = club });
+
+        GetAllHockeyTeamsHandler handler = new(
+            _teamRepo.Object,
+            _clubRepo.Object,
+            Mock.Of<ILogger<GetAllHockeyTeamsHandler>>());
+
+        Result<IEnumerable<HockeyTeamDto>> result = await handler.Handle(
+            new GetAllHockeyTeamsQuery(),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data.Should().ContainSingle();
+        result.Data!.Single().LogoUrl.Should().Be("https://cdn.myleague.test/hc.png");
+    }
+
+    [Fact]
+    public async Task GetAll_TeamLogo_WinsOverClubLogo()
+    {
+        Club club = new("Test HC", logoUrl: new Uri("https://cdn.myleague.test/club.png"));
+        HockeyTeam team = new(
+            "Wolves",
+            club,
+            TeamCategory.Adult,
+            shortName: "WOL",
+            logoUrl: new Uri("https://cdn.myleague.test/team.png"));
+        _teamRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<HockeyTeam> { team });
+        _clubRepo.Setup(r => r.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, Club> { [club.Id] = club });
+
+        GetAllHockeyTeamsHandler handler = new(
+            _teamRepo.Object,
+            _clubRepo.Object,
+            Mock.Of<ILogger<GetAllHockeyTeamsHandler>>());
+
+        Result<IEnumerable<HockeyTeamDto>> result = await handler.Handle(
+            new GetAllHockeyTeamsQuery(),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Single().LogoUrl.Should().Be("https://cdn.myleague.test/team.png");
+    }
+
+    [Fact]
+    public async Task GetAll_PlaceholderClubLogo_IsOmitted()
+    {
+        Club club = new("Test HC");
+        HockeyTeam team = CreateTeam(club);
+        _teamRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<HockeyTeam> { team });
+        _clubRepo.Setup(r => r.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, Club> { [club.Id] = club });
+
+        GetAllHockeyTeamsHandler handler = new(
+            _teamRepo.Object,
+            _clubRepo.Object,
+            Mock.Of<ILogger<GetAllHockeyTeamsHandler>>());
+
+        Result<IEnumerable<HockeyTeamDto>> result = await handler.Handle(
+            new GetAllHockeyTeamsQuery(),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data!.Single().LogoUrl.Should().BeNull();
     }
 }

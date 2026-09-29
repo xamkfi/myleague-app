@@ -2,7 +2,9 @@
 using Application.Features.Hockey.Teams.DTOs;
 using Application.Features.Hockey.Teams.Mappings;
 using Application.Features.Hockey.Teams.Queries;
+using Domain.Entities.Common;
 using Domain.Entities.Hockey.Teams;
+using Domain.Repositories.Common;
 using Domain.Repositories.Hockey;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -15,11 +17,16 @@ namespace Application.Features.Hockey.Teams.Handlers;
 public class GetHockeyTeamsByClubHandler : IRequestHandler<GetHockeyTeamsByClubQuery, Result<IEnumerable<HockeyTeamDto>>>
 {
     private readonly IHockeyTeamRepository _teamRepository;
+    private readonly IClubRepository _clubRepository;
     private readonly ILogger<GetHockeyTeamsByClubHandler> _logger;
 
-    public GetHockeyTeamsByClubHandler(IHockeyTeamRepository teamRepository, ILogger<GetHockeyTeamsByClubHandler> logger)
+    public GetHockeyTeamsByClubHandler(
+        IHockeyTeamRepository teamRepository,
+        IClubRepository clubRepository,
+        ILogger<GetHockeyTeamsByClubHandler> logger)
     {
         _teamRepository = teamRepository;
+        _clubRepository = clubRepository;
         _logger = logger;
     }
 
@@ -28,10 +35,14 @@ public class GetHockeyTeamsByClubHandler : IRequestHandler<GetHockeyTeamsByClubQ
         try
         {
             IReadOnlyList<HockeyTeam> teams = await _teamRepository.GetByClubIdAsync(request.ClubId);
-            IEnumerable<HockeyTeam> filtered = request.TeamCategory is null
-                ? teams
-                : teams.Where(team => team.TeamCategory == request.TeamCategory);
-            return Result<IEnumerable<HockeyTeamDto>>.Success(filtered.Select(HockeyTeamMapper.ToDto).ToList());
+            List<HockeyTeam> filtered = request.TeamCategory is null
+                ? teams.ToList()
+                : teams.Where(team => team.TeamCategory == request.TeamCategory).ToList();
+            Club? club = await _clubRepository.GetByIdAsync(request.ClubId);
+            Dictionary<Guid, Club> clubs = club is null
+                ? new Dictionary<Guid, Club>()
+                : new Dictionary<Guid, Club> { [club.Id] = club };
+            return Result<IEnumerable<HockeyTeamDto>>.Success(HockeyTeamMapper.ToDtos(filtered, clubs));
         }
         catch (Exception ex)
         {
