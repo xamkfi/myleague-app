@@ -497,11 +497,13 @@ public class ImportApiClient : IDisposable
             });
             File.WriteAllText(path, json);
         }
-        catch (IOException)
+        catch (IOException ex)
         {
+            Console.WriteLine($"  WARN: failed to persist token cache to '{path}': {ex.Message}");
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
+            Console.WriteLine($"  WARN: failed to persist token cache to '{path}': {ex.Message}");
         }
     }
 
