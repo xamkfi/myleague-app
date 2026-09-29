@@ -3590,17 +3590,14 @@
   "privacyPage": {
     "title": "Privacy policy",
     "intro": "This is a privacy policy in accordance with the EU General Data Protection Regulation (GDPR, 2016/679) for the MAHL recreational leagues web service. It describes what personal data is processed in the service, for what purposes, and what rights data subjects have.",
-    "updatedTodo": "TODO (admin): Add the date this policy was created and the date of the latest update.",
     "sections": {
       "controller": {
         "title": "Data controller",
-        "body": "The data controller is the organisation that operates this web service.",
-        "todo": "TODO (admin): Add the controller's official name, business ID, postal address and email address."
+        "body": "The data controller is:\n\n- Official name: Mikkelin alueen harrasteliigat ry\n- Business ID: 2570128-4\n- Postal address: Savilahdenkatu 2 B 23, 50100 Mikkeli\n- Email address: toimisto@mahl.fi"
       },
       "contact": {
         "title": "Contact person for data protection matters",
-        "body": "For questions about data protection and requests concerning your rights as a data subject, you can contact the controller's designated contact person.",
-        "todo": "TODO (admin): Add the contact person's name, email address and, if needed, phone number."
+        "body": "For questions about data protection and requests concerning your rights as a data subject, you can contact the controller's designated contact person.\n\n- Mikko Luukkonen\n- Email address: mikko@mahl.fi\n- Phone number: 044 209 9199"
       },
       "scope": {
         "title": "Name of the register and scope of this policy",
@@ -3620,8 +3617,7 @@
       },
       "disclosure": {
         "title": "Disclosure and public visibility of data",
-        "body": "Due to the nature of league activities, player names, team and club details, match events and statistics are publicly visible on the website. Other personal data (for example email addresses, phone numbers or dates of birth) is not published and is not regularly disclosed to third parties.\n\nService providers (for example hosting and email services) are used for the technical processing of data and process data on behalf of the controller.",
-        "todo": "TODO (admin): List the service providers used (e.g. hosting and email service) and state whether data is processed outside the EU/EEA."
+        "body": "Due to the nature of league activities, player names, team and club details, match events and statistics are publicly visible on the website. Other personal data (for example email addresses, phone numbers or dates of birth) is not published and is not regularly disclosed to third parties.\n\nService providers (for example hosting and email services) are used for the technical processing of data and process data on behalf of the controller.\n\nHosting and email services are provided by trusted partners based in Finland and Europe. Data is processed only in secure data centres located within the EU and EEA, and is not transferred outside the EU/EEA."
       },
       "storage": {
         "title": "Cookies and local storage",
@@ -3629,8 +3625,7 @@
       },
       "retention": {
         "title": "Data retention periods",
-        "body": "Personal data is retained only for as long as necessary for the purposes of processing. Expired login codes and session tokens are invalidated automatically.",
-        "todo": "TODO (admin): Define and document the exact retention periods for player and user data, registrations and server logs."
+        "body": "Personal data is retained only for as long as necessary for the purposes of processing. Expired login codes and session tokens are invalidated automatically.\n\n- Player and statistics data: retained indefinitely for historical reasons as part of sports statistics and recreational league history, unless the player requests erasure of their data.\n- User accounts and contact details: deleted or anonymised when the user has been inactive for two (2) years.\n- Registration data: retained for the duration of the relevant league season and deleted six (6) months after the season ends.\n- Server logs and technical data: retained automatically for six (6) months, after which they are overwritten."
       },
       "security": {
         "title": "Principles of data protection",
@@ -3638,8 +3633,7 @@
       },
       "rights": {
         "title": "Rights of the data subject",
-        "body": "The data subject has the right to:\n\n- know whether their personal data is being processed and receive a copy of the data\n- request the rectification of inaccurate or incomplete data\n- request the erasure of their data insofar as there is no longer a basis for processing\n- request the restriction of processing and object to processing based on legitimate interest\n- transfer data they have provided to another system when processing is based on consent or a contract\n\nRequests should be addressed to the contact person mentioned in section 2. The identity of the requester is verified before the request is processed.",
-        "todo": "TODO (admin): Add the email address or other channel where data subject requests should be sent."
+        "body": "The data subject has the right to:\n\n- know whether their personal data is being processed and receive a copy of the data\n- request the rectification of inaccurate or incomplete data\n- request the erasure of their data insofar as there is no longer a basis for processing\n- request the restriction of processing and object to processing based on legitimate interest\n- transfer data they have provided to another system when processing is based on consent or a contract\n\nRequests should be sent by email to mikko@mahl.fi. The identity of the requester is verified before the request is processed."
       },
       "complaints": {
         "title": "Right to lodge a complaint with a supervisory authority",
@@ -3647,8 +3641,7 @@
       },
       "changes": {
         "title": "Changes to this policy",
-        "body": "This policy is updated if the features of the service or the processing of personal data change. The current version is always available on this page.",
-        "todo": "TODO (admin): Update the date of this policy whenever changes are made."
+        "body": "This policy is updated if the features of the service or the processing of personal data change. The current version is always available on this page. This policy was last reviewed and updated on 28 September 2026."
       }
     }
   },

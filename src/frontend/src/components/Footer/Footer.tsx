@@ -115,38 +115,40 @@ export default function Footer() {
         </div>
       </div>
       <div className="footer-version">
-        <div className="footer-credits">
-          <span className="footer-credits__made-by">
-            {t('footer.credits.madeBy', 'Sivuston tehnyt')}
-          </span>
-          <a
-            className="footer-credits__logo-link"
-            href={XAMK_PROGRAMME_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img
-              src={xamkLogo}
-              alt={t('footer.credits.xamkLogo', 'XAMK, insinööri (AMK), ohjelmistotekniikka')}
-              className="footer-credits__logo"
-            />
-          </a>
-          <span className="footer-credits__programme">
-            {t('footer.credits.programme', 'Ohjelmistotekniikka')}
-          </span>
-          <a
-            className="footer-credits__source"
-            href={SOURCE_REPO_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <GitHubIcon />
-            <span>{t('footer.credits.source', 'Lähdekoodit täällä')}</span>
-          </a>
+        <div className="footer-version__top">
+          <div className="footer-credits">
+            <span className="footer-credits__made-by">
+              {t('footer.credits.madeBy', 'Sivuston tehnyt')}
+            </span>
+            <a
+              className="footer-credits__logo-link"
+              href={XAMK_PROGRAMME_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src={xamkLogo}
+                alt={t('footer.credits.xamkLogo', 'XAMK, insinööri (AMK), ohjelmistotekniikka')}
+                className="footer-credits__logo"
+              />
+            </a>
+            <span className="footer-credits__programme">
+              {t('footer.credits.programme', 'Ohjelmistotekniikka')}
+            </span>
+            <a
+              className="footer-credits__source"
+              href={SOURCE_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <GitHubIcon />
+              <span>{t('footer.credits.source', 'Lähdekoodit täällä')}</span>
+            </a>
+          </div>
+          <Link className="footer-privacy-link" to="/tietosuojaseloste">
+            {t('footer.privacyPolicy', 'Tietosuojaseloste')}
+          </Link>
         </div>
-        <Link className="footer-privacy-link" to="/tietosuojaseloste">
-          {t('footer.privacyPolicy', 'Tietosuojaseloste')}
-        </Link>
         <p className="footer-version__meta">
           Frontend: {__APP_VERSION__} | Backend: {backendVersion}
         </p>

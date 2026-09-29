@@ -1,4 +1,6 @@
+using Application.Common;
 using Application.Features.Hockey.Teams.DTOs;
+using Domain.Entities.Common;
 using Domain.Entities.Hockey.Teams;
 
 namespace Application.Features.Hockey.Teams.Mappings;
@@ -11,16 +13,36 @@ public static class HockeyTeamMapper
     /// <summary>
     /// Maps a hockey team to a DTO.
     /// </summary>
-    public static HockeyTeamDto ToDto(HockeyTeam team) => ToDto(team, null);
+    public static HockeyTeamDto ToDto(HockeyTeam team) => ToDto(team, null, null);
+
+    /// <summary>
+    /// Maps hockey teams, using each club logo when the team has none of its own.
+    /// </summary>
+    public static IReadOnlyList<HockeyTeamDto> ToDtos(
+        IEnumerable<HockeyTeam> teams,
+        IReadOnlyDictionary<Guid, Club> clubs,
+        Guid? competitionId = null)
+    {
+        return teams
+            .Select(team =>
+            {
+                clubs.TryGetValue(team.ClubId, out Club? club);
+                return ToDto(team, competitionId, club?.LogoUrl);
+            })
+            .ToList();
+    }
 
     /// <summary>
     /// Maps a hockey team to a DTO, optionally scoped to one competition roster.
+    /// Team logo wins; otherwise the club logo is used. Placeholder hosts are omitted.
     /// </summary>
-    public static HockeyTeamDto ToDto(HockeyTeam team, Guid? competitionId)
+    public static HockeyTeamDto ToDto(HockeyTeam team, Guid? competitionId = null, Uri? clubLogoUrl = null)
     {
         IEnumerable<HockeyTeamPlayer> roster = competitionId.HasValue
             ? team.Roster.Where(p => p.CompetitionId == competitionId)
             : team.Roster;
+
+        string? logoUrl = PublicLogoUrl.OmitPlaceholder(team.GetEffectiveLogoUrl(clubLogoUrl))?.ToString();
 
         return new HockeyTeamDto(
             team.Id,
@@ -32,7 +54,7 @@ public static class HockeyTeamMapper
             team.HomeArena,
             team.PrimaryJerseyColor,
             team.SecondaryJerseyColor,
-            team.LogoUrl?.ToString(),
+            logoUrl,
             team.IsActive,
             roster.Select(ToTeamPlayerDto).ToList(),
             team.Lines.Select(ToLineDto).ToList(),
