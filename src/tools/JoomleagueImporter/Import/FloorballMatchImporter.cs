@@ -300,6 +300,16 @@ public class FloorballMatchImporter
             return true;
         }
 
+        (List<GoalRec> pendingGoals, List<PenaltyRec> pendingPenalties, _) =
+            await BuildEventsAsync(mi, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods);
+        Guid homeGoalie = await ResolveMatchGoalieAsync(mi, home, playerByTeamPlayerId);
+        Guid awayGoalie = await ResolveMatchGoalieAsync(mi, away, playerByTeamPlayerId);
+        if (homeGoalie == Guid.Empty || awayGoalie == Guid.Empty)
+        {
+            _log.LogError("RepairMatch", new { match.Id, newMatchId }, "No goalies available; cannot record events.");
+            return false;
+        }
+
         if (dto.Status == FloorballMatchStatus.Completed)
         {
             if (!await _api.ReopenMatchAsync(newMatchId))
@@ -308,21 +318,14 @@ public class FloorballMatchImporter
                 return false;
             }
         }
-        else if (dto.Status == FloorballMatchStatus.Scheduled)
+
+        // Historical import deactivates the competition roster after the season. Re-activate
+        // scorers before replaying events, including when the match was already completed.
+        await ApplyAppearancesAsync(newMatchId, mi, home, homeGoalie, playerByTeamPlayerId, EventPlayerIds(pendingGoals, pendingPenalties, match.ProjectTeam1Id));
+        await ApplyAppearancesAsync(newMatchId, mi, away, awayGoalie, playerByTeamPlayerId, EventPlayerIds(pendingGoals, pendingPenalties, match.ProjectTeam2Id));
+
+        if (dto.Status == FloorballMatchStatus.Scheduled)
         {
-            // The match was created but never started (e.g. an earlier run failed at goalie
-            // assignment); bring it to InProgress so events can be recorded.
-            (List<GoalRec> pendingGoals, List<PenaltyRec> pendingPenalties, _) =
-                await BuildEventsAsync(mi, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods);
-            Guid homeGoalie = await ResolveMatchGoalieAsync(mi, home, playerByTeamPlayerId);
-            Guid awayGoalie = await ResolveMatchGoalieAsync(mi, away, playerByTeamPlayerId);
-            if (homeGoalie == Guid.Empty || awayGoalie == Guid.Empty)
-            {
-                _log.LogError("RepairMatch", new { match.Id, newMatchId }, "No goalies available; cannot start match.");
-                return false;
-            }
-            await ApplyAppearancesAsync(newMatchId, mi, home, homeGoalie, playerByTeamPlayerId, EventPlayerIds(pendingGoals, pendingPenalties, match.ProjectTeam1Id));
-            await ApplyAppearancesAsync(newMatchId, mi, away, awayGoalie, playerByTeamPlayerId, EventPlayerIds(pendingGoals, pendingPenalties, match.ProjectTeam2Id));
             if (!await _api.StartMatchAsync(newMatchId))
             {
                 _log.LogError("RepairMatch", new { match.Id, newMatchId }, "StartMatch failed during repair.");

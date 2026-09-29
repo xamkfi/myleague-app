@@ -115,7 +115,7 @@ public class HockeyEntityImporter
         Console.WriteLine("--- Teams & Rosters ---");
         (_, Dictionary<int, TeamCategory> categories) = TeamRosterUnion.Build(set);
 
-        Dictionary<Guid, HockeyTeamDto> byId = [];
+        ConcurrentDictionary<Guid, HockeyTeamDto> byId = [];
         ConcurrentDictionary<string, HockeyTeamDto> byName = new(StringComparer.OrdinalIgnoreCase);
         foreach (HockeyTeamDto existing in await _api.GetTeamsAsync())
         {
@@ -520,6 +520,11 @@ public class HockeyEntityImporter
         {
             await _api.PublishSeasonAsync(season.Id);
             await _api.OpenSeasonRegistrationAsync(season.Id);
+            await _api.ActivateSeasonAsync(season.Id);
+        }
+        else if (string.Equals(season.Status, "Draft", StringComparison.OrdinalIgnoreCase))
+        {
+            // Historical dumps are already finished. Activate so the later complete call is allowed.
             await _api.ActivateSeasonAsync(season.Id);
         }
         Console.WriteLine($"  Teams in season: {teamsAdded}/{pi.Teams.Count}");

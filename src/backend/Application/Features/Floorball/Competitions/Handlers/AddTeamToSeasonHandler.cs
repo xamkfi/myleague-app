@@ -13,6 +13,7 @@ using Domain.Repositories.Floorball;
 using Domain.Repositories.Common;
 using Microsoft.Extensions.Logging;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,22 +89,31 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddFloorballTeamToSeasonCo
                 return Result<FloorballSeasonDto>.NotFound("FloorballTeam", request.TeamId);
             }
 
-            _logger.LogInformation("Adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
-            
-            season.AddTeam(team);
-            Application.Features.Common.Shared.RosterEnrollment.Apply(team, request.CompetitionId, request.RosterMode);
+            bool alreadyEnrolled = season.Teams.Any(existing => existing.Id == team.Id);
+            if (alreadyEnrolled)
+            {
+                _logger.LogInformation(
+                    "Team {TeamId} is already in season {SeasonId}",
+                    request.TeamId,
+                    request.CompetitionId);
+            }
+            else
+            {
+                _logger.LogInformation("Adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
+                season.AddTeam(team);
+                Application.Features.Common.Shared.RosterEnrollment.Apply(team, request.CompetitionId, request.RosterMode);
 
-            FloorballTeamSeasonStatistics teamStatistics = new FloorballTeamSeasonStatistics(team.Id, request.CompetitionId);
-            await _floorballStatisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
+                FloorballTeamSeasonStatistics teamStatistics = new FloorballTeamSeasonStatistics(team.Id, request.CompetitionId);
+                await _floorballStatisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
 
-            List<FloorballPlayerSeasonStatistics> players = team.GetActiveRoster(request.CompetitionId)
-                .Select(player => new FloorballPlayerSeasonStatistics(player.PlayerId, request.TeamId, request.CompetitionId))
-                .ToList();
-            if (players.Count > 0)
-                await _floorballStatisticsRepository.SavePlayerSeasonStatisticsBatchAsync(players, cancellationToken);
+                List<FloorballPlayerSeasonStatistics> players = team.GetActiveRoster(request.CompetitionId)
+                    .Select(player => new FloorballPlayerSeasonStatistics(player.PlayerId, request.TeamId, request.CompetitionId))
+                    .ToList();
+                if (players.Count > 0)
+                    await _floorballStatisticsRepository.SavePlayerSeasonStatisticsBatchAsync(players, cancellationToken);
 
-            // Save changes explicitly to trigger domain events
-            await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
+                await _floorballUnitOfWork.SaveChangesAsync(cancellationToken);
+            }
 
             // Load clubs for all teams in the season for the DTO mapping
             Dictionary<Guid, Club> clubsDict = new Dictionary<Guid, Club>();
@@ -128,10 +138,32 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddFloorballTeamToSeasonCo
             _logger.LogWarning(ex, "Business rule violation while adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
             return Result<FloorballSeasonDto>.Failure(ex.Message);
         }
-        catch (Exception ex)
+        catch (ArgumentException ex)
         {
-            _logger.LogError(ex, "Error occurred while adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
-            return Result<FloorballSeasonDto>.Failure("An error occurred while adding the team to the season.");
+            _logger.LogWarning(ex, "Invalid team {TeamId} for season {SeasonId}", request.TeamId, request.CompetitionId);
+            return Result<FloorballSeasonDto>.Failure(ex.Message);
         }
+        catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+        {
+            _logger.LogWarning(ex, "Team {TeamId} is already stored on season {SeasonId}", request.TeamId, request.CompetitionId);
+            return Result<FloorballSeasonDto>.Failure("Team is already in this season.");
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database rejected adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
+            return Result<FloorballSeasonDto>.Failure("Saving the team membership conflicted with existing data.");
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+    }
+
+    private static bool IsUniqueViolation(DbUpdateException ex)
+    {
+        string text = ex.InnerException?.Message ?? ex.Message;
+        return text.Contains("23505", StringComparison.Ordinal)
+            || text.Contains("duplicate key", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("unique constraint", StringComparison.OrdinalIgnoreCase);
     }
 } 
