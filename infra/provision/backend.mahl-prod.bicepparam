@@ -11,8 +11,10 @@ using './backend.bicep'
 param environmentName = 'prod'
 param baseName = 'mahl'
 
-// Location - West Europe is typically good for European users
-param location = 'westeurope'
+// The MAHL subscription rejects new resources in West Europe. Sweden Central
+// keeps the API, database, and storage in the EU. The Static Web App stays in
+// East US 2 because that resource type has no other European region.
+param location = 'swedencentral'
 
 // App Service Plan - Basic B1 handles ~5k users with a single instance.
 // NOTE: SignalR uses an in-memory timer store, so keep instance count at 1
