@@ -10,8 +10,10 @@ using './frontend.bicep'
 param environmentName = 'prod'
 param baseName = 'mahl'
 
-// Location for Static Web App (limited region availability)
-param location = 'westeurope'
+// Static Web Apps in West Europe are not accepting new resources on the MAHL
+// subscription (RequestDisallowedByAzure / locationineligible). The API and
+// database stay in West Europe. SWA content is served from this region.
+param location = 'eastus2'
 
 // SKU - Free tier is sufficient at this scale (100 GB bandwidth/month,
 // custom domains supported). Upgrade to Standard only if you need SLA,
