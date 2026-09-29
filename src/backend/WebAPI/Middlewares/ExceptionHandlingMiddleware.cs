@@ -1,5 +1,8 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using WebAPI.Models.Common;
 
 namespace WebAPI.Middlewares;
@@ -37,41 +40,35 @@ public class ExceptionHandlingMiddleware
         catch (Exception ex)
         {
             _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
-            await HandleExceptionAsync(context, ex);
+            IHostEnvironment environment = context.RequestServices.GetRequiredService<IHostEnvironment>();
+            await HandleExceptionAsync(context, ex, environment.IsDevelopment());
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static async Task HandleExceptionAsync(HttpContext context, Exception exception, bool isDevelopment)
     {
         context.Response.ContentType = "application/json";
-        
-        var response = exception switch
+
+        (int StatusCode, ApiResponse Response) response = exception switch
         {
-            ArgumentException => new
-            {
-                StatusCode = (int)HttpStatusCode.BadRequest,
-                Response = ApiResponse.ErrorResponse(exception.Message)
-            },
-            InvalidOperationException => new
-            {
-                StatusCode = (int)HttpStatusCode.BadRequest,
-                Response = ApiResponse.ErrorResponse(exception.Message)
-            },
-            KeyNotFoundException => new
-            {
-                StatusCode = (int)HttpStatusCode.NotFound,
-                Response = ApiResponse.ErrorResponse("Resource not found")
-            },
-            UnauthorizedAccessException => new
-            {
-                StatusCode = (int)HttpStatusCode.Unauthorized,
-                Response = ApiResponse.ErrorResponse("Unauthorized access")
-            },
-            _ => new
-            {
-                StatusCode = (int)HttpStatusCode.InternalServerError,
-                Response = ApiResponse.ErrorResponse("An internal server error occurred")
-            }
+            ArgumentException => (
+                (int)HttpStatusCode.BadRequest,
+                ApiResponse.ErrorResponse(exception.Message)),
+            InvalidOperationException => (
+                (int)HttpStatusCode.BadRequest,
+                ApiResponse.ErrorResponse(exception.Message)),
+            KeyNotFoundException => (
+                (int)HttpStatusCode.NotFound,
+                ApiResponse.ErrorResponse(exception.Message)),
+            UnauthorizedAccessException => (
+                (int)HttpStatusCode.Unauthorized,
+                ApiResponse.ErrorResponse("Unauthorized access")),
+            DbUpdateException dbUpdate => (
+                (int)HttpStatusCode.Conflict,
+                ApiResponse.ErrorResponse(DescribeDatabaseRejection(dbUpdate))),
+            _ => (
+                (int)HttpStatusCode.InternalServerError,
+                ApiResponse.ErrorResponse(DescribeUnexpected(exception, isDevelopment)))
         };
 
         context.Response.StatusCode = response.StatusCode;
@@ -82,5 +79,36 @@ public class ExceptionHandlingMiddleware
         });
 
         await context.Response.WriteAsync(jsonResponse);
+    }
+
+    private static string DescribeDatabaseRejection(DbUpdateException exception)
+    {
+        string text = exception.InnerException?.Message ?? exception.Message;
+        Match constraint = Regex.Match(text, "unique constraint \"([^\"]+)\"");
+        if (constraint.Success)
+        {
+            return $"The save conflicted with unique constraint {constraint.Groups[1].Value} (duplicate key 23505).";
+        }
+
+        if (text.Contains("23505", StringComparison.Ordinal)
+            || text.Contains("duplicate key", StringComparison.OrdinalIgnoreCase))
+        {
+            return "The save conflicted with an existing unique key (duplicate key 23505).";
+        }
+
+        string firstLine = text.Split('\n', 2)[0].Trim();
+        if (firstLine.Length > 300)
+            firstLine = firstLine[..300];
+
+        return $"The database rejected the save: {firstLine}";
+    }
+
+    private static string DescribeUnexpected(Exception exception, bool isDevelopment)
+    {
+        if (!isDevelopment)
+            return "An internal server error occurred";
+
+        string detail = exception.InnerException?.Message ?? exception.Message;
+        return $"{exception.GetType().Name}: {detail}";
     }
 } 
