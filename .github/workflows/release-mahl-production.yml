@@ -87,8 +87,8 @@ jobs:
             --parameters backend.mahl-prod.bicepparam \
             --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
             --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
-            --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
-            --parameters alertEmail="${{ vars.ALERT_EMAIL }}" \
+            --parameters seedAdminEmail="${{ secrets.SEED_ADMIN_EMAIL || vars.SEED_ADMIN_EMAIL }}" \
+            --parameters alertEmail="${{ secrets.ALERT_EMAIL || vars.ALERT_EMAIL }}" \
             --parameters frontendBaseUrl="${FRONTEND_URL}" \
             --parameters "allowedOrigins=[\"${FRONTEND_URL}\"]"
 
@@ -102,8 +102,8 @@ jobs:
             --parameters backend.mahl-prod.bicepparam \
             --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
             --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
-            --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
-            --parameters alertEmail="${{ vars.ALERT_EMAIL }}" \
+            --parameters seedAdminEmail="${{ secrets.SEED_ADMIN_EMAIL || vars.SEED_ADMIN_EMAIL }}" \
+            --parameters alertEmail="${{ secrets.ALERT_EMAIL || vars.ALERT_EMAIL }}" \
             --parameters frontendBaseUrl="${FRONTEND_URL}" \
             --parameters "allowedOrigins=[\"${FRONTEND_URL}\"]" \
             --query "properties.outputs" -o json > backend-outputs.json

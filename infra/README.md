@@ -163,14 +163,16 @@ az role assignment create --assignee $APP_ID --role Contributor \
 | `AZURE_SUBSCRIPTION_ID` | Your subscription ID |
 | `POSTGRES_ADMIN_PASSWORD` | PostgreSQL admin password (unique per env) |
 | `JWT_SECRET_KEY` | JWT signing key, min 32 chars (unique per env) |
+| `ALERT_EMAIL` | Admin email that receives monitoring alerts |
+| `SEED_ADMIN_EMAIL` | Initial admin user email (optional). Becomes `Seed__AdminEmail` on the API |
 
 **Variables** (per environment):
 
 | Variable | Value |
 |----------|-------|
-| `ALERT_EMAIL` | Admin email that receives monitoring alerts |
-| `SEED_ADMIN_EMAIL` | Initial admin user email (optional) |
 | `VITE_API_URL` | Optional override; defaults to `https://myleague-{env}-api.azurewebsites.net/api` |
+
+`ALERT_EMAIL` and `SEED_ADMIN_EMAIL` are read from the environment **secrets**. A variable with the same name is used only when that secret is empty.
 
 The old `AZURE_WEBAPP_PUBLISH_PROFILE` and `AZURE_STATIC_WEB_APP_TOKEN` secrets are no longer used and can be deleted.
 
@@ -227,7 +229,7 @@ The provisioning templates configure the following on the App Service:
 | `Jwt__Issuer` / `Jwt__Audience` | Default: `MyLeague` | JWT token issuer/audience |
 | `AzureCommunicationServices__ConnectionString` | Auto from ACS module | ACS connection string |
 | `AzureCommunicationServices__SenderAddress` | Auto from ACS domain | Email sender (DoNotReply@...) |
-| `Seed__AdminEmail` | Variable at deploy time | Initial admin user email |
+| `Seed__AdminEmail` | `SEED_ADMIN_EMAIL` secret at deploy time | Initial admin user email |
 | `LoginCode__AutoFillLoginCode` | Bicep sets `false` in Production; otherwise manual | When `true`, the `/api/Auth/login` response includes the generated code (skips email). Convenient for staging. **Must stay `false` in any publicly reachable production environment** — Bicep enforces that on the prod App Service. |
 
 ### Toggling the login-code auto-fill flag in Azure

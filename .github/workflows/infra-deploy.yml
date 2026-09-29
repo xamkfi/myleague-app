@@ -110,8 +110,8 @@ jobs:
             --parameters backend.staging.bicepparam \
             --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
             --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
-            --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
-            --parameters alertEmail="${{ vars.ALERT_EMAIL }}"
+            --parameters seedAdminEmail="${{ secrets.SEED_ADMIN_EMAIL || vars.SEED_ADMIN_EMAIL }}" \
+            --parameters alertEmail="${{ secrets.ALERT_EMAIL || vars.ALERT_EMAIL }}"
 
   # --------------------------------------------------------------------------
   # Resolve env/component: push to development always provisions staging (both).
@@ -234,8 +234,8 @@ jobs:
             --parameters backend.${TARGET_ENV}.bicepparam \
             --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
             --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
-            --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
-            --parameters alertEmail="${{ vars.ALERT_EMAIL }}" \
+            --parameters seedAdminEmail="${{ secrets.SEED_ADMIN_EMAIL || vars.SEED_ADMIN_EMAIL }}" \
+            --parameters alertEmail="${{ secrets.ALERT_EMAIL || vars.ALERT_EMAIL }}" \
             "${EXTRA_ARGS[@]}"
 
       - name: Deploy backend infrastructure
@@ -258,8 +258,8 @@ jobs:
             --parameters backend.${TARGET_ENV}.bicepparam \
             --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
             --parameters jwtSecretKey="${{ secrets.JWT_SECRET_KEY }}" \
-            --parameters seedAdminEmail="${{ vars.SEED_ADMIN_EMAIL }}" \
-            --parameters alertEmail="${{ vars.ALERT_EMAIL }}" \
+            --parameters seedAdminEmail="${{ secrets.SEED_ADMIN_EMAIL || vars.SEED_ADMIN_EMAIL }}" \
+            --parameters alertEmail="${{ secrets.ALERT_EMAIL || vars.ALERT_EMAIL }}" \
             "${EXTRA_ARGS[@]}" \
             --query "properties.outputs" -o json > backend-outputs.json
           echo "### Backend outputs" >> $GITHUB_STEP_SUMMARY
