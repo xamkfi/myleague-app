@@ -9,6 +9,7 @@ Bicep templates and deploy scripts for MyLeague staging and production. Local Do
 | **Local dev** | `docker-compose up` at repo root | Day-to-day development (Postgres, Seq, API, frontend) | $0 |
 | **Staging** | Azure (`myleague-staging-rg`) | Pre-release testing, auto-deployed from the `development` branch | ~$26 |
 | **Prod** | Azure (`myleague-prod-rg`) | Production, released from `master` after one GitHub `prod` approval | ~$27 |
+| **MAHL prod** | Azure (`mahl-prod-rg`) | Separate production instance, released from `master` after one GitHub `mahl-prod` approval | ~$27 |
 
 There is deliberately no cloud dev environment - local docker-compose covers it.
 
@@ -29,9 +30,11 @@ infra/
 │   ├── backend.bicep                 # Backend infrastructure template
 │   ├── backend.staging.bicepparam    # Backend parameters (staging)
 │   ├── backend.prod.bicepparam       # Backend parameters (prod)
+│   ├── backend.mahl-prod.bicepparam  # Backend parameters (MAHL prod)
 │   ├── frontend.bicep                # Frontend infrastructure template (SWA)
 │   ├── frontend.staging.bicepparam
 │   ├── frontend.prod.bicepparam
+│   ├── frontend.mahl-prod.bicepparam # Frontend parameters (MAHL prod)
 │   ├── app-insights-only.bicep       # Standalone App Insights (optional)
 │   ├── provision-backend.ps1 / .sh   # Provision backend infra manually
 │   ├── provision-frontend.ps1        # Provision frontend infra manually
@@ -99,14 +102,15 @@ Alert costs: metric alert rules ~$0.10/month each, availability test pennies at 
 | `deploy-backend.yml` | Auto to **staging** after Backend CI on `development`, and after a successful staging provision; manual for staging, or prod from `master` only | Builds and zip-deploys the API, health-checks it, then runs smoke tests |
 | `deploy-frontend.yml` | Auto to **staging** after Frontend CI on `development`, and after a successful staging provision; manual for staging, or prod from `master` only | Builds the SPA with the right `VITE_API_URL`, deploys to SWA, then smoke tests it |
 | `release-production.yml` | Push to `master`, or `workflow_dispatch` from `master` | One `prod` environment approval, then provisions FE then BE (CORS from the live SWA URL), deploys API + SPA, and runs smoke tests |
+| `release-mahl-production.yml` | Push to `master`, or `workflow_dispatch` from `master` | One `mahl-prod` environment approval, then provisions and deploys the MAHL instance (`mahl-prod-rg`) the same way |
 
-**Release path:** feature → PR into `development` (staging auto, no approval) → verify staging → PR `development` into `master` → **Review deployments** on the `prod` GitHub environment → Approve once.
+**Release path:** feature → PR into `development` (staging auto, no approval) → verify staging → PR `development` into `master` → **Review deployments** on the `prod` and `mahl-prod` GitHub environments → Approve each once. The two production workflows run in parallel and do not share an approval.
 
-`workflow_dispatch` on `release-production.yml` (branch: `master`) replays the same production release without another merge.
+`workflow_dispatch` on `release-production.yml` or `release-mahl-production.yml` (branch: `master`) replays that production release without another merge.
 
 After every backend deploy, a smoke-test job hits the live environment with public read-only requests: liveness/readiness (includes DB health), `GET /api/News`, `GET /api/Clubs`, `GET /api/Divisions` (valid JSON expected), an admin endpoint without a token (must return 401 - proves auth is enforced), and an unknown route (must return 404). The frontend deploy verifies the SPA loads (HTTP 200 with the React root element) both on `/` and on a deep link like `/clubs` (SPA fallback). Any failed check fails the workflow, so a broken staging or prod deploy is visible immediately - and on prod the deploy job's approval gate means the smoke failure emails/notifies right after an intentional release.
 
-All workflows authenticate with **OIDC** (federated credentials) - no publish profiles or long-lived secrets. Keep **required reviewers on the `prod` GitHub environment only** — the `staging` environment must not require approval, or the auto provision/deploy path will wait for a person. Production jobs refuse any ref other than `master`.
+All workflows authenticate with **OIDC** (federated credentials) - no publish profiles or long-lived secrets. Keep **required reviewers on the `prod` and `mahl-prod` GitHub environments only** — the `staging` environment must not require approval, or the auto provision/deploy path will wait for a person. Production jobs refuse any ref other than `master`. `mahl-prod` uses its own Azure subscription secrets and deploys to `mahl-prod-rg`.
 
 ### One-time OIDC setup
 
@@ -257,7 +261,7 @@ Changing an app setting restarts the App Service automatically.
 | Alerts + availability test (prod) | Metric alerts + standard test | ~$1-2 |
 | **Total** | | **~$26-28/month** |
 
-Both environments together: **~$55/month**. A budget alert fires at 80% of $35 per resource group, so unexpected growth is flagged before it hurts.
+Staging and one production instance together: **~$55/month**. MAHL prod is a third instance at the same ~$27. A budget alert fires at 80% of $35 per resource group, so unexpected growth is flagged before it hurts.
 
 ## Troubleshooting
 
