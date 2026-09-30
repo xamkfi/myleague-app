@@ -34,6 +34,11 @@ public interface IHockeyMatchRepository
     Task<int> DeleteAllByCompetitionIdAsync(Guid competitionId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Deletes one match that is still scheduled. Started and finished matches are left in place.
+    /// </summary>
+    Task<bool> DeleteIfScheduledAsync(Guid matchId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Loads matches where the given career team appears as home or away.
     /// </summary>
     Task<IReadOnlyList<HockeyMatch>> GetByTeamIdAsync(Guid teamId);

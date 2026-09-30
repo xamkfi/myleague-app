@@ -253,6 +253,9 @@ public class FootballMatchImporter
         string prefix)
     {
         OldMatch match = mi.Match;
+        if (!match.HasResult)
+            return SkipUndeterminedMatch(match.Id, prefix, home, away, "no result");
+
         DateTime scheduled = match.MatchDate ?? new DateTime(2000, 1, 1, 18, 0, 0);
         string? venue = match.PlaygroundId.HasValue ? _db.Playgrounds.GetValueOrDefault(match.PlaygroundId.Value) : null;
 
@@ -264,14 +267,6 @@ public class FootballMatchImporter
             return false;
         }
 
-        if (!match.HasResult)
-        {
-            _idMap.MapMatch(match.Id, created.Id);
-            Interlocked.Increment(ref _scheduledOnly);
-            Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: scheduled only");
-            return true;
-        }
-
         (List<GoalRec> goals, List<CardRec> cards, int ignoredEvents) =
             await BuildEventsAsync(mi, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods);
 
@@ -281,12 +276,9 @@ public class FootballMatchImporter
             await BuildLineupAsync(mi, away, playersOnField, playerByTeamPlayerId, EventPlayerIds(goals, cards, match.ProjectTeam2Id));
         if (homeLineup == null || awayLineup == null)
         {
-            _idMap.MapMatch(match.Id, created.Id);
-            Interlocked.Increment(ref _scheduledOnly);
             _log.LogWarning("NoLineup",
-                $"Match JL#{match.Id} left as Scheduled: could not fill a {playersOnField}-player lineup.");
-            Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: scheduled only (lineup too small)");
-            return true;
+                $"Match JL#{match.Id} skipped: could not fill a {playersOnField}-player lineup.");
+            return await DiscardCreatedMatchAsync(match.Id, created.Id, prefix, home, away, "lineup too small");
         }
 
         await EnsureLineupOnRosterAsync(home.TeamId, homeLineup, season.Id);
@@ -297,9 +289,8 @@ public class FootballMatchImporter
         bool started = await _api.StartMatchAsync(created.Id);
         if (!started)
         {
-            _idMap.MapMatch(match.Id, created.Id);
-            _log.LogError("StartFootballMatch", new { match.Id, NewMatchId = created.Id }, "Could not start match; left as Scheduled.");
-            return false;
+            _log.LogError("StartFootballMatch", new { match.Id, NewMatchId = created.Id }, "Could not start match; skipping it.");
+            return await DiscardCreatedMatchAsync(match.Id, created.Id, prefix, home, away, "could not start");
         }
 
         (int goalsRecorded, int cardsRecorded) = await RecordEventsAsync(
@@ -316,6 +307,32 @@ public class FootballMatchImporter
         Console.WriteLine(
             $"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name} " +
             $"{match.Team1Result}-{match.Team2Result}: {goalsRecorded} goals, {cardsRecorded} cards{eventNote}");
+        return true;
+    }
+
+    private bool SkipUndeterminedMatch(int oldMatchId, string prefix, SideInfo home, SideInfo away, string reason)
+    {
+        _idMap.MapMatch(oldMatchId, Guid.Empty);
+        Interlocked.Increment(ref _skipped);
+        Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: skipped ({reason})");
+        return true;
+    }
+
+    private async Task<bool> DiscardCreatedMatchAsync(
+        int oldMatchId, Guid createdMatchId, string prefix, SideInfo home, SideInfo away, string reason)
+    {
+        bool deleted = await _api.DeleteMatchAsync(createdMatchId);
+        if (!deleted)
+        {
+            _idMap.MapMatch(oldMatchId, createdMatchId);
+            _log.LogError("DeleteFootballMatch", new { oldMatchId, createdMatchId, reason },
+                "Could not delete the match, so it is still scheduled.");
+            return false;
+        }
+
+        _idMap.MapMatch(oldMatchId, Guid.Empty);
+        Interlocked.Increment(ref _skipped);
+        Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: skipped ({reason})");
         return true;
     }
 
