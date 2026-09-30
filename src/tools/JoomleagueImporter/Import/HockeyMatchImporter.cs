@@ -482,7 +482,42 @@ public class HockeyMatchImporter
             return null;
         }
 
+        await EnsureDressedJerseysAsync(side.TeamId, team, dressedTeamPlayerIds);
+
         return await _api.ConfirmMatchRosterAsync(match.Id, matchTeam.Id, dressedTeamPlayerIds);
+    }
+
+    /// <summary>
+    /// Match confirm rejects a dressed player who has no jersey. Assign a free number first.
+    /// </summary>
+    private async Task EnsureDressedJerseysAsync(
+        Guid teamId,
+        HockeyTeamDto team,
+        List<Guid> dressedTeamPlayerIds)
+    {
+        HashSet<int> claimed = team.Roster
+            .Select(row => row.JerseyNumber)
+            .Where(number => number is > 0 and < 100)
+            .Select(number => number!.Value)
+            .ToHashSet();
+
+        foreach (Guid teamPlayerId in dressedTeamPlayerIds)
+        {
+            HockeyTeamPlayerDto? row = team.Roster.FirstOrDefault(existing => existing.Id == teamPlayerId);
+            if (row == null || row.JerseyNumber is > 0 and < 100)
+                continue;
+
+            int jersey = HistoricalRosterApplicator.ClaimJersey(null, claimed);
+            if (!Enum.TryParse(row.Position, ignoreCase: true, out HockeyPosition position))
+                position = HockeyPosition.Center;
+            if (!Enum.TryParse(row.CaptainRole, ignoreCase: true, out HockeyCaptainRole captain))
+                captain = HockeyCaptainRole.None;
+            if (!Enum.TryParse(row.RosterStatus, ignoreCase: true, out HockeyRosterStatus status))
+                status = HockeyRosterStatus.Active;
+
+            await _api.UpdateTeamPlayerAsync(
+                teamId, row.PlayerId, position, jersey, status, captain, _competitionId.Value);
+        }
     }
 
     private async Task<(List<GoalRec> Goals, List<PenaltyRec> Penalties, int IgnoredEvents)> BuildEventsAsync(

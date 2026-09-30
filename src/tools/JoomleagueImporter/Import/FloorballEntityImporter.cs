@@ -113,7 +113,7 @@ public class FloorballEntityImporter
         Console.WriteLine("--- Teams & Rosters ---");
         (_, Dictionary<int, TeamCategory> categories) = TeamRosterUnion.Build(set);
 
-        Dictionary<Guid, FloorballTeamDto> byId = [];
+        ConcurrentDictionary<Guid, FloorballTeamDto> byId = [];
         ConcurrentDictionary<string, FloorballTeamDto> byName = new(StringComparer.OrdinalIgnoreCase);
         foreach (FloorballTeamDto existing in await _api.GetTeamsAsync())
         {
@@ -406,7 +406,8 @@ public class FloorballEntityImporter
                 continue;
             if (!handled.Add(teamId))
                 continue; // two old project teams can map to the same new team
-            bool ok = await _api.AddTeamToSeasonAsync(season.Id, teamId);
+            bool alreadyEnrolled = season.Teams.Any(existing => existing.Id == teamId);
+            bool ok = alreadyEnrolled || await _api.AddTeamToSeasonAsync(season.Id, teamId);
             await _api.AddTeamToSeasonDivisionAsync(
                 season.Id, division.Id, teamId, Domain.Enums.Common.RosterEnrollmentMode.Empty);
             await ImportProjectRosterAsync(pti, teamId, season.Id);

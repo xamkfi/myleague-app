@@ -9,6 +9,7 @@ using Domain.Entities.Football.Teams;
 using Domain.Repositories.Common;
 using Domain.Repositories.Football;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Football.Competitions.Handlers;
@@ -59,23 +60,34 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddFootballTeamToSeasonCom
                 return Result<FootballSeasonDto>.NotFound("FootballTeam", request.TeamId);
             }
 
-            _logger.LogInformation("Adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
-            season.AddTeam(team);
-            Application.Features.Common.Shared.RosterEnrollment.Apply(team, request.CompetitionId, request.RosterMode);
-
-            FootballTeamSeasonStatistics teamStatistics = new(team.Id, request.CompetitionId);
-            await _footballStatisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
-
-            foreach (FootballTeamPlayer player in team.GetActiveRoster(request.CompetitionId))
+            bool alreadyEnrolled = season.Teams.Any(existing => existing.Id == team.Id);
+            if (alreadyEnrolled)
             {
-                FootballPlayerSeasonStatistics playerSeasonStatistics = new(
-                    player.PlayerId,
+                _logger.LogInformation(
+                    "Team {TeamId} is already in season {SeasonId}",
                     request.TeamId,
                     request.CompetitionId);
-                await _footballStatisticsRepository.SavePlayerSeasonStatisticsAsync(playerSeasonStatistics, cancellationToken);
             }
+            else
+            {
+                _logger.LogInformation("Adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
+                season.AddTeam(team);
+                Application.Features.Common.Shared.RosterEnrollment.Apply(team, request.CompetitionId, request.RosterMode);
 
-            await _footballUnitOfWork.SaveChangesAsync(cancellationToken);
+                FootballTeamSeasonStatistics teamStatistics = new(team.Id, request.CompetitionId);
+                await _footballStatisticsRepository.SaveTeamSeasonStatisticsAsync(teamStatistics, cancellationToken);
+
+                foreach (FootballTeamPlayer player in team.GetActiveRoster(request.CompetitionId))
+                {
+                    FootballPlayerSeasonStatistics playerSeasonStatistics = new(
+                        player.PlayerId,
+                        request.TeamId,
+                        request.CompetitionId);
+                    await _footballStatisticsRepository.SavePlayerSeasonStatisticsAsync(playerSeasonStatistics, cancellationToken);
+                }
+
+                await _footballUnitOfWork.SaveChangesAsync(cancellationToken);
+            }
 
             Dictionary<Guid, Club> clubsDict = new();
             foreach (FootballTeam seasonTeam in season.Teams)
@@ -101,10 +113,32 @@ public class AddTeamToSeasonHandler : IRequestHandler<AddFootballTeamToSeasonCom
             _logger.LogWarning(ex, "Business rule violation while adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
             return Result<FootballSeasonDto>.Failure(ex.Message);
         }
-        catch (Exception ex)
+        catch (ArgumentException ex)
         {
-            _logger.LogError(ex, "Error occurred while adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
-            return Result<FootballSeasonDto>.Failure("An error occurred while adding the team to the season.");
+            _logger.LogWarning(ex, "Invalid team {TeamId} for season {SeasonId}", request.TeamId, request.CompetitionId);
+            return Result<FootballSeasonDto>.Failure(ex.Message);
         }
+        catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+        {
+            _logger.LogWarning(ex, "Team {TeamId} is already stored on season {SeasonId}", request.TeamId, request.CompetitionId);
+            return Result<FootballSeasonDto>.Failure("Team is already in this season.");
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database rejected adding team {TeamId} to season {SeasonId}", request.TeamId, request.CompetitionId);
+            return Result<FootballSeasonDto>.Failure("Saving the team membership conflicted with existing data.");
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+    }
+
+    private static bool IsUniqueViolation(DbUpdateException ex)
+    {
+        string text = ex.InnerException?.Message ?? ex.Message;
+        return text.Contains("23505", StringComparison.Ordinal)
+            || text.Contains("duplicate key", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("unique constraint", StringComparison.OrdinalIgnoreCase);
     }
 }

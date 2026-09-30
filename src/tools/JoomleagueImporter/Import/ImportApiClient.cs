@@ -474,6 +474,37 @@ public class ImportApiClient : IDisposable
             ? DateTime.SpecifyKind(expiresAtUtc, DateTimeKind.Utc)
             : expiresAtUtc.ToUniversalTime();
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        PersistTokenCache();
+    }
+
+    /// <summary>
+    /// Writes the latest rotated tokens so the next sport process can keep the session alive.
+    /// Set JoomleagueImporter__TokenCachePath. The file holds secrets and must stay out of git.
+    /// </summary>
+    private void PersistTokenCache()
+    {
+        string? path = Environment.GetEnvironmentVariable("JoomleagueImporter__TokenCachePath");
+        if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(_accessToken))
+            return;
+
+        try
+        {
+            string json = JsonSerializer.Serialize(new
+            {
+                accessToken = _accessToken,
+                refreshToken = _refreshToken,
+                expiresAt = _accessExpiresAtUtc,
+            });
+            File.WriteAllText(path, json);
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine($"  WARN: failed to persist token cache to '{path}': {ex.Message}");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Console.WriteLine($"  WARN: failed to persist token cache to '{path}': {ex.Message}");
+        }
     }
 
     internal async Task EnsureFreshTokenAsync(CancellationToken cancellationToken)
