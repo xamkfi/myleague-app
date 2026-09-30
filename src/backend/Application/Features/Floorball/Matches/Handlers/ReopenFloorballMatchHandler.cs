@@ -12,6 +12,7 @@ using Domain.Entities.Floorball.Statistics;
 using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Floorball;
 using Domain.Repositories.Floorball;
+using Domain.ValueObjects.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -122,12 +123,12 @@ public class ReopenFloorballMatchHandler : IRequestHandler<ReopenFloorballMatchC
         // A reopened match was previously Completed, which means Start() succeeded and both
         // team IDs are populated. Skip the undo gracefully if a slot somehow ended up null.
         if (match.HomeTeamId.HasValue)
-            await UndoSingleTeamSeasonStatistics(match.HomeTeamId.Value, match.CompetitionId, homeResult, isHomeGame: true, match.WentToShootout, cancellationToken);
+            await UndoSingleTeamSeasonStatistics(match.HomeTeamId.Value, match.CompetitionId, homeResult, isHomeGame: true, match, cancellationToken);
         if (match.AwayTeamId.HasValue)
-            await UndoSingleTeamSeasonStatistics(match.AwayTeamId.Value, match.CompetitionId, awayResult, isHomeGame: false, match.WentToShootout, cancellationToken);
+            await UndoSingleTeamSeasonStatistics(match.AwayTeamId.Value, match.CompetitionId, awayResult, isHomeGame: false, match, cancellationToken);
     }
 
-    private async Task UndoSingleTeamSeasonStatistics(Guid teamId, Guid competitionId, FloorballGameResult result, bool isHomeGame, bool wentToShootout, CancellationToken cancellationToken)
+    private async Task UndoSingleTeamSeasonStatistics(Guid teamId, Guid competitionId, FloorballGameResult result, bool isHomeGame, FloorballMatch match, CancellationToken cancellationToken)
     {
         FloorballTeamSeasonStatistics? teamStats = await _statisticsRepository.GetTeamSeasonStatisticsAsync(teamId, competitionId, cancellationToken);
         if (teamStats == null)
@@ -136,7 +137,8 @@ public class ReopenFloorballMatchHandler : IRequestHandler<ReopenFloorballMatchC
             return;
         }
 
-        teamStats.UndoMatchResult(result, isHomeGame, wentToShootout);
+        FloorballStandingRules? standingRules = match.Competition is FloorballSeason season ? season.StandingRules : null;
+        teamStats.UndoMatchResult(result, isHomeGame, match.WentToShootout, match.WentToOvertime, standingRules);
         await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
     }
 

@@ -48,6 +48,8 @@ public class UpdateFootballSeasonCommandValidator : AbstractValidator<UpdateFoot
         RuleFor(x => x.WinPoints).GreaterThanOrEqualTo(0);
         RuleFor(x => x.DrawPoints).GreaterThanOrEqualTo(0);
         RuleFor(x => x.LossPoints).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.OvertimeWinPoints).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.OvertimeLossPoints).GreaterThanOrEqualTo(0);
         RuleFor(x => x.LogoUrl)
             .Must(CompetitionLogoUrl.IsValidOptional)
             .WithMessage("Logo url must be an http or https address under 500 characters");

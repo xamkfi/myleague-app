@@ -186,6 +186,20 @@ public class FloorballDomainBehaviorTests
     }
 
     [Fact]
+    public void RecordShootout_WithoutOvertime_LeavesOvertimeUnset()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        ready.Match.Start();
+
+        ready.Match.RecordShootout();
+
+        ready.Match.WentToShootout.Should().BeTrue();
+        ready.Match.WentToOvertime.Should().BeFalse();
+        ready.Match.PeriodScores.Select(ps => ps.PeriodNumber).Should().Contain(ready.Match.ShootoutPeriodNumber);
+        ready.Match.PeriodScores.Select(ps => ps.PeriodNumber).Should().NotContain(ready.Match.OvertimePeriodNumber);
+    }
+
+    [Fact]
     public void RecordGoal_WhenNotInProgress_Throws()
     {
         FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();

@@ -37,4 +37,5 @@ public record HockeySeasonDto(
     IReadOnlyCollection<HockeyPlayoffScheduleSlotDto> PlayoffSchedule,
     string? LogoUrl,
     int TeamsAdvancing = 0,
-    IReadOnlyList<StandingSortCriterion>? RankingCriteria = null);
+    IReadOnlyList<StandingSortCriterion>? RankingCriteria = null,
+    HockeyStandingRulesDto? StandingRules = null);

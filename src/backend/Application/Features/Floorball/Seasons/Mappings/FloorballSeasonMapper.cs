@@ -95,10 +95,12 @@ public static class FloorballSeasonMapper
 
         int teamsAdvancing = 0;
         IReadOnlyList<StandingSortCriterion> rankingCriteria = StandingSortCriteria.Default;
+        FloorballStandingRules standingRules = FloorballStandingRules.Default();
         if (season is FloorballSeason floorballSeason)
         {
             teamsAdvancing = floorballSeason.TeamsAdvancing;
             rankingCriteria = floorballSeason.RankingCriteria;
+            standingRules = floorballSeason.StandingRules;
         }
 
         return new FloorballSeasonDto(
@@ -115,7 +117,12 @@ public static class FloorballSeasonMapper
             season.TeamCategory,
             CompetitionLogoUrl.ToPublicString(season.LogoUrl),
             teamsAdvancing,
-            rankingCriteria
+            rankingCriteria,
+            new FloorballStandingRulesDto(
+                standingRules.WinPoints,
+                standingRules.DrawPoints,
+                standingRules.OvertimeWinPoints,
+                standingRules.OvertimeLossPoints)
         );
     }
 
@@ -164,6 +171,11 @@ public static class FloorballSeasonMapper
      );
         season.UpdateLogo(CompetitionLogoUrl.Parse(command.LogoUrl));
         season.UpdateStandingsSettings(command.TeamsAdvancing, command.RankingCriteria);
+        season.UpdateStandingRules(new FloorballStandingRules(
+            command.WinPoints,
+            command.DrawPoints,
+            command.OvertimeWinPoints,
+            command.OvertimeLossPoints));
         return season;
     }
 
@@ -221,6 +233,11 @@ public static class FloorballSeasonMapper
         if (season is FloorballSeason floorballSeason)
         {
             floorballSeason.UpdateStandingsSettings(command.TeamsAdvancing, command.RankingCriteria);
+            floorballSeason.UpdateStandingRules(new FloorballStandingRules(
+                command.WinPoints,
+                command.DrawPoints,
+                command.OvertimeWinPoints,
+                command.OvertimeLossPoints));
         }
     }
 } 

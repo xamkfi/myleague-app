@@ -307,6 +307,33 @@ public class FootballMatchTests
     }
 
     [Fact]
+    public void ChangeTeams_SwappingSides_ClearsPreviousLineups()
+    {
+        ReadyMatch ready = CreateReadyMatch();
+        ready.Match.Lineup.Should().NotBeEmpty();
+
+        ready.Match.ChangeTeams(ready.Away, ready.Home);
+
+        ready.Match.HomeTeamId.Should().Be(ready.Away.Id);
+        ready.Match.AwayTeamId.Should().Be(ready.Home.Id);
+        ready.Match.Lineup.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RecordPenaltyShootout_WithoutExtraTime_LeavesExtraTimeUnset()
+    {
+        ReadyMatch ready = CreateReadyMatch(FiveASideRules(allowExtraTime: true, allowPenaltyShootout: true));
+        ready.Match.Start();
+
+        ready.Match.RecordPenaltyShootout();
+
+        ready.Match.WentToPenaltyShootout.Should().BeTrue();
+        ready.Match.WentToExtraTime.Should().BeFalse();
+        ready.Match.PeriodScores.Select(ps => ps.PeriodNumber).Should().Contain(ready.Match.MatchRules.PenaltyShootoutPeriodNumber);
+        ready.Match.PeriodScores.Select(ps => ps.PeriodNumber).Should().NotContain(ready.Match.MatchRules.ExtraTimeStartPeriodNumber);
+    }
+
+    [Fact]
     public void RecordExtraTime_AddsPeriodRows()
     {
         ReadyMatch ready = CreateReadyMatch(FiveASideRules(allowExtraTime: true, allowPenaltyShootout: true));

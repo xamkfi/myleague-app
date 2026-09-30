@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import './LiveMatchTimer.scss';
 import { MatchTimer } from '../../../../../components/MatchTimer';
+import type { TimerUpdate } from '../../../../../api/common/timerService';
 import { useMatchTimerContext } from '../context';
 import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 
@@ -31,6 +32,9 @@ interface LiveMatchTimerProps {
    * start" copy for backwards compatibility.
    */
   startDisabledReason?: string;
+  showSkipToShootout?: boolean;
+  skipToShootoutLoading?: boolean;
+  onSkipToShootout?: () => void;
 }
 
 const LiveMatchTimer = ({
@@ -50,15 +54,37 @@ const LiveMatchTimer = ({
   overtimePeriodNumber,
   shootoutPeriodNumber,
   startDisabledReason,
+  showSkipToShootout = false,
+  skipToShootoutLoading = false,
+  onSkipToShootout,
 }: LiveMatchTimerProps) => {
   const { t } = useTranslation();
   const {
     currentPeriod,
+    setCurrentPeriod,
     elapsedTimeSeconds,
     currentPeriodStartSeconds,
     registerCallback,
     handleTimerUpdate,
   } = useMatchTimerContext();
+
+  const shootoutOpen: boolean = currentMatch.wentToShootout
+    && startedPeriods.has(shootoutPeriodNumber)
+    && !endedPeriods.has(shootoutPeriodNumber);
+
+  React.useEffect(() => {
+    if (shootoutOpen && currentPeriod !== shootoutPeriodNumber) {
+      setCurrentPeriod(shootoutPeriodNumber);
+    }
+  }, [shootoutOpen, currentPeriod, shootoutPeriodNumber, setCurrentPeriod]);
+
+  const onTimerUpdate = (update: TimerUpdate): void => {
+    if (shootoutOpen && update.PeriodNumber !== shootoutPeriodNumber) {
+      handleTimerUpdate({ ...update, PeriodNumber: shootoutPeriodNumber });
+      return;
+    }
+    handleTimerUpdate(update);
+  };
 
   const getChipStatus = (p: number) => {
     if (endedPeriods.has(p)) return 'completed';
@@ -137,6 +163,20 @@ const LiveMatchTimer = ({
               </div>
             ))}
           </div>
+          {showSkipToShootout && onSkipToShootout && currentMatch.status === 'InProgress' && (
+            <div className="period-row extra-actions">
+              <button
+                type="button"
+                className="start-match-btn"
+                onClick={onSkipToShootout}
+                disabled={skipToShootoutLoading || loading}
+              >
+                {skipToShootoutLoading
+                  ? t('matchPage.skippingToShootout', 'Skipping to penalty shootout...')
+                  : t('matchPage.skipToShootout', 'Skip to penalty shootout')}
+              </button>
+            </div>
+          )}
           <div className="clock-time">
             {currentMatch.status === 'Scheduled' ? (
               <div className="start-match-container">
@@ -164,7 +204,7 @@ const LiveMatchTimer = ({
                     matchId={currentMatch.id}
                 periodNumber={currentPeriod}
                     isActive={isOpen}
-                onTimerUpdate={handleTimerUpdate}
+                onTimerUpdate={onTimerUpdate}
                 onGetCurrentTime={handleGetCurrentTime}
                 onGetCurrentElapsedSeconds={handleGetCurrentElapsedSeconds}
                 onGetToggleFunction={handleGetToggleFunction}

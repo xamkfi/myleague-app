@@ -143,6 +143,7 @@ public class ReopenFootballMatchHandler : IRequestHandler<ReopenFootballMatchCom
             c.TeamId == teamId && c.ResultsInSendingOff);
 
         FootballStandingRules standingRules = match.Competition?.StandingRules ?? FootballStandingRules.Default();
+        bool decidedAfterRegulation = match.WentToExtraTime || match.WentToPenaltyShootout;
         teamStats.RevertAfterMatch(
             gameResult,
             isHomeGame,
@@ -150,7 +151,8 @@ public class ReopenFootballMatchHandler : IRequestHandler<ReopenFootballMatchCom
             opponentScore,
             standingRules,
             yellowCards,
-            redCards);
+            redCards,
+            decidedAfterRegulation);
 
         await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
     }

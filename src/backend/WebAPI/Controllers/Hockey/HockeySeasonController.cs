@@ -155,7 +155,13 @@ public class HockeySeasonController : BaseApiController
             request.TeamCategory,
             request.LogoUrl,
             request.TeamsAdvancing,
-            request.RankingCriteria);
+            request.RankingCriteria,
+            request.RegulationWinPoints,
+            request.OvertimeWinPoints,
+            request.ShootoutWinPoints,
+            request.OvertimeLossPoints,
+            request.ShootoutLossPoints,
+            request.TiePoints);
         Result<HockeySeasonDto> result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsSuccess && result.Data is not null)
@@ -189,7 +195,13 @@ public class HockeySeasonController : BaseApiController
             request.TeamCategory,
             request.LogoUrl,
             request.TeamsAdvancing,
-            request.RankingCriteria), cancellationToken);
+            request.RankingCriteria,
+            request.RegulationWinPoints,
+            request.OvertimeWinPoints,
+            request.ShootoutWinPoints,
+            request.OvertimeLossPoints,
+            request.ShootoutLossPoints,
+            request.TiePoints), cancellationToken);
 
         return HandleResult(result, "Hockey season updated successfully", "Failed to update hockey season");
     }

@@ -10,6 +10,7 @@ using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using Domain.Services.Common;
 using Domain.Services.Floorball;
+using Domain.ValueObjects.Floorball;
 
 namespace Application.Features.Floorball.Statistics.Handlers;
 
@@ -54,9 +55,9 @@ internal static class FloorballEnrolledStandings
         }
 
         await ApplyMarksAsync(rows, knownTeams, teams, clubs, cancellationToken);
-        await ApplyMatchPointsAsync(rows, competitionId, matches);
+        await ApplyMatchPointsAsync(rows, competitionId, competition, matches);
         IReadOnlyList<StandingSortCriterion> criteria = CriteriaFor(competition);
-        IReadOnlyList<StandingMatchResult> played = await LoadResultsAsync(competitionId, criteria, matches);
+        IReadOnlyList<StandingMatchResult> played = await LoadResultsAsync(competitionId, criteria, competition, matches);
         return StandingTableOrder.Sort(
             rows,
             criteria,
@@ -72,18 +73,20 @@ internal static class FloorballEnrolledStandings
     }
 
     /// <summary>
-    /// Replaces stored points with the current match-point rules so already finished
-    /// matches follow regulation 3, shootout win 2, shootout loss 1, and draw 1.
+    /// Replaces stored points with the competition's match-point rules.
+    /// Season tables use <see cref="FloorballStandingRules"/>. Tournaments keep the shootout-only formula.
     /// Playoff matches stay out of the league table.
     /// </summary>
     private static async Task ApplyMatchPointsAsync(
         List<FloorballTeamSeasonStatisticsDto> rows,
         Guid competitionId,
+        FloorballCompetition? competition,
         IFloorballMatchRepository matches)
     {
         if (rows.Count == 0)
             return;
 
+        FloorballStandingRules? seasonRules = SeasonRules(competition);
         Dictionary<Guid, int> pointsByTeam = new();
         IEnumerable<FloorballMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
             .Where(match => match.Status == FloorballMatchStatus.Completed
@@ -95,9 +98,9 @@ internal static class FloorballEnrolledStandings
             Guid homeId = match.HomeTeamId!.Value;
             Guid awayId = match.AwayTeamId!.Value;
             pointsByTeam[homeId] = pointsByTeam.GetValueOrDefault(homeId)
-                + FloorballStandingPoints.ForScore(match.HomeScore, match.AwayScore, match.WentToShootout);
+                + PointsFor(seasonRules, match.HomeScore, match.AwayScore, match);
             pointsByTeam[awayId] = pointsByTeam.GetValueOrDefault(awayId)
-                + FloorballStandingPoints.ForScore(match.AwayScore, match.HomeScore, match.WentToShootout);
+                + PointsFor(seasonRules, match.AwayScore, match.HomeScore, match);
         }
 
         foreach (FloorballTeamSeasonStatisticsDto row in rows)
@@ -107,11 +110,13 @@ internal static class FloorballEnrolledStandings
     private static async Task<IReadOnlyList<StandingMatchResult>> LoadResultsAsync(
         Guid competitionId,
         IReadOnlyList<StandingSortCriterion> criteria,
+        FloorballCompetition? competition,
         IFloorballMatchRepository matches)
     {
         if (!StandingSortCriteria.UsesHeadToHead(criteria))
             return [];
 
+        FloorballStandingRules? seasonRules = SeasonRules(competition);
         List<StandingMatchResult> results = new();
         IEnumerable<FloorballMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
             .Where(match => match.Status == FloorballMatchStatus.Completed
@@ -122,12 +127,34 @@ internal static class FloorballEnrolledStandings
         {
             Guid homeId = match.HomeTeamId!.Value;
             Guid awayId = match.AwayTeamId!.Value;
-            int homePoints = FloorballStandingPoints.ForScore(match.HomeScore, match.AwayScore, match.WentToShootout);
-            int awayPoints = FloorballStandingPoints.ForScore(match.AwayScore, match.HomeScore, match.WentToShootout);
+            int homePoints = PointsFor(seasonRules, match.HomeScore, match.AwayScore, match);
+            int awayPoints = PointsFor(seasonRules, match.AwayScore, match.HomeScore, match);
             results.Add(new StandingMatchResult(homeId, awayId, match.HomeScore, match.AwayScore, homePoints, awayPoints));
         }
 
         return results;
+    }
+
+    private static FloorballStandingRules? SeasonRules(FloorballCompetition? competition)
+    {
+        return competition is FloorballSeason season ? season.StandingRules : null;
+    }
+
+    private static int PointsFor(
+        FloorballStandingRules? seasonRules,
+        int goalsFor,
+        int goalsAgainst,
+        FloorballMatch match)
+    {
+        if (seasonRules is null)
+            return FloorballStandingPoints.ForScore(goalsFor, goalsAgainst, match.WentToShootout);
+
+        return FloorballStandingPoints.ForScore(
+            seasonRules,
+            goalsFor,
+            goalsAgainst,
+            match.WentToOvertime,
+            match.WentToShootout);
     }
 
     private static IReadOnlyList<StandingSortCriterion> CriteriaFor(FloorballCompetition? competition)

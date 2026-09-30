@@ -47,6 +47,14 @@ public class CreateHockeySeasonHandler : IRequestHandler<CreateHockeySeasonComma
                 teamCategory: request.TeamCategory);
             season.UpdateLogo(CompetitionLogoUrl.Parse(request.LogoUrl));
             season.UpdateStandingsSettings(request.TeamsAdvancing, request.RankingCriteria);
+            HockeyCompetitionMapper.ApplyStandingPoints(
+                season,
+                request.RegulationWinPoints,
+                request.OvertimeWinPoints,
+                request.ShootoutWinPoints,
+                request.OvertimeLossPoints,
+                request.ShootoutLossPoints,
+                request.TiePoints);
             await _competitionRepository.AddAsync(season);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

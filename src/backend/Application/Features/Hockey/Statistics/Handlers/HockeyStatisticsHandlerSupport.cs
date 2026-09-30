@@ -172,7 +172,6 @@ internal static class HockeyStatisticsHandlerSupport
                 : StandingSortCriteria.Default;
             IReadOnlyList<StandingMatchResult> played = await LoadResultsAsync(
                 competitionId,
-                criteria,
                 season.GetEffectiveRules().StandingRules,
                 matches);
             return SortSeason(existing, enrolledTeamIds, names, competitionId, scope, tournamentGroupId, criteria, played);
@@ -190,13 +189,9 @@ internal static class HockeyStatisticsHandlerSupport
 
     private static async Task<IReadOnlyList<StandingMatchResult>> LoadResultsAsync(
         Guid competitionId,
-        IReadOnlyList<StandingSortCriterion> criteria,
         HockeyStandingRules rules,
         IHockeyMatchRepository matches)
     {
-        if (!StandingSortCriteria.UsesHeadToHead(criteria))
-            return [];
-
         List<StandingMatchResult> results = new();
         IEnumerable<HockeyMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
             .Where(match => match.PlayoffSeriesId is null
@@ -243,6 +238,7 @@ internal static class HockeyStatisticsHandlerSupport
         IReadOnlyList<StandingMatchResult> matches)
     {
         List<HockeyTeamCompetitionStatisticsDto> merged = MergeRows(existing, enrolledTeamIds, names, competitionId, scope, tournamentGroupId);
+        ApplyMatchPoints(merged, matches);
         List<HockeyTeamCompetitionStatisticsDto> ordered = StandingTableOrder.Sort(
             merged,
             criteria,
@@ -260,6 +256,21 @@ internal static class HockeyStatisticsHandlerSupport
             ordered[index].StandingRank = index + 1;
 
         return ordered;
+    }
+
+    private static void ApplyMatchPoints(
+        List<HockeyTeamCompetitionStatisticsDto> rows,
+        IReadOnlyList<StandingMatchResult> matches)
+    {
+        Dictionary<Guid, int> pointsByTeam = new();
+        foreach (StandingMatchResult match in matches)
+        {
+            pointsByTeam[match.HomeTeamId] = pointsByTeam.GetValueOrDefault(match.HomeTeamId) + match.HomePoints;
+            pointsByTeam[match.AwayTeamId] = pointsByTeam.GetValueOrDefault(match.AwayTeamId) + match.AwayPoints;
+        }
+
+        foreach (HockeyTeamCompetitionStatisticsDto row in rows)
+            row.Points = pointsByTeam.GetValueOrDefault(row.TeamId);
     }
 
     private static List<HockeyTeamCompetitionStatisticsDto> MergeZeros(

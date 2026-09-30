@@ -1,0 +1,12 @@
+{
+  "$schema": "myleague-roster-import/v1",
+  "teams": [
+    {
+      "name": "Example SB",
+      "players": [
+        { "firstName": "Matti", "lastName": "Meikäläinen", "jerseyNumber": 1, "position": "Goalkeeper" },
+        { "firstName": "Liisa", "lastName": "Esimerkki", "jerseyNumber": 10, "position": "Forward" }
+      ]
+    }
+  ]
+}

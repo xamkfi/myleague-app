@@ -19,6 +19,8 @@ export interface FootballStandingRulesDto {
   winPoints: number;
   drawPoints: number;
   lossPoints: number;
+  overtimeWinPoints: number;
+  overtimeLossPoints: number;
 }
 
 export interface FootballSeasonDto {
@@ -82,6 +84,8 @@ export interface CreateFootballSeasonRequest {
   winPoints: number;
   drawPoints: number;
   lossPoints: number;
+  overtimeWinPoints: number;
+  overtimeLossPoints: number;
   teamCategory?: string;
   logoUrl?: string | null;
   teamsAdvancing?: number;
@@ -105,6 +109,8 @@ export const FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS = {
   winPoints: 3,
   drawPoints: 1,
   lossPoints: 0,
+  overtimeWinPoints: 3,
+  overtimeLossPoints: 0,
 };
 
 export interface UpdateFootballSeasonRequest {
@@ -124,6 +130,8 @@ export interface UpdateFootballSeasonRequest {
   winPoints: number;
   drawPoints: number;
   lossPoints: number;
+  overtimeWinPoints: number;
+  overtimeLossPoints: number;
   teamCategory?: string;
   logoUrl?: string | null;
   teamsAdvancing?: number;

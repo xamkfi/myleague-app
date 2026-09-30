@@ -38,9 +38,12 @@ public static class HockeyTeamMapper
     /// </summary>
     public static HockeyTeamDto ToDto(HockeyTeam team, Guid? competitionId = null, Uri? clubLogoUrl = null)
     {
-        IEnumerable<HockeyTeamPlayer> roster = competitionId.HasValue
-            ? team.Roster.Where(p => p.CompetitionId == competitionId)
-            : team.Roster;
+        IEnumerable<HockeyTeamPlayer> roster = team.Roster.Where(player => player.IsActive);
+        if (competitionId.HasValue)
+        {
+            Guid selectedCompetitionId = competitionId.Value;
+            roster = roster.Where(player => player.CompetitionId == selectedCompetitionId);
+        }
 
         string? logoUrl = PublicLogoUrl.OmitPlaceholder(team.GetEffectiveLogoUrl(clubLogoUrl))?.ToString();
 

@@ -37,5 +37,9 @@ namespace Application.Features.Floorball.Seasons.Commands
         TeamCategory TeamCategory = TeamCategory.Adult,
         string? LogoUrl = null,
         int TeamsAdvancing = 0,
-        IReadOnlyList<StandingSortCriterion>? RankingCriteria = null) : IRequest<Result<FloorballSeasonDto>>;
+        IReadOnlyList<StandingSortCriterion>? RankingCriteria = null,
+        int WinPoints = 3,
+        int DrawPoints = 1,
+        int OvertimeWinPoints = 2,
+        int OvertimeLossPoints = 1) : IRequest<Result<FloorballSeasonDto>>;
 }

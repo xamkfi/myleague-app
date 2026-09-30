@@ -110,7 +110,7 @@ export const usePeriodManagement = ({
     } finally {
       setPeriodLoading(prev => ({ ...prev, [currentPeriod]: false }));
     }
-  }, [currentPeriod, currentMatch.id, setCurrentPeriod, rules, overtimePeriodNumber, shootoutPeriodNumber]);
+  }, [currentPeriod, currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus, rules, overtimePeriodNumber, shootoutPeriodNumber]);
 
   /**
    * Starts a new period.
@@ -186,26 +186,51 @@ export const usePeriodManagement = ({
   }, [currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus, overtimePeriodNumber]);
 
   /**
-   * Records shootout for the current match
+   * Records shootout for the current match without marking overtime.
+   * Ends the last regulation period first when it is still open.
    */
   const recordShootout = useCallback(async () => {
     try {
+      setPeriodLoading(prev => ({ ...prev, [shootoutPeriodNumber]: true }));
+
+      const lastRegularPeriod: number = rules.numberOfPeriods;
+      const lastRegularStillOpen: boolean = currentPeriod === lastRegularPeriod
+        && startedPeriods.has(lastRegularPeriod)
+        && !endedPeriods.has(lastRegularPeriod);
+      if (lastRegularStillOpen) {
+        await floorballMatchEventService.endPeriod(currentMatch.id, lastRegularPeriod);
+        setEndedPeriods(prev => new Set([...prev, lastRegularPeriod]));
+      }
+
       await floorballMatchEventService.recordShootout(currentMatch.id);
       await floorballMatchEventService.startPeriod(currentMatch.id, shootoutPeriodNumber);
-      
+
       if (loadCurrentMatchStatus) {
         await loadCurrentMatchStatus();
       }
-      
+
       setStartedPeriods(prev => new Set([...prev, shootoutPeriodNumber]));
       setCurrentPeriod(shootoutPeriodNumber);
+      setNextPeriodToStart(0);
       setShowShootoutConfirmation(false);
-      
     } catch (error) {
       console.error('Error recording shootout:', error);
       throw error;
+    } finally {
+      setPeriodLoading(prev => ({ ...prev, [shootoutPeriodNumber]: false }));
     }
-  }, [currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus, shootoutPeriodNumber]);
+  }, [
+    currentMatch.id,
+    currentPeriod,
+    startedPeriods,
+    endedPeriods,
+    setCurrentPeriod,
+    loadCurrentMatchStatus,
+    rules.numberOfPeriods,
+    shootoutPeriodNumber,
+  ]);
+
+  const skipToShootout = recordShootout;
 
   /**
    * Determines if we can end the current period
@@ -328,6 +353,7 @@ export const usePeriodManagement = ({
     startPeriod,
     recordOvertime,
     recordShootout,
+    skipToShootout,
     confirmEndPeriod,
     cancelEndPeriod,
     

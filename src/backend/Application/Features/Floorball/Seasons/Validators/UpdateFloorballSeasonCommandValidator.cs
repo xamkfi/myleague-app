@@ -49,6 +49,11 @@ public class UpdateFloorballSeasonCommandValidator : AbstractValidator<UpdateFlo
         RuleFor(x => x.RankingCriteria)
             .Must(StandingSortCriteria.IsValid)
             .WithMessage("Ranking criteria must be a non-empty list of unique values");
+
+        RuleFor(x => x.WinPoints).GreaterThanOrEqualTo(0).WithMessage("Win points cannot be negative");
+        RuleFor(x => x.DrawPoints).GreaterThanOrEqualTo(0).WithMessage("Draw points cannot be negative");
+        RuleFor(x => x.OvertimeWinPoints).GreaterThanOrEqualTo(0).WithMessage("Overtime win points cannot be negative");
+        RuleFor(x => x.OvertimeLossPoints).GreaterThanOrEqualTo(0).WithMessage("Overtime loss points cannot be negative");
     }
 
     private bool BeValidDate(DateTime date)

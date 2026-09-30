@@ -32,6 +32,7 @@ import {
   type HockeyTeamDto,
 } from '../../../../types/hockey/hockeyTypes';
 import { loadHockeyRosterNameMaps, loadPersonNameMap, loadTeamNameMap } from '../../../../utils/hockeyLookups';
+import { hockeyCompetitionKind, loadHockeyEnrolledTeams } from '../../../../utils/enrolledCompetitionTeams';
 import {
   DEFAULT_HOCKEY_MATCH_RULES,
   useHockeyPeriodManagement,
@@ -292,6 +293,25 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
     })();
   };
 
+  const showSkipToShootout: boolean = isHockeyMatchLive(match.status)
+    && DEFAULT_HOCKEY_MATCH_RULES.allowShootout
+    && !match.wentToOvertime
+    && !match.wentToShootout
+    && periodManagement.nextPeriodToStart === periodManagement.overtimePeriodNumber
+    && periodManagement.endedPeriods.has(periodManagement.rules.numberOfPeriods);
+
+  const handleSkipToShootout = (): void => {
+    void (async () => {
+      setError(null);
+      stopClock();
+      try {
+        await periodManagement.skipToShootout();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to start penalty shootout');
+      }
+    })();
+  };
+
   const home = hockeyHomeTeam(match);
   const away = hockeyAwayTeam(match);
   const leftSide = isSidesSwapped ? away : home;
@@ -499,6 +519,9 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
             }
             overtimePeriodNumber={periodManagement.overtimePeriodNumber}
             shootoutPeriodNumber={periodManagement.shootoutPeriodNumber}
+            showSkipToShootout={showSkipToShootout}
+            skipToShootoutLoading={Boolean(periodManagement.periodLoading[periodManagement.shootoutPeriodNumber])}
+            onSkipToShootout={handleSkipToShootout}
           />
           <LiveMatchQuickActions
             loading={busy}
@@ -726,7 +749,7 @@ function ManageHockeyMatchPage() {
   const { matchId } = useParams<{ matchId: string }>();
   const [searchParams] = useSearchParams();
   const [match, setMatch] = useState<HockeyMatchDto | null>(null);
-  const [teams, setTeams] = useState<HockeyTeamDto[]>([]);
+  const [teams, setTeams] = useState<Array<{ id: string; name: string }>>([]);
   const [homeTeamId, setHomeTeamId] = useState('');
   const [awayTeamId, setAwayTeamId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -743,12 +766,13 @@ function ManageHockeyMatchPage() {
     }
     const fetchMatch = async (): Promise<void> => {
       try {
-        const [loaded, teamList] = await Promise.all([
-          hockeyMatchService.getById(matchId),
-          hockeyTeamService.getAll(),
-        ]);
+        const loaded = await hockeyMatchService.getById(matchId);
+        const kind = hockeyCompetitionKind(String(loaded.matchType));
+        const enrolled = loaded.competitionId
+          ? await loadHockeyEnrolledTeams(loaded.competitionId, kind)
+          : (await hockeyTeamService.getAll()).map((team) => ({ id: team.id, name: team.name }));
         setMatch(loaded);
-        setTeams(teamList);
+        setTeams(enrolled);
         setHomeTeamId(loaded.homeTeamId ?? '');
         setAwayTeamId(loaded.awayTeamId ?? '');
       } catch (err) {

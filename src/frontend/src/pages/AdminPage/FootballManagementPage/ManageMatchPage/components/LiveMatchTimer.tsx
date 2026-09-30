@@ -1,6 +1,8 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './LiveMatchTimer.scss';
 import { MatchTimer } from '../../../../../components/MatchTimer';
+import type { TimerUpdate } from '../../../../../api/common/timerService';
 import { useMatchTimerContext } from '../context';
 import type { FootballMatchDto } from '../../../../../types/football/footballTypes';
 import {
@@ -53,6 +55,7 @@ const LiveMatchTimer = ({
   getPeriodControlButtonText,
   keybindsEnabled,
   isStartMatchDisabled,
+  shootoutPeriodNumber,
   startDisabledReason,
   showExtraTimeButton = false,
   showPenaltyShootoutButton = false,
@@ -61,13 +64,33 @@ const LiveMatchTimer = ({
   onRecordExtraTime,
   onRecordPenaltyShootout,
 }: LiveMatchTimerProps) => {
+  const { t } = useTranslation();
   const {
     currentPeriod,
+    setCurrentPeriod,
     elapsedTimeSeconds,
     currentPeriodStartSeconds,
     registerCallback,
     handleTimerUpdate,
   } = useMatchTimerContext();
+
+  const shootoutOpen: boolean = currentMatch.wentToPenaltyShootout
+    && startedPeriods.has(shootoutPeriodNumber)
+    && !endedPeriods.has(shootoutPeriodNumber);
+
+  React.useEffect(() => {
+    if (shootoutOpen && currentPeriod !== shootoutPeriodNumber) {
+      setCurrentPeriod(shootoutPeriodNumber);
+    }
+  }, [shootoutOpen, currentPeriod, shootoutPeriodNumber, setCurrentPeriod]);
+
+  const onTimerUpdate = (update: TimerUpdate): void => {
+    if (shootoutOpen && update.PeriodNumber !== shootoutPeriodNumber) {
+      handleTimerUpdate({ ...update, PeriodNumber: shootoutPeriodNumber });
+      return;
+    }
+    handleTimerUpdate(update);
+  };
 
   const getChipStatus = (p: number) => {
     if (endedPeriods.has(p)) return 'completed';
@@ -157,7 +180,9 @@ const LiveMatchTimer = ({
                 onClick={onRecordPenaltyShootout}
                 disabled={penaltyShootoutLoading || loading}
               >
-                {penaltyShootoutLoading ? 'Starting PSO…' : 'Start penalty shootout'}
+                {penaltyShootoutLoading
+                  ? t('matchPage.skippingToShootout', 'Skipping to penalty shootout...')
+                  : t('matchPage.skipToShootout', 'Skip to penalty shootout')}
               </button>
             )}
           </div>
@@ -189,7 +214,7 @@ const LiveMatchTimer = ({
                 matchId={currentMatch.id}
                 periodNumber={currentPeriod}
                 isActive={isOpen}
-                onTimerUpdate={handleTimerUpdate}
+                onTimerUpdate={onTimerUpdate}
                 onGetCurrentTime={handleGetCurrentTime}
                 onGetCurrentElapsedSeconds={handleGetCurrentElapsedSeconds}
                 onGetToggleFunction={handleGetToggleFunction}

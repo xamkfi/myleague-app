@@ -19,6 +19,30 @@ public class FloorballSeasonConfiguration : IEntityTypeConfiguration<FloorballSe
             .HasDefaultValue(0)
             .IsRequired();
 
+        builder.OwnsOne(season => season.StandingRules, rules =>
+        {
+            rules.Property(rule => rule.WinPoints)
+                .HasColumnName("StandingRules_WinPoints")
+                .IsRequired()
+                .HasDefaultValue(3)
+                .ValueGeneratedNever();
+            rules.Property(rule => rule.DrawPoints)
+                .HasColumnName("StandingRules_DrawPoints")
+                .IsRequired()
+                .HasDefaultValue(1)
+                .ValueGeneratedNever();
+            rules.Property(rule => rule.OvertimeWinPoints)
+                .HasColumnName("StandingRules_OvertimeWinPoints")
+                .IsRequired()
+                .HasDefaultValue(2)
+                .ValueGeneratedNever();
+            rules.Property(rule => rule.OvertimeLossPoints)
+                .HasColumnName("StandingRules_OvertimeLossPoints")
+                .IsRequired()
+                .HasDefaultValue(1)
+                .ValueGeneratedNever();
+        });
+
         builder.Property<List<StandingSortCriterion>>("_rankingCriteria")
             .HasColumnName("RankingCriteria")
             .HasMaxLength(64)

@@ -5,6 +5,7 @@ export interface ParsedRosterPlayer {
   lastName: string;
   rawName: string;
   jerseyNumber?: number;
+  position?: string;
   isGoalkeeper: boolean;
   isCaptain: boolean;
   isReferee: boolean;
@@ -43,11 +44,30 @@ export interface RosterImportPreview {
   invalidNames: string[];
   unnamedPlayerCount: number;
   duplicateFileTeams: string[];
+  duplicateDestinations: string[];
+  playerCount: number;
+  parsedPlayerCount: number;
   canImport: boolean;
 }
 
 const GOALIE_SECTIONS = new Set(['mv', 'maalivahti', 'maalivahdit', 'goalkeeper', 'goalie']);
 const FIELD_SECTIONS = new Set(['pelaajat', 'kenttapelaajat', 'kenttäpelaajat']);
+const GROUP_SECTIONS = new Set([
+  'puolustajat',
+  'puolustaja',
+  'hyökkääjät',
+  'hyokkaajat',
+  'hyökkääjä',
+  'hyökkäys',
+  'forwards',
+  'forward',
+  'defensemen',
+  'defenseman',
+  'defense',
+  'defence',
+  'vaihtopelaajat',
+  'vaihto',
+]);
 
 interface ColumnMap {
   name: number;
@@ -71,7 +91,11 @@ export function splitPersonName(rawName: string): { firstName: string; lastName:
   return { firstName, lastName };
 }
 
-export function parseRosterGrid(rows: readonly (readonly string[])[]): ParsedRosterWorkbook {
+export function parseRosterGrid(
+  rows: readonly (readonly string[])[],
+  fallbackTeamName?: string | null,
+): ParsedRosterWorkbook {
+  const namedFallback = fallbackTeamName?.trim() || null;
   const teams: ParsedRosterTeamBlock[] = [];
   let current: ParsedRosterTeamBlock | null = null;
   let inPlayers = false;
@@ -80,6 +104,9 @@ export function parseRosterGrid(rows: readonly (readonly string[])[]): ParsedRos
 
   const pushCurrent = (): void => {
     if (!current) return;
+    if (!current.teamName && namedFallback) {
+      current.teamName = namedFallback;
+    }
     if (current.teamName || current.coachName || current.jerseyColor || current.players.length > 0) {
       teams.push(current);
     }
@@ -104,7 +131,7 @@ export function parseRosterGrid(rows: readonly (readonly string[])[]): ParsedRos
     if (label === 'joukkueen nimi') {
       pushCurrent();
       current = {
-        teamName: valueAfter(cells, labelIndex),
+        teamName: valueAfter(cells, labelIndex) ?? namedFallback,
         coachName: null,
         jerseyColor: null,
         players: [],
@@ -149,7 +176,7 @@ export function parseRosterGrid(rows: readonly (readonly string[])[]): ParsedRos
       isGoalkeeper = true;
       return;
     }
-    if (section === 'field') {
+    if (section === 'field' || section === 'group') {
       isGoalkeeper = false;
       return;
     }
@@ -174,8 +201,15 @@ export function parseRosterGrid(rows: readonly (readonly string[])[]): ParsedRos
 }
 
 export async function parseRosterWorkbook(buffer: ArrayBuffer): Promise<ParsedRosterWorkbook> {
-  const rows = await readFirstSheet(buffer);
-  return parseRosterGrid(rows);
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const teams: ParsedRosterTeamBlock[] = [];
+  for (const sheet of workbook.worksheets) {
+    if (sheet.state === 'hidden' || sheet.state === 'veryHidden') continue;
+    const parsed = parseRosterGrid(readSheetRows(sheet), sheet.name);
+    teams.push(...parsed.teams);
+  }
+  return { teams };
 }
 
 export function matchRosterImport(
@@ -259,7 +293,7 @@ export function matchRosterImport(
     (sum, assignment) => sum + assignment.block.players.filter((player) => !player.invalidName).length,
     0,
   );
-  const singleExtrasBlocked = mode === 'single' && extraFileTeams.length > 0;
+  const parsedPlayerCount = parsed.teams.reduce((sum, block) => sum + block.players.length, 0);
   const unnamedBlocked = mode === 'multiple' && unnamedPlayerCount > 0;
   const singleUnnamedWithNamedBlock =
     mode === 'single' && unnamedPlayerCount > 0 && assignments.some((assignment) => assignment.block.teamName);
@@ -269,7 +303,6 @@ export function matchRosterImport(
     missingTeams.length === 0 &&
     duplicateFileTeams.length === 0 &&
     invalidNames.length === 0 &&
-    !singleExtrasBlocked &&
     !unnamedBlocked &&
     !singleUnnamedWithNamedBlock &&
     playerCount > 0;
@@ -281,15 +314,95 @@ export function matchRosterImport(
     invalidNames,
     unnamedPlayerCount: mode === 'multiple' || singleUnnamedWithNamedBlock ? unnamedPlayerCount : 0,
     duplicateFileTeams,
+    duplicateDestinations: [],
+    playerCount,
+    parsedPlayerCount,
     canImport,
   };
 }
 
-async function readFirstSheet(buffer: ArrayBuffer): Promise<string[][]> {
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(buffer);
-  const sheet = workbook.worksheets[0];
-  if (!sheet) return [];
+export function suggestRosterDestinations(
+  parsed: ParsedRosterWorkbook,
+  teams: readonly RosterTeamOption[],
+  preferredTeamId?: string | null,
+): Record<number, string> {
+  const destinations: Record<number, string> = {};
+  const used = new Set<string>();
+  parsed.teams.forEach((block, index) => {
+    const named = block.teamName
+      ? teams.find((team) => !used.has(team.id) && namesMatch(team.name, block.teamName ?? ''))
+      : undefined;
+    if (named) {
+      destinations[index] = named.id;
+      used.add(named.id);
+      return;
+    }
+    if (
+      parsed.teams.length === 1
+      && preferredTeamId
+      && !used.has(preferredTeamId)
+      && teams.some((team) => team.id === preferredTeamId)
+    ) {
+      destinations[index] = preferredTeamId;
+      used.add(preferredTeamId);
+    }
+  });
+  return destinations;
+}
+
+export function assignRosterDestinations(
+  parsed: ParsedRosterWorkbook,
+  teams: readonly RosterTeamOption[],
+  destinations: Readonly<Record<number, string>>,
+): RosterImportPreview {
+  const chosenCounts = new Map<string, number>();
+  for (const teamId of Object.values(destinations)) {
+    if (teamId.length === 0) continue;
+    chosenCounts.set(teamId, (chosenCounts.get(teamId) ?? 0) + 1);
+  }
+  const duplicateDestinations = teams
+    .filter((team) => (chosenCounts.get(team.id) ?? 0) > 1)
+    .map((team) => team.name);
+
+  const assignments: RosterAssignment[] = [];
+  parsed.teams.forEach((block, index) => {
+    const teamId = destinations[index];
+    if (!teamId || (chosenCounts.get(teamId) ?? 0) !== 1) return;
+    const team = teams.find((candidate) => candidate.id === teamId);
+    if (!team) return;
+    assignments.push({ teamId: team.id, teamName: team.name, block });
+  });
+
+  const invalidNames = assignments.flatMap((assignment) =>
+    assignment.block.players
+      .filter((player) => player.invalidName)
+      .map((player) => `${assignment.teamName}: ${player.rawName}`),
+  );
+  const playerCount = assignments.reduce(
+    (sum, assignment) => sum + assignment.block.players.filter((player) => !player.invalidName).length,
+    0,
+  );
+  const parsedPlayerCount = parsed.teams.reduce((sum, block) => sum + block.players.length, 0);
+
+  return {
+    assignments,
+    missingTeams: [],
+    extraFileTeams: [],
+    invalidNames,
+    unnamedPlayerCount: 0,
+    duplicateFileTeams: [],
+    duplicateDestinations,
+    playerCount,
+    parsedPlayerCount,
+    canImport:
+      assignments.length > 0
+      && duplicateDestinations.length === 0
+      && invalidNames.length === 0
+      && playerCount > 0,
+  };
+}
+
+function readSheetRows(sheet: ExcelJS.Worksheet): string[][] {
   const columnCount = Math.max(sheet.columnCount, 8);
   const rows: string[][] = [];
   sheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
@@ -358,11 +471,13 @@ function readColumns(cells: readonly string[]): ColumnMap {
   return columns;
 }
 
-function sectionKind(name: string, jerseyRaw: string): 'goalkeeper' | 'field' | null {
+function sectionKind(name: string, jerseyRaw: string): 'goalkeeper' | 'field' | 'group' | null {
   if (jerseyRaw.trim().length > 0) return null;
   const label = normalizeLabel(name);
   if (GOALIE_SECTIONS.has(label)) return 'goalkeeper';
   if (FIELD_SECTIONS.has(label)) return 'field';
+  if (GROUP_SECTIONS.has(label)) return 'group';
+  if (!name.includes(' ') && name.trim().endsWith(':')) return 'group';
   return null;
 }
 

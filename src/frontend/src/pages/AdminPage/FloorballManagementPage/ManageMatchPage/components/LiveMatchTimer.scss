@@ -35,6 +35,20 @@
   justify-content: center;
   gap: 4px;
   flex-wrap: wrap;
+
+  &.extra-actions {
+    height: auto;
+    gap: 8px;
+    margin-top: 8px;
+
+    .start-match-btn {
+      width: auto;
+      min-width: 180px;
+      height: 36px;
+      padding: 0 16px;
+      font-size: 13px;
+    }
+  }
 }
 
 .period-chip {

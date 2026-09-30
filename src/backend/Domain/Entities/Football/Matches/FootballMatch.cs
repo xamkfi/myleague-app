@@ -148,8 +148,18 @@ public class FootballMatch : BaseEntity
     {
         if (homeTeam != null && awayTeam != null && homeTeam == awayTeam)
             throw new ArgumentException("Home team and away team cannot be the same team.");
-        AssignTeam(FootballPlayoffSlot.Home, homeTeam);
-        AssignTeam(FootballPlayoffSlot.Away, awayTeam);
+
+        bool homeChanges = HomeTeamId != homeTeam?.Id;
+        bool awayChanges = AwayTeamId != awayTeam?.Id;
+
+        if (homeChanges)
+            AssignTeam(FootballPlayoffSlot.Home, null);
+        if (awayChanges)
+            AssignTeam(FootballPlayoffSlot.Away, null);
+        if (homeChanges && homeTeam != null)
+            AssignTeam(FootballPlayoffSlot.Home, homeTeam);
+        if (awayChanges && awayTeam != null)
+            AssignTeam(FootballPlayoffSlot.Away, awayTeam);
     }
 
     public void ChangeVenue(string venue)
@@ -602,6 +612,8 @@ public class FootballMatch : BaseEntity
                 throw new ArgumentException("Home team and away team cannot be the same team.");
         }
 
+        Guid? previousTeamId = slot == FootballPlayoffSlot.Home ? HomeTeamId : AwayTeamId;
+
         if (slot == FootballPlayoffSlot.Home)
         {
             HomeTeam = team;
@@ -612,6 +624,9 @@ public class FootballMatch : BaseEntity
             AwayTeam = team;
             AwayTeamId = team?.Id;
         }
+
+        if (previousTeamId != team?.Id && previousTeamId.HasValue)
+            _lineup.RemoveAll(player => player.TeamId == previousTeamId.Value);
 
         Guid stampedId = team?.Id ?? Guid.Empty;
         foreach (FootballPeriodScore ps in _periodScores)

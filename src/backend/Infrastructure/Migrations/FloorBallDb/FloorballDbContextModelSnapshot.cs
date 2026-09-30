@@ -2011,6 +2011,45 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.Entities.Floorball.Competitions.FloorballSeason", b =>
+                {
+                    b.OwnsOne("Domain.ValueObjects.Floorball.FloorballStandingRules", "StandingRules", b1 =>
+                        {
+                            b1.Property<Guid>("FloorballSeasonId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("DrawPoints")
+                                .HasColumnType("integer")
+                                .HasDefaultValue(1)
+                                .HasColumnName("StandingRules_DrawPoints");
+
+                            b1.Property<int>("OvertimeLossPoints")
+                                .HasColumnType("integer")
+                                .HasDefaultValue(1)
+                                .HasColumnName("StandingRules_OvertimeLossPoints");
+
+                            b1.Property<int>("OvertimeWinPoints")
+                                .HasColumnType("integer")
+                                .HasDefaultValue(2)
+                                .HasColumnName("StandingRules_OvertimeWinPoints");
+
+                            b1.Property<int>("WinPoints")
+                                .HasColumnType("integer")
+                                .HasDefaultValue(3)
+                                .HasColumnName("StandingRules_WinPoints");
+
+                            b1.HasKey("FloorballSeasonId");
+
+                            b1.ToTable("FloorballCompetitions", "floorball");
+
+                            b1.WithOwner()
+                                .HasForeignKey("FloorballSeasonId");
+                        });
+
+                    b.Navigation("StandingRules")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Domain.Entities.Floorball.Competitions.FloorballTournament", b =>
                 {
                     b.OwnsOne("Domain.ValueObjects.Floorball.FloorballTournamentRules", "TournamentRules", b1 =>

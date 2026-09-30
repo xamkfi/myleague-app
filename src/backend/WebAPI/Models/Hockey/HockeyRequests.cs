@@ -60,6 +60,30 @@ public class CreateHockeySeasonRequest
     /// Ordered ranking criteria. Omitted values keep the default order.
     /// </summary>
     public List<StandingSortCriterion>? RankingCriteria { get; set; }
+
+    /// <summary>Points for a win in regulation time.</summary>
+    [Range(0, 100)]
+    public int RegulationWinPoints { get; set; } = 3;
+
+    /// <summary>Points for a win in overtime.</summary>
+    [Range(0, 100)]
+    public int OvertimeWinPoints { get; set; } = 2;
+
+    /// <summary>Points for a win in a shootout.</summary>
+    [Range(0, 100)]
+    public int ShootoutWinPoints { get; set; } = 2;
+
+    /// <summary>Points for a loss in overtime.</summary>
+    [Range(0, 100)]
+    public int OvertimeLossPoints { get; set; } = 1;
+
+    /// <summary>Points for a loss in a shootout.</summary>
+    [Range(0, 100)]
+    public int ShootoutLossPoints { get; set; } = 1;
+
+    /// <summary>Points for a tie.</summary>
+    [Range(0, 100)]
+    public int TiePoints { get; set; } = 1;
 }
 
 /// <summary>
@@ -101,6 +125,30 @@ public class UpdateHockeySeasonRequest
     /// Ordered ranking criteria. Omitted values keep the current order.
     /// </summary>
     public List<StandingSortCriterion>? RankingCriteria { get; set; }
+
+    /// <summary>Points for a win in regulation time.</summary>
+    [Range(0, 100)]
+    public int RegulationWinPoints { get; set; } = 3;
+
+    /// <summary>Points for a win in overtime.</summary>
+    [Range(0, 100)]
+    public int OvertimeWinPoints { get; set; } = 2;
+
+    /// <summary>Points for a win in a shootout.</summary>
+    [Range(0, 100)]
+    public int ShootoutWinPoints { get; set; } = 2;
+
+    /// <summary>Points for a loss in overtime.</summary>
+    [Range(0, 100)]
+    public int OvertimeLossPoints { get; set; } = 1;
+
+    /// <summary>Points for a loss in a shootout.</summary>
+    [Range(0, 100)]
+    public int ShootoutLossPoints { get; set; } = 1;
+
+    /// <summary>Points for a tie.</summary>
+    [Range(0, 100)]
+    public int TiePoints { get; set; } = 1;
 }
 
 /// <summary>

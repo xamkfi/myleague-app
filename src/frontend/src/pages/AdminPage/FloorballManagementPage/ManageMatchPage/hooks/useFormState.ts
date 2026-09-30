@@ -5,7 +5,7 @@ import {
   type RecordPenaltyEventRequest 
 } from '../../../../../api/floorball/floorballMatchEventService';
 import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
-import { isFloorballOvertimePeriod, isFloorballShootoutPeriod } from '../../../../../utils/floorballPeriod';
+import { floorballPeriodEventFlags } from '../../../../../utils/floorballPeriod';
 import type { GoalForm, PenaltyForm, LocalClock } from '../components/types';
 
 interface UseFormStateProps {
@@ -119,6 +119,7 @@ export const useFormState = ({
       // Calculate time in seconds from the form time values (not the running clock)
       const timeInSeconds = goalForm.timeMinutes * 60 + goalForm.timeSeconds;
       
+      const periodFlags = floorballPeriodEventFlags(clock.period, currentMatch.matchRules?.numberOfPeriods ?? 2);
       const goalData: RecordGoalEventRequest = {
         matchId: currentMatch.id,
         teamId: goalForm.teamId,
@@ -126,8 +127,8 @@ export const useFormState = ({
         assisterId: goalForm.assisterId || undefined,
         periodNumber: clock.period,
         timeInSeconds: timeInSeconds,
-        wasInOvertime: currentMatch.wentToOvertime || isFloorballOvertimePeriod(clock.period, currentMatch.matchRules?.numberOfPeriods ?? 2),
-        wasInShootout: currentMatch.wentToShootout || isFloorballShootoutPeriod(clock.period, currentMatch.matchRules?.numberOfPeriods ?? 2),
+        wasInOvertime: periodFlags.wasInOvertime,
+        wasInShootout: periodFlags.wasInShootout,
         goalType: goalForm.goalType ?? undefined,
       };
       

@@ -6,4 +6,6 @@ namespace Application.Features.Football.Seasons.DTOs;
 public record FootballStandingRulesDto(
     int WinPoints,
     int DrawPoints,
-    int LossPoints);
+    int LossPoints,
+    int OvertimeWinPoints = 3,
+    int OvertimeLossPoints = 0);

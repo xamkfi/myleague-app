@@ -30,6 +30,7 @@ interface TeamsTableProps {
   viewMode?: 'season' | 'catalog';
   divisionNameByTeamId?: Map<string, string>;
   bulkActionLabel?: string;
+  seasonId?: string | null;
 }
 
 function TeamsTable({
@@ -51,10 +52,10 @@ function TeamsTable({
   viewMode = 'catalog',
   divisionNameByTeamId,
   bulkActionLabel,
+  seasonId = null,
 }: TeamsTableProps) {
   const { t } = useTranslation();
   const [divisions, setDivisions] = useState<DivisionType[]>([]);
-  const teamById = new Map(teams.map((team) => [team.id, team]));
 
   useEffect(() => {
     const fetchDivisions = async (): Promise<void> => {
@@ -130,7 +131,7 @@ function TeamsTable({
           teamId={row.id}
           isExpanded={isExpanded}
           isClosing={isClosing}
-          team={teamById.get(row.id)}
+          competitionId={viewMode === 'season' ? seasonId : null}
         />
       )}
     />

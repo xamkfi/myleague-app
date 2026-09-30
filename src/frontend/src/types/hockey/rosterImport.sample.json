@@ -1,0 +1,12 @@
+{
+  "$schema": "myleague-roster-import/v1",
+  "teams": [
+    {
+      "name": "Example HC",
+      "players": [
+        { "firstName": "Matti", "lastName": "Meikäläinen", "jerseyNumber": 1, "position": "Goalie" },
+        { "firstName": "Liisa", "lastName": "Esimerkki", "jerseyNumber": 12, "position": "Defenseman" }
+      ]
+    }
+  ]
+}

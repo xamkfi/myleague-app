@@ -5,7 +5,7 @@ import { floorballMatchEventService, type RecordSaveEventRequest } from '../../.
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
 import { timerService } from '../../../../api/common/timerService';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
-import { isFloorballOvertimePeriod, isFloorballShootoutPeriod } from '../../../../utils/floorballPeriod';
+import { floorballPeriodEventFlags, nextOpenFloorballPeriod } from '../../../../utils/floorballPeriod';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 
 // Components
@@ -178,8 +178,13 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   // Derived values
   const homeTeamId = matchData.homeTeam?.id ?? '';
   const awayTeamId = matchData.awayTeam?.id ?? '';
-  const matchWentToOvertime = matchData.currentMatch.wentToOvertime;
-  const matchWentToShootout = matchData.currentMatch.wentToShootout;
+  const showSkipToShootout: boolean =
+    matchData.currentMatch.status === 'InProgress'
+    && (matchData.currentMatch.matchRules?.allowShootout ?? true)
+    && !matchData.currentMatch.wentToOvertime
+    && !matchData.currentMatch.wentToShootout
+    && periodManagement.nextPeriodToStart === periodManagement.overtimePeriodNumber
+    && periodManagement.endedPeriods.has(periodManagement.matchRules.numberOfPeriods);
   const toggleTimer = timerContext.callbacks.toggle;
   const timerCurrentPeriod = timerContext.currentPeriod;
   const setTimerCurrentPeriod = timerContext.setCurrentPeriod;
@@ -294,20 +299,29 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
           
           desiredStartedPeriods.add(currentPeriod);
           
-          const maxPeriod = periodManagement.maxPeriodNumber;
-          let nextPeriod = 1;
-          for (let i = 1; i <= maxPeriod; i++) {
-            if (!desiredStartedPeriods.has(i)) {
-              nextPeriod = i;
-              break;
-            }
+          const regularPeriods: number = matchData.currentMatch.matchRules?.numberOfPeriods ?? 2;
+          const shootoutPeriod: number = regularPeriods + 2;
+          const wentToShootout: boolean = matchData.currentMatch.wentToShootout;
+          const shootoutEnded: boolean = desiredEndedPeriods.has(shootoutPeriod);
+          const resolvedPeriod: number = wentToShootout && !shootoutEnded ? shootoutPeriod : currentPeriod;
+          if (wentToShootout) {
+            desiredStartedPeriods.add(shootoutPeriod);
           }
+
+          const maxPeriod = periodManagement.maxPeriodNumber;
+          let nextPeriod = nextOpenFloorballPeriod(
+            maxPeriod,
+            desiredStartedPeriods,
+            regularPeriods,
+            matchData.currentMatch.wentToOvertime,
+            wentToShootout,
+          );
           if (nextPeriod > maxPeriod || desiredStartedPeriods.has(maxPeriod)) {
             nextPeriod = 0;
           }
           
-          if (timerCurrentPeriodRef.current !== currentPeriod) {
-            setTimerCurrentPeriod(currentPeriod);
+          if (timerCurrentPeriodRef.current !== resolvedPeriod) {
+            setTimerCurrentPeriod(resolvedPeriod);
           }
           if (!areNumberSetsEqual(startedPeriodsRef.current, desiredStartedPeriods)) {
             setStartedPeriods(desiredStartedPeriods);
@@ -349,6 +363,9 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     match.id,
     matchData.currentMatch.status,
     matchData.currentMatch.periodScores,
+    matchData.currentMatch.wentToOvertime,
+    matchData.currentMatch.wentToShootout,
+    matchData.currentMatch.matchRules?.numberOfPeriods,
     periodManagement.maxPeriodNumber,
     setTimerCurrentPeriod,
     setStartedPeriods,
@@ -367,10 +384,24 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update match state when prop changes
+  // Keep the live view aligned with the match prop. Team reassignment ("Muuta joukkueita")
+  // does not change id or status, and the initial load above runs only once, so without this
+  // the scoreboard and rosters would keep the clubs that were on the page when it opened.
   useEffect(() => {
-    if (match && (match.id !== matchData.currentMatch.id || match.status !== matchData.currentMatch.status)) {
+    const teamsChanged: boolean =
+      (match.homeTeamId ?? null) !== (matchData.currentMatch.homeTeamId ?? null)
+      || (match.awayTeamId ?? null) !== (matchData.currentMatch.awayTeamId ?? null);
+
+    if (
+      match.id !== matchData.currentMatch.id
+      || match.status !== matchData.currentMatch.status
+      || teamsChanged
+    ) {
       matchData.setCurrentMatch(match);
+    }
+
+    if (teamsChanged) {
+      void matchData.loadTeamData();
     }
   }, [match, matchData]);
 
@@ -391,6 +422,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     try {
       setSaveLoading(true);
       const regularPeriods: number = matchData.currentMatch.matchRules?.numberOfPeriods ?? 2;
+      const periodFlags = floorballPeriodEventFlags(timerContext.currentPeriod, regularPeriods);
       const payload: RecordSaveEventRequest = {
         goalieId,
         matchId: match.id,
@@ -398,8 +430,8 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         playerId: goalieId,
         periodNumber: timerContext.currentPeriod,
         timeInSeconds: currentElapsedSeconds,
-        wasInOvertime: matchWentToOvertime || isFloorballOvertimePeriod(timerContext.currentPeriod, regularPeriods),
-        wasInShootout: matchWentToShootout || isFloorballShootoutPeriod(timerContext.currentPeriod, regularPeriods),
+        wasInOvertime: periodFlags.wasInOvertime,
+        wasInShootout: periodFlags.wasInShootout,
       };
       await floorballMatchEventService.recordSave(payload);
       await matchEvents.loadMatchEvents();
@@ -409,7 +441,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     } finally {
       setSaveLoading(false);
     }
-  }, [match.id, homeTeamId, awayTeamId, matchWentToOvertime, matchWentToShootout, timerContext.currentPeriod, timerContext.elapsedTimeSeconds, timerContext.callbacks, matchEvents, matchData]);
+  }, [match.id, homeTeamId, awayTeamId, timerContext.currentPeriod, timerContext.elapsedTimeSeconds, timerContext.callbacks, matchEvents, matchData]);
 
   const handleOpenBulkSave = useCallback((team: 'home' | 'away', goalieId: string) => {
     if (!goalieId) return;
@@ -439,6 +471,10 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     setBulkSaveLoading(true);
     setBulkSaveError(null);
     try {
+      const periodFlags = floorballPeriodEventFlags(
+        payload.periodNumber,
+        matchData.currentMatch.matchRules?.numberOfPeriods ?? 2,
+      );
       const request: RecordSaveEventRequest = {
         goalieId,
         matchId: match.id,
@@ -446,8 +482,8 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         playerId: goalieId,
         periodNumber: payload.periodNumber,
         timeInSeconds: payload.timeInSeconds,
-        wasInOvertime: matchWentToOvertime || isFloorballOvertimePeriod(payload.periodNumber, matchData.currentMatch.matchRules?.numberOfPeriods ?? 2),
-        wasInShootout: matchWentToShootout || isFloorballShootoutPeriod(payload.periodNumber, matchData.currentMatch.matchRules?.numberOfPeriods ?? 2),
+        wasInOvertime: periodFlags.wasInOvertime,
+        wasInShootout: periodFlags.wasInShootout,
         count: payload.count,
       };
       await floorballMatchEventService.recordSave(request);
@@ -463,7 +499,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     } finally {
       setBulkSaveLoading(false);
     }
-  }, [bulkSaveTarget, match.id, homeTeamId, awayTeamId, matchWentToOvertime, matchWentToShootout, matchEvents, matchData]);
+  }, [bulkSaveTarget, match.id, homeTeamId, awayTeamId, matchEvents, matchData]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -534,6 +570,18 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     await matchControls.handleStartMatch();
     setShouldStartTimer(true);
   }, [matchControls]);
+
+  const handleSkipToShootout = useCallback(async () => {
+    try {
+      matchData.setError(null);
+      if (timerContext.callbacks.stop) {
+        timerContext.callbacks.stop();
+      }
+      await periodManagement.skipToShootout();
+    } catch (error) {
+      matchData.setError(error instanceof Error ? error.message : 'Failed to start penalty shootout');
+    }
+  }, [matchData, periodManagement, timerContext.callbacks]);
 
   const handlePeriodControlClick = useCallback(() => {
     if (periodManagement.canEndPeriod()) {
@@ -834,6 +882,9 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             }
             overtimePeriodNumber={periodManagement.overtimePeriodNumber}
             shootoutPeriodNumber={periodManagement.shootoutPeriodNumber}
+            showSkipToShootout={showSkipToShootout}
+            skipToShootoutLoading={Boolean(periodManagement.periodLoading[periodManagement.shootoutPeriodNumber])}
+            onSkipToShootout={handleSkipToShootout}
           />
 
           <LiveMatchQuickActions

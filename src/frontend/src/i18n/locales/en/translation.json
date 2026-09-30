@@ -207,6 +207,9 @@
       "shootout": "Went to shootout",
       "notStarted": "The match has not started yet."
     },
+    "skipToShootout": "Skip to penalty shootout",
+    "skippingToShootout": "Skipping to penalty shootout..."
+    ,
     "lineups": {
       "notSet": "The match lineup has not been set yet."
     },
@@ -1191,7 +1194,14 @@
         "division": "Division",
         "startDate": "Starts",
         "endDate": "Ends",
-        "teams": "Teams"
+        "teams": "Teams",
+        "winPoints": "Regulation win",
+        "drawPoints": "Draw",
+        "overtimeWinPoints": "Overtime or shootout win",
+        "overtimeLossPoints": "Overtime or shootout loss"
+      },
+      "sections": {
+        "points": "Points"
       },
       "status": {
         "active": "Active",
@@ -1894,19 +1904,50 @@
   "common": {
     "rosterImport": {
       "button": "Import roster",
-      "buttonTooltip": "Import a team roster from an Excel file into a selected season.",
-      "title": "Import roster from Excel",
+      "buttonTooltip": "Import a team roster from a JSON file into a selected season.",
+      "title": "Import roster from JSON",
       "season": "Season",
       "seasonPlaceholder": "Select a season",
       "teams": "Teams",
       "modeSingle": "One team",
       "modeMultiple": "Several teams",
-      "multiReminder": "The file must contain the selected teams under the same names, with each team's roster in its own block (JOUKKUEEN NIMI, then the players).",
+      "multiReminder": "Each team in the JSON file is imported when its name matches a team in the season.",
+      "fileShape": "Choose the JSON file first. The team is read from the name when the file includes one. Position and jersey number are optional.",
+      "fileSummary": "In the file",
+      "unnamedTeam": "Team name could not be read · {{count}} players",
+      "destinationHeading": "Where to import",
+      "destinationHint": "Choose the season. Each team from the file is imported into the team in the right column. An empty choice leaves that team out.",
+      "fileTeamColumn": "Team in the file",
+      "seasonTeamColumn": "Import into",
+      "playerCountShort": "{{count}} players",
+      "unnamedTeamShort": "Team name not in the file",
+      "importIntoNamed": "Import {{name}} into",
+      "importIntoUnnamed": "Import these players into",
+      "skipTeam": "Do not import",
+      "nameMatches": "The name matches a team in the season.",
+      "pickDestination": "Choose at least one team to import the players into.",
+      "duplicateDestination": "The same season team is selected for more than one file team: {{names}}",
+      "cannotImport": "Import cannot start. The reason is listed below.",
+      "noPlayersInFile": "The file has no players to import. Every player needs a first and last name.",
+      "nothingAdded": "No players were added to the roster. {{reasons}}",
       "noTeams": "This season has no teams.",
-      "dropzone": "Drop an Excel file here or choose a file.",
+      "dropzone": "Drop a JSON file here or choose a file.",
       "chooseFile": "Choose file",
-      "xlsxOnly": "Choose an .xlsx file.",
-      "fileFailed": "Could not read the Excel file: {{msg}}",
+      "jsonOnly": "Choose a .json file.",
+      "fileFailed": "Could not read the JSON file: {{msg}}",
+      "downloadSample": "Download sample JSON",
+      "aiHelp": {
+        "title": "Don't have a JSON file yet? Generate one with AI",
+        "step1": "Copy the prompt, or download it as a text file.",
+        "step2": "Open ChatGPT, Claude, Gemini or another AI and paste the prompt.",
+        "step3": "Attach the roster Excel, PDF or photo and send the message.",
+        "step4": "Download the .json file the AI gives you and drop it into the area above.",
+        "copyPrompt": "Copy AI prompt",
+        "downloadPrompt": "Download AI prompt as .txt",
+        "copiedToast": "Prompt copied. Paste it into the AI chat and attach the roster file.",
+        "downloadedToast": "Prompt downloaded as a .txt file. Open it, copy the contents, and paste them into the AI chat.",
+        "errorToast": "Could not copy or download the prompt. Try the download button again."
+      },
       "loadFailed": "Could not load seasons: {{msg}}",
       "teamsFailed": "Could not load teams: {{msg}}",
       "selectFirst": "Select the season and at least one team before choosing the file.",
@@ -2330,6 +2371,13 @@
       "newTeamShortName": "Short name (optional)",
       "newTeamHomeArena": "Home arena (optional)",
       "teamCreatedFromClub": "New team created with an empty roster.",
+      "fields": {
+        "winPoints": "Regulation win",
+        "drawPoints": "Draw",
+        "lossPoints": "Regulation loss",
+        "overtimeWinPoints": "Extra time or penalty win",
+        "overtimeLossPoints": "Extra time or penalty loss"
+      },
       "import": {
         "button": "Import from JSON",
         "buttonTooltip": "Create a season by uploading a JSON file (myleague format).",
@@ -2559,6 +2607,7 @@
       "noPlayersFound": "No players found matching your search",
       "noPlayersInRoster": "No players in this team roster",
       "noPlayersInTeam": "No players in this team",
+      "rosterLoadFailed": "Could not load the roster",
       "addPlayersHelp": "Use the edit button to manage team roster and add players.",
       "confirmRemovePlayer": "Are you sure you want to remove this player from the team?",
       "actions": {
@@ -2599,7 +2648,8 @@
       },
       "sections": {
         "basicInfo": "Basic Information",
-        "schedule": "Schedule"
+        "schedule": "Schedule",
+        "points": "Points"
       },
       "lifecycle": "Lifecycle",
       "seasonCode": "Season code",
@@ -2645,7 +2695,13 @@
         "endDate": "End Date",
         "status": "Status",
         "division": "Division",
-        "teams": "Teams"
+        "teams": "Teams",
+        "regulationWinPoints": "Regulation win",
+        "tiePoints": "Draw",
+        "overtimeWinPoints": "Overtime win",
+        "overtimeLossPoints": "Overtime loss",
+        "shootoutWinPoints": "Shootout win",
+        "shootoutLossPoints": "Shootout loss"
       },
       "completeConfirm": {
         "title": "Complete Season?",

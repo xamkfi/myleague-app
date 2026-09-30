@@ -157,6 +157,7 @@ public class CompleteFootballMatchHandler : IRequestHandler<CompleteFootballMatc
             c.TeamId == teamId && c.ResultsInSendingOff);
 
         FootballStandingRules standingRules = match.Competition?.StandingRules ?? FootballStandingRules.Default();
+        bool decidedAfterRegulation = match.WentToExtraTime || match.WentToPenaltyShootout;
         teamStats.UpdateAfterMatch(
             gameResult,
             isHomeGame,
@@ -164,7 +165,8 @@ public class CompleteFootballMatchHandler : IRequestHandler<CompleteFootballMatc
             opponentScore,
             standingRules,
             yellowCards,
-            redCards);
+            redCards,
+            decidedAfterRegulation);
 
         await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
     }

@@ -185,6 +185,8 @@ export async function importSeason(
       winPoints: payload.season.winPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.winPoints,
       drawPoints: payload.season.drawPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.drawPoints,
       lossPoints: payload.season.lossPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.lossPoints,
+      overtimeWinPoints: payload.season.overtimeWinPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.overtimeWinPoints,
+      overtimeLossPoints: payload.season.overtimeLossPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.overtimeLossPoints,
       teamCategory: defaultCategory,
     });
     seasonId = created.data.id;

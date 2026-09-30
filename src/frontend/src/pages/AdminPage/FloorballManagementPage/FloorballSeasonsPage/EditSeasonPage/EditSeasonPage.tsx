@@ -41,7 +41,11 @@ const EditSeasonPage = () => {
     periodDurationMinutes: 15,
     allowOvertime: true,
     overtimeDurationMinutes: 5,
-    allowShootout: true
+    allowShootout: true,
+    winPoints: 3,
+    drawPoints: 1,
+    overtimeWinPoints: 2,
+    overtimeLossPoints: 1,
   });
   
   const [loading, setLoading] = useState(false);
@@ -106,6 +110,10 @@ const EditSeasonPage = () => {
         logoUrl: seasonData.data.logoUrl ?? '',
         teamsAdvancing: seasonData.data.teamsAdvancing ?? 0,
         rankingCriteria: normalizeStandingCriteria(seasonData.data.rankingCriteria),
+        winPoints: seasonData.data.standingRules?.winPoints ?? 3,
+        drawPoints: seasonData.data.standingRules?.drawPoints ?? 1,
+        overtimeWinPoints: seasonData.data.standingRules?.overtimeWinPoints ?? 2,
+        overtimeLossPoints: seasonData.data.standingRules?.overtimeLossPoints ?? 1,
       });
     } catch {
       setError(t('floorball.seasons.errors.loadFailed', 'Failed to load season data'));
@@ -598,6 +606,31 @@ const EditSeasonPage = () => {
                   onChange={setContentBlocks}
                   disabled={loading}
                 />
+              </div>
+
+              <div className="form-section">
+                <h3 className="form-section__title">
+                  <i className="fas fa-list-ol"></i>
+                  {t('floorball.seasons.sections.points', 'Points')}
+                </h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="edit-winPoints">{t('floorball.seasons.fields.winPoints', 'Win points')}</label>
+                    <input type="number" id="edit-winPoints" name="winPoints" value={formData.winPoints ?? 3} onChange={handleInputChange} min={0} disabled={loading} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-drawPoints">{t('floorball.seasons.fields.drawPoints', 'Draw points')}</label>
+                    <input type="number" id="edit-drawPoints" name="drawPoints" value={formData.drawPoints ?? 1} onChange={handleInputChange} min={0} disabled={loading} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-overtimeWinPoints">{t('floorball.seasons.fields.overtimeWinPoints', 'Overtime win points')}</label>
+                    <input type="number" id="edit-overtimeWinPoints" name="overtimeWinPoints" value={formData.overtimeWinPoints ?? 2} onChange={handleInputChange} min={0} disabled={loading} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-overtimeLossPoints">{t('floorball.seasons.fields.overtimeLossPoints', 'Overtime loss points')}</label>
+                    <input type="number" id="edit-overtimeLossPoints" name="overtimeLossPoints" value={formData.overtimeLossPoints ?? 1} onChange={handleInputChange} min={0} disabled={loading} />
+                  </div>
+                </div>
               </div>
 
               <SeasonStandingsSettings
