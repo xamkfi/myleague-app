@@ -26,7 +26,8 @@
     font-weight: map.get($font-weights, 'medium');
     font-size: 14px;
     line-height: 24px;
-    letter-spacing: 0;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     color: $color-neutral-black;
   }
 
@@ -161,10 +162,27 @@
   }
 }
 
-.btn-label { white-space: nowrap; }
-.btn-meta { display: inline-flex; align-items: center; gap: 8px; }
-.btn-key { font-weight: 700; font-size: 12px; opacity: 0.9; }
-.btn-key.disabled { opacity: 0.4; }
-.btn-icon { font-size: 16px; line-height: 16px; }
+.btn-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn-meta { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+
+// Keyboard hint rendered as a small keycap so operators can spot the shortcut.
+.btn-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  font-family: $font-family-body;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.9;
+  transition: opacity 0.15s ease;
+}
+.btn-key.disabled { opacity: 0.35; }
+.btn-icon { font-size: 14px; line-height: 16px; flex: 0 0 auto; }
 
 

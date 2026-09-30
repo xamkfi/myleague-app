@@ -98,8 +98,7 @@ public class AssignMatchTeamsHandler : IRequestHandler<AssignFloorballMatchTeams
             Guid? previousHomeTeamId = match.HomeTeamId;
             Guid? previousAwayTeamId = match.AwayTeamId;
 
-            match.AssignTeam(FloorballPlayoffSlot.Home, homeTeam);
-            match.AssignTeam(FloorballPlayoffSlot.Away, awayTeam);
+            match.ChangeTeams(homeTeam, awayTeam);
 
             // Playoff propagation: bump the projected team in the next bracket slot when our
             // higher seed (= home team, per the seeding convention) has changed. Loser-slot

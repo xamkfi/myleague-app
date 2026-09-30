@@ -17,4 +17,10 @@ public record UpdateHockeySeasonCommand(
     TeamCategory TeamCategory,
     string? LogoUrl = null,
     int TeamsAdvancing = 0,
-    IReadOnlyList<StandingSortCriterion>? RankingCriteria = null) : IRequest<Result<HockeySeasonDto>>;
+    IReadOnlyList<StandingSortCriterion>? RankingCriteria = null,
+    int RegulationWinPoints = 3,
+    int OvertimeWinPoints = 2,
+    int ShootoutWinPoints = 2,
+    int OvertimeLossPoints = 1,
+    int ShootoutLossPoints = 1,
+    int TiePoints = 1) : IRequest<Result<HockeySeasonDto>>;

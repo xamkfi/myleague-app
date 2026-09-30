@@ -1,18 +1,24 @@
 import { useState, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   floorballMatchEventService, 
   type RecordGoalEventRequest, 
   type RecordPenaltyEventRequest 
 } from '../../../../../api/floorball/floorballMatchEventService';
-import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
-import { isFloorballOvertimePeriod, isFloorballShootoutPeriod } from '../../../../../utils/floorballPeriod';
-import type { GoalForm, PenaltyForm, LocalClock } from '../components/types';
+import { FloorballGoalType, type FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
+import {
+  floorballPeriodEventFlags,
+  isFloorballOvertimePeriod,
+  isFloorballShootoutPeriod,
+} from '../../../../../utils/floorballPeriod';
+import type { GoalForm, PenaltyForm } from '../components/types';
 
 interface UseFormStateProps {
   currentMatch: FloorballMatchDto;
-  clock: LocalClock;
-  currentTimerElapsedTime: number;
-  getCurrentElapsedSeconds: (() => number) | null;
+  /** Period the desk is operating on; stamped onto recorded events. */
+  currentPeriod: number;
+  /** Live elapsed seconds of the match clock; used to prefill the time fields. */
+  getCurrentElapsedSeconds: () => number;
   loadMatchEvents: () => Promise<void>;
   loadCurrentMatchStatus: () => Promise<void>;
   setError: (error: string | null) => void;
@@ -20,13 +26,13 @@ interface UseFormStateProps {
 
 export const useFormState = ({
   currentMatch,
-  clock,
-  currentTimerElapsedTime,
+  currentPeriod,
   getCurrentElapsedSeconds,
   loadMatchEvents,
   loadCurrentMatchStatus,
   setError
 }: UseFormStateProps) => {
+  const { t } = useTranslation();
   // Form visibility states
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showPenaltyForm, setShowPenaltyForm] = useState(false);
@@ -63,52 +69,46 @@ export const useFormState = ({
    * @param teamId The ID of the team to open the form for
    */
   const openGoalFormForTeam = useCallback((teamId: string) => {
-    // Use getCurrentElapsedSeconds if available (includes optimistic updates), otherwise fall back to currentTimerElapsedTime
-    const elapsedSeconds = getCurrentElapsedSeconds ? getCurrentElapsedSeconds() : currentTimerElapsedTime;
-    const timeMinutes = Math.floor(elapsedSeconds / 60);
-    const timeSeconds = elapsedSeconds % 60;
-    setGoalForm(prev => ({ ...prev, teamId, timeMinutes, timeSeconds }));
+    const elapsedSeconds: number = getCurrentElapsedSeconds();
+    const timeMinutes: number = Math.floor(elapsedSeconds / 60);
+    const timeSeconds: number = elapsedSeconds % 60;
+    // Pre-select the goal type that matches the period: overtime goals are JA and
+    // shootout goals VL. The scorer can still override it in the form.
+    const regularPeriods: number = currentMatch.matchRules?.numberOfPeriods ?? 2;
+    const goalType: FloorballGoalType | null = isFloorballShootoutPeriod(currentPeriod, regularPeriods)
+      ? FloorballGoalType.Shootout
+      : isFloorballOvertimePeriod(currentPeriod, regularPeriods)
+        ? FloorballGoalType.Overtime
+        : null;
+    setGoalForm(prev => ({ ...prev, teamId, timeMinutes, timeSeconds, goalType }));
     setShowGoalForm(true);
-  }, [getCurrentElapsedSeconds, currentTimerElapsedTime]);
+  }, [getCurrentElapsedSeconds, currentPeriod, currentMatch.matchRules?.numberOfPeriods]);
 
   /**
    * Opens the penalty form for a specific team
    * @param teamId The ID of the team to open the form for
    */
   const openPenaltyFormForTeam = useCallback((teamId: string) => {
-    // Use getCurrentElapsedSeconds if available (includes optimistic updates), otherwise fall back to currentTimerElapsedTime
-    const elapsedSeconds = getCurrentElapsedSeconds ? getCurrentElapsedSeconds() : currentTimerElapsedTime;
-    const timeMinutes = Math.floor(elapsedSeconds / 60);
-    const timeSeconds = elapsedSeconds % 60;
+    const elapsedSeconds: number = getCurrentElapsedSeconds();
+    const timeMinutes: number = Math.floor(elapsedSeconds / 60);
+    const timeSeconds: number = elapsedSeconds % 60;
     setPenaltyForm(prev => ({ ...prev, teamId, timeMinutes, timeSeconds }));
     setShowPenaltyForm(true);
-  }, [getCurrentElapsedSeconds, currentTimerElapsedTime]);
-
-  /**
-   * Opens the penalty form
-   */
-  const openPenaltyForm = useCallback(() => {
-    // Use getCurrentElapsedSeconds if available (includes optimistic updates), otherwise fall back to currentTimerElapsedTime
-    const elapsedSeconds = getCurrentElapsedSeconds ? getCurrentElapsedSeconds() : currentTimerElapsedTime;
-    const timeMinutes = Math.floor(elapsedSeconds / 60);
-    const timeSeconds = elapsedSeconds % 60;
-    setPenaltyForm(prev => ({ ...prev, timeMinutes, timeSeconds }));
-    setShowPenaltyForm(true);
-  }, [getCurrentElapsedSeconds, currentTimerElapsedTime]);
+  }, [getCurrentElapsedSeconds]);
 
   /**
    * Records a goal event
    */
   const recordGoal = useCallback(async () => {
     if (!goalForm.teamId || !goalForm.playerId) {
-      setError('Please select team and player');
+      setError(t('floorball.matches.manage.errors.selectTeamAndPlayer', 'Select a team and a player'));
       return;
     }
 
     const key = `${currentMatch.id}:${goalForm.teamId}:${goalForm.playerId}`;
     const now = Date.now();
     if (goalThrottleRef.current[key] && now - goalThrottleRef.current[key] < throttleMs) {
-      setError('Please wait a moment before recording another goal.');
+      setError(t('floorball.matches.manage.errors.goalThrottle', 'Wait a moment before recording another goal.'));
       return;
     }
     
@@ -119,15 +119,16 @@ export const useFormState = ({
       // Calculate time in seconds from the form time values (not the running clock)
       const timeInSeconds = goalForm.timeMinutes * 60 + goalForm.timeSeconds;
       
+      const periodFlags = floorballPeriodEventFlags(currentPeriod, currentMatch.matchRules?.numberOfPeriods ?? 2);
       const goalData: RecordGoalEventRequest = {
         matchId: currentMatch.id,
         teamId: goalForm.teamId,
         playerId: goalForm.playerId,
         assisterId: goalForm.assisterId || undefined,
-        periodNumber: clock.period,
+        periodNumber: currentPeriod,
         timeInSeconds: timeInSeconds,
-        wasInOvertime: currentMatch.wentToOvertime || isFloorballOvertimePeriod(clock.period, currentMatch.matchRules?.numberOfPeriods ?? 2),
-        wasInShootout: currentMatch.wentToShootout || isFloorballShootoutPeriod(clock.period, currentMatch.matchRules?.numberOfPeriods ?? 2),
+        wasInOvertime: periodFlags.wasInOvertime,
+        wasInShootout: periodFlags.wasInShootout,
         goalType: goalForm.goalType ?? undefined,
       };
       
@@ -145,25 +146,25 @@ export const useFormState = ({
       
     } catch (error) {
       console.error('Error recording goal:', error);
-      setError(error instanceof Error ? error.message : 'Failed to record goal');
+      setError(error instanceof Error ? error.message : t('floorball.matches.manage.errors.recordGoal', 'Failed to record goal'));
     } finally {
       setLoading(false);
     }
-  }, [goalForm, currentMatch, clock.period, loadMatchEvents, loadCurrentMatchStatus, setError]);
+  }, [goalForm, currentMatch, currentPeriod, loadMatchEvents, loadCurrentMatchStatus, setError, t]);
 
   /**
    * Records a penalty event
    */
   const recordPenalty = useCallback(async () => {
     if (!penaltyForm.teamId || !penaltyForm.penaltyType) {
-      setError('Please select team and penalty type');
+      setError(t('floorball.matches.manage.errors.selectTeamAndPenaltyType', 'Select a team and a penalty type'));
       return;
     }
 
     const key = `${currentMatch.id}:${penaltyForm.teamId}:${penaltyForm.playerId || 'team'}`;
     const now = Date.now();
     if (penaltyThrottleRef.current[key] && now - penaltyThrottleRef.current[key] < throttleMs) {
-      setError('Please wait a moment before recording another penalty.');
+      setError(t('floorball.matches.manage.errors.penaltyThrottle', 'Wait a moment before recording another penalty.'));
       return;
     }
     
@@ -180,7 +181,7 @@ export const useFormState = ({
         playerId: penaltyForm.playerId || undefined,
         penaltyType: penaltyForm.penaltyType,
         durationMinutes: penaltyForm.minutes,
-        periodNumber: clock.period,
+        periodNumber: currentPeriod,
         timeInSeconds: timeInSeconds,
         description: penaltyForm.description,
       };
@@ -208,11 +209,11 @@ export const useFormState = ({
       
     } catch (error) {
       console.error('Error recording penalty:', error);
-      setError(error instanceof Error ? error.message : 'Failed to record penalty');
+      setError(error instanceof Error ? error.message : t('floorball.matches.manage.errors.recordPenalty', 'Failed to record penalty'));
     } finally {
       setLoading(false);
     }
-  }, [penaltyForm, currentMatch, clock.period, loadMatchEvents, loadCurrentMatchStatus, setError]);
+  }, [penaltyForm, currentMatch, currentPeriod, loadMatchEvents, loadCurrentMatchStatus, setError, t]);
 
   return {
     // Form visibility
@@ -220,7 +221,6 @@ export const useFormState = ({
     setShowGoalForm,
     showPenaltyForm,
     setShowPenaltyForm,
-    openPenaltyForm,
     openGoalFormForTeam,
     openPenaltyFormForTeam,
     

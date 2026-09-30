@@ -2,11 +2,22 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { hockeyMatchService } from '../../../../../api/hockey/hockeyMatchService';
 import {
+  hockeyAwayTeam,
+  hockeyHomeTeam,
   isHockeyMatchLive,
   type HockeyMatchDto,
   type HockeyPeriodAction,
   type HockeyPeriodType,
 } from '../../../../../types/hockey/hockeyTypes';
+
+/** What the single period control button does right now. */
+export type HockeyPeriodControlAction = 'end' | 'start' | 'finish';
+
+/** Whether the match is level; extra periods are only offered for a tie. */
+export function isHockeyScoreTied(match: HockeyMatchDto | null): boolean {
+  if (!match) return true;
+  return (hockeyHomeTeam(match)?.goals ?? 0) === (hockeyAwayTeam(match)?.goals ?? 0);
+}
 
 /**
  * Default hockey match rules used until matchRules is exposed on the match DTO.
@@ -63,15 +74,22 @@ export function useHockeyPeriodManagement({
   const [periodLoading, setPeriodLoading] = useState<Record<number, boolean>>({});
   const [showEndPeriodConfirmation, setShowEndPeriodConfirmation] = useState(false);
 
-  const computeNextAfter = useCallback((period: number): number => {
+  const scoreTied: boolean = isHockeyScoreTied(currentMatch);
+
+  /**
+   * Period that follows `period`, or 0 when nothing can follow it. Overtime and the
+   * shootout are only due when the score is level.
+   */
+  const computeNextAfter = useCallback((period: number, tied: boolean = scoreTied): number => {
     if (period < rules.numberOfPeriods) return period + 1;
+    if (!tied) return 0;
     if (period === rules.numberOfPeriods && rules.allowOvertime) return overtimePeriodNumber;
     if (period === rules.numberOfPeriods && !rules.allowOvertime && rules.allowShootout) {
       return shootoutPeriodNumber;
     }
     if (period === overtimePeriodNumber && rules.allowShootout) return shootoutPeriodNumber;
     return 0;
-  }, [rules, overtimePeriodNumber, shootoutPeriodNumber]);
+  }, [rules, scoreTied, overtimePeriodNumber, shootoutPeriodNumber]);
 
   const applyMatch = useCallback((match: HockeyMatchDto) => {
     onMatchUpdated(match);
@@ -166,32 +184,105 @@ export function useHockeyPeriodManagement({
     computeNextAfter,
   ]);
 
-  const canEndPeriod = useCallback(() => {
-    const isShootout = currentPeriod === shootoutPeriodNumber;
-    const isLastAllowedPeriod = currentPeriod === maxPeriodNumber;
-    return (
-      Boolean(currentMatch && isHockeyMatchLive(currentMatch.status)) &&
-      !periodLoading[currentPeriod] &&
-      startedPeriods.has(currentPeriod) &&
-      !endedPeriods.has(currentPeriod) &&
-      (nextPeriodToStart > 0 || isShootout || isLastAllowedPeriod)
-    );
+  const skipToShootout = useCallback(async () => {
+    if (!currentMatch || !rules.allowShootout || currentMatch.wentToOvertime || currentMatch.wentToShootout) {
+      return;
+    }
+
+    const starting = shootoutPeriodNumber;
+    try {
+      setPeriodLoading((prev) => ({ ...prev, [starting]: true }));
+
+      const lastRegularPeriod: number = rules.numberOfPeriods;
+      const lastRegularStillOpen: boolean = currentPeriod === lastRegularPeriod
+        && startedPeriods.has(lastRegularPeriod)
+        && !endedPeriods.has(lastRegularPeriod);
+      if (lastRegularStillOpen) {
+        const timeInSeconds = getElapsedSeconds();
+        let updated = await hockeyMatchService.recordPeriodEvent(currentMatch.id, {
+          periodNumber: lastRegularPeriod,
+          timeInSeconds,
+          action: 'PeriodEnded',
+          description: 'PeriodEnded',
+        });
+        const scoreRow = await ensurePeriodScore(lastRegularPeriod);
+        if (scoreRow) {
+          updated = scoreRow;
+        }
+        applyMatch(updated);
+        setEndedPeriods((prev) => new Set([...prev, lastRegularPeriod]));
+      }
+
+      await hockeyMatchService.setWentToShootout(currentMatch.id, true);
+      await hockeyMatchService.setPeriod(currentMatch.id, starting);
+      await ensurePeriodScore(starting);
+      const startedEvent = await hockeyMatchService.recordPeriodEvent(currentMatch.id, {
+        periodNumber: starting,
+        timeInSeconds: getElapsedSeconds(),
+        action: 'ShootoutStarted',
+        description: 'ShootoutStarted',
+      });
+      applyMatch(startedEvent);
+
+      setStartedPeriods((prev) => new Set([...prev, starting]));
+      setCurrentPeriod(starting);
+      setNextPeriodToStart(0);
+    } finally {
+      setPeriodLoading((prev) => ({ ...prev, [starting]: false }));
+    }
   }, [
     currentMatch,
-    periodLoading,
+    rules.allowShootout,
+    rules.numberOfPeriods,
     currentPeriod,
     startedPeriods,
     endedPeriods,
-    nextPeriodToStart,
     shootoutPeriodNumber,
-    maxPeriodNumber,
+    getElapsedSeconds,
+    ensurePeriodScore,
+    applyMatch,
+    setCurrentPeriod,
   ]);
 
-  const getPeriodControlButtonText = useCallback(() => {
-    if (canEndPeriod()) {
+  const isMatchLive: boolean = Boolean(currentMatch && isHockeyMatchLive(currentMatch.status));
+
+  const canEndPeriod = useCallback((): boolean => (
+    isMatchLive
+    && !periodLoading[currentPeriod]
+    && startedPeriods.has(currentPeriod)
+    && !endedPeriods.has(currentPeriod)
+  ), [isMatchLive, periodLoading, currentPeriod, startedPeriods, endedPeriods]);
+
+  /**
+   * True when ending the current period also ends the match: the shootout, the last
+   * allowed period, or a period after which no extra period is due because the score
+   * is not level (evaluated live, so an overtime goal flips this immediately).
+   */
+  const endingPeriodFinishesMatch = useCallback((): boolean => (
+    currentPeriod === shootoutPeriodNumber
+    || currentPeriod === maxPeriodNumber
+    || computeNextAfter(currentPeriod) === 0
+  ), [currentPeriod, shootoutPeriodNumber, maxPeriodNumber, computeNextAfter]);
+
+  /**
+   * Resolves the period control action. `null` means the button has nothing to offer
+   * (match not live).
+   */
+  const getPeriodControlAction = useCallback((): HockeyPeriodControlAction | null => {
+    if (!isMatchLive) return null;
+    if (canEndPeriod()) return endingPeriodFinishesMatch() ? 'finish' : 'end';
+    if (nextPeriodToStart > 0) return 'start';
+    // Everything playable is over but the match is still live (e.g. the last period was
+    // ended with the score not level): offer to complete the match.
+    return 'finish';
+  }, [isMatchLive, canEndPeriod, endingPeriodFinishesMatch, nextPeriodToStart]);
+
+  const getPeriodControlButtonText = useCallback((): string => {
+    const action: HockeyPeriodControlAction | null = getPeriodControlAction();
+    if (action === 'end' || action === 'finish') {
       if (periodLoading[currentPeriod]) return t('hockey.matches.endingPeriod', 'Ending...');
+      if (action === 'finish') return t('hockey.matches.manage.finishMatch', 'Finish match');
       if (currentPeriod === overtimePeriodNumber) return t('hockey.matches.endOvertime', 'End Overtime');
-      if (currentPeriod === shootoutPeriodNumber) return t('hockey.matches.endShootout', 'End Shootout');
       return t('hockey.matches.endPeriod', 'End period');
     }
     if (periodLoading[nextPeriodToStart]) return t('hockey.matches.startingPeriod', 'Starting...');
@@ -199,7 +290,7 @@ export function useHockeyPeriodManagement({
     if (nextPeriodToStart === shootoutPeriodNumber) return t('hockey.matches.startShootout', 'Start Shootout');
     return t('hockey.matches.startPeriodN', 'Start period {{number}}', { number: nextPeriodToStart });
   }, [
-    canEndPeriod,
+    getPeriodControlAction,
     periodLoading,
     currentPeriod,
     nextPeriodToStart,
@@ -249,12 +340,20 @@ export function useHockeyPeriodManagement({
       started.add(current);
     }
 
+    const overtimeSkipped: boolean = match.wentToShootout && !match.wentToOvertime && !started.has(overtimePeriodNumber);
     let next = 0;
     for (let period = 1; period <= maxPeriodNumber; period += 1) {
+      if (period === overtimePeriodNumber && overtimeSkipped) {
+        continue;
+      }
       if (!started.has(period)) {
         next = period;
         break;
       }
+    }
+    // Extra periods are only due for a tie.
+    if (next > rules.numberOfPeriods && !isHockeyScoreTied(match)) {
+      next = 0;
     }
 
     let restoredCurrent = current;
@@ -266,7 +365,7 @@ export function useHockeyPeriodManagement({
     setEndedPeriods(ended);
     setNextPeriodToStart(next);
     setCurrentPeriod(restoredCurrent);
-  }, [maxPeriodNumber, setCurrentPeriod]);
+  }, [maxPeriodNumber, overtimePeriodNumber, rules.numberOfPeriods, setCurrentPeriod]);
 
   return {
     rules,
@@ -284,10 +383,15 @@ export function useHockeyPeriodManagement({
     setShowEndPeriodConfirmation,
     endPeriod,
     startPeriod,
+    skipToShootout,
     canEndPeriod,
+    computeNextAfter,
+    endingPeriodFinishesMatch,
+    getPeriodControlAction,
     getPeriodControlButtonText,
     isInOvertime,
     isInShootout,
+    scoreTied,
     restoreFromMatch,
   };
 }

@@ -1,20 +1,8 @@
-import { useEffect, useCallback, useMemo, useState } from 'react';
-import { useMatchTimer } from '../../hooks/useMatchTimer';
-import { TimeInputModal } from '../Timer/TimeInputModal';
-import './MatchTimer.scss';
+import { useEffect, useCallback, useMemo, useRef, type ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
+import { formatElapsedMs, useMatchTimer } from '../../hooks/useMatchTimer';
 import type { TimerUpdate } from '../../api/common/timerService';
-import EditIcon from '../../assets/basicIcons/edit.svg';
-
-function formatElapsedMs(ms: number): string {
-  const totalSeconds = Math.floor(Math.max(0, ms) / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  if (hours > 0) {
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  }
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
+import { MatchTimerView, type PeriodControlDescriptor } from './MatchTimerView';
 
 interface MatchTimerProps {
   matchId: string;
@@ -23,9 +11,9 @@ interface MatchTimerProps {
   onGetCurrentTime?: (getTime: () => string) => void;
   onGetCurrentElapsedSeconds?: (getSeconds: () => number) => void;
   onGetToggleFunction?: (toggleFunction: () => Promise<void>) => void;
-  onGetResetFunction?: (resetFunction: () => void) => void;
+  onGetResetFunction?: (resetFunction: () => Promise<void>) => void;
   onGetStartFunction?: (startFunction: () => Promise<void>) => void;
-  onGetStopFunction?: (stopFunction: () => void) => void;
+  onGetStopFunction?: (stopFunction: () => Promise<void>) => void;
   controlsEnabled?: boolean;
   isActive?: boolean;
   keybindsEnabled?: boolean;
@@ -44,10 +32,21 @@ interface MatchTimerProps {
   onPeriodControlClick?: () => void;
   canEndPeriod?: () => boolean;
   getPeriodControlButtonText?: () => string;
+  /**
+   * Optional resolver for the control's semantics. When omitted the action is derived
+   * from `canEndPeriod` (`end` vs `start`). Returning `null` hides the button.
+   */
+  getPeriodControlAction?: () => 'end' | 'start' | 'finish' | null;
   periodLoading?: Record<number, boolean>;
   nextPeriodToStart?: number;
 }
 
+/**
+ * Hook-owning wrapper around {@link MatchTimerView}. Used by the football and hockey live
+ * desks, which register the timer's imperative API into their own contexts through the
+ * `onGet*` props. All registered functions have stable identities so the parents can safely
+ * store them in state without re-render loops.
+ */
 export const MatchTimer = ({
   matchId,
   periodNumber,
@@ -66,11 +65,11 @@ export const MatchTimer = ({
   onPeriodControlClick,
   canEndPeriod,
   getPeriodControlButtonText,
+  getPeriodControlAction,
   periodLoading,
   nextPeriodToStart,
-}: MatchTimerProps) => {
-  const [showTimeInputModal, setShowTimeInputModal] = useState(false);
-
+}: MatchTimerProps): ReactElement => {
+  const { t } = useTranslation();
   const {
     displayTime,
     displayTimeMs,
@@ -82,255 +81,115 @@ export const MatchTimer = ({
     stopTimer,
     setTimer,
     adjustTimer,
-    createTimer,
     getCurrentElapsedSeconds,
-  } = useMatchTimer({
-    matchId,
-    autoConnect: isActive,
-    onTimerUpdate,
-  });
+  } = useMatchTimer({ matchId, autoConnect: isActive, onTimerUpdate });
 
-  const visibleDisplayTime = clockDisplayMode === 'period'
-    ? formatElapsedMs(Math.max(0, displayTimeMs - Math.max(0, periodStartSeconds) * 1000))
+  const periodOffsetSeconds: number = Math.max(0, Math.floor(periodStartSeconds));
+  const visibleDisplayTime: string = clockDisplayMode === 'period'
+    ? formatElapsedMs(Math.max(0, displayTimeMs - periodOffsetSeconds * 1000))
     : displayTime;
 
-  const getCurrentTime = useCallback(() => visibleDisplayTime, [visibleDisplayTime]);
-  
-  useEffect(() => {
-    if (onGetCurrentTime && isActive) {
-      onGetCurrentTime(getCurrentTime);
-    }
-  }, [onGetCurrentTime, getCurrentTime, isActive]);
-  
-  // Provide getCurrentElapsedSeconds function to parent
-  useEffect(() => {
-    if (onGetCurrentElapsedSeconds && isActive) {
-      onGetCurrentElapsedSeconds(getCurrentElapsedSeconds);
-    }
-  }, [onGetCurrentElapsedSeconds, getCurrentElapsedSeconds, isActive]);
-  
-  // Handle start button
-  const handleStart = useCallback(async () => {
-    try {
-      await createTimer();
-      const resolvedPeriod = typeof periodNumber === 'number' && Number.isFinite(periodNumber) && periodNumber >= 1
+  // Expose the latest visible time through a stable getter.
+  const visibleTimeRef = useRef<string>(visibleDisplayTime);
+  visibleTimeRef.current = visibleDisplayTime;
+  const getCurrentTime = useCallback((): string => visibleTimeRef.current, []);
+
+  const handleStart = useCallback(async (): Promise<void> => {
+    const resolvedPeriod: number | undefined =
+      typeof periodNumber === 'number' && Number.isFinite(periodNumber) && periodNumber >= 1
         ? periodNumber
         : undefined;
-      await startTimer(resolvedPeriod);
-    } catch (err) {
-      console.error('Error starting timer:', err);
-    }
-  }, [createTimer, startTimer, periodNumber]);
-  
-  // Handle stop button
-  const handleStop = useCallback(async () => {
-    try {
-      await stopTimer();
-    } catch (err) {
-      console.error('Error stopping timer:', err);
-    }
+    await startTimer(resolvedPeriod);
+  }, [startTimer, periodNumber]);
+
+  const handleStop = useCallback(async (): Promise<void> => {
+    await stopTimer();
   }, [stopTimer]);
-  
-  // Handle reset button. With a continuous match clock, "reset" no longer means "back
-  // to 0" — it means "back to the start of the current period". For period 1 this is
-  // still 0; for later periods it's the absolute elapsed-second mark we recorded when
-  // the operator started that period.
-  const handleReset = useCallback(async () => {
-    try {
-      const target: number = Number.isFinite(periodStartSeconds) && periodStartSeconds >= 0
-        ? Math.floor(periodStartSeconds)
-        : 0;
-      await setTimer(target);
-    } catch (err) {
-      console.error('Error resetting timer:', err);
-    }
-  }, [setTimer, periodStartSeconds]);
-  
-  // Handle toggle (play/pause)
-  const handleToggle = useCallback(async () => {
-    if (isRunning) {
+
+  // "Reset" rewinds to the start of the current period, not to 0.
+  const handleReset = useCallback(async (): Promise<void> => {
+    await setTimer(periodOffsetSeconds);
+  }, [setTimer, periodOffsetSeconds]);
+
+  const isRunningRef = useRef<boolean>(isRunning);
+  isRunningRef.current = isRunning;
+  const handleToggle = useCallback(async (): Promise<void> => {
+    if (isRunningRef.current) {
       await handleStop();
     } else {
       await handleStart();
     }
-  }, [isRunning, handleStop, handleStart]);
-  
-  // Handle set time from modal
-  const handleSetTime = useCallback(async (timeInSeconds: number) => {
-    try {
-      const absoluteSeconds = clockDisplayMode === 'period'
-        ? Math.max(0, Math.floor(periodStartSeconds) + timeInSeconds)
-        : timeInSeconds;
-      await setTimer(absoluteSeconds);
-      setShowTimeInputModal(false);
-    } catch (err) {
-      console.error('Error setting timer:', err);
-    }
-  }, [setTimer, clockDisplayMode, periodStartSeconds]);
-  
-  // Handle time adjustment
-  const handleAdjustTime = useCallback(async (adjustmentInSeconds: number) => {
-    try {
-      await adjustTimer(adjustmentInSeconds);
-    } catch (err) {
-      console.error('Error adjusting timer:', err);
-    }
-  }, [adjustTimer]);
-  
-  // Expose toggle function to parent
-  useEffect(() => {
-    if (onGetToggleFunction && isActive) {
-      onGetToggleFunction(handleToggle);
-    }
-  }, [onGetToggleFunction, handleToggle, isActive]);
-  
-  // Expose start/stop/reset handlers to parent
+  }, [handleStart, handleStop]);
+
+  const handleSetTime = useCallback(async (seconds: number): Promise<void> => {
+    const absoluteSeconds: number = clockDisplayMode === 'period'
+      ? periodOffsetSeconds + seconds
+      : seconds;
+    await setTimer(absoluteSeconds);
+  }, [setTimer, clockDisplayMode, periodOffsetSeconds]);
+
   useEffect(() => {
     if (!isActive) return;
-    if (onGetStartFunction) onGetStartFunction(handleStart);
-    if (onGetStopFunction) onGetStopFunction(handleStop);
-    if (onGetResetFunction) onGetResetFunction(handleReset);
-  }, [isActive, onGetStartFunction, onGetStopFunction, onGetResetFunction, handleStart, handleStop, handleReset]);
-  
-  // Memoize button disabled states
-  const buttonStates = useMemo(() => {
-    const controlsBlocked = !controlsEnabled;
-    return {
-      toggleDisabled: loading || controlsBlocked,
-      resetDisabled: loading || controlsBlocked,
-      setTimeDisabled: loading || controlsBlocked,
-      adjustDisabled: loading || controlsBlocked,
-    };
-  }, [loading, controlsEnabled]);
-  
-  // Period control button state
-  const endPeriod = useMemo(() => {
-    if (!getPeriodControlButtonText) {
-      return { disabled: false, title: '', label: '' };
-    }
-    const canEnd = canEndPeriod ? canEndPeriod() : false;
-    const targetPeriod = canEnd ? periodNumber : nextPeriodToStart;
-    const disabled = (targetPeriod !== undefined && periodLoading)
+    onGetCurrentTime?.(getCurrentTime);
+    onGetCurrentElapsedSeconds?.(getCurrentElapsedSeconds);
+    onGetToggleFunction?.(handleToggle);
+    onGetStartFunction?.(handleStart);
+    onGetStopFunction?.(handleStop);
+    onGetResetFunction?.(handleReset);
+  }, [
+    isActive,
+    onGetCurrentTime,
+    onGetCurrentElapsedSeconds,
+    onGetToggleFunction,
+    onGetStartFunction,
+    onGetStopFunction,
+    onGetResetFunction,
+    getCurrentTime,
+    getCurrentElapsedSeconds,
+    handleToggle,
+    handleStart,
+    handleStop,
+    handleReset,
+  ]);
+
+  const periodControl: PeriodControlDescriptor | undefined = useMemo(() => {
+    if (!onPeriodControlClick || !getPeriodControlButtonText) return undefined;
+    const canEnd: boolean = canEndPeriod ? canEndPeriod() : false;
+    const action: 'end' | 'start' | 'finish' | null = getPeriodControlAction
+      ? getPeriodControlAction()
+      : (canEnd ? 'end' : 'start');
+    if (action === null) return undefined;
+    const targetPeriod: number | undefined = action === 'start' ? nextPeriodToStart : periodNumber;
+    const disabled: boolean = targetPeriod !== undefined && periodLoading
       ? Boolean(periodLoading[targetPeriod])
       : false;
-    const title = canEnd ? 'End the current period' : 'Start the next period';
-    const label = getPeriodControlButtonText();
-    return { disabled, title, label };
-  }, [canEndPeriod, periodNumber, nextPeriodToStart, periodLoading, getPeriodControlButtonText]);
-  
-  // Show loading indicator until initial load is complete
-  const timeDisplay = initialLoadComplete ? visibleDisplayTime : '--:--';
-  
+    const title: string = action === 'finish'
+      ? t('matchTimer.finishMatchTitle', 'No further period can follow; complete the match')
+      : action === 'end'
+        ? t('matchTimer.endPeriodTitle', 'End the current period')
+        : t('matchTimer.startPeriodTitle', 'Start the next period');
+    return {
+      label: getPeriodControlButtonText(),
+      title,
+      disabled,
+      action,
+      onClick: onPeriodControlClick,
+    };
+  }, [onPeriodControlClick, getPeriodControlButtonText, getPeriodControlAction, canEndPeriod, periodNumber, nextPeriodToStart, periodLoading, t]);
+
   return (
-    <div className="timer-component" data-keybinds-enabled={keybindsEnabled ? 'true' : undefined}>
-      <div className="timer-display">
-        <div className="timer-time">
-          {timeDisplay}
-        </div>
-      </div>
-
-      <div className="timer-controls">
-        <button
-          onClick={() => setShowTimeInputModal(true)}
-          disabled={buttonStates.setTimeDisabled}
-          className="timer-button set-time"
-          title="Edit time"
-        >
-          <img src={EditIcon} alt="" aria-hidden="true" />
-        </button>
-
-        <div className="timer-adjustments">
-          <div className="adjustment-group">
-            <div className="adjustment-buttons">
-              <button
-                onClick={() => handleAdjustTime(-60)}
-                disabled={buttonStates.adjustDisabled}
-                className="timer-button adjust-time decrease minute-back"
-                title="Go back 1 minute"
-              >
-                1 min
-              </button>
-              <button
-                onClick={() => handleAdjustTime(-10)}
-                disabled={buttonStates.adjustDisabled}
-                className="timer-button adjust-time decrease seconds-back"
-                title="Go back 10 seconds"
-              >
-                10s
-              </button>
-              <button
-                onClick={() => handleAdjustTime(-1)}
-                disabled={buttonStates.adjustDisabled}
-                className="timer-button adjust-time decrease one-second-back"
-                title="Go back 1 second"
-              >
-                1s
-              </button>
-              <button
-                onClick={handleToggle}
-                disabled={buttonStates.toggleDisabled}
-                className={`timer-button ${isRunning ? 'pause' : 'start'}`}
-              >
-                {isRunning ? 'Pause' : 'Play'}
-              </button>
-              <button
-                onClick={() => handleAdjustTime(1)}
-                disabled={buttonStates.adjustDisabled}
-                className="timer-button adjust-time increase one-second-forward"
-                title="Advance 1 second"
-              >
-                1s
-              </button>
-              <button
-                onClick={() => handleAdjustTime(10)}
-                disabled={buttonStates.adjustDisabled}
-                className="timer-button adjust-time increase seconds-forward"
-                title="Advance 10 seconds"
-              >
-                10s
-              </button>
-              <button
-                onClick={() => handleAdjustTime(60)}
-                disabled={buttonStates.adjustDisabled}
-                className="timer-button adjust-time increase minute-forward"
-                title="Advance 1 minute"
-              >
-                1 min
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={handleReset}
-          disabled={buttonStates.resetDisabled}
-          className="timer-button reset"
-          title="Reset clock"
-        >
-          R
-        </button>
-
-        {onPeriodControlClick && getPeriodControlButtonText && (
-          <button
-            onClick={onPeriodControlClick}
-            className="timer-button end-period-inline"
-            title={endPeriod.title}
-            disabled={endPeriod.disabled}
-          >
-            {endPeriod.label}
-          </button>
-        )}
-      </div>
-
-      {error && <div className="timer-error">Error: {error}</div>}
-
-      <TimeInputModal
-        isOpen={showTimeInputModal}
-        currentTime={visibleDisplayTime}
-        onSetTime={handleSetTime}
-        onClose={() => setShowTimeInputModal(false)}
-        loading={loading}
-      />
-    </div>
+    <MatchTimerView
+      displayTime={initialLoadComplete ? visibleDisplayTime : '--:--'}
+      isRunning={isRunning}
+      loading={loading}
+      error={error}
+      controlsEnabled={controlsEnabled}
+      keybindsEnabled={keybindsEnabled}
+      onToggle={handleToggle}
+      onAdjust={adjustTimer}
+      onReset={handleReset}
+      onSetTime={handleSetTime}
+      periodControl={periodControl}
+    />
   );
 };

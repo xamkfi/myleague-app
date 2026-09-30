@@ -31,5 +31,12 @@ public class UpdateHockeySeasonCommandValidator : AbstractValidator<UpdateHockey
         RuleFor(x => x.RankingCriteria)
             .Must(StandingSortCriteria.IsValid)
             .WithMessage("Ranking criteria must be a non-empty list of unique values.");
+
+        RuleFor(x => x.RegulationWinPoints).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.OvertimeWinPoints).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.ShootoutWinPoints).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.OvertimeLossPoints).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.ShootoutLossPoints).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.TiePoints).GreaterThanOrEqualTo(0);
     }
 }

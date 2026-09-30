@@ -1,9 +1,13 @@
-import { useCallback, useEffect, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
-import { floorballTeamNameSearchService } from '../../api/floorball/floorballTeamNameSearchService';
 import type { FloorballMatchDto } from '../../types/floorball/floorballTypes';
 import SearchableInfiniteDropdown from '../SearchableInfiniteDropdown/SearchableInfiniteDropdown';
+import {
+  competitionKindFromMatch,
+  toTeamSearchResult,
+  useEnrolledTeams,
+} from '../../utils/enrolledCompetitionTeams';
 import './AssignTeamsDialog.scss';
 
 interface AssignTeamsDialogProps {
@@ -70,26 +74,25 @@ const AssignTeamsDialog = ({
     void loadInitialOptions();
   }, [isOpen, match.homeTeamId, match.homeTeamName, match.awayTeamId, match.awayTeamName]);
 
+  const competitionKind = competitionKindFromMatch(match);
+  const enrolledCatalog = useEnrolledTeams(match.competitionId, competitionKind, 'floorball');
+  const catalogReady = Boolean(
+    enrolledCatalog.competitionId === match.competitionId
+    && enrolledCatalog.teams
+    && !enrolledCatalog.failed,
+  );
+  const enrolledTeams = useMemo(
+    () => (catalogReady ? enrolledCatalog.teams ?? [] : []),
+    [catalogReady, enrolledCatalog.teams],
+  );
+  const enrolledTeamKey = catalogReady
+    ? enrolledTeams.map((team) => team.id).join('|')
+    : 'pending';
+
   const searchTeamsWith = useCallback(
-    async (initialOptions: { id: string; name: string }[], query: string, page: number) => {
-      const result = await floorballTeamNameSearchService.searchTeams(query, page);
-      if (page !== 1 || initialOptions.length === 0) {
-        return result;
-      }
-      const trimmed: string = query.trim().toLowerCase();
-      const filteredInitial = trimmed
-        ? initialOptions.filter((opt) => opt.name.toLowerCase().includes(trimmed))
-        : initialOptions;
-      // Avoid duplicates: if the same team came back in `result.data`, prefer the entry
-      // already pre-seeded by the parent (no perceived flicker).
-      const seenIds = new Set<string>(filteredInitial.map((o) => o.id));
-      const merged = [
-        ...filteredInitial,
-        ...result.data.filter((opt) => !seenIds.has(opt.id)),
-      ];
-      return { data: merged, pagination: result.pagination };
-    },
-    []
+    async (initialOptions: { id: string; name: string }[], query: string, page: number) =>
+      toTeamSearchResult(enrolledTeams, query, page, initialOptions),
+    [enrolledTeams],
   );
 
   const searchHome = useCallback(
@@ -197,6 +200,7 @@ const AssignTeamsDialog = ({
               {t('floorball.matches.homeTeamLabel', 'Home Team')}
             </label>
             <SearchableInfiniteDropdown
+              key={`home-${enrolledTeamKey}`}
               placeholder={t('floorball.matches.assignTeams.homePlaceholder', 'Valitse kotijoukkue (valinnainen)')}
               value={homeTeamId}
               onChange={(value: string) => setHomeTeamId(value)}
@@ -224,6 +228,7 @@ const AssignTeamsDialog = ({
               {t('floorball.matches.awayTeamLabel', 'Away Team')}
             </label>
             <SearchableInfiniteDropdown
+              key={`away-${enrolledTeamKey}`}
               placeholder={t('floorball.matches.assignTeams.awayPlaceholder', 'Valitse vierasjoukkue (valinnainen)')}
               value={awayTeamId}
               onChange={(value: string) => setAwayTeamId(value)}

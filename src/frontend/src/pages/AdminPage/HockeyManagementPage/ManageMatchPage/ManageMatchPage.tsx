@@ -32,6 +32,7 @@ import {
   type HockeyTeamDto,
 } from '../../../../types/hockey/hockeyTypes';
 import { loadHockeyRosterNameMaps, loadPersonNameMap, loadTeamNameMap } from '../../../../utils/hockeyLookups';
+import { hockeyCompetitionKind, loadHockeyEnrolledTeams } from '../../../../utils/enrolledCompetitionTeams';
 import {
   DEFAULT_HOCKEY_MATCH_RULES,
   useHockeyPeriodManagement,
@@ -158,8 +159,10 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   }, []);
 
   useEffect(() => {
-    void reloadLookups().catch((err) => setError(err instanceof Error ? err.message : 'Failed to load match extras'));
-  }, [reloadLookups]);
+    void reloadLookups().catch((err: unknown) => setError(
+      err instanceof Error ? err.message : t('hockey.matches.manage.errors.loadExtras', 'Failed to load match extras'),
+    ));
+  }, [reloadLookups, t]);
 
   const restoreFromMatch = periodManagement.restoreFromMatch;
   useEffect(() => {
@@ -203,7 +206,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
       }
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Operation failed');
+      setError(err instanceof Error ? err.message : t('hockey.matches.manage.errors.operationFailed', 'Operation failed'));
       return false;
     } finally {
       setBusy(false);
@@ -240,12 +243,40 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
     });
   };
 
+  /**
+   * Ends the current period: freezes the clock, records the period end and anchors the
+   * upcoming period's start mark so the intermission read-out shows the next period's
+   * 00:00 instead of jumping to the absolute match time.
+   */
+  const finishCurrentPeriod = async (): Promise<void> => {
+    const endingPeriod: number = timer.currentPeriod;
+    const next: number = periodManagement.computeNextAfter(endingPeriod);
+    if (next > 0) {
+      timer.setPeriodStartTime(next, theoreticalPeriodStartSeconds(
+        next,
+        periodManagement.overtimePeriodNumber,
+        periodManagement.shootoutPeriodNumber,
+        match.wentToOvertime,
+      ));
+    }
+    if (timer.callbacks.stop) {
+      await timer.callbacks.stop();
+    }
+    await periodManagement.endPeriod();
+  };
+
   const handlePeriodControlClick = (): void => {
-    if (periodManagement.canEndPeriod()) {
-      if (periodManagement.isInShootout() || timer.currentPeriod === periodManagement.maxPeriodNumber) {
-        setShowFinishConfirm(true);
-        return;
-      }
+    const action = periodManagement.getPeriodControlAction();
+    if (action === null) return;
+
+    // Nothing can follow the current period (shootout, last allowed period, or the score
+    // is not level): ending it means finishing the match.
+    if (action === 'finish') {
+      setShowFinishConfirm(true);
+      return;
+    }
+
+    if (action === 'end') {
       const durationSeconds = periodManagement.isInOvertime()
         ? DEFAULT_HOCKEY_MATCH_RULES.overtimeDurationMinutes * 60
         : DEFAULT_HOCKEY_MATCH_RULES.periodDurationMinutes * 60;
@@ -253,12 +284,9 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         periodManagement.setShowEndPeriodConfirmation(true);
         return;
       }
-      void (async () => {
-        await periodManagement.endPeriod();
-        if (timer.callbacks.stop) {
-          timer.callbacks.stop();
-        }
-      })();
+      void finishCurrentPeriod().catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : t('hockey.matches.manage.errors.operationFailed', 'Operation failed'));
+      });
       return;
     }
 
@@ -292,12 +320,34 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
     })();
   };
 
+  // A shootout only makes sense when regulation ended level.
+  const showSkipToShootout: boolean = isHockeyMatchLive(match.status)
+    && DEFAULT_HOCKEY_MATCH_RULES.allowShootout
+    && periodManagement.scoreTied
+    && !match.wentToOvertime
+    && !match.wentToShootout
+    && periodManagement.nextPeriodToStart === periodManagement.overtimePeriodNumber
+    && periodManagement.endedPeriods.has(periodManagement.rules.numberOfPeriods);
+
+  const handleSkipToShootout = (): void => {
+    void (async () => {
+      setError(null);
+      stopClock();
+      try {
+        await periodManagement.skipToShootout();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t('hockey.matches.manage.errors.startShootout', 'Failed to start penalty shootout'));
+      }
+    })();
+  };
+
   const home = hockeyHomeTeam(match);
   const away = hockeyAwayTeam(match);
   const leftSide = isSidesSwapped ? away : home;
   const rightSide = isSidesSwapped ? home : away;
-  const leftName = leftSide ? teamNames.get(leftSide.teamId) ?? 'TBD' : 'TBD';
-  const rightName = rightSide ? teamNames.get(rightSide.teamId) ?? 'TBD' : 'TBD';
+  const tbdLabel: string = t('hockey.matches.manage.tbd', 'TBD');
+  const leftName: string = leftSide ? teamNames.get(leftSide.teamId) ?? tbdLabel : tbdLabel;
+  const rightName: string = rightSide ? teamNames.get(rightSide.teamId) ?? tbdLabel : tbdLabel;
   const selectedSide = match.matchTeams.find((side) => side.id === selectedTeamId);
   const selectedTeamName = selectedSide ? teamNames.get(selectedSide.teamId) ?? '' : '';
   const formPlayers = toFormPlayers(selectedSide?.activePlayers ?? [], playerNames);
@@ -459,8 +509,8 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
     <>
       <ErrorPopup message={error} />
       <LiveMatchModalHeader
-        homeTeam={{ name: home ? teamNames.get(home.teamId) ?? 'Home' : 'Home' }}
-        awayTeam={{ name: away ? teamNames.get(away.teamId) ?? 'Away' : 'Away' }}
+        homeTeam={{ name: (home ? teamNames.get(home.teamId) : undefined) ?? t('hockey.matches.manage.home', 'Home') }}
+        awayTeam={{ name: (away ? teamNames.get(away.teamId) : undefined) ?? t('hockey.matches.manage.away', 'Away') }}
         currentMatch={match}
         isSidesSwapped={isSidesSwapped}
         onToggleSides={() => setIsSidesSwapped((prev) => !prev)}
@@ -488,6 +538,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
             onPeriodControlClick={handlePeriodControlClick}
             canEndPeriod={periodManagement.canEndPeriod}
             getPeriodControlButtonText={periodManagement.getPeriodControlButtonText}
+            getPeriodControlAction={periodManagement.getPeriodControlAction}
             keybindsEnabled={!eventForm && !isLineupDialogOpen}
             isStartMatchDisabled={!homeGoalieId || !awayGoalieId || !match.homeTeamId || !match.awayTeamId}
             startDisabledReason={
@@ -499,6 +550,9 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
             }
             overtimePeriodNumber={periodManagement.overtimePeriodNumber}
             shootoutPeriodNumber={periodManagement.shootoutPeriodNumber}
+            showSkipToShootout={showSkipToShootout}
+            skipToShootoutLoading={Boolean(periodManagement.periodLoading[periodManagement.shootoutPeriodNumber])}
+            onSkipToShootout={handleSkipToShootout}
           />
           <LiveMatchQuickActions
             loading={busy}
@@ -668,11 +722,13 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         isLoading={busy || Boolean(periodManagement.periodLoading[timer.currentPeriod])}
         onConfirm={() => {
           void (async () => {
-            await periodManagement.endPeriod();
-            if (timer.callbacks.stop) {
-              timer.callbacks.stop();
+            try {
+              await finishCurrentPeriod();
+            } catch (err) {
+              setError(err instanceof Error ? err.message : t('hockey.matches.manage.errors.operationFailed', 'Operation failed'));
+            } finally {
+              periodManagement.setShowEndPeriodConfirmation(false);
             }
-            periodManagement.setShowEndPeriodConfirmation(false);
           })();
         }}
         onCancel={() => periodManagement.setShowEndPeriodConfirmation(false)}
@@ -726,7 +782,7 @@ function ManageHockeyMatchPage() {
   const { matchId } = useParams<{ matchId: string }>();
   const [searchParams] = useSearchParams();
   const [match, setMatch] = useState<HockeyMatchDto | null>(null);
-  const [teams, setTeams] = useState<HockeyTeamDto[]>([]);
+  const [teams, setTeams] = useState<Array<{ id: string; name: string }>>([]);
   const [homeTeamId, setHomeTeamId] = useState('');
   const [awayTeamId, setAwayTeamId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -737,28 +793,29 @@ function ManageHockeyMatchPage() {
 
   useEffect(() => {
     if (!matchId) {
-      setError('Match ID is missing');
+      setError(t('hockey.matches.manage.errors.matchIdMissing', 'Match ID is missing'));
       setLoading(false);
       return;
     }
     const fetchMatch = async (): Promise<void> => {
       try {
-        const [loaded, teamList] = await Promise.all([
-          hockeyMatchService.getById(matchId),
-          hockeyTeamService.getAll(),
-        ]);
+        const loaded = await hockeyMatchService.getById(matchId);
+        const kind = hockeyCompetitionKind(String(loaded.matchType));
+        const enrolled = loaded.competitionId
+          ? await loadHockeyEnrolledTeams(loaded.competitionId, kind)
+          : (await hockeyTeamService.getAll()).map((team) => ({ id: team.id, name: team.name }));
         setMatch(loaded);
-        setTeams(teamList);
+        setTeams(enrolled);
         setHomeTeamId(loaded.homeTeamId ?? '');
         setAwayTeamId(loaded.awayTeamId ?? '');
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred while fetching match data.');
+        setError(err instanceof Error ? err.message : t('hockey.matches.manage.errors.loadMatch', 'An error occurred while fetching match data.'));
       } finally {
         setLoading(false);
       }
     };
     void fetchMatch();
-  }, [matchId]);
+  }, [matchId, t]);
 
   if (loading) {
     return <div>{t('common.loading', 'Loading...')}</div>;
@@ -773,7 +830,7 @@ function ManageHockeyMatchPage() {
   }
 
   if (!match) {
-    return <div>Match not found.</div>;
+    return <div>{t('hockey.matches.manage.notFound', 'Match not found.')}</div>;
   }
 
   const isTeamsAssignable = match.status === 'Scheduled' || match.status === 'Postponed';
@@ -784,7 +841,7 @@ function ManageHockeyMatchPage() {
       <div className="manage-match-page">
         <div className="page-header">
           <div className="page-header__top">
-            <h1 className="page-title-compact font-title">MATCH MANAGEMENT</h1>
+            <h1 className="page-title-compact font-title">{t('hockey.matches.manage.title', 'Match management')}</h1>
             <div className="page-header__actions">
               {isTeamsAssignable && (
                 <button
@@ -843,7 +900,7 @@ function ManageHockeyMatchPage() {
                   try {
                     setMatch(await hockeyMatchService.assignTeams(match.id, homeTeamId, awayTeamId));
                   } catch (err) {
-                    setError(err instanceof Error ? err.message : 'Failed to assign teams');
+                    setError(err instanceof Error ? err.message : t('hockey.matches.manage.errors.assignTeams', 'Failed to assign teams'));
                   } finally {
                     setAssigning(false);
                   }

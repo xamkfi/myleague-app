@@ -464,6 +464,35 @@ export interface HockeySeasonDto {
   logoUrl?: string | null;
   teamsAdvancing?: number;
   rankingCriteria?: string[];
+  standingRules?: HockeyStandingRulesDto;
+}
+
+export interface HockeyStandingRulesDto {
+  regulationWinPoints: number;
+  overtimeWinPoints: number;
+  shootoutWinPoints: number;
+  overtimeLossPoints: number;
+  shootoutLossPoints: number;
+  tiePoints: number;
+  tieBreakers?: string[];
+}
+
+export const HOCKEY_STANDING_POINT_DEFAULTS: HockeySeasonPointSettings = {
+  regulationWinPoints: 3,
+  overtimeWinPoints: 2,
+  shootoutWinPoints: 2,
+  overtimeLossPoints: 1,
+  shootoutLossPoints: 1,
+  tiePoints: 1,
+};
+
+export interface HockeySeasonPointSettings {
+  regulationWinPoints: number;
+  overtimeWinPoints: number;
+  shootoutWinPoints: number;
+  overtimeLossPoints: number;
+  shootoutLossPoints: number;
+  tiePoints: number;
 }
 
 export interface CreateHockeySeasonRequest {
@@ -475,6 +504,12 @@ export interface CreateHockeySeasonRequest {
   logoUrl?: string | null;
   teamsAdvancing?: number;
   rankingCriteria?: string[];
+  regulationWinPoints?: number;
+  overtimeWinPoints?: number;
+  shootoutWinPoints?: number;
+  overtimeLossPoints?: number;
+  shootoutLossPoints?: number;
+  tiePoints?: number;
 }
 
 export interface UpdateHockeySeasonRequest {
@@ -486,6 +521,12 @@ export interface UpdateHockeySeasonRequest {
   logoUrl?: string | null;
   teamsAdvancing?: number;
   rankingCriteria?: string[];
+  regulationWinPoints?: number;
+  overtimeWinPoints?: number;
+  shootoutWinPoints?: number;
+  overtimeLossPoints?: number;
+  shootoutLossPoints?: number;
+  tiePoints?: number;
 }
 
 export interface HockeyTournamentRulesDto {

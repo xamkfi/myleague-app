@@ -31,6 +31,7 @@ using Domain.Entities.Floorball.Officials;
 using Domain.Entities.Floorball.Statistics;
 using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Floorball;
+using Domain.ValueObjects.Floorball;
 using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -198,7 +199,9 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             isHomeGame: isHomeGame,
             goalsFor: 0,
             goalsAgainst: 0,
-            wentToShootout: match.WentToShootout);
+            wentToShootout: match.WentToShootout,
+            wentToOvertime: match.WentToOvertime,
+            standingRules: match.Competition is FloorballSeason season ? season.StandingRules : null);
 
         await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
     }

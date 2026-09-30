@@ -11,8 +11,8 @@ interface TimerCallbacks {
   getCurrentElapsedSeconds: (() => number) | null;
   toggle: (() => Promise<void>) | null;
   start: (() => Promise<void>) | null;
-  stop: (() => void) | null;
-  reset: (() => void) | null;
+  stop: (() => Promise<void>) | null;
+  reset: (() => Promise<void>) | null;
 }
 
 interface MatchTimerContextValue {
@@ -152,7 +152,7 @@ export const MatchTimerProvider = ({ children, initialPeriod = 1, matchId }: Mat
     setIsRunning(update.IsRunning);
   }, []);
 
-  const value: MatchTimerContextValue = {
+  const value: MatchTimerContextValue = useMemo(() => ({
     currentPeriod,
     setCurrentPeriod,
     elapsedTimeSeconds,
@@ -167,7 +167,19 @@ export const MatchTimerProvider = ({ children, initialPeriod = 1, matchId }: Mat
     formatTime,
     formatEventTime,
     handleTimerUpdate,
-  };
+  }), [
+    currentPeriod,
+    elapsedTimeSeconds,
+    isRunning,
+    periodStartTimes,
+    setPeriodStartTime,
+    currentPeriodStartSeconds,
+    callbacks,
+    registerCallback,
+    formatTime,
+    formatEventTime,
+    handleTimerUpdate,
+  ]);
 
   return (
     <MatchTimerContext.Provider value={value}>

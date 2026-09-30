@@ -158,7 +158,6 @@ export const floorballMatchEventService = {
    */
   getMatchEvents: async (matchId: string): Promise<ApiResponse<FloorballDomainEventDto[]>> => {
     try {
-      console.log('Fetching match events for match:', matchId);
       // Fetch the match through the queries controller and synthesize events on the client.
       const response = await authFetch(`${API_URL}/${MATCHES_PATH}/by-id/${matchId}`, {
         method: 'GET',

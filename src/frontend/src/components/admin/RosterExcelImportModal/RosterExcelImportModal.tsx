@@ -17,15 +17,16 @@ import type {
   SeasonImportSummary,
 } from '../../../types/common/seasonImportTypes';
 import {
-  matchRosterImport,
-  parseRosterWorkbook,
+  assignRosterDestinations,
+  normalizeTeamName,
+  suggestRosterDestinations,
   type ParsedRosterPlayer,
   type ParsedRosterWorkbook,
   type RosterAssignment,
-  type RosterImportMode,
   type RosterImportPreview,
   type RosterTeamOption,
 } from '../../../api/common/rosterExcelParser';
+import { parseRosterJson } from '../../../api/common/rosterJsonParser';
 import '../SeasonJsonImportModal/SeasonJsonImportModal.scss';
 import './RosterExcelImportModal.scss';
 
@@ -36,6 +37,14 @@ export interface RosterImportLock {
   competitionName: string;
   teamId: string;
   teamName: string;
+}
+
+export interface RosterJsonGuide {
+  prompt: string;
+  buildPromptFileName: () => string;
+  sampleHref: string;
+  sampleDownloadName: string;
+  allowedPositions: readonly string[];
 }
 
 export interface RosterExcelImportModalProps {
@@ -57,6 +66,7 @@ export interface RosterExcelImportModalProps {
   preferredTeamId?: string;
   preferredTeamName?: string;
   presetSeasonId?: string;
+  guide: RosterJsonGuide;
 }
 
 type RunState =
@@ -81,24 +91,23 @@ export function RosterExcelImportModal({
   revertRosters,
   lockedSelection = null,
   preferredTeamId,
-  preferredTeamName,
   presetSeasonId,
+  guide,
 }: RosterExcelImportModalProps) {
   const { t } = useTranslation();
-  const [externalLock, setExternalLock] = useState<RosterImportLock | null>(null);
+  const suggestedTeamId = lockedSelection?.teamId ?? preferredTeamId ?? null;
   const [seasons, setSeasons] = useState<RosterTeamOption[]>([]);
   const [teams, setTeams] = useState<RosterTeamOption[]>([]);
-  const [seasonsLoading, setSeasonsLoading] = useState(!lockedSelection);
+  const [seasonsLoading, setSeasonsLoading] = useState(true);
   const [teamsLoading, setTeamsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [seasonId, setSeasonId] = useState(lockedSelection?.competitionId ?? '');
-  const [mode, setMode] = useState<RosterImportMode>('single');
-  const [selectedIds, setSelectedIds] = useState<string[]>(
-    lockedSelection ? [lockedSelection.teamId] : [],
-  );
+  const [destinations, setDestinations] = useState<Record<number, string>>({});
+  const [destinationsTouched, setDestinationsTouched] = useState(false);
   const [parsed, setParsed] = useState<ParsedRosterWorkbook | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
-  const [fileError, setFileError] = useState<string | null>(null);
+  const [fileErrors, setFileErrors] = useState<string[]>([]);
+  const [promptCopyState, setPromptCopyState] = useState<null | 'copied' | 'downloaded' | 'error'>(null);
   const [runState, setRunState] = useState<RunState>({ kind: 'idle' });
   const [log, setLog] = useState<LogLine[]>([]);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
@@ -108,22 +117,23 @@ export function RosterExcelImportModal({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (lockedSelection) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     setSeasonsLoading(true);
     void loadSeasons()
       .then((loaded) => {
         if (cancelled) return;
         setSeasons(loaded);
-        if (presetSeasonId && loaded.some((season) => season.id === presetSeasonId)) {
-          setSeasonId(presetSeasonId);
-        } else if (presetSeasonId && preferredTeamId && preferredTeamName) {
-          setExternalLock({
-            competitionId: presetSeasonId,
-            competitionName: t(`${I18N}.selectedCompetition`, 'Selected competition'),
-            teamId: preferredTeamId,
-            teamName: preferredTeamName,
-          });
+        const preferredSeasonId = lockedSelection?.competitionId ?? presetSeasonId;
+        if (preferredSeasonId && loaded.some((season) => season.id === preferredSeasonId)) {
+          setSeasonId(preferredSeasonId);
         }
         setLoadError(null);
       })
@@ -138,11 +148,11 @@ export function RosterExcelImportModal({
     return () => {
       cancelled = true;
     };
-  }, [loadSeasons, lockedSelection, preferredTeamId, preferredTeamName, presetSeasonId, t]);
+  }, [loadSeasons, lockedSelection, presetSeasonId, t]);
 
   useEffect(() => {
-    if (lockedSelection || seasonId.length === 0) {
-      if (!lockedSelection) setTeams([]);
+    if (seasonId.length === 0) {
+      setTeams([]);
       return;
     }
     let cancelled = false;
@@ -151,14 +161,6 @@ export function RosterExcelImportModal({
       .then((loaded) => {
         if (cancelled) return;
         setTeams(loaded);
-        setSelectedIds((current) => {
-          const stillThere = current.filter((id) => loaded.some((team) => team.id === id));
-          if (stillThere.length > 0) return stillThere;
-          if (preferredTeamId && loaded.some((team) => team.id === preferredTeamId)) {
-            return [preferredTeamId];
-          }
-          return [];
-        });
         setLoadError(null);
       })
       .catch((err: unknown) => {
@@ -173,25 +175,19 @@ export function RosterExcelImportModal({
     return () => {
       cancelled = true;
     };
-  }, [loadSeasonTeams, lockedSelection, preferredTeamId, seasonId, t]);
+  }, [loadSeasonTeams, seasonId, t]);
 
-  const activeLock = lockedSelection ?? externalLock;
-
-  const selectedTeams = useMemo((): RosterTeamOption[] => {
-    if (activeLock) {
-      return [{ id: activeLock.teamId, name: activeLock.teamName }];
-    }
-    return teams.filter((team) => selectedIds.includes(team.id));
-  }, [activeLock, selectedIds, teams]);
-
-  const effectiveMode: RosterImportMode = activeLock ? 'single' : mode;
+  useEffect(() => {
+    if (!parsed || destinationsTouched) return;
+    setDestinations(suggestRosterDestinations(parsed, teams, suggestedTeamId));
+  }, [destinationsTouched, parsed, suggestedTeamId, teams]);
 
   const preview = useMemo((): RosterImportPreview | null => {
     if (!parsed) return null;
-    return matchRosterImport(parsed, selectedTeams, effectiveMode);
-  }, [effectiveMode, parsed, selectedTeams]);
+    return assignRosterDestinations(parsed, teams, destinations);
+  }, [destinations, parsed, teams]);
 
-  const competitionId = activeLock?.competitionId ?? seasonId;
+  const competitionId = seasonId;
 
   const appendLog = useCallback((line: LogLine) => {
     setLog((prev) => [...prev, line]);
@@ -199,27 +195,71 @@ export function RosterExcelImportModal({
 
   const readFile = useCallback(
     async (file: File) => {
-      setFileError(null);
-      if (!file.name.toLowerCase().endsWith('.xlsx')) {
+      setFileErrors([]);
+      if (!file.name.toLowerCase().endsWith('.json')) {
         setParsed(null);
         setFileName(null);
-        setFileError(t(`${I18N}.xlsxOnly`, 'Choose an .xlsx file.'));
+        setDestinations({});
+        setDestinationsTouched(false);
+        setFileErrors([t(`${I18N}.jsonOnly`, 'Choose a .json file.')]);
         return;
       }
       try {
-        const buffer = await file.arrayBuffer();
-        const workbook = await parseRosterWorkbook(buffer);
-        setParsed(workbook);
+        const text = await file.text();
+        const result = parseRosterJson(text, guide.allowedPositions);
+        if (!result.ok) {
+          setParsed(null);
+          setFileName(file.name);
+          setDestinations({});
+          setDestinationsTouched(false);
+          setFileErrors(result.errors);
+          return;
+        }
+        setParsed(result.workbook);
         setFileName(file.name);
+        setDestinationsTouched(false);
+        setDestinations({});
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setParsed(null);
         setFileName(null);
-        setFileError(t(`${I18N}.fileFailed`, 'Could not read the Excel file: {{msg}}', { msg: message }));
+        setDestinations({});
+        setDestinationsTouched(false);
+        setFileErrors([t(`${I18N}.fileFailed`, 'Could not read the JSON file: {{msg}}', { msg: message })]);
       }
     },
-    [t],
+    [guide.allowedPositions, t],
   );
+
+  const downloadPrompt = useCallback((): boolean => {
+    try {
+      const blob = new Blob([guide.prompt], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = guide.buildPromptFileName();
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [guide]);
+
+  const downloadPromptFile = useCallback(() => {
+    setPromptCopyState(downloadPrompt() ? 'downloaded' : 'error');
+  }, [downloadPrompt]);
+
+  const copyPrompt = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(guide.prompt);
+      setPromptCopyState('copied');
+    } catch {
+      setPromptCopyState(downloadPrompt() ? 'downloaded' : 'error');
+    }
+  }, [downloadPrompt, guide.prompt]);
 
   const onFileChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -238,15 +278,18 @@ export function RosterExcelImportModal({
     [readFile],
   );
 
-  const toggleTeam = useCallback(
-    (teamId: string) => {
-      setSelectedIds((current) => {
-        if (effectiveMode === 'single') return [teamId];
-        return current.includes(teamId) ? current.filter((id) => id !== teamId) : [...current, teamId];
-      });
-    },
-    [effectiveMode],
-  );
+  const onDestinationChange = useCallback((index: number, teamId: string) => {
+    setDestinationsTouched(true);
+    setDestinations((current) => {
+      const next = { ...current };
+      if (teamId.length === 0) {
+        delete next[index];
+      } else {
+        next[index] = teamId;
+      }
+      return next;
+    });
+  }, []);
 
   const runRevert = useCallback(
     async (records: SeasonImportCreatedRecord[]) => {
@@ -286,14 +329,18 @@ export function RosterExcelImportModal({
     };
     try {
       const summary = await importRosters(competitionId, preview.assignments, callbacks);
-      if (summary.fatal || summary.aborted) {
+      const nothingAdded = summary.teamPlayerAssignments === 0 && summary.errors.length > 0;
+      if (summary.fatal || summary.aborted || nothingAdded) {
         const fatal = summary.errors.find((err) => err.fatal);
+        const reasons = summary.errors.map((err) => `${err.label}: ${err.message}`).join(' ');
         setRunState({
           kind: 'failed',
           summary,
-          fatalMessage: fatal?.message ?? t(`${I18N}.failed`, 'Import failed'),
+          fatalMessage: nothingAdded
+            ? t(`${I18N}.nothingAdded`, 'No players were added. {{reasons}}', { reasons })
+            : fatal?.message ?? t(`${I18N}.failed`, 'Import failed'),
         });
-        if (autoRevertRef.current && summary.created.length > 0 && !summary.aborted) {
+        if (summary.fatal && autoRevertRef.current && summary.created.length > 0 && !summary.aborted) {
           await runRevert(summary.created);
         }
         return;
@@ -333,10 +380,10 @@ export function RosterExcelImportModal({
   const busy = runState.kind === 'running' || runState.kind === 'reverting';
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay roster-import-overlay">
       <div className="modal-content import-modal roster-import-modal">
         <div className="modal-header">
-          <h3>{t(`${I18N}.title`, 'Import roster from Excel')}</h3>
+          <h3>{t(`${I18N}.title`, 'Import roster from JSON')}</h3>
           <button
             type="button"
             className="modal-close-btn"
@@ -350,30 +397,28 @@ export function RosterExcelImportModal({
         <div className="modal-body import-modal__body">
           {runState.kind === 'idle' && (
             <SetupView
-              lockedSelection={activeLock}
+              parsed={parsed}
               seasons={seasons}
               teams={teams}
               seasonsLoading={seasonsLoading}
               teamsLoading={teamsLoading}
               loadError={loadError}
               seasonId={seasonId}
-              mode={effectiveMode}
-              selectedIds={selectedIds}
+              destinations={destinations}
               fileName={fileName}
-              fileError={fileError}
+              fileErrors={fileErrors}
               preview={preview}
+              guide={guide}
+              promptCopyState={promptCopyState}
+              onCopyPrompt={() => void copyPrompt()}
+              onDownloadPrompt={downloadPromptFile}
               fileInputRef={fileInputRef}
               onSeasonChange={(value) => {
                 setSeasonId(value);
-                setSelectedIds([]);
-                setParsed(null);
-                setFileName(null);
+                setDestinationsTouched(false);
+                setDestinations({});
               }}
-              onModeChange={(value) => {
-                setMode(value);
-                setSelectedIds((current) => (value === 'single' ? current.slice(0, 1) : current));
-              }}
-              onToggleTeam={toggleTeam}
+              onDestinationChange={onDestinationChange}
               onFileChange={onFileChange}
               onDrop={onDrop}
             />
@@ -468,60 +513,85 @@ export function RosterExcelImportModal({
 }
 
 interface SetupViewProps {
-  lockedSelection: RosterImportLock | null;
+  parsed: ParsedRosterWorkbook | null;
   seasons: RosterTeamOption[];
   teams: RosterTeamOption[];
   seasonsLoading: boolean;
   teamsLoading: boolean;
   loadError: string | null;
   seasonId: string;
-  mode: RosterImportMode;
-  selectedIds: string[];
+  destinations: Record<number, string>;
   fileName: string | null;
-  fileError: string | null;
+  fileErrors: string[];
   preview: RosterImportPreview | null;
+  guide: RosterJsonGuide;
+  promptCopyState: null | 'copied' | 'downloaded' | 'error';
+  onCopyPrompt: () => void;
+  onDownloadPrompt: () => void;
   fileInputRef: RefObject<HTMLInputElement | null>;
   onSeasonChange: (seasonId: string) => void;
-  onModeChange: (mode: RosterImportMode) => void;
-  onToggleTeam: (teamId: string) => void;
+  onDestinationChange: (index: number, teamId: string) => void;
   onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onDrop: (event: DragEvent<HTMLLabelElement>) => void;
 }
 
 function SetupView({
-  lockedSelection,
+  parsed,
   seasons,
   teams,
   seasonsLoading,
   teamsLoading,
   loadError,
   seasonId,
-  mode,
-  selectedIds,
+  destinations,
   fileName,
-  fileError,
+  fileErrors,
   preview,
+  guide,
+  promptCopyState,
+  onCopyPrompt,
+  onDownloadPrompt,
   fileInputRef,
   onSeasonChange,
-  onModeChange,
-  onToggleTeam,
+  onDestinationChange,
   onFileChange,
   onDrop,
 }: SetupViewProps) {
   const { t } = useTranslation();
-  const canPickFile = lockedSelection !== null || (seasonId.length > 0 && selectedIds.length > 0);
+  const fileReady = parsed !== null && fileErrors.length === 0;
 
   return (
     <div className="roster-import-modal__setup">
-      {lockedSelection ? (
-        <p className="import-modal__note">
-          {t(`${I18N}.lockedIntro`, 'Importing the roster of {{team}} into {{season}}.', {
-            team: lockedSelection.teamName,
-            season: lockedSelection.competitionName,
-          })}
-        </p>
-      ) : (
-        <>
+      <label
+        className="import-modal__dropzone"
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={onDrop}
+      >
+        <i className="fas fa-file-upload" aria-hidden="true"></i>
+        <p>{fileName ?? t(`${I18N}.dropzone`, 'Drop a JSON file here or choose a file.')}</p>
+        <span className="import-modal__choose-btn">
+          <i className="fas fa-folder-open" aria-hidden="true"></i> {t(`${I18N}.chooseFile`, 'Choose file')}
+        </span>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json,.json"
+          onChange={onFileChange}
+          className="import-modal__file-input"
+        />
+      </label>
+      {fileErrors.map((error) => (
+        <p key={error} className="import-modal__note">{error}</p>
+      ))}
+      {!fileReady && <p className="import-modal__note">{t(`${I18N}.fileShape`)}</p>}
+      {fileReady && parsed && (
+        <FileSummary parsed={parsed} />
+      )}
+      {fileReady && (
+        <section className="roster-import-modal__destination">
+          <h4>{t(`${I18N}.destinationHeading`, 'Where to import')}</h4>
+          <p className="import-modal__note">{t(`${I18N}.destinationHint`)}</p>
+          {loadError && <p className="import-modal__note">{loadError}</p>}
           <label className="import-modal__field">
             <span>{t(`${I18N}.season`, 'Season')}</span>
             <select
@@ -537,144 +607,152 @@ function SetupView({
               ))}
             </select>
           </label>
-          <fieldset className="roster-import-modal__mode" disabled={seasonId.length === 0}>
-            <legend>{t(`${I18N}.teams`, 'Teams')}</legend>
-            <label>
-              <input
-                type="radio"
-                name="roster-import-mode"
-                checked={mode === 'single'}
-                onChange={() => onModeChange('single')}
-              />
-              {t(`${I18N}.modeSingle`, 'One team')}
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="roster-import-mode"
-                checked={mode === 'multiple'}
-                onChange={() => onModeChange('multiple')}
-              />
-              {t(`${I18N}.modeMultiple`, 'Several teams')}
-            </label>
-          </fieldset>
-          {mode === 'multiple' && (
-            <p className="import-modal__note">{t(`${I18N}.multiReminder`)}</p>
-          )}
           {teamsLoading && <p>{t('common.loading', 'Loading...')}</p>}
           {!teamsLoading && seasonId.length > 0 && teams.length === 0 && (
             <p className="import-modal__note">{t(`${I18N}.noTeams`, 'This season has no teams.')}</p>
           )}
-          {teams.length > 0 && (
-            <ul className="roster-import-modal__teams">
-              {teams.map((team) => (
-                <li key={team.id}>
-                  <label>
-                    <input
-                      type={mode === 'single' ? 'radio' : 'checkbox'}
-                      name="roster-import-team"
-                      checked={selectedIds.includes(team.id)}
-                      onChange={() => onToggleTeam(team.id)}
-                    />
-                    {team.name}
-                  </label>
-                </li>
-              ))}
-            </ul>
+          {parsed && seasonId.length > 0 && teams.length > 0 && (
+            <div className="roster-import-modal__map">
+              <div className="roster-import-modal__map-head">
+                <span>{t(`${I18N}.fileTeamColumn`, 'Team in the file')}</span>
+                <span>{t(`${I18N}.seasonTeamColumn`, 'Import into')}</span>
+              </div>
+              {parsed.teams.map((block, index) => {
+                const selectedId = destinations[index] ?? '';
+                const selectedTeam = teams.find((team) => team.id === selectedId);
+                const nameMatches = Boolean(
+                  block.teamName
+                  && selectedTeam
+                  && normalizeTeamName(block.teamName) === normalizeTeamName(selectedTeam.name),
+                );
+                const sourceName = block.teamName
+                  ?? t(`${I18N}.unnamedTeamShort`, 'Team name not in the file');
+                return (
+                  <div key={`${block.teamName ?? 'team'}-${index}`} className="roster-import-modal__map-row">
+                    <div className="roster-import-modal__map-source">
+                      <strong>{sourceName}</strong>
+                      <span>
+                        {t(`${I18N}.playerCountShort`, '{{count}} players', { count: block.players.length })}
+                      </span>
+                    </div>
+                    <div className="roster-import-modal__map-target">
+                      <select
+                        className={selectedId.length === 0 ? 'is-skipped' : undefined}
+                        aria-label={t(`${I18N}.importIntoNamed`, 'Import {{name}} into', { name: sourceName })}
+                        value={selectedId}
+                        onChange={(event) => onDestinationChange(index, event.target.value)}
+                      >
+                        <option value="">{t(`${I18N}.skipTeam`, 'Do not import')}</option>
+                        {teams.map((team) => (
+                          <option key={team.id} value={team.id}>{team.name}</option>
+                        ))}
+                      </select>
+                      {nameMatches && (
+                        <span className="roster-import-modal__match">{t(`${I18N}.nameMatches`)}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
-        </>
+          {preview && <PreviewView preview={preview} />}
+        </section>
       )}
-      {loadError && <p className="import-modal__note">{loadError}</p>}
-      <label
-        className="import-modal__dropzone"
-        onDragOver={(event) => event.preventDefault()}
-        onDrop={(event) => {
-          if (!canPickFile) {
-            event.preventDefault();
-            return;
-          }
-          onDrop(event);
-        }}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          onChange={onFileChange}
-          disabled={!canPickFile}
-        />
-        <span>
-          {fileName ?? t(`${I18N}.dropzone`, 'Drop an Excel file here or choose a file.')}
-        </span>
-        <span className="import-modal__choose-btn">{t(`${I18N}.chooseFile`, 'Choose file')}</span>
-      </label>
-      {!canPickFile && (
-        <p className="import-modal__note">
-          {t(`${I18N}.selectFirst`, 'Select the season and at least one team before choosing the file.')}
-        </p>
-      )}
-      {fileError && <p className="import-modal__note">{fileError}</p>}
-      {preview && <PreviewView preview={preview} />}
+      <div className="import-modal__ai-help">
+        <h4 className="import-modal__ai-help-title">
+          {t(`${I18N}.aiHelp.title`, "Don't have a JSON file yet? Generate one with AI")}
+        </h4>
+        <ol className="import-modal__ai-help-steps">
+          <li>{t(`${I18N}.aiHelp.step1`)}</li>
+          <li>{t(`${I18N}.aiHelp.step2`)}</li>
+          <li>{t(`${I18N}.aiHelp.step3`)}</li>
+          <li>{t(`${I18N}.aiHelp.step4`)}</li>
+        </ol>
+        <div className="import-modal__ai-help-actions">
+          <button type="button" className="import-modal__ai-help-btn import-modal__ai-help-btn--primary" onClick={onCopyPrompt}>
+            {t(`${I18N}.aiHelp.copyPrompt`, 'Copy AI prompt to clipboard')}
+          </button>
+          <button type="button" className="import-modal__ai-help-btn import-modal__ai-help-btn--ghost" onClick={onDownloadPrompt}>
+            {t(`${I18N}.aiHelp.downloadPrompt`, 'Download AI prompt as .txt')}
+          </button>
+        </div>
+        {promptCopyState === 'copied' && (
+          <p className="import-modal__ai-help-feedback import-modal__ai-help-feedback--ok" role="status">
+            {t(`${I18N}.aiHelp.copiedToast`)}
+          </p>
+        )}
+        {promptCopyState === 'downloaded' && (
+          <p className="import-modal__ai-help-feedback import-modal__ai-help-feedback--info" role="status">
+            {t(`${I18N}.aiHelp.downloadedToast`)}
+          </p>
+        )}
+        {promptCopyState === 'error' && (
+          <p className="import-modal__ai-help-feedback import-modal__ai-help-feedback--error" role="alert">
+            {t(`${I18N}.aiHelp.errorToast`)}
+          </p>
+        )}
+        <a className="import-modal__sample-link" href={guide.sampleHref} download={guide.sampleDownloadName}>
+          {t(`${I18N}.downloadSample`, 'Download sample JSON')}
+        </a>
+      </div>
     </div>
+  );
+}
+
+function FileSummary({ parsed }: { parsed: ParsedRosterWorkbook }) {
+  const { t } = useTranslation();
+  return (
+    <section className="roster-import-modal__summary">
+      <h4>{t(`${I18N}.fileSummary`, 'In the file')}</h4>
+      {parsed.teams.length === 0 && (
+        <p className="import-modal__note">{t(`${I18N}.noPlayersInFile`)}</p>
+      )}
+      {parsed.teams.map((block, index) => (
+        <details key={`${block.teamName ?? 'team'}-${index}`} className="roster-import-modal__team">
+          <summary>
+            {block.teamName
+              ? t(`${I18N}.teamLine`, '{{name}} · {{count}} players', {
+                name: block.teamName,
+                count: block.players.length,
+              })
+              : t(`${I18N}.unnamedTeam`, 'Team name could not be read · {{count}} players', {
+                count: block.players.length,
+              })}
+          </summary>
+          <ul className="roster-import-modal__players">
+            {block.players.map((player) => (
+              <li key={`${index}-${player.rowNumber}-${player.rawName}`}>
+                <PlayerLine player={player} />
+              </li>
+            ))}
+          </ul>
+        </details>
+      ))}
+    </section>
   );
 }
 
 function PreviewView({ preview }: { preview: RosterImportPreview }) {
   const { t } = useTranslation();
+  const blocked = preview.invalidNames.length > 0
+    || preview.duplicateDestinations.length > 0
+    || preview.parsedPlayerCount === 0;
   return (
     <section className="import-modal__preview">
-      <h4>{t(`${I18N}.previewHeading`, 'Check before import')}</h4>
-      <p className="import-modal__note">{t(`${I18N}.ignoredMeta`)}</p>
-      {preview.assignments.map((assignment) => (
-        <div key={assignment.teamId}>
-          <p>
-            {t(`${I18N}.teamLine`, '{{name}} · {{count}} players', {
-              name: assignment.teamName,
-              count: assignment.block.players.length,
-            })}
-          </p>
-          {assignment.block.coachName && (
-            <p className="import-modal__checklist-meta">
-              {t(`${I18N}.coach`, 'Coach: {{name}}', { name: assignment.block.coachName })}
-            </p>
-          )}
-          {assignment.block.jerseyColor && (
-            <p className="import-modal__checklist-meta">
-              {t(`${I18N}.jerseyColor`, 'Jersey colour: {{color}}', { color: assignment.block.jerseyColor })}
-            </p>
-          )}
-          <ul>
-            {assignment.block.players.map((player) => (
-              <li key={`${assignment.teamId}-${player.rowNumber}-${player.rawName}`}>
-                <PlayerLine player={player} />
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-      {preview.missingTeams.length > 0 && (
+      {blocked && <p className="import-modal__note">{t(`${I18N}.cannotImport`)}</p>}
+      {preview.parsedPlayerCount === 0 && (
+        <p className="import-modal__note">{t(`${I18N}.noPlayersInFile`)}</p>
+      )}
+      {preview.assignments.length === 0 && preview.parsedPlayerCount > 0 && (
+        <p className="import-modal__note">{t(`${I18N}.pickDestination`)}</p>
+      )}
+      {preview.duplicateDestinations.length > 0 && (
         <p className="import-modal__note">
-          {t(`${I18N}.missingTeams`, 'Missing from the file: {{names}}', {
-            names: preview.missingTeams.map((team) => team.name).join(', '),
+          {t(`${I18N}.duplicateDestination`, 'The same season team is selected for more than one file team: {{names}}', {
+            names: preview.duplicateDestinations.join(', '),
           })}
         </p>
-      )}
-      {preview.extraFileTeams.length > 0 && (
-        <p className="import-modal__note">
-          {t(`${I18N}.extraTeams`, 'Extra teams in the file will not be imported: {{names}}', {
-            names: preview.extraFileTeams.join(', '),
-          })}
-        </p>
-      )}
-      {preview.duplicateFileTeams.length > 0 && (
-        <p className="import-modal__note">
-          {t(`${I18N}.duplicateNames`, 'The file contains the same team more than once: {{names}}', {
-            names: preview.duplicateFileTeams.join(', '),
-          })}
-        </p>
-      )}
-      {preview.unnamedPlayerCount > 0 && (
-        <p className="import-modal__note">{t(`${I18N}.unnamedPlayers`)}</p>
       )}
       {preview.invalidNames.length > 0 && (
         <p className="import-modal__note">
@@ -693,7 +771,8 @@ function PreviewView({ preview }: { preview: RosterImportPreview }) {
 function PlayerLine({ player }: { player: ParsedRosterPlayer }) {
   const { t } = useTranslation();
   const marks: string[] = [];
-  if (player.isGoalkeeper) marks.push(t(`${I18N}.goalkeeper`, 'goalkeeper'));
+  if (player.position) marks.push(player.position);
+  else if (player.isGoalkeeper) marks.push(t(`${I18N}.goalkeeper`, 'goalkeeper'));
   if (typeof player.jerseyNumber === 'number') {
     marks.push(t(`${I18N}.jersey`, 'no. {{number}}', { number: player.jerseyNumber }));
   }

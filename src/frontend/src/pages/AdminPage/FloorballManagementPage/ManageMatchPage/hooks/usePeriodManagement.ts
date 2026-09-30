@@ -1,341 +1,224 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { floorballMatchEventService } from '../../../../../api/floorball/floorballMatchEventService';
-import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
+import type { FloorballMatchDto, FloorballMatchRules } from '../../../../../types/floorball/floorballTypes';
+import {
+  areNumberSetsEqual,
+  deriveFloorballPeriodState,
+  floorballPeriodNumbers,
+  nextFloorballPeriodAfter,
+  resolveFloorballRules,
+  type FloorballPeriodState,
+} from '../../../../../utils/floorballPeriod';
 import type { PeriodEventData } from '../components/types';
 
 interface UsePeriodManagementProps {
   currentMatch: FloorballMatchDto;
   currentPeriod: number;
   setCurrentPeriod: (period: number) => void;
-  loadCurrentMatchStatus?: () => Promise<void>;
+  /** Period reported by the backend timer; drives the derived period state. */
+  timerPeriodNumber: number | null;
+  loadCurrentMatchStatus: () => Promise<void>;
 }
 
+export type PeriodKind = 'regular' | 'overtime' | 'shootout';
+
 /**
- * Default match rules used as fallback when matchRules is not present on the DTO
- * (e.g., for matches created before the match rules feature was added).
+ * Describes what the single period control button does right now. The component turns
+ * this into a translated label.
  */
-const DEFAULT_MATCH_RULES = {
-  numberOfPeriods: 2,
-  periodDurationMinutes: 15,
-  allowOvertime: true,
-  overtimeDurationMinutes: 5,
-  allowShootout: true,
-};
+export interface PeriodControlDescriptor {
+  /**
+   * `end` closes the current period, `start` opens the next one and `finish` completes the
+   * match because no further period can follow (decided in regulation/overtime, or the
+   * shootout is over).
+   */
+  action: 'end' | 'start' | 'finish';
+  period: number;
+  kind: PeriodKind;
+  loading: boolean;
+}
 
 export const usePeriodManagement = ({
   currentMatch,
   currentPeriod,
   setCurrentPeriod,
+  timerPeriodNumber,
   loadCurrentMatchStatus,
 }: UsePeriodManagementProps) => {
-  // Derive dynamic period numbers from match rules
-  const rules = currentMatch.matchRules ?? DEFAULT_MATCH_RULES;
-  const overtimePeriodNumber = useMemo(() => rules.numberOfPeriods + 1, [rules.numberOfPeriods]);
-  const shootoutPeriodNumber = useMemo(() => rules.numberOfPeriods + 2, [rules.numberOfPeriods]);
-  const maxPeriodNumber = useMemo(() => {
-    if (rules.allowShootout) return shootoutPeriodNumber;
-    if (rules.allowOvertime) return overtimePeriodNumber;
-    return rules.numberOfPeriods;
-  }, [rules, overtimePeriodNumber, shootoutPeriodNumber]);
+  const rules: FloorballMatchRules = useMemo(() => resolveFloorballRules(currentMatch.matchRules), [currentMatch.matchRules]);
+  const { overtimePeriod: overtimePeriodNumber, shootoutPeriod: shootoutPeriodNumber, maxPeriod: maxPeriodNumber } =
+    useMemo(() => floorballPeriodNumbers(rules), [rules]);
 
-  // State for tracking which periods have been started and ended
-  const [startedPeriods, setStartedPeriods] = useState<Set<number>>(new Set());
-  const [endedPeriods, setEndedPeriods] = useState<Set<number>>(new Set());
+  const [startedPeriods, setStartedPeriods] = useState<Set<number>>(() => new Set());
+  const [endedPeriods, setEndedPeriods] = useState<Set<number>>(() => new Set());
   const [nextPeriodToStart, setNextPeriodToStart] = useState<number>(1);
   const [periodLoading, setPeriodLoading] = useState<Record<number, boolean>>({});
-  
-  // Confirmation dialog states
-  const [showEndPeriodConfirmation, setShowEndPeriodConfirmation] = useState(false);
-  const [pendingEndPeriodAction, setPendingEndPeriodAction] = useState<(() => void) | null>(null);
-  const [showOvertimeConfirmation, setShowOvertimeConfirmation] = useState(false);
-  const [showShootoutConfirmation, setShowShootoutConfirmation] = useState(false);
+  const [showEndPeriodConfirmation, setShowEndPeriodConfirmation] = useState<boolean>(false);
+
+  // Re-derive the bookkeeping whenever the persisted match or the backend timer period
+  // changes. Local optimistic updates made by the actions below converge to the same
+  // values, so this is safe to run after every refresh.
+  const { status, periodScores, wentToOvertime, wentToShootout, homeScore, awayScore } = currentMatch;
+  const scoreTied: boolean = (homeScore ?? 0) === (awayScore ?? 0);
+  useEffect(() => {
+    const derived: FloorballPeriodState = deriveFloorballPeriodState(
+      { status, periodScores, wentToOvertime, wentToShootout, matchRules: rules, homeScore, awayScore },
+      timerPeriodNumber,
+    );
+    setStartedPeriods(prev => (areNumberSetsEqual(prev, derived.started) ? prev : derived.started));
+    setEndedPeriods(prev => (areNumberSetsEqual(prev, derived.ended) ? prev : derived.ended));
+    setNextPeriodToStart(derived.next);
+    setCurrentPeriod(derived.current);
+  }, [status, periodScores, wentToOvertime, wentToShootout, homeScore, awayScore, rules, timerPeriodNumber, setCurrentPeriod]);
+
+  const setLoadingFor = useCallback((period: number, loading: boolean): void => {
+    setPeriodLoading(prev => ({ ...prev, [period]: loading }));
+  }, []);
+
+  const periodKind = useCallback((period: number): PeriodKind => {
+    if (period === overtimePeriodNumber) return 'overtime';
+    if (period === shootoutPeriodNumber) return 'shootout';
+    return 'regular';
+  }, [overtimePeriodNumber, shootoutPeriodNumber]);
 
   /**
-   * Handles real-time period started events from SignalR
+   * Handles real-time period started events from SignalR (another operator's browser).
    */
-  const handlePeriodStarted = useCallback((eventData: PeriodEventData) => {
-    if (eventData.matchId !== currentMatch.id) {
-      return;
-    }
-    setStartedPeriods(prev => new Set([...prev, eventData.periodNumber]));
+  const handlePeriodStarted = useCallback((eventData: PeriodEventData): void => {
+    if (eventData.matchId !== currentMatch.id) return;
+    setStartedPeriods(prev => (prev.has(eventData.periodNumber) ? prev : new Set([...prev, eventData.periodNumber])));
   }, [currentMatch.id]);
 
   /**
-   * Ends the current period by sending API call.
-   * Calculates the next period dynamically based on match rules.
+   * Ends the current period and moves the desk to the next one.
    */
-  const endPeriod = useCallback(async () => {
+  const endPeriod = useCallback(async (): Promise<void> => {
+    const period: number = currentPeriod;
+    setLoadingFor(period, true);
     try {
-      setPeriodLoading(prev => ({ ...prev, [currentPeriod]: true }));
-      
-      await floorballMatchEventService.endPeriod(currentMatch.id, currentPeriod);
-
-      if (loadCurrentMatchStatus) {
-        await loadCurrentMatchStatus();
-      }
-      
-      // Mark this period as ended
-      setEndedPeriods(prev => new Set([...prev, currentPeriod]));
-      
-      // Calculate the next period to start based on match rules
-      let nextPeriod: number;
-      
-      if (currentPeriod < rules.numberOfPeriods) {
-        // Still in regular periods, advance to next regular period
-        nextPeriod = currentPeriod + 1;
-      } else if (currentPeriod === rules.numberOfPeriods && rules.allowOvertime) {
-        // Last regular period ended, overtime is available
-        nextPeriod = overtimePeriodNumber;
-      } else if (currentPeriod === rules.numberOfPeriods && !rules.allowOvertime && rules.allowShootout) {
-        // Last regular period ended, no overtime but shootout is available
-        nextPeriod = shootoutPeriodNumber;
-      } else if (currentPeriod === overtimePeriodNumber && rules.allowShootout) {
-        // Overtime ended, shootout is available
-        nextPeriod = shootoutPeriodNumber;
-      } else {
-        // No more periods available (or shootout just ended)
-        nextPeriod = 0;
-      }
-      
-      setNextPeriodToStart(nextPeriod);
-      
-      // Update the period number
-      if (nextPeriod > 0) {
-        setCurrentPeriod(nextPeriod);
-      }
-      
-    } catch (error) {
-      console.error('Error ending period:', error);
-      throw error;
+      await floorballMatchEventService.endPeriod(currentMatch.id, period);
+      setEndedPeriods(prev => new Set([...prev, period]));
+      const next: number = nextFloorballPeriodAfter(period, rules, scoreTied);
+      setNextPeriodToStart(next);
+      if (next > 0) setCurrentPeriod(next);
+      await loadCurrentMatchStatus();
     } finally {
-      setPeriodLoading(prev => ({ ...prev, [currentPeriod]: false }));
+      setLoadingFor(period, false);
     }
-  }, [currentPeriod, currentMatch.id, setCurrentPeriod, rules, overtimePeriodNumber, shootoutPeriodNumber]);
+  }, [currentPeriod, currentMatch.id, rules, scoreTied, setCurrentPeriod, loadCurrentMatchStatus, setLoadingFor]);
 
   /**
-   * Starts a new period.
-   * For overtime/shootout periods, also records the overtime/shootout on the match.
+   * Starts the next period. Overtime and shootout are recorded on the match first.
    */
-  const startPeriod = useCallback(async () => {
+  const startPeriod = useCallback(async (): Promise<void> => {
+    const period: number = nextPeriodToStart;
+    if (period <= 0) return;
+    setLoadingFor(period, true);
     try {
-      setPeriodLoading(prev => ({ ...prev, [nextPeriodToStart]: true }));
-      
-      if (nextPeriodToStart === overtimePeriodNumber) {
+      if (period === overtimePeriodNumber) {
         await floorballMatchEventService.recordOvertime(currentMatch.id);
-        await floorballMatchEventService.startPeriod(currentMatch.id, overtimePeriodNumber);
-        if (loadCurrentMatchStatus) {
-          await loadCurrentMatchStatus();
-        }
-      } else if (nextPeriodToStart === shootoutPeriodNumber) {
+      } else if (period === shootoutPeriodNumber) {
         await floorballMatchEventService.recordShootout(currentMatch.id);
-        await floorballMatchEventService.startPeriod(currentMatch.id, shootoutPeriodNumber);
-        if (loadCurrentMatchStatus) {
-          await loadCurrentMatchStatus();
-        }
-      } else {
-        await floorballMatchEventService.startPeriod(currentMatch.id, nextPeriodToStart);
       }
-      
-      // Mark this period as started
-      setStartedPeriods(prev => new Set([...prev, nextPeriodToStart]));
-      setCurrentPeriod(nextPeriodToStart);
-      
-      // Update next period to start
-      let upcoming: number;
-      if (nextPeriodToStart < rules.numberOfPeriods) {
-        upcoming = nextPeriodToStart + 1;
-      } else if (nextPeriodToStart === rules.numberOfPeriods && rules.allowOvertime) {
-        upcoming = overtimePeriodNumber;
-      } else if (nextPeriodToStart === rules.numberOfPeriods && !rules.allowOvertime && rules.allowShootout) {
-        upcoming = shootoutPeriodNumber;
-      } else if (nextPeriodToStart === overtimePeriodNumber && rules.allowShootout) {
-        upcoming = shootoutPeriodNumber;
-      } else {
-        upcoming = 0;
-      }
-      setNextPeriodToStart(upcoming);
-      
-    } catch (error) {
-      console.error('Error starting period:', error);
-      throw error;
-    } finally {
-      setPeriodLoading(prev => ({ ...prev, [nextPeriodToStart]: false }));
-    }
-  }, [nextPeriodToStart, currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus, rules, overtimePeriodNumber, shootoutPeriodNumber]);
+      await floorballMatchEventService.startPeriod(currentMatch.id, period);
 
-  /**
-   * Records overtime for the current match
-   */
-  const recordOvertime = useCallback(async () => {
-    try {
-      await floorballMatchEventService.recordOvertime(currentMatch.id);
-      await floorballMatchEventService.startPeriod(currentMatch.id, overtimePeriodNumber);
-      
-      if (loadCurrentMatchStatus) {
+      setStartedPeriods(prev => new Set([...prev, period]));
+      setCurrentPeriod(period);
+      setNextPeriodToStart(nextFloorballPeriodAfter(period, rules, scoreTied));
+
+      if (period === overtimePeriodNumber || period === shootoutPeriodNumber) {
         await loadCurrentMatchStatus();
       }
-      
-      setStartedPeriods(prev => new Set([...prev, overtimePeriodNumber]));
-      setCurrentPeriod(overtimePeriodNumber);
-      setShowOvertimeConfirmation(false);
-      
-    } catch (error) {
-      console.error('Error recording overtime:', error);
-      throw error;
+    } finally {
+      setLoadingFor(period, false);
     }
-  }, [currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus, overtimePeriodNumber]);
+  }, [nextPeriodToStart, currentMatch.id, rules, scoreTied, overtimePeriodNumber, shootoutPeriodNumber, setCurrentPeriod, loadCurrentMatchStatus, setLoadingFor]);
 
   /**
-   * Records shootout for the current match
+   * Goes straight to the shootout from the last regular period, ending that period first
+   * when it is still open.
    */
-  const recordShootout = useCallback(async () => {
+  const skipToShootout = useCallback(async (): Promise<void> => {
+    setLoadingFor(shootoutPeriodNumber, true);
     try {
+      const lastRegularPeriod: number = rules.numberOfPeriods;
+      const lastRegularStillOpen: boolean = currentPeriod === lastRegularPeriod
+        && startedPeriods.has(lastRegularPeriod)
+        && !endedPeriods.has(lastRegularPeriod);
+      if (lastRegularStillOpen) {
+        await floorballMatchEventService.endPeriod(currentMatch.id, lastRegularPeriod);
+        setEndedPeriods(prev => new Set([...prev, lastRegularPeriod]));
+      }
+
       await floorballMatchEventService.recordShootout(currentMatch.id);
       await floorballMatchEventService.startPeriod(currentMatch.id, shootoutPeriodNumber);
-      
-      if (loadCurrentMatchStatus) {
-        await loadCurrentMatchStatus();
-      }
-      
+
       setStartedPeriods(prev => new Set([...prev, shootoutPeriodNumber]));
       setCurrentPeriod(shootoutPeriodNumber);
-      setShowShootoutConfirmation(false);
-      
-    } catch (error) {
-      console.error('Error recording shootout:', error);
-      throw error;
+      setNextPeriodToStart(0);
+      await loadCurrentMatchStatus();
+    } finally {
+      setLoadingFor(shootoutPeriodNumber, false);
     }
-  }, [currentMatch.id, setCurrentPeriod, loadCurrentMatchStatus, shootoutPeriodNumber]);
+  }, [currentMatch.id, currentPeriod, startedPeriods, endedPeriods, rules.numberOfPeriods, shootoutPeriodNumber, setCurrentPeriod, loadCurrentMatchStatus, setLoadingFor]);
+
+  const isInShootout: boolean = currentPeriod === shootoutPeriodNumber;
+  const isMatchInProgress: boolean = currentMatch.status === 'InProgress';
+  const isCurrentPeriodOpen: boolean = startedPeriods.has(currentPeriod) && !endedPeriods.has(currentPeriod);
+
+  const canEndPeriod: boolean = isMatchInProgress && !periodLoading[currentPeriod] && isCurrentPeriodOpen;
 
   /**
-   * Determines if we can end the current period
+   * True when ending the current period also ends the match: nothing can follow it
+   * (shootout, last allowed period, or the score is not level so no extra period is due).
    */
-  const canEndPeriod = useCallback(() => {
-    const isShootout = currentPeriod === shootoutPeriodNumber;
-    const isLastAllowedPeriod = currentPeriod === maxPeriodNumber;
-    
-    const conditions = {
-      matchInProgress: currentMatch.status === 'InProgress',
-      notLoading: !periodLoading[currentPeriod],
-      periodStarted: startedPeriods.has(currentPeriod),
-      periodNotEnded: !endedPeriods.has(currentPeriod),
-      hasNextPeriod: nextPeriodToStart > 0,
-    };
-    
-    return conditions.matchInProgress && 
-           conditions.notLoading &&
-           conditions.periodStarted &&
-           conditions.periodNotEnded &&
-           (conditions.hasNextPeriod || isShootout || isLastAllowedPeriod);
-  }, [currentMatch.status, periodLoading, currentPeriod, startedPeriods, endedPeriods, nextPeriodToStart, shootoutPeriodNumber, maxPeriodNumber]);
+  const endingPeriodFinishesMatch: boolean =
+    isInShootout
+    || currentPeriod === maxPeriodNumber
+    || nextFloorballPeriodAfter(currentPeriod, rules, scoreTied) === 0;
 
-  /**
-   * Gets the current period status for display
-   */
-  const getPeriodStatus = useCallback(() => {
-    if (periodLoading[currentPeriod]) {
-      return 'Processing...';
+  const periodControl: PeriodControlDescriptor | null = useMemo(() => {
+    const loading: boolean = Boolean(periodLoading[currentPeriod]);
+    if (canEndPeriod) {
+      return {
+        action: endingPeriodFinishesMatch ? 'finish' : 'end',
+        period: currentPeriod,
+        kind: periodKind(currentPeriod),
+        loading,
+      };
     }
-    
-    if (currentMatch.status === 'Completed') {
-      return 'Completed';
+    if (nextPeriodToStart > 0) {
+      return { action: 'start', period: nextPeriodToStart, kind: periodKind(nextPeriodToStart), loading: Boolean(periodLoading[nextPeriodToStart]) };
     }
-    
-    const isOvertime = currentPeriod === overtimePeriodNumber;
-    const isShootout = currentPeriod === shootoutPeriodNumber;
-    
-    if (currentMatch.status === 'InProgress') {
-      if (endedPeriods.has(currentPeriod)) {
-        if (isOvertime) return 'Overtime Ended';
-        if (isShootout) return 'Shootout Ended';
-        return 'Ended';
-      } else if (startedPeriods.has(currentPeriod)) {
-        if (isOvertime) return 'Overtime Started';
-        if (isShootout) return 'Shootout Started';
-        return 'Started';
-      } else {
-        if (isOvertime) return 'Overtime Not Started';
-        if (isShootout) return 'Shootout Not Started';
-        return 'Not Started';
-      }
+    // Every playable period is over but the match is still open (e.g. the last period was
+    // ended while the score was not level): offer to complete the match.
+    if (isMatchInProgress && endedPeriods.has(currentPeriod)) {
+      return { action: 'finish', period: currentPeriod, kind: periodKind(currentPeriod), loading };
     }
-    
-    return 'Not Started';
-  }, [periodLoading, currentPeriod, currentMatch.status, endedPeriods, startedPeriods, overtimePeriodNumber, shootoutPeriodNumber]);
-
-  /**
-   * Gets the text for the period control button
-   */
-  const getPeriodControlButtonText = useCallback(() => {
-    if (canEndPeriod()) {
-      if (periodLoading[currentPeriod]) return 'Ending...';
-      if (currentPeriod === overtimePeriodNumber) return 'End Overtime';
-      if (currentPeriod === shootoutPeriodNumber) return 'End Shootout';
-      return 'End period';
-    } else {
-      if (periodLoading[nextPeriodToStart]) return 'Starting...';
-      if (nextPeriodToStart === overtimePeriodNumber) return 'Start Overtime';
-      if (nextPeriodToStart === shootoutPeriodNumber) return 'Start Shootout';
-      return `Start period ${nextPeriodToStart}`;
-    }
-  }, [canEndPeriod, periodLoading, currentPeriod, nextPeriodToStart, overtimePeriodNumber, shootoutPeriodNumber]);
-
-  const isInOvertime = useCallback(() => currentPeriod === overtimePeriodNumber, [currentPeriod, overtimePeriodNumber]);
-  const isInShootout = useCallback(() => currentPeriod === shootoutPeriodNumber, [currentPeriod, shootoutPeriodNumber]);
-
-  const confirmEndPeriod = useCallback(() => {
-    if (pendingEndPeriodAction) {
-      pendingEndPeriodAction();
-      setPendingEndPeriodAction(null);
-    }
-    setShowEndPeriodConfirmation(false);
-  }, [pendingEndPeriodAction]);
-
-  const cancelEndPeriod = useCallback(() => {
-    setPendingEndPeriodAction(null);
-    setShowEndPeriodConfirmation(false);
-  }, []);
+    return null;
+  }, [canEndPeriod, endingPeriodFinishesMatch, isMatchInProgress, endedPeriods, currentPeriod, nextPeriodToStart, periodKind, periodLoading]);
 
   return {
-    // State
     startedPeriods,
-    setStartedPeriods,
     endedPeriods,
-    setEndedPeriods,
     nextPeriodToStart,
-    setNextPeriodToStart,
     periodLoading,
-    
-    // Dynamic period numbers derived from match rules
+
     overtimePeriodNumber,
     shootoutPeriodNumber,
     maxPeriodNumber,
     matchRules: rules,
-    
-    // Confirmation dialogs
+
     showEndPeriodConfirmation,
     setShowEndPeriodConfirmation,
-    pendingEndPeriodAction,
-    setPendingEndPeriodAction,
-    showOvertimeConfirmation,
-    setShowOvertimeConfirmation,
-    showShootoutConfirmation,
-    setShowShootoutConfirmation,
-    
-    // Actions
+
     handlePeriodStarted,
     endPeriod,
     startPeriod,
-    recordOvertime,
-    recordShootout,
-    confirmEndPeriod,
-    cancelEndPeriod,
-    
-    // Utility functions
+    skipToShootout,
+
     canEndPeriod,
-    getPeriodStatus,
-    getPeriodControlButtonText,
-    isInOvertime,
     isInShootout,
+    periodControl,
   };
 };

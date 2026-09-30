@@ -146,13 +146,21 @@
     }
 
     &__icon {
-      font-size: 1rem;
+      font-size: 0.875rem;
       line-height: 1;
+      color: $color-neutral-dark-grey;
     }
 
     &__label {
       display: inline-block;
     }
+  }
+
+  &--loading {
+    padding: 48px 24px;
+    text-align: center;
+    color: $color-neutral-dark-grey;
+    font-family: $font-family-body;
   }
 
   .page-title-compact {

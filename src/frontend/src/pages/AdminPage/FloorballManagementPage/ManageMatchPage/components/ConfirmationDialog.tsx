@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import './ConfirmationDialog.scss';
 
 interface ConfirmationDialogProps {
@@ -20,19 +21,26 @@ const ConfirmationDialog = ({
   message,
   warningMessage,
   confirmText,
-  cancelText = 'Cancel',
+  cancelText,
   isLoading = false,
   onConfirm,
   onCancel
 }: ConfirmationDialogProps) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
-  <div className="confirmation-dialog-overlay" onClick={onCancel}>
-      <div className="confirmation-dialog" onClick={(e) => e.stopPropagation()}>
+    <div className="confirmation-dialog-overlay" onClick={onCancel}>
+      <div
+        className="confirmation-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirmation-dialog-title"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="confirmation-header">
-          <span className="confirmation-icon">{icon}</span>
-          <h3>{title}</h3>
+          <span className="confirmation-icon" aria-hidden="true">{icon}</span>
+          <h3 id="confirmation-dialog-title">{title}</h3>
         </div>
         <div className="confirmation-content">
           <p>{message}</p>
@@ -47,7 +55,7 @@ const ConfirmationDialog = ({
             className="confirm-btn"
             disabled={isLoading}
           >
-            {isLoading ? 'Processing...' : confirmText}
+            {isLoading ? t('common.processing', 'Processing...') : confirmText}
           </button>
           <button
             type="button"
@@ -55,7 +63,7 @@ const ConfirmationDialog = ({
             className="cancel-btn"
             disabled={isLoading}
           >
-            {cancelText}
+            {cancelText ?? t('common.cancel', 'Cancel')}
           </button>
         </div>
       </div>
@@ -63,4 +71,4 @@ const ConfirmationDialog = ({
   );
 };
 
-export default ConfirmationDialog; 
+export default ConfirmationDialog;

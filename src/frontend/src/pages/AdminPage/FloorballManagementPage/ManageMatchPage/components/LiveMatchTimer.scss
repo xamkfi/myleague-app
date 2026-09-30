@@ -1,11 +1,9 @@
 @use 'sass:map';
+@use 'sass:color';
 @use '../../../../../styles/variables' as *;
 
 .clock-card {
   box-sizing: border-box;
-  // Was a fixed 622px which broke alignment with the right-hand scoreboard / events column
-  // when the page was rendered inside a flex parent that already split the width 50/50.
-  // Filling the parent here ensures both columns produce visually identical card widths.
   width: 100%;
   min-height: 200px;
   padding: 24px;
@@ -20,63 +18,124 @@
 
 .clock-inner {
   width: 100%;
-  min-height: 170px; /* keep enough room for the timer controls */
+  min-height: 170px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
+// ---------------------------------------------------------------------------
+// Period pills
+// ---------------------------------------------------------------------------
 .period-row {
   width: 100%;
-  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 8px;
   flex-wrap: wrap;
+
+  &.extra-actions {
+    gap: 8px;
+    margin-top: 4px;
+
+    .start-match-btn {
+      width: auto;
+      min-width: 180px;
+      height: 36px;
+      padding: 0 16px;
+      font-size: 13px;
+    }
+  }
 }
 
 .period-chip {
-  height: 16px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px 0 8px;
+  border-radius: 13px;
+  border: 1px solid $color-neutral-medium-grey;
+  background: $color-neutral-light-grey;
   font-family: $font-family-body;
   font-weight: map.get($font-weights, 'medium');
   font-size: 12px;
-  letter-spacing: 0;
+  line-height: 16px;
   color: $color-neutral-dark-grey;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 
-  &.started {
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $color-neutral-medium-grey;
+    flex: 0 0 auto;
+  }
+
+  &__name {
+    font-weight: map.get($font-weights, 'semibold');
+  }
+
+  &__status {
+    font-size: 11px;
+    opacity: 0.85;
+
+    &::before {
+      content: '·';
+      margin-right: 6px;
+    }
+  }
+
+  &--completed {
+    color: $color-neutral-dark-grey;
+    background: $color-neutral-white;
+
+    .period-chip__dot { background: $color-neutral-dark-grey; }
+  }
+
+  &--started {
     color: $color-green-muted;
-    width: 105px;
-  }
-  &.upcoming {
-    width: 119px;
-  }
-  &.completed {
-    width: 119px;
-  }
-  
-  // Special styling for overtime and shootout periods
-  &.period-chip--extra {
-    font-weight: map.get($font-weights, 'bold');
-    
-    &.started {
-      color: $color-yellow-primary;
-      width: 119px;
+    border-color: $color-green-pale;
+    background: $color-green-almost;
+
+    .period-chip__dot {
+      background: $color-green-primary;
+      box-shadow: 0 0 0 3px rgba(47, 204, 111, 0.25);
     }
-    &.upcoming {
+  }
+
+  &--upcoming {
+    color: $color-neutral-dark-grey;
+    border-style: dashed;
+    background: transparent;
+  }
+
+  &--extra {
+    .period-chip__name { letter-spacing: 0.01em; }
+
+    &.period-chip--started {
       color: $color-yellow-muted;
-      width: 135px;
+      border-color: $color-yellow-light;
+      background: $color-yellow-almost;
+
+      .period-chip__dot {
+        background: $color-yellow-primary;
+        box-shadow: 0 0 0 3px rgba(255, 187, 41, 0.25);
+      }
     }
-    &.completed {
-      width: 135px;
-    }
+  }
+
+  &--current {
+    border-color: currentColor;
   }
 }
 
+// ---------------------------------------------------------------------------
+// Clock area
+// ---------------------------------------------------------------------------
 .clock-time {
   flex: 1;
   display: flex;
@@ -86,50 +145,92 @@
   width: 100%;
 }
 
+.clock-digits {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.start-match-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
+}
+
 .start-match-btn {
-  background: #10b981;
-  color: white;
-  min-width: 120px;
-  padding: 12px 24px;
-  border: 2px solid #10b981;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1rem;
+  background: $color-green-muted;
+  color: $color-neutral-white;
+  min-width: 200px;
+  height: 48px;
+  padding: 0 28px;
+  border: 1px solid $color-green-muted;
+  border-radius: 24px;
+  font-family: $font-family-body;
+  font-weight: map.get($font-weights, 'semibold');
+  font-size: 15px;
   cursor: pointer;
-  transition: all 0.2s;
-  display: inline-block;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
   outline: none;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 14px rgba(30, 152, 80, 0.25);
 
   &:hover:not(:disabled) {
-    background: #059669;
-    border-color: #059669;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    background: color.adjust($color-green-muted, $lightness: -6%);
+    border-color: color.adjust($color-green-muted, $lightness: -6%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(30, 152, 80, 0.3);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-blue-secondary;
+    outline-offset: 2px;
   }
 
   &:disabled {
-    opacity: 0.5;
     cursor: not-allowed;
-    background: #9ca3af;
-    border-color: #9ca3af;
+    background: $color-neutral-light-grey;
+    border-color: $color-neutral-medium-grey;
+    color: $color-neutral-dark-grey;
+    box-shadow: none;
+  }
+
+  &--secondary {
+    background: $color-neutral-white;
+    color: $color-yellow-muted;
+    border-color: $color-yellow-muted;
+    box-shadow: none;
+
+    &:hover:not(:disabled) {
+      background: $color-yellow-almost;
+      border-color: $color-yellow-muted;
+      transform: none;
+      box-shadow: none;
+    }
   }
 }
 
 .match-completed-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   font-family: $font-family-body;
   font-weight: map.get($font-weights, 'semibold');
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   color: $color-neutral-dark-grey;
   padding: 12px 24px;
-}
 
-
-/* Turn timer digits red at or beyond 15:00 (900s) */
-.clock-digits.timer-digits--critical {
-  .timer-component .timer-display .timer-time {
-    color: $color-red-primary;
+  .match-completed-time {
+    font-family: $font-family-display;
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: 0.05em;
+    color: $color-neutral-black;
+    font-variant-numeric: tabular-nums;
   }
 }
-

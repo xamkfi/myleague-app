@@ -5,6 +5,13 @@ import {
   loadFootballRosterSeasons,
   revertFootballRosters,
 } from '../../../../../api/football/rosterImportService';
+import {
+  FOOTBALL_ROSTER_IMPORT_AI_PROMPT,
+  FOOTBALL_ROSTER_IMPORT_POSITIONS,
+  buildFootballRosterPromptFileName,
+} from './rosterImportPrompt';
+
+const SAMPLE_HREF = new URL('../../../../../types/football/rosterImport.sample.json', import.meta.url).href;
 
 interface FootballRosterImportModalProps {
   onClose: () => void;
@@ -35,6 +42,13 @@ export function FootballRosterImportModal({
       preferredTeamId={preferredTeamId}
       preferredTeamName={preferredTeamName}
       presetSeasonId={presetSeasonId}
+      guide={{
+        prompt: FOOTBALL_ROSTER_IMPORT_AI_PROMPT,
+        buildPromptFileName: buildFootballRosterPromptFileName,
+        sampleHref: SAMPLE_HREF,
+        sampleDownloadName: 'football-roster-import-sample.json',
+        allowedPositions: FOOTBALL_ROSTER_IMPORT_POSITIONS,
+      }}
     />
   );
 }

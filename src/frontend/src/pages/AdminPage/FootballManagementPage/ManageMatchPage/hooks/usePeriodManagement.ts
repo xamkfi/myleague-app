@@ -145,17 +145,53 @@ export const usePeriodManagement = ({
   }, [currentMatch.id, loadCurrentMatchStatus]);
 
   const recordShootout = useCallback(async () => {
+    if (currentMatch.wentToExtraTime) {
+      throw new Error('Extra time has already started.');
+    }
+
     try {
-      await footballMatchEventService.recordPenaltyShootout(currentMatch.id);
+      setPeriodLoading((prev) => ({ ...prev, [shootoutPeriodNumber]: true }));
+
+      const lastRegularPeriod: number = rules.numberOfHalves;
+      const lastRegularStillOpen: boolean = currentPeriod === lastRegularPeriod
+        && startedPeriods.has(lastRegularPeriod)
+        && !endedPeriods.has(lastRegularPeriod);
+      if (lastRegularStillOpen) {
+        await footballMatchEventService.endPeriod(currentMatch.id, lastRegularPeriod);
+        setEndedPeriods((prev) => new Set([...prev, lastRegularPeriod]));
+      }
+
+      if (!currentMatch.wentToPenaltyShootout) {
+        await footballMatchEventService.recordPenaltyShootout(currentMatch.id);
+      }
+      await footballMatchEventService.startPeriod(currentMatch.id, shootoutPeriodNumber);
+
       if (loadCurrentMatchStatus) {
         await loadCurrentMatchStatus();
       }
+
+      setStartedPeriods((prev) => new Set([...prev, shootoutPeriodNumber]));
+      setCurrentPeriod(shootoutPeriodNumber);
+      setNextPeriodToStart(0);
       setShowShootoutConfirmation(false);
     } catch (error) {
       console.error('Error recording penalty shootout:', error);
       throw error;
+    } finally {
+      setPeriodLoading((prev) => ({ ...prev, [shootoutPeriodNumber]: false }));
     }
-  }, [currentMatch.id, loadCurrentMatchStatus]);
+  }, [
+    currentMatch.id,
+    currentMatch.wentToExtraTime,
+    currentMatch.wentToPenaltyShootout,
+    currentPeriod,
+    startedPeriods,
+    endedPeriods,
+    rules.numberOfHalves,
+    shootoutPeriodNumber,
+    setCurrentPeriod,
+    loadCurrentMatchStatus,
+  ]);
 
   const canEndPeriod = useCallback(() => {
     const isShootout = isPenaltyShootoutPeriod(currentPeriod, rules);

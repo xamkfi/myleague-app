@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { HockeyTeamDto } from '../../../../../types/hockey/hockeyTypes';
+import type { HockeyTeamPlayerDto } from '../../../../../types/hockey/hockeyTypes';
+import { hockeyTeamService } from '../../../../../api/hockey/hockeyTeamService';
 import { loadHockeyRosterNameMaps } from '../../../../../utils/hockeyLookups';
 import PlayerLink from '../../../../../components/SportLinks/PlayerLink';
 import './TeamPlayersRow.scss';
@@ -9,27 +10,38 @@ interface TeamPlayersRowProps {
   teamId: string;
   isExpanded: boolean;
   isClosing: boolean;
-  team?: HockeyTeamDto;
+  competitionId?: string | null;
 }
 
 const POSITION_ORDER = ['Goalie', 'Defenseman', 'Center', 'LeftWing', 'RightWing'];
 
-function TeamPlayersRow({ isExpanded, isClosing, team }: TeamPlayersRowProps) {
+function TeamPlayersRow({ teamId, isExpanded, isClosing, competitionId }: TeamPlayersRowProps) {
   const { t } = useTranslation();
   const [playerNames, setPlayerNames] = useState<Map<string, string>>(new Map());
+  const [displayPlayers, setDisplayPlayers] = useState<HockeyTeamPlayerDto[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isExpanded || !team) {
+    if (!isExpanded) {
       return;
     }
     let cancelled = false;
     const load = async (): Promise<void> => {
       setLoading(true);
+      setLoadError(null);
       try {
-        const names = await loadHockeyRosterNameMaps([team]);
+        const loaded = await hockeyTeamService.getById(teamId, competitionId || null);
+        const active = (loaded.roster ?? []).filter((player) => player.isActive);
+        const names = await loadHockeyRosterNameMaps([{ ...loaded, roster: active }]);
         if (!cancelled) {
+          setDisplayPlayers(active);
           setPlayerNames(names.byPlayerId);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setDisplayPlayers([]);
+          setLoadError(err instanceof Error ? err.message : t('hockey.teams.rosterLoadFailed'));
         }
       } finally {
         if (!cancelled) {
@@ -41,9 +53,7 @@ function TeamPlayersRow({ isExpanded, isClosing, team }: TeamPlayersRowProps) {
     return () => {
       cancelled = true;
     };
-  }, [isExpanded, team]);
-
-  const displayPlayers = team?.roster ?? [];
+  }, [competitionId, isExpanded, t, teamId]);
   const playerCount = displayPlayers.length;
   const playerPositions = [...new Set(displayPlayers.map((player) => player.position))].sort(
     (a, b) => POSITION_ORDER.indexOf(a) - POSITION_ORDER.indexOf(b),
@@ -58,7 +68,13 @@ function TeamPlayersRow({ isExpanded, isClosing, team }: TeamPlayersRowProps) {
             <p>{t('common.loading', 'Loading...')}</p>
           </div>
         )}
-        {!loading && playerCount === 0 && (
+        {!loading && loadError && (
+          <div className="no-players">
+            <p>{t('hockey.teams.rosterLoadFailed')}</p>
+            <p className="help-text">{loadError}</p>
+          </div>
+        )}
+        {!loading && !loadError && playerCount === 0 && (
           <div className="no-players">
             <p>{t('hockey.teams.noPlayersInTeam', 'This team has no players assigned yet.')}</p>
             <p className="help-text">
@@ -66,7 +82,7 @@ function TeamPlayersRow({ isExpanded, isClosing, team }: TeamPlayersRowProps) {
             </p>
           </div>
         )}
-        {!loading && playerCount > 0 && (
+        {!loading && !loadError && playerCount > 0 && (
           <div className="admin-roster-section">
             {playerPositions.map((pos) => (
               <div key={pos} className="admin-roster-group">

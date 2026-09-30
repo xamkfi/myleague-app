@@ -104,6 +104,30 @@ namespace WebAPI.Models.Floorball
         /// Ordered ranking criteria. Omitted values use the default order.
         /// </summary>
         public List<Domain.Enums.Common.StandingSortCriterion>? RankingCriteria { get; set; }
+
+        /// <summary>
+        /// Points for a win in regulation time. Default: 3.
+        /// </summary>
+        [Range(0, 100)]
+        public int WinPoints { get; set; } = 3;
+
+        /// <summary>
+        /// Points for a draw. Default: 1.
+        /// </summary>
+        [Range(0, 100)]
+        public int DrawPoints { get; set; } = 1;
+
+        /// <summary>
+        /// Points for a win in overtime or a shootout. Default: 2.
+        /// </summary>
+        [Range(0, 100)]
+        public int OvertimeWinPoints { get; set; } = 2;
+
+        /// <summary>
+        /// Points for a loss in overtime or a shootout. Default: 1.
+        /// </summary>
+        [Range(0, 100)]
+        public int OvertimeLossPoints { get; set; } = 1;
     }
 
     /// <summary>
@@ -176,6 +200,30 @@ namespace WebAPI.Models.Floorball
         /// Ordered ranking criteria. Omitted values use the default order.
         /// </summary>
         public List<Domain.Enums.Common.StandingSortCriterion>? RankingCriteria { get; set; }
+
+        /// <summary>
+        /// Points for a win in regulation time. Default: 3.
+        /// </summary>
+        [Range(0, 100)]
+        public int WinPoints { get; set; } = 3;
+
+        /// <summary>
+        /// Points for a draw. Default: 1.
+        /// </summary>
+        [Range(0, 100)]
+        public int DrawPoints { get; set; } = 1;
+
+        /// <summary>
+        /// Points for a win in overtime or a shootout. Default: 2.
+        /// </summary>
+        [Range(0, 100)]
+        public int OvertimeWinPoints { get; set; } = 2;
+
+        /// <summary>
+        /// Points for a loss in overtime or a shootout. Default: 1.
+        /// </summary>
+        [Range(0, 100)]
+        public int OvertimeLossPoints { get; set; } = 1;
     }
 
     /// <summary>

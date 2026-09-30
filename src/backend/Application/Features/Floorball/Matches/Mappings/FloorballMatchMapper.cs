@@ -64,7 +64,12 @@ public static class FloorballMatchMapper
                 ps => new PeriodScoreDto(ps.HomeScore, ps.AwayScore, ps.IsCompleted)
             );
 
-        // Map goal events with player names
+        // Map goal events with player names. Overtime/shootout flags follow the period the
+        // goal was scored in, not the sticky match-level flags, so a first-period goal in a
+        // match that later went to overtime is not tagged as an overtime goal.
+        int regularPeriods = match.MatchRules.NumberOfPeriods;
+        int overtimePeriodNumber = regularPeriods + 1;
+        int shootoutPeriodNumber = regularPeriods + 2;
         List<FloorballGoalEventDto> goalEvents = match.GoalEvents
             .Select(g => new FloorballGoalEventDto(
                 g.Id,
@@ -74,8 +79,8 @@ public static class FloorballMatchMapper
                 g.SecondaryAssistingPlayerId,
                 g.PeriodNumber,
                 g.TimeInSeconds,
-                match.WentToOvertime,
-                match.WentToShootout,
+                g.PeriodNumber == overtimePeriodNumber,
+                g.PeriodNumber == shootoutPeriodNumber,
                 GetPlayerName(g.ScoringPlayerId, playerPersonLookup),
                 GetPlayerName(g.AssistingPlayerId, playerPersonLookup),
                 GetPlayerName(g.SecondaryAssistingPlayerId, playerPersonLookup),

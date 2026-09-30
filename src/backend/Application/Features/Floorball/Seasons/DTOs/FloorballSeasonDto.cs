@@ -30,6 +30,7 @@ namespace Application.Features.Floorball.Seasons.DTOs
     /// <param name="Matches">List of matches scheduled for this season</param>
     /// <param name="MatchRules">Match rules configuration for this season</param>
     /// <param name="TeamCategory">Audience / age-group category</param>
+    /// <param name="StandingRules">Points for wins, draws, and overtime or shootout results</param>
     public record FloorballSeasonDto(
         Guid Id,
         string Name,
@@ -44,5 +45,6 @@ namespace Application.Features.Floorball.Seasons.DTOs
         TeamCategory TeamCategory,
         string? LogoUrl,
         int TeamsAdvancing = 0,
-        IReadOnlyList<StandingSortCriterion>? RankingCriteria = null);
+        IReadOnlyList<StandingSortCriterion>? RankingCriteria = null,
+        FloorballStandingRulesDto? StandingRules = null);
 }

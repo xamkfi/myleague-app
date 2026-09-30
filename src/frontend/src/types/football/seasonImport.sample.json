@@ -18,7 +18,9 @@
     "allowPenaltyShootout": false,
     "winPoints": 3,
     "drawPoints": 1,
-    "lossPoints": 0
+    "lossPoints": 0,
+    "overtimeWinPoints": 3,
+    "overtimeLossPoints": 0
   },
   "divisions": [
     { "name": "Miehet 5v5", "level": 1 }

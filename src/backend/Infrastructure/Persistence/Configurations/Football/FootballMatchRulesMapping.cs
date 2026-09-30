@@ -66,5 +66,15 @@ internal static class FootballMatchRulesMapping
             .HasColumnName($"{prefix}LossPoints")
             .IsRequired()
             .HasDefaultValue(0);
+        rules.Property(r => r.OvertimeWinPoints)
+            .HasColumnName($"{prefix}OvertimeWinPoints")
+            .IsRequired()
+            .HasDefaultValue(3)
+            .ValueGeneratedNever();
+        rules.Property(r => r.OvertimeLossPoints)
+            .HasColumnName($"{prefix}OvertimeLossPoints")
+            .IsRequired()
+            .HasDefaultValue(0)
+            .ValueGeneratedNever();
     }
 }

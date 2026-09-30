@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import './PenaltyRecordingForm.scss';
 import type { FloorballMatchDto, FloorballTeam } from '../../../../../types/floorball/floorballTypes';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
-import type { PenaltyForm, LocalClock } from './types';
+import type { PenaltyForm } from './types';
 import { formatPlayerOptionLabel, sortPlayersForSelect } from './eventFormHelpers';
 
 interface PenaltyRecordingFormProps {
@@ -12,23 +13,23 @@ interface PenaltyRecordingFormProps {
   currentMatch: FloorballMatchDto;
   homeTeam: FloorballTeam | null;
   awayTeam: FloorballTeam | null;
-  clock: LocalClock;
   loading: boolean;
   getPlayersForTeam: (teamId: string) => FloorballPlayerDto[];
   onRecordPenalty: () => Promise<void>;
   onClose: () => void;
 }
 
-const PENALTY_DURATION_OPTIONS: ReadonlyArray<{ value: number; label: string }> = [
-  { value: 2, label: '2 minutes (minor)' },
-  { value: 5, label: '5 minutes (major)' },
-  { value: 10, label: '10 minutes (misconduct)' },
-  { value: 20, label: '20 minutes (game misconduct)' },
+/** Duration options; the label is resolved via i18n key `penaltyForm.duration{value}`. */
+const PENALTY_DURATION_OPTIONS: ReadonlyArray<{ value: number; labelKey: string; fallback: string }> = [
+  { value: 2, labelKey: 'floorball.matches.manage.penaltyForm.duration2', fallback: '2 minutes (minor)' },
+  { value: 5, labelKey: 'floorball.matches.manage.penaltyForm.duration5', fallback: '5 minutes (major)' },
+  { value: 10, labelKey: 'floorball.matches.manage.penaltyForm.duration10', fallback: '10 minutes (misconduct)' },
+  { value: 20, labelKey: 'floorball.matches.manage.penaltyForm.duration20', fallback: '20 minutes (game misconduct)' },
 ];
 
-const PENALTY_TYPE_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
-  { value: 'Minor', label: 'Minor' },
-  { value: 'Major', label: 'Major' },
+const PENALTY_TYPE_OPTIONS: ReadonlyArray<{ value: string; labelKey: string; fallback: string }> = [
+  { value: 'Minor', labelKey: 'floorball.matches.manage.penaltyForm.severityMinor', fallback: 'Minor' },
+  { value: 'Major', labelKey: 'floorball.matches.manage.penaltyForm.severityMajor', fallback: 'Major' },
 ];
 
 const DESCRIPTION_MAX_LENGTH: number = 280;
@@ -56,6 +57,7 @@ const PenaltyRecordingForm = ({
   onRecordPenalty,
   onClose,
 }: PenaltyRecordingFormProps) => {
+  const { t } = useTranslation();
   const firstFieldRef = useRef<HTMLSelectElement | null>(null);
 
   const sortedPlayers: FloorballPlayerDto[] = useMemo(
@@ -108,13 +110,15 @@ const PenaltyRecordingForm = ({
         aria-labelledby="penalty-record-modal-title"
       >
         <div className="penalty-record-modal__header">
-          <h3 id="penalty-record-modal-title">Record penalty for {selectedTeamName ?? 'team'}</h3>
+          <h3 id="penalty-record-modal-title">
+            {t('floorball.matches.manage.penaltyForm.title', { team: selectedTeamName ?? t('common.team') })}
+          </h3>
           <button
             className="penalty-record-modal__close"
             onClick={onClose}
             disabled={loading}
             type="button"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             ×
           </button>
@@ -124,7 +128,7 @@ const PenaltyRecordingForm = ({
           <div className="event-form penalty-form">
             <div className="form-grid">
               <div className="field">
-                <label htmlFor="penalty-player">Receiving player</label>
+                <label htmlFor="penalty-player">{t('floorball.matches.manage.penaltyForm.receivingPlayer')}</label>
                 <select
                   id="penalty-player"
                   ref={firstFieldRef}
@@ -132,7 +136,7 @@ const PenaltyRecordingForm = ({
                   value={penaltyForm.playerId}
                   onChange={(e) => setPenaltyForm((prev) => ({ ...prev, playerId: e.target.value }))}
                 >
-                  <option value="">Select player</option>
+                  <option value="">{t('floorball.matches.manage.penaltyForm.selectPlayer')}</option>
                   {sortedPlayers.map((player) => (
                     <option key={player.id} value={player.id}>
                       {formatPlayerOptionLabel(player)}
@@ -142,41 +146,41 @@ const PenaltyRecordingForm = ({
               </div>
 
               <div className="field">
-                <label htmlFor="penalty-type">Penalty severity</label>
+                <label htmlFor="penalty-type">{t('floorball.matches.manage.penaltyForm.severity')}</label>
                 <select
                   id="penalty-type"
                   className={`select-field${penaltyForm.penaltyType ? '' : ' is-placeholder'}`}
                   value={penaltyForm.penaltyType}
                   onChange={(e) => setPenaltyForm((prev) => ({ ...prev, penaltyType: e.target.value }))}
                 >
-                  <option value="">Select severity</option>
+                  <option value="">{t('floorball.matches.manage.penaltyForm.selectSeverity')}</option>
                   {PENALTY_TYPE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label}
+                      {t(option.labelKey, option.fallback)}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div className="field">
-                <label htmlFor="penalty-duration">Duration</label>
+                <label htmlFor="penalty-duration">{t('floorball.matches.manage.penaltyForm.duration')}</label>
                 <select
                   id="penalty-duration"
                   className={`select-field${penaltyForm.minutes ? '' : ' is-placeholder'}`}
                   value={penaltyForm.minutes || ''}
                   onChange={(e) => setPenaltyForm((prev) => ({ ...prev, minutes: parseInt(e.target.value, 10) || 0 }))}
                 >
-                  <option value="">Select duration</option>
+                  <option value="">{t('floorball.matches.manage.penaltyForm.selectDuration')}</option>
                   {PENALTY_DURATION_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label}
+                      {t(option.labelKey, option.fallback)}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div className="field field--time">
-                <label htmlFor="penalty-time-minutes">Time</label>
+                <label htmlFor="penalty-time-minutes">{t('floorball.matches.manage.penaltyForm.time')}</label>
                 <div className="time-input-group">
                   <input
                     id="penalty-time-minutes"
@@ -189,7 +193,7 @@ const PenaltyRecordingForm = ({
                     min={0}
                     max={99}
                     placeholder="MM"
-                    aria-label="Minutes"
+                    aria-label={t('floorball.matches.manage.timeMinutesAria', 'Minutes')}
                   />
                   <span className="time-separator" aria-hidden="true">
                     :
@@ -205,7 +209,7 @@ const PenaltyRecordingForm = ({
                     min={0}
                     max={59}
                     placeholder="SS"
-                    aria-label="Seconds"
+                    aria-label={t('floorball.matches.manage.timeSecondsAria', 'Seconds')}
                   />
                 </div>
               </div>
@@ -213,13 +217,14 @@ const PenaltyRecordingForm = ({
 
             <div className="field field--description">
               <label htmlFor="penalty-description">
-                Description <span className="field-hint">(optional)</span>
+                {t('floorball.matches.manage.penaltyForm.description')}{' '}
+                <span className="field-hint">{t('floorball.matches.manage.goalForm.optional')}</span>
               </label>
               <textarea
                 id="penalty-description"
                 value={penaltyForm.description}
                 onChange={(e) => setPenaltyForm((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="E.g. hooking, slashing, unsportsmanlike conduct…"
+                placeholder={t('floorball.matches.manage.penaltyForm.descriptionPlaceholder')}
                 className="description-input"
                 maxLength={DESCRIPTION_MAX_LENGTH}
                 rows={3}
@@ -231,13 +236,13 @@ const PenaltyRecordingForm = ({
 
             {missingJersey && (
               <div className="field-error" role="alert">
-                Selected player has no jersey number. Assign a jersey before recording the penalty.
+                {t('floorball.matches.manage.penaltyForm.missingJersey')}
               </div>
             )}
 
             <div className="form-actions">
               <button onClick={onClose} className="cancel-btn" type="button" disabled={loading}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={onRecordPenalty}
@@ -245,7 +250,11 @@ const PenaltyRecordingForm = ({
                 className="submit-btn"
                 type="button"
               >
-                {loading ? 'Recording…' : missingJersey ? 'Missing jersey' : 'Record Penalty'}
+                {loading
+                  ? t('floorball.matches.manage.penaltyForm.recording')
+                  : missingJersey
+                    ? t('floorball.matches.manage.penaltyForm.missingJerseyShort')
+                    : t('floorball.matches.manage.penaltyForm.submit')}
               </button>
             </div>
           </div>

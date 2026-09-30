@@ -55,7 +55,12 @@ internal static class FootballEnrolledStandings
 
         await ApplyMarksAsync(rows, knownTeams, teams, clubs, cancellationToken);
         IReadOnlyList<StandingSortCriterion> criteria = CriteriaFor(competition);
-        IReadOnlyList<StandingMatchResult> played = await LoadResultsAsync(competition, criteria, matches);
+        IReadOnlyList<StandingMatchResult> played = await LoadResultsAsync(competition, matches);
+        if (competition is not null)
+            ApplyMatchPoints(rows, played);
+        IReadOnlyList<StandingMatchResult> headToHead = StandingSortCriteria.UsesHeadToHead(criteria)
+            ? played
+            : [];
         return StandingTableOrder.Sort(
             rows,
             criteria,
@@ -67,15 +72,32 @@ internal static class FootballEnrolledStandings
                 row.GoalsAgainst,
                 0,
                 row.TeamName),
-            played);
+            headToHead);
+    }
+
+    private static void ApplyMatchPoints(
+        List<FootballTeamSeasonStatisticsDto> rows,
+        IReadOnlyList<StandingMatchResult> played)
+    {
+        if (rows.Count == 0)
+            return;
+
+        Dictionary<Guid, int> pointsByTeam = new();
+        foreach (StandingMatchResult match in played)
+        {
+            pointsByTeam[match.HomeTeamId] = pointsByTeam.GetValueOrDefault(match.HomeTeamId) + match.HomePoints;
+            pointsByTeam[match.AwayTeamId] = pointsByTeam.GetValueOrDefault(match.AwayTeamId) + match.AwayPoints;
+        }
+
+        foreach (FootballTeamSeasonStatisticsDto row in rows)
+            row.Points = pointsByTeam.GetValueOrDefault(row.TeamId);
     }
 
     private static async Task<IReadOnlyList<StandingMatchResult>> LoadResultsAsync(
         FootballCompetition? competition,
-        IReadOnlyList<StandingSortCriterion> criteria,
         IFootballMatchRepository matches)
     {
-        if (competition is null || !StandingSortCriteria.UsesHeadToHead(criteria))
+        if (competition is null)
             return [];
 
         FootballStandingRules rules = competition.StandingRules;
@@ -89,16 +111,28 @@ internal static class FootballEnrolledStandings
         {
             Guid homeId = match.HomeTeamId!.Value;
             Guid awayId = match.AwayTeamId!.Value;
-            int homePoints = match.HomeScore > match.AwayScore
-                ? rules.WinPoints
-                : match.HomeScore == match.AwayScore ? rules.DrawPoints : rules.LossPoints;
-            int awayPoints = match.AwayScore > match.HomeScore
-                ? rules.WinPoints
-                : match.HomeScore == match.AwayScore ? rules.DrawPoints : rules.LossPoints;
-            results.Add(new StandingMatchResult(homeId, awayId, match.HomeScore, match.AwayScore, homePoints, awayPoints));
+            bool decidedAfterRegulation = match.WentToExtraTime || match.WentToPenaltyShootout;
+            FootballGameResult homeResult = ResultFor(match.HomeScore, match.AwayScore);
+            FootballGameResult awayResult = ResultFor(match.AwayScore, match.HomeScore);
+            results.Add(new StandingMatchResult(
+                homeId,
+                awayId,
+                match.HomeScore,
+                match.AwayScore,
+                rules.PointsFor(homeResult, decidedAfterRegulation),
+                rules.PointsFor(awayResult, decidedAfterRegulation)));
         }
 
         return results;
+    }
+
+    private static FootballGameResult ResultFor(int goalsFor, int goalsAgainst)
+    {
+        if (goalsFor > goalsAgainst)
+            return FootballGameResult.Win;
+        if (goalsFor < goalsAgainst)
+            return FootballGameResult.Loss;
+        return FootballGameResult.Draw;
     }
 
     private static IReadOnlyList<StandingSortCriterion> CriteriaFor(FootballCompetition? competition)

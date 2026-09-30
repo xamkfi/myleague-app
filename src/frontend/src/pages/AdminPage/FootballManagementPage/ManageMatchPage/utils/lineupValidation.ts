@@ -132,6 +132,34 @@ export function getPeriodDurationSeconds(period: number, rules: FootballMatchRul
   return rules.halfDurationMinutes * 60;
 }
 
+/**
+ * First period that has not started. Unplayed extra-time slots are skipped when the
+ * match already went straight to a penalty shootout.
+ */
+export function nextOpenFootballPeriod(
+  started: ReadonlySet<number>,
+  rules: FootballMatchRules,
+  wentToExtraTime: boolean,
+  wentToPenaltyShootout: boolean,
+): number {
+  const maxPeriod: number = maxPeriodNumber(rules);
+  const extraStart: number = extraTimeStartPeriod(rules);
+  const shootout: number = penaltyShootoutPeriod(rules);
+  for (let period = 1; period <= maxPeriod; period += 1) {
+    const skippedExtraTime: boolean = wentToPenaltyShootout
+      && !wentToExtraTime
+      && period >= extraStart
+      && period < shootout;
+    if (skippedExtraTime) {
+      continue;
+    }
+    if (!started.has(period)) {
+      return period;
+    }
+  }
+  return 0;
+}
+
 export function getTheoreticalPeriodStartSeconds(period: number, rules: FootballMatchRules): number {
   if (period <= 1) {
     return 0;

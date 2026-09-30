@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Domain.Entities.Common;
 using Domain.Entities.Floorball.Competitions;
 using Domain.Entities.Floorball.Matches;
@@ -8,6 +9,8 @@ using Domain.Entities.Floorball.Statistics;
 using Domain.Entities.Floorball.Teams;
 using Domain.Enums.Common;
 using Domain.Enums.Floorball;
+
+using DomainTestProject.Floorball;
 
 namespace DomainTestProject;
 
@@ -228,5 +231,38 @@ public class FloorballMatchAssignTeamsTests
 
         match.HomeTeam.Should().BeNull();
         match.AwayTeam.Should().BeNull();
+    }
+
+    [Fact]
+    public void ChangeTeams_SwapsHomeAndAway()
+    {
+        FloorballSeason season = CreateSeason();
+        FloorballTeam home = CreateTeam("Wolves");
+        FloorballTeam away = CreateTeam("Bears");
+        FloorballMatch match = CreateMatch(season, home, away);
+
+        match.ChangeTeams(away, home);
+
+        match.HomeTeamId.Should().Be(away.Id);
+        match.AwayTeamId.Should().Be(home.Id);
+    }
+
+    [Fact]
+    public void AssignTeam_ReplacingHomeTeam_ClearsHomeGoalieAndLineup()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        FloorballPlayer fieldPlayer = ready.HomePlayers.First(player => player.Id != ready.HomeGoalie.Id);
+        ready.Match.SetActiveRoster(
+            ready.Home.Id,
+            new[] { new ActivePlayerSelection(fieldPlayer.Id, FloorballPosition.Forward) },
+            ready.HomeGoalie.Id);
+
+        FloorballTeam replacement = CreateTeam("Lynxes");
+        ready.Match.AssignTeam(FloorballPlayoffSlot.Home, replacement);
+
+        ready.Match.HomeTeamId.Should().Be(replacement.Id);
+        ready.Match.HomeActiveGoalieId.Should().BeNull();
+        ready.Match.ActivePlayers.Should().NotContain(player => player.TeamId == ready.Home.Id);
+        ready.Match.AwayActiveGoalieId.Should().Be(ready.AwayGoalie.Id);
     }
 }

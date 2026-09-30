@@ -56,7 +56,8 @@ public class FootballTeamSeasonStatistics : BaseEntity
         int goalsAgainst,
         FootballStandingRules standingRules,
         int yellowCards = 0,
-        int redCards = 0)
+        int redCards = 0,
+        bool decidedAfterRegulation = false)
     {
         ArgumentNullException.ThrowIfNull(standingRules);
         if (goalsFor < 0 || goalsAgainst < 0)
@@ -67,12 +68,12 @@ public class FootballTeamSeasonStatistics : BaseEntity
         {
             case FootballGameResult.Win:
                 Wins++;
-                Points += standingRules.WinPoints;
+                Points += standingRules.PointsFor(FootballGameResult.Win, decidedAfterRegulation);
                 if (isHomeGame) HomeWins++; else AwayWins++;
                 break;
             case FootballGameResult.Loss:
                 Losses++;
-                Points += standingRules.LossPoints;
+                Points += standingRules.PointsFor(FootballGameResult.Loss, decidedAfterRegulation);
                 if (isHomeGame) HomeLosses++; else AwayLosses++;
                 break;
             case FootballGameResult.Draw:
@@ -99,7 +100,8 @@ public class FootballTeamSeasonStatistics : BaseEntity
         int goalsAgainst,
         FootballStandingRules standingRules,
         int yellowCards = 0,
-        int redCards = 0)
+        int redCards = 0,
+        bool decidedAfterRegulation = false)
     {
         ArgumentNullException.ThrowIfNull(standingRules);
         if (GamesPlayed <= 0)
@@ -110,12 +112,12 @@ public class FootballTeamSeasonStatistics : BaseEntity
         {
             case FootballGameResult.Win:
                 Wins = Math.Max(0, Wins - 1);
-                Points = Math.Max(0, Points - standingRules.WinPoints);
+                Points = Math.Max(0, Points - standingRules.PointsFor(FootballGameResult.Win, decidedAfterRegulation));
                 if (isHomeGame) HomeWins = Math.Max(0, HomeWins - 1); else AwayWins = Math.Max(0, AwayWins - 1);
                 break;
             case FootballGameResult.Loss:
                 Losses = Math.Max(0, Losses - 1);
-                Points = Math.Max(0, Points - standingRules.LossPoints);
+                Points = Math.Max(0, Points - standingRules.PointsFor(FootballGameResult.Loss, decidedAfterRegulation));
                 if (isHomeGame) HomeLosses = Math.Max(0, HomeLosses - 1); else AwayLosses = Math.Max(0, AwayLosses - 1);
                 break;
             case FootballGameResult.Draw:

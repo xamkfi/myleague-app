@@ -15,6 +15,10 @@ export interface FloorballSeasonImportSeasonSection extends SeasonImportSeasonBa
   allowOvertime?: boolean;
   overtimeDurationMinutes?: number;
   allowShootout?: boolean;
+  winPoints?: number;
+  drawPoints?: number;
+  overtimeWinPoints?: number;
+  overtimeLossPoints?: number;
 }
 
 export interface FloorballSeasonImportPayload extends SeasonImportPayloadBase {

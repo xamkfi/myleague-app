@@ -26,7 +26,11 @@ export const FLOORBALL_SEASON_IMPORT_AI_PROMPT: string = `You are converting a f
     "periodDurationMinutes"?: number,                // typical: 15
     "allowOvertime"?: boolean,                       // typical: true
     "overtimeDurationMinutes"?: number,              // typical: 5
-    "allowShootout"?: boolean                        // typical: true
+    "allowShootout"?: boolean,                       // typical: true
+    "winPoints"?: number,                            // regulation win, typical: 3
+    "drawPoints"?: number,                           // typical: 1
+    "overtimeWinPoints"?: number,                    // overtime or shootout win, typical: 2
+    "overtimeLossPoints"?: number                    // overtime or shootout loss, typical: 1
   },
   "divisions": [                                     // at least one league division
     { "name": string, "level"?: number }             // level 1..10, default 1

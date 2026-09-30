@@ -21,6 +21,8 @@ export interface FootballSeasonImportSeasonSection extends SeasonImportSeasonBas
   winPoints?: number;
   drawPoints?: number;
   lossPoints?: number;
+  overtimeWinPoints?: number;
+  overtimeLossPoints?: number;
 }
 
 export interface FootballSeasonImportPayload extends SeasonImportPayloadBase {

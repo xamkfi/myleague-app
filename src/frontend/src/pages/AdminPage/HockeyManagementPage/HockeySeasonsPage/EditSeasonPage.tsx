@@ -9,11 +9,14 @@ import { divisionService } from '../../../../api/common/divisionService';
 import Pagination from '../../../../components/Pagination';
 import { SportsCategory } from '../../../../types/common/sports';
 import {
+  HOCKEY_STANDING_POINT_DEFAULTS,
   HOCKEY_TEAM_CATEGORIES,
   type HockeySeasonDto,
+  type HockeySeasonPointSettings,
   type HockeyTeamCategory,
   type HockeyTeamDto,
 } from '../../../../types/hockey/hockeyTypes';
+import HockeySeasonPointFields from './HockeySeasonPointFields';
 import { loadClubNameMap } from '../../../../utils/hockeyLookups';
 import SeasonContentBlocksEditor from '../../../../components/SeasonContentBlocksEditor/SeasonContentBlocksEditor';
 import {
@@ -59,6 +62,7 @@ function EditHockeySeasonPage() {
   const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDraft[]>([]);
   const [teamsAdvancing, setTeamsAdvancing] = useState(0);
   const [rankingCriteria, setRankingCriteria] = useState<string[]>([...DEFAULT_STANDING_SORT]);
+  const [points, setPoints] = useState<HockeySeasonPointSettings>({ ...HOCKEY_STANDING_POINT_DEFAULTS });
 
   const load = useCallback(async (): Promise<void> => {
     if (!competitionId) {
@@ -84,6 +88,14 @@ function EditHockeySeasonPage() {
     setCompetitionCategory(loaded.teamCategory ?? 'Adult');
     setTeamsAdvancing(loaded.teamsAdvancing ?? 0);
     setRankingCriteria(normalizeStandingCriteria(loaded.rankingCriteria));
+    setPoints({
+      regulationWinPoints: loaded.standingRules?.regulationWinPoints ?? HOCKEY_STANDING_POINT_DEFAULTS.regulationWinPoints,
+      overtimeWinPoints: loaded.standingRules?.overtimeWinPoints ?? HOCKEY_STANDING_POINT_DEFAULTS.overtimeWinPoints,
+      shootoutWinPoints: loaded.standingRules?.shootoutWinPoints ?? HOCKEY_STANDING_POINT_DEFAULTS.shootoutWinPoints,
+      overtimeLossPoints: loaded.standingRules?.overtimeLossPoints ?? HOCKEY_STANDING_POINT_DEFAULTS.overtimeLossPoints,
+      shootoutLossPoints: loaded.standingRules?.shootoutLossPoints ?? HOCKEY_STANDING_POINT_DEFAULTS.shootoutLossPoints,
+      tiePoints: loaded.standingRules?.tiePoints ?? HOCKEY_STANDING_POINT_DEFAULTS.tiePoints,
+    });
   }, [competitionId]);
 
   useEffect(() => {
@@ -218,6 +230,7 @@ function EditHockeySeasonPage() {
                       logoUrl: logoUrl || null,
                       teamsAdvancing,
                       rankingCriteria,
+                      ...points,
                     });
                     await hockeySeasonService.replaceContentBlocks(
                       season.id,
@@ -278,6 +291,12 @@ function EditHockeySeasonPage() {
                   </div>
                 </div>
               </div>
+              <HockeySeasonPointFields
+                idPrefix="edit-hockey-points"
+                values={points}
+                disabled={saving}
+                onChange={setPoints}
+              />
               <SeasonStandingsSettings
                 idPrefix="edit-hockey"
                 teamsAdvancing={teamsAdvancing}
