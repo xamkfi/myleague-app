@@ -63,4 +63,43 @@ public class RequestLoginCodeHandlerTests
             e => e.SendLoginCodeAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
+
+    [Fact]
+    public async Task Handle_WhenUserDoesNotExist_ReturnsFailureAndDoesNotSendCode()
+    {
+        Mock<IUserRepository> users = new();
+        Mock<IUnitOfWork> uow = new();
+        Mock<IEmailService> email = new();
+        Mock<ISiteSettingsProvider> provider = new();
+        Mock<ILogger<RequestLoginCodeHandler>> logger = new();
+
+        users.Setup(r => r.GetByEmailAsync("missing@mahl.fi")).ReturnsAsync((User?)null);
+
+        LoginCodeConfiguration loginCodeConfig = new()
+        {
+            CodeLength = 6,
+            AutoFillLoginCode = true,
+            ExpirationMinutes = 10
+        };
+
+        RequestLoginCodeHandler handler = new(
+            users.Object,
+            uow.Object,
+            email.Object,
+            provider.Object,
+            Options.Create(loginCodeConfig),
+            logger.Object);
+
+        Result<string?> result = await handler.Handle(
+            new RequestLoginCodeCommand("missing@mahl.fi"),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be(RequestLoginCodeHandler.EmailNotFoundMessage);
+        users.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
+        uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        email.Verify(
+            e => e.SendLoginCodeAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
 }

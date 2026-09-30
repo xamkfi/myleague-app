@@ -17,6 +17,11 @@ namespace Application.Features.Auth.Handlers;
 /// </summary>
 public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, Result<string?>>
 {
+    /// <summary>
+    /// Returned when the email does not match an account. The login page maps this text to a translated message.
+    /// </summary>
+    public const string EmailNotFoundMessage = "No account was found for this email address.";
+
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
@@ -45,9 +50,8 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
         Domain.Entities.Common.User? user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null)
         {
-            // Don't reveal whether the email exists -- return success regardless
             _logger.LogInformation("Login code requested for non-existent email: {Email}", request.Email);
-            return Result<string?>.Success(null);
+            return Result<string?>.Failure(EmailNotFoundMessage);
         }
 
         if (!user.IsActive && !_loginCodeConfig.AutoFillLoginCode)
