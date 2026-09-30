@@ -120,21 +120,23 @@ export default function Footer() {
             <span className="footer-credits__made-by">
               {t('footer.credits.madeBy', 'Sivuston tehnyt')}
             </span>
-            <a
-              className="footer-credits__logo-link"
-              href={XAMK_PROGRAMME_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src={xamkLogo}
-                alt={t('footer.credits.xamkLogo', 'XAMK, insinööri (AMK), ohjelmistotekniikka')}
-                className="footer-credits__logo"
-              />
-            </a>
-            <span className="footer-credits__programme">
-              {t('footer.credits.programme', 'Ohjelmistotekniikka')}
-            </span>
+            <div className="footer-credits__brand">
+              <a
+                className="footer-credits__logo-link"
+                href={XAMK_PROGRAMME_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src={xamkLogo}
+                  alt={t('footer.credits.xamkLogo', 'XAMK, insinööri (AMK), ohjelmistotekniikka')}
+                  className="footer-credits__logo"
+                />
+              </a>
+              <span className="footer-credits__programme">
+                {t('footer.credits.programme', 'Ohjelmistotekniikka')}
+              </span>
+            </div>
             <a
               className="footer-credits__source"
               href={SOURCE_REPO_URL}

@@ -213,6 +213,9 @@ public class HockeyMatchImporter
         string prefix)
     {
         OldMatch match = mi.Match;
+        if (!match.HasResult)
+            return SkipUndeterminedMatch(match.Id, prefix, home, away, "no result");
+
         DateTime scheduled = match.MatchDate ?? new DateTime(2000, 1, 1, 18, 0, 0);
         string? venue = match.PlaygroundId.HasValue ? _db.Playgrounds.GetValueOrDefault(match.PlaygroundId.Value) : null;
 
@@ -225,35 +228,23 @@ public class HockeyMatchImporter
 
         created = await _api.SetMatchTeamsAsync(created.Id, home.TeamId, away.TeamId) ?? created;
 
-        if (!match.HasResult)
-        {
-            _idMap.MapMatch(match.Id, created.Id);
-            Interlocked.Increment(ref _scheduledOnly);
-            Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: scheduled only");
-            return true;
-        }
-
         (List<GoalRec> goals, List<PenaltyRec> penalties, int ignoredEvents) =
             await BuildEventsAsync(mi, home, away, playerByTeamPlayerId, periodSeconds, regularPeriods);
 
         HockeyMatchDto? dressed = await ConfirmSidesAsync(created, mi, home, away, goals, penalties, playerByTeamPlayerId);
         if (dressed == null)
         {
-            _idMap.MapMatch(match.Id, created.Id);
-            Interlocked.Increment(ref _scheduledOnly);
             _log.LogWarning("NoRoster",
-                $"Match JL#{match.Id} left as Scheduled: could not confirm hockey rosters.");
-            Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: scheduled only (roster)");
-            return true;
+                $"Match JL#{match.Id} skipped: could not confirm hockey rosters.");
+            return await DiscardCreatedMatchAsync(match.Id, created.Id, prefix, home, away, "roster");
         }
 
         await _api.AddMatchOfficialAsync(dressed.Id, officialId);
 
         if (!await _api.StartMatchAsync(dressed.Id, scheduled))
         {
-            _idMap.MapMatch(match.Id, dressed.Id);
-            _log.LogError("StartHockeyMatch", new { match.Id, NewMatchId = dressed.Id }, "Could not start match; left as Scheduled.");
-            return false;
+            _log.LogError("StartHockeyMatch", new { match.Id, NewMatchId = dressed.Id }, "Could not start match; skipping it.");
+            return await DiscardCreatedMatchAsync(match.Id, dressed.Id, prefix, home, away, "could not start");
         }
 
         dressed = await _api.GetMatchByIdAsync(dressed.Id) ?? dressed;
@@ -276,6 +267,32 @@ public class HockeyMatchImporter
         Console.WriteLine(
             $"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name} " +
             $"{match.Team1Result}-{match.Team2Result}: {goalsRecorded} goals, {penaltiesRecorded} penalties{eventNote}");
+        return true;
+    }
+
+    private bool SkipUndeterminedMatch(int oldMatchId, string prefix, SideInfo home, SideInfo away, string reason)
+    {
+        _idMap.MapMatch(oldMatchId, Guid.Empty);
+        Interlocked.Increment(ref _skipped);
+        Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: skipped ({reason})");
+        return true;
+    }
+
+    private async Task<bool> DiscardCreatedMatchAsync(
+        int oldMatchId, Guid createdMatchId, string prefix, SideInfo home, SideInfo away, string reason)
+    {
+        bool deleted = await _api.DeleteMatchAsync(createdMatchId);
+        if (!deleted)
+        {
+            _idMap.MapMatch(oldMatchId, createdMatchId);
+            _log.LogError("DeleteHockeyMatch", new { oldMatchId, createdMatchId, reason },
+                "Could not delete the match, so it is still scheduled.");
+            return false;
+        }
+
+        _idMap.MapMatch(oldMatchId, Guid.Empty);
+        Interlocked.Increment(ref _skipped);
+        Console.WriteLine($"{prefix} {home.OldTeam.Name} - {away.OldTeam.Name}: skipped ({reason})");
         return true;
     }
 

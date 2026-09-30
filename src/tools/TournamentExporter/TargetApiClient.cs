@@ -159,24 +159,38 @@ internal sealed class TargetApiClient : IDisposable
         if (competitionId.HasValue)
             url += $"&competitionId={competitionId.Value}";
 
-        HttpResponseMessage resp = await _http.PostAsync(url, null);
-        if (resp.IsSuccessStatusCode)
+        (bool added, string body) = await PostRosterAsync(url);
+        if (added)
             return true;
 
-        string body = await resp.Content.ReadAsStringAsync();
-        if (body.Contains("already", StringComparison.OrdinalIgnoreCase)
-            || body.Contains("jersey", StringComparison.OrdinalIgnoreCase))
+        if (jerseyNumber.HasValue
+            && body.Contains("jersey", StringComparison.OrdinalIgnoreCase))
         {
-            return false;
+            string withoutJersey = $"api/floorballteam/{teamId}/players/{playerId}?position={Uri.EscapeDataString(position)}";
+            if (competitionId.HasValue)
+                withoutJersey += $"&competitionId={competitionId.Value}";
+            (added, body) = await PostRosterAsync(withoutJersey);
+            if (added)
+                return true;
         }
 
-        Console.WriteLine($"    WARN: add player failed ({(int)resp.StatusCode}): {TrimBody(body)}");
+        if (body.Contains("already", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        Console.WriteLine($"    WARN: add player failed: {TrimBody(body)}");
         return false;
+    }
+
+    private async Task<(bool Added, string Body)> PostRosterAsync(string url)
+    {
+        HttpResponseMessage resp = await _http.PostAsync(url, null);
+        string body = await resp.Content.ReadAsStringAsync();
+        return (resp.IsSuccessStatusCode, body);
     }
 
     public async Task<IdName?> FindTournamentAsync(string name)
     {
-        HttpResponseMessage resp = await _http.GetAsync("api/floorballtournament");
+        HttpResponseMessage resp = await _http.GetAsync("api/floorballtournament?includeDrafts=true");
         if (!resp.IsSuccessStatusCode)
             return null;
         ApiResponse<List<IdName>>? api = await resp.Content.ReadFromJsonAsync<ApiResponse<List<IdName>>>(_json);

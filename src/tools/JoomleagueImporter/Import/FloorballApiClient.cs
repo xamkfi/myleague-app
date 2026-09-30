@@ -233,6 +233,12 @@ public class FloorballApiClient : ImportApiClient
         return await OkOrAlready(resp, "AddTeamToSeasonDivision");
     }
 
+    public async Task<bool> DeleteMatchAsync(Guid matchId)
+    {
+        HttpResponseMessage resp = await Http.DeleteAsync($"api/floorball-matches/{matchId}");
+        return await OkOrWarn(resp, "Delete floorball match");
+    }
+
     public async Task<FloorballMatchDto?> CreateMatchAsync(
         Guid competitionId,
         Guid homeTeamId,

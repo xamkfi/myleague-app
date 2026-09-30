@@ -40,6 +40,14 @@ internal static class TournamentImporter
 
     private static async Task ImportOneAsync(TargetApiClient api, ExportPayload payload, bool replace, Guid refereeId)
     {
+        int recordedEvents = payload.Matches.Sum(match =>
+            (match.Goals?.Count ?? 0) + (match.Penalties?.Count ?? 0) + (match.Saves?.Count ?? 0));
+        if (recordedEvents == 0)
+        {
+            Console.WriteLine($"  Skipping '{payload.Tournament.Name}': no match events.");
+            return;
+        }
+
         string category = payload.Tournament.TeamCategory;
         if (!ExportBuilder.TryParseCategory(category, out string parsedCategory))
             parsedCategory = "Adult";
@@ -195,47 +203,36 @@ internal static class TournamentImporter
         if (team.Players is null || team.Players.Count == 0)
             return;
 
-        SourceTeam? snapshot = await api.GetTeamAsync(teamId);
-        HashSet<string> rosterNames = new(StringComparer.OrdinalIgnoreCase);
-        foreach (SourceRosterPlayer row in snapshot?.Roster ?? [])
-        {
-            if (!string.IsNullOrWhiteSpace(row.PlayerName))
-                rosterNames.Add(row.PlayerName.Trim());
-        }
-
-        int added = 0;
-        int skipped = 0;
+        int createdPersons = 0;
+        int enrolled = 0;
+        int alreadyEnrolled = 0;
         foreach (ExportPlayer player in team.Players)
         {
             string fullName = $"{player.FirstName} {player.LastName}".Trim();
-            if (rosterNames.Contains(fullName))
-            {
-                skipped++;
+            if (fullName.Length == 0)
                 continue;
-            }
 
             IdName? person = await api.FindPersonAsync(player.FirstName, player.LastName);
             if (person is null)
+            {
                 person = await api.CreatePersonAsync(player.FirstName, player.LastName);
+                createdPersons++;
+            }
 
             Guid? playerId = await api.FindPlayerByPersonAsync(person.Id, fullName);
             if (playerId is null)
                 playerId = await api.CreatePlayerAsync(person.Id);
 
             string position = string.IsNullOrWhiteSpace(player.Position) ? "Forward" : player.Position;
-            bool ok = await api.AddPlayerToTeamAsync(teamId, playerId.Value, position, player.JerseyNumber, competitionId);
-            if (ok)
-            {
-                rosterNames.Add(fullName);
-                added++;
-            }
+            bool added = await api.AddPlayerToTeamAsync(teamId, playerId.Value, position, player.JerseyNumber, competitionId);
+            if (added)
+                enrolled++;
             else
-            {
-                skipped++;
-            }
+                alreadyEnrolled++;
         }
 
-        Console.WriteLine($"    Roster {team.Name}: +{added} players ({skipped} skipped)");
+        Console.WriteLine(
+            $"    Roster {team.Name}: {enrolled} enrolled, {createdPersons} new persons, {alreadyEnrolled} already on this tournament");
     }
 
     private static async Task<bool> ReplayMatchEventsAsync(
@@ -498,7 +495,10 @@ internal static class TournamentImporter
         }
 
         if (roster.TryGetValue(trimmed, out Guid existing))
+        {
+            await api.AddPlayerToTeamAsync(teamId, existing, position, null, competitionId);
             return existing;
+        }
 
         string[] parts = trimmed.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         string firstName = parts[0];

@@ -314,6 +314,12 @@ public class HockeyApiClient : ImportApiClient
         return await OkOrAlready(resp, "ActivateHockeySeason");
     }
 
+    public async Task<bool> DeleteMatchAsync(Guid matchId)
+    {
+        HttpResponseMessage resp = await Http.DeleteAsync($"api/HockeyMatch/{matchId}");
+        return await OkOrWarn(resp, "Delete hockey match");
+    }
+
     public async Task<HockeyMatchDto?> CreateMatchAsync(
         Guid competitionId,
         Guid? competitionDivisionId,

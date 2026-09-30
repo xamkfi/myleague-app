@@ -1201,5 +1201,19 @@ public class HockeyMatchController : BaseApiController
             request.MatchActivePlayerId), cancellationToken);
         return HandleResult(result, "Roster player deactivated successfully", "Failed to deactivate roster player");
     }
+
+    /// <summary>
+    /// Deletes a match that is still scheduled. Started and finished matches are left in place.
+    /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [HttpDelete("{matchId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse>> DeleteMatch(Guid matchId, CancellationToken cancellationToken)
+    {
+        Result result = await _mediator.Send(new DeleteHockeyMatchCommand(matchId), cancellationToken);
+        return HandleVoidResult(result, "Match deleted successfully", "Failed to delete match");
+    }
 }
 

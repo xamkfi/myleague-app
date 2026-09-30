@@ -65,6 +65,28 @@ public class HockeyMatchRepository : IHockeyMatchRepository
             return 0;
         }
 
+        return await DeleteAllByIdsAsync(matchIds, cancellationToken);
+    }
+
+    /// <summary>
+    /// Deletes one match that is still scheduled. Started and finished matches are left in place.
+    /// </summary>
+    public async Task<bool> DeleteIfScheduledAsync(Guid matchId, CancellationToken cancellationToken = default)
+    {
+        bool scheduled = await _dbContext.HockeyMatches
+            .AsNoTracking()
+            .AnyAsync(
+                match => match.Id == matchId && match.Status == HockeyMatchStatus.Scheduled,
+                cancellationToken);
+        if (!scheduled)
+            return false;
+
+        int deleted = await DeleteAllByIdsAsync([matchId], cancellationToken);
+        return deleted > 0;
+    }
+
+    private async Task<int> DeleteAllByIdsAsync(List<Guid> matchIds, CancellationToken cancellationToken)
+    {
         // Match statistics restrict the match row. Drop them before the matches.
         await _dbContext.HockeyGoaliePeriodStatistics
             .Where(stat => matchIds.Contains(stat.MatchId))
@@ -80,7 +102,12 @@ public class HockeyMatchRepository : IHockeyMatchRepository
             .ExecuteDeleteAsync(cancellationToken);
 
         await _dbContext.HockeyMatches
-            .Where(match => match.CompetitionId == competitionId && match.NextMatchId != null)
+            .Where(match => matchIds.Contains(match.Id) && match.NextMatchId != null)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(match => match.NextMatchId, _ => (Guid?)null),
+                cancellationToken);
+        await _dbContext.HockeyMatches
+            .Where(match => match.NextMatchId != null && matchIds.Contains(match.NextMatchId.Value))
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(match => match.NextMatchId, _ => (Guid?)null),
                 cancellationToken);
@@ -127,10 +154,41 @@ public class HockeyMatchRepository : IHockeyMatchRepository
                 .ExecuteUpdateAsync(
                     setters => setters.SetProperty(matchTeam => matchTeam.ActiveGoalieMatchPlayerId, _ => (Guid?)null),
                     cancellationToken);
+
+            List<Guid> selectionIds = await _dbContext.HockeyMatchPlayerSelections
+                .Where(selection => matchTeamIds.Contains(selection.MatchTeamId))
+                .Select(selection => selection.Id)
+                .ToListAsync(cancellationToken);
+            if (selectionIds.Count > 0)
+            {
+                await _dbContext.HockeyMatchActivePlayers
+                    .Where(player => selectionIds.Contains(player.MatchPlayerSelectionId))
+                    .ExecuteDeleteAsync(cancellationToken);
+                await _dbContext.HockeyMatchPlayerSelections
+                    .Where(selection => selectionIds.Contains(selection.Id))
+                    .ExecuteDeleteAsync(cancellationToken);
+            }
+
+            await _dbContext.HockeyOnIceStates
+                .Where(state => matchTeamIds.Contains(state.MatchTeamId))
+                .ExecuteDeleteAsync(cancellationToken);
+            await _dbContext.HockeyMatchLines
+                .Where(line => matchTeamIds.Contains(line.MatchTeamId))
+                .ExecuteDeleteAsync(cancellationToken);
+            await _dbContext.HockeyMatchTeams
+                .Where(matchTeam => matchTeamIds.Contains(matchTeam.Id))
+                .ExecuteDeleteAsync(cancellationToken);
         }
 
+        await _dbContext.HockeyMatchOfficials
+            .Where(official => matchIds.Contains(official.MatchId))
+            .ExecuteDeleteAsync(cancellationToken);
+        await _dbContext.HockeyPeriodScores
+            .Where(score => matchIds.Contains(score.MatchId))
+            .ExecuteDeleteAsync(cancellationToken);
+
         return await _dbContext.HockeyMatches
-            .Where(match => match.CompetitionId == competitionId)
+            .Where(match => matchIds.Contains(match.Id))
             .ExecuteDeleteAsync(cancellationToken);
     }
 
