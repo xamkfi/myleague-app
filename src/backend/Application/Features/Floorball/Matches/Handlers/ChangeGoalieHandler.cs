@@ -96,10 +96,19 @@ public class ChangeGoalieHandler : IRequestHandler<ChangeFloorballGoalieCommand,
 
             return Result<FloorballMatchDto>.Success(matchDto);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
         {
-            _logger.LogError(ex, "Error occurred while changing goalie in match {MatchId}", request.MatchId);
-            return Result<FloorballMatchDto>.Failure("An error occurred while changing the goalie.");
+            throw;
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Goalie change rejected for match {MatchId}", request.MatchId);
+            return Result<FloorballMatchDto>.Failure(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Goalie change rejected for match {MatchId}", request.MatchId);
+            return Result<FloorballMatchDto>.Failure(ex.Message);
         }
     }
 }

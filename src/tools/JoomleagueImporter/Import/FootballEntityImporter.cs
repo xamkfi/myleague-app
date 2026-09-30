@@ -109,7 +109,7 @@ public class FootballEntityImporter
         Console.WriteLine("--- Teams & Rosters ---");
         (_, Dictionary<int, TeamCategory> categories) = TeamRosterUnion.Build(set);
 
-        Dictionary<Guid, FootballTeamSummaryDto> byId = [];
+        ConcurrentDictionary<Guid, FootballTeamSummaryDto> byId = [];
         ConcurrentDictionary<string, FootballTeamSummaryDto> byName = new(StringComparer.OrdinalIgnoreCase);
         foreach (FootballTeamSummaryDto existing in await _api.GetTeamsAsync())
         {
@@ -459,7 +459,8 @@ public class FootballEntityImporter
                 continue;
             if (!handled.Add(teamId))
                 continue;
-            bool ok = await _api.AddTeamToSeasonAsync(season.Id, teamId);
+            bool alreadyEnrolled = season.Teams.Any(existing => existing.Id == teamId);
+            bool ok = alreadyEnrolled || await _api.AddTeamToSeasonAsync(season.Id, teamId);
             await _api.AddTeamToSeasonDivisionAsync(
                 season.Id, division.Id, teamId, Domain.Enums.Common.RosterEnrollmentMode.Empty);
             await ImportProjectRosterAsync(pti, teamId, season.Id);

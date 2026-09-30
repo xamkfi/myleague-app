@@ -215,7 +215,7 @@ public abstract class FloorballCompetition : BaseEntity
         ArgumentNullException.ThrowIfNull(team);
         if (IsCompleted)
             throw new InvalidOperationException("Cannot add a team to a completed competition.");
-        if (_teams.Contains(team))
+        if (_teams.Any(existing => existing.Id == team.Id))
             return;
         _teams.Add(team);
     }

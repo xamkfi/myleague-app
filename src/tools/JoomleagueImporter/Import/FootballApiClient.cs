@@ -220,6 +220,12 @@ public class FootballApiClient : ImportApiClient
         return await OkOrAlready(resp, "AddTeamToFootballSeasonDivision");
     }
 
+    public async Task<bool> DeleteMatchAsync(Guid matchId)
+    {
+        HttpResponseMessage resp = await Http.DeleteAsync($"api/football-matches/{matchId}");
+        return await OkOrWarn(resp, "Delete football match");
+    }
+
     public async Task<FootballMatchDto?> CreateMatchAsync(
         Guid competitionId,
         Guid homeTeamId,
