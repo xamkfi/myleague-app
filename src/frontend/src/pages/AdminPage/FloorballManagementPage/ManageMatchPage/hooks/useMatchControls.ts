@@ -1,129 +1,92 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { floorballMatchService } from '../../../../../api/floorball/floorballMatchService';
 import { timerService } from '../../../../../api/common/timerService';
 import type { FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
+import type { ApiResponse } from '../../../../../types/common/apiResponseType';
+import { describeMatchError } from '../utils/describeMatchError';
 
 interface UseMatchControlsProps {
   currentMatch: FloorballMatchDto;
   setCurrentMatch: (match: FloorballMatchDto) => void;
   setError: (error: string | null) => void;
   setLoading: (loading: boolean) => void;
-  onGoLive?: (matchId: string, updatedMatch?: FloorballMatchDto) => void;
-  onCompleteLive?: (matchId: string, updatedMatch?: FloorballMatchDto) => void;
-  onReopen?: (matchId: string, updatedMatch?: FloorballMatchDto) => void;
+  /** Receives the updated match after any successful lifecycle transition. */
+  onMatchChanged?: (updatedMatch: FloorballMatchDto) => void;
 }
 
+/**
+ * Match lifecycle transitions (start / complete / reopen). Every action resolves to
+ * `true` on success and `false` after surfacing an error, so callers can chain follow-up
+ * work (e.g. starting the clock) only when the transition really happened.
+ */
 export const useMatchControls = ({
   currentMatch,
   setCurrentMatch,
   setError,
   setLoading,
-  onGoLive,
-  onCompleteLive,
-  onReopen,
+  onMatchChanged,
 }: UseMatchControlsProps) => {
+  const { t } = useTranslation();
 
-  /**
-   * Simple function that only starts the match
-   */
-  const handleStartMatch = useCallback(async () => {
+  const runTransition = useCallback(async (
+    request: () => Promise<ApiResponse<FloorballMatchDto>>,
+    fallbackMessage: string,
+    afterSuccess?: () => Promise<void>,
+  ): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await floorballMatchService.start(currentMatch.id);
-      
-      if (response.success && response.data) {
-        setCurrentMatch(response.data);
-        if (onGoLive) {
-          onGoLive(currentMatch.id, response.data);
-        }
-      } else {
-        throw new Error('Failed to start match');
+      const response: ApiResponse<FloorballMatchDto> = await request();
+      if (!response.success || !response.data) {
+        setError(response.message || fallbackMessage);
+        return false;
       }
-      
-      setError(null);
+      if (afterSuccess) await afterSuccess();
+      setCurrentMatch(response.data);
+      onMatchChanged?.(response.data);
+      return true;
     } catch (error) {
-      console.error('Error starting match:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start match');
+      setError(describeMatchError(error, fallbackMessage, t));
+      return false;
     } finally {
       setLoading(false);
     }
-  }, [currentMatch.id, setCurrentMatch, setError, setLoading, onGoLive]);
+  }, [setLoading, setError, setCurrentMatch, onMatchChanged, t]);
 
-  /**
-   * Handles completing the live match
-   */
-  const handleCompleteLive = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Use the event sourced endpoint to complete the match
-      const response = await floorballMatchService.complete(currentMatch.id);
-      
-      if (response.success && response.data) {
-        
-        // Destroy the timer for this match to stop background service queries
+  const handleStartMatch = useCallback((): Promise<boolean> =>
+    runTransition(
+      () => floorballMatchService.start(currentMatch.id),
+      t('floorball.matches.manage.errors.startMatch', 'Failed to start match'),
+    ), [runTransition, currentMatch.id, t]);
+
+  const handleCompleteLive = useCallback((): Promise<boolean> =>
+    runTransition(
+      () => floorballMatchService.complete(currentMatch.id),
+      t('floorball.matches.manage.errors.completeMatch', 'Failed to complete match'),
+      async () => {
+        // Stop the background timer for this match; not fatal if it is already gone.
         try {
           await timerService.destroyTimer(currentMatch.id);
         } catch (timerError) {
           console.warn('Failed to destroy timer for match:', currentMatch.id, timerError);
-          // Don't fail the match completion if timer destruction fails
         }
-        
-        // Update the current match with the response from the backend
-        setCurrentMatch(response.data);
-        
-        // Update the match with the response from the backend
-        // This will include the updated status from the event sourced system
-        if (onCompleteLive) {
-          onCompleteLive(currentMatch.id, response.data);
-        }
-        
-      } else {
-        setError('Failed to complete match');
-      }
-    } catch (error) {
-      console.error('Error completing match:', error);
-      setError(error instanceof Error ? error.message : 'Failed to complete match');
-    } finally {
-      setLoading(false);
-    }
-    // Don't close the modal - let it stay open with "Match Finished" status
-  }, [currentMatch.id, setCurrentMatch, setError, setLoading, onCompleteLive]);
+      },
+    ), [runTransition, currentMatch.id, t]);
 
   /**
-   * Reopens a previously completed match back to InProgress so the operator can correct
-   * accidentally recorded results or continue play. The backend reverses the per-match
-   * aggregates that were applied at completion time.
+   * Reopens a completed match back to InProgress so the operator can correct results or
+   * continue play. The backend reverses the per-match aggregates applied at completion.
    */
-  const handleReopenMatch = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await floorballMatchService.reopen(currentMatch.id);
-
-      if (response.success && response.data) {
-        setCurrentMatch(response.data);
-        if (onReopen) {
-          onReopen(currentMatch.id, response.data);
-        }
-      } else {
-        throw new Error('Failed to reopen match');
-      }
-    } catch (error) {
-      console.error('Error reopening match:', error);
-      setError(error instanceof Error ? error.message : 'Failed to reopen match');
-    } finally {
-      setLoading(false);
-    }
-  }, [currentMatch.id, setCurrentMatch, setError, setLoading, onReopen]);
+  const handleReopenMatch = useCallback((): Promise<boolean> =>
+    runTransition(
+      () => floorballMatchService.reopen(currentMatch.id),
+      t('floorball.matches.manage.errors.reopenMatch', 'Failed to reopen match'),
+    ), [runTransition, currentMatch.id, t]);
 
   return {
     handleStartMatch,
     handleCompleteLive,
     handleReopenMatch,
   };
-}; 
+};

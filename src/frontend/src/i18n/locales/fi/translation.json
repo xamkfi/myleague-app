@@ -1,4 +1,37 @@
 {
+  "matchTimer": {
+    "play": "Käynnistä kello",
+    "pause": "Pysäytä kello",
+    "reset": "Palauta erän alkuun",
+    "editTime": "Aseta aika",
+    "error": "Kellovirhe",
+    "oneMinute": "1 min",
+    "tenSeconds": "10 s",
+    "oneSecond": "1 s",
+    "back1min": "Taaksepäin 1 minuutti",
+    "back10s": "Taaksepäin 10 sekuntia",
+    "back1s": "Taaksepäin 1 sekunti",
+    "forward1s": "Eteenpäin 1 sekunti",
+    "forward10s": "Eteenpäin 10 sekuntia",
+    "forward1min": "Eteenpäin 1 minuutti",
+    "endPeriodTitle": "Päätä nykyinen erä",
+    "startPeriodTitle": "Aloita seuraava erä",
+    "finishMatchTitle": "Ottelu on ratkennut, eikä lisäeriä tarvita – merkitse ottelu päättyneeksi",
+    "setTime": {
+      "title": "Aseta kellonaika",
+      "currentTime": "Nykyinen aika",
+      "minutes": "Minuutit",
+      "seconds": "Sekunnit",
+      "saving": "Asetetaan...",
+      "submit": "Aseta aika",
+      "errors": {
+        "invalid": "Anna kelvolliset numerot",
+        "negative": "Aika ei voi olla negatiivinen",
+        "seconds": "Sekuntien tulee olla 0–59",
+        "minutes": "Minuuttien tulee olla 0–999"
+      }
+    }
+  },
   "seasonStandings": {
     "title": "Sarjataulukko",
     "teamsAdvancing": "Jatkoon pääsevät joukkueet",
@@ -1805,6 +1838,8 @@
         "confirm": "Kyllä, aktivoi uudelleen"
       },
       "manage": {
+        "title": "Ottelun hallinta",
+        "notFound": "Ottelua ei löytynyt.",
         "finished": "PÄÄTTYNYT",
         "reopenMatch": "Avaa ottelu",
         "reopenMatchTitle": "Avaa ottelu uudelleen muokattavaksi",
@@ -1814,11 +1849,188 @@
         "selectReferee": "VALITSE TUOMARI",
         "saving": "Tallennetaan...",
         "noOfficials": "Ei valittuja tuomareita.",
+        "startMatch": "Aloita ottelu",
+        "selectGoalies": "Valitse maalivahdit aloittaaksesi",
+        "matchCompleted": "Ottelu päättynyt",
+        "startDisabled": {
+          "assignTeams": "Aseta molemmat joukkueet ennen aloitusta",
+          "selectGoalies": "Valitse maalivahdit aloittaaksesi"
+        },
+        "header": {
+          "vs": "vs",
+          "live": "LIVE",
+          "swapSides": "Vaihda puolia",
+          "swapSidesTitle": "Vaihda joukkueiden puolet näkymässä",
+          "finishMatch": "Päätä ottelu",
+          "finishMatchTitle": "Lopeta live-seuranta ja merkitse ottelu päättyneeksi",
+          "closeTitle": "Takaisin ottelulistaan"
+        },
+        "scoreboard": {
+          "home": "Koti",
+          "away": "Vieras"
+        },
+        "intermission": "Erätauko · seuraavaksi {{next}}",
+        "periodStatus": {
+          "completed": "Pelattu",
+          "started": "Käynnissä",
+          "upcoming": "Tulossa"
+        },
+        "periodControl": {
+          "ending": "Päätetään...",
+          "starting": "Aloitetaan...",
+          "endPeriod": "Päätä erä",
+          "endOvertime": "Päätä jatkoaika",
+          "endShootout": "Päätä rankkarit",
+          "startPeriod": "Aloita {{number}}. erä",
+          "startOvertime": "Aloita jatkoaika",
+          "startShootout": "Aloita rankkarit",
+          "finishMatch": "Päätä ottelu",
+          "finishMatchTitle": "Ottelu on ratkennut, eikä lisäeriä tarvita – merkitse ottelu päättyneeksi"
+        },
+        "quickActions": {
+          "title": "Kirjaa tapahtuma",
+          "recordSave": "Torjunta",
+          "recordGoal": "Maali",
+          "recordPenalty": "Rangaistus",
+          "selectGoalieToEnable": "Valitse maalivahti käyttöön",
+          "selectGoalieForBulk": "Valitse maalivahti, jotta voit kirjata useita torjuntoja",
+          "bulkSaves": "Kirjaa useita torjuntoja",
+          "bulkSavesFor": "Kirjaa useita torjuntoja: {{team}}",
+          "team": "joukkue"
+        },
+        "events": {
+          "title": "Ottelutapahtumat",
+          "empty": "Ei vielä kirjattuja tapahtumia",
+          "selectAll": "Valitse kaikki",
+          "selectAllEvents": "Valitse kaikki tapahtumat",
+          "clearSelection": "Tyhjennä valinta",
+          "selectEvent": "Valitse {{type}} ajassa {{time}}",
+          "selectGroup": "Valitse {{count}} torjuntaa ajassa {{time}}",
+          "deleteEvent": "Poista tapahtuma",
+          "deleteGroup": "Poista kaikki ryhmän {{count}} torjuntaa",
+          "savesRecordedTogether": "{{count}} torjuntaa kirjattu yhdessä",
+          "assist": "Syöttö: {{name}}",
+          "teamPenalty": "Joukkuerangaistus",
+          "type": {
+            "goal": "Maali",
+            "penalty": "Rangaistus",
+            "save": "Torjunta"
+          }
+        },
+        "confirmEndPeriod": {
+          "title": "Päätetäänkö erä ennen aikojaan?",
+          "titleOvertime": "Päätetäänkö jatkoaika ennen aikojaan?",
+          "message": "Haluatko varmasti päättää {{period}}. erän ajassa {{time}}?",
+          "messageOvertime": "Haluatko varmasti päättää jatkoajan ajassa {{time}}?",
+          "confirm": "Päätä erä",
+          "confirmOvertime": "Päätä jatkoaika"
+        },
+        "confirmEndMatch": {
+          "title": "Päätetäänkö ottelu?",
+          "message": "Haluatko varmasti päättää tämän ottelun?",
+          "messageShootout": "Haluatko varmasti päättää tämän ottelun? Rankkarikisa päättyy samalla.",
+          "warning": "Ottelun tulos vahvistetaan. Voit tarvittaessa avata ottelun myöhemmin uudelleen.",
+          "confirm": "Päätä ottelu"
+        },
         "confirmReopen": {
           "title": "Avaa ottelu muokattavaksi",
           "message": "Haluatko varmasti avata tämän ottelun uudelleen? Ottelu siirretään takaisin Käynnissä-tilaan, jolloin voit muokata ottelutapahtumia tai jatkaa peliä (esim. jos ottelu päättyi vahingossa).",
           "warning": "Ottelukohtaiset joukkue-, pelaaja- ja maalivahtitilastot perutaan ja päivitetään uudelleen, kun ottelu päätetään seuraavan kerran.",
           "confirm": "Kyllä, avaa ottelu"
+        },
+        "confirmDelete": {
+          "title": "Poista tapahtuma",
+          "titleMany": "Poista {{count}} ottelutapahtumaa",
+          "titleGroup": "Poista {{count}} {{type}}",
+          "messageSingle": "Poistetaanko {{type}} ({{team}}) ajassa {{time}}?",
+          "messageGroup": "Poistetaanko kaikki {{count}} {{type}} ({{team}}{{player}}) ajassa {{time}}?",
+          "messageMany": "Poistetaanko {{count}} valittua ottelutapahtumaa ({{rows}} riviä)?",
+          "confirm": "Poista",
+          "confirmCount": "Poista {{count}}",
+          "type": {
+            "goal_one": "maali",
+            "goal_other": "maalia",
+            "penalty_one": "rangaistus",
+            "penalty_other": "rangaistusta",
+            "save_one": "torjunta",
+            "save_other": "torjuntaa"
+          }
+        },
+        "regulationDecided": "Ottelu on ratkennut · päätä ottelu",
+        "timeMinutesAria": "Minuutit",
+        "timeSecondsAria": "Sekunnit",
+        "goalTypes": {
+          "Regular": "Tavallinen maali",
+          "PowerPlay": "Ylivoima (YV)",
+          "ShortHanded": "Alivoima (AV)",
+          "EmptyNet": "Tyhjä maali (TM)",
+          "PenaltyShot": "Rangaistuslaukaus (RL)",
+          "OwnGoal": "Oma maali (OM)",
+          "Overtime": "Jatkoaika (JA)",
+          "Shootout": "Voittolaukaus (VL)"
+        },
+        "goalForm": {
+          "title": "Kirjaa maali: {{team}}",
+          "scoringPlayer": "Maalintekijä",
+          "selectPlayer": "Valitse pelaaja",
+          "assistingPlayer": "Syöttäjä",
+          "optional": "(valinnainen)",
+          "noAssist": "Ei syöttäjää",
+          "goalType": "Maalin tyyppi",
+          "time": "Aika",
+          "missingJersey": "Valitulla pelaajalla ei ole pelinumeroa. Lisää pelinumero ennen maalin kirjaamista.",
+          "missingJerseyShort": "Pelinumero puuttuu",
+          "recording": "Kirjataan…",
+          "submit": "Kirjaa maali"
+        },
+        "penaltyForm": {
+          "title": "Kirjaa rangaistus: {{team}}",
+          "receivingPlayer": "Rangaistu pelaaja",
+          "selectPlayer": "Valitse pelaaja",
+          "severity": "Rangaistuksen vakavuus",
+          "selectSeverity": "Valitse vakavuus",
+          "severityMinor": "Pieni rangaistus",
+          "severityMajor": "Iso rangaistus",
+          "duration": "Kesto",
+          "selectDuration": "Valitse kesto",
+          "duration2": "2 minuuttia (pieni)",
+          "duration5": "5 minuuttia (iso)",
+          "duration10": "10 minuuttia (käytösrangaistus)",
+          "duration20": "20 minuuttia (pelirangaistus)",
+          "time": "Aika",
+          "description": "Kuvaus",
+          "descriptionPlaceholder": "Esim. mailan pito, lyönti, epäurheilijamainen käytös…",
+          "missingJersey": "Valitulla pelaajalla ei ole pelinumeroa. Lisää pelinumero ennen rangaistuksen kirjaamista.",
+          "missingJerseyShort": "Pelinumero puuttuu",
+          "recording": "Kirjataan…",
+          "submit": "Kirjaa rangaistus"
+        },
+        "errors": {
+          "connection": "Palvelimeen ei saatu yhteyttä. Tarkista verkkoyhteys ja yritä uudelleen.",
+          "matchIdMissing": "Ottelun tunniste puuttuu",
+          "fetchMatch": "Ottelun tietojen lataus epäonnistui",
+          "startMatch": "Ottelun aloittaminen epäonnistui",
+          "startTimer": "Ottelu aloitettiin, mutta kelloa ei saatu käyntiin",
+          "completeMatch": "Ottelun päättäminen epäonnistui",
+          "reopenMatch": "Ottelun avaaminen epäonnistui",
+          "endPeriod": "Erän päättäminen epäonnistui",
+          "startPeriod": "Erän aloittaminen epäonnistui",
+          "skipToShootout": "Rankkareihin siirtyminen epäonnistui",
+          "recordSave": "Torjunnan kirjaaminen epäonnistui",
+          "recordSaves": "Torjuntojen kirjaaminen epäonnistui",
+          "recordGoal": "Maalin kirjaaminen epäonnistui",
+          "recordPenalty": "Rangaistuksen kirjaaminen epäonnistui",
+          "selectTeamAndPlayer": "Valitse joukkue ja pelaaja",
+          "selectTeamAndPenaltyType": "Valitse joukkue ja rangaistuksen tyyppi",
+          "goalThrottle": "Odota hetki ennen seuraavan maalin kirjaamista.",
+          "penaltyThrottle": "Odota hetki ennen seuraavan rangaistuksen kirjaamista.",
+          "cannotDetermineTeam": "Joukkuetta ei voitu tunnistaa – avaa ottelu uudelleen.",
+          "missingEventId": "Poisto ei onnistu: tapahtuman tunniste puuttuu",
+          "noEventsSelected": "Poisto ei onnistu: tapahtumia ei ole valittu",
+          "deleteEvent": "Tapahtuman poistaminen epäonnistui",
+          "refereeDuplicate": "Tuomari on jo valittu toiseen paikkaan",
+          "setOfficial": "Tuomarin asettaminen epäonnistui",
+          "removeOfficial": "Tuomarin poistaminen epäonnistui"
         }
       },
       "cancelling": "Peruutetaan...",
@@ -1966,6 +2178,16 @@
     "back": "Takaisin",
     "backTo": "Takaisin",
     "loading": "Ladataan...",
+    "cannotBeUndone": "Tätä toimintoa ei voi perua.",
+    "bulk": {
+      "selected_one": "{{count}} valittu",
+      "selected_other": "{{count}} valittu",
+      "selectAll": "Valitse kaikki ({{count}})",
+      "clear": "Tyhjennä",
+      "actions": "Toiminnot",
+      "delete_one": "Poista ({{count}})",
+      "delete_other": "Poista ({{count}})"
+    },
     "edit": "Muokkaa",
     "viewPublic": "Näytä julkinen sivu",
     "delete": "Poista",
@@ -3101,7 +3323,27 @@
         "removeReferee": "Poista tuomari",
         "selectReferee": "VALITSE TUOMARI",
         "saving": "Tallennetaan...",
-        "noOfficials": "Ei valittuja tuomareita."
+        "noOfficials": "Ei valittuja tuomareita.",
+        "title": "Ottelun hallinta",
+        "notFound": "Ottelua ei löytynyt.",
+        "live": "LIVE",
+        "swapSides": "Vaihda puolet",
+        "swapSidesTitle": "Vaihda joukkueiden visuaaliset puolet",
+        "finishMatch": "Päätä ottelu",
+        "finishMatchTitle": "Lopeta live-seuranta ja merkitse ottelu päättyneeksi",
+        "closeTitle": "Sulje ottelun hallinta",
+        "home": "Koti",
+        "away": "Vieras",
+        "tbd": "Avoin",
+        "regulationDecided": "Ottelu on ratkennut · päätä ottelu",
+        "errors": {
+          "matchIdMissing": "Ottelun tunniste puuttuu",
+          "loadMatch": "Ottelun tietojen lataus epäonnistui.",
+          "loadExtras": "Ottelun lisätietojen lataus epäonnistui",
+          "operationFailed": "Toiminto epäonnistui",
+          "startShootout": "Voittomaalikilpailun aloitus epäonnistui",
+          "assignTeams": "Joukkueiden asettaminen epäonnistui"
+        }
       },
       "public": "Julkinen",
       "confirmCancel": "Perutaanko tämä ottelu?",

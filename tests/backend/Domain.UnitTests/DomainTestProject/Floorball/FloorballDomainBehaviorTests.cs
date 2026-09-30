@@ -200,6 +200,22 @@ public class FloorballDomainBehaviorTests
     }
 
     [Fact]
+    public void Complete_WithOpenShootoutPeriod_ClosesAllPeriods()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        FloorballMatch match = ready.Match;
+        match.Start();
+        match.RecordShootout();
+
+        match.PeriodScores.Should().Contain(ps => ps.PeriodNumber == match.ShootoutPeriodNumber && !ps.IsCompleted);
+
+        match.Complete();
+
+        match.Status.Should().Be(FloorballMatchStatus.Completed);
+        match.PeriodScores.Should().OnlyContain(ps => ps.IsCompleted);
+    }
+
+    [Fact]
     public void RecordGoal_WhenNotInProgress_Throws()
     {
         FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();

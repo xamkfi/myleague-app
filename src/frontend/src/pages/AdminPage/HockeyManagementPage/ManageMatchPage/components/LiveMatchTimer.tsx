@@ -22,6 +22,8 @@ interface LiveMatchTimerProps {
   onPeriodControlClick: () => void;
   canEndPeriod: () => boolean;
   getPeriodControlButtonText: () => string;
+  /** Resolves whether the control ends a period, starts the next one, or finishes the match. */
+  getPeriodControlAction: () => 'end' | 'start' | 'finish' | null;
   keybindsEnabled: boolean;
   isStartMatchDisabled: boolean;
   overtimePeriodNumber: number;
@@ -50,6 +52,7 @@ const LiveMatchTimer = ({
   onPeriodControlClick,
   canEndPeriod,
   getPeriodControlButtonText,
+  getPeriodControlAction,
   keybindsEnabled,
   isStartMatchDisabled,
   overtimePeriodNumber,
@@ -79,18 +82,24 @@ const LiveMatchTimer = ({
     }
   }, [shootoutOpen, currentPeriod, shootoutPeriodNumber, setCurrentPeriod]);
 
-  const onTimerUpdate = (update: TimerUpdate): void => {
+  const onTimerUpdate = React.useCallback((update: TimerUpdate): void => {
     if (shootoutOpen && update.PeriodNumber !== shootoutPeriodNumber) {
       handleTimerUpdate({ ...update, PeriodNumber: shootoutPeriodNumber });
       return;
     }
     handleTimerUpdate(update);
-  };
+  }, [shootoutOpen, shootoutPeriodNumber, handleTimerUpdate]);
 
-  const getChipStatus = (p: number) => {
+  type ChipStatus = 'completed' | 'started' | 'upcoming';
+  const getChipStatus = (p: number): ChipStatus => {
     if (endedPeriods.has(p)) return 'completed';
     if (startedPeriods.has(p)) return 'started';
     return 'upcoming';
+  };
+  const chipStatusLabel: Record<ChipStatus, string> = {
+    completed: t('hockey.matches.periodEnded', 'ended'),
+    started: t('hockey.matches.periodStarted', 'in progress'),
+    upcoming: t('hockey.matches.periodUpcoming', 'upcoming'),
   };
 
   const numberOfPeriods = DEFAULT_HOCKEY_MATCH_RULES.numberOfPeriods;
@@ -136,40 +145,44 @@ const LiveMatchTimer = ({
     periodsToShow.push(shootoutPeriodNumber);
   }
 
-  // Register timer callbacks when they're provided
-  const handleGetCurrentTime = (getTime: () => string) => {
+  // Stable registration callbacks so the memoized timer does not re-render every tick.
+  const handleGetCurrentTime = React.useCallback((getTime: () => string) => {
     registerCallback('getCurrentTime', getTime);
-  };
+  }, [registerCallback]);
 
-  const handleGetCurrentElapsedSeconds = (getSeconds: () => number) => {
+  const handleGetCurrentElapsedSeconds = React.useCallback((getSeconds: () => number) => {
     registerCallback('getCurrentElapsedSeconds', getSeconds);
-  };
+  }, [registerCallback]);
 
-  const handleGetToggleFunction = (toggleFn: () => Promise<void>) => {
+  const handleGetToggleFunction = React.useCallback((toggleFn: () => Promise<void>) => {
     registerCallback('toggle', toggleFn);
-  };
+  }, [registerCallback]);
 
-  const handleGetResetFunction = (resetFn: () => void) => {
+  const handleGetResetFunction = React.useCallback((resetFn: () => Promise<void>) => {
     registerCallback('reset', resetFn);
-  };
+  }, [registerCallback]);
 
-  const handleGetStartFunction = (startFn: () => Promise<void>) => {
+  const handleGetStartFunction = React.useCallback((startFn: () => Promise<void>) => {
     registerCallback('start', startFn);
-  };
+  }, [registerCallback]);
 
-  const handleGetStopFunction = (stopFn: () => void) => {
+  const handleGetStopFunction = React.useCallback((stopFn: () => Promise<void>) => {
     registerCallback('stop', stopFn);
-  };
+  }, [registerCallback]);
 
   return (
       <div className="clock-card">
         <div className="clock-inner">
           <div className="period-row">
-          {periodsToShow.map((p) => (
-            <div key={p} className={`period-chip ${getChipStatus(p)} ${p > numberOfPeriods ? 'period-chip--extra' : ''}`}>
-                {`${periodLabels[p] ?? `Period ${p}`}: ${getChipStatus(p)}`}
+          {periodsToShow.map((p) => {
+            const status: ChipStatus = getChipStatus(p);
+            const label: string = periodLabels[p] ?? t('hockey.matches.periodN', 'Period {{number}}', { number: p });
+            return (
+              <div key={p} className={`period-chip ${status} ${p > numberOfPeriods ? 'period-chip--extra' : ''}`}>
+                {`${label}: ${chipStatusLabel[status]}`}
               </div>
-            ))}
+            );
+          })}
           </div>
           {showSkipToShootout && onSkipToShootout && isHockeyMatchLive(currentMatch.status) && (
             <div className="period-row extra-actions">
@@ -230,6 +243,7 @@ const LiveMatchTimer = ({
                       onPeriodControlClick={onPeriodControlClick}
                       canEndPeriod={canEndPeriod}
                       getPeriodControlButtonText={getPeriodControlButtonText}
+                      getPeriodControlAction={getPeriodControlAction}
                       periodLoading={periodLoading}
                       nextPeriodToStart={nextPeriodToStart}
                     />

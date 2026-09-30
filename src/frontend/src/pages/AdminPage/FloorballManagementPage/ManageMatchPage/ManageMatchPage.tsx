@@ -3,12 +3,14 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { floorballMatchEventService, type RecordSaveEventRequest } from '../../../../api/floorball/floorballMatchEventService';
 import { floorballMatchService } from '../../../../api/floorball/floorballMatchService';
-import { timerService } from '../../../../api/common/timerService';
+import { floorballRefereeService } from '../../../../api/floorball/floorballRefereeService';
 import type { FloorballMatchDto } from '../../../../types/floorball/floorballTypes';
-import { floorballPeriodEventFlags, nextOpenFloorballPeriod } from '../../../../utils/floorballPeriod';
+import { floorballPeriodEventFlags, floorballPeriodStartSeconds } from '../../../../utils/floorballPeriod';
+import { formatEventTimeMmSs } from '../../../../utils/matchEventFormat';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
+import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import AssignTeamsDialog from '../../../../components/AssignTeamsDialog/AssignTeamsDialog';
 
-// Components
 import LiveMatchModalHeader from './components/LiveMatchModalHeader';
 import LiveMatchScoreboard from './components/LiveMatchScoreboard';
 import LiveMatchTimer from './components/LiveMatchTimer';
@@ -21,15 +23,9 @@ import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from './components/OfficialsSelectorSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
 import BulkSaveDialog, { type BulkSavePayload } from './components/BulkSaveDialog';
-import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
-import AssignTeamsDialog from '../../../../components/AssignTeamsDialog/AssignTeamsDialog';
 import type { EventGroup, ProcessedEvent } from './components/types';
-import { floorballRefereeService } from '../../../../api/floorball/floorballRefereeService';
 
-// Context
 import { MatchTimerProvider, useMatchTimerContext } from './context';
-
-// Hooks
 import {
   useMatchData,
   useSignalR,
@@ -38,8 +34,21 @@ import {
   useFormState,
   useMatchControls,
 } from './hooks';
+import { describeMatchError } from './utils/describeMatchError';
 
 import './ManageMatchPage.scss';
+
+type TeamSide = 'home' | 'away';
+
+interface OfficialOption {
+  id: string;
+  name: string;
+}
+
+interface BulkSaveTarget {
+  team: TeamSide;
+  goalieId: string;
+}
 
 interface ManageMatchPageContentProps {
   match: FloorballMatchDto;
@@ -52,34 +61,46 @@ interface ManageMatchPageContentProps {
   onClose: () => void;
 }
 
+/** Minimum gap between two quick-save keypresses for the same goalie. */
+const SAVE_THROTTLE_MS: number = 250;
+
 /**
- * Main content component that uses the timer context
+ * Live desk for one match. Owns page-level UI state (dialogs, side swap, officials) and wires
+ * the feature hooks together; the timer itself lives in {@link MatchTimerProvider}.
  */
 const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageContentProps) => {
-  const timerContext = useMatchTimerContext();
+  const { t } = useTranslation();
+  const { currentPeriod, setCurrentPeriod, currentPeriodStartSeconds, setPeriodStartTime, timer } = useMatchTimerContext();
   const lastSaveRef = useRef<Record<string, number>>({});
-  
+
   // Goalie and official state
   const [homeGoalieId, setHomeGoalieId] = useState<string>(match.homeActiveGoalieId || '');
   const [awayGoalieId, setAwayGoalieId] = useState<string>(match.awayActiveGoalieId || '');
   const [selectedOfficials, setSelectedOfficials] = useState<string[]>(match.officials || []);
-  const [officialOptions, setOfficialOptions] = useState<Array<{ id: string; name: string }>>([]);
-  const [officialsSaving, setOfficialsSaving] = useState(false);
-  
-  // UI state
-  const [showEndMatchConfirmation, setShowEndMatchConfirmation] = useState(false);
-  const [showReopenConfirmation, setShowReopenConfirmation] = useState(false);
-  const [saveLoading, setSaveLoading] = useState(false);
+  const [officialOptions, setOfficialOptions] = useState<OfficialOption[]>([]);
+  const [officialsSaving, setOfficialsSaving] = useState<boolean>(false);
+
+  // Dialog state
+  const [showEndMatchConfirmation, setShowEndMatchConfirmation] = useState<boolean>(false);
+  const [showReopenConfirmation, setShowReopenConfirmation] = useState<boolean>(false);
+  /** Match clock captured when the end-period confirmation was opened. */
+  const [endPeriodTimeSnapshot, setEndPeriodTimeSnapshot] = useState<string>('');
+  const [saveLoading, setSaveLoading] = useState<boolean>(false);
   // Holds the groups the user picked for deletion (always non-empty when set). For a
   // single-row delete the array contains exactly one group; for multi-select bulk deletes
   // it carries every selected group, and the delete handler walks every underlying event
   // in sequence so a partial failure leaves the rest of the batch consistent.
   const [groupsToDelete, setGroupsToDelete] = useState<EventGroup[] | null>(null);
-  const [deleteEventLoading, setDeleteEventLoading] = useState(false);
-  const [shouldStartTimer, setShouldStartTimer] = useState(false);
+  const [deleteEventLoading, setDeleteEventLoading] = useState<boolean>(false);
+  const [isLineupDialogOpen, setIsLineupDialogOpen] = useState<boolean>(false);
+  // Bulk save dialog state. `null` means "closed"; an object means the dialog is open for the
+  // captured side + goalie.
+  const [bulkSaveTarget, setBulkSaveTarget] = useState<BulkSaveTarget | null>(null);
+  const [bulkSaveLoading, setBulkSaveLoading] = useState<boolean>(false);
+  const [bulkSaveError, setBulkSaveError] = useState<string | null>(null);
+
   // Persist the visual side swap per-match in localStorage so that leaving the page and
-  // returning preserves the operator's chosen orientation. Without this, the state lived
-  // only in React component state and was lost the moment the page unmounted.
+  // returning preserves the operator's chosen orientation.
   const sidesStorageKey: string = `manage-match-sides-swapped:${match.id}`;
   const [isSidesSwapped, setIsSidesSwapped] = useState<boolean>(() => {
     try {
@@ -95,13 +116,6 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
       /* noop – localStorage may be unavailable (private mode, quota, etc.) */
     }
   }, [sidesStorageKey, isSidesSwapped]);
-  const [isLineupDialogOpen, setIsLineupDialogOpen] = useState(false);
-  // Bulk save dialog state. `null` means "closed"; an object means the dialog is open for the
-  // captured side + goalie. Using a single state object instead of separate `isOpen` + `side`
-  // flags avoids inconsistent transitions when the user reopens the dialog after a submit.
-  const [bulkSaveTarget, setBulkSaveTarget] = useState<{ team: 'home' | 'away'; goalieId: string } | null>(null);
-  const [bulkSaveLoading, setBulkSaveLoading] = useState(false);
-  const [bulkSaveError, setBulkSaveError] = useState<string | null>(null);
 
   // Sync goalie state with match prop
   useEffect(() => {
@@ -110,65 +124,47 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     setSelectedOfficials(match.officials || []);
   }, [match.homeActiveGoalieId, match.awayActiveGoalieId, match.officials]);
 
-  // Custom hooks
-  const matchData = useMatchData({
-    match,
-    onMatchUpdated: setMatch,
-    onStateUpdate: () => {},
-  });
+  // Feature hooks
+  const matchData = useMatchData({ match, onMatchUpdated: setMatch });
+  const { currentMatch, setCurrentMatch, setError, loadCurrentMatchStatus } = matchData;
 
   const matchControls = useMatchControls({
-    currentMatch: matchData.currentMatch,
-    setCurrentMatch: matchData.setCurrentMatch,
-    setError: matchData.setError,
+    currentMatch,
+    setCurrentMatch,
+    setError,
     setLoading: matchData.setLoading,
-    onGoLive: (_matchId: string, updatedMatch?: FloorballMatchDto) => {
-      if (updatedMatch) setMatch(updatedMatch);
-    },
-    onCompleteLive: (_matchId: string, updatedMatch?: FloorballMatchDto) => {
-      if (updatedMatch) setMatch(updatedMatch);
-    },
-    onReopen: (_matchId: string, updatedMatch?: FloorballMatchDto) => {
-      if (updatedMatch) setMatch(updatedMatch);
-    },
+    onMatchChanged: setMatch,
   });
 
   const matchEvents = useMatchEvents({
-    match,
-    currentMatch: matchData.currentMatch,
+    matchId: match.id,
+    currentMatch,
     homeTeam: matchData.homeTeam,
     awayTeam: matchData.awayTeam,
     getPlayerNameById: matchData.getPlayerNameById,
-    loadCurrentMatchStatus: matchData.loadCurrentMatchStatus,
+    loadCurrentMatchStatus,
   });
+  const { loadMatchEvents } = matchEvents;
 
   const periodManagement = usePeriodManagement({
-    currentMatch: matchData.currentMatch,
-    currentPeriod: timerContext.currentPeriod,
-    setCurrentPeriod: timerContext.setCurrentPeriod,
-    loadCurrentMatchStatus: matchData.loadCurrentMatchStatus,
+    currentMatch,
+    currentPeriod,
+    setCurrentPeriod,
+    timerPeriodNumber: timer.periodNumber,
+    loadCurrentMatchStatus,
   });
-  const {
-    startedPeriods,
-    endedPeriods,
-    nextPeriodToStart,
-    setStartedPeriods,
-    setEndedPeriods,
-    setNextPeriodToStart
-  } = periodManagement;
 
   const forms = useFormState({
-    currentMatch: matchData.currentMatch,
-    clock: { period: timerContext.currentPeriod, minutes: 0, seconds: 0, isRunning: timerContext.isRunning },
-    currentTimerElapsedTime: timerContext.elapsedTimeSeconds,
-    getCurrentElapsedSeconds: timerContext.callbacks.getCurrentElapsedSeconds,
-    loadMatchEvents: matchEvents.loadMatchEvents,
-    loadCurrentMatchStatus: matchData.loadCurrentMatchStatus,
-    setError: matchData.setError,
+    currentMatch,
+    currentPeriod,
+    getCurrentElapsedSeconds: timer.getCurrentElapsedSeconds,
+    loadMatchEvents,
+    loadCurrentMatchStatus,
+    setError,
   });
 
   const signalR = useSignalR({
-    matchId: match?.id,
+    matchId: match.id,
     onPeriodStarted: periodManagement.handlePeriodStarted,
     onGoalScored: matchEvents.handleGoalScored,
     onPenaltyAssigned: matchEvents.handlePenaltyAssigned,
@@ -176,305 +172,165 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   });
 
   // Derived values
-  const homeTeamId = matchData.homeTeam?.id ?? '';
-  const awayTeamId = matchData.awayTeam?.id ?? '';
+  const homeTeamId: string = matchData.homeTeam?.id ?? '';
+  const awayTeamId: string = matchData.awayTeam?.id ?? '';
+  const matchRules = periodManagement.matchRules;
+  const isMatchInProgress: boolean = currentMatch.status === 'InProgress';
+  const isMatchClosed: boolean = currentMatch.status === 'Completed' || currentMatch.status === 'Cancelled';
+
+  // A shootout only makes sense when regulation ended level.
   const showSkipToShootout: boolean =
-    matchData.currentMatch.status === 'InProgress'
-    && (matchData.currentMatch.matchRules?.allowShootout ?? true)
-    && !matchData.currentMatch.wentToOvertime
-    && !matchData.currentMatch.wentToShootout
+    isMatchInProgress
+    && (currentMatch.matchRules?.allowShootout ?? true)
+    && (currentMatch.homeScore ?? 0) === (currentMatch.awayScore ?? 0)
+    && !currentMatch.wentToOvertime
+    && !currentMatch.wentToShootout
     && periodManagement.nextPeriodToStart === periodManagement.overtimePeriodNumber
-    && periodManagement.endedPeriods.has(periodManagement.matchRules.numberOfPeriods);
-  const toggleTimer = timerContext.callbacks.toggle;
-  const timerCurrentPeriod = timerContext.currentPeriod;
-  const setTimerCurrentPeriod = timerContext.setCurrentPeriod;
+    && periodManagement.endedPeriods.has(matchRules.numberOfPeriods);
 
-  const currentScore = useMemo(() => ({
-    home: match?.homeScore ?? 0,
-    away: match?.awayScore ?? 0,
-  }), [match]);
-
-  const leftSideTeam: 'home' | 'away' = isSidesSwapped ? 'away' : 'home';
-  const rightSideTeam: 'home' | 'away' = isSidesSwapped ? 'home' : 'away';
+  const leftSideTeam: TeamSide = isSidesSwapped ? 'away' : 'home';
+  const rightSideTeam: TeamSide = isSidesSwapped ? 'home' : 'away';
 
   const leftSideTeamData = leftSideTeam === 'home' ? matchData.homeTeam : matchData.awayTeam;
   const rightSideTeamData = rightSideTeam === 'home' ? matchData.homeTeam : matchData.awayTeam;
-  const leftSideScore = leftSideTeam === 'home' ? currentScore.home : currentScore.away;
-  const rightSideScore = rightSideTeam === 'home' ? currentScore.home : currentScore.away;
-  const leftSideTeamId = leftSideTeam === 'home' ? homeTeamId : awayTeamId;
-  const rightSideTeamId = rightSideTeam === 'home' ? homeTeamId : awayTeamId;
+  const leftSideScore: number = leftSideTeam === 'home' ? (match.homeScore ?? 0) : (match.awayScore ?? 0);
+  const rightSideScore: number = rightSideTeam === 'home' ? (match.homeScore ?? 0) : (match.awayScore ?? 0);
+  const leftSideTeamId: string = leftSideTeam === 'home' ? homeTeamId : awayTeamId;
+  const rightSideTeamId: string = rightSideTeam === 'home' ? homeTeamId : awayTeamId;
   const leftSidePlayers = leftSideTeam === 'home' ? matchData.homePlayers : matchData.awayPlayers;
   const rightSidePlayers = rightSideTeam === 'home' ? matchData.homePlayers : matchData.awayPlayers;
+  const leftSideGoalieId: string = leftSideTeam === 'home' ? homeGoalieId : awayGoalieId;
+  const rightSideGoalieId: string = rightSideTeam === 'home' ? homeGoalieId : awayGoalieId;
 
-  const leftSideGoalieId = leftSideTeam === 'home' ? homeGoalieId : awayGoalieId;
-  const rightSideGoalieId = rightSideTeam === 'home' ? homeGoalieId : awayGoalieId;
+  const isPeriodActive: boolean =
+    periodManagement.startedPeriods.has(currentPeriod) && !periodManagement.endedPeriods.has(currentPeriod);
 
-  const isPeriodActive = periodManagement.startedPeriods.has(timerContext.currentPeriod) &&
-    !periodManagement.endedPeriods.has(timerContext.currentPeriod);
+  // Keyboard shortcuts (Q/R/Space) must stay off while any dialog that collects input is open.
+  const keybindsEnabled: boolean = isMatchInProgress
+    && isPeriodActive
+    && !forms.showGoalForm
+    && !forms.showPenaltyForm
+    && !isLineupDialogOpen
+    && !bulkSaveTarget
+    && !showEndMatchConfirmation
+    && !showReopenConfirmation
+    && !groupsToDelete
+    && !periodManagement.showEndPeriodConfirmation;
 
-  // Keybinds (Q/R/Space) saa olla aktiivinen vain kun yksikään dataa keräävä modaali tai
-  // varmistusdialogi ei ole avoinna. Aikaisemmin tarkistus huomioi vain goal- ja
-  // penalty-formit, jolloin esim. avoin BulkSaveDialog tai lineup-dialogi salli torjunnan
-  // rekisteröinnin vaikka käyttäjä kirjoitti niiden sisällä – etenkin select/button-fokus
-  // ohitti INPUT/TEXTAREA-suodattimen.
-  const keybindsEnabled = matchData.currentMatch.status === 'InProgress' &&
-    isPeriodActive &&
-    !forms.showGoalForm &&
-    !forms.showPenaltyForm &&
-    !isLineupDialogOpen &&
-    !bulkSaveTarget &&
-    !showEndMatchConfirmation &&
-    !showReopenConfirmation &&
-    !groupsToDelete &&
-    !periodManagement.showEndPeriodConfirmation;
-
-  const areNumberSetsEqual = useCallback((a: Set<number>, b: Set<number>) => {
-    if (a === b) return true;
-    if (a.size !== b.size) return false;
-    for (const value of a) {
-      if (!b.has(value)) return false;
-    }
-    return true;
-  }, []);
-
-  const startedPeriodsRef = useRef<Set<number>>(startedPeriods);
-  const endedPeriodsRef = useRef<Set<number>>(endedPeriods);
-  const nextPeriodToStartRef = useRef<number>(nextPeriodToStart);
-  const timerCurrentPeriodRef = useRef<number>(timerCurrentPeriod);
-
-  useEffect(() => { startedPeriodsRef.current = startedPeriods; }, [startedPeriods]);
-  useEffect(() => { endedPeriodsRef.current = endedPeriods; }, [endedPeriods]);
-  useEffect(() => { nextPeriodToStartRef.current = nextPeriodToStart; }, [nextPeriodToStart]);
-  useEffect(() => { timerCurrentPeriodRef.current = timerCurrentPeriod; }, [timerCurrentPeriod]);
-
-  // Load officials - only runs once when match.id is available
+  // Load officials once per match
   useEffect(() => {
-    let isCancelled = false;
-    const loadOfficials = async () => {
-      if (!match.id) return;
+    let isCancelled: boolean = false;
+    const loadOfficials = async (): Promise<void> => {
       try {
         const response = await floorballRefereeService.getAll({ pageSize: 50 });
-        if (!isCancelled && response.success && response.data) {
-          const mapped = response.data.map(ref => ({ id: ref.id, name: ref.person.fullName }));
-          const sorted = [...mapped].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
-          const guestIndex = sorted.findIndex(option => option.name.toUpperCase() === 'GUEST REFEREE');
-          if (guestIndex > 0) {
-            const guest = sorted[guestIndex];
-            sorted.splice(guestIndex, 1);
-            sorted.unshift(guest);
-          }
-          setOfficialOptions(sorted);
+        if (isCancelled || !response.success || !response.data) return;
+        const sorted: OfficialOption[] = response.data
+          .map(ref => ({ id: ref.id, name: ref.person.fullName }))
+          .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+        const guestIndex: number = sorted.findIndex(option => option.name.toUpperCase() === 'GUEST REFEREE');
+        if (guestIndex > 0) {
+          const [guest] = sorted.splice(guestIndex, 1);
+          sorted.unshift(guest);
         }
+        setOfficialOptions(sorted);
       } catch (error) {
-        if (!isCancelled) {
-          console.error('Failed to load officials:', error);
-        }
+        if (!isCancelled) console.error('Failed to load officials:', error);
       }
     };
-    loadOfficials();
+    void loadOfficials();
     return () => { isCancelled = true; };
   }, [match.id]);
 
-  // Initialize period state
-  useEffect(() => {
-    const initializePeriodState = async () => {
-      try {
-        if (matchData.currentMatch.status === 'InProgress') {
-          const timerStatus = await timerService.getTimerStatus(match.id);
-          const currentPeriod = timerStatus.exists && timerStatus.periodNumber ? timerStatus.periodNumber : 1;
-          
-          const desiredStartedPeriods = new Set<number>();
-          const desiredEndedPeriods = new Set<number>();
-          const periodScores = matchData.currentMatch.periodScores || {};
-          
-          Object.entries(periodScores).forEach(([periodNum, scoreData]) => {
-            const period = parseInt(periodNum);
-            if (scoreData.isCompleted) {
-              desiredStartedPeriods.add(period);
-              desiredEndedPeriods.add(period);
-            } else if (period === currentPeriod) {
-              desiredStartedPeriods.add(period);
-          }
-          });
-          
-          desiredStartedPeriods.add(currentPeriod);
-          
-          const regularPeriods: number = matchData.currentMatch.matchRules?.numberOfPeriods ?? 2;
-          const shootoutPeriod: number = regularPeriods + 2;
-          const wentToShootout: boolean = matchData.currentMatch.wentToShootout;
-          const shootoutEnded: boolean = desiredEndedPeriods.has(shootoutPeriod);
-          const resolvedPeriod: number = wentToShootout && !shootoutEnded ? shootoutPeriod : currentPeriod;
-          if (wentToShootout) {
-            desiredStartedPeriods.add(shootoutPeriod);
-          }
-
-          const maxPeriod = periodManagement.maxPeriodNumber;
-          let nextPeriod = nextOpenFloorballPeriod(
-            maxPeriod,
-            desiredStartedPeriods,
-            regularPeriods,
-            matchData.currentMatch.wentToOvertime,
-            wentToShootout,
-          );
-          if (nextPeriod > maxPeriod || desiredStartedPeriods.has(maxPeriod)) {
-            nextPeriod = 0;
-          }
-          
-          if (timerCurrentPeriodRef.current !== resolvedPeriod) {
-            setTimerCurrentPeriod(resolvedPeriod);
-          }
-          if (!areNumberSetsEqual(startedPeriodsRef.current, desiredStartedPeriods)) {
-            setStartedPeriods(desiredStartedPeriods);
-          }
-          if (!areNumberSetsEqual(endedPeriodsRef.current, desiredEndedPeriods)) {
-            setEndedPeriods(desiredEndedPeriods);
-          }
-          if (nextPeriodToStartRef.current !== nextPeriod) {
-            setNextPeriodToStart(nextPeriod);
-          }
-        } else {
-          const desiredStartedPeriods = new Set<number>();
-          const desiredEndedPeriods = new Set<number>();
-          if (!areNumberSetsEqual(startedPeriodsRef.current, desiredStartedPeriods)) {
-            setStartedPeriods(desiredStartedPeriods);
-          }
-          if (!areNumberSetsEqual(endedPeriodsRef.current, desiredEndedPeriods)) {
-            setEndedPeriods(desiredEndedPeriods);
-          }
-          if (nextPeriodToStartRef.current !== 1) {
-            setNextPeriodToStart(1);
-          }
-        }
-      } catch (error) {
-        console.warn('Failed to initialize period state:', error);
-        if (matchData.currentMatch.status === 'InProgress') {
-          const desiredStartedPeriods = new Set<number>([1]);
-          if (!areNumberSetsEqual(startedPeriodsRef.current, desiredStartedPeriods)) {
-            setStartedPeriods(desiredStartedPeriods);
-          }
-          if (nextPeriodToStartRef.current !== 2) {
-            setNextPeriodToStart(2);
-          }
-        }
-      }
-    };
-    initializePeriodState();
-  }, [
-    match.id,
-    matchData.currentMatch.status,
-    matchData.currentMatch.periodScores,
-    matchData.currentMatch.wentToOvertime,
-    matchData.currentMatch.wentToShootout,
-    matchData.currentMatch.matchRules?.numberOfPeriods,
-    periodManagement.maxPeriodNumber,
-    setTimerCurrentPeriod,
-    setStartedPeriods,
-    setEndedPeriods,
-    setNextPeriodToStart,
-    areNumberSetsEqual
-  ]);
-
   // Load initial data
   useEffect(() => {
-    matchData.loadTeamData();
-    matchEvents.loadMatchEvents();
-    matchData.loadCurrentMatchStatus();
+    void matchData.loadTeamData();
+    void loadMatchEvents();
+    void loadCurrentMatchStatus();
     signalR.setupSignalR();
     return () => { signalR.cleanupSignalR(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keep the live view aligned with the match prop. Team reassignment ("Muuta joukkueita")
-  // does not change id or status, and the initial load above runs only once, so without this
-  // the scoreboard and rosters would keep the clubs that were on the page when it opened.
+  // Keep the live view aligned with the match prop. Team reassignment does not change id or
+  // status, and the initial load above runs only once, so without this the scoreboard and
+  // rosters would keep the clubs that were on the page when it opened.
   useEffect(() => {
     const teamsChanged: boolean =
-      (match.homeTeamId ?? null) !== (matchData.currentMatch.homeTeamId ?? null)
-      || (match.awayTeamId ?? null) !== (matchData.currentMatch.awayTeamId ?? null);
+      (match.homeTeamId ?? null) !== (currentMatch.homeTeamId ?? null)
+      || (match.awayTeamId ?? null) !== (currentMatch.awayTeamId ?? null);
 
-    if (
-      match.id !== matchData.currentMatch.id
-      || match.status !== matchData.currentMatch.status
-      || teamsChanged
-    ) {
-      matchData.setCurrentMatch(match);
+    if (match.id !== currentMatch.id || match.status !== currentMatch.status || teamsChanged) {
+      setCurrentMatch(match);
     }
-
     if (teamsChanged) {
       void matchData.loadTeamData();
     }
-  }, [match, matchData]);
+  }, [match, currentMatch, setCurrentMatch, matchData]);
 
-  // Handlers
-  const handleRecordSave = useCallback(async (team: 'home' | 'away', goalieId: string) => {
-    if (!match.id) return;
+  const reportError = useCallback((error: unknown, fallback: string): void => {
+    setError(describeMatchError(error, fallback, t));
+  }, [setError, t]);
 
-    const key = `${match.id}:${team}:${goalieId}`;
-    const now = Date.now();
-    if (lastSaveRef.current[key] && now - lastSaveRef.current[key] < 250) return;
+  // ---------------------------------------------------------------------------
+  // Saves
+  // ---------------------------------------------------------------------------
+  const handleRecordSave = useCallback(async (team: TeamSide, goalieId: string): Promise<void> => {
+    const key: string = `${match.id}:${team}:${goalieId}`;
+    const now: number = Date.now();
+    if (lastSaveRef.current[key] && now - lastSaveRef.current[key] < SAVE_THROTTLE_MS) return;
     lastSaveRef.current[key] = now;
 
-    // Get the LIVE elapsed time from the timer callback, not the stale context state
-    const currentElapsedSeconds = timerContext.callbacks.getCurrentElapsedSeconds
-      ? timerContext.callbacks.getCurrentElapsedSeconds()
-      : timerContext.elapsedTimeSeconds;
+    const currentElapsedSeconds: number = timer.getCurrentElapsedSeconds();
+    const periodFlags = floorballPeriodEventFlags(currentPeriod, matchRules.numberOfPeriods);
+    const payload: RecordSaveEventRequest = {
+      goalieId,
+      matchId: match.id,
+      teamId: team === 'home' ? homeTeamId : awayTeamId,
+      playerId: goalieId,
+      periodNumber: currentPeriod,
+      timeInSeconds: currentElapsedSeconds,
+      wasInOvertime: periodFlags.wasInOvertime,
+      wasInShootout: periodFlags.wasInShootout,
+    };
 
+    setSaveLoading(true);
     try {
-      setSaveLoading(true);
-      const regularPeriods: number = matchData.currentMatch.matchRules?.numberOfPeriods ?? 2;
-      const periodFlags = floorballPeriodEventFlags(timerContext.currentPeriod, regularPeriods);
-      const payload: RecordSaveEventRequest = {
-        goalieId,
-        matchId: match.id,
-        teamId: team === 'home' ? homeTeamId : awayTeamId,
-        playerId: goalieId,
-        periodNumber: timerContext.currentPeriod,
-        timeInSeconds: currentElapsedSeconds,
-        wasInOvertime: periodFlags.wasInOvertime,
-        wasInShootout: periodFlags.wasInShootout,
-      };
       await floorballMatchEventService.recordSave(payload);
-      await matchEvents.loadMatchEvents();
-      matchData.setError(null);
+      await loadMatchEvents();
+      setError(null);
     } catch (error) {
-      matchData.setError(error instanceof Error ? error.message : 'Failed to record save');
+      reportError(error, t('floorball.matches.manage.errors.recordSave', 'Failed to record save'));
     } finally {
       setSaveLoading(false);
     }
-  }, [match.id, homeTeamId, awayTeamId, timerContext.currentPeriod, timerContext.elapsedTimeSeconds, timerContext.callbacks, matchEvents, matchData]);
+  }, [match.id, homeTeamId, awayTeamId, currentPeriod, matchRules.numberOfPeriods, timer, loadMatchEvents, setError, reportError, t]);
 
-  const handleOpenBulkSave = useCallback((team: 'home' | 'away', goalieId: string) => {
+  const handleOpenBulkSave = useCallback((team: TeamSide, goalieId: string): void => {
     if (!goalieId) return;
     setBulkSaveError(null);
     setBulkSaveTarget({ team, goalieId });
   }, []);
 
-  const handleCloseBulkSave = useCallback(() => {
+  const handleCloseBulkSave = useCallback((): void => {
     if (bulkSaveLoading) return;
     setBulkSaveTarget(null);
     setBulkSaveError(null);
   }, [bulkSaveLoading]);
 
-  const handleSubmitBulkSave = useCallback(async (payload: BulkSavePayload) => {
-    if (!bulkSaveTarget || !match.id) return;
+  const handleSubmitBulkSave = useCallback(async (payload: BulkSavePayload): Promise<void> => {
+    if (!bulkSaveTarget) return;
     const { team, goalieId } = bulkSaveTarget;
     const teamId: string = team === 'home' ? homeTeamId : awayTeamId;
     if (!teamId) {
-      setBulkSaveError('Cannot determine team — try reopening the match.');
+      setBulkSaveError(t('floorball.matches.manage.errors.cannotDetermineTeam', 'Cannot determine team — try reopening the match.'));
       return;
     }
 
-    // The backend accepts a `count` field on the record-save request and writes all events
-    // inside a single transaction (and skips the per-(match, goalie) rate limit while it's
-    // doing so). This avoids both the 250ms rate limit that broke the previous client-side
-    // loop and the partial-failure window where some saves landed and some didn't.
+    // The backend accepts a `count` field and writes all saves inside a single transaction.
     setBulkSaveLoading(true);
     setBulkSaveError(null);
     try {
-      const periodFlags = floorballPeriodEventFlags(
-        payload.periodNumber,
-        matchData.currentMatch.matchRules?.numberOfPeriods ?? 2,
-      );
+      const periodFlags = floorballPeriodEventFlags(payload.periodNumber, matchRules.numberOfPeriods);
       const request: RecordSaveEventRequest = {
         goalieId,
         matchId: match.id,
@@ -487,53 +343,38 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         count: payload.count,
       };
       await floorballMatchEventService.recordSave(request);
-      await matchEvents.loadMatchEvents();
-      matchData.setError(null);
+      await loadMatchEvents();
+      setError(null);
       setBulkSaveTarget(null);
     } catch (error) {
-      const baseMessage: string = error instanceof Error ? error.message : 'Failed to record saves';
-      setBulkSaveError(baseMessage);
-      // Refresh the events list so any saves the backend committed before the failure are
-      // still reflected in the UI immediately.
-      await matchEvents.loadMatchEvents();
+      setBulkSaveError(describeMatchError(error, t('floorball.matches.manage.errors.recordSaves', 'Failed to record saves'), t));
+      // Refresh so any saves the backend committed before the failure are still shown.
+      await loadMatchEvents();
     } finally {
       setBulkSaveLoading(false);
     }
-  }, [bulkSaveTarget, match.id, homeTeamId, awayTeamId, matchEvents, matchData]);
+  }, [bulkSaveTarget, match.id, homeTeamId, awayTeamId, matchRules.numberOfPeriods, loadMatchEvents, setError, t]);
 
+  // ---------------------------------------------------------------------------
   // Keyboard shortcuts
+  // ---------------------------------------------------------------------------
   useEffect(() => {
     if (!keybindsEnabled) return;
 
-    const handler = (e: KeyboardEvent) => {
-      // Älä koskaan reagoi näppäinyhdistelmiin (esim. Ctrl+R reload, Cmd+Q quit). Käyttäjä
-      // pelkkää Q/R/Space ilman modifiereita käyttäessä haluamme rekisteröidä torjunnan
-      // tai vaihtaa ajastimen tilan.
+    const handler = (e: KeyboardEvent): void => {
+      // Never react to key combinations (Ctrl+R reload, Cmd+Q quit, ...).
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
       const target = e.target as HTMLElement | null;
       if (target) {
         const tagName: string = target.tagName;
-        // INPUT / TEXTAREA / SELECT kattaa lomakekentät; isContentEditable kattaa custom-
-        // editorit (esim. rich text). SELECT puuttui ennen, mikä päästi pikanäppäimet läpi
-        // kun käyttäjä oli erotuomarivalinnan dropdownissa.
-        if (
-          tagName === 'INPUT' ||
-          tagName === 'TEXTAREA' ||
-          tagName === 'SELECT' ||
-          target.isContentEditable
-        ) {
+        if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT' || target.isContentEditable) {
           return;
         }
-        // Suojaa kaikki avoinna olevat modaalit/dialogit kokonaisuutena: jos fokus on
-        // dialogin sisällä mutta jossain muussa kuin lomakekentässä (esim. nappi tai
-        // overlay-div), pikanäppäimet eivät silti saa laueta. Tämä on toinen
-        // turvaverkko keybindsEnabled-tarkistuksen lisäksi.
+        // Second safety net: never fire while focus is inside any open dialog.
         if (
-          typeof target.closest === 'function' &&
-          target.closest(
-            '[role="dialog"], dialog, .modal, .goal-record-modal, .penalty-record-modal, .bulk-save-modal, .eard-dialog',
-          )
+          typeof target.closest === 'function'
+          && target.closest('[role="dialog"], dialog, .modal, .goal-record-modal, .penalty-record-modal, .bulk-save-modal, .eard-dialog')
         ) {
           return;
         }
@@ -541,245 +382,248 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
 
       const key: string = e.key.toLowerCase();
       if (key === 'q' && leftSideGoalieId) {
-        handleRecordSave(leftSideTeam, leftSideGoalieId);
+        void handleRecordSave(leftSideTeam, leftSideGoalieId);
         e.preventDefault();
-      }
-      if (key === 'r' && rightSideGoalieId) {
-        handleRecordSave(rightSideTeam, rightSideGoalieId);
+      } else if (key === 'r' && rightSideGoalieId) {
+        void handleRecordSave(rightSideTeam, rightSideGoalieId);
         e.preventDefault();
-      }
-      if (key === ' ' && toggleTimer) {
-        toggleTimer();
+      } else if (key === ' ') {
+        void timer.toggle();
         e.preventDefault();
       }
     };
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [keybindsEnabled, leftSideGoalieId, rightSideGoalieId, leftSideTeam, rightSideTeam, toggleTimer, handleRecordSave]);
+  }, [keybindsEnabled, leftSideGoalieId, rightSideGoalieId, leftSideTeam, rightSideTeam, timer, handleRecordSave]);
 
-  // Trigger timer start after match starts
-  useEffect(() => {
-    if (shouldStartTimer && toggleTimer) {
-      toggleTimer();
-      setShouldStartTimer(false);
-    }
-  }, [shouldStartTimer, toggleTimer]);
-
-  const handleStartMatchAndTimer = useCallback(async () => {
-    await matchControls.handleStartMatch();
-    setShouldStartTimer(true);
-  }, [matchControls]);
-
-  const handleSkipToShootout = useCallback(async () => {
+  // ---------------------------------------------------------------------------
+  // Match and period lifecycle
+  // ---------------------------------------------------------------------------
+  const handleStartMatchAndTimer = useCallback(async (): Promise<void> => {
+    const started: boolean = await matchControls.handleStartMatch();
+    if (!started) return;
     try {
-      matchData.setError(null);
-      if (timerContext.callbacks.stop) {
-        timerContext.callbacks.stop();
+      await timer.start(1);
+    } catch (error) {
+      reportError(error, t('floorball.matches.manage.errors.startTimer', 'Match started but the clock could not be started'));
+    }
+  }, [matchControls, timer, reportError, t]);
+
+  /** Ends the current period: freezes the clock first so no stale tick can restart it. */
+  const finishCurrentPeriod = useCallback(async (): Promise<void> => {
+    setError(null);
+    try {
+      await timer.stop();
+      await periodManagement.endPeriod();
+    } catch (error) {
+      reportError(error, t('floorball.matches.manage.errors.endPeriod', 'Failed to end period'));
+    }
+  }, [timer, periodManagement, setError, reportError, t]);
+
+  /** Starts the next period, anchoring the clock at that period's theoretical start mark. */
+  const startNextPeriod = useCallback(async (): Promise<void> => {
+    const startingPeriod: number = periodManagement.nextPeriodToStart;
+    if (startingPeriod <= 0) return;
+    setError(null);
+
+    // Each period anchors at its theoretical start mark regardless of when the previous
+    // period was actually ended: with 15-minute periods, period 2 always begins at 15:00.
+    const theoreticalStartSeconds: number = floorballPeriodStartSeconds(startingPeriod, matchRules, currentMatch.wentToOvertime);
+    setPeriodStartTime(startingPeriod, theoreticalStartSeconds);
+
+    try {
+      if (theoreticalStartSeconds > 0) {
+        try {
+          await timer.setTime(theoreticalStartSeconds);
+        } catch (alignError) {
+          console.warn('Failed to align timer with period start mark:', alignError);
+        }
       }
+      await periodManagement.startPeriod();
+      // Shootouts are not timed.
+      if (startingPeriod !== periodManagement.shootoutPeriodNumber) {
+        await timer.start(startingPeriod);
+      }
+    } catch (error) {
+      reportError(error, t('floorball.matches.manage.errors.startPeriod', 'Failed to start period'));
+    }
+  }, [periodManagement, matchRules, currentMatch.wentToOvertime, setPeriodStartTime, timer, setError, reportError, t]);
+
+  const handleSkipToShootout = useCallback(async (): Promise<void> => {
+    setError(null);
+    try {
+      await timer.stop();
+      setPeriodStartTime(
+        periodManagement.shootoutPeriodNumber,
+        floorballPeriodStartSeconds(periodManagement.shootoutPeriodNumber, matchRules, false),
+      );
       await periodManagement.skipToShootout();
     } catch (error) {
-      matchData.setError(error instanceof Error ? error.message : 'Failed to start penalty shootout');
+      reportError(error, t('floorball.matches.manage.errors.skipToShootout', 'Failed to start penalty shootout'));
     }
-  }, [matchData, periodManagement, timerContext.callbacks]);
+  }, [timer, periodManagement, matchRules, setPeriodStartTime, setError, reportError, t]);
 
-  const handlePeriodControlClick = useCallback(() => {
-    if (periodManagement.canEndPeriod()) {
-      if (periodManagement.isInShootout() || timerContext.currentPeriod === periodManagement.maxPeriodNumber) {
-        setShowEndMatchConfirmation(true);
-        return;
-      }
+  const handlePeriodControlClick = useCallback((): void => {
+    const control = periodManagement.periodControl;
+    if (!control || control.loading) return;
 
-      // Get live elapsed time from callback, not stale context state
-      const currentElapsedSeconds = timerContext.callbacks.getCurrentElapsedSeconds
-        ? timerContext.callbacks.getCurrentElapsedSeconds()
-        : timerContext.elapsedTimeSeconds;
+    if (control.action === 'start') {
+      void startNextPeriod();
+      return;
+    }
 
-      // With a continuous clock the operator-facing "did you really mean to end early?"
-      // confirmation must be evaluated against the time played *in the current period*,
-      // not the absolute match clock (otherwise period 2 would never trigger it).
-      const periodDurationSeconds: number = (matchData.currentMatch.matchRules?.periodDurationMinutes ?? 15) * 60;
-      const inPeriodElapsedSeconds: number = Math.max(0, currentElapsedSeconds - timerContext.currentPeriodStartSeconds);
-      const isUnderConfiguredPeriodLength: boolean = inPeriodElapsedSeconds < periodDurationSeconds;
-      if (isUnderConfiguredPeriodLength) {
-        periodManagement.setShowEndPeriodConfirmation(true);
-      } else {
-        (async () => {
-          await periodManagement.endPeriod();
-          // Don't reset the clock between periods – the match clock is continuous so
-          // period N+1 should pick up where period N left off. We just pause the timer
-          // so the operator can deliberately restart it when the next period begins.
-          if (timerContext.callbacks.stop) timerContext.callbacks.stop();
-        })();
-      }
+    // Nothing can follow the current period (shootout, last allowed period, or the score
+    // is not level): ending it means finishing the match.
+    if (control.action === 'finish') {
+      setShowEndMatchConfirmation(true);
+      return;
+    }
+
+    // Ask for confirmation only when the period is being cut short. The check is made against
+    // time played *in this period*, not the continuous match clock.
+    const currentElapsedSeconds: number = timer.getCurrentElapsedSeconds();
+    const periodDurationSeconds: number = matchRules.periodDurationMinutes * 60;
+    const inPeriodElapsedSeconds: number = Math.max(0, currentElapsedSeconds - currentPeriodStartSeconds);
+    if (inPeriodElapsedSeconds < periodDurationSeconds) {
+      setEndPeriodTimeSnapshot(formatEventTimeMmSs(currentElapsedSeconds));
+      periodManagement.setShowEndPeriodConfirmation(true);
     } else {
-      (async () => {
-        // Each period anchors at its theoretical start mark regardless of when the
-        // previous period was actually ended. With a 15-minute period length, period 2
-        // always begins at 15:00 – even if the operator ended period 1 early at 12:00
-        // or let it run over to 17:00. This makes the elapsed clock match the
-        // match-time convention operators expect on the scoreboard.
-        const startingPeriod: number = periodManagement.nextPeriodToStart;
-        const rules = matchData.currentMatch.matchRules;
-        const periodDurationSeconds: number = (rules?.periodDurationMinutes ?? 15) * 60;
-        const overtimeDurationSeconds: number = (rules?.overtimeDurationMinutes ?? 5) * 60;
-        const numberOfPeriods: number = rules?.numberOfPeriods ?? 2;
-
-        let theoreticalStartSeconds: number;
-        if (startingPeriod === periodManagement.overtimePeriodNumber) {
-          theoreticalStartSeconds = numberOfPeriods * periodDurationSeconds;
-        } else if (startingPeriod === periodManagement.shootoutPeriodNumber) {
-          // Shootouts come after overtime when overtime occurred, otherwise straight
-          // after regulation. The clock value for shootouts is mostly cosmetic since
-          // the timer doesn't tick during a shootout, but anchoring it consistently
-          // keeps the displayed clock monotone.
-          theoreticalStartSeconds = matchData.currentMatch.wentToOvertime
-            ? numberOfPeriods * periodDurationSeconds + overtimeDurationSeconds
-            : numberOfPeriods * periodDurationSeconds;
-        } else {
-          theoreticalStartSeconds = Math.max(0, (startingPeriod - 1) * periodDurationSeconds);
-        }
-
-        if (startingPeriod > 0) {
-          timerContext.setPeriodStartTime(startingPeriod, theoreticalStartSeconds);
-        }
-
-        // Jump the backend timer to the theoretical mark before starting the period so
-        // the operator sees e.g. 15:00 the instant period 2 begins. Skip the round-trip
-        // for period 1 because the timer is already at 0 when the match goes live.
-        if (theoreticalStartSeconds > 0) {
-          try {
-            await timerService.setTimer(match.id, theoreticalStartSeconds);
-          } catch (err) {
-            console.warn('Failed to align timer with period start mark:', err);
-          }
-        }
-
-        await periodManagement.startPeriod();
-        if (periodManagement.nextPeriodToStart !== 4) {
-          if (timerContext.callbacks.start) {
-            await timerContext.callbacks.start();
-          } else if (timerContext.callbacks.toggle) {
-            await timerContext.callbacks.toggle();
-          }
-        }
-      })();
+      void finishCurrentPeriod();
     }
-  }, [periodManagement, timerContext, matchData.currentMatch.matchRules, matchData.currentMatch.wentToOvertime, match.id]);
+  }, [periodManagement, currentPeriodStartSeconds, matchRules.periodDurationMinutes, timer, startNextPeriod, finishCurrentPeriod]);
 
-  const handleDeleteEvent = useCallback(async () => {
+  const handleEndPeriodConfirm = useCallback(async (): Promise<void> => {
+    await finishCurrentPeriod();
+    periodManagement.setShowEndPeriodConfirmation(false);
+  }, [finishCurrentPeriod, periodManagement]);
+
+  const handleEndMatchConfirm = useCallback(async (): Promise<void> => {
+    try {
+      await timer.stop();
+    } catch (error) {
+      console.warn('Failed to stop timer before completing match:', error);
+    }
+    await matchControls.handleCompleteLive();
+    setShowEndMatchConfirmation(false);
+  }, [timer, matchControls]);
+
+  const handleReopenConfirm = useCallback(async (): Promise<void> => {
+    await matchControls.handleReopenMatch();
+    setShowReopenConfirmation(false);
+  }, [matchControls]);
+
+  // ---------------------------------------------------------------------------
+  // Event deletion
+  // ---------------------------------------------------------------------------
+  const requestDelete = useCallback((groups: EventGroup[]): void => {
+    if (groups.length === 0) {
+      setError(t('floorball.matches.manage.errors.noEventsSelected', 'Cannot delete: no events selected'));
+      return;
+    }
+    const malformed: boolean = groups.some(g => g.events.length === 0 || g.events.some(e => !e.eventId));
+    if (malformed) {
+      setError(t('floorball.matches.manage.errors.missingEventId', 'Cannot delete: missing event id'));
+      return;
+    }
+    setGroupsToDelete(groups);
+  }, [setError, t]);
+
+  const handleDeleteEvent = useCallback(async (): Promise<void> => {
     if (!groupsToDelete || groupsToDelete.length === 0) {
       setGroupsToDelete(null);
       return;
     }
-    // Flatten the (possibly multi-group) selection into a single ordered list of underlying
-    // events, then require every entry to carry an id. We don't want to partially delete a
-    // bulk-save group — or skip silently corrupted rows in a multi-select batch — and leave
-    // orphan rows behind, so abort the whole batch up-front if anything is malformed.
-    const allEvents: ProcessedEvent[] = groupsToDelete.flatMap(group => group.events);
-    const eventsToDelete: ProcessedEvent[] = allEvents.filter(e => !!e.eventId);
-    if (eventsToDelete.length !== allEvents.length || eventsToDelete.length === 0) {
-      matchData.setError('Cannot delete: missing event id');
-      setGroupsToDelete(null);
-      return;
-    }
+    const eventsToDelete: ProcessedEvent[] = groupsToDelete.flatMap(group => group.events);
 
+    setDeleteEventLoading(true);
+    setError(null);
     try {
-      setDeleteEventLoading(true);
-      matchData.setError(null);
-      await matchData.loadCurrentMatchStatus();
-
       for (const evt of eventsToDelete) {
         const eventId: string = evt.eventId as string;
         if (evt.type === 'goal') {
           await floorballMatchService.deleteGoal(match.id, eventId);
         } else if (evt.type === 'penalty') {
           await floorballMatchService.deletePenalty(match.id, eventId);
-        } else if (evt.type === 'save') {
+        } else {
           await floorballMatchService.deleteSave(match.id, eventId);
         }
       }
-
-      await matchData.loadCurrentMatchStatus();
-      await matchEvents.loadMatchEvents();
-      setGroupsToDelete(null);
-    } catch (err) {
-      matchData.setError(err instanceof Error ? err.message : 'Failed to delete event');
-      setGroupsToDelete(null);
+      await loadCurrentMatchStatus();
+      await loadMatchEvents();
+    } catch (error) {
+      reportError(error, t('floorball.matches.manage.errors.deleteEvent', 'Failed to delete event'));
     } finally {
+      setGroupsToDelete(null);
       setDeleteEventLoading(false);
     }
-  }, [groupsToDelete, match.id, matchData, matchEvents]);
+  }, [groupsToDelete, match.id, loadCurrentMatchStatus, loadMatchEvents, setError, reportError, t]);
 
-  const handleOfficialSelect = useCallback(async (index: number, refereeId: string) => {
-    if (!match.id || !refereeId) return;
-    
-    const isDuplicate = selectedOfficials.some((id, idx) => id === refereeId && idx !== index);
+  // ---------------------------------------------------------------------------
+  // Officials
+  // ---------------------------------------------------------------------------
+  const applyMatchUpdate = useCallback((updated: FloorballMatchDto): void => {
+    setSelectedOfficials(updated.officials);
+    setCurrentMatch(updated);
+    setMatch(updated);
+  }, [setCurrentMatch, setMatch]);
+
+  const handleOfficialSelect = useCallback(async (index: number, refereeId: string): Promise<void> => {
+    if (!refereeId) return;
+    const isDuplicate: boolean = selectedOfficials.some((id, idx) => id === refereeId && idx !== index);
     if (isDuplicate) {
-      matchData.setError('Referee already selected in another slot');
+      setError(t('floorball.matches.manage.errors.refereeDuplicate', 'Referee already selected in another slot'));
       return;
     }
 
-    const next = [...selectedOfficials];
-    const wasEmpty = next[index] === '';
+    const next: string[] = [...selectedOfficials];
+    const wasEmpty: boolean = next[index] === '';
     next[index] = refereeId;
 
+    setOfficialsSaving(true);
+    setError(null);
     try {
-      setOfficialsSaving(true);
-      matchData.setError(null);
-      
       const resp = wasEmpty
         ? await floorballMatchService.addOfficial(match.id, refereeId)
         : await floorballMatchService.updateOfficials(match.id, next);
-        
-      if (resp.success && resp.data) {
-        setSelectedOfficials(resp.data.officials);
-        matchData.setCurrentMatch(resp.data);
-        setMatch(resp.data);
-      }
+      if (resp.success && resp.data) applyMatchUpdate(resp.data);
     } catch (error) {
-      matchData.setError(error instanceof Error ? error.message : 'Failed to set official');
+      reportError(error, t('floorball.matches.manage.errors.setOfficial', 'Failed to set official'));
     } finally {
       setOfficialsSaving(false);
     }
-  }, [match.id, selectedOfficials, matchData, setMatch]);
+  }, [match.id, selectedOfficials, applyMatchUpdate, setError, reportError, t]);
 
-  const handleOfficialRemove = useCallback(async (index: number, refereeId: string) => {
-    if (!match.id) return;
-    
+  const handleOfficialRemove = useCallback(async (index: number, refereeId: string): Promise<void> => {
     if (!refereeId) {
       setSelectedOfficials(prev => prev.filter((_, idx) => idx !== index));
       return;
     }
-    
+    setOfficialsSaving(true);
+    setError(null);
     try {
-      setOfficialsSaving(true);
-      matchData.setError(null);
       const resp = await floorballMatchService.deleteOfficial(match.id, refereeId);
-      if (resp.success && resp.data) {
-        setSelectedOfficials(resp.data.officials);
-        matchData.setCurrentMatch(resp.data);
-        setMatch(resp.data);
-      }
+      if (resp.success && resp.data) applyMatchUpdate(resp.data);
     } catch (error) {
-      matchData.setError(error instanceof Error ? error.message : 'Failed to remove official');
+      reportError(error, t('floorball.matches.manage.errors.removeOfficial', 'Failed to remove official'));
     } finally {
       setOfficialsSaving(false);
     }
-  }, [match.id, matchData, setMatch]);
+  }, [match.id, applyMatchUpdate, setError, reportError, t]);
 
-  // Format time helpers
-  const currentTimeFormatted = timerContext.formatTime(
-    Math.floor(timerContext.elapsedTimeSeconds / 60),
-    timerContext.elapsedTimeSeconds % 60
-  );
+  const isStartMatchDisabled: boolean = !homeGoalieId || !awayGoalieId || !currentMatch.homeTeamId || !currentMatch.awayTeamId;
+  const startDisabledReason: string | undefined = !currentMatch.homeTeamId || !currentMatch.awayTeamId
+    ? t('floorball.matches.manage.startDisabled.assignTeams', 'Assign both teams before starting')
+    : (!homeGoalieId || !awayGoalieId)
+      ? t('floorball.matches.manage.startDisabled.selectGoalies', 'Select goalies to start')
+      : undefined;
 
   return (
     <>
       <LiveMatchModalHeader
         homeTeam={matchData.homeTeam}
         awayTeam={matchData.awayTeam}
-        currentMatch={matchData.currentMatch}
+        currentMatch={currentMatch}
         isSidesSwapped={isSidesSwapped}
         onToggleSides={() => setIsSidesSwapped(prev => !prev)}
         onClose={onClose}
@@ -791,105 +635,49 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
 
       <MatchConfirmationDialogs
         showEndPeriodConfirmation={periodManagement.showEndPeriodConfirmation}
-        currentPeriod={timerContext.currentPeriod}
-        currentTimeFormatted={currentTimeFormatted}
+        currentPeriod={currentPeriod}
+        isOvertimePeriod={currentPeriod === periodManagement.overtimePeriodNumber}
+        currentTimeFormatted={endPeriodTimeSnapshot}
         periodLoading={periodManagement.periodLoading}
-        onEndPeriodConfirm={async () => {
-          await periodManagement.endPeriod();
-          // Stop, don't reset: the next period continues from this elapsed-second mark.
-          if (timerContext.callbacks.stop) timerContext.callbacks.stop();
-          periodManagement.setShowEndPeriodConfirmation(false);
-        }}
-        onEndPeriodCancel={periodManagement.cancelEndPeriod}
-        
-        showOvertimeConfirmation={periodManagement.showOvertimeConfirmation}
-        onOvertimeConfirm={async () => {
-          await periodManagement.recordOvertime();
-          if (timerContext.callbacks.start) {
-            await timerContext.callbacks.start();
-          } else if (timerContext.callbacks.toggle) {
-            await timerContext.callbacks.toggle();
-          }
-        }}
-        onOvertimeCancel={() => periodManagement.setShowOvertimeConfirmation(false)}
-        
-        showShootoutConfirmation={periodManagement.showShootoutConfirmation}
-        onShootoutConfirm={async () => {
-          await periodManagement.recordShootout();
-          if (timerContext.callbacks.start) {
-            await timerContext.callbacks.start();
-          } else if (timerContext.callbacks.toggle) {
-            await timerContext.callbacks.toggle();
-          }
-        }}
-        onShootoutCancel={() => periodManagement.setShowShootoutConfirmation(false)}
-        
+        onEndPeriodConfirm={handleEndPeriodConfirm}
+        onEndPeriodCancel={() => periodManagement.setShowEndPeriodConfirmation(false)}
         showEndMatchConfirmation={showEndMatchConfirmation}
-        isShootout={periodManagement.isInShootout()}
-        onEndMatchConfirm={async () => {
-          await matchControls.handleCompleteLive();
-          setShowEndMatchConfirmation(false);
-        }}
+        isShootout={periodManagement.isInShootout && periodManagement.startedPeriods.has(periodManagement.shootoutPeriodNumber)}
+        onEndMatchConfirm={handleEndMatchConfirm}
         onEndMatchCancel={() => setShowEndMatchConfirmation(false)}
-
         showReopenConfirmation={showReopenConfirmation}
-        onReopenConfirm={async () => {
-          await matchControls.handleReopenMatch();
-          setShowReopenConfirmation(false);
-        }}
+        onReopenConfirm={handleReopenConfirm}
         onReopenCancel={() => setShowReopenConfirmation(false)}
-
         groupsToDelete={groupsToDelete}
         deleteEventLoading={deleteEventLoading}
         onDeleteEventConfirm={handleDeleteEvent}
         onDeleteEventCancel={() => setGroupsToDelete(null)}
-        
         matchLoading={matchData.loading}
       />
 
       <div className="modal-content">
         <div className="left-section">
           <LiveMatchTimer
-            currentMatch={matchData.currentMatch}
-            isOpen={true}
+            currentMatch={currentMatch}
             loading={matchData.loading}
             startedPeriods={periodManagement.startedPeriods}
             endedPeriods={periodManagement.endedPeriods}
-            nextPeriodToStart={periodManagement.nextPeriodToStart}
-            periodLoading={periodManagement.periodLoading}
-            onStartMatch={handleStartMatchAndTimer}
+            periodControl={periodManagement.periodControl}
             onPeriodControlClick={handlePeriodControlClick}
-            canEndPeriod={periodManagement.canEndPeriod}
-            getPeriodControlButtonText={periodManagement.getPeriodControlButtonText}
+            onStartMatch={handleStartMatchAndTimer}
             keybindsEnabled={keybindsEnabled}
-            // Defense in depth: refuse to render an enabled "Start match" CTA whenever the
-            // backend would reject the request (missing teams, missing goalies). The page
-            // already short-circuits to an "Assign teams" placeholder when teams are
-            // unset, but we keep these checks here so the timer card stays correct even
-            // if a future refactor changes the rendering path.
-            isStartMatchDisabled={
-              !homeGoalieId ||
-              !awayGoalieId ||
-              !matchData.currentMatch.homeTeamId ||
-              !matchData.currentMatch.awayTeamId
-            }
-            startDisabledReason={
-              !matchData.currentMatch.homeTeamId || !matchData.currentMatch.awayTeamId
-                ? 'Aseta molemmat joukkueet ennen aloitusta'
-                : (!homeGoalieId || !awayGoalieId)
-                  ? 'Select goalies to start'
-                  : undefined
-            }
+            isStartMatchDisabled={isStartMatchDisabled}
+            startDisabledReason={startDisabledReason}
             overtimePeriodNumber={periodManagement.overtimePeriodNumber}
             shootoutPeriodNumber={periodManagement.shootoutPeriodNumber}
             showSkipToShootout={showSkipToShootout}
             skipToShootoutLoading={Boolean(periodManagement.periodLoading[periodManagement.shootoutPeriodNumber])}
-            onSkipToShootout={handleSkipToShootout}
+            onSkipToShootout={() => { void handleSkipToShootout(); }}
           />
 
           <LiveMatchQuickActions
             loading={forms.loading}
-            currentMatch={matchData.currentMatch}
+            currentMatch={currentMatch}
             leftTeamId={leftSideTeamId}
             rightTeamId={rightSideTeamId}
             leftTeamName={leftSideTeamData?.name}
@@ -911,35 +699,35 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             rightTeamName={rightSideTeamData?.name}
             leftPlayers={leftSidePlayers}
             rightPlayers={rightSidePlayers}
-            leftLineup={leftSideTeam === 'home' ? matchData.currentMatch.homeActivePlayers : matchData.currentMatch.awayActivePlayers}
-            rightLineup={rightSideTeam === 'home' ? matchData.currentMatch.homeActivePlayers : matchData.currentMatch.awayActivePlayers}
+            leftLineup={leftSideTeam === 'home' ? currentMatch.homeActivePlayers : currentMatch.awayActivePlayers}
+            rightLineup={rightSideTeam === 'home' ? currentMatch.homeActivePlayers : currentMatch.awayActivePlayers}
             leftGoalieId={leftSideGoalieId}
             rightGoalieId={rightSideGoalieId}
             onEditLineup={() => setIsLineupDialogOpen(true)}
-            disabled={matchData.currentMatch.status === 'Completed' || matchData.currentMatch.status === 'Cancelled'}
+            disabled={isMatchClosed}
           />
 
           <EditActiveRosterDialog
             isOpen={isLineupDialogOpen}
-            matchId={matchData.currentMatch.id}
+            matchId={currentMatch.id}
             homeTeamId={homeTeamId}
             awayTeamId={awayTeamId}
             homeTeamName={matchData.homeTeam?.name ?? ''}
             awayTeamName={matchData.awayTeam?.name ?? ''}
             homePlayers={matchData.homePlayers}
             awayPlayers={matchData.awayPlayers}
-            initialHomeLineup={matchData.currentMatch.homeActivePlayers ?? []}
-            initialAwayLineup={matchData.currentMatch.awayActivePlayers ?? []}
+            initialHomeLineup={currentMatch.homeActivePlayers ?? []}
+            initialAwayLineup={currentMatch.awayActivePlayers ?? []}
             initialHomeGoalieId={homeGoalieId}
             initialAwayGoalieId={awayGoalieId}
             onClose={() => setIsLineupDialogOpen(false)}
             onSaved={(updated) => {
-              matchData.setCurrentMatch(updated);
+              setCurrentMatch(updated);
               setMatch(updated);
               setHomeGoalieId(updated.homeActiveGoalieId ?? '');
               setAwayGoalieId(updated.awayActiveGoalieId ?? '');
             }}
-            onError={matchData.setError}
+            onError={setError}
           />
 
           <OfficialsSelectorSection
@@ -949,17 +737,16 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             onAddRow={() => setSelectedOfficials(prev => [...prev, ''])}
             onSelect={handleOfficialSelect}
             onRemove={handleOfficialRemove}
-            disabled={matchData.currentMatch.status === 'Completed' || matchData.currentMatch.status === 'Cancelled'}
+            disabled={isMatchClosed}
           />
 
           <GoalRecordingForm
             showGoalForm={forms.showGoalForm}
             goalForm={forms.goalForm}
             setGoalForm={forms.setGoalForm}
-            currentMatch={matchData.currentMatch}
+            currentMatch={currentMatch}
             homeTeam={matchData.homeTeam}
             awayTeam={matchData.awayTeam}
-            clock={{ period: timerContext.currentPeriod, minutes: 0, seconds: 0, isRunning: timerContext.isRunning }}
             loading={forms.loading}
             getPlayersForTeam={matchData.getPlayersForTeam}
             onRecordGoal={forms.recordGoal}
@@ -970,17 +757,16 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             showPenaltyForm={forms.showPenaltyForm}
             penaltyForm={forms.penaltyForm}
             setPenaltyForm={forms.setPenaltyForm}
-            currentMatch={matchData.currentMatch}
+            currentMatch={currentMatch}
             homeTeam={matchData.homeTeam}
             awayTeam={matchData.awayTeam}
-            clock={{ period: timerContext.currentPeriod, minutes: 0, seconds: 0, isRunning: timerContext.isRunning }}
             loading={forms.loading}
             getPlayersForTeam={matchData.getPlayersForTeam}
             onRecordPenalty={forms.recordPenalty}
             onClose={() => forms.setShowPenaltyForm(false)}
           />
         </div>
-        
+
         <div className="right-section">
           <LiveMatchScoreboard
             leftTeam={leftSideTeamData}
@@ -991,38 +777,11 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
 
           <LiveMatchEventsHistory
             allEvents={matchEvents.allEvents}
-            onDeleteEvent={(group) => {
-              // A group always carries at least one event from the child component, so an
-              // empty list here would indicate a programming error. Reject it loudly via
-              // the visible error popup instead of silently opening an empty dialog.
-              if (group.events.length === 0 || !group.representative.eventId) {
-                matchData.setError('Cannot delete: missing event id');
-                return;
-              }
-              setGroupsToDelete([group]);
-            }}
-            onBulkDelete={(groups) => {
-              // Belt-and-braces validation: the child only invokes this with non-empty
-              // groups whose underlying events all carry ids, but cross-component contracts
-              // can drift over time. Surface a visible error rather than opening a dialog
-              // backed by malformed data.
-              if (groups.length === 0) {
-                matchData.setError('Cannot delete: no events selected');
-                return;
-              }
-              const malformed: boolean = groups.some(
-                g => g.events.length === 0 || g.events.some(e => !e.eventId)
-              );
-              if (malformed) {
-                matchData.setError('Cannot delete: missing event id');
-                return;
-              }
-              setGroupsToDelete(groups);
-            }}
-            /* Once the match is Completed/Cancelled the backend blocks event deletion */
-            /* (the only legitimate edit path is to reopen the match first), so hide   */
-            /* the per-row delete affordance to match the user's mental model.         */
-            canDelete={matchData.currentMatch.status !== 'Completed' && matchData.currentMatch.status !== 'Cancelled'}
+            onDeleteEvent={(group) => requestDelete([group])}
+            onBulkDelete={requestDelete}
+            // Once the match is Completed/Cancelled the backend blocks event deletion; the only
+            // legitimate edit path is to reopen the match first.
+            canDelete={!isMatchClosed}
           />
         </div>
       </div>
@@ -1031,17 +790,11 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         <BulkSaveDialog
           isOpen={true}
           goalieName={matchData.getPlayerNameById(bulkSaveTarget.goalieId)}
-          teamName={
-            (bulkSaveTarget.team === 'home' ? matchData.homeTeam?.name : matchData.awayTeam?.name) ?? ''
-          }
-          currentPeriod={timerContext.currentPeriod}
-          numberOfPeriods={matchData.currentMatch.matchRules?.numberOfPeriods ?? 3}
-          periodDurationMinutes={matchData.currentMatch.matchRules?.periodDurationMinutes ?? 20}
-          currentElapsedSeconds={
-            timerContext.callbacks.getCurrentElapsedSeconds
-              ? timerContext.callbacks.getCurrentElapsedSeconds()
-              : timerContext.elapsedTimeSeconds
-          }
+          teamName={(bulkSaveTarget.team === 'home' ? matchData.homeTeam?.name : matchData.awayTeam?.name) ?? ''}
+          currentPeriod={currentPeriod}
+          numberOfPeriods={matchRules.numberOfPeriods}
+          periodDurationMinutes={matchRules.periodDurationMinutes}
+          currentElapsedSeconds={timer.getCurrentElapsedSeconds()}
           onSubmit={handleSubmitBulkSave}
           onClose={handleCloseBulkSave}
           loading={bulkSaveLoading}
@@ -1053,34 +806,27 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
 };
 
 /**
- * Wrapper component that provides the timer context
+ * Wrapper component that provides the timer context. `matchId` lets the provider persist
+ * per-period start times for the duration of the match (continuous-clock behaviour).
  */
-const ManageMatchPageWithContext = ({ match, setMatch, onClose }: ManageMatchPageContentProps) => {
-  return (
-    // Pass matchId so the timer context can persist per-period start times to localStorage
-    // for the duration of the match (continuous-clock behaviour relies on this).
-    <MatchTimerProvider initialPeriod={1} matchId={match.id}>
-      <ManageMatchPageContent match={match} setMatch={setMatch} onClose={onClose} />
-    </MatchTimerProvider>
-  );
-};
+const ManageMatchPageWithContext = ({ match, setMatch, onClose }: ManageMatchPageContentProps) => (
+  <MatchTimerProvider initialPeriod={1} matchId={match.id}>
+    <ManageMatchPageContent match={match} setMatch={setMatch} onClose={onClose} />
+  </MatchTimerProvider>
+);
 
 /**
  * Default landing page used when the user opens the match management view directly (no
- * originating view to return to). Kept as a single source of truth so the Close button and
- * any future "back" affordances stay in sync.
+ * originating view to return to).
  */
-const DEFAULT_RETURN_PATH = '/admin/floorball/matches';
+const DEFAULT_RETURN_PATH: string = '/admin/floorball/matches';
 
 /**
  * Whitelists the `returnTo` query parameter to internal absolute paths only. This prevents
- * an open-redirect via a crafted URL and also guards against accidental protocol-relative
- * paths (e.g. `//evil.example`).
+ * an open-redirect via a crafted URL and also guards against protocol-relative paths.
  */
 const sanitizeReturnTo = (raw: string | null): string => {
   if (!raw) return DEFAULT_RETURN_PATH;
-  // Reject anything that isn't a same-origin absolute path. Allow `/foo` but not `//foo`,
-  // `http://...`, `javascript:...`, etc.
   if (!raw.startsWith('/') || raw.startsWith('//')) return DEFAULT_RETURN_PATH;
   return raw;
 };
@@ -1094,14 +840,11 @@ const ManageMatchPage = (): ReactElement => {
   const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const [match, setMatch] = useState<FloorballMatchDto | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showAssignTeams, setShowAssignTeams] = useState<boolean>(false);
 
-  const returnTo: string = useMemo(
-    () => sanitizeReturnTo(searchParams.get('returnTo')),
-    [searchParams]
-  );
+  const returnTo: string = useMemo(() => sanitizeReturnTo(searchParams.get('returnTo')), [searchParams]);
 
   const handleClose = useCallback((): void => {
     navigate(returnTo);
@@ -1115,78 +858,88 @@ const ManageMatchPage = (): ReactElement => {
 
   useEffect(() => {
     if (!matchId) {
-      setError('Match ID is missing');
+      setError(t('floorball.matches.manage.errors.matchIdMissing', 'Match ID is missing'));
       setLoading(false);
       return;
     }
 
-    const fetchMatch = async () => {
+    const fetchMatch = async (): Promise<void> => {
       try {
         const response = await floorballMatchService.getById(matchId);
         if (response.success && response.data) {
           setMatch(response.data);
         } else {
-          setError('Failed to fetch match data');
+          setError(t('floorball.matches.manage.errors.fetchMatch', 'Failed to fetch match data'));
         }
       } catch (err) {
-        setError('An error occurred while fetching match data.');
+        setError(describeMatchError(err, t('floorball.matches.manage.errors.fetchMatch', 'Failed to fetch match data'), t));
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMatch();
-  }, [matchId]);
+    void fetchMatch();
+  }, [matchId, t]);
+
+  const pageTitle: string = t('floorball.matches.manage.title', 'Match management');
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <PageTemplate title={pageTitle}>
+        <div className="manage-match-page manage-match-page--loading">{t('common.loading', 'Loading...')}</div>
+      </PageTemplate>
+    );
   }
 
   if (error) {
     return (
-      <div className="manage-match-page">
-        <ErrorPopup message={error} />
-      </div>
+      <PageTemplate title={pageTitle}>
+        <div className="manage-match-page">
+          <ErrorPopup message={error} />
+        </div>
+      </PageTemplate>
     );
   }
 
   if (!match) {
-    return <div>Match not found.</div>;
+    return (
+      <PageTemplate title={pageTitle}>
+        <div className="manage-match-page manage-match-page--loading">
+          {t('floorball.matches.manage.notFound', 'Match not found.')}
+        </div>
+      </PageTemplate>
+    );
   }
 
-  const isMatchFinished = match.status === 'Completed';
+  const isMatchFinished: boolean = match.status === 'Completed';
   const isTeamsAssignable: boolean = match.status === 'Scheduled' || match.status === 'Postponed';
   const isMissingTeams: boolean = !match.homeTeamId || !match.awayTeamId;
 
   return (
-    <PageTemplate title="Manage match page">
-    <div className="manage-match-page">
+    <PageTemplate title={pageTitle}>
+      <div className="manage-match-page">
         <div className="page-header">
           <div className="page-header__top">
-            <h1 className="page-title-compact font-title">MATCH MANAGEMENT</h1>
+            <h1 className="page-title-compact font-title">{pageTitle}</h1>
             <div className="page-header__actions">
-              {/* "Assign teams" is only meaningful while the match is still Scheduled/Postponed.
-                  Show it eagerly when teams are missing (badge style), and as a secondary action
-                  when both are already set so juries can override assignments. */}
+              {/* "Assign teams" is only meaningful while the match is still Scheduled/Postponed. */}
               {isTeamsAssignable && (
                 <button
                   type="button"
                   className="edit-match-button"
                   onClick={() => setShowAssignTeams(true)}
-                  title={t('floorball.matches.assignTeams.action', 'Aseta joukkueet')}
+                  title={t('floorball.matches.assignTeams.action', 'Assign teams')}
                 >
-                  <span className="edit-match-button__icon" aria-hidden="true">👥</span>
+                  <i className="fas fa-users edit-match-button__icon" aria-hidden="true"></i>
                   <span className="edit-match-button__label">
                     {isMissingTeams
-                      ? t('floorball.matches.assignTeams.actionMissing', 'Aseta joukkueet')
-                      : t('floorball.matches.assignTeams.actionChange', 'Muuta joukkueita')}
+                      ? t('floorball.matches.assignTeams.actionMissing', 'Assign teams')
+                      : t('floorball.matches.assignTeams.actionChange', 'Change teams')}
                   </span>
                 </button>
               )}
-              {/* "Edit match details" navigates to a separate form that mutates schedule / teams. */}
-              {/* Hide it once the match is Finished: at that point the only sanctioned recovery */}
-              {/* path is "Open match" in the header, which reverts season aggregates safely.    */}
+              {/* Hidden once the match is Finished: the sanctioned recovery path is "Reopen match". */}
               {!isMatchFinished && (
                 <button
                   type="button"
@@ -1195,7 +948,7 @@ const ManageMatchPage = (): ReactElement => {
                   disabled={!matchId}
                   title={t('floorball.matches.actions.edit')}
                 >
-                  <span className="edit-match-button__icon" aria-hidden="true">✏️</span>
+                  <i className="fas fa-pen edit-match-button__icon" aria-hidden="true"></i>
                   <span className="edit-match-button__label">{t('floorball.matches.actions.edit')}</span>
                 </button>
               )}
@@ -1206,21 +959,19 @@ const ManageMatchPage = (): ReactElement => {
               <i className="fas fa-info-circle" aria-hidden="true"></i>
               {t(
                 'floorball.matches.assignTeams.missingBanner',
-                'Tällä ottelulla ei ole molempia joukkueita. Aseta joukkueet ennen ottelun aloittamista.'
+                'This match does not have both teams yet. Assign the teams before starting the match.'
               )}
             </div>
           )}
         </div>
         {isMissingTeams ? (
-          /* Without both teams the live management UI cannot meaningfully render rosters,
-              goalies, or the scoreboard. Short-circuit with a friendly empty state so the
-              user is directed to the only useful action: assign the teams first. */
+          /* Without both teams the live UI cannot render rosters, goalies, or the scoreboard. */
           <div className="manage-match-page__placeholder">
             <i className="fas fa-users-slash" aria-hidden="true"></i>
             <p>
               {t(
                 'floorball.matches.assignTeams.placeholderBody',
-                'Otteluun ei ole vielä asetettu molempia joukkueita, joten ottelun hallintanäkymää ei voi vielä avata.'
+                'Both teams have not been assigned to this match yet, so the live management view cannot be opened.'
               )}
             </p>
             <button
@@ -1229,7 +980,7 @@ const ManageMatchPage = (): ReactElement => {
               onClick={() => setShowAssignTeams(true)}
             >
               <i className="fas fa-user-plus" aria-hidden="true"></i>
-              {t('floorball.matches.assignTeams.action', 'Aseta joukkueet')}
+              {t('floorball.matches.assignTeams.action', 'Assign teams')}
             </button>
           </div>
         ) : (
@@ -1245,7 +996,7 @@ const ManageMatchPage = (): ReactElement => {
             setShowAssignTeams(false);
           }}
         />
-    </div>
+      </div>
     </PageTemplate>
   );
 };

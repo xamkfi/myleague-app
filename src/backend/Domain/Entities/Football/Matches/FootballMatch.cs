@@ -626,7 +626,10 @@ public class FootballMatch : BaseEntity
         }
 
         if (previousTeamId != team?.Id && previousTeamId.HasValue)
-            _lineup.RemoveAll(player => player.TeamId == previousTeamId.Value);
+        {
+            Guid previousTeamIdValue = previousTeamId.Value;
+            _lineup.RemoveAll(player => player.TeamId == previousTeamIdValue);
+        }
 
         Guid stampedId = team?.Id ?? Guid.Empty;
         foreach (FootballPeriodScore ps in _periodScores)

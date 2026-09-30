@@ -84,13 +84,13 @@ const LiveMatchTimer = ({
     }
   }, [shootoutOpen, currentPeriod, shootoutPeriodNumber, setCurrentPeriod]);
 
-  const onTimerUpdate = (update: TimerUpdate): void => {
+  const onTimerUpdate = React.useCallback((update: TimerUpdate): void => {
     if (shootoutOpen && update.PeriodNumber !== shootoutPeriodNumber) {
       handleTimerUpdate({ ...update, PeriodNumber: shootoutPeriodNumber });
       return;
     }
     handleTimerUpdate(update);
-  };
+  }, [shootoutOpen, shootoutPeriodNumber, handleTimerUpdate]);
 
   const getChipStatus = (p: number) => {
     if (endedPeriods.has(p)) return 'completed';
@@ -127,29 +127,30 @@ const LiveMatchTimer = ({
     periodsToShow.push(psoPeriod);
   }
 
-  const handleGetCurrentTime = (getTime: () => string) => {
+  // Stable registration callbacks so the memoized timer does not re-render every tick.
+  const handleGetCurrentTime = React.useCallback((getTime: () => string) => {
     registerCallback('getCurrentTime', getTime);
-  };
+  }, [registerCallback]);
 
-  const handleGetCurrentElapsedSeconds = (getSeconds: () => number) => {
+  const handleGetCurrentElapsedSeconds = React.useCallback((getSeconds: () => number) => {
     registerCallback('getCurrentElapsedSeconds', getSeconds);
-  };
+  }, [registerCallback]);
 
-  const handleGetToggleFunction = (toggleFn: () => Promise<void>) => {
+  const handleGetToggleFunction = React.useCallback((toggleFn: () => Promise<void>) => {
     registerCallback('toggle', toggleFn);
-  };
+  }, [registerCallback]);
 
-  const handleGetResetFunction = (resetFn: () => void) => {
+  const handleGetResetFunction = React.useCallback((resetFn: () => Promise<void>) => {
     registerCallback('reset', resetFn);
-  };
+  }, [registerCallback]);
 
-  const handleGetStartFunction = (startFn: () => Promise<void>) => {
+  const handleGetStartFunction = React.useCallback((startFn: () => Promise<void>) => {
     registerCallback('start', startFn);
-  };
+  }, [registerCallback]);
 
-  const handleGetStopFunction = (stopFn: () => void) => {
+  const handleGetStopFunction = React.useCallback((stopFn: () => Promise<void>) => {
     registerCallback('stop', stopFn);
-  };
+  }, [registerCallback]);
 
   return (
     <div className="clock-card">

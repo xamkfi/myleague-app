@@ -18,9 +18,31 @@
     font-weight: map.get($font-weights, 'medium');
     font-size: 14px;
     line-height: 24px;
-    letter-spacing: 0;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     color: $color-neutral-black;
     height: 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 7px;
+    border-radius: 10px;
+    background: $color-neutral-light-grey;
+    border: 1px solid $color-neutral-medium-grey;
+    font-family: $font-family-body;
+    font-size: 12px;
+    font-weight: map.get($font-weights, 'semibold');
+    letter-spacing: 0;
+    text-transform: none;
+    color: $color-neutral-dark-grey;
   }
 
   // Header row groups the section title with the "Select all" affordance so the
@@ -64,8 +86,23 @@
   }
 
   .no-events {
-    text-align: center; color: #9ca3af; font-style: italic; padding: 24px;
-    background: #f9fafb; border-radius: 6px; border: 2px dashed #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    color: $color-neutral-dark-grey;
+    font-family: $font-family-body;
+    font-size: 14px;
+    padding: 32px 24px;
+    background: $color-neutral-light-grey;
+    border-radius: 8px;
+    border: 1px dashed $color-neutral-medium-grey;
+
+    i {
+      font-size: 22px;
+      color: $color-neutral-medium-grey;
+    }
   }
 
   .events-list {
@@ -76,12 +113,59 @@
   }
 
   .event-item {
-    padding: 8px 12px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 10px; transition: background-color 0.2s; background: $color-neutral-white;
-    &:hover { background: #f8fafc; }
+    padding: 8px 12px;
+    border-bottom: 1px solid $color-neutral-light-grey;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.2s;
+    background: $color-neutral-white;
+    border-left: 4px solid transparent;
+
+    &:hover { background: $color-neutral-light-grey; }
     &:last-child { border-bottom: none; }
-    &.goal { border-left: 4px solid #10b981; }
-    &.penalty { border-left: 4px solid #f59e0b; }
-    &.save { border-left: 4px solid #3b82f6; }
+    &.goal { border-left-color: $color-green-primary; }
+    &.penalty { border-left-color: $color-yellow-primary; }
+    &.save { border-left-color: $color-blue-secondary; }
+
+    .event-delete {
+      flex: 0 0 auto;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid transparent;
+      background: transparent;
+      color: $color-neutral-dark-grey;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+
+      &:hover,
+      &:focus-visible {
+        opacity: 1;
+        background: $color-red-almost;
+        border-color: $color-red-pale;
+        color: $color-red-muted;
+      }
+    }
+
+    &:hover .event-delete { opacity: 1; }
+
+    .event-meta {
+      flex: 0 0 auto;
+      font-size: 12px !important;
+      line-height: 16px !important;
+      color: $color-neutral-dark-grey !important;
+      white-space: nowrap;
+
+      &::before {
+        content: '·';
+        margin-right: 4px;
+      }
+    }
 
     // Tinted background when the row is part of an active multi-select. Kept light enough
     // that the colour still reads with the team's left-edge type marker (goal/penalty/save).
@@ -111,14 +195,25 @@
     }
 
     .event-type-badge {
-      display: inline-flex; align-items: center; gap: 6px; padding: 2px; border-radius: 8px; font-size: 0.825rem; font-weight: 600;
-      background: $color-neutral-white; border: 1px solid $color-neutral-medium-grey;
-      &.goal { color: #065f46; }
-      &.penalty { color: #92400e; }
-      &.save { color: #1e40af; }
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 24px;
+      padding: 0 10px 0 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex: 0 0 auto;
+      background: $color-neutral-white;
+      border: 1px solid $color-neutral-medium-grey;
 
-      .badge-icon { line-height: 1; padding: 2px 0 2px 1px; display: inline-flex; align-items: center; }
-      .badge-text { line-height: 16px; font-size: 14px; padding: 2px 1px 2px 0; display: inline-block; }
+      &.goal { color: $color-green-muted; background: $color-green-almost; border-color: $color-green-pale; }
+      &.penalty { color: $color-yellow-muted; background: $color-yellow-almost; border-color: $color-yellow-light; }
+      &.save { color: $color-blue-secondary-muted; background: $color-blue-secondary-almost; border-color: $color-blue-secondary-pale; }
+
+      .badge-icon { font-size: 11px; line-height: 1; display: inline-flex; align-items: center; }
+      .badge-text { line-height: 16px; font-size: 12px; display: inline-block; }
     }
 
     .team-short { font-weight: 700; color: $color-neutral-black; letter-spacing: 0.02em; }
@@ -202,8 +297,16 @@
     // multiple saves share this coordinate.
     .save-count-badge {
       flex: 0 0 auto;
-      font-weight: map.get($font-weights, 'bold');
-      color: #1e40af;
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      padding: 0 8px;
+      border-radius: 10px;
+      background: $color-blue-secondary-almost;
+      border: 1px solid $color-blue-secondary-pale;
+      font-size: 12px !important;
+      font-weight: map.get($font-weights, 'bold') !important;
+      color: $color-blue-secondary-muted !important;
       white-space: nowrap;
     }
 

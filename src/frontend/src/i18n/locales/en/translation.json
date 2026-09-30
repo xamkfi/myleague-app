@@ -1,4 +1,37 @@
 {
+  "matchTimer": {
+    "play": "Start clock",
+    "pause": "Pause clock",
+    "reset": "Reset to period start",
+    "editTime": "Set time",
+    "error": "Clock error",
+    "oneMinute": "1 min",
+    "tenSeconds": "10 s",
+    "oneSecond": "1 s",
+    "back1min": "Back 1 minute",
+    "back10s": "Back 10 seconds",
+    "back1s": "Back 1 second",
+    "forward1s": "Forward 1 second",
+    "forward10s": "Forward 10 seconds",
+    "forward1min": "Forward 1 minute",
+    "endPeriodTitle": "End the current period",
+    "finishMatchTitle": "The match is decided and no extra period is needed – mark it as finished",
+    "startPeriodTitle": "Start the next period",
+    "setTime": {
+      "title": "Set clock time",
+      "currentTime": "Current time",
+      "minutes": "Minutes",
+      "seconds": "Seconds",
+      "saving": "Setting...",
+      "submit": "Set time",
+      "errors": {
+        "invalid": "Enter valid numbers",
+        "negative": "Time cannot be negative",
+        "seconds": "Seconds must be between 0 and 59",
+        "minutes": "Minutes must be between 0 and 999"
+      }
+    }
+  },
   "seasonStandings": {
     "title": "League table",
     "teamsAdvancing": "Teams advancing",
@@ -1797,6 +1830,8 @@
         "confirm": "Yes, Reactivate Match"
       },
       "manage": {
+        "title": "Match management",
+        "notFound": "Match not found.",
         "finished": "FINISHED",
         "reopenMatch": "Open match",
         "reopenMatchTitle": "Reopen this match for editing",
@@ -1806,11 +1841,188 @@
         "selectReferee": "SELECT REFEREE",
         "saving": "Saving...",
         "noOfficials": "No officials assigned.",
+        "startMatch": "Start match",
+        "selectGoalies": "Select goalies to start",
+        "matchCompleted": "Match completed",
+        "startDisabled": {
+          "assignTeams": "Assign both teams before starting",
+          "selectGoalies": "Select goalies to start"
+        },
+        "header": {
+          "vs": "vs",
+          "live": "LIVE",
+          "swapSides": "Swap sides",
+          "swapSidesTitle": "Swap the visual sides of the teams",
+          "finishMatch": "Finish match",
+          "finishMatchTitle": "Stop live tracking and mark the match as finished",
+          "closeTitle": "Back to the match list"
+        },
+        "scoreboard": {
+          "home": "Home",
+          "away": "Away"
+        },
+        "intermission": "Intermission · {{next}} next",
+        "periodStatus": {
+          "completed": "Played",
+          "started": "Live",
+          "upcoming": "Upcoming"
+        },
+        "periodControl": {
+          "ending": "Ending...",
+          "starting": "Starting...",
+          "endPeriod": "End period",
+          "endOvertime": "End overtime",
+          "endShootout": "End shootout",
+          "startPeriod": "Start period {{number}}",
+          "startOvertime": "Start overtime",
+          "startShootout": "Start shootout",
+          "finishMatch": "Finish match",
+          "finishMatchTitle": "The match is decided and no extra period is needed – mark it as finished"
+        },
+        "quickActions": {
+          "title": "Record event",
+          "recordSave": "Save",
+          "recordGoal": "Goal",
+          "recordPenalty": "Penalty",
+          "selectGoalieToEnable": "Select a goalie to enable",
+          "selectGoalieForBulk": "Select a goalie to enable bulk save entry",
+          "bulkSaves": "Record several saves",
+          "bulkSavesFor": "Record several saves for {{team}}",
+          "team": "team"
+        },
+        "events": {
+          "title": "Match events",
+          "empty": "No events recorded yet",
+          "selectAll": "Select all",
+          "selectAllEvents": "Select all events",
+          "clearSelection": "Clear selection",
+          "selectEvent": "Select {{type}} at {{time}}",
+          "selectGroup": "Select {{count}} saves at {{time}}",
+          "deleteEvent": "Delete event",
+          "deleteGroup": "Delete all {{count}} saves in this group",
+          "savesRecordedTogether": "{{count}} saves recorded together",
+          "assist": "Assist: {{name}}",
+          "teamPenalty": "Team penalty",
+          "type": {
+            "goal": "Goal",
+            "penalty": "Penalty",
+            "save": "Save"
+          }
+        },
+        "confirmEndPeriod": {
+          "title": "End period early?",
+          "titleOvertime": "End overtime early?",
+          "message": "Are you sure you want to end period {{period}} at {{time}}?",
+          "messageOvertime": "Are you sure you want to end overtime at {{time}}?",
+          "confirm": "End period",
+          "confirmOvertime": "End overtime"
+        },
+        "confirmEndMatch": {
+          "title": "Finish match?",
+          "message": "Are you sure you want to finish this match?",
+          "messageShootout": "Are you sure you want to finish this match? This will end the shootout.",
+          "warning": "This will finalize the match result. You can reopen the match later if needed.",
+          "confirm": "Finish match"
+        },
         "confirmReopen": {
           "title": "Reopen match for editing",
           "message": "Are you sure you want to reopen this match? It will move back to In progress so you can edit events or continue play (e.g. if the match was finished by accident).",
           "warning": "Per-match team, player and goalie season aggregates will be reverted. Statistics will be recalculated when you finish the match again.",
           "confirm": "Yes, reopen match"
+        },
+        "confirmDelete": {
+          "title": "Delete event",
+          "titleMany": "Delete {{count}} match events",
+          "titleGroup": "Delete {{count}} {{type}}",
+          "messageSingle": "Delete {{type}} for {{team}} at {{time}}?",
+          "messageGroup": "Delete all {{count}} {{type}} for {{team}}{{player}} at {{time}}?",
+          "messageMany": "Delete {{count}} selected match events ({{rows}} rows)?",
+          "confirm": "Delete",
+          "confirmCount": "Delete {{count}}",
+          "type": {
+            "goal_one": "goal",
+            "goal_other": "goals",
+            "penalty_one": "penalty",
+            "penalty_other": "penalties",
+            "save_one": "save",
+            "save_other": "saves"
+          }
+        },
+        "regulationDecided": "Match decided · finish the match",
+        "timeMinutesAria": "Minutes",
+        "timeSecondsAria": "Seconds",
+        "goalTypes": {
+          "Regular": "Regular goal",
+          "PowerPlay": "Power play (YV)",
+          "ShortHanded": "Short-handed (AV)",
+          "EmptyNet": "Empty net (TM)",
+          "PenaltyShot": "Penalty shot (RL)",
+          "OwnGoal": "Own goal (OM)",
+          "Overtime": "Overtime (JA)",
+          "Shootout": "Shootout (VL)"
+        },
+        "goalForm": {
+          "title": "Record goal for {{team}}",
+          "scoringPlayer": "Scoring player",
+          "selectPlayer": "Select player",
+          "assistingPlayer": "Assisting player",
+          "optional": "(optional)",
+          "noAssist": "No assist",
+          "goalType": "Goal type",
+          "time": "Time",
+          "missingJersey": "Selected player has no jersey number. Assign a jersey before recording the goal.",
+          "missingJerseyShort": "Missing jersey",
+          "recording": "Recording…",
+          "submit": "Record goal"
+        },
+        "penaltyForm": {
+          "title": "Record penalty for {{team}}",
+          "receivingPlayer": "Receiving player",
+          "selectPlayer": "Select player",
+          "severity": "Penalty severity",
+          "selectSeverity": "Select severity",
+          "severityMinor": "Minor",
+          "severityMajor": "Major",
+          "duration": "Duration",
+          "selectDuration": "Select duration",
+          "duration2": "2 minutes (minor)",
+          "duration5": "5 minutes (major)",
+          "duration10": "10 minutes (misconduct)",
+          "duration20": "20 minutes (game misconduct)",
+          "time": "Time",
+          "description": "Description",
+          "descriptionPlaceholder": "E.g. hooking, slashing, unsportsmanlike conduct…",
+          "missingJersey": "Selected player has no jersey number. Assign a jersey before recording the penalty.",
+          "missingJerseyShort": "Missing jersey",
+          "recording": "Recording…",
+          "submit": "Record penalty"
+        },
+        "errors": {
+          "connection": "Could not reach the server. Check your connection and try again.",
+          "matchIdMissing": "Match ID is missing",
+          "fetchMatch": "Failed to fetch match data",
+          "startMatch": "Failed to start match",
+          "startTimer": "Match started but the clock could not be started",
+          "completeMatch": "Failed to complete match",
+          "reopenMatch": "Failed to reopen match",
+          "endPeriod": "Failed to end period",
+          "startPeriod": "Failed to start period",
+          "skipToShootout": "Failed to start penalty shootout",
+          "recordSave": "Failed to record save",
+          "recordSaves": "Failed to record saves",
+          "recordGoal": "Failed to record goal",
+          "recordPenalty": "Failed to record penalty",
+          "selectTeamAndPlayer": "Select a team and a player",
+          "selectTeamAndPenaltyType": "Select a team and a penalty type",
+          "goalThrottle": "Wait a moment before recording another goal.",
+          "penaltyThrottle": "Wait a moment before recording another penalty.",
+          "cannotDetermineTeam": "Cannot determine team — try reopening the match.",
+          "missingEventId": "Cannot delete: missing event id",
+          "noEventsSelected": "Cannot delete: no events selected",
+          "deleteEvent": "Failed to delete event",
+          "refereeDuplicate": "Referee already selected in another slot",
+          "setOfficial": "Failed to set official",
+          "removeOfficial": "Failed to remove official"
         }
       },
       "cancelling": "Cancelling...",
@@ -1983,6 +2195,16 @@
     "back": "Back",
     "backTo": "Back to",
     "loading": "Loading…",
+    "cannotBeUndone": "This action cannot be undone.",
+    "bulk": {
+      "selected_one": "{{count}} selected",
+      "selected_other": "{{count}} selected",
+      "selectAll": "Select all ({{count}})",
+      "clear": "Clear",
+      "actions": "Actions",
+      "delete_one": "Delete ({{count}})",
+      "delete_other": "Delete ({{count}})"
+    },
     "edit": "Edit",
     "viewPublic": "View public page",
     "delete": "Delete",
@@ -3094,7 +3316,27 @@
         "removeReferee": "Remove referee",
         "selectReferee": "SELECT REFEREE",
         "saving": "Saving...",
-        "noOfficials": "No officials assigned."
+        "noOfficials": "No officials assigned.",
+        "title": "Match management",
+        "notFound": "Match not found.",
+        "live": "LIVE",
+        "swapSides": "Swap sides",
+        "swapSidesTitle": "Swap visual sides for teams",
+        "finishMatch": "Finish match",
+        "finishMatchTitle": "Stop live tracking and mark match as finished",
+        "closeTitle": "Close match management",
+        "home": "Home",
+        "away": "Away",
+        "tbd": "TBD",
+        "regulationDecided": "Match decided · finish the match",
+        "errors": {
+          "matchIdMissing": "Match ID is missing",
+          "loadMatch": "An error occurred while fetching match data.",
+          "loadExtras": "Failed to load match extras",
+          "operationFailed": "Operation failed",
+          "startShootout": "Failed to start penalty shootout",
+          "assignTeams": "Failed to assign teams"
+        }
       },
       "public": "Public",
       "confirmCancel": "Cancel this match?",

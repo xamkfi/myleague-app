@@ -715,6 +715,13 @@ public class FloorballMatch : BaseEntity
 
         Status = FloorballMatchStatus.Completed;
 
+        // A completed match has no open periods. The desk typically finishes straight from the
+        // overtime or shootout period without an explicit EndPeriod call, so close them here.
+        foreach (FloorballPeriodScore periodScore in _periodScores.Where(ps => !ps.IsCompleted))
+        {
+            periodScore.Complete();
+        }
+
         // Record that the match has been officiated by all referees
         foreach (FloorballReferee referee in _officials)
         {
@@ -1031,7 +1038,10 @@ public class FloorballMatch : BaseEntity
                 AwayActiveGoalieId = null;
 
             if (previousTeamId.HasValue)
-                _activePlayers.RemoveAll(player => player.TeamId == previousTeamId.Value);
+            {
+                Guid previousTeamIdValue = previousTeamId.Value;
+                _activePlayers.RemoveAll(player => player.TeamId == previousTeamIdValue);
+            }
         }
 
         // Backfill the denormalized team IDs on each existing period score so per-period
