@@ -3766,6 +3766,7 @@
     "verifying": "Vahvistetaan...",
     "back": "Takaisin",
     "codeSent": "Kirjautumiskoodi on lähetetty sähköpostiisi.",
+    "emailNotFound": "Sähköpostiosoitetta ei löydy. Tarkista osoite ja yritä uudelleen.",
     "unexpectedError": "Odottamaton virhe tapahtui.",
     "logout": "Kirjaudu ulos"
   },
