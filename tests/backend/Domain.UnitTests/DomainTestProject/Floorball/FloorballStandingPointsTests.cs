@@ -1,6 +1,7 @@
 using Domain.Entities.Floorball.Statistics;
 using Domain.Enums.Floorball;
 using Domain.Services.Floorball;
+using Domain.ValueObjects.Floorball;
 
 namespace DomainTestProject.Floorball;
 
@@ -19,6 +20,35 @@ public class FloorballStandingPointsTests
         int expectedPoints)
     {
         FloorballStandingPoints.ForScore(goalsFor, goalsAgainst, wentToShootout).Should().Be(expectedPoints);
+    }
+
+    [Fact]
+    public void ForScore_WithSeasonRules_AwardsOvertimeWinWithoutShootout()
+    {
+        FloorballStandingRules rules = new(4, 2, 3, 1);
+
+        int points = FloorballStandingPoints.ForScore(rules, 2, 1, wentToOvertime: true, wentToShootout: false);
+
+        points.Should().Be(3);
+    }
+
+    [Fact]
+    public void ForScore_WithSeasonRules_AwardsShootoutWinAndLoss()
+    {
+        FloorballStandingRules rules = FloorballStandingRules.Default();
+
+        FloorballStandingPoints.ForScore(rules, 1, 0, wentToOvertime: true, wentToShootout: true).Should().Be(2);
+        FloorballStandingPoints.ForScore(rules, 0, 1, wentToOvertime: false, wentToShootout: true).Should().Be(1);
+    }
+
+    [Fact]
+    public void ForScore_WithSeasonRules_AwardsCustomDrawAndRegulationWin()
+    {
+        FloorballStandingRules rules = new(5, 2, 3, 1);
+
+        FloorballStandingPoints.ForScore(rules, 3, 1, wentToOvertime: false, wentToShootout: false).Should().Be(5);
+        FloorballStandingPoints.ForScore(rules, 2, 2, wentToOvertime: false, wentToShootout: false).Should().Be(2);
+        FloorballStandingPoints.ForScore(rules, 0, 1, wentToOvertime: false, wentToShootout: false).Should().Be(0);
     }
 
     [Fact]
@@ -68,5 +98,39 @@ public class FloorballStandingPointsTests
 
         team.Points.Should().Be(FloorballStandingPoints.TiePoints);
         team.Ties.Should().Be(1);
+    }
+
+    [Fact]
+    public void UpdateAfterMatch_SeasonOvertime_UsesConfiguredPointsAndUndoRemovesThem()
+    {
+        FloorballStandingRules rules = new(3, 1, 2, 1);
+        FloorballTeamSeasonStatistics winner = new(Guid.NewGuid(), Guid.NewGuid());
+
+        winner.UpdateAfterMatch(
+            FloorballGameResult.Win,
+            isHomeGame: true,
+            goalsFor: 0,
+            goalsAgainst: 0,
+            wentToOvertime: true,
+            standingRules: rules);
+
+        winner.Points.Should().Be(2);
+
+        winner.UndoMatchResult(
+            FloorballGameResult.Win,
+            isHomeGame: true,
+            wentToOvertime: true,
+            standingRules: rules);
+
+        winner.Points.Should().Be(0);
+        winner.Wins.Should().Be(0);
+    }
+
+    [Fact]
+    public void Constructor_NegativePoints_Throws()
+    {
+        Action act = () => new FloorballStandingRules(-1, 1, 2, 1);
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
     }
 }

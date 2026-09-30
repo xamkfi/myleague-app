@@ -123,6 +123,7 @@ function HockeyTeamsPage() {
           pagination={slot.pagination}
           onPageChange={slot.onPageChange}
           onPageSizeChange={slot.onPageSizeChange}
+          seasonId={slot.seasonId}
         />
       )}
     />

@@ -113,6 +113,8 @@ const EditSeasonPage = () => {
         winPoints: standing?.winPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.winPoints,
         drawPoints: standing?.drawPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.drawPoints,
         lossPoints: standing?.lossPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.lossPoints,
+        overtimeWinPoints: standing?.overtimeWinPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.overtimeWinPoints,
+        overtimeLossPoints: standing?.overtimeLossPoints ?? FOOTBALL_HOBBY_STANDING_RULE_DEFAULTS.overtimeLossPoints,
         teamCategory: seasonData.data.teamCategory,
         logoUrl: seasonData.data.logoUrl ?? '',
         teamsAdvancing: seasonData.data.teamsAdvancing ?? 0,
@@ -643,6 +645,14 @@ const EditSeasonPage = () => {
                   <div className="form-group">
                     <label htmlFor="edit-lossPoints">{t('football.seasons.fields.lossPoints', 'Loss Points')}</label>
                     <input type="number" id="edit-lossPoints" name="lossPoints" value={formData.lossPoints} onChange={handleInputChange} min={0} disabled={loading} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-overtimeWinPoints">{t('football.seasons.fields.overtimeWinPoints', 'Extra time or penalty win')}</label>
+                    <input type="number" id="edit-overtimeWinPoints" name="overtimeWinPoints" value={formData.overtimeWinPoints} onChange={handleInputChange} min={0} disabled={loading} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="edit-overtimeLossPoints">{t('football.seasons.fields.overtimeLossPoints', 'Extra time or penalty loss')}</label>
+                    <input type="number" id="edit-overtimeLossPoints" name="overtimeLossPoints" value={formData.overtimeLossPoints} onChange={handleInputChange} min={0} disabled={loading} />
                   </div>
                 </div>
               </div>

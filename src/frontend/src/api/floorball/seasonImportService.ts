@@ -170,6 +170,10 @@ export async function importSeason(
       allowOvertime: payload.season.allowOvertime ?? true,
       overtimeDurationMinutes: payload.season.overtimeDurationMinutes ?? 5,
       allowShootout: payload.season.allowShootout ?? true,
+      winPoints: payload.season.winPoints ?? 3,
+      drawPoints: payload.season.drawPoints ?? 1,
+      overtimeWinPoints: payload.season.overtimeWinPoints ?? 2,
+      overtimeLossPoints: payload.season.overtimeLossPoints ?? 1,
       teamCategory: defaultCategory,
     });
     seasonId = created.data.id;

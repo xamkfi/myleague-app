@@ -5,6 +5,13 @@ import {
   loadFloorballRosterSeasons,
   revertFloorballRosters,
 } from '../../../../../api/floorball/rosterImportService';
+import {
+  FLOORBALL_ROSTER_IMPORT_AI_PROMPT,
+  FLOORBALL_ROSTER_IMPORT_POSITIONS,
+  buildFloorballRosterPromptFileName,
+} from './rosterImportPrompt';
+
+const SAMPLE_HREF = new URL('../../../../../types/floorball/rosterImport.sample.json', import.meta.url).href;
 
 interface FloorballRosterImportModalProps {
   onClose: () => void;
@@ -35,6 +42,13 @@ export function FloorballRosterImportModal({
       preferredTeamId={preferredTeamId}
       preferredTeamName={preferredTeamName}
       presetSeasonId={presetSeasonId}
+      guide={{
+        prompt: FLOORBALL_ROSTER_IMPORT_AI_PROMPT,
+        buildPromptFileName: buildFloorballRosterPromptFileName,
+        sampleHref: SAMPLE_HREF,
+        sampleDownloadName: 'floorball-roster-import-sample.json',
+        allowedPositions: FLOORBALL_ROSTER_IMPORT_POSITIONS,
+      }}
     />
   );
 }

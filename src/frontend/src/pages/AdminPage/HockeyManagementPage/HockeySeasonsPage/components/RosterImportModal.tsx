@@ -5,6 +5,13 @@ import {
   loadHockeyRosterSeasons,
   revertHockeyRosters,
 } from '../../../../../api/hockey/rosterImportService';
+import {
+  HOCKEY_ROSTER_IMPORT_AI_PROMPT,
+  HOCKEY_ROSTER_IMPORT_POSITIONS,
+  buildHockeyRosterPromptFileName,
+} from './rosterImportPrompt';
+
+const SAMPLE_HREF = new URL('../../../../../types/hockey/rosterImport.sample.json', import.meta.url).href;
 
 interface HockeyRosterImportModalProps {
   onClose: () => void;
@@ -35,6 +42,13 @@ export function HockeyRosterImportModal({
       preferredTeamId={preferredTeamId}
       preferredTeamName={preferredTeamName}
       presetSeasonId={presetSeasonId}
+      guide={{
+        prompt: HOCKEY_ROSTER_IMPORT_AI_PROMPT,
+        buildPromptFileName: buildHockeyRosterPromptFileName,
+        sampleHref: SAMPLE_HREF,
+        sampleDownloadName: 'hockey-roster-import-sample.json',
+        allowedPositions: HOCKEY_ROSTER_IMPORT_POSITIONS,
+      }}
     />
   );
 }

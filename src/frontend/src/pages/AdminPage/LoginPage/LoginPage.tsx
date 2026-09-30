@@ -26,16 +26,26 @@ function LoginPage({ variant = 'admin' }: LoginPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const localizeAuthError = (message: string): string => {
+    if (message === 'No account was found for this email address.') {
+      return t(
+        'auth.emailNotFound',
+        'No account was found for this email address. Check the address and try again.',
+      );
+    }
+    return message;
+  };
+
   const parseApiError = (err: unknown): string => {
     if (!(err instanceof Error)) return t('auth.unexpectedError', 'An unexpected error occurred');
     try {
       const parsed = JSON.parse(err.message) as { title?: string; errors?: string[] };
       if (parsed.errors && parsed.errors.length > 0) {
-        return parsed.errors.join(', ');
+        return localizeAuthError(parsed.errors.join(', '));
       }
-      return parsed.title || err.message;
+      return localizeAuthError(parsed.title || err.message);
     } catch {
-      return err.message;
+      return localizeAuthError(err.message);
     }
   };
 

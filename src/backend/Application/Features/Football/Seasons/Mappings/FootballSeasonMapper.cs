@@ -60,7 +60,9 @@ public static class FootballSeasonMapper
         FootballStandingRulesDto standingRulesDto = new(
             season.StandingRules.WinPoints,
             season.StandingRules.DrawPoints,
-            season.StandingRules.LossPoints);
+            season.StandingRules.LossPoints,
+            season.StandingRules.OvertimeWinPoints,
+            season.StandingRules.OvertimeLossPoints);
 
         int teamsAdvancing = 0;
         IReadOnlyList<StandingSortCriterion> rankingCriteria = StandingSortCriteria.Default;
@@ -110,7 +112,9 @@ public static class FootballSeasonMapper
         FootballStandingRules standingRules = new(
             command.WinPoints,
             command.DrawPoints,
-            command.LossPoints);
+            command.LossPoints,
+            command.OvertimeWinPoints,
+            command.OvertimeLossPoints);
 
         FootballSeason season = new FootballSeason(
             command.Name,
@@ -147,7 +151,9 @@ public static class FootballSeasonMapper
         season.UpdateStandingRules(new FootballStandingRules(
             command.WinPoints,
             command.DrawPoints,
-            command.LossPoints));
+            command.LossPoints,
+            command.OvertimeWinPoints,
+            command.OvertimeLossPoints));
 
         if (command.TeamCategory.HasValue)
         {

@@ -15,6 +15,14 @@
   background-color: $color-neutral-white;
   color: $color-neutral-black;
   border-radius: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  // While the match is live the header carries a subtle accent so the desk state is
+  // obvious at a glance even when the LIVE badge is out of view.
+  &--live {
+    border-color: $color-red-pale;
+    box-shadow: inset 4px 0 0 $color-red-muted;
+  }
 
   .live-match-info {
     display: flex;
@@ -49,6 +57,22 @@
       height: 40px;
       display: flex;
       align-items: center;
+      gap: 10px;
+
+      .team-label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .vs-label {
+        flex: 0 0 auto;
+        font-size: 14px;
+        font-weight: map.get($font-weights, 'medium');
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: $color-neutral-dark-grey;
+      }
     }
 
     .status-controls {
@@ -61,15 +85,35 @@
         box-sizing: border-box;
         height: 40px;
         padding: 8px 16px;
-        background: #D74440;
-        color: #ffffff;
-        border: 1px solid #D74440;
         border-radius: 24px;
-        font-size: 0.875rem;
-        font-weight: 600;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 8px;
+
+        &--live {
+          background: $color-red-muted;
+          color: $color-neutral-white;
+          border: 1px solid $color-red-muted;
+        }
+
+        &--finished {
+          background: $color-neutral-light-grey;
+          color: $color-neutral-black;
+          border: 1px solid $color-neutral-medium-grey;
+        }
+
+        .live-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: $color-neutral-white;
+          box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6);
+          animation: live-dot-pulse 1.6s ease-out infinite;
+        }
       }
 
       .cancel-live-button {
@@ -91,7 +135,13 @@
         transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
         &:hover {
-          background: #fff;
+          background: $color-red-muted;
+          color: $color-neutral-white;
+        }
+
+        &:focus-visible {
+          outline: 2px solid $color-blue-deep;
+          outline-offset: 2px;
         }
       }
 
@@ -189,9 +239,16 @@
   }
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+@keyframes live-dot-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6); }
+  70% { box-shadow: 0 0 0 6px rgba(255, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-header .live-match-info .status-controls .match-status .live-dot {
+    animation: none;
+  }
 }
 
 

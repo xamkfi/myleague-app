@@ -1,9 +1,13 @@
-import { useCallback, useEffect, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { footballMatchService } from '../../../../api/football/footballMatchService';
-import { footballTeamNameSearchService } from '../../../../api/football/footballTeamNameSearchService';
 import type { FootballMatchDto } from '../../../../types/football/footballTypes';
 import SearchableInfiniteDropdown from '../../../../components/SearchableInfiniteDropdown/SearchableInfiniteDropdown';
+import {
+  competitionKindFromMatch,
+  toTeamSearchResult,
+  useEnrolledTeams,
+} from '../../../../utils/enrolledCompetitionTeams';
 import '../../../../components/AssignTeamsDialog/AssignTeamsDialog.scss';
 
 interface FootballAssignTeamsDialogProps {
@@ -45,24 +49,25 @@ const FootballAssignTeamsDialog = ({
     }
   }, [isOpen, match.homeTeamId, match.homeTeamName, match.awayTeamId, match.awayTeamName]);
 
+  const competitionKind = competitionKindFromMatch(match);
+  const enrolledCatalog = useEnrolledTeams(match.competitionId, competitionKind, 'football');
+  const catalogReady = Boolean(
+    enrolledCatalog.competitionId === match.competitionId
+    && enrolledCatalog.teams
+    && !enrolledCatalog.failed,
+  );
+  const enrolledTeams = useMemo(
+    () => (catalogReady ? enrolledCatalog.teams ?? [] : []),
+    [catalogReady, enrolledCatalog.teams],
+  );
+  const enrolledTeamKey = catalogReady
+    ? enrolledTeams.map((team) => team.id).join('|')
+    : 'pending';
+
   const searchTeamsWith = useCallback(
-    async (initialOptions: { id: string; name: string }[], query: string, page: number) => {
-      const result = await footballTeamNameSearchService.searchTeams(query, page);
-      if (page !== 1 || initialOptions.length === 0) {
-        return result;
-      }
-      const trimmed: string = query.trim().toLowerCase();
-      const filteredInitial = trimmed
-        ? initialOptions.filter((opt) => opt.name.toLowerCase().includes(trimmed))
-        : initialOptions;
-      const seenIds = new Set<string>(filteredInitial.map((o) => o.id));
-      const merged = [
-        ...filteredInitial,
-        ...result.data.filter((opt) => !seenIds.has(opt.id)),
-      ];
-      return { data: merged, pagination: result.pagination };
-    },
-    []
+    async (initialOptions: { id: string; name: string }[], query: string, page: number) =>
+      toTeamSearchResult(enrolledTeams, query, page, initialOptions),
+    [enrolledTeams],
   );
 
   const searchHome = useCallback(
@@ -167,6 +172,7 @@ const FootballAssignTeamsDialog = ({
               {t('football.matches.homeTeamLabel', 'Home Team')}
             </label>
             <SearchableInfiniteDropdown
+              key={`home-${enrolledTeamKey}`}
               placeholder={t('football.matches.assignTeams.homePlaceholder', 'Select home team (optional)')}
               value={homeTeamId}
               onChange={(value: string) => setHomeTeamId(value)}
@@ -194,6 +200,7 @@ const FootballAssignTeamsDialog = ({
               {t('football.matches.awayTeamLabel', 'Away Team')}
             </label>
             <SearchableInfiniteDropdown
+              key={`away-${enrolledTeamKey}`}
               placeholder={t('football.matches.assignTeams.awayPlaceholder', 'Select away team (optional)')}
               value={awayTeamId}
               onChange={(value: string) => setAwayTeamId(value)}

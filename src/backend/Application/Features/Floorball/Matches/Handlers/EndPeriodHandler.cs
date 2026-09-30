@@ -1,26 +1,9 @@
-using Application.Features.Floorball.Matches.Commands;
 using Application.Common;
-using Application.Features.Floorball.Seasons.DTOs;
+using Application.Features.Common.CrossCutting.MatchTimer.Services;
+using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
-using Application.Features.Floorball.Teams.DTOs;
-using Application.Features.Floorball.Players.DTOs;
-using Application.Features.Floorball.Referees.DTOs;
-using Application.Features.Floorball.TeamManagers.DTOs;
-using Application.Features.Floorball.Statistics.DTOs;
-using Application.Features.Floorball.Seasons.Mappings;
 using Application.Features.Floorball.Matches.Mappings;
-using Application.Features.Floorball.Teams.Mappings;
-using Application.Features.Floorball.Players.Mappings;
-using Application.Features.Floorball.Referees.Mappings;
-using Application.Features.Floorball.TeamManagers.Mappings;
-using Application.Features.Floorball.Statistics.Mappings;
-using Domain.Entities.Floorball.Competitions;
 using Domain.Entities.Floorball.Matches;
-using Domain.Entities.Floorball.Matches.Events;
-using Domain.Entities.Floorball.Officials;
-using Domain.Entities.Floorball.Statistics;
-using Domain.Entities.Floorball.Teams;
-using Domain.Repositories.Common;
 using Domain.Repositories.Floorball;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -28,12 +11,14 @@ using Microsoft.Extensions.Logging;
 namespace Application.Features.Floorball.Matches.Handlers;
 
 /// <summary>
-/// Handler for ending a period in a floorball match
+/// Handler for ending a period in a floorball match. Also stops the live match timer so the
+/// clock cannot keep running after the period has been closed.
 /// </summary>
 public class EndPeriodHandler : IRequestHandler<EndFloorballPeriodCommand, Result<FloorballMatchDto>>
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
+    private readonly IMatchTimerService _timerService;
     private readonly ILogger<EndPeriodHandler> _logger;
 
     /// <summary>
@@ -42,10 +27,12 @@ public class EndPeriodHandler : IRequestHandler<EndFloorballPeriodCommand, Resul
     public EndPeriodHandler(
         IFloorballMatchRepository matchRepository,
         IFloorballUnitOfWork unitOfWork,
+        IMatchTimerService timerService,
         ILogger<EndPeriodHandler> logger)
     {
         _matchRepository = matchRepository;
         _unitOfWork = unitOfWork;
+        _timerService = timerService;
         _logger = logger;
     }
 
@@ -60,21 +47,32 @@ public class EndPeriodHandler : IRequestHandler<EndFloorballPeriodCommand, Resul
             if (match == null)
             {
                 _logger.LogWarning("Match not found with ID: {MatchId}", request.MatchId);
-                return Result<FloorballMatchDto>.Failure($"Match with ID {request.MatchId} not found.");
+                return Result<FloorballMatchDto>.NotFound("Match", request.MatchId);
             }
 
             match.EndPeriod(request.PeriodNumber);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // The period is closed; freeze the clock so the next period starts from a paused
+            // timer. StopTimerAsync is a no-op when no timer exists for the match.
+            await _timerService.StopTimerAsync(match.Id);
+
             return Result<FloorballMatchDto>.Success(FloorballMatchMapper.ToDto(match));
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
         {
-            _logger.LogError(ex, "Error occurred while ending period {Period} for match {MatchId}", request.PeriodNumber, request.MatchId);
-            return Result<FloorballMatchDto>.Failure("An error occurred while ending the period.");
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Period {Period} for match {MatchId} could not be ended: {Reason}", request.PeriodNumber, request.MatchId, ex.Message);
+            return Result<FloorballMatchDto>.Failure(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid period {Period} for match {MatchId}: {Reason}", request.PeriodNumber, request.MatchId, ex.Message);
+            return Result<FloorballMatchDto>.Failure(ex.Message);
         }
     }
 }
-
-

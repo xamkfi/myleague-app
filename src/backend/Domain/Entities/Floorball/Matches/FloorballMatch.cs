@@ -354,8 +354,19 @@ public class FloorballMatch : BaseEntity
         if (homeTeam != null && awayTeam != null && homeTeam == awayTeam)
             throw new ArgumentException("Home team and away team cannot be the same team.");
 
-        AssignTeam(FloorballPlayoffSlot.Home, homeTeam);
-        AssignTeam(FloorballPlayoffSlot.Away, awayTeam);
+        bool homeChanges = HomeTeamId != homeTeam?.Id;
+        bool awayChanges = AwayTeamId != awayTeam?.Id;
+
+        // Clear a slot before writing its replacement. A straight swap would otherwise fail the
+        // opposite-slot check while the team being moved is still sitting on the other side.
+        if (homeChanges)
+            AssignTeam(FloorballPlayoffSlot.Home, null);
+        if (awayChanges)
+            AssignTeam(FloorballPlayoffSlot.Away, null);
+        if (homeChanges && homeTeam != null)
+            AssignTeam(FloorballPlayoffSlot.Home, homeTeam);
+        if (awayChanges && awayTeam != null)
+            AssignTeam(FloorballPlayoffSlot.Away, awayTeam);
     }
 
     /// <summary>
@@ -704,6 +715,13 @@ public class FloorballMatch : BaseEntity
 
         Status = FloorballMatchStatus.Completed;
 
+        // A completed match has no open periods. The desk typically finishes straight from the
+        // overtime or shootout period without an explicit EndPeriod call, so close them here.
+        foreach (FloorballPeriodScore periodScore in _periodScores.Where(ps => !ps.IsCompleted))
+        {
+            periodScore.Complete();
+        }
+
         // Record that the match has been officiated by all referees
         foreach (FloorballReferee referee in _officials)
         {
@@ -997,6 +1015,8 @@ public class FloorballMatch : BaseEntity
                 throw new ArgumentException("Home team and away team cannot be the same team.");
         }
 
+        Guid? previousTeamId = slot == FloorballPlayoffSlot.Home ? HomeTeamId : AwayTeamId;
+
         if (slot == FloorballPlayoffSlot.Home)
         {
             HomeTeam = team;
@@ -1006,6 +1026,22 @@ public class FloorballMatch : BaseEntity
         {
             AwayTeam = team;
             AwayTeamId = team?.Id;
+        }
+
+        // A replaced slot no longer belongs to the previous club. Drop that side's goalie and
+        // active field players so the match page does not keep showing the old roster.
+        if (previousTeamId != team?.Id)
+        {
+            if (slot == FloorballPlayoffSlot.Home)
+                HomeActiveGoalieId = null;
+            else
+                AwayActiveGoalieId = null;
+
+            if (previousTeamId.HasValue)
+            {
+                Guid previousTeamIdValue = previousTeamId.Value;
+                _activePlayers.RemoveAll(player => player.TeamId == previousTeamIdValue);
+            }
         }
 
         // Backfill the denormalized team IDs on each existing period score so per-period

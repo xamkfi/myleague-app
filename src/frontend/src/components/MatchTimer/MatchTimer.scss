@@ -1,8 +1,11 @@
 @use 'sass:map';
+@use 'sass:color';
 @use '../../styles/variables' as *;
 
+// Shared match clock (floorball / football / hockey live desks). The card chrome is owned by
+// the page; this file styles only the digits, caption, and control chips.
 .timer-component {
-  display: block; /* neutralize base card for embedded usage */
+  display: block;
   padding: 0;
   border: none;
   background: transparent;
@@ -12,94 +15,57 @@
     text-align: center;
     background: transparent;
     padding: 0;
-    margin-bottom: 10px;
-    
+    margin-bottom: 12px;
+
     .timer-time {
-      
       font-family: $font-family-display;
       font-weight: map.get($font-weights, 'medium');
-      font-size: 96px;
-      line-height: 80px;
+      font-size: clamp(64px, 9vw, 96px);
+      line-height: 1;
       letter-spacing: 0.05em;
       color: $color-neutral-black;
-      /* Prevent digit width jitter: use tabular numerals */
       font-variant-numeric: tabular-nums;
-      -webkit-font-feature-settings: 'tnum' 1, 'lnum' 1;
       font-feature-settings: 'tnum' 1, 'lnum' 1;
-
-      /* Remove inner card look so parent layout can style the box */
       background: transparent;
       padding: 0;
-      border-radius: 0;
       border: none;
-      min-width: auto;
       display: inline-block;
+      transition: color 0.2s ease;
+
+      &--running {
+        color: $color-sport-floorball-ink;
+      }
+    }
+
+    .timer-caption {
+      margin-top: 8px;
+      font-family: $font-family-body;
+      font-weight: map.get($font-weights, 'semibold');
+      font-size: 13px;
+      line-height: 16px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: $color-neutral-dark-grey;
+      font-variant-numeric: tabular-nums;
     }
   }
 
   .timer-controls {
     display: flex;
-    gap: 4px;
-    /* Allow the row to wrap onto multiple lines on narrow viewports. The previous
-     * `nowrap` value was deliberate (keeps the chip row visually identical at default
-     * widths), but it made the controls overflow the timer card whenever the manage
-     * match layout switched to its narrow / sidebar-collapsed-with-narrow-window mode.
-     * Wrapping is preferred over horizontal overflow because every button is a real
-     * click target — if they slid behind the card edge users couldn't reach the
-     * +1 min / End period buttons. `min-width: 0` on the parent flex item ensures the
-     * controls receive their fair share of space rather than being forced wider than
-     * the card. */
+    gap: 6px;
     flex-wrap: wrap;
     max-width: 100%;
     justify-content: center;
     align-items: center;
-
-    .timer-button {
-      height: 32px;
-      padding: 6px 10px;
-      border-radius: 16px;
-      border: 1px solid $color-neutral-medium-grey;
-      background: $color-neutral-light-grey;
-      color: $color-neutral-dark-grey;
-      font-family: $font-family-body;
-      font-weight: map.get($font-weights, 'semibold');
-      font-size: 11px;
-      line-height: 16px;
-      letter-spacing: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      white-space: nowrap;
-      cursor: pointer;
-      box-shadow: none;
-      transition: all 0.2s ease;
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-    }
   }
 
-  // Adjustment buttons inherit neutral style
-  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.decrease,
-  .timer-adjustments .adjustment-buttons .timer-button.adjust-time.increase {
-    border-color: $color-neutral-medium-grey;
+  .timer-button {
+    height: 32px;
+    padding: 6px 10px;
+    border-radius: 16px;
+    border: 1px solid $color-neutral-medium-grey;
     background: $color-neutral-light-grey;
     color: $color-neutral-dark-grey;
-  }
-
-  // End/Start period button styles (increase specificity to beat .timer-controls .timer-button)
-  .timer-controls .timer-button.end-period-inline {
-    min-width: 80px;
-    width: 80px;
-    height: 32px;
-    padding: 6px 12px;
-    border-radius: 16px;
-    border: 1px solid $color-red-muted;
-    background: $color-red-muted;
-    color: $color-neutral-white;
     font-family: $font-family-body;
     font-weight: map.get($font-weights, 'semibold');
     font-size: 11px;
@@ -107,77 +73,227 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    list-style: none;
+    gap: 4px;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+
+    &:hover:not(:disabled) {
+      background: $color-neutral-white;
+      border-color: $color-neutral-dark-grey;
+      color: $color-neutral-black;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-blue-secondary;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
   }
 
-  // Ensure no pseudo-element glyph renders inside the end period button
-  .timer-controls .timer-button.end-period-inline::before,
-  .timer-controls .timer-button.end-period-inline::after { content: none; }
-
-  
-  .timer-button.set-time { min-width: 36px; width: 36px; padding: 6px; }
-  .timer-button.minute-back { min-width: 60px; width: 60px; }
-  .timer-button.seconds-back { min-width: 50px; width: 50px; }
-  .timer-button.one-second-back { min-width: 42px; width: 42px; }
-  .timer-button.start,
-  .timer-button.pause { min-width: 36px; width: 36px; padding: 6px; }
-  .timer-button.one-second-forward { min-width: 42px; width: 42px; }
-  .timer-button.seconds-forward { min-width: 50px; width: 50px; }
-  .timer-button.minute-forward { min-width: 60px; width: 60px; }
-  .timer-button.reset { min-width: 36px; width: 36px; background: #FFEFB8; border-color: $color-neutral-medium-grey; color: $color-neutral-dark-grey; }
-
-  /* Placeholder icons using text glyphs */
-  .timer-button.minute-back::before { content: '«'; font-size: 11px; line-height: 16px; }
-  .timer-button.seconds-back::before { content: '‹'; font-size: 11px; line-height: 16px; }
-  .timer-button.one-second-back::before { content: '‹'; font-size: 11px; line-height: 16px; }
-  .timer-button.one-second-forward::after { content: '›'; font-size: 11px; line-height: 16px; }
-  .timer-button.seconds-forward::after { content: '›'; font-size: 11px; line-height: 16px; }
-  .timer-button.minute-forward::after { content: '»'; font-size: 11px; line-height: 16px; }
-
-  /* placeholder icons for start/pause */
-  .timer-button.start, .timer-button.pause { font-size: 0; }
-  .timer-button.start::before { content: '▶'; font-size: 11px; line-height: 16px; }
-  .timer-button.pause::before { content: '⏸'; font-size: 11px; line-height: 16px; }
-
-  /* Edit icon sizing */
-  .timer-button.set-time img { width: 16px; height: 16px; }
-
   .timer-adjustments {
-    /* Required so the adjustment group can shrink within a wrapped `.timer-controls`
-     * row instead of forcing the parent to stay wide enough to fit all 8 inner
-     * buttons inline. */
     min-width: 0;
     max-width: 100%;
 
-    .adjustment-group {
+    .adjustment-buttons {
       display: flex;
-      flex-direction: column;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
       align-items: center;
-      gap: 0.75rem;
+    }
 
-      .adjustment-label { display: none; }
+    // Rewind / forward chips are grouped into a single pill so the three sizes read as one unit.
+    .adjustment-cluster {
+      display: inline-flex;
+      gap: 0;
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: 16px;
+      overflow: hidden;
+      background: $color-neutral-light-grey;
 
-      .adjustment-buttons {
-        display: flex;
-        gap: 4px;
-        /* Inner buttons now also wrap so very narrow viewports don't overflow the
-         * timer card — pairs the `flex-wrap: wrap` we added to the outer
-         * `.timer-controls` and keeps every adjustment button reachable. */
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
+      .timer-button {
+        height: 30px;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        min-width: 44px;
+
+        & + .timer-button {
+          border-left: 1px solid $color-neutral-medium-grey;
+        }
+      }
+    }
+  }
+
+  .timer-button.set-time,
+  .timer-button.reset {
+    min-width: 36px;
+    width: 36px;
+    padding: 6px;
+  }
+
+  .timer-button.set-time img {
+    width: 16px;
+    height: 16px;
+  }
+
+  .timer-button.reset {
+    background: $color-yellow-pale;
+    border-color: $color-yellow-light;
+    color: $color-neutral-black;
+
+    &:hover:not(:disabled) {
+      background: $color-yellow-light;
+      border-color: $color-yellow-muted;
+    }
+  }
+
+  // Direction glyphs on the adjustment chips
+  .timer-button.minute-back::before,
+  .timer-button.seconds-back::before,
+  .timer-button.one-second-back::before {
+    content: '‹';
+    font-size: 13px;
+    line-height: 16px;
+  }
+  .timer-button.minute-back::before { content: '«'; }
+
+  .timer-button.one-second-forward::after,
+  .timer-button.seconds-forward::after,
+  .timer-button.minute-forward::after {
+    content: '›';
+    font-size: 13px;
+    line-height: 16px;
+  }
+  .timer-button.minute-forward::after { content: '»'; }
+
+  // Primary play / pause control sits between the two clusters and is the largest chip.
+  .timer-button.start,
+  .timer-button.pause {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+    color: $color-neutral-white;
+    box-shadow: 0 4px 12px rgba(28, 28, 30, 0.18);
+
+    &::before {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    &:hover:not(:disabled) {
+      color: $color-neutral-white;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(28, 28, 30, 0.22);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  }
+
+  .timer-button.start {
+    background: $color-green-muted;
+    border-color: $color-green-muted;
+
+    &::before { content: '▶'; padding-left: 3px; }
+
+    &:hover:not(:disabled) {
+      background: color.adjust($color-green-muted, $lightness: -6%);
+      border-color: color.adjust($color-green-muted, $lightness: -6%);
+    }
+  }
+
+  .timer-button.pause {
+    background: $color-neutral-black;
+    border-color: $color-neutral-black;
+
+    &::before { content: '❚❚'; font-size: 14px; letter-spacing: -2px; }
+
+    &:hover:not(:disabled) {
+      background: color.adjust($color-neutral-black, $lightness: 10%);
+      border-color: color.adjust($color-neutral-black, $lightness: 10%);
+    }
+  }
+
+  // End / start period call to action under the controls.
+  .timer-button.period-control {
+    margin-top: 14px;
+    height: 40px;
+    min-width: 200px;
+    padding: 0 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: $color-neutral-white;
+
+    &::before,
+    &::after { content: none; }
+
+    &--end,
+    &--finish {
+      background: $color-red-muted;
+      border-color: $color-red-muted;
+
+      &:hover:not(:disabled) {
+        background: color.adjust($color-red-muted, $lightness: -8%);
+        border-color: color.adjust($color-red-muted, $lightness: -8%);
+        color: $color-neutral-white;
+      }
+    }
+
+    &--start {
+      background: $color-sport-floorball;
+      border-color: $color-sport-floorball;
+
+      &:hover:not(:disabled) {
+        background: $color-sport-floorball-ink;
+        border-color: $color-sport-floorball-ink;
+        color: $color-neutral-white;
       }
     }
   }
 
   .timer-error {
-    color: #f44336;
-    font-size: 0.9rem;
+    margin-top: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid $color-red-pale;
+    background: $color-red-almost;
+    color: $color-red-muted;
+    font-family: $font-family-body;
+    font-size: 13px;
+    line-height: 18px;
     text-align: center;
-    margin-top: 0.5rem;
-    padding: 0.5rem;
-    background: #ffebee;
-    border-radius: 4px;
-    border: 1px solid #ffcdd2;
+  }
+}
+
+// Match desks flag when the configured period length has elapsed.
+@keyframes timer-critical-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.timer-digits--critical .timer-component .timer-display .timer-time {
+  color: $color-red-primary;
+  animation: timer-critical-pulse 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timer-digits--critical .timer-component .timer-display .timer-time {
+    animation: none;
   }
 }

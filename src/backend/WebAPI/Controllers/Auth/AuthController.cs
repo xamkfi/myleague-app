@@ -44,7 +44,7 @@ public class AuthController : BaseApiController
     /// Request a login code to be sent to the specified email
     /// </summary>
     /// <param name="request">The login request containing the email</param>
-    /// <returns>Success response (always returns 200 to prevent email enumeration)</returns>
+    /// <returns>Success when a code was issued, or 400 when the email has no account</returns>
     [HttpPost("login")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

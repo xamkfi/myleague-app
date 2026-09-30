@@ -26,6 +26,10 @@ export const CreateSeasonPage = () => {
     allowShootout: true,
     teamsAdvancing: 0,
     rankingCriteria: [...DEFAULT_STANDING_SORT],
+    winPoints: 3,
+    drawPoints: 1,
+    overtimeWinPoints: 2,
+    overtimeLossPoints: 1,
   });
   const [isActive, setIsActive] = useState(false);
 
@@ -460,6 +464,31 @@ export const CreateSeasonPage = () => {
               <div className="info-message">
                 <i className="fas fa-info-circle"></i>
                 {t('floorball.seasons.create.info', 'The season will be created as inactive by default')}
+              </div>
+            </div>
+
+            <div className="form-section">
+              <h3 className="form-section__title">
+                <i className="fas fa-list-ol"></i>
+                {t('floorball.seasons.sections.points', 'Points')}
+              </h3>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="create-winPoints">{t('floorball.seasons.fields.winPoints', 'Win points')}</label>
+                  <input type="number" id="create-winPoints" name="winPoints" value={formData.winPoints ?? 3} onChange={handleInputChange} min={0} disabled={loading} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="create-drawPoints">{t('floorball.seasons.fields.drawPoints', 'Draw points')}</label>
+                  <input type="number" id="create-drawPoints" name="drawPoints" value={formData.drawPoints ?? 1} onChange={handleInputChange} min={0} disabled={loading} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="create-overtimeWinPoints">{t('floorball.seasons.fields.overtimeWinPoints', 'Overtime win points')}</label>
+                  <input type="number" id="create-overtimeWinPoints" name="overtimeWinPoints" value={formData.overtimeWinPoints ?? 2} onChange={handleInputChange} min={0} disabled={loading} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="create-overtimeLossPoints">{t('floorball.seasons.fields.overtimeLossPoints', 'Overtime loss points')}</label>
+                  <input type="number" id="create-overtimeLossPoints" name="overtimeLossPoints" value={formData.overtimeLossPoints ?? 1} onChange={handleInputChange} min={0} disabled={loading} />
+                </div>
               </div>
             </div>
 

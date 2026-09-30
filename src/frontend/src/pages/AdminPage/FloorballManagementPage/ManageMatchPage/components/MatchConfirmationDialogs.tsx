@@ -1,27 +1,20 @@
 import { useTranslation } from 'react-i18next';
 import ConfirmationDialog from './ConfirmationDialog';
-import type { EventGroup } from './types';
+import type { EventGroup, ProcessedEventType } from './types';
 import { formatMatchEventTime } from '../../../../../utils/matchEventFormat';
 
 interface MatchConfirmationDialogsProps {
   // End Period
   showEndPeriodConfirmation: boolean;
   currentPeriod: number;
+  /** True when the period being ended is the overtime period (changes the wording). */
+  isOvertimePeriod: boolean;
+  /** Match clock (mm:ss) captured when the confirmation was opened. */
   currentTimeFormatted: string;
   periodLoading: Record<number, boolean>;
   onEndPeriodConfirm: () => Promise<void>;
   onEndPeriodCancel: () => void;
-  
-  // Overtime
-  showOvertimeConfirmation: boolean;
-  onOvertimeConfirm: () => Promise<void>;
-  onOvertimeCancel: () => void;
-  
-  // Shootout
-  showShootoutConfirmation: boolean;
-  onShootoutConfirm: () => Promise<void>;
-  onShootoutCancel: () => void;
-  
+
   // End Match
   showEndMatchConfirmation: boolean;
   isShootout: boolean;
@@ -39,113 +32,124 @@ interface MatchConfirmationDialogsProps {
   deleteEventLoading: boolean;
   onDeleteEventConfirm: () => Promise<void>;
   onDeleteEventCancel: () => void;
-  
-  // Loading state
+
   matchLoading: boolean;
 }
 
 export const MatchConfirmationDialogs = ({
   showEndPeriodConfirmation,
   currentPeriod,
+  isOvertimePeriod,
   currentTimeFormatted,
   periodLoading,
   onEndPeriodConfirm,
   onEndPeriodCancel,
-  
-  showOvertimeConfirmation,
-  onOvertimeConfirm,
-  onOvertimeCancel,
-  
-  showShootoutConfirmation,
-  onShootoutConfirm,
-  onShootoutCancel,
-  
   showEndMatchConfirmation,
   isShootout,
   onEndMatchConfirm,
   onEndMatchCancel,
-
   showReopenConfirmation,
   onReopenConfirm,
   onReopenCancel,
-
   groupsToDelete,
   deleteEventLoading,
   onDeleteEventConfirm,
   onDeleteEventCancel,
-  
   matchLoading,
 }: MatchConfirmationDialogsProps) => {
   const { t } = useTranslation();
 
-  // Pre-compute counts and a single representative once per render so the JSX below stays
-  // readable and avoids repeated `.flatMap` calls. `representativeGroup` is intentionally
-  // the first group: the dialog only surfaces full per-event detail in the single-group
-  // case, and the multi-group case uses an aggregate count summary instead.
   const groupCount: number = groupsToDelete?.length ?? 0;
   const totalEventCount: number = groupsToDelete
     ? groupsToDelete.reduce((sum: number, g: EventGroup) => sum + g.events.length, 0)
     : 0;
   const isBulkMultiGroup: boolean = groupCount > 1;
-  // Bulk-save cluster collapsed into a single group still counts as a "single delete"
-  // from the dialog's perspective — the original copy already explains "all N saves".
-  const isSingleGroup: boolean = groupCount === 1;
-  const singleGroup: EventGroup | undefined = isSingleGroup ? groupsToDelete?.[0] : undefined;
+  const singleGroup: EventGroup | undefined = groupCount === 1 ? groupsToDelete?.[0] : undefined;
+
+  const eventTypeLabel = (type: ProcessedEventType, count: number): string =>
+    t(`floorball.matches.manage.confirmDelete.type.${type}`, { count, defaultValue: type });
+
+  let deleteTitle: string = t('floorball.matches.manage.confirmDelete.title', 'Delete event');
+  let deleteMessage: string = '';
+  let deleteConfirm: string = t('floorball.matches.manage.confirmDelete.confirm', 'Delete');
+
+  if (isBulkMultiGroup) {
+    deleteTitle = t('floorball.matches.manage.confirmDelete.titleMany', { count: totalEventCount, defaultValue: 'Delete {{count}} match events' });
+    deleteMessage = t('floorball.matches.manage.confirmDelete.messageMany', {
+      count: totalEventCount,
+      rows: groupCount,
+      defaultValue: 'Delete {{count}} selected match events ({{rows}} rows)?',
+    });
+    deleteConfirm = t('floorball.matches.manage.confirmDelete.confirmCount', { count: totalEventCount, defaultValue: 'Delete {{count}}' });
+  } else if (singleGroup) {
+    const representative = singleGroup.representative;
+    const eventCount: number = singleGroup.events.length;
+    const time: string = formatMatchEventTime(representative.periodNumber, representative.timeInSeconds);
+    const typeLabel: string = eventTypeLabel(representative.type, eventCount);
+    if (eventCount > 1) {
+      deleteTitle = t('floorball.matches.manage.confirmDelete.titleGroup', { count: eventCount, type: typeLabel, defaultValue: 'Delete {{count}} {{type}}' });
+      deleteMessage = t('floorball.matches.manage.confirmDelete.messageGroup', {
+        count: eventCount,
+        type: typeLabel,
+        team: representative.teamName,
+        player: representative.playerName ? ` (${representative.playerName})` : '',
+        time,
+        defaultValue: 'Delete all {{count}} {{type}} for {{team}}{{player}} at {{time}}?',
+      });
+      deleteConfirm = t('floorball.matches.manage.confirmDelete.confirmCount', { count: eventCount, defaultValue: 'Delete {{count}}' });
+    } else {
+      deleteMessage = t('floorball.matches.manage.confirmDelete.messageSingle', {
+        type: typeLabel,
+        team: representative.teamName,
+        time,
+        defaultValue: 'Delete {{type}} for {{team}} at {{time}}?',
+      });
+    }
+  }
+
   return (
     <>
-      {/* End Period Confirmation */}
       <ConfirmationDialog
         isOpen={showEndPeriodConfirmation}
         icon="⚠️"
-        title="Confirm End Period"
-        message={`Are you sure you want to end period ${currentPeriod} at ${currentTimeFormatted}?`}
-        warningMessage="This action cannot be undone."
-        confirmText="End Period"
-        isLoading={periodLoading[currentPeriod]}
+        title={isOvertimePeriod
+          ? t('floorball.matches.manage.confirmEndPeriod.titleOvertime', 'End overtime early?')
+          : t('floorball.matches.manage.confirmEndPeriod.title', 'End period early?')}
+        message={isOvertimePeriod
+          ? t('floorball.matches.manage.confirmEndPeriod.messageOvertime', {
+            time: currentTimeFormatted,
+            defaultValue: 'Are you sure you want to end overtime at {{time}}?',
+          })
+          : t('floorball.matches.manage.confirmEndPeriod.message', {
+            period: currentPeriod,
+            time: currentTimeFormatted,
+            defaultValue: 'Are you sure you want to end period {{period}} at {{time}}?',
+          })}
+        warningMessage={t('common.cannotBeUndone', 'This action cannot be undone.')}
+        confirmText={isOvertimePeriod
+          ? t('floorball.matches.manage.confirmEndPeriod.confirmOvertime', 'End overtime')
+          : t('floorball.matches.manage.confirmEndPeriod.confirm', 'End period')}
+        isLoading={Boolean(periodLoading[currentPeriod])}
         onConfirm={onEndPeriodConfirm}
         onCancel={onEndPeriodCancel}
       />
 
-      {/* Overtime Confirmation */}
-      <ConfirmationDialog
-        isOpen={showOvertimeConfirmation}
-        icon="⏰"
-        title="Start Overtime"
-        message="Are you sure you want to start overtime for this match?"
-        warningMessage="This will begin the overtime period. The clock will be reset to 0:00."
-        confirmText="Start Overtime"
-        isLoading={matchLoading}
-        onConfirm={onOvertimeConfirm}
-        onCancel={onOvertimeCancel}
-      />
-
-      {/* Shootout Confirmation */}
-      <ConfirmationDialog
-        isOpen={showShootoutConfirmation}
-        icon="🎯"
-        title="Start Shootout"
-        message="Are you sure you want to start a shootout for this match?"
-        warningMessage="Shootout does not use time keeping. Goals will be recorded without time."
-        confirmText="Start Shootout"
-        isLoading={matchLoading}
-        onConfirm={onShootoutConfirm}
-        onCancel={onShootoutCancel}
-      />
-
-      {/* End Match Confirmation */}
       <ConfirmationDialog
         isOpen={showEndMatchConfirmation}
         icon="🏁"
-        title="Confirm End Match"
-        message={`Are you sure you want to complete this match?${isShootout ? ' This will end the shootout.' : ''}`}
-        warningMessage="This will finalize the match results. This action cannot be undone."
-        confirmText="Complete Match"
+        title={t('floorball.matches.manage.confirmEndMatch.title', 'Finish match?')}
+        message={
+          isShootout
+            ? t('floorball.matches.manage.confirmEndMatch.messageShootout', 'Are you sure you want to finish this match? This will end the shootout.')
+            : t('floorball.matches.manage.confirmEndMatch.message', 'Are you sure you want to finish this match?')
+        }
+        warningMessage={t('floorball.matches.manage.confirmEndMatch.warning', 'This will finalize the match result. You can reopen the match later if needed.')}
+        confirmText={t('floorball.matches.manage.confirmEndMatch.confirm', 'Finish match')}
         isLoading={matchLoading}
         onConfirm={onEndMatchConfirm}
         onCancel={onEndMatchCancel}
       />
 
-      {/* Reopen Match Confirmation */}
       <ConfirmationDialog
         isOpen={showReopenConfirmation}
         icon="🔓"
@@ -164,38 +168,13 @@ export const MatchConfirmationDialogs = ({
         onCancel={onReopenCancel}
       />
 
-      {/* Delete Event Confirmation. Three cases share this dialog:                              */}
-      {/* 1. Single-row delete            → "Delete goal for ABC at 02:14?"                       */}
-      {/* 2. Bulk-save cluster (1 group)  → "Delete all 5 saves for ABC (Doe) at 02:14?"          */}
-      {/* 3. Multi-select bulk delete (N) → "Delete 12 selected match events?" + summary list    */}
       <ConfirmationDialog
-        isOpen={!!groupsToDelete && groupsToDelete.length > 0}
+        isOpen={groupCount > 0}
         icon="🗑️"
-        title={
-          isBulkMultiGroup
-            ? `Delete ${totalEventCount} match events`
-            : singleGroup && singleGroup.events.length > 1
-              ? `Delete ${singleGroup.events.length} ${singleGroup.representative.type}s`
-              : 'Delete Event'
-        }
-        message={
-          isBulkMultiGroup
-            ? `Delete ${totalEventCount} selected match event${totalEventCount === 1 ? '' : 's'}` +
-              ` (${groupCount} rows)?`
-            : singleGroup
-              ? singleGroup.events.length > 1
-                ? `Delete all ${singleGroup.events.length} ${singleGroup.representative.type}s for ${singleGroup.representative.teamName}${singleGroup.representative.playerName ? ` (${singleGroup.representative.playerName})` : ''} at ${formatMatchEventTime(singleGroup.representative.periodNumber, singleGroup.representative.timeInSeconds)}?`
-                : `Delete ${singleGroup.representative.type} for ${singleGroup.representative.teamName} at ${formatMatchEventTime(singleGroup.representative.periodNumber, singleGroup.representative.timeInSeconds)}?`
-              : ''
-        }
-        warningMessage="This action cannot be undone."
-        confirmText={
-          isBulkMultiGroup
-            ? `Delete ${totalEventCount}`
-            : singleGroup && singleGroup.events.length > 1
-              ? `Delete ${singleGroup.events.length}`
-              : 'Delete'
-        }
+        title={deleteTitle}
+        message={deleteMessage}
+        warningMessage={t('common.cannotBeUndone', 'This action cannot be undone.')}
+        confirmText={deleteConfirm}
         isLoading={deleteEventLoading}
         onConfirm={onDeleteEventConfirm}
         onCancel={onDeleteEventCancel}
@@ -205,4 +184,3 @@ export const MatchConfirmationDialogs = ({
 };
 
 export default MatchConfirmationDialogs;
-

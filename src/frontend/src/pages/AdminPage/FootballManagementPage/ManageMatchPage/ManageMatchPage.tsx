@@ -42,6 +42,7 @@ import {
   getPeriodDurationSeconds,
   getTheoreticalPeriodStartSeconds,
   isPenaltyShootoutPeriod,
+  nextOpenFootballPeriod,
   resolveMatchRules,
 } from './utils/lineupValidation';
 
@@ -221,15 +222,22 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         ? 'Assign officials to start'
         : undefined;
 
+  const regulationEndedForExtraTime: boolean =
+    periodManagement.nextPeriodToStart === periodManagement.overtimePeriodNumber;
+
   const showExtraTimeButton =
     matchData.currentMatch.status === 'InProgress' &&
     matchRules.allowExtraTime &&
-    !matchData.currentMatch.wentToExtraTime;
+    !matchData.currentMatch.wentToExtraTime &&
+    !matchData.currentMatch.wentToPenaltyShootout;
 
   const showPenaltyShootoutButton =
     matchData.currentMatch.status === 'InProgress' &&
     matchRules.allowPenaltyShootout &&
-    !matchData.currentMatch.wentToPenaltyShootout;
+    !matchData.currentMatch.wentToPenaltyShootout &&
+    !matchData.currentMatch.wentToExtraTime &&
+    regulationEndedForExtraTime &&
+    periodManagement.endedPeriods.has(periodManagement.matchRules.numberOfHalves);
 
   const playersFromLineup = useCallback((
     teamId: string,
@@ -329,20 +337,27 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
 
           desiredStartedPeriods.add(currentPeriod);
 
-          const maxPeriod = periodManagement.maxPeriodNumber;
-          let nextPeriod = 1;
-          for (let i = 1; i <= maxPeriod; i++) {
-            if (!desiredStartedPeriods.has(i)) {
-              nextPeriod = i;
-              break;
-            }
+          const wentToPenaltyShootout: boolean = matchData.currentMatch.wentToPenaltyShootout;
+          const shootoutPeriod: number = periodManagement.shootoutPeriodNumber;
+          const shootoutEnded: boolean = desiredEndedPeriods.has(shootoutPeriod);
+          const resolvedPeriod: number = wentToPenaltyShootout && !shootoutEnded ? shootoutPeriod : currentPeriod;
+          if (wentToPenaltyShootout) {
+            desiredStartedPeriods.add(shootoutPeriod);
           }
+
+          const maxPeriod = periodManagement.maxPeriodNumber;
+          let nextPeriod = nextOpenFootballPeriod(
+            desiredStartedPeriods,
+            matchRules,
+            matchData.currentMatch.wentToExtraTime,
+            wentToPenaltyShootout,
+          );
           if (nextPeriod > maxPeriod || desiredStartedPeriods.has(maxPeriod)) {
             nextPeriod = 0;
           }
 
-          if (timerCurrentPeriodRef.current !== currentPeriod) {
-            setTimerCurrentPeriod(currentPeriod);
+          if (timerCurrentPeriodRef.current !== resolvedPeriod) {
+            setTimerCurrentPeriod(resolvedPeriod);
           }
           if (!areNumberSetsEqual(startedPeriodsRef.current, desiredStartedPeriods)) {
             setStartedPeriods(desiredStartedPeriods);
@@ -384,7 +399,11 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     match.id,
     matchData.currentMatch.status,
     matchData.currentMatch.periodScores,
+    matchData.currentMatch.wentToExtraTime,
+    matchData.currentMatch.wentToPenaltyShootout,
     periodManagement.maxPeriodNumber,
+    periodManagement.shootoutPeriodNumber,
+    matchRules,
     setTimerCurrentPeriod,
     setStartedPeriods,
     setEndedPeriods,
@@ -401,9 +420,23 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Team reassignment does not change id or status, and team data is loaded only on mount.
+  // Reload clubs and rosters when home or away actually changes.
   useEffect(() => {
-    if (match && (match.id !== matchData.currentMatch.id || match.status !== matchData.currentMatch.status)) {
+    const teamsChanged: boolean =
+      (match.homeTeamId ?? null) !== (matchData.currentMatch.homeTeamId ?? null)
+      || (match.awayTeamId ?? null) !== (matchData.currentMatch.awayTeamId ?? null);
+
+    if (
+      match.id !== matchData.currentMatch.id
+      || match.status !== matchData.currentMatch.status
+      || teamsChanged
+    ) {
       matchData.setCurrentMatch(match);
+    }
+
+    if (teamsChanged) {
+      void matchData.loadTeamData();
     }
   }, [match, matchData]);
 
@@ -524,13 +557,16 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     try {
       setPenaltyShootoutLoading(true);
       matchData.setError(null);
+      if (timerContext.callbacks.stop) {
+        timerContext.callbacks.stop();
+      }
       await periodManagement.recordShootout();
     } catch (error) {
       matchData.setError(error instanceof Error ? error.message : 'Failed to start penalty shootout');
     } finally {
       setPenaltyShootoutLoading(false);
     }
-  }, [periodManagement, matchData]);
+  }, [periodManagement, matchData, timerContext.callbacks]);
 
   const handleDeleteEvent = useCallback(async () => {
     if (!groupsToDelete || groupsToDelete.length === 0) {

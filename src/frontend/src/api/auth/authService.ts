@@ -8,7 +8,7 @@ const BASE_URL = `${API_URL}/Auth`;
 export const authService = {
   /**
    * Request a login code to be sent to the specified email.
-   * Always returns 200 to prevent email enumeration.
+   * Fails when the email does not match an account, so the login page can stay on the email step.
    * When the backend `LoginCode:AutoFillLoginCode` flag is enabled, the response includes
    * `autoFillCode` so the login page can pre-fill the verification input. The flag is intended
    * for local development / trusted internal environments only.

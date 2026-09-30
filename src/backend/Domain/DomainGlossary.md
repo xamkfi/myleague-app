@@ -131,7 +131,10 @@ A hobby football game between two teams. Tracks scores, halves, cards, substitut
 Configurable match timing and roster rules: number of halves, half duration, players on field (5–11), unlimited or limited substitutions, extra time and penalty shootout flags.
 
 ### FootballStandingRules
-Point allocation for league tables. Default is 3 points for a win, 1 for a draw, 0 for a loss.
+Point allocation for league tables. Default is 3 points for a regulation win, 1 for a draw, and 0 for a regulation loss. Extra time and penalty shootouts default to the same 3 and 0, and a season can set different overtime win and loss points.
+
+### FloorballStandingRules
+Point allocation for a floorball season table. Default is 3 for a regulation win, 1 for a draw, 2 for a win in overtime or a shootout, and 1 for a loss in overtime or a shootout. A regulation loss is 0. Tournaments keep the older shootout-only split.
 
 ## Historical names
 

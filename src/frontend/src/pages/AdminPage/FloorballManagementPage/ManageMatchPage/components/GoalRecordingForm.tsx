@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FloorballGoalType, type FloorballMatchDto, type FloorballTeam } from '../../../../../types/floorball/floorballTypes';
 import './GoalRecordingForm.scss';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
-import type { GoalForm, LocalClock } from './types';
+import type { GoalForm } from './types';
 import { FLOORBALL_GOAL_TYPE_OPTIONS } from '../../../../../utils/floorballGoalType';
 import { formatPlayerOptionLabel, sortPlayersForSelect } from './eventFormHelpers';
 
@@ -13,7 +14,6 @@ interface GoalRecordingFormProps {
   currentMatch: FloorballMatchDto;
   homeTeam: FloorballTeam | null;
   awayTeam: FloorballTeam | null;
-  clock: LocalClock;
   loading: boolean;
   getPlayersForTeam: (teamId: string) => FloorballPlayerDto[];
   onRecordGoal: () => Promise<void>;
@@ -43,6 +43,7 @@ const GoalRecordingForm = ({
   onRecordGoal,
   onClose,
 }: GoalRecordingFormProps) => {
+  const { t } = useTranslation();
   const firstFieldRef = useRef<HTMLSelectElement | null>(null);
 
   const sortedPlayers: FloorballPlayerDto[] = useMemo(
@@ -103,13 +104,15 @@ const GoalRecordingForm = ({
         aria-labelledby="goal-record-modal-title"
       >
         <div className="goal-record-modal__header">
-          <h3 id="goal-record-modal-title">Record goal for {selectedTeamName ?? 'team'}</h3>
+          <h3 id="goal-record-modal-title">
+            {t('floorball.matches.manage.goalForm.title', { team: selectedTeamName ?? t('common.team') })}
+          </h3>
           <button
             className="goal-record-modal__close"
             onClick={onClose}
             disabled={loading}
             type="button"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             ×
           </button>
@@ -119,7 +122,7 @@ const GoalRecordingForm = ({
           <div className="event-form goal-form">
             <div className="form-grid">
               <div className="field">
-                <label htmlFor="scoring-player">Scoring player</label>
+                <label htmlFor="scoring-player">{t('floorball.matches.manage.goalForm.scoringPlayer')}</label>
                 <select
                   id="scoring-player"
                   ref={firstFieldRef}
@@ -127,7 +130,7 @@ const GoalRecordingForm = ({
                   value={goalForm.playerId}
                   onChange={(e) => setGoalForm((prev) => ({ ...prev, playerId: e.target.value }))}
                 >
-                  <option value="">Select player</option>
+                  <option value="">{t('floorball.matches.manage.goalForm.selectPlayer')}</option>
                   {sortedPlayers.map((player) => (
                     <option key={player.id} value={player.id}>
                       {formatPlayerOptionLabel(player)}
@@ -138,7 +141,8 @@ const GoalRecordingForm = ({
 
               <div className="field">
                 <label htmlFor="assisting-player">
-                  Assisting player <span className="field-hint">(optional)</span>
+                  {t('floorball.matches.manage.goalForm.assistingPlayer')}{' '}
+                  <span className="field-hint">{t('floorball.matches.manage.goalForm.optional')}</span>
                 </label>
                 <select
                   id="assisting-player"
@@ -146,7 +150,7 @@ const GoalRecordingForm = ({
                   value={goalForm.assisterId}
                   onChange={(e) => setGoalForm((prev) => ({ ...prev, assisterId: e.target.value }))}
                 >
-                  <option value="">No assist</option>
+                  <option value="">{t('floorball.matches.manage.goalForm.noAssist')}</option>
                   {sortedPlayers
                     .filter((player) => player.id !== goalForm.playerId)
                     .map((player) => (
@@ -158,7 +162,7 @@ const GoalRecordingForm = ({
               </div>
 
               <div className="field">
-                <label htmlFor="goal-type">Goal type</label>
+                <label htmlFor="goal-type">{t('floorball.matches.manage.goalForm.goalType')}</label>
                 <select
                   id="goal-type"
                   className={`select-field${goalTypeValue === '' ? ' is-placeholder' : ''}`}
@@ -171,17 +175,17 @@ const GoalRecordingForm = ({
                     }));
                   }}
                 >
-                  <option value="">Regular goal</option>
+                  <option value="">{t('floorball.matches.manage.goalTypes.Regular')}</option>
                   {FLOORBALL_GOAL_TYPE_OPTIONS.filter((o) => o.value !== FloorballGoalType.Regular).map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label}
+                      {t(`floorball.matches.manage.goalTypes.${option.name}`, option.label)}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div className="field field--time">
-                <label htmlFor="goal-time-minutes">Time</label>
+                <label htmlFor="goal-time-minutes">{t('floorball.matches.manage.goalForm.time')}</label>
                 <div className="time-input-group">
                   <input
                     id="goal-time-minutes"
@@ -194,7 +198,7 @@ const GoalRecordingForm = ({
                     min={0}
                     max={99}
                     placeholder="MM"
-                    aria-label="Minutes"
+                    aria-label={t('floorball.matches.manage.timeMinutesAria', 'Minutes')}
                   />
                   <span className="time-separator" aria-hidden="true">
                     :
@@ -210,7 +214,7 @@ const GoalRecordingForm = ({
                     min={0}
                     max={59}
                     placeholder="SS"
-                    aria-label="Seconds"
+                    aria-label={t('floorball.matches.manage.timeSecondsAria', 'Seconds')}
                   />
                 </div>
               </div>
@@ -218,13 +222,13 @@ const GoalRecordingForm = ({
 
             {missingJersey && (
               <div className="field-error" role="alert">
-                Selected player has no jersey number. Assign a jersey before recording the goal.
+                {t('floorball.matches.manage.goalForm.missingJersey')}
               </div>
             )}
 
             <div className="form-actions">
               <button onClick={onClose} className="cancel-btn" type="button" disabled={loading}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={onRecordGoal}
@@ -232,7 +236,11 @@ const GoalRecordingForm = ({
                 className="submit-btn"
                 type="button"
               >
-                {loading ? 'Recording…' : missingJersey ? 'Missing jersey' : 'Record Goal'}
+                {loading
+                  ? t('floorball.matches.manage.goalForm.recording')
+                  : missingJersey
+                    ? t('floorball.matches.manage.goalForm.missingJerseyShort')
+                    : t('floorball.matches.manage.goalForm.submit')}
               </button>
             </div>
           </div>

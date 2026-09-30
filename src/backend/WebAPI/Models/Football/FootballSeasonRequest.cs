@@ -123,6 +123,16 @@ public class CreateFootballSeasonRequest
     public int LossPoints { get; set; }
 
     /// <summary>
+    /// Points for a win in extra time or a penalty shootout. Default matches a regulation win.
+    /// </summary>
+    public int OvertimeWinPoints { get; set; } = 3;
+
+    /// <summary>
+    /// Points for a loss in extra time or a penalty shootout. Default matches a regulation loss.
+    /// </summary>
+    public int OvertimeLossPoints { get; set; }
+
+    /// <summary>
     /// Audience / age-group category for the season
     /// </summary>
     public TeamCategory TeamCategory { get; set; } = TeamCategory.Adult;
@@ -233,6 +243,16 @@ public class UpdateFootballSeasonRequest
     /// Points awarded for a loss
     /// </summary>
     public int LossPoints { get; set; }
+
+    /// <summary>
+    /// Points for a win in extra time or a penalty shootout. Default matches a regulation win.
+    /// </summary>
+    public int OvertimeWinPoints { get; set; } = 3;
+
+    /// <summary>
+    /// Points for a loss in extra time or a penalty shootout. Default matches a regulation loss.
+    /// </summary>
+    public int OvertimeLossPoints { get; set; }
 
     /// <summary>
     /// Audience / age-group category for the season

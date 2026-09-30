@@ -29,6 +29,11 @@ public class FloorballSeason : FloorballCompetition
     public IReadOnlyList<StandingSortCriterion> RankingCriteria => _rankingCriteria;
 
     /// <summary>
+    /// Points awarded for wins, draws, and overtime or shootout results.
+    /// </summary>
+    public FloorballStandingRules StandingRules { get; private set; } = FloorballStandingRules.Default();
+
+    /// <summary>
     /// Gets the ordered HTML intro blocks for public season pages.
     /// </summary>
     public IReadOnlyCollection<FloorballSeasonContentBlock> ContentBlocks => _contentBlocks.AsReadOnly();
@@ -67,6 +72,15 @@ public class FloorballSeason : FloorballCompetition
         List<StandingSortCriterion> resolved = StandingSortCriteria.Resolve(rankingCriteria);
         _rankingCriteria.Clear();
         _rankingCriteria.AddRange(resolved);
+    }
+
+    /// <summary>
+    /// Replaces the point values used by the season table.
+    /// </summary>
+    public void UpdateStandingRules(FloorballStandingRules standingRules)
+    {
+        ArgumentNullException.ThrowIfNull(standingRules);
+        StandingRules = standingRules;
     }
 
     /// <summary>

@@ -5,11 +5,15 @@ import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate'
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import HockeyMatchForm, { type HockeyMatchFormValues } from '../components/HockeyMatchForm';
 import { hockeyMatchService } from '../../../../api/hockey/hockeyMatchService';
-import { hockeyTeamService } from '../../../../api/hockey/hockeyTeamService';
 import { hockeySeasonService } from '../../../../api/hockey/hockeySeasonService';
 import { hockeyTournamentService } from '../../../../api/hockey/hockeyTournamentService';
 import type { HockeyMatchDto } from '../../../../types/hockey/hockeyTypes';
 import { joinHockeyDateTime, splitHockeyDateTime } from '../../../../utils/hockeyLookups';
+import {
+  hockeyCompetitionKind,
+  loadHockeyEnrolledTeams,
+  type TeamOption,
+} from '../../../../utils/enrolledCompetitionTeams';
 
 function EditHockeyMatchPage() {
   const { t } = useTranslation();
@@ -17,7 +21,7 @@ function EditHockeyMatchPage() {
   const { matchId } = useParams<{ matchId: string }>();
   const [match, setMatch] = useState<HockeyMatchDto | null>(null);
   const [competitions, setCompetitions] = useState<Array<{ id: string; name: string }>>([]);
-  const [teams, setTeams] = useState<Array<{ id: string; name: string }>>([]);
+  const [teams, setTeams] = useState<TeamOption[]>([]);
   const [values, setValues] = useState<HockeyMatchFormValues>({
     competitionId: '',
     homeTeamId: '',
@@ -37,14 +41,17 @@ function EditHockeyMatchPage() {
     if (!matchId) {
       return;
     }
-    const [loaded, teamList, seasons, tournaments] = await Promise.all([
+    const [loaded, seasons, tournaments] = await Promise.all([
       hockeyMatchService.getById(matchId),
-      hockeyTeamService.getAll(),
       hockeySeasonService.getAll(undefined, true),
       hockeyTournamentService.getAll(undefined, true),
     ]);
+    const kind = hockeyCompetitionKind(String(loaded.matchType));
+    const enrolled = loaded.competitionId
+      ? await loadHockeyEnrolledTeams(loaded.competitionId, kind)
+      : [];
     setMatch(loaded);
-    setTeams(teamList.map((team) => ({ id: team.id, name: team.name })));
+    setTeams(enrolled);
     setCompetitions([
       ...seasons.map((item) => ({ id: item.id, name: item.name })),
       ...tournaments.map((item) => ({ id: item.id, name: item.name })),

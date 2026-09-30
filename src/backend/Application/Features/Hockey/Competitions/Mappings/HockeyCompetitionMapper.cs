@@ -150,7 +150,32 @@ public static class HockeyCompetitionMapper
             season.PlayoffSchedule.Select(ToPlayoffScheduleSlotDto).ToList(),
             CompetitionLogoUrl.ToPublicString(season.LogoUrl),
             season.TeamsAdvancing,
-            season.RankingCriteria);
+            season.RankingCriteria,
+            ToStandingRulesDto(season.GetEffectiveRules().StandingRules));
+    }
+
+    /// <summary>
+    /// Replaces season point values and keeps the existing tie-breaker order.
+    /// </summary>
+    public static void ApplyStandingPoints(
+        HockeySeason season,
+        int regulationWinPoints,
+        int overtimeWinPoints,
+        int shootoutWinPoints,
+        int overtimeLossPoints,
+        int shootoutLossPoints,
+        int tiePoints)
+    {
+        ArgumentNullException.ThrowIfNull(season);
+        HockeyStandingRules current = season.GetEffectiveRules().StandingRules;
+        season.UpdateCompetitionRules(season.GetEffectiveRules().WithStandingRules(new HockeyStandingRules(
+            regulationWinPoints,
+            overtimeWinPoints,
+            shootoutWinPoints,
+            overtimeLossPoints,
+            shootoutLossPoints,
+            tiePoints,
+            current.TieBreakers)));
     }
 
     /// <summary>

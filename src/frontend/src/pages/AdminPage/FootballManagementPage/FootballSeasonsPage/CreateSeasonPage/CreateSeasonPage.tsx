@@ -566,6 +566,34 @@ export const CreateSeasonPage = () => {
                     disabled={loading}
                   />
                 </div>
+                <div className="form-group">
+                  <label htmlFor="create-overtimeWinPoints">
+                    {t('football.seasons.fields.overtimeWinPoints', 'Extra time or penalty win')}
+                  </label>
+                  <input
+                    type="number"
+                    id="create-overtimeWinPoints"
+                    name="overtimeWinPoints"
+                    value={formData.overtimeWinPoints}
+                    onChange={handleInputChange}
+                    min={0}
+                    disabled={loading}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="create-overtimeLossPoints">
+                    {t('football.seasons.fields.overtimeLossPoints', 'Extra time or penalty loss')}
+                  </label>
+                  <input
+                    type="number"
+                    id="create-overtimeLossPoints"
+                    name="overtimeLossPoints"
+                    value={formData.overtimeLossPoints}
+                    onChange={handleInputChange}
+                    min={0}
+                    disabled={loading}
+                  />
+                </div>
               </div>
             </div>
 

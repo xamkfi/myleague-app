@@ -68,8 +68,7 @@ public class AssignMatchTeamsHandler : IRequestHandler<AssignFootballMatchTeamsC
 
             Guid? previousHomeTeamId = match.HomeTeamId;
 
-            match.AssignTeam(FootballPlayoffSlot.Home, homeTeam);
-            match.AssignTeam(FootballPlayoffSlot.Away, awayTeam);
+            match.ChangeTeams(homeTeam, awayTeam);
 
             if (match.NextMatchId.HasValue
                 && match.NextMatchSlot.HasValue

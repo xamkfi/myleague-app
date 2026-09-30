@@ -57,7 +57,7 @@ export async function importRosterAssignments(
       .map((player): SeasonImportTeamPlayer => ({
         firstName: player.firstName,
         lastName: player.lastName,
-        position: player.isGoalkeeper ? 'Goalkeeper' : undefined,
+        position: player.position ?? (player.isGoalkeeper ? 'Goalkeeper' : undefined),
         jerseyNumber: player.jerseyNumber,
       })),
   }));

@@ -57,9 +57,14 @@ function EditHockeyRosterPage() {
     void loadTeamData();
   }, [loadTeamData]);
 
-  const filteredRoster = currentTeam?.roster.filter((player) =>
+  const activeRoster = useMemo(
+    () => (currentTeam?.roster ?? []).filter((player) => player.isActive),
+    [currentTeam],
+  );
+
+  const filteredRoster = activeRoster.filter((player) =>
     (names.get(player.playerId) ?? '').toLowerCase().includes(searchTerm.toLowerCase()),
-  ) ?? [];
+  );
 
   const handleUpdate = async (
     player: HockeyTeamPlayerDto,
@@ -126,8 +131,8 @@ function EditHockeyRosterPage() {
   }, [dropdownOpen]);
 
   const takenJerseyNumbers = useMemo(
-    () => collectJerseyNumbers(currentTeam?.roster ?? []),
-    [currentTeam],
+    () => collectJerseyNumbers(activeRoster),
+    [activeRoster],
   );
 
   if (loading) {
@@ -156,7 +161,7 @@ function EditHockeyRosterPage() {
         </h2>
         <div className="team-info-header">
           <span className="team-name">{currentTeam.name}</span>
-          <span className="roster-count">{currentTeam.roster.length} {t('hockey.teams.players', 'players')}</span>
+          <span className="roster-count">{activeRoster.length} {t('hockey.teams.players', 'players')}</span>
         </div>
         <div className="edit-roster-header">
           <div className="roster-actions">

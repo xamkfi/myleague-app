@@ -1234,6 +1234,16 @@ namespace MyLeague.Infrastructure.Migrations.FootballDb
                                 .HasDefaultValue(0)
                                 .HasColumnName("StandingRules_LossPoints");
 
+                            b1.Property<int>("OvertimeLossPoints")
+                                .HasColumnType("integer")
+                                .HasDefaultValue(0)
+                                .HasColumnName("StandingRules_OvertimeLossPoints");
+
+                            b1.Property<int>("OvertimeWinPoints")
+                                .HasColumnType("integer")
+                                .HasDefaultValue(3)
+                                .HasColumnName("StandingRules_OvertimeWinPoints");
+
                             b1.Property<int>("WinPoints")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("integer")

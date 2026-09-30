@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   CreateFloorballMatchRequest,
@@ -9,8 +9,8 @@ import {
   floorballSeasonSearchService,
   floorballTournamentSearchService,
 } from '../../../../../api/floorball/floorballTeamSearchService';
-import { floorballTeamNameSearchService } from '../../../../../api/floorball/floorballTeamNameSearchService';
 import ConfirmationDialog from '../../ManageMatchPage/components/ConfirmationDialog';
+import { toTeamSearchResult, useEnrolledTeams } from '../../../../../utils/enrolledCompetitionTeams';
 import './MatchForm.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
 
@@ -153,20 +153,6 @@ const MatchForm = ({
         if (matchingCompetition) {
           setInitialSeasonOptions([matchingCompetition]);
         }
-
-        const homeTeamResult = await floorballTeamNameSearchService.searchTeams('', 1);
-        const matchingHomeTeam = homeTeamResult.data.find((team) => team.id === initialData.homeTeamId);
-
-        if (matchingHomeTeam) {
-          setInitialHomeTeamOptions([matchingHomeTeam]);
-        }
-
-        const awayTeamResult = await floorballTeamNameSearchService.searchTeams('', 1);
-        const matchingAwayTeam = awayTeamResult.data.find((team) => team.id === initialData.awayTeamId);
-
-        if (matchingAwayTeam) {
-          setInitialAwayTeamOptions([matchingAwayTeam]);
-        }
       } catch (error) {
         console.error('Error pre-loading initial options:', error);
       }
@@ -279,54 +265,66 @@ const MatchForm = ({
     [mode, initialData, initialSeasonOptions, isTournamentMatch]
   );
 
-  const searchHomeTeamsWithInitial = useCallback(
-    async (query: string, page: number) => {
-      const result = await floorballTeamNameSearchService.searchTeams(query, page);
+  const enrolledCatalog = useEnrolledTeams(
+    formData.competitionId,
+    isTournamentMatch ? 'tournament' : 'season',
+    'floorball',
+  );
+  const catalogReady = Boolean(
+    formData.competitionId
+    && enrolledCatalog.competitionId === formData.competitionId
+    && enrolledCatalog.teams
+    && !enrolledCatalog.failed,
+  );
+  const enrolledTeams = useMemo(
+    () => (catalogReady ? enrolledCatalog.teams ?? [] : []),
+    [catalogReady, enrolledCatalog.teams],
+  );
+  const enrolledTeamKey = !formData.competitionId
+    ? 'none'
+    : catalogReady
+      ? enrolledTeams.map((team) => team.id).join('|')
+      : 'pending';
 
-      if (mode === 'edit' && page === 1 && initialHomeTeamOptions.length > 0) {
-        const filteredInitial = initialHomeTeamOptions.filter((option) =>
-          option.name.toLowerCase().includes(query.toLowerCase())
-        );
-
-        return {
-          data: [
-            ...filteredInitial,
-            ...result.data.filter(
-              (item) => !initialHomeTeamOptions.some((initial) => initial.id === item.id)
-            ),
-          ],
-          pagination: result.pagination,
-        };
+  useEffect(() => {
+    if (!catalogReady) {
+      return;
+    }
+    const allowedIds = new Set(enrolledTeams.map((team) => team.id));
+    setFormData((prev) => {
+      const homeStillValid = !prev.homeTeamId || allowedIds.has(prev.homeTeamId);
+      const awayStillValid = !prev.awayTeamId || allowedIds.has(prev.awayTeamId);
+      if (homeStillValid && awayStillValid) {
+        return prev;
       }
+      return {
+        ...prev,
+        homeTeamId: homeStillValid ? prev.homeTeamId : undefined,
+        awayTeamId: awayStillValid ? prev.awayTeamId : undefined,
+      };
+    });
+  }, [catalogReady, enrolledTeams]);
 
-      return result;
-    },
-    [mode, initialHomeTeamOptions]
+  const searchHomeTeamsWithInitial = useCallback(
+    async (query: string, page: number) =>
+      toTeamSearchResult(
+        enrolledTeams,
+        query,
+        page,
+        catalogReady ? [] : initialHomeTeamOptions,
+      ),
+    [catalogReady, enrolledTeams, initialHomeTeamOptions],
   );
 
   const searchAwayTeamsWithInitial = useCallback(
-    async (query: string, page: number) => {
-      const result = await floorballTeamNameSearchService.searchTeams(query, page);
-
-      if (mode === 'edit' && page === 1 && initialAwayTeamOptions.length > 0) {
-        const filteredInitial = initialAwayTeamOptions.filter((option) =>
-          option.name.toLowerCase().includes(query.toLowerCase())
-        );
-
-        return {
-          data: [
-            ...filteredInitial,
-            ...result.data.filter(
-              (item) => !initialAwayTeamOptions.some((initial) => initial.id === item.id)
-            ),
-          ],
-          pagination: result.pagination,
-        };
-      }
-
-      return result;
-    },
-    [mode, initialAwayTeamOptions]
+    async (query: string, page: number) =>
+      toTeamSearchResult(
+        enrolledTeams,
+        query,
+        page,
+        catalogReady ? [] : initialAwayTeamOptions,
+      ),
+    [catalogReady, enrolledTeams, initialAwayTeamOptions],
   );
 
   const updateScheduledDateTime = (dateStr: string, hours: string, minutes: string) => {
@@ -494,6 +492,7 @@ const MatchForm = ({
           <label htmlFor="homeTeam">{t('floorball.matches.homeTeamLabel', 'Home Team')}</label>
           <div className="input-wrapper">
             <SearchableInfiniteDropdown
+              key={`home-${formData.competitionId ?? 'none'}-${enrolledTeamKey}`}
               placeholder={t('floorball.matches.homeTeamPlaceholder', 'Select Home Team (optional)')}
               value={formData.homeTeamId}
               onChange={(value) =>
@@ -503,8 +502,8 @@ const MatchForm = ({
                 }))
               }
               onSearch={searchHomeTeamsWithInitial}
-              searchPlaceholder="Search teams..."
-              emptyMessage="No teams found"
+              searchPlaceholder={t('floorball.matches.placeholders.searchTeams', 'Hae joukkueita...')}
+              emptyMessage={t('floorball.matches.emptyStates.noTeams', 'Joukkueita ei löytynyt')}
               loadInitialDataOnMount={mode === 'edit'}
             />
           </div>
@@ -514,6 +513,7 @@ const MatchForm = ({
           <label htmlFor="awayTeam">{t('floorball.matches.awayTeamLabel', 'Away Team')}</label>
           <div className="input-wrapper">
             <SearchableInfiniteDropdown
+              key={`away-${formData.competitionId ?? 'none'}-${enrolledTeamKey}`}
               placeholder={t('floorball.matches.awayTeamPlaceholder', 'Select Away Team (optional)')}
               value={formData.awayTeamId}
               onChange={(value) =>
@@ -523,8 +523,8 @@ const MatchForm = ({
                 }))
               }
               onSearch={searchAwayTeamsWithInitial}
-              searchPlaceholder="Search teams..."
-              emptyMessage="No teams found"
+              searchPlaceholder={t('floorball.matches.placeholders.searchTeams', 'Hae joukkueita...')}
+              emptyMessage={t('floorball.matches.emptyStates.noTeams', 'Joukkueita ei löytynyt')}
               loadInitialDataOnMount={mode === 'edit'}
             />
           </div>

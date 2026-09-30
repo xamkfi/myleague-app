@@ -30,7 +30,9 @@ export const FOOTBALL_SEASON_IMPORT_AI_PROMPT: string = `You are converting a fo
     "allowPenaltyShootout"?: boolean,
     "winPoints"?: number,
     "drawPoints"?: number,
-    "lossPoints"?: number
+    "lossPoints"?: number,
+    "overtimeWinPoints"?: number,
+    "overtimeLossPoints"?: number
   },
   "divisions": [
     { "name": string, "level"?: number }

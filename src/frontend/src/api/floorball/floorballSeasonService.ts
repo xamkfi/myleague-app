@@ -15,6 +15,13 @@ export interface FloorballSeasonDivisionDto {
   teamIds: string[];
 }
 
+export interface FloorballStandingRulesDto {
+  winPoints: number;
+  drawPoints: number;
+  overtimeWinPoints: number;
+  overtimeLossPoints: number;
+}
+
 export interface FloorballSeasonDto {
   id: string;
   name: string;
@@ -30,6 +37,7 @@ export interface FloorballSeasonDto {
   logoUrl?: string | null;
   teamsAdvancing?: number;
   rankingCriteria?: string[];
+  standingRules?: FloorballStandingRulesDto;
 }
 
 export interface FloorballSeasonSummaryDto {
@@ -71,6 +79,10 @@ export interface CreateFloorballSeasonRequest {
   logoUrl?: string | null;
   teamsAdvancing?: number;
   rankingCriteria?: string[];
+  winPoints?: number;
+  drawPoints?: number;
+  overtimeWinPoints?: number;
+  overtimeLossPoints?: number;
 }
 
 export interface UpdateFloorballSeasonRequest {
@@ -86,6 +98,10 @@ export interface UpdateFloorballSeasonRequest {
   logoUrl?: string | null;
   teamsAdvancing?: number;
   rankingCriteria?: string[];
+  winPoints?: number;
+  drawPoints?: number;
+  overtimeWinPoints?: number;
+  overtimeLossPoints?: number;
 }
 
 export const floorballSeasonService = {

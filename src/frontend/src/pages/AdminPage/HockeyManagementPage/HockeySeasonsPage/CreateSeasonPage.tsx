@@ -6,7 +6,8 @@ import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { hockeySeasonService } from '../../../../api/hockey/hockeySeasonService';
 import { divisionService } from '../../../../api/common/divisionService';
 import { SportsCategory } from '../../../../types/common/sports';
-import { HOCKEY_TEAM_CATEGORIES, type HockeyTeamCategory } from '../../../../types/hockey/hockeyTypes';
+import { HOCKEY_STANDING_POINT_DEFAULTS, HOCKEY_TEAM_CATEGORIES, type HockeySeasonPointSettings, type HockeyTeamCategory } from '../../../../types/hockey/hockeyTypes';
+import HockeySeasonPointFields from './HockeySeasonPointFields';
 import SeasonStandingsSettings from '../../../../components/SeasonStandingsSettings/SeasonStandingsSettings';
 import { DEFAULT_STANDING_SORT, STANDING_SORT_OPTIONS } from '../../../../components/SeasonStandingsSettings/standingSort';
 import '../HockeyTeamsPage/CreateTeamPage.scss';
@@ -23,6 +24,7 @@ function CreateHockeySeasonPage() {
   const [selectedDivisionIds, setSelectedDivisionIds] = useState<string[]>([]);
   const [teamsAdvancing, setTeamsAdvancing] = useState(0);
   const [rankingCriteria, setRankingCriteria] = useState<string[]>([...DEFAULT_STANDING_SORT]);
+  const [points, setPoints] = useState<HockeySeasonPointSettings>({ ...HOCKEY_STANDING_POINT_DEFAULTS });
   const [divisions, setDivisions] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +53,7 @@ function CreateHockeySeasonPage() {
         logoUrl: logoUrl || undefined,
         teamsAdvancing,
         rankingCriteria,
+        ...points,
       });
       for (const [index, divisionId] of selectedDivisionIds.entries()) {
         const division = divisions.find((item) => item.id === divisionId);
@@ -117,6 +120,12 @@ function CreateHockeySeasonPage() {
               </label>
             ))}
           </div>
+          <HockeySeasonPointFields
+            idPrefix="create-hockey-points"
+            values={points}
+            disabled={loading}
+            onChange={setPoints}
+          />
           <SeasonStandingsSettings
             idPrefix="create-hockey"
             teamsAdvancing={teamsAdvancing}
