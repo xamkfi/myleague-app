@@ -64,6 +64,7 @@
     "unknownPerson": "Tuntematon henkilö",
     "modalTitle": "Valitse toimitsija",
     "searchPlaceholder": "Hae henkilöä nimellä...",
+    "searchHint": "Kirjoita vähintään 2 merkkiä hakeaksesi kaikista henkilöistä.",
     "searchError": "Henkilöhaku epäonnistui",
     "noPersons": "Henkilöitä ei löytynyt.",
     "pick": "Lisää",

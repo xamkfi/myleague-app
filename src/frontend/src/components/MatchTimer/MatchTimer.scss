@@ -5,7 +5,9 @@
 // Shared match clock (floorball / football / hockey live desks). The card chrome is owned by
 // the page; this file styles only the digits, caption, and control chips.
 .timer-component {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 0;
   border: none;
   background: transparent;
@@ -50,10 +52,11 @@
     }
   }
 
+  // Edit and reset flank the adjustment block; only the adjustment block wraps when narrow.
   .timer-controls {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: auto minmax(0, auto) auto;
+    gap: 8px;
     max-width: 100%;
     justify-content: center;
     align-items: center;
@@ -126,7 +129,8 @@
         border: none;
         border-radius: 0;
         background: transparent;
-        min-width: 44px;
+        min-width: 40px;
+        padding: 6px 8px;
 
         & + .timer-button {
           border-left: 1px solid $color-neutral-medium-grey;

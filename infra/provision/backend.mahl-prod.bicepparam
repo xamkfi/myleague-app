@@ -31,9 +31,13 @@ param postgresAdminPassword = ''
 // PostgreSQL backups - longer retention for production
 param postgresBackupRetentionDays = 21
 
-// CORS - Release MAHL Production overrides this with the live SWA URL.
-// After the first successful release, commit that hostname here.
-param allowedOrigins = []
+// CORS - Release MAHL Production overrides this with the live SWA URL plus the
+// custom domains in CUSTOM_DOMAIN_ORIGINS; keep both lists in sync.
+param allowedOrigins = [
+  'https://orange-mushroom-0ad28900f.1.azurestaticapps.net'
+  'https://www.mahl.fi'
+  'https://mahl.fi'
+]
 
 // Secret - provided at deploy time (GitHub environment secret or CLI/script prompt)
 param jwtSecretKey = ''
