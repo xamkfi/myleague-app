@@ -1158,6 +1158,11 @@ public class RecordHockeyShotRequest
     /// Description.
     /// </summary>
     public string? Description { get; set; }
+    /// <summary>
+    /// Number of identical shots to record (1-99). Values above 1 require a saved shot and a goalie.
+    /// </summary>
+    [Range(1, 99)]
+    public int Count { get; set; } = 1;
 }
 
 /// <summary>

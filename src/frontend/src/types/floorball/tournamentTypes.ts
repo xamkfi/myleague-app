@@ -66,6 +66,12 @@ export interface FloorballTournamentGroupStandingDto {
   goalsAgainst: number;
   goalDifference: number;
   points: number;
+  regulationWins: number;
+  overtimeWins: number;
+  shootoutWins: number;
+  regulationLosses: number;
+  overtimeLosses: number;
+  shootoutLosses: number;
 }
 
 export type FloorballPlayoffRoundKey =

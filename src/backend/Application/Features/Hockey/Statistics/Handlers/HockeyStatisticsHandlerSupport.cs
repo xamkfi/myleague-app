@@ -170,11 +170,11 @@ internal static class HockeyStatisticsHandlerSupport
             IReadOnlyList<StandingSortCriterion> criteria = season.RankingCriteria.Count > 0
                 ? season.RankingCriteria
                 : StandingSortCriteria.Default;
-            IReadOnlyList<StandingMatchResult> played = await LoadResultsAsync(
-                competitionId,
-                season.GetEffectiveRules().StandingRules,
-                matches);
-            return SortSeason(existing, enrolledTeamIds, names, competitionId, scope, tournamentGroupId, criteria, played);
+            List<HockeyMatch> standingMatches = await LoadStandingMatchesAsync(competitionId, matches);
+            IReadOnlyList<StandingMatchResult> played = ToResults(
+                standingMatches,
+                season.GetEffectiveRules().StandingRules);
+            return SortSeason(existing, enrolledTeamIds, names, competitionId, scope, tournamentGroupId, criteria, played, standingMatches);
         }
 
         return MergeZeros(
@@ -187,19 +187,25 @@ internal static class HockeyStatisticsHandlerSupport
             competition.GetEffectiveRules().StandingRules.TieBreakers);
     }
 
-    private static async Task<IReadOnlyList<StandingMatchResult>> LoadResultsAsync(
+    private static async Task<List<HockeyMatch>> LoadStandingMatchesAsync(
         Guid competitionId,
-        HockeyStandingRules rules,
         IHockeyMatchRepository matches)
     {
-        List<StandingMatchResult> results = new();
-        IEnumerable<HockeyMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
+        return (await matches.GetByCompetitionIdAsync(competitionId))
             .Where(match => match.PlayoffSeriesId is null
                 && match.CountsTowardStandings
                 && match.Status is HockeyMatchStatus.Finished or HockeyMatchStatus.Forfeit
                 && match.HomeTeamId is Guid homeId && homeId != Guid.Empty
-                && match.AwayTeamId is Guid awayId && awayId != Guid.Empty);
-        foreach (HockeyMatch match in validMatches)
+                && match.AwayTeamId is Guid awayId && awayId != Guid.Empty)
+            .ToList();
+    }
+
+    private static List<StandingMatchResult> ToResults(
+        IReadOnlyList<HockeyMatch> standingMatches,
+        HockeyStandingRules rules)
+    {
+        List<StandingMatchResult> results = new();
+        foreach (HockeyMatch match in standingMatches)
         {
             Guid homeId = match.HomeTeamId!.Value;
             Guid awayId = match.AwayTeamId!.Value;
@@ -212,7 +218,7 @@ internal static class HockeyStatisticsHandlerSupport
 
     private static (int HomePoints, int AwayPoints) PointsFor(HockeyMatch match, HockeyStandingRules rules)
     {
-        return match.ResultType switch
+        return match.StandingResultType switch
         {
             HockeyMatchResultType.HomeWin or HockeyMatchResultType.ForfeitHomeWin => (rules.RegulationWinPoints, 0),
             HockeyMatchResultType.AwayWin or HockeyMatchResultType.ForfeitAwayWin => (0, rules.RegulationWinPoints),
@@ -235,9 +241,11 @@ internal static class HockeyStatisticsHandlerSupport
         HockeyStatisticsScope scope,
         Guid? tournamentGroupId,
         IReadOnlyList<StandingSortCriterion> criteria,
-        IReadOnlyList<StandingMatchResult> matches)
+        IReadOnlyList<StandingMatchResult> matches,
+        IReadOnlyList<HockeyMatch> standingMatches)
     {
         List<HockeyTeamCompetitionStatisticsDto> merged = MergeRows(existing, enrolledTeamIds, names, competitionId, scope, tournamentGroupId);
+        ApplyMatchRecords(merged, standingMatches);
         ApplyMatchPoints(merged, matches);
         List<HockeyTeamCompetitionStatisticsDto> ordered = StandingTableOrder.Sort(
             merged,
@@ -256,6 +264,82 @@ internal static class HockeyStatisticsHandlerSupport
             ordered[index].StandingRank = index + 1;
 
         return ordered;
+    }
+
+    /// <summary>
+    /// Replaces the stored win/loss record and goals with values from the finished matches,
+    /// so the table stays complete even when persisted aggregates are stale.
+    /// </summary>
+    private static void ApplyMatchRecords(
+        List<HockeyTeamCompetitionStatisticsDto> rows,
+        IReadOnlyList<HockeyMatch> standingMatches)
+    {
+        foreach (HockeyTeamCompetitionStatisticsDto row in rows)
+        {
+            int gamesPlayed = 0, regulationWins = 0, overtimeWins = 0, shootoutWins = 0;
+            int regulationLosses = 0, overtimeLosses = 0, shootoutLosses = 0, ties = 0;
+            int goalsFor = 0, goalsAgainst = 0;
+            int homeWins = 0, homeLosses = 0, awayWins = 0, awayLosses = 0;
+
+            foreach (HockeyMatch match in standingMatches)
+            {
+                bool isHome = match.HomeTeamId == row.TeamId;
+                if (!isHome && match.AwayTeamId != row.TeamId)
+                    continue;
+
+                gamesPlayed++;
+                goalsFor += isHome ? match.HomeScore : match.AwayScore;
+                goalsAgainst += isHome ? match.AwayScore : match.HomeScore;
+
+                HockeyMatchResultType result = match.StandingResultType ?? match.InferResultType();
+                if (result == HockeyMatchResultType.Draw)
+                {
+                    ties++;
+                    continue;
+                }
+
+                bool homeWon = result is HockeyMatchResultType.HomeWin
+                    or HockeyMatchResultType.ForfeitHomeWin
+                    or HockeyMatchResultType.OvertimeHomeWin
+                    or HockeyMatchResultType.ShootoutHomeWin;
+                bool won = homeWon == isHome;
+                bool overtime = result is HockeyMatchResultType.OvertimeHomeWin or HockeyMatchResultType.OvertimeAwayWin;
+                bool shootout = result is HockeyMatchResultType.ShootoutHomeWin or HockeyMatchResultType.ShootoutAwayWin;
+
+                if (won)
+                {
+                    if (shootout) shootoutWins++;
+                    else if (overtime) overtimeWins++;
+                    else regulationWins++;
+                    if (isHome) homeWins++; else awayWins++;
+                }
+                else
+                {
+                    if (shootout) shootoutLosses++;
+                    else if (overtime) overtimeLosses++;
+                    else regulationLosses++;
+                    if (isHome) homeLosses++; else awayLosses++;
+                }
+            }
+
+            row.GamesPlayed = gamesPlayed;
+            row.RegulationWins = regulationWins;
+            row.OvertimeWins = overtimeWins;
+            row.ShootoutWins = shootoutWins;
+            row.RegulationLosses = regulationLosses;
+            row.OvertimeLosses = overtimeLosses;
+            row.ShootoutLosses = shootoutLosses;
+            row.Ties = ties;
+            row.Wins = regulationWins + overtimeWins + shootoutWins;
+            row.Losses = regulationLosses + overtimeLosses + shootoutLosses;
+            row.GoalsFor = goalsFor;
+            row.GoalsAgainst = goalsAgainst;
+            row.GoalDifference = goalsFor - goalsAgainst;
+            row.HomeWins = homeWins;
+            row.HomeLosses = homeLosses;
+            row.AwayWins = awayWins;
+            row.AwayLosses = awayLosses;
+        }
     }
 
     private static void ApplyMatchPoints(

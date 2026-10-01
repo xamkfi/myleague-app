@@ -23,7 +23,7 @@ import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from './components/OfficialsSelectorSection';
 import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
-import BulkSaveDialog, { type BulkSavePayload } from './components/BulkSaveDialog';
+import BulkSaveDialog, { type BulkSavePayload } from '../../../../components/match/BulkSaveDialog';
 import type { EventGroup, ProcessedEvent } from './components/types';
 
 import { MatchTimerProvider, useMatchTimerContext } from './context';

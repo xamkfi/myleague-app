@@ -7,6 +7,11 @@ import { createTeamSlug } from '../../utils/slugUtils';
 import { getTeamPath, type SportKind } from '../../utils/sportRoutes';
 import { TeamLink } from '../SportLinks';
 import TeamLogoMark from '../TeamLogoMark/TeamLogoMark';
+import {
+  FloorballDecisionCells,
+  FloorballDecisionColGroup,
+  FloorballDecisionHeaderCells,
+} from '../LeagueStanding/FloorballDecisionColumns';
 import '../LeagueStanding/LeagueStanding.scss';
 import './TournamentGroupStandingsTable.scss';
 
@@ -23,6 +28,12 @@ export interface TournamentGroupStandingRow {
   goalsAgainst: number;
   goalDifference: number;
   points: number;
+  regulationWins?: number;
+  overtimeWins?: number;
+  shootoutWins?: number;
+  regulationLosses?: number;
+  overtimeLosses?: number;
+  shootoutLosses?: number;
 }
 
 interface TournamentGroupStandingsTableProps {
@@ -48,6 +59,7 @@ export default function TournamentGroupStandingsTable({ groupId, groupName, spor
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { teams, refetch } = useFloorballTeamsData();
+  const showDecisionColumns: boolean = sport === 'floorball';
   const [rows, setRows] = useState<TournamentGroupStandingRow[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,31 +127,43 @@ export default function TournamentGroupStandingsTable({ groupId, groupName, spor
             {t('tournaments.standings.empty', 'No matches played yet in this group.')}
           </div>
         ) : (
-          <table className="standing-table">
+          <table className={`standing-table${showDecisionColumns ? ' standing-table--wide' : ''}`}>
             <colgroup>
               <col className="rank-col" />
               <col className="team-col" />
               <col className="spacer-col" />
-              <col className="stats-col" />
-              <col className="stats-col" />
-              <col className="stats-col" />
-              <col className="stats-col" />
-              <col className="goals-col" />
-              <col className="stats-col" />
-              <col className="points-col" />
+              {showDecisionColumns ? (
+                <FloorballDecisionColGroup />
+              ) : (
+                <>
+                  <col className="stats-col" />
+                  <col className="stats-col" />
+                  <col className="stats-col" />
+                  <col className="stats-col" />
+                  <col className="goals-col" />
+                  <col className="stats-col" />
+                  <col className="points-col" />
+                </>
+              )}
             </colgroup>
             <thead>
               <tr className="header-row">
                 <th className="rank-col">#</th>
                 <th className="team-col">{t('leaguePage.standings.team', 'TEAM')}</th>
                 <th className="spacer-col"></th>
-                <th className="stats-col" title="Pelatut ottelut (Matches Played)">MP</th>
-                <th className="stats-col" title="Voitot (Wins)">W</th>
-                <th className="stats-col" title="Tasapelit (Draws)">D</th>
-                <th className="stats-col" title="Tappiot (Losses)">L</th>
-                <th className="goals-col" title="Tehdyt : Päästetyt maalit (Goals)">G</th>
-                <th className="stats-col" title="Maaliero (Goal Difference)">GD</th>
-                <th className="points-col" title="Pisteet (Points)">PTS</th>
+                {showDecisionColumns ? (
+                  <FloorballDecisionHeaderCells />
+                ) : (
+                  <>
+                    <th className="stats-col" title="Pelatut ottelut (Matches Played)">MP</th>
+                    <th className="stats-col" title="Voitot (Wins)">W</th>
+                    <th className="stats-col" title="Tasapelit (Draws)">D</th>
+                    <th className="stats-col" title="Tappiot (Losses)">L</th>
+                    <th className="goals-col" title="Tehdyt : Päästetyt maalit (Goals)">G</th>
+                    <th className="stats-col" title="Maaliero (Goal Difference)">GD</th>
+                    <th className="points-col" title="Pisteet (Points)">PTS</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -175,15 +199,21 @@ export default function TournamentGroupStandingsTable({ groupId, groupName, spor
                     </div>
                   </td>
                   <td className="spacer-col"></td>
-                  <td className="stats-col">{row.gamesPlayed}</td>
-                  <td className="stats-col">{row.wins}</td>
-                  <td className="stats-col">{row.draws}</td>
-                  <td className="stats-col">{row.losses}</td>
-                  <td className="goals-col">
-                    {row.goalsFor}:{row.goalsAgainst}
-                  </td>
-                  <td className="stats-col">{row.goalDifference}</td>
-                  <td className="points-col">{row.points}</td>
+                  {showDecisionColumns ? (
+                    <FloorballDecisionCells row={row} />
+                  ) : (
+                    <>
+                      <td className="stats-col">{row.gamesPlayed}</td>
+                      <td className="stats-col">{row.wins}</td>
+                      <td className="stats-col">{row.draws}</td>
+                      <td className="stats-col">{row.losses}</td>
+                      <td className="goals-col">
+                        {row.goalsFor}:{row.goalsAgainst}
+                      </td>
+                      <td className="stats-col">{row.goalDifference}</td>
+                      <td className="points-col">{row.points}</td>
+                    </>
+                  )}
                 </tr>
               );
               })}

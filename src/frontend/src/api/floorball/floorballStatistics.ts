@@ -46,6 +46,12 @@ export interface FloorballTeamSeasonStatisticsDto {
   wins: number;
   losses: number;
   ties: number;
+  regulationWins: number;
+  overtimeWins: number;
+  shootoutWins: number;
+  regulationLosses: number;
+  overtimeLosses: number;
+  shootoutLosses: number;
   points: number;
   goalsFor: number;
   goalsAgainst: number;

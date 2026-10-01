@@ -291,9 +291,31 @@ public class HockeyMatch : BaseEntity
 
         ActualEndTime = actualEndTime ?? DateTime.UtcNow;
         Status = HockeyMatchStatus.Finished;
-        if (resultType is not null)
-            ResultType = resultType;
+        ResultType = resultType ?? ResultType ?? InferResultType();
     }
+
+    /// <summary>
+    /// Derives the result from the score and the overtime / shootout flags.
+    /// </summary>
+    public HockeyMatchResultType InferResultType()
+    {
+        if (HomeScore == AwayScore)
+            return HockeyMatchResultType.Draw;
+
+        bool homeWon = HomeScore > AwayScore;
+        if (WentToShootout)
+            return homeWon ? HockeyMatchResultType.ShootoutHomeWin : HockeyMatchResultType.ShootoutAwayWin;
+        if (WentToOvertime)
+            return homeWon ? HockeyMatchResultType.OvertimeHomeWin : HockeyMatchResultType.OvertimeAwayWin;
+        return homeWon ? HockeyMatchResultType.HomeWin : HockeyMatchResultType.AwayWin;
+    }
+
+    /// <summary>
+    /// Result used for standings: the stored result, or one inferred from the score once the match is finished.
+    /// Null while the match has not been decided.
+    /// </summary>
+    public HockeyMatchResultType? StandingResultType =>
+        ResultType ?? (Status == HockeyMatchStatus.Finished ? InferResultType() : null);
 
     /// <summary>
     /// Stores floorball-style bracket forwarding: round, order, and the next match slot for the winner.

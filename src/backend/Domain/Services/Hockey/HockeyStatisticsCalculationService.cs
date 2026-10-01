@@ -321,11 +321,11 @@ public static class HockeyStatisticsCalculationService
         foreach (HockeyMatch match in teamMatches)
         {
             HockeyMatchTeam? side = match.MatchTeams.FirstOrDefault(t => t.TeamId == teamId);
-            if (side is null || match.ResultType is null)
+            if (side is null || match.StandingResultType is not HockeyMatchResultType result)
                 continue;
 
             ApplyMatchResult(
-                match.ResultType.Value,
+                result,
                 side.TeamSlot,
                 ref regulationWins,
                 ref overtimeWins,
@@ -359,7 +359,7 @@ public static class HockeyStatisticsCalculationService
             playoffSeriesId);
 
         aggregate.UpdateRecord(
-            gamesPlayed: teamMatches.Count(m => m.ResultType is not null),
+            gamesPlayed: teamMatches.Count(m => m.StandingResultType is not null),
             regulationWins,
             overtimeWins,
             shootoutWins,
@@ -421,11 +421,11 @@ public static class HockeyStatisticsCalculationService
         Guid goalieActivePlayerId,
         bool wasStarter)
     {
-        if (match.ResultType is null || !wasStarter)
+        if (match.StandingResultType is not HockeyMatchResultType result || !wasStarter)
             return HockeyGoalieDecision.NoDecision;
 
         bool isHome = matchTeam.TeamSlot == HockeyTeamSlot.Home;
-        return match.ResultType.Value switch
+        return result switch
         {
             HockeyMatchResultType.HomeWin => isHome ? HockeyGoalieDecision.Win : HockeyGoalieDecision.Loss,
             HockeyMatchResultType.AwayWin => isHome ? HockeyGoalieDecision.Loss : HockeyGoalieDecision.Win,

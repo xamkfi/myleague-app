@@ -73,7 +73,8 @@ internal static class FloorballEnrolledStandings
     }
 
     /// <summary>
-    /// Replaces stored points with the competition's match-point rules.
+    /// Replaces stored points with the competition's match-point rules and fills the
+    /// regulation / overtime / shootout win-loss breakdown.
     /// Season tables use <see cref="FloorballStandingRules"/>. Tournaments keep the shootout-only formula.
     /// Playoff matches stay out of the league table.
     /// </summary>
@@ -88,11 +89,12 @@ internal static class FloorballEnrolledStandings
 
         FloorballStandingRules? seasonRules = SeasonRules(competition);
         Dictionary<Guid, int> pointsByTeam = new();
-        IEnumerable<FloorballMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
+        List<FloorballMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
             .Where(match => match.Status == FloorballMatchStatus.Completed
                 && match.PlayoffRound is null
                 && match.HomeTeamId is Guid
-                && match.AwayTeamId is Guid);
+                && match.AwayTeamId is Guid)
+            .ToList();
         foreach (FloorballMatch match in validMatches)
         {
             Guid homeId = match.HomeTeamId!.Value;
@@ -104,7 +106,48 @@ internal static class FloorballEnrolledStandings
         }
 
         foreach (FloorballTeamSeasonStatisticsDto row in rows)
+        {
             row.Points = pointsByTeam.GetValueOrDefault(row.TeamId);
+            ApplyDecisionBreakdown(row, validMatches);
+        }
+    }
+
+    private static void ApplyDecisionBreakdown(
+        FloorballTeamSeasonStatisticsDto row,
+        IReadOnlyList<FloorballMatch> completedMatches)
+    {
+        row.RegulationWins = 0;
+        row.OvertimeWins = 0;
+        row.ShootoutWins = 0;
+        row.RegulationLosses = 0;
+        row.OvertimeLosses = 0;
+        row.ShootoutLosses = 0;
+
+        foreach (FloorballMatch match in completedMatches)
+        {
+            bool isHome = match.HomeTeamId == row.TeamId;
+            if (!isHome && match.AwayTeamId != row.TeamId)
+                continue;
+
+            int goalsFor = isHome ? match.HomeScore : match.AwayScore;
+            int goalsAgainst = isHome ? match.AwayScore : match.HomeScore;
+            if (goalsFor == goalsAgainst)
+                continue;
+
+            bool won = goalsFor > goalsAgainst;
+            if (match.WentToShootout)
+            {
+                if (won) row.ShootoutWins++; else row.ShootoutLosses++;
+            }
+            else if (match.WentToOvertime)
+            {
+                if (won) row.OvertimeWins++; else row.OvertimeLosses++;
+            }
+            else
+            {
+                if (won) row.RegulationWins++; else row.RegulationLosses++;
+            }
+        }
     }
 
     private static async Task<IReadOnlyList<StandingMatchResult>> LoadResultsAsync(

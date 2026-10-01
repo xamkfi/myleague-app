@@ -57,7 +57,7 @@ public class HockeyRosterRules : IEquatable<HockeyRosterRules>
     }
 
     public static HockeyRosterRules Default() =>
-        new(20, 2, 15, requiresGoalie: true, maxCaptains: 1, maxAlternateCaptains: 2,
+        new(20, 2, 0, requiresGoalie: true, maxCaptains: 1, maxAlternateCaptains: 2,
             canGoalieBeCaptain: false, allowGuestPlayers: false, lineManagementEnabled: true);
 
     public override bool Equals(object? obj) => Equals(obj as HockeyRosterRules);
