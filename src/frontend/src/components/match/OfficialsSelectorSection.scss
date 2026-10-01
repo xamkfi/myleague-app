@@ -1,5 +1,5 @@
 @use 'sass:map';
-@use '../../../../../styles/variables' as *;
+@use '@variables' as *;
 
 // Styled to mirror `.active-roster-card` so the two cards form a consistent vertical
 // stack in the manage-match layout (same border, padding, title typography and

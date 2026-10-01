@@ -41,11 +41,11 @@ const OfficialsSelectorSection = ({
   return (
     <section
       className="officials-selector-section"
-      aria-label={t('floorball.matches.manage.matchOfficials', 'Match officials')}
+      aria-label={t('matchManage.officials.title', 'Match officials')}
     >
       <div className="officials-selector-section__header">
         <h3 className="officials-selector-section__title">
-          {t('floorball.matches.manage.matchOfficials', 'MATCH OFFICIALS')}
+          {t('matchManage.officials.title', 'MATCH OFFICIALS')}
         </h3>
         {/* Hide the Add affordance entirely when the section is locked (Completed match): */}
         {/* keeping a greyed-out button there would just invite frustrated clicks.        */}
@@ -57,14 +57,14 @@ const OfficialsSelectorSection = ({
             disabled={saving}
           >
             <i className="fas fa-plus" aria-hidden="true"></i>
-            {t('floorball.matches.manage.addReferee', 'Add referee')}
+            {t('matchManage.officials.add', 'Add referee')}
           </button>
         )}
       </div>
 
       {selectedOfficials.length === 0 ? (
         <div className="officials-selector-section__empty">
-          {t('floorball.matches.manage.noOfficials', 'No officials assigned.')}
+          {t('matchManage.officials.none', 'No officials assigned.')}
         </div>
       ) : (
         <div className="officials-selector-section__rows">
@@ -77,8 +77,8 @@ const OfficialsSelectorSection = ({
               >
                 <option value="">
                   {saving
-                    ? t('floorball.matches.manage.saving', 'Saving...')
-                    : t('floorball.matches.manage.selectReferee', 'SELECT REFEREE')}
+                    ? t('matchManage.officials.saving', 'Saving...')
+                    : t('matchManage.officials.select', 'SELECT REFEREE')}
                 </option>
                 {options.map(option => (
                   <option
@@ -97,7 +97,7 @@ const OfficialsSelectorSection = ({
                   className="officials-selector-section__remove"
                   onClick={() => onRemove(idx, refId)}
                   disabled={isLocked || !refId}
-                  aria-label={t('floorball.matches.manage.removeReferee', 'Remove referee')}
+                  aria-label={t('matchManage.officials.remove', 'Remove referee')}
                 >
                   ×
                 </button>
