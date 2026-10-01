@@ -44,7 +44,7 @@ param enableAvailabilityTest bool = false
 param monthlyBudgetAmount int = 35
 
 @description('Start date of the cost budget. Must be the first day of a month and must stay unchanged after the budget is created; Azure rejects updates to this value.')
-param budgetStartDate string = '2026-09-01'
+param budgetStartDate string = '2026-09-01T00:00:00Z'
 
 @description('Tags to apply to created resources')
 param tags object = {}
