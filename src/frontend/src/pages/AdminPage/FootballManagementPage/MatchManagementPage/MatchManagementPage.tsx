@@ -12,7 +12,7 @@ import type { FootballMatchDto } from '../../../../types/football/footballTypes'
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
-import ConfirmationDialog from '../ManageMatchPage/components/ConfirmationDialog';
+import ConfirmationDialog from '../../../../components/ConfirmationDialog/ConfirmationDialog';
 import SearchField from '../../../../components/SearchField/SearchField';
 import Button from '../../../../components/Button/Button';
 import AddIcon from '../../../../assets/basicIcons/add.svg';

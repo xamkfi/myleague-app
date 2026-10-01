@@ -195,6 +195,40 @@
     "fi": "Finnish",
     "switchLanguage": "Switch language"
   },
+  "matchManage": {
+    "officials": {
+      "title": "MATCH OFFICIALS",
+      "add": "Add referee",
+      "none": "No officials assigned.",
+      "saving": "Saving...",
+      "select": "SELECT REFEREE",
+      "remove": "Remove referee"
+    },
+    "scoreboard": {
+      "home": "Home",
+      "away": "Away"
+    },
+    "header": {
+      "vs": "vs",
+      "live": "LIVE",
+      "finished": "FINISHED",
+      "swapSides": "Swap sides",
+      "swapSidesTitle": "Swap the visual sides of the teams",
+      "finishMatch": "Finish match",
+      "finishMatchTitle": "Stop live tracking and mark the match as finished",
+      "reopenMatch": "Open match",
+      "reopenMatchTitle": "Reopen this match for editing",
+      "closeTitle": "Back to the match list"
+    },
+    "confirmDelete": {
+      "title": "Delete event",
+      "titleMany": "Delete {{count}} match events",
+      "message": "Delete the selected match event?",
+      "messageMany": "Delete {{count}} selected match events?",
+      "warning": "This action cannot be undone.",
+      "confirm": "Delete"
+    }
+  },
   "matchScorekeepers": {
     "title": "Match scorekeepers",
     "add": "Add scorekeeper",
@@ -3581,7 +3615,10 @@
       },
       "periodActions": {
         "PeriodStarted": "Period started",
-        "PeriodEnded": "Period ended"
+        "PeriodEnded": "Period ended",
+        "IntermissionStarted": "Intermission started",
+        "OvertimeStarted": "Overtime started",
+        "ShootoutStarted": "Shootout started"
       },
       "recordEvent": "RECORD EVENT",
       "faceoff": "Face-off",

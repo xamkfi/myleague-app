@@ -93,7 +93,7 @@ const LiveMatchTimer = ({
   type ChipStatus = 'completed' | 'started' | 'upcoming';
   const getChipStatus = (p: number): ChipStatus => {
     if (endedPeriods.has(p)) return 'completed';
-    if (startedPeriods.has(p)) return 'started';
+    if (startedPeriods.has(p)) return isHockeyMatchFinished(currentMatch.status) ? 'completed' : 'started';
     return 'upcoming';
   };
   const chipStatusLabel: Record<ChipStatus, string> = {

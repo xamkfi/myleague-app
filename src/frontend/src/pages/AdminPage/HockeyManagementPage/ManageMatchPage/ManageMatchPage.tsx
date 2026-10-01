@@ -24,6 +24,7 @@ import {
   type HockeyFaceoffZone,
   type HockeyGoalStrength,
   type HockeyMatchDto,
+  type HockeyMatchEventDto,
   type HockeyMatchTeamDto,
   type HockeyOfficialRole,
   type HockeyPenaltyOffence,
@@ -37,8 +38,8 @@ import {
   DEFAULT_HOCKEY_MATCH_RULES,
   useHockeyPeriodManagement,
 } from './hooks/useHockeyPeriodManagement';
-import LiveMatchModalHeader from './components/LiveMatchModalHeader';
-import LiveMatchScoreboard from './components/LiveMatchScoreboard';
+import LiveMatchModalHeader from '../../../../components/match/LiveMatchModalHeader';
+import LiveMatchScoreboard from '../../../../components/match/LiveMatchScoreboard';
 import LiveMatchTimer from './components/LiveMatchTimer';
 import LiveMatchQuickActions from './components/LiveMatchQuickActions';
 import GoalRecordingForm from './components/GoalRecordingForm';
@@ -48,7 +49,7 @@ import FaceoffRecordingForm from './components/FaceoffRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ActiveRosterCard from './components/ActiveRosterCard';
 import EditActiveRosterDialog from './components/EditActiveRosterDialog';
-import OfficialsSelectorSection from './components/OfficialsSelectorSection';
+import OfficialsSelectorSection from '../../../../components/match/OfficialsSelectorSection';
 import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
 import BulkSaveDialog, { type BulkSavePayload } from '../../../../components/match/BulkSaveDialog';
 import { toFormPlayers } from './components/eventFormHelpers';
@@ -107,6 +108,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   const [faceoffWinnerPlayerId, setFaceoffWinnerPlayerId] = useState('');
   const [faceoffLoserPlayerId, setFaceoffLoserPlayerId] = useState('');
   const [showFinishConfirm, setShowFinishConfirm] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<HockeyMatchEventDto[] | null>(null);
   const [showReopenConfirm, setShowReopenConfirm] = useState(false);
   const [isLineupDialogOpen, setIsLineupDialogOpen] = useState(false);
   const [shouldStartTimer, setShouldStartTimer] = useState(false);
@@ -575,7 +577,8 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
       <LiveMatchModalHeader
         homeTeam={{ name: (home ? teamNames.get(home.teamId) : undefined) ?? t('hockey.matches.manage.home', 'Home') }}
         awayTeam={{ name: (away ? teamNames.get(away.teamId) : undefined) ?? t('hockey.matches.manage.away', 'Away') }}
-        currentMatch={match}
+        isLive={isHockeyMatchLive(match.status)}
+        isFinished={isHockeyMatchFinished(match.status)}
         isSidesSwapped={isSidesSwapped}
         onToggleSides={() => setIsSidesSwapped((prev) => !prev)}
         onClose={onClose}
@@ -583,6 +586,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         onReopen={() => setShowReopenConfirm(true)}
       />
       <LiveMatchScoreboard
+        sport="hockey"
         leftTeam={{ name: leftName }}
         rightTeam={{ name: rightName }}
         leftScore={leftSide?.goals ?? 0}
@@ -660,8 +664,8 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
             playerNames={playerNames}
             canDelete={canRecord}
             busy={busy}
-            onDeleteEvent={(eventItem) => void deleteEvent(eventItem.id, eventItem.eventType)}
-            onDeleteEvents={(eventItems) => void deleteEventGroup(eventItems.map((eventItem) => eventItem.id))}
+            onDeleteEvent={(eventItem) => setPendingDelete([eventItem])}
+            onDeleteEvents={(eventItems) => setPendingDelete(eventItems)}
           />
           <OfficialsSelectorSection
             selectedOfficials={
@@ -863,6 +867,33 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
           });
         }}
         onCancel={() => setShowReopenConfirm(false)}
+      />
+      <ConfirmationDialog
+        isOpen={pendingDelete !== null}
+        icon="🗑️"
+        title={
+          (pendingDelete?.length ?? 0) > 1
+            ? t('matchManage.confirmDelete.titleMany', { count: pendingDelete?.length ?? 0, defaultValue: 'Delete {{count}} events' })
+            : t('matchManage.confirmDelete.title', 'Delete event')
+        }
+        message={
+          (pendingDelete?.length ?? 0) > 1
+            ? t('matchManage.confirmDelete.messageMany', { count: pendingDelete?.length ?? 0, defaultValue: 'Delete {{count}} selected events?' })
+            : t('matchManage.confirmDelete.message', 'Delete the selected event?')
+        }
+        warningMessage={t('matchManage.confirmDelete.warning', 'This action cannot be undone.')}
+        confirmText={t('matchManage.confirmDelete.confirm', 'Delete')}
+        isLoading={busy}
+        onConfirm={() => {
+          const events: HockeyMatchEventDto[] = pendingDelete ?? [];
+          setPendingDelete(null);
+          if (events.length > 1) {
+            void deleteEventGroup(events.map((eventItem) => eventItem.id));
+          } else if (events.length === 1) {
+            void deleteEvent(events[0].id, events[0].eventType);
+          }
+        }}
+        onCancel={() => setPendingDelete(null)}
       />
     </>
   );

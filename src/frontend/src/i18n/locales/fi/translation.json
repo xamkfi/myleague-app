@@ -56,6 +56,40 @@
       "Draw": "Arpa"
     }
   },
+  "matchManage": {
+    "officials": {
+      "title": "OTTELUN TUOMARIT",
+      "add": "Lisää tuomari",
+      "none": "Ei valittuja tuomareita.",
+      "saving": "Tallennetaan...",
+      "select": "VALITSE TUOMARI",
+      "remove": "Poista tuomari"
+    },
+    "scoreboard": {
+      "home": "Koti",
+      "away": "Vieras"
+    },
+    "header": {
+      "vs": "vs",
+      "live": "LIVE",
+      "finished": "PÄÄTTYNYT",
+      "swapSides": "Vaihda puolia",
+      "swapSidesTitle": "Vaihda joukkueiden puolet näkymässä",
+      "finishMatch": "Päätä ottelu",
+      "finishMatchTitle": "Lopeta live-seuranta ja merkitse ottelu päättyneeksi",
+      "reopenMatch": "Avaa ottelu",
+      "reopenMatchTitle": "Avaa ottelu uudelleen muokattavaksi",
+      "closeTitle": "Takaisin ottelulistaan"
+    },
+    "confirmDelete": {
+      "title": "Poista tapahtuma",
+      "titleMany": "Poista {{count}} ottelutapahtumaa",
+      "message": "Poistetaanko valittu ottelutapahtuma?",
+      "messageMany": "Poistetaanko {{count}} valittua ottelutapahtumaa?",
+      "warning": "Tätä toimintoa ei voi perua.",
+      "confirm": "Poista"
+    }
+  },
   "matchScorekeepers": {
     "title": "Ottelun toimitsijat",
     "add": "Lisää toimitsija",
@@ -3554,7 +3588,10 @@
       },
       "periodActions": {
         "PeriodStarted": "Erä alkoi",
-        "PeriodEnded": "Erä päättyi"
+        "PeriodEnded": "Erä päättyi",
+        "IntermissionStarted": "Erätauko alkoi",
+        "OvertimeStarted": "Jatkoaika alkoi",
+        "ShootoutStarted": "Voittomaalikilpailu alkoi"
       },
       "recordEvent": "KIRJAA TAPAHTUMA",
       "faceoff": "Aloitus",

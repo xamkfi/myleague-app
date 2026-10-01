@@ -67,7 +67,7 @@ public class HockeyMatchConfiguration : BaseEntityConfiguration<HockeyMatch>
         {
             scorekeeper.ToTable("HockeyMatchScorekeepers");
             scorekeeper.WithOwner().HasForeignKey("MatchId");
-            scorekeeper.Property(s => s.PersonId).IsRequired();
+            scorekeeper.Property(s => s.PersonId).IsRequired().ValueGeneratedNever();
             scorekeeper.HasKey("MatchId", nameof(HockeyMatchScorekeeper.PersonId));
         });
         builder.Navigation(m => m.Scorekeepers)

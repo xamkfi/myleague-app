@@ -11,8 +11,8 @@ import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate'
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import AssignTeamsDialog from '../../../../components/AssignTeamsDialog/AssignTeamsDialog';
 
-import LiveMatchModalHeader from './components/LiveMatchModalHeader';
-import LiveMatchScoreboard from './components/LiveMatchScoreboard';
+import LiveMatchModalHeader from '../../../../components/match/LiveMatchModalHeader';
+import LiveMatchScoreboard from '../../../../components/match/LiveMatchScoreboard';
 import LiveMatchTimer from './components/LiveMatchTimer';
 import LiveMatchQuickActions from './components/LiveMatchQuickActions';
 import GoalRecordingForm from './components/GoalRecordingForm';
@@ -20,7 +20,7 @@ import PenaltyRecordingForm from './components/PenaltyRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ActiveRosterCard from './components/ActiveRosterCard';
 import EditActiveRosterDialog from './components/EditActiveRosterDialog';
-import OfficialsSelectorSection from './components/OfficialsSelectorSection';
+import OfficialsSelectorSection from '../../../../components/match/OfficialsSelectorSection';
 import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
 import BulkSaveDialog, { type BulkSavePayload } from '../../../../components/match/BulkSaveDialog';
@@ -651,7 +651,8 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
       <LiveMatchModalHeader
         homeTeam={matchData.homeTeam}
         awayTeam={matchData.awayTeam}
-        currentMatch={currentMatch}
+        isLive={currentMatch.status === 'InProgress'}
+        isFinished={currentMatch.status === 'Completed'}
         isSidesSwapped={isSidesSwapped}
         onToggleSides={() => setIsSidesSwapped(prev => !prev)}
         onClose={onClose}
@@ -805,6 +806,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
 
         <div className="right-section">
           <LiveMatchScoreboard
+            sport="floorball"
             leftTeam={leftSideTeamData}
             rightTeam={rightSideTeamData}
             leftScore={leftSideScore}

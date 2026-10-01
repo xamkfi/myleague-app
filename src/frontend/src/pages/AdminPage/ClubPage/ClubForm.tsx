@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import { clubService, type ClubRequest } from '../../../api/common/clubService';
 import './ClubForm.scss';
-import ConfirmationDialog from '../FloorballManagementPage/ManageMatchPage/components/ConfirmationDialog';
+import ConfirmationDialog from '../../../components/ConfirmationDialog/ConfirmationDialog';
 
 interface ClubFormProps {
   initialValues?: ClubRequest;
