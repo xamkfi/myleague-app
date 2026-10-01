@@ -9,7 +9,7 @@ import {
   floorballSeasonSearchService,
   floorballTournamentSearchService,
 } from '../../../../../api/floorball/floorballTeamSearchService';
-import ConfirmationDialog from '../../ManageMatchPage/components/ConfirmationDialog';
+import ConfirmationDialog from '../../../../../components/ConfirmationDialog/ConfirmationDialog';
 import { toTeamSearchResult, useEnrolledTeams } from '../../../../../utils/enrolledCompetitionTeams';
 import './MatchForm.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';

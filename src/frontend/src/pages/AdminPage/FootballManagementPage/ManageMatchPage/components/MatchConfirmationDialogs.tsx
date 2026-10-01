@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import ConfirmationDialog from './ConfirmationDialog';
+import ConfirmationDialog from '../../../../../components/ConfirmationDialog/ConfirmationDialog';
 import type { EventGroup } from './types';
 import { formatMatchEventTime } from '../../../../../utils/matchEventFormat';
 

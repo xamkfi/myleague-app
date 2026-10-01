@@ -149,6 +149,61 @@ public class FloorballTeamAndMatchRepositoryTests : FloorballIntegrationTestBase
     }
 
     [Fact]
+    public async Task AddScorekeeper_OnLoadedMatch_PersistsAfterReload()
+    {
+        FloorballMatch match = await SeedMatchAsync();
+        Guid personId = Guid.NewGuid();
+
+        FloorballMatch tracked = (await MatchRepository.GetByIdAsync(match.Id))!;
+        tracked.AddScorekeeper(personId);
+        await DbContext.SaveChangesAsync();
+        DbContext.ChangeTracker.Clear();
+
+        FloorballMatch? reloaded = await MatchRepository.GetByIdAsync(match.Id);
+
+        reloaded!.Scorekeepers.Should().ContainSingle(s => s.PersonId == personId);
+    }
+
+    [Fact]
+    public async Task RemoveScorekeeper_OnLoadedMatch_PersistsAfterReload()
+    {
+        FloorballMatch match = await SeedMatchAsync();
+        Guid personId = Guid.NewGuid();
+        FloorballMatch withScorekeeper = (await MatchRepository.GetByIdAsync(match.Id))!;
+        withScorekeeper.AddScorekeeper(personId);
+        await DbContext.SaveChangesAsync();
+        DbContext.ChangeTracker.Clear();
+
+        FloorballMatch tracked = (await MatchRepository.GetByIdAsync(match.Id))!;
+        tracked.RemoveScorekeeper(personId);
+        await DbContext.SaveChangesAsync();
+        DbContext.ChangeTracker.Clear();
+
+        FloorballMatch? reloaded = await MatchRepository.GetByIdAsync(match.Id);
+
+        reloaded!.Scorekeepers.Should().BeEmpty();
+    }
+
+    private async Task<FloorballMatch> SeedMatchAsync()
+    {
+        FloorballSeason season = new(
+            "Season",
+            new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc));
+        FloorballTeam home = CreateTeam("Home");
+        FloorballTeam away = CreateTeam("Away");
+        season.AddTeam(home);
+        season.AddTeam(away);
+        FloorballMatch match = CreateMatch(season, home, away, new DateTime(2027, 1, 15, 18, 0, 0, DateTimeKind.Utc));
+
+        await CompetitionRepository.AddAsync(season);
+        await MatchRepository.AddAsync(match);
+        await DbContext.SaveChangesAsync();
+        DbContext.ChangeTracker.Clear();
+        return match;
+    }
+
+    [Fact]
     public async Task GetLastCompletedForTeamsAsync_ReturnsNewestCompletedMatchesForThoseTeams()
     {
         FloorballSeason season = new(

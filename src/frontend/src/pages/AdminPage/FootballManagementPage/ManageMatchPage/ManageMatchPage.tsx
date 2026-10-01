@@ -7,8 +7,8 @@ import type { FootballLineupPlayer, FootballMatchDto } from '../../../../types/f
 import type { FootballPlayerDto } from '../../../../api/football/footballPlayerService';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 
-import LiveMatchModalHeader from './components/LiveMatchModalHeader';
-import LiveMatchScoreboard from './components/LiveMatchScoreboard';
+import LiveMatchModalHeader from '../../../../components/match/LiveMatchModalHeader';
+import LiveMatchScoreboard from '../../../../components/match/LiveMatchScoreboard';
 import LiveMatchTimer from './components/LiveMatchTimer';
 import LiveMatchQuickActions from './components/LiveMatchQuickActions';
 import GoalRecordingForm from './components/GoalRecordingForm';
@@ -17,7 +17,7 @@ import SubstitutionRecordingForm from './components/SubstitutionRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ActiveRosterCard from './components/ActiveRosterCard';
 import EditActiveRosterDialog from './components/EditActiveRosterDialog';
-import OfficialsSelectorSection from './components/OfficialsSelectorSection';
+import OfficialsSelectorSection from '../../../../components/match/OfficialsSelectorSection';
 import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
@@ -700,7 +700,8 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
       <LiveMatchModalHeader
         homeTeam={matchData.homeTeam}
         awayTeam={matchData.awayTeam}
-        currentMatch={matchData.currentMatch}
+        isLive={matchData.currentMatch.status === 'InProgress'}
+        isFinished={matchData.currentMatch.status === 'Completed'}
         isSidesSwapped={isSidesSwapped}
         onToggleSides={() => setIsSidesSwapped((prev) => !prev)}
         onClose={onClose}
@@ -879,6 +880,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
 
         <div className="right-section">
           <LiveMatchScoreboard
+            sport="football"
             leftTeam={leftSideTeamData}
             rightTeam={rightSideTeamData}
             leftScore={leftSideScore}
