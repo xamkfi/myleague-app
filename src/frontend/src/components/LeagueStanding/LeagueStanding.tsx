@@ -20,6 +20,7 @@ import { createTeamSlug } from '../../utils/slugUtils';
 import { getPlayerPath, getTeamPath, type SportKind } from '../../utils/sportRoutes';
 import { TeamLink, PlayerLink } from '../SportLinks';
 import TeamLogoMark from '../TeamLogoMark/TeamLogoMark';
+import { FloorballDecisionCells, FloorballDecisionColGroup, FloorballDecisionHeaderCells } from './FloorballDecisionColumns';
 
 type StandingView = 'standings' | 'scorers' | 'assists' | 'goalies';
 type LeagueSeasonSummary = FloorballSeasonStatisticsSummaryDto | FootballSeasonStatisticsSummaryDto;
@@ -75,6 +76,7 @@ export default function LeagueStanding({
   const footballTeams = useFootballTeamsData();
   const { teams, refetch } = sport === 'football' ? footballTeams : floorballTeams;
   const showGoalies = sport !== 'football';
+  const showDecisionColumns: boolean = sport === 'floorball';
   const [activeView, setActiveView] = useState<StandingView>('standings');
 
   useEffect(() => {
@@ -129,13 +131,19 @@ export default function LeagueStanding({
             <th className="rank-col">#</th>
             <th className="team-col">{t('leaguePage.standings.team')}</th>
             <th className="spacer-col"></th>
-            <th className="stats-col" title={t('leaguePage.standings.colMpTitle')}>MP</th>
-            <th className="stats-col" title={t('leaguePage.standings.colWTitle')}>W</th>
-            <th className="stats-col" title={t('leaguePage.standings.colDTitle')}>D</th>
-            <th className="stats-col" title={t('leaguePage.standings.colLTitle')}>L</th>
-            <th className="goals-col" title={t('leaguePage.standings.colGTitle')}>G</th>
-            <th className="stats-col" title={t('leaguePage.standings.colGdTitle')}>GD</th>
-            <th className="points-col" title={t('leaguePage.standings.colPtsTitle')}>PTS</th>
+            {showDecisionColumns ? (
+              <FloorballDecisionHeaderCells />
+            ) : (
+              <>
+                <th className="stats-col" title={t('leaguePage.standings.colMpTitle')}>MP</th>
+                <th className="stats-col" title={t('leaguePage.standings.colWTitle')}>W</th>
+                <th className="stats-col" title={t('leaguePage.standings.colDTitle')}>D</th>
+                <th className="stats-col" title={t('leaguePage.standings.colLTitle')}>L</th>
+                <th className="goals-col" title={t('leaguePage.standings.colGTitle')}>G</th>
+                <th className="stats-col" title={t('leaguePage.standings.colGdTitle')}>GD</th>
+                <th className="points-col" title={t('leaguePage.standings.colPtsTitle')}>PTS</th>
+              </>
+            )}
             <th className="form-col" title={t('leaguePage.standings.colFormTitle')}>FORM</th>
           </tr>
         </thead>
@@ -204,18 +212,24 @@ export default function LeagueStanding({
 
     return (
       <>
-      <table className="standing-table">
+      <table className={`standing-table${showDecisionColumns ? ' standing-table--wide' : ''}`}>
         <colgroup>
           <col className="rank-col" />
           <col className="team-col" />
           <col className="spacer-col" />
-          <col className="stats-col" />
-          <col className="stats-col" />
-          <col className="stats-col" />
-          <col className="stats-col" />
-          <col className="goals-col" />
-          <col className="stats-col" />
-          <col className="points-col" />
+          {showDecisionColumns ? (
+            <FloorballDecisionColGroup />
+          ) : (
+            <>
+              <col className="stats-col" />
+              <col className="stats-col" />
+              <col className="stats-col" />
+              <col className="stats-col" />
+              <col className="goals-col" />
+              <col className="stats-col" />
+              <col className="points-col" />
+            </>
+          )}
           <col className="form-col" />
         </colgroup>
         {renderHeaderRow('standings')}
@@ -256,13 +270,19 @@ export default function LeagueStanding({
                   </div>
                 </td>
                 <td className="spacer-col"></td>
-                <td className="stats-col">{team.gamesPlayed}</td>
-                <td className="stats-col">{team.wins}</td>
-                <td className="stats-col">{getDraws(team)}</td>
-                <td className="stats-col">{team.losses}</td>
-                <td className="goals-col">{team.goalsFor}:{team.goalsAgainst}</td>
-                <td className="stats-col">{team.goalDifference}</td>
-                <td className="points-col">{team.points}</td>
+                {showDecisionColumns ? (
+                  <FloorballDecisionCells row={team} />
+                ) : (
+                  <>
+                    <td className="stats-col">{team.gamesPlayed}</td>
+                    <td className="stats-col">{team.wins}</td>
+                    <td className="stats-col">{getDraws(team)}</td>
+                    <td className="stats-col">{team.losses}</td>
+                    <td className="goals-col">{team.goalsFor}:{team.goalsAgainst}</td>
+                    <td className="stats-col">{team.goalDifference}</td>
+                    <td className="points-col">{team.points}</td>
+                  </>
+                )}
                 <td className="form-col">
                   <div className="form-indicators">
                     {form.map((result, formIndex) => (

@@ -94,7 +94,7 @@ public class RecalculateHockeyCompetitionStatisticsHandler
             }
 
             List<HockeyMatch> standingsMatches = scopedMatches
-                .Where(m => m.CountsTowardStandings && m.ResultType is not null)
+                .Where(m => m.CountsTowardStandings && m.StandingResultType is not null)
                 .ToList();
 
             HockeyStandingRules standingRules = competition.GetEffectiveRules().StandingRules;

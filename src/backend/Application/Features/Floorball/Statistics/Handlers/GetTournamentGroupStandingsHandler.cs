@@ -104,7 +104,13 @@ public class GetTournamentGroupStandingsHandler
                         r.GoalsAgainst,
                         r.GoalDifference,
                         r.Points,
-                        team?.ShortName ?? string.Empty);
+                        team?.ShortName ?? string.Empty,
+                        r.RegulationWins,
+                        r.OvertimeWins,
+                        r.ShootoutWins,
+                        r.RegulationLosses,
+                        r.OvertimeLosses,
+                        r.ShootoutLosses);
                 })
                 .ToList();
 

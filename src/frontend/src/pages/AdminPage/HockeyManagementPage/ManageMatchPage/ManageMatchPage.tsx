@@ -50,6 +50,7 @@ import ActiveRosterCard from './components/ActiveRosterCard';
 import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from './components/OfficialsSelectorSection';
 import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
+import BulkSaveDialog, { type BulkSavePayload } from '../../../../components/match/BulkSaveDialog';
 import { toFormPlayers } from './components/eventFormHelpers';
 import './ManageMatchPage.scss';
 
@@ -110,6 +111,8 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   const [isLineupDialogOpen, setIsLineupDialogOpen] = useState(false);
   const [shouldStartTimer, setShouldStartTimer] = useState(false);
   const [showOfficialDraft, setShowOfficialDraft] = useState(false);
+  const [bulkSaveShootingTeamId, setBulkSaveShootingTeamId] = useState<string | null>(null);
+  const [bulkSaveError, setBulkSaveError] = useState<string | null>(null);
   const restoredStatusRef = useRef('');
   const eventStampRef = useRef<{ periodNumber: number; timeInSeconds: number } | null>(null);
 
@@ -360,6 +363,11 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   const awayTeamEntity = teams.find((item) => item.id === away?.teamId);
   const homeGoalieId = home?.activeGoalieMatchPlayerId ?? home?.activePlayers.find((player) => player.isGoalie)?.id ?? '';
   const awayGoalieId = away?.activeGoalieMatchPlayerId ?? away?.activePlayers.find((player) => player.isGoalie)?.id ?? '';
+  const bulkSaveDefendingSide: HockeyMatchTeamDto | undefined = bulkSaveShootingTeamId
+    ? match.matchTeams.find((side) => side.id !== bulkSaveShootingTeamId)
+    : undefined;
+  const bulkSaveGoalieId: string = bulkSaveShootingTeamId ? hockeyOpposingGoalieId(match, bulkSaveShootingTeamId) : '';
+  const bulkSavePeriod: number = Math.max(1, Math.min(timer.currentPeriod, periodManagement.overtimePeriodNumber));
 
   const openEventForm = (kind: EventFormKind, side: HockeyMatchTeamDto | undefined): void => {
     if (!side) {
@@ -481,6 +489,61 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
     clearEventStamp();
   };
 
+  const openBulkSaveForm = (shootingTeamId: string): void => {
+    if (!hockeyOpposingGoalieId(match, shootingTeamId)) {
+      setError(t('hockey.matches.shotNeedsGoalie', 'A save requires an opposing goalie in the lineup.'));
+      return;
+    }
+    setBulkSaveError(null);
+    setBulkSaveShootingTeamId(shootingTeamId);
+  };
+
+  const closeBulkSaveForm = (): void => {
+    setBulkSaveShootingTeamId(null);
+    setBulkSaveError(null);
+  };
+
+  const submitBulkSaves = async ({ count, periodNumber, timeInSeconds }: BulkSavePayload): Promise<void> => {
+    if (!bulkSaveShootingTeamId) {
+      return;
+    }
+    const goalieId = hockeyOpposingGoalieId(match, bulkSaveShootingTeamId);
+    if (!goalieId) {
+      setBulkSaveError(t('hockey.matches.shotNeedsGoalie', 'A save requires an opposing goalie in the lineup.'));
+      return;
+    }
+    setBusy(true);
+    setBulkSaveError(null);
+    try {
+      const updated = await hockeyMatchService.recordShot(match.id, {
+        shootingMatchTeamId: bulkSaveShootingTeamId,
+        periodNumber,
+        timeInSeconds,
+        shotResult: 'Saved',
+        countsAsShotOnGoal: true,
+        goalieActivePlayerId: goalieId,
+        description: 'Saved',
+        count,
+      });
+      setMatch(updated);
+      setBulkSaveShootingTeamId(null);
+    } catch (err) {
+      setBulkSaveError(err instanceof Error ? err.message : t('hockey.matches.manage.errors.operationFailed', 'Operation failed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const deleteEventGroup = async (eventIds: string[]): Promise<void> => {
+    await run(async () => {
+      let latest: HockeyMatchDto | undefined;
+      for (const eventId of eventIds) {
+        latest = await hockeyMatchService.deleteShot(match.id, eventId);
+      }
+      return latest;
+    });
+  };
+
   const deleteEvent = async (eventId: string, eventType: string): Promise<void> => {
     const type = eventType.toLowerCase();
     if (type.includes('goal')) {
@@ -565,6 +628,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
             onShowGoalForm={(teamId) => openEventForm('goal', match.matchTeams.find((side) => side.id === teamId))}
             onShowPenaltyForm={(teamId) => openEventForm('penalty', match.matchTeams.find((side) => side.id === teamId))}
             onShowShotForm={(teamId) => openEventForm('shot', match.matchTeams.find((side) => side.id === teamId))}
+            onShowBulkSaveForm={openBulkSaveForm}
             onShowFaceoffForm={openFaceoffForm}
             onRecordOffside={() => void recordOffside()}
             keybindsEnabled={!eventForm && !isLineupDialogOpen && canRecord}
@@ -597,6 +661,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
             canDelete={canRecord}
             busy={busy}
             onDeleteEvent={(eventItem) => void deleteEvent(eventItem.id, eventItem.eventType)}
+            onDeleteEvents={(eventItems) => void deleteEventGroup(eventItems.map((eventItem) => eventItem.id))}
           />
           <OfficialsSelectorSection
             selectedOfficials={
@@ -672,6 +737,21 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         onRecordPenalty={submitEvent}
         onClose={closeEventForm}
       />
+      {bulkSaveDefendingSide && (
+        <BulkSaveDialog
+          isOpen
+          goalieName={playerNames.get(bulkSaveGoalieId) ?? ''}
+          teamName={teamNames.get(bulkSaveDefendingSide.teamId) ?? ''}
+          currentPeriod={bulkSavePeriod}
+          numberOfPeriods={Math.max(periodManagement.rules.numberOfPeriods, bulkSavePeriod)}
+          periodDurationMinutes={DEFAULT_HOCKEY_MATCH_RULES.periodDurationMinutes}
+          currentElapsedSeconds={getInPeriodSeconds()}
+          onSubmit={submitBulkSaves}
+          onClose={closeBulkSaveForm}
+          loading={busy}
+          errorMessage={bulkSaveError}
+        />
+      )}
       <ShotRecordingForm
         showShotForm={eventForm === 'shot'}
         teamName={selectedTeamName}

@@ -14,6 +14,8 @@ interface LiveMatchQuickActionsProps {
   onShowGoalForm: (teamId: string) => void;
   onShowPenaltyForm: (teamId: string) => void;
   onShowShotForm: (teamId: string) => void;
+  /** Opens the bulk dialog for saves made by the opposing goalie against shots from `teamId`. */
+  onShowBulkSaveForm?: (teamId: string) => void;
   onShowFaceoffForm: () => void;
   onRecordOffside: () => void;
   keybindsEnabled?: boolean;
@@ -29,6 +31,7 @@ function LiveMatchQuickActions({
   onShowGoalForm,
   onShowPenaltyForm,
   onShowShotForm,
+  onShowBulkSaveForm,
   onShowFaceoffForm,
   onRecordOffside,
   keybindsEnabled,
@@ -72,18 +75,32 @@ function LiveMatchQuickActions({
 
   const renderTeamActions = (teamId: string | undefined, shotKeyLabel: string) => (
     <div className="team-actions">
-      <button
-        type="button"
-        onClick={() => teamId && onShowShotForm(teamId)}
-        className="action-btn save-btn"
-        disabled={loading || !canRecord || !teamId}
-      >
-        <span className="btn-label">{t('hockey.matches.shot', 'Record Shot')}</span>
-        <span className="btn-meta">
-          <span className={`btn-key ${keybindsEnabled ? '' : 'disabled'}`}>({shotKeyLabel})</span>
-          <span className="btn-icon" aria-hidden="true">🏒</span>
-        </span>
-      </button>
+      <div className="save-action-group">
+        <button
+          type="button"
+          onClick={() => teamId && onShowShotForm(teamId)}
+          className="action-btn save-btn"
+          disabled={loading || !canRecord || !teamId}
+        >
+          <span className="btn-label">{t('hockey.matches.shot', 'Record Shot')}</span>
+          <span className="btn-meta">
+            <span className={`btn-key ${keybindsEnabled ? '' : 'disabled'}`}>({shotKeyLabel})</span>
+            <span className="btn-icon" aria-hidden="true">🏒</span>
+          </span>
+        </button>
+        {onShowBulkSaveForm && (
+          <button
+            type="button"
+            onClick={() => teamId && onShowBulkSaveForm(teamId)}
+            className="bulk-save-btn"
+            disabled={loading || !canRecord || !teamId}
+            title={t('hockey.matches.manage.bulkSavesTitle', 'Record multiple saved shots at once')}
+            aria-label={t('hockey.matches.manage.bulkSavesTitle', 'Record multiple saved shots at once')}
+          >
+            +N
+          </button>
+        )}
+      </div>
       <button
         type="button"
         onClick={() => teamId && onShowGoalForm(teamId)}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './BulkSaveDialog.scss';
 
 export interface BulkSavePayload {
@@ -58,6 +59,7 @@ const BulkSaveDialog = ({
   loading,
   errorMessage,
 }: BulkSaveDialogProps) => {
+  const { t } = useTranslation();
   const countInputRef = useRef<HTMLInputElement | null>(null);
   // Tracks the previous `isOpen` so we can detect the closed→open transition. Without this
   // the reset effect would re-run every time `currentElapsedSeconds` (or any other live
@@ -138,7 +140,7 @@ const BulkSaveDialog = ({
       >
         <div className="bulk-save-modal__header">
           <div>
-            <h3 id="bulk-save-modal-title">Bulk record saves</h3>
+            <h3 id="bulk-save-modal-title">{t('bulkSaveDialog.title', 'Bulk record saves')}</h3>
             <p className="bulk-save-modal__subtitle">
               {goalieName ? `${goalieName} · ${teamName}` : teamName}
             </p>
@@ -148,7 +150,7 @@ const BulkSaveDialog = ({
             onClick={onClose}
             disabled={loading}
             type="button"
-            aria-label="Close"
+            aria-label={t('bulkSaveDialog.close', 'Close')}
           >
             ×
           </button>
@@ -156,7 +158,7 @@ const BulkSaveDialog = ({
 
         <div className="bulk-save-modal__body">
           <div className="field">
-            <label htmlFor="bulk-save-count">Number of saves</label>
+            <label htmlFor="bulk-save-count">{t('bulkSaveDialog.count', 'Number of saves')}</label>
             <input
               id="bulk-save-count"
               ref={countInputRef}
@@ -169,14 +171,16 @@ const BulkSaveDialog = ({
               aria-describedby="bulk-save-count-help"
             />
             <small id="bulk-save-count-help" className="field-help">
-              Each save is recorded as an individual event so existing per-event tooling
-              (deletion, period stats, etc.) keeps working.
+              {t(
+                'bulkSaveDialog.countHelp',
+                'Each save is recorded as an individual event so existing per-event tooling (deletion, period stats, etc.) keeps working.'
+              )}
             </small>
           </div>
 
           <div className="bulk-save-modal__row">
             <div className="field">
-              <label htmlFor="bulk-save-period">Period</label>
+              <label htmlFor="bulk-save-period">{t('bulkSaveDialog.period', 'Period')}</label>
               <select
                 id="bulk-save-period"
                 className="select-field"
@@ -185,14 +189,14 @@ const BulkSaveDialog = ({
               >
                 {periodOptions.map((p) => (
                   <option key={p} value={p}>
-                    Period {p}
+                    {t('bulkSaveDialog.periodOption', 'Period {{period}}', { period: p })}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="field">
-              <label htmlFor="bulk-save-time-minutes">Time within period</label>
+              <label htmlFor="bulk-save-time-minutes">{t('bulkSaveDialog.time', 'Time within period')}</label>
               <div className="time-input-group">
                 <input
                   id="bulk-save-time-minutes"
@@ -203,7 +207,7 @@ const BulkSaveDialog = ({
                   min={0}
                   max={99}
                   placeholder="MM"
-                  aria-label="Minutes"
+                  aria-label={t('bulkSaveDialog.minutes', 'Minutes')}
                 />
                 <span className="time-separator" aria-hidden="true">
                   :
@@ -217,7 +221,7 @@ const BulkSaveDialog = ({
                   min={0}
                   max={59}
                   placeholder="SS"
-                  aria-label="Seconds"
+                  aria-label={t('bulkSaveDialog.seconds', 'Seconds')}
                 />
               </div>
             </div>
@@ -225,10 +229,10 @@ const BulkSaveDialog = ({
 
           <div className="bulk-save-modal__presets">
             <button type="button" className="preset-btn" onClick={setCurrentTimePreset} disabled={loading}>
-              Use current timer
+              {t('bulkSaveDialog.useCurrentTimer', 'Use current timer')}
             </button>
             <button type="button" className="preset-btn" onClick={setLastMinutePreset} disabled={loading}>
-              Place at last minute
+              {t('bulkSaveDialog.lastMinute', 'Place at last minute')}
             </button>
           </div>
 
@@ -241,10 +245,12 @@ const BulkSaveDialog = ({
 
         <div className="bulk-save-modal__footer">
           <button onClick={onClose} className="cancel-btn" type="button" disabled={loading}>
-            Cancel
+            {t('bulkSaveDialog.cancel', 'Cancel')}
           </button>
           <button onClick={() => void submit()} disabled={!canSubmit} className="submit-btn" type="button">
-            {loading ? 'Recording…' : `Record ${count} save${count === 1 ? '' : 's'}`}
+            {loading
+              ? t('bulkSaveDialog.recording', 'Recording…')
+              : t('bulkSaveDialog.submit', 'Record {{count}} saves', { count })}
           </button>
         </div>
       </div>

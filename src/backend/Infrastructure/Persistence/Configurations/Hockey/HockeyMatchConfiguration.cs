@@ -42,6 +42,7 @@ public class HockeyMatchConfiguration : BaseEntityConfiguration<HockeyMatch>
         builder.Ignore(m => m.AwayTeamId);
         builder.Ignore(m => m.HomeScore);
         builder.Ignore(m => m.AwayScore);
+        builder.Ignore(m => m.StandingResultType);
 
         builder.OwnsOne(m => m.MatchRules, ConfigureMatchRules);
 

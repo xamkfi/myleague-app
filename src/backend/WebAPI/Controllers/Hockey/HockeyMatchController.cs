@@ -628,7 +628,7 @@ public class HockeyMatchController : BaseApiController
     }
 
     /// <summary>
-    /// Records a shot.
+    /// Records a shot. Set <c>count</c> above 1 to record that many saves at once.
     /// </summary>
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/shots")]
@@ -647,7 +647,8 @@ public class HockeyMatchController : BaseApiController
             request.CountsAsShotOnGoal,
             request.ShooterActivePlayerId,
             request.GoalieActivePlayerId,
-            request.Description), cancellationToken);
+            request.Description,
+            request.Count), cancellationToken);
 
         return HandleResult(result, "Shot recorded successfully", "Failed to record shot");
     }

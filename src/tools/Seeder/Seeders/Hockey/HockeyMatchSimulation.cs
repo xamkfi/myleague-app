@@ -146,7 +146,7 @@ public static class HockeyMatchSimulation
     }
 
     /// <summary>
-    /// Dresses goalie(s) plus enough skaters to satisfy default MinDressedPlayers (15).
+    /// Dresses goalie(s) plus a full realistic lineup of skaters (15 players).
     /// </summary>
     private static List<Guid> PickMatchRoster(HockeyTeamDto team)
     {

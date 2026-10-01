@@ -212,6 +212,23 @@
       "remove": "Failed to remove scorekeeper"
     }
   },
+  "bulkSaveDialog": {
+    "title": "Bulk record saves",
+    "close": "Close",
+    "count": "Number of saves",
+    "countHelp": "Each save is recorded as an individual event so existing per-event tooling (deletion, period stats, etc.) keeps working.",
+    "period": "Period",
+    "periodOption": "Period {{period}}",
+    "time": "Time within period",
+    "minutes": "Minutes",
+    "seconds": "Seconds",
+    "useCurrentTimer": "Use current timer",
+    "lastMinute": "Place at last minute",
+    "cancel": "Cancel",
+    "recording": "Recording…",
+    "submit_one": "Record {{count}} save",
+    "submit_other": "Record {{count}} saves"
+  },
   "matchPage": {
     "navigation": {
       "summary": "Summary",
@@ -3339,6 +3356,9 @@
         "suspended": "Suspended"
       },
       "manage": {
+        "bulkSavesTitle": "Record multiple saved shots at once",
+        "deleteBulkSaves_one": "Delete {{count}} save",
+        "deleteBulkSaves_other": "Delete {{count}} saves",
         "finished": "FINISHED",
         "reopenMatch": "Open match",
         "reopenMatchTitle": "Reopen this match for editing",
@@ -3877,7 +3897,27 @@
       "colGpTitle": "Games played",
       "colGaTitle": "Goals against",
       "colSvTitle": "Save percentage",
-      "colSoTitle": "Shutouts"
+      "colSoTitle": "Shutouts",
+      "floorballColumns": {
+        "gp": "GP",
+        "gpTitle": "Games played",
+        "w": "W",
+        "wTitle": "Regulation wins",
+        "otw": "OTW",
+        "otwTitle": "Overtime and shootout wins",
+        "otl": "OTL",
+        "otlTitle": "Overtime and shootout losses",
+        "l": "L",
+        "lTitle": "Regulation losses",
+        "gf": "GF",
+        "gfTitle": "Goals for",
+        "ga": "GA",
+        "gaTitle": "Goals against",
+        "gd": "GD",
+        "gdTitle": "Goal difference",
+        "pts": "PTS",
+        "ptsTitle": "Points"
+      }
     },
     "errors": {
       "loadLeagueData": "Failed to load league data",
@@ -4034,7 +4074,7 @@
     "searchGoalie": "Search goalie by name or jersey number...",
     "noMatchingGoalies": "No matching players",
     "clearGoalie": "Clear",
-    "hockeyRosterHint": "Select the dressed players for this match. A goalie is required and at least 15 players must be selected.",
+    "hockeyRosterHint": "Select the dressed players for this match. A goalie is required.",
     "floorballRosterHint": "Select the field players for this match and set their role. The goalie is selected separately above.",
     "footballRosterHint": "Select the players for this match, set their position, and mark the starting lineup.",
     "inRoster": "In roster",
