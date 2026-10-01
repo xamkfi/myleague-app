@@ -454,3 +454,35 @@
   color: $color-neutral-dark-grey;
   margin: 0;
 }
+
+@media (max-width: 768px) {
+  .club-card-header {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .club-actions {
+    justify-self: center;
+  }
+
+  .club-admins-card__header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .teams-section__header {
+    justify-content: center;
+  }
+
+  .info-row {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+    padding: 0.7rem 0;
+  }
+
+  .info-row .value {
+    overflow-wrap: break-word;
+  }
+}

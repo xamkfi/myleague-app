@@ -301,3 +301,65 @@
     animation: none;
   }
 }
+
+// Phone: rewind and forward chips stack, pause sits between them, end-period stays centered below.
+@media (max-width: 768px) {
+  .timer-component {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .timer-controls {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .timer-adjustments {
+    width: auto;
+    flex: 0 1 auto;
+  }
+
+  .timer-adjustments .adjustment-buttons {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+  }
+
+  .timer-adjustments .adjustment-cluster {
+    flex-direction: column;
+    width: 5.5rem;
+
+    .timer-button {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .timer-button + .timer-button {
+      border-left: none;
+      border-top: 1px solid $color-neutral-medium-grey;
+    }
+  }
+
+  // Forward chips mirror the rewind stack so the 1-second step sits on the bottom row.
+  .timer-adjustments .adjustment-cluster:last-child {
+    flex-direction: column-reverse;
+
+    .timer-button + .timer-button {
+      border-top: none;
+      border-bottom: 1px solid $color-neutral-medium-grey;
+    }
+  }
+
+  .timer-button.period-control {
+    align-self: center;
+  }
+}

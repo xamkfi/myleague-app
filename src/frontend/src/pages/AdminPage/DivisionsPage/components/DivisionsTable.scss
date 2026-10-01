@@ -1,13 +1,1 @@
-/* Division-specific overrides – base table styles come from AdminTable.scss */
-
-@media (max-width: 900px) {
-  .admin-table {
-    /* Hide Status + Created columns on small screens */
-    th:nth-child(5),
-    td:nth-child(5),
-    th:nth-child(6),
-    td:nth-child(6) {
-      display: none;
-    }
-  }
-}
+/* Mobile layout comes from the shared admin table cards. */

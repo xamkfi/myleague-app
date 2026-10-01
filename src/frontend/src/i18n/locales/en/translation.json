@@ -453,7 +453,9 @@
     "title": "Admin Dashboard",
     "nav": {
       "league": "League data",
-      "administration": "Administration"
+      "administration": "Administration",
+      "openMenu": "Menu",
+      "closeMenu": "Close menu"
     },
     "sportsTitle": "Sports",
     "view": "Admin view",

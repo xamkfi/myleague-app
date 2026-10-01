@@ -453,7 +453,9 @@
     "title": "Hallintapaneeli",
     "nav": {
       "league": "Liigan tiedot",
-      "administration": "Ylläpito"
+      "administration": "Ylläpito",
+      "openMenu": "Valikko",
+      "closeMenu": "Sulje valikko"
     },
     "sportsTitle": "Urheilulajit",
     "view": "Admin näkymä",

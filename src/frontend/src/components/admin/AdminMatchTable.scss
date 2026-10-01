@@ -28,6 +28,127 @@
   }
 }
 
+.match-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.match-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.1fr) minmax(8.5rem, 0.85fr) minmax(0, 0.9fr) auto;
+  grid-template-areas:
+    "teams teams teams status actions"
+    "season date venue score actions";
+  align-items: center;
+  gap: 0.75rem 1rem;
+  min-width: 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid #e0e4e9;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(12, 29, 62, 0.05);
+  cursor: pointer;
+
+  &__teams {
+    grid-area: teams;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.45rem;
+    min-width: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    color: #1e3a5f;
+  }
+
+  &__team-link {
+    color: #1e3a5f;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+
+    &--season { grid-area: season; }
+    &--date { grid-area: date; }
+    &--venue { grid-area: venue; }
+    &--score { grid-area: score; }
+  }
+
+  &__label {
+    color: #6b7684;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+
+  &__value {
+    min-width: 0;
+    overflow-wrap: break-word;
+    line-height: 1.3;
+
+    &--score {
+      font-weight: 700;
+    }
+  }
+
+  &__status {
+    grid-area: status;
+    justify-self: end;
+  }
+
+  &__actions {
+    grid-area: actions;
+  }
+}
+
+@media (max-width: 768px) {
+  .match-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "teams actions"
+      "season season"
+      "date date"
+      "venue venue"
+      "score score"
+      "status status";
+    gap: 0.35rem 0.5rem;
+    padding: 0.55rem 0.7rem;
+  }
+
+  .match-card__field {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+
+    &--score {
+      display: flex;
+    }
+  }
+
+  .match-card__label {
+    flex: 0 0 auto;
+  }
+
+  .match-card__value {
+    text-align: right;
+  }
+
+  .match-card__status {
+    justify-self: end;
+  }
+}
+
 .match-table__teams {
   display: flex;
   align-items: center;

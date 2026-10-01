@@ -63,7 +63,7 @@ const DivisionsTable = ({
           { label: t('common.delete', 'Delete'), onClick: onBulkDelete, variant: 'danger' },
         ]}
       />
-      <div className="admin-table__wrapper">
+      <div className="admin-table__wrapper divisions-table">
         <table className="admin-table">
           <thead>
             <tr>

@@ -9,6 +9,8 @@ $sidebar-collapsed-width: 68px;
   &-container {
     display: flex;
     min-height: 100vh;
+    max-width: 100%;
+    overflow-x: hidden;
     background-color: $color-blue-darkest;
 
     &--collapsed {
@@ -61,6 +63,9 @@ $sidebar-collapsed-width: 68px;
     
     > * {
       width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
     }
   }
 }
@@ -77,6 +82,143 @@ $sidebar-collapsed-width: 68px;
   .back-button-container,
   .club-details-back {
     display: none;
+  }
+}
+
+.admin-page-menu-button {
+  display: none;
+}
+
+.admin-page-edge {
+  display: none;
+}
+
+.admin-page-backdrop {
+  display: none;
+}
+
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .admin-page-container {
+    .admin-page-content,
+    &.admin-page-container--collapsed .admin-page-content {
+      margin-left: 0;
+      padding: map.get($spacing, 'base');
+    }
+  }
+
+  .admin-page-body {
+    padding: map.get($spacing, 'base');
+  }
+
+  .admin-page-menu-button {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'sm');
+    align-self: flex-start;
+    margin-bottom: map.get($spacing, 'base');
+    padding: 0.5rem 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    color: $color-white;
+    font-family: $font-family-body;
+    font-size: 0.95rem;
+    cursor: pointer;
+
+    &__bars {
+      width: 16px;
+      height: 2px;
+      background: currentColor;
+      box-shadow: 0 -5px 0 currentColor, 0 5px 0 currentColor;
+    }
+  }
+
+  .admin-page-edge {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 85;
+    width: 6px;
+    height: 100dvh;
+    padding: 0;
+    border: 0;
+    background: $color-blue-darkest;
+    cursor: pointer;
+
+    &__tab {
+      position: fixed;
+      top: 50%;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      width: 22px;
+      height: 40px;
+      padding-right: 4px;
+      border-radius: 0 8px 8px 0;
+      background: $color-blue-darkest;
+      box-shadow: none;
+      transform: translateY(-50%);
+    }
+
+    &__dots {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+
+      span {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.92);
+      }
+    }
+
+    &__close {
+      color: $color-white;
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    &::after {
+      content: '';
+      position: fixed;
+      top: 50%;
+      left: 0;
+      width: 28px;
+      height: 56px;
+      transform: translateY(-50%);
+    }
+
+    &--open {
+      z-index: 120;
+      background: transparent;
+      pointer-events: none;
+
+      .admin-page-edge__tab {
+        left: calc(#{$sidebar-width} - 16px);
+        z-index: 120;
+        pointer-events: auto;
+      }
+
+      &::after {
+        left: calc(#{$sidebar-width} - 16px);
+        pointer-events: auto;
+      }
+    }
+  }
+
+  .admin-page-container--nav-open .admin-page-backdrop,
+  .admin-page-container--nav-dragging .admin-page-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    border: 0;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.45);
+    cursor: pointer;
   }
 }
 

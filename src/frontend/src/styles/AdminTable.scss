@@ -395,14 +395,108 @@
   font-size: 0.7rem;
 }
 
+// Mobile player cards. Same compact layout as the persons list cards.
+.admin-player-cards {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-player-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #e0e4e9;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(12, 29, 62, 0.05);
+  cursor: pointer;
+
+  &--selected {
+    border-color: #8eb4f5;
+    background: rgba(13, 110, 253, 0.06);
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__name,
+  &__name.sport-link {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.25;
+    color: #1e3a5f;
+    overflow-wrap: normal;
+  }
+
+  &__details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+    margin: 0;
+    min-width: 0;
+
+    > div {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+
+    dt {
+      flex: 0 0 auto;
+      margin: 0;
+      color: #6b7684;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    dd {
+      min-width: 0;
+      margin: 0;
+      text-align: right;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+
+      .admin-table__licences {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        text-align: right;
+      }
+    }
+  }
+}
+
 // ── Responsive ──
 @media (max-width: 900px) {
   .admin-table__wrapper {
     padding: 0.5rem 0.75rem;
     border-radius: 12px;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .admin-table {
+    th,
+    td,
+    .admin-table__name,
+    .admin-table__subtitle {
+      white-space: nowrap;
+      overflow-wrap: normal;
+    }
+
     th {
       padding: 0.5rem 0.75rem;
       font-size: 0.7rem;
@@ -419,7 +513,173 @@
   .admin-table__wrapper {
     padding: 0.25rem 0.5rem;
     border-radius: 8px;
-    margin-left: -0.5rem;
-    margin-right: -0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-player-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .admin-players-table {
+    display: none;
+  }
+
+  .admin-table__wrapper {
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .admin-table {
+    min-width: 0;
+    width: 100%;
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    tr {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      column-gap: 0.55rem;
+      row-gap: 0.1rem;
+      align-items: center;
+      min-width: 0;
+      padding: 0.45rem 0.65rem;
+      border: 1px solid #e0e4e9;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(12, 29, 62, 0.05);
+    }
+
+    td {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: baseline;
+      column-gap: 0.75rem;
+      grid-column: 1 / -1;
+      min-width: 0;
+      padding: 0.08rem 0;
+      border: none;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: normal;
+      font-size: 0.84rem;
+      line-height: 1.25;
+      text-align: right;
+
+      &::before {
+        content: attr(data-label);
+        max-width: none;
+        text-align: left;
+        white-space: nowrap;
+        overflow-wrap: normal;
+        word-break: normal;
+        color: #6b7684;
+        font-size: 0.84rem;
+        font-weight: 500;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        line-height: 1.25;
+      }
+    }
+
+    td:not([data-label])::before,
+    td.admin-table__checkbox-col::before,
+    td.admin-table__actions-col::before {
+      content: none;
+    }
+
+    td.admin-table__checkbox-col {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      grid-column: 1;
+      grid-row: 1;
+      width: auto;
+      padding: 0;
+    }
+
+    td.admin-table__actions-col {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      grid-column: 3;
+      grid-row: 1;
+      width: auto;
+      padding: 0;
+      justify-content: flex-end;
+    }
+
+    tr:has(> .admin-table__checkbox-col) > td:nth-child(2),
+    tr:not(:has(> .admin-table__checkbox-col)) > td:first-child {
+      display: flex;
+      grid-column: 2;
+      grid-row: 1;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+      padding: 0;
+      text-align: left;
+      font-weight: 600;
+      color: #1e3a5f;
+
+      &::before {
+        content: none;
+      }
+    }
+
+    tr:not(:has(> .admin-table__actions-col)):not(:has(> .admin-table__checkbox-col)) > td:first-child {
+      grid-column: 1 / -1;
+    }
+
+    tr:has(> .admin-table__checkbox-col):not(:has(> .admin-table__actions-col)) > td:nth-child(2) {
+      grid-column: 2 / -1;
+    }
+
+    .admin-table__name,
+    .admin-table__subtitle {
+      white-space: normal;
+      overflow-wrap: normal;
+    }
+
+    .admin-badge {
+      justify-self: end;
+      width: max-content;
+      max-width: 100%;
+      min-width: 0;
+      padding: 0.1rem 0.45rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.02em;
+    }
+
+    tr.teams-table__expanded-row {
+      display: block;
+      padding: 0;
+      border: none;
+      box-shadow: none;
+      background: transparent;
+
+      td {
+        display: block;
+        text-align: left;
+
+        &::before {
+          content: none;
+        }
+      }
+    }
   }
 }
