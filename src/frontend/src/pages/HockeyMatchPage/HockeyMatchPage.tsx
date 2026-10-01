@@ -20,7 +20,7 @@ import {
   loadTeamNameMap,
   mergeHockeyMatchFaceoffWins,
 } from '../../utils/hockeyLookups';
-import { MatchPageShell, type MatchTabType } from '../../components/match';
+import { MatchInfoCard, MatchPageShell, type MatchTabType } from '../../components/match';
 import { getTeamPath, getLeaguePath, getTournamentPath } from '../../utils/sportRoutes';
 import { getTeamSlug } from '../../utils/slugUtils';
 import '../FloorballMatchPage/FloorballMatchPage.scss';
@@ -158,12 +158,11 @@ function HockeyMatchPage() {
       {match && activeTab === 'summary' && (
         <div className="tab-content">
           <div className="summary-content">
-            {(match.wentToOvertime || match.wentToShootout) && (
-              <div className="match-notes">
-                {match.wentToOvertime && <span>{t('matchPage.matchInfo.overtime')}</span>}
-                {match.wentToShootout && <span>{t('matchPage.matchInfo.shootout')}</span>}
-              </div>
-            )}
+            <MatchInfoCard
+              decision={match.wentToShootout ? 'shootout' : match.wentToOvertime ? 'overtime' : null}
+              referees={match.refereeDetails}
+              scorekeepers={match.scorekeepers}
+            />
             <HockeyMatchEvents
               match={match}
               teams={teams}

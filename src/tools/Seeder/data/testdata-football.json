@@ -92,6 +92,12 @@
       { "FirstName": "Henrik", "LastName": "Lindback", "BirthDate": "1983-09-04", "IsRegistered": true, "ContactInfo": { "Email": "henrik.lindback@fb-ref.fi" } }
     ],
 
+    "ScorekeeperPersons": [
+      { "FirstName": "Tiina", "LastName": "Toimitsija", "BirthDate": "1988-03-12", "IsRegistered": true, "ContactInfo": { "Email": "tiina.toimitsija@toimitsija.fi" } },
+      { "FirstName": "Pekka", "LastName": "Pöytäkirja", "BirthDate": "1979-09-04", "IsRegistered": true, "ContactInfo": { "Email": "pekka.poytakirja@toimitsija.fi" } },
+      { "FirstName": "Kaisa", "LastName": "Kello", "BirthDate": "1992-12-21", "IsRegistered": true, "ContactInfo": { "Email": "kaisa.kello@toimitsija.fi" } }
+    ],
+
     "Clubs": [
       { "Name": "Helsinki FC", "City": "Helsinki", "Country": "Finland", "FoundingDate": "1991-01-15T00:00:00Z", "WebsiteUrl": "https://helsinkifc.fi", "LogoUrl": "", "ContactEmail": "info@helsinkifc.fi" },
       { "Name": "Tampere United", "City": "Tampere", "Country": "Finland", "FoundingDate": "1993-04-20T00:00:00Z", "WebsiteUrl": "https://tampereunited.fi", "LogoUrl": "", "ContactEmail": "info@tampereunited.fi" },
@@ -138,6 +144,31 @@
           {
             "Title": "Kilpailut",
             "ContentHtml": "<p>Avaa sarja nähdäksesi taulukon, otteluohjelman ja tulokset.</p><p>Avaa turnaus nähdäksesi lohkot, pudotuspelit ja tilastot.</p><p>Käynnissä olevat ottelut päivittyvät reaaliajassa.</p>"
+          }
+        ]
+      },
+      {
+        "Name": "2027 Toimitsijaottelut (toimitsijat)",
+        "StartDate": "2027-04-01",
+        "EndDate": "2027-06-30",
+        "DivisionNames": ["Football Championship"],
+        "NumberOfHalves": 2,
+        "HalfDurationMinutes": 25,
+        "PlayersOnField": 5,
+        "RequireGoalkeeper": true,
+        "MaxSubstitutions": 0,
+        "RequireOfficialsToStart": false,
+        "AllowExtraTime": false,
+        "ExtraTimeHalfCount": 2,
+        "ExtraTimeHalfDurationMinutes": 15,
+        "AllowPenaltyShootout": false,
+        "WinPoints": 3,
+        "DrawPoints": 1,
+        "LossPoints": 0,
+        "ContentBlocks": [
+          {
+            "Title": "Toimitsijademo",
+            "ContentHtml": "<p>Seederin luoma demokausi: jokaiselle tämän kauden ottelulle on asetettu tuomari ja yksi tai useampi toimitsija.</p>"
           }
         ]
       }
@@ -368,7 +399,11 @@
       { "HomeTeamName": "Espoo Athletic", "AwayTeamName": "Kuopio United", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-09-27T14:00:00", "Venue": "Espoo Athletic Field", "RefereeEmail": "henrik.lindback@fb-ref.fi" },
       { "HomeTeamName": "Vantaa Wanderers", "AwayTeamName": "Lahti Rovers", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-10-04T16:00:00", "Venue": "Vantaa Wanderers Park", "RefereeEmail": "magnus.wikman@fb-ref.fi" },
       { "HomeTeamName": "Helsinki FC", "AwayTeamName": "Lahti Rovers", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-10-11T14:00:00", "Venue": "Helsinki Football Park", "RefereeEmail": "stefan.palmqvist@fb-ref.fi" },
-      { "HomeTeamName": "Tampere United", "AwayTeamName": "Espoo Athletic", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-10-18T16:00:00", "Venue": "Tampere Stadium", "RefereeEmail": "bjorn.ekman@fb-ref.fi" }
+      { "HomeTeamName": "Tampere United", "AwayTeamName": "Espoo Athletic", "SeasonName": "2026 Football Championship", "ScheduledDateTime": "2026-10-18T16:00:00", "Venue": "Tampere Stadium", "RefereeEmail": "bjorn.ekman@fb-ref.fi" },
+
+      { "HomeTeamName": "Helsinki FC", "AwayTeamName": "Turku City", "SeasonName": "2027 Toimitsijaottelut (toimitsijat)", "ScheduledDateTime": "2027-04-11T14:00:00", "Venue": "Helsinki Football Park", "RefereeEmail": "magnus.wikman@fb-ref.fi", "ScorekeeperEmails": ["tiina.toimitsija@toimitsija.fi"] },
+      { "HomeTeamName": "Oulu Kickers", "AwayTeamName": "Kuopio United", "SeasonName": "2027 Toimitsijaottelut (toimitsijat)", "ScheduledDateTime": "2027-04-11T16:00:00", "Venue": "Oulu Kickers Field", "RefereeEmail": "stefan.palmqvist@fb-ref.fi", "ScorekeeperEmails": ["pekka.poytakirja@toimitsija.fi", "kaisa.kello@toimitsija.fi"] },
+      { "HomeTeamName": "Espoo Athletic", "AwayTeamName": "Vantaa Wanderers", "SeasonName": "2027 Toimitsijaottelut (toimitsijat)", "ScheduledDateTime": "2027-04-18T14:00:00", "Venue": "Espoo Athletic Ground", "RefereeEmail": "bjorn.ekman@fb-ref.fi", "ScorekeeperEmails": ["kaisa.kello@toimitsija.fi"] }
     ]
   }
 }

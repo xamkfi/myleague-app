@@ -1,3 +1,4 @@
+using Application.Features.Common.Shared.DTOs;
 using Application.Features.Hockey.Matches.DTOs;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Matches.Events;
@@ -9,7 +10,15 @@ namespace Application.Features.Hockey.Matches.Mappings;
 /// </summary>
 public static class HockeyMatchMapper
 {
-    public static HockeyMatchDto ToDto(HockeyMatch match)
+    public static HockeyMatchDto ToDto(HockeyMatch match) => ToDto(match, null, null);
+
+    /// <param name="match">The match to map</param>
+    /// <param name="officialNames">Optional display names keyed by official ID</param>
+    /// <param name="scorekeeperNames">Optional display names keyed by person ID</param>
+    public static HockeyMatchDto ToDto(
+        HockeyMatch match,
+        IReadOnlyDictionary<Guid, string>? officialNames,
+        IReadOnlyDictionary<Guid, string>? scorekeeperNames)
     {
         return new HockeyMatchDto(
             match.Id,
@@ -38,8 +47,17 @@ public static class HockeyMatchMapper
             match.MatchTeams.Select(ToTeamDto).ToList(),
             match.Events.OrderBy(e => e.PeriodNumber).ThenBy(e => e.GameTime).Select(ToEventDto).ToList(),
             match.Officials.Select(ToOfficialDto).ToList(),
-            match.PeriodScores.OrderBy(p => p.PeriodNumber).Select(ToPeriodScoreDto).ToList());
+            match.PeriodScores.OrderBy(p => p.PeriodNumber).Select(ToPeriodScoreDto).ToList(),
+            match.Officials
+                .Select(o => new MatchPersonDto(o.OfficialId, NameOrEmpty(o.OfficialId, officialNames)))
+                .ToList(),
+            match.Scorekeepers
+                .Select(s => new MatchPersonDto(s.PersonId, NameOrEmpty(s.PersonId, scorekeeperNames)))
+                .ToList());
     }
+
+    private static string NameOrEmpty(Guid id, IReadOnlyDictionary<Guid, string>? names) =>
+        names is not null && names.TryGetValue(id, out string? name) ? name : string.Empty;
 
     public static HockeyMatchTeamDto ToTeamDto(HockeyMatchTeam team)
     {

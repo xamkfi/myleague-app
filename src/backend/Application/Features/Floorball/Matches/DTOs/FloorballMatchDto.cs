@@ -1,3 +1,4 @@
+using Application.Features.Common.Shared.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,6 +57,8 @@ namespace Application.Features.Floorball.Matches.DTOs
     /// <param name="CompetitionType">Explicit competition discriminator (Season or Tournament). Lets the
     /// frontend route matches without falling back to heuristics on tournament-only fields. Defaults
     /// to "Season" for backward compatibility when the mapper can't resolve the navigation.</param>
+    /// <param name="RefereeDetails">Referees with display names (Id = referee ID). Names are empty when persons were not loaded.</param>
+    /// <param name="Scorekeepers">Optional scorekeepers (toimitsijat) with display names (Id = person ID).</param>
     public record FloorballMatchDto(
         Guid Id,
         Guid CompetitionId,
@@ -85,5 +88,7 @@ namespace Application.Features.Floorball.Matches.DTOs
         IReadOnlyCollection<FloorballActiveLineupPlayerDto> AwayActivePlayers,
         Guid? TournamentGroupId = null,
         string? TournamentStage = null,
-        FloorballCompetitionType CompetitionType = FloorballCompetitionType.Season);
+        FloorballCompetitionType CompetitionType = FloorballCompetitionType.Season,
+        IReadOnlyCollection<MatchPersonDto>? RefereeDetails = null,
+        IReadOnlyCollection<MatchPersonDto>? Scorekeepers = null);
 }

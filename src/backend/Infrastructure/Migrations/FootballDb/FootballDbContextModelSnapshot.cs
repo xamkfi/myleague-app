@@ -1433,6 +1433,23 @@ namespace MyLeague.Infrastructure.Migrations.FootballDb
                                 .HasForeignKey("FootballMatchId");
                         });
 
+                    b.OwnsMany("Domain.Entities.Football.Matches.FootballMatchScorekeeper", "Scorekeepers", b1 =>
+                        {
+                            b1.Property<Guid>("MatchId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid>("PersonId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("MatchId", "PersonId");
+
+                            b1.ToTable("FootballMatchScorekeepers", "football");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MatchId");
+                        });
+
                     b.Navigation("AwayTeam");
 
                     b.Navigation("Competition");
@@ -1441,6 +1458,8 @@ namespace MyLeague.Infrastructure.Migrations.FootballDb
 
                     b.Navigation("MatchRules")
                         .IsRequired();
+
+                    b.Navigation("Scorekeepers");
                 });
 
             modelBuilder.Entity("Domain.Entities.Football.Matches.FootballMatchEvent", b =>

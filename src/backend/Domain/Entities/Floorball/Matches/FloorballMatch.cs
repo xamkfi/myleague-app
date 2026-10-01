@@ -160,6 +160,12 @@ public class FloorballMatch : BaseEntity
     /// </summary>
     public IReadOnlyCollection<FloorballReferee> Officials => _officials.AsReadOnly();
     private readonly List<FloorballReferee> _officials = new();
+
+    /// <summary>
+    /// Gets the optional scorekeepers (toimitsijat) of the match
+    /// </summary>
+    public IReadOnlyCollection<FloorballMatchScorekeeper> Scorekeepers => _scorekeepers.AsReadOnly();
+    private readonly List<FloorballMatchScorekeeper> _scorekeepers = new();
     
     /// <summary>
     /// Gets the period scores (per period)
@@ -650,6 +656,39 @@ public class FloorballMatch : BaseEntity
 
         _officials.Clear();
         _officials.AddRange(refs);
+    }
+
+    /// <summary>
+    /// Adds a scorekeeper (toimitsija) to the match. Adding the same person twice is a no-op.
+    /// </summary>
+    /// <param name="personId">The person acting as scorekeeper</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match is completed or cancelled</exception>
+    public void AddScorekeeper(Guid personId)
+    {
+        if (Status == FloorballMatchStatus.Completed || Status == FloorballMatchStatus.Cancelled)
+            throw new InvalidOperationException($"Cannot add scorekeepers to a match with status {Status}.");
+
+        if (_scorekeepers.Any(s => s.PersonId == personId))
+            return;
+
+        _scorekeepers.Add(new FloorballMatchScorekeeper(personId));
+    }
+
+    /// <summary>
+    /// Removes a scorekeeper (toimitsija) from the match. Scorekeepers are optional, so the list may become empty.
+    /// </summary>
+    /// <param name="personId">The person to remove</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match is completed or cancelled</exception>
+    public void RemoveScorekeeper(Guid personId)
+    {
+        if (Status == FloorballMatchStatus.Completed || Status == FloorballMatchStatus.Cancelled)
+            throw new InvalidOperationException($"Cannot remove scorekeepers from a match with status {Status}.");
+
+        FloorballMatchScorekeeper? existing = _scorekeepers.FirstOrDefault(s => s.PersonId == personId);
+        if (existing is null)
+            return;
+
+        _scorekeepers.Remove(existing);
     }
 
     /// <summary>

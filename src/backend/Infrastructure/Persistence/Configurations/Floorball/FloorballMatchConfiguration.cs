@@ -115,6 +115,18 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                     j => j.HasOne<FloorballMatch>().WithMany().HasForeignKey("MatchesId")
                 );
 
+            // Scorekeepers reference persons in CommonDbContext, so only the PersonId is stored.
+            builder.OwnsMany(m => m.Scorekeepers, scorekeeper =>
+            {
+                scorekeeper.ToTable("FloorballMatchScorekeepers");
+                scorekeeper.WithOwner().HasForeignKey("MatchId");
+                scorekeeper.Property(s => s.PersonId).IsRequired();
+                scorekeeper.HasKey("MatchId", nameof(FloorballMatchScorekeeper.PersonId));
+            });
+
+            builder.Navigation(m => m.Scorekeepers)
+                .HasField("_scorekeepers");
+
             // Configure relationship with PeriodScores - they are now separate entities
             builder.HasMany(m => m.PeriodScores)
                 .WithOne()

@@ -157,6 +157,12 @@
       { "FirstName": "Lauri", "LastName": "Marjamäki", "BirthDate": "1977-05-29", "IsRegistered": true, "ContactInfo": { "Email": "lauri.marjamaki@coach.fi" } }
     ],
 
+    "ScorekeeperPersons": [
+      { "FirstName": "Tiina", "LastName": "Toimitsija", "BirthDate": "1988-03-12", "IsRegistered": true, "ContactInfo": { "Email": "tiina.toimitsija@toimitsija.fi" } },
+      { "FirstName": "Pekka", "LastName": "Pöytäkirja", "BirthDate": "1979-09-04", "IsRegistered": true, "ContactInfo": { "Email": "pekka.poytakirja@toimitsija.fi" } },
+      { "FirstName": "Kaisa", "LastName": "Kello", "BirthDate": "1992-12-21", "IsRegistered": true, "ContactInfo": { "Email": "kaisa.kello@toimitsija.fi" } }
+    ],
+
     "Clubs": [
       { "Name": "Helsinki Hammers", "City": "Helsinki", "Country": "Finland", "FoundingDate": "1990-01-01T00:00:00Z", "WebsiteUrl": "https://helsinkihammers.fi", "LogoUrl": "https://ui-avatars.com/api/?name=HH&background=16346B&color=FFFFFF&size=128&bold=true", "ContactEmail": "info@helsinkihammers.fi" },
       { "Name": "Tampere Titans", "City": "Tampere", "Country": "Finland", "FoundingDate": "1992-03-15T00:00:00Z", "WebsiteUrl": "https://tamperetitans.fi", "LogoUrl": "https://ui-avatars.com/api/?name=TT&background=8B1E1E&color=FFFFFF&size=128&bold=true", "ContactEmail": "info@tamperetitans.fi" },
@@ -204,6 +210,23 @@
           {
             "Title": "Joukkuemaksu",
             "ContentHtml": "<p>Osallistumismaksu 1200-2000 €, alv. 0% (Lopullinen hinta selviää joukkuemäärän ja sarjamuodon varmistuttua).</p><p>Puolet joukkuemaksusta tulee olla hoidettuna lokakuun 2025 loppuun mennessä. Loput joukkuemaksusta tulee olla hoidettuna tammikuun 2026 loppuun mennessä.</p><p>Joukkuemaksu sisältää osallistumisoikeuden PMT festival salibandyturnaukseen. Joukkueiden laskutus tapahtuu suomisportin kautta. Jojoihin ollaan yhteydessä laskutuksesta kauden alussa.</p>"
+          }
+        ]
+      },
+      {
+        "Name": "2027 Toimitsijaottelut (toimitsijat)",
+        "StartDate": "2027-02-01",
+        "EndDate": "2027-05-31",
+        "DivisionNames": ["Championship Division"],
+        "NumberOfPeriods": 3,
+        "PeriodDurationMinutes": 20,
+        "AllowOvertime": true,
+        "OvertimeDurationMinutes": 10,
+        "AllowShootout": true,
+        "ContentBlocks": [
+          {
+            "Title": "Toimitsijademo",
+            "ContentHtml": "<p>Seederin luoma demokausi: jokaiselle tämän kauden ottelulle on asetettu tuomari ja yksi tai useampi toimitsija.</p>"
           }
         ]
       }
@@ -624,7 +647,12 @@
       { "HomeTeamName": "Tampere Titans", "AwayTeamName": "Espoo Eagles", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-08T16:00:00", "Venue": "Tampere Sports Hall", "RefereeEmail": "edvin.ojanen@referee.fi" },
       { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-08T18:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "erkki.tuominen@referee.fi" },
       { "HomeTeamName": "Oulu Outlaws", "AwayTeamName": "Helsinki Hammers", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-09T14:00:00", "Venue": "Oulu Sports Center", "RefereeEmail": "tapio.heinonen@referee.fi" },
-      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-09T16:00:00", "Venue": "Lahti Arena", "RefereeEmail": "veikko.koivisto@referee.fi" }
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Jyväskylä Jets", "SeasonName": "2027 Championship Season", "ScheduledDateTime": "2027-06-09T16:00:00", "Venue": "Lahti Arena", "RefereeEmail": "veikko.koivisto@referee.fi" },
+
+      { "HomeTeamName": "Helsinki Hammers", "AwayTeamName": "Tampere Titans", "SeasonName": "2027 Toimitsijaottelut (toimitsijat)", "ScheduledDateTime": "2027-02-12T18:00:00", "Venue": "Helsinki Arena", "RefereeEmail": "erkki.tuominen@referee.fi", "ScorekeeperEmails": ["tiina.toimitsija@toimitsija.fi"] },
+      { "HomeTeamName": "Turku Thunder", "AwayTeamName": "Oulu Outlaws", "SeasonName": "2027 Toimitsijaottelut (toimitsijat)", "ScheduledDateTime": "2027-02-12T20:00:00", "Venue": "Turku Ball Arena", "RefereeEmail": "tapio.heinonen@referee.fi", "ScorekeeperEmails": ["pekka.poytakirja@toimitsija.fi", "kaisa.kello@toimitsija.fi"] },
+      { "HomeTeamName": "Espoo Eagles", "AwayTeamName": "Vantaa Vikings", "SeasonName": "2027 Toimitsijaottelut (toimitsijat)", "ScheduledDateTime": "2027-02-19T18:00:00", "Venue": "Espoo Sports Hall", "RefereeEmail": "veikko.koivisto@referee.fi", "ScorekeeperEmails": ["kaisa.kello@toimitsija.fi"] },
+      { "HomeTeamName": "Lahti Lions", "AwayTeamName": "Kuopio Knights", "SeasonName": "2027 Toimitsijaottelut (toimitsijat)", "ScheduledDateTime": "2027-02-19T20:00:00", "Venue": "Lahti Arena", "RefereeEmail": "aarne.niemisto@referee.fi", "ScorekeeperEmails": ["tiina.toimitsija@toimitsija.fi", "pekka.poytakirja@toimitsija.fi"] }
     ],
 
     "HockeySeasons": [
@@ -671,6 +699,20 @@
           {
             "Title": "Naisten Liiga 2026–27",
             "ContentHtml": "<p>Naisten liigakausi 2026–27. Selaa otteluita, sarjataulukkoa ja pelaajatilastoja tältä sivulta.</p>"
+          }
+        ]
+      },
+      {
+        "Name": "2026-27 Toimitsijaottelut (toimitsijat)",
+        "StartDate": "2027-01-01",
+        "EndDate": "2027-04-30",
+        "SeasonCode": "2026-27-TOIM",
+        "TeamCategory": 0,
+        "DivisionNames": ["Liiga Division"],
+        "ContentBlocks": [
+          {
+            "Title": "Toimitsijademo",
+            "ContentHtml": "<p>Seederin luoma demokausi: jokaiselle tämän kauden ottelulle on asetettu yksi tai useampi toimitsija.</p>"
           }
         ]
       }
@@ -991,6 +1033,24 @@
         "ScheduledDateTime": "2027-01-23T15:00:00Z",
         "Venue": "Helsinki Ice Hall",
         "SimulateCompleted": false
+      },
+      {
+        "HomeTeamName": "Tappara HC",
+        "AwayTeamName": "HIFK Ice",
+        "SeasonName": "2026-27 Toimitsijaottelut (toimitsijat)",
+        "ScheduledDateTime": "2027-02-10T16:00:00Z",
+        "Venue": "Nokia Arena",
+        "SimulateCompleted": false,
+        "ScorekeeperEmails": ["tiina.toimitsija@toimitsija.fi", "kaisa.kello@toimitsija.fi"]
+      },
+      {
+        "HomeTeamName": "Kärpät HC",
+        "AwayTeamName": "Ilves HC",
+        "SeasonName": "2026-27 Toimitsijaottelut (toimitsijat)",
+        "ScheduledDateTime": "2027-02-11T16:00:00Z",
+        "Venue": "Raksila Arena",
+        "SimulateCompleted": false,
+        "ScorekeeperEmails": ["pekka.poytakirja@toimitsija.fi"]
       }
     ]
   }

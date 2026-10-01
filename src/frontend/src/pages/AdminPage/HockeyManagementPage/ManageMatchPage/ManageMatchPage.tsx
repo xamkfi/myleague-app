@@ -49,6 +49,7 @@ import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ActiveRosterCard from './components/ActiveRosterCard';
 import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from './components/OfficialsSelectorSection';
+import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
 import { toFormPlayers } from './components/eventFormHelpers';
 import './ManageMatchPage.scss';
 
@@ -623,6 +624,17 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
               } else {
                 setShowOfficialDraft(false);
               }
+            }}
+          />
+          <ScorekeepersSection
+            scorekeepers={match.scorekeepers ?? []}
+            saving={busy}
+            disabled={finished || match.status === 'Cancelled'}
+            onAdd={async (personId) => {
+              await run(() => hockeyMatchService.addScorekeeper(match.id, personId));
+            }}
+            onRemove={async (personId) => {
+              await run(() => hockeyMatchService.removeScorekeeper(match.id, personId));
             }}
           />
         </div>

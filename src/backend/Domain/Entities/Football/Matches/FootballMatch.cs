@@ -49,6 +49,9 @@ public class FootballMatch : BaseEntity
     public IReadOnlyCollection<FootballReferee> Officials => _officials.AsReadOnly();
     private readonly List<FootballReferee> _officials = new();
 
+    public IReadOnlyCollection<FootballMatchScorekeeper> Scorekeepers => _scorekeepers.AsReadOnly();
+    private readonly List<FootballMatchScorekeeper> _scorekeepers = new();
+
     public IReadOnlyCollection<FootballPeriodScore> PeriodScores => _periodScores.AsReadOnly();
     private readonly List<FootballPeriodScore> _periodScores = new();
 
@@ -394,6 +397,35 @@ public class FootballMatch : BaseEntity
 
         _officials.Clear();
         _officials.AddRange(refs);
+    }
+
+    /// <summary>
+    /// Adds a scorekeeper (toimitsija) to the match. Adding the same person twice is a no-op.
+    /// </summary>
+    public void AddScorekeeper(Guid personId)
+    {
+        if (Status == FootballMatchStatus.Completed || Status == FootballMatchStatus.Cancelled)
+            throw new InvalidOperationException($"Cannot add scorekeepers to a match with status {Status}.");
+
+        if (_scorekeepers.Any(s => s.PersonId == personId))
+            return;
+
+        _scorekeepers.Add(new FootballMatchScorekeeper(personId));
+    }
+
+    /// <summary>
+    /// Removes a scorekeeper (toimitsija) from the match. Scorekeepers are optional, so the list may become empty.
+    /// </summary>
+    public void RemoveScorekeeper(Guid personId)
+    {
+        if (Status == FootballMatchStatus.Completed || Status == FootballMatchStatus.Cancelled)
+            throw new InvalidOperationException($"Cannot remove scorekeepers from a match with status {Status}.");
+
+        FootballMatchScorekeeper? existing = _scorekeepers.FirstOrDefault(s => s.PersonId == personId);
+        if (existing is null)
+            return;
+
+        _scorekeepers.Remove(existing);
     }
 
     public void RecordExtraTime()

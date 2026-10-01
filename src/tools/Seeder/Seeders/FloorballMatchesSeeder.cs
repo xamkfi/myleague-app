@@ -20,9 +20,12 @@ public static class FloorballMatchesSeeder
         List<FloorballSeasonDto> seasons,
         List<FloorballTeamDto> teams,
         List<FloorballRefereeDto> referees,
-        Dictionary<string, Guid> emailToRefereeId)
+        Dictionary<string, Guid> emailToRefereeId,
+        IReadOnlyDictionary<string, Guid>? scorekeeperEmailToPersonId = null)
     {
         List<FloorballMatchDto> created = new List<FloorballMatchDto>();
+        IReadOnlyDictionary<string, Guid> scorekeeperMap = scorekeeperEmailToPersonId
+            ?? new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
 
         foreach (FloorballMatchSeed match in matches)
         {
@@ -45,6 +48,8 @@ public static class FloorballMatchesSeeder
                     {
                         created.Add(existing);
                         Console.WriteLine($"Match exists, skipping: {match.HomeTeamName} vs {match.AwayTeamName} ({existing.Id})");
+                        await MatchScorekeepersSeeder.EnsureAsync(
+                            http, "api/floorball-matches", existing.Id, existing.Scorekeepers, match.ScorekeeperEmails, scorekeeperMap);
                         continue;
                     }
                 }
@@ -71,6 +76,8 @@ public static class FloorballMatchesSeeder
 
             created.Add(api.Data);
             Console.WriteLine($"Created floorball match: {match.HomeTeamName} vs {match.AwayTeamName} ({api.Data.Id})");
+            await MatchScorekeepersSeeder.EnsureAsync(
+                http, "api/floorball-matches", api.Data.Id, api.Data.Scorekeepers, match.ScorekeeperEmails, scorekeeperMap);
         }
 
         return created;

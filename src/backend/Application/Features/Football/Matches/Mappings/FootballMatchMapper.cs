@@ -1,3 +1,5 @@
+using Application.Features.Common.Shared;
+using Application.Features.Common.Shared.DTOs;
 using Application.Features.Football.Matches.Commands;
 using Application.Features.Football.Matches.DTOs;
 using Domain.Entities.Common;
@@ -25,7 +27,8 @@ public static class FootballMatchMapper
         FootballMatch match,
         Dictionary<Guid, Person> playerPersonLookup,
         Club? homeClub = null,
-        Club? awayClub = null)
+        Club? awayClub = null,
+        IReadOnlyDictionary<Guid, Person>? staffPersonLookup = null)
     {
         ArgumentNullException.ThrowIfNull(match);
         playerPersonLookup ??= new Dictionary<Guid, Person>();
@@ -128,7 +131,22 @@ public static class FootballMatchMapper
             match.PlayoffRound,
             match.PlayoffMatchOrder,
             match.NextMatchId,
-            match.NextMatchSlot);
+            match.NextMatchSlot,
+            match.Officials
+                .Select(r => new MatchPersonDto(r.Id, MatchPersonLookup.NameOf(r.PersonId, staffPersonLookup)))
+                .ToList(),
+            match.Scorekeepers
+                .Select(s => new MatchPersonDto(s.PersonId, MatchPersonLookup.NameOf(s.PersonId, staffPersonLookup)))
+                .ToList());
+    }
+
+    /// <summary>
+    /// Collects the person IDs of the match referees and scorekeepers for a name lookup.
+    /// </summary>
+    public static IEnumerable<Guid> CollectStaffPersonIds(FootballMatch match)
+    {
+        return match.Officials.Select(r => r.PersonId)
+            .Concat(match.Scorekeepers.Select(s => s.PersonId));
     }
 
     public static IEnumerable<FootballMatchDto> ToDtos(IEnumerable<FootballMatch> matches)

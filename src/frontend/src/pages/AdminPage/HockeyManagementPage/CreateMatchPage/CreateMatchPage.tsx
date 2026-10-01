@@ -36,8 +36,11 @@ function CreateHockeyMatchPage({ mode = 'season' }: CreateHockeyMatchPageProps) 
     const load = async (): Promise<void> => {
       const competitionList = mode === 'tournament'
         ? await hockeyTournamentService.getAll(undefined, true)
-        : await hockeySeasonService.getAll(undefined, true);
-      setCompetitions(competitionList.map((item) => ({ id: item.id, name: item.name })));
+        : await hockeySeasonService.getActive();
+      const visibleCompetitions = mode === 'tournament'
+        ? competitionList
+        : competitionList.filter((season) => season.isActive);
+      setCompetitions(visibleCompetitions.map((item) => ({ id: item.id, name: item.name })));
     };
     void load().catch((err) => setError(err instanceof Error ? err.message : 'Failed to load form data'));
   }, [mode]);

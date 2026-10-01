@@ -1821,6 +1821,23 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                                 .HasForeignKey("FloorballMatchId");
                         });
 
+                    b.OwnsMany("Domain.Entities.Floorball.Matches.FloorballMatchScorekeeper", "Scorekeepers", b1 =>
+                        {
+                            b1.Property<Guid>("MatchId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid>("PersonId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("MatchId", "PersonId");
+
+                            b1.ToTable("FloorballMatchScorekeepers", "floorball");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MatchId");
+                        });
+
                     b.Navigation("AwayTeam");
 
                     b.Navigation("Competition");
@@ -1829,6 +1846,8 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
 
                     b.Navigation("MatchRules")
                         .IsRequired();
+
+                    b.Navigation("Scorekeepers");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.Matches.FloorballMatchActivePlayer", b =>
