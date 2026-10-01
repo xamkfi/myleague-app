@@ -24,6 +24,9 @@ env:
   WORKING_DIRECTORY: src/backend/WebAPI
   NODE_VERSION: '22'
   FRONTEND_PATH: src/frontend
+  # Custom domains bound to the MAHL Static Web App. The CORS override below replaces
+  # allowedOrigins entirely, so these must be listed here or each release drops them.
+  CUSTOM_DOMAIN_ORIGINS: '"https://www.mahl.fi","https://mahl.fi"'
 
 jobs:
   release:
@@ -90,7 +93,7 @@ jobs:
             --parameters seedAdminEmail="${{ secrets.SEED_ADMIN_EMAIL || vars.SEED_ADMIN_EMAIL }}" \
             --parameters alertEmail="${{ secrets.ALERT_EMAIL || vars.ALERT_EMAIL }}" \
             --parameters frontendBaseUrl="${FRONTEND_URL}" \
-            --parameters "allowedOrigins=[\"${FRONTEND_URL}\"]"
+            --parameters "allowedOrigins=[\"${FRONTEND_URL}\",${CUSTOM_DOMAIN_ORIGINS}]"
 
       - name: Deploy backend infrastructure
         working-directory: ${{ env.PROVISION_DIR }}
@@ -105,7 +108,7 @@ jobs:
             --parameters seedAdminEmail="${{ secrets.SEED_ADMIN_EMAIL || vars.SEED_ADMIN_EMAIL }}" \
             --parameters alertEmail="${{ secrets.ALERT_EMAIL || vars.ALERT_EMAIL }}" \
             --parameters frontendBaseUrl="${FRONTEND_URL}" \
-            --parameters "allowedOrigins=[\"${FRONTEND_URL}\"]" \
+            --parameters "allowedOrigins=[\"${FRONTEND_URL}\",${CUSTOM_DOMAIN_ORIGINS}]" \
             --query "properties.outputs" -o json > backend-outputs.json
           echo "### Backend outputs" >> $GITHUB_STEP_SUMMARY
           echo '```json' >> $GITHUB_STEP_SUMMARY

@@ -81,6 +81,9 @@ param enableAvailabilityTest bool = false
 @description('Monthly cost budget for this resource group in USD (email notifications at 80% and 100%)')
 param monthlyBudgetAmount int = 35
 
+@description('Start date of the cost budget, e.g. 2026-09-01T00:00:00Z. Set once per environment to the month the budget was created; Azure rejects changes to it.')
+param budgetStartDate string
+
 @description('PostgreSQL backup retention in days (7-35)')
 @minValue(7)
 @maxValue(35)
@@ -220,6 +223,7 @@ module monitoring 'modules/monitoring-alerts.bicep' = if (alertEmail != '') {
     apiHostname: appService.outputs.hostname
     enableAvailabilityTest: enableAvailabilityTest
     monthlyBudgetAmount: monthlyBudgetAmount
+    budgetStartDate: budgetStartDate
     tags: tags
   }
 }

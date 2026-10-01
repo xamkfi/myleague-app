@@ -7,6 +7,7 @@ import './ScorekeepersSection.scss';
 
 const SEARCH_PAGE_SIZE = 25;
 const SEARCH_DEBOUNCE_MS = 300;
+const MIN_SEARCH_LENGTH = 2;
 
 interface ScorekeepersSectionProps {
   scorekeepers: MatchPersonDto[];
@@ -103,13 +104,16 @@ function ScorekeeperSearchModal({ selectedIds, saving, onAdd, onClose }: Scoreke
 
   const fetchPersons = useCallback(async (term: string): Promise<void> => {
     const requestId: number = ++requestIdRef.current;
-    setIsSearching(true);
     setError(null);
+    const trimmed: string = term.trim();
+    if (trimmed.length < MIN_SEARCH_LENGTH) {
+      setPersons([]);
+      setIsSearching(false);
+      return;
+    }
+    setIsSearching(true);
     try {
-      const trimmed: string = term.trim();
-      const response = trimmed.length >= 2
-        ? await personApi.search(trimmed, 1, SEARCH_PAGE_SIZE)
-        : await personApi.getAll(1, SEARCH_PAGE_SIZE);
+      const response = await personApi.search(trimmed, 1, SEARCH_PAGE_SIZE);
       if (requestId !== requestIdRef.current) return;
       setPersons(response.data ?? []);
     } catch (err: unknown) {
@@ -123,11 +127,10 @@ function ScorekeeperSearchModal({ selectedIds, saving, onAdd, onClose }: Scoreke
 
   useEffect(() => {
     searchInputRef.current?.focus();
-    void fetchPersons('');
     return () => {
       if (debounceTimerRef.current !== null) clearTimeout(debounceTimerRef.current);
     };
-  }, [fetchPersons]);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -139,6 +142,7 @@ function ScorekeeperSearchModal({ selectedIds, saving, onAdd, onClose }: Scoreke
 
   const handleSearchChange = (value: string): void => {
     setSearch(value);
+    if (value.trim().length >= MIN_SEARCH_LENGTH) setIsSearching(true);
     if (debounceTimerRef.current !== null) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = window.setTimeout(() => {
       void fetchPersons(value);
@@ -178,7 +182,13 @@ function ScorekeeperSearchModal({ selectedIds, saving, onAdd, onClose }: Scoreke
         {error && <div className="scorekeepers-modal__error">{error}</div>}
         {isSearching && <div className="scorekeepers-modal__status">{t('common.loading', 'Loading...')}</div>}
 
-        {!isSearching && !error && (
+        {!isSearching && !error && search.trim().length < MIN_SEARCH_LENGTH && (
+          <div className="scorekeepers-modal__status">
+            {t('matchScorekeepers.searchHint', 'Type at least 2 characters to search all persons.')}
+          </div>
+        )}
+
+        {!isSearching && !error && search.trim().length >= MIN_SEARCH_LENGTH && (
           <ul className="scorekeepers-modal__results">
             {persons.length === 0 ? (
               <li className="scorekeepers-modal__status">{t('matchScorekeepers.noPersons', 'No persons found.')}</li>
