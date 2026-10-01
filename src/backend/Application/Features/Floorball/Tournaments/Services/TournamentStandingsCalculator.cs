@@ -32,8 +32,14 @@ public static class TournamentStandingsCalculator
         public int GoalsAgainst { get; private set; }
         public int GoalDifference => GoalsFor - GoalsAgainst;
         public int Points { get; private set; }
+        public int RegulationWins { get; private set; }
+        public int OvertimeWins { get; private set; }
+        public int ShootoutWins { get; private set; }
+        public int RegulationLosses { get; private set; }
+        public int OvertimeLosses { get; private set; }
+        public int ShootoutLosses { get; private set; }
 
-        internal void AddResult(int scoredFor, int scoredAgainst, bool wentToShootout)
+        internal void AddResult(int scoredFor, int scoredAgainst, bool wentToOvertime, bool wentToShootout)
         {
             GamesPlayed++;
             GoalsFor += scoredFor;
@@ -42,10 +48,16 @@ public static class TournamentStandingsCalculator
             if (scoredFor > scoredAgainst)
             {
                 Wins++;
+                if (wentToShootout) ShootoutWins++;
+                else if (wentToOvertime) OvertimeWins++;
+                else RegulationWins++;
             }
             else if (scoredFor < scoredAgainst)
             {
                 Losses++;
+                if (wentToShootout) ShootoutLosses++;
+                else if (wentToOvertime) OvertimeLosses++;
+                else RegulationLosses++;
             }
             else
             {
@@ -88,11 +100,11 @@ public static class TournamentStandingsCalculator
             }
             if (homeKnown && home != null)
             {
-                home.AddResult(match.HomeScore, match.AwayScore, match.WentToShootout);
+                home.AddResult(match.HomeScore, match.AwayScore, match.WentToOvertime, match.WentToShootout);
             }
             if (awayKnown && away != null)
             {
-                away.AddResult(match.AwayScore, match.HomeScore, match.WentToShootout);
+                away.AddResult(match.AwayScore, match.HomeScore, match.WentToOvertime, match.WentToShootout);
             }
         }
 

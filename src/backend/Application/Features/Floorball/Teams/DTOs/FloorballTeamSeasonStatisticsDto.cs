@@ -64,6 +64,36 @@ public class FloorballTeamSeasonStatisticsDto
     public int Ties { get; set; }
 
     /// <summary>
+    /// Gets or sets wins decided in regulation time
+    /// </summary>
+    public int RegulationWins { get; set; }
+
+    /// <summary>
+    /// Gets or sets wins decided in overtime without a shootout
+    /// </summary>
+    public int OvertimeWins { get; set; }
+
+    /// <summary>
+    /// Gets or sets wins decided by a shootout
+    /// </summary>
+    public int ShootoutWins { get; set; }
+
+    /// <summary>
+    /// Gets or sets losses decided in regulation time
+    /// </summary>
+    public int RegulationLosses { get; set; }
+
+    /// <summary>
+    /// Gets or sets losses decided in overtime without a shootout
+    /// </summary>
+    public int OvertimeLosses { get; set; }
+
+    /// <summary>
+    /// Gets or sets losses decided by a shootout
+    /// </summary>
+    public int ShootoutLosses { get; set; }
+
+    /// <summary>
     /// Gets or sets the total points
     /// </summary>
     public int Points { get; set; }

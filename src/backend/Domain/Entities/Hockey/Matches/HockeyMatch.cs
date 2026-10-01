@@ -58,6 +58,9 @@ public class HockeyMatch : BaseEntity
     public IReadOnlyCollection<HockeyMatchOfficial> Officials => _officials.AsReadOnly();
     private readonly List<HockeyMatchOfficial> _officials = new();
 
+    public IReadOnlyCollection<HockeyMatchScorekeeper> Scorekeepers => _scorekeepers.AsReadOnly();
+    private readonly List<HockeyMatchScorekeeper> _scorekeepers = new();
+
     public IReadOnlyCollection<HockeyPeriodScore> PeriodScores => _periodScores.AsReadOnly();
     private readonly List<HockeyPeriodScore> _periodScores = new();
 
@@ -209,6 +212,44 @@ public class HockeyMatch : BaseEntity
         _officials.Remove(existing);
     }
 
+    /// <summary>
+    /// Adds a scorekeeper (toimitsija) to the match. Adding the same person twice is a no-op.
+    /// </summary>
+    public void AddScorekeeper(Guid personId)
+    {
+        EnsureCanModifyScorekeepers();
+
+        if (_scorekeepers.Any(s => s.PersonId == personId))
+            return;
+
+        _scorekeepers.Add(new HockeyMatchScorekeeper(personId));
+    }
+
+    /// <summary>
+    /// Removes a scorekeeper (toimitsija) from the match. Scorekeepers are optional, so the list may become empty.
+    /// </summary>
+    public void RemoveScorekeeper(Guid personId)
+    {
+        EnsureCanModifyScorekeepers();
+
+        HockeyMatchScorekeeper? existing = _scorekeepers.FirstOrDefault(s => s.PersonId == personId);
+        if (existing is null)
+            return;
+
+        _scorekeepers.Remove(existing);
+    }
+
+    private void EnsureCanModifyScorekeepers()
+    {
+        if (Status is HockeyMatchStatus.Finished
+            or HockeyMatchStatus.Cancelled
+            or HockeyMatchStatus.Postponed
+            or HockeyMatchStatus.Forfeit)
+        {
+            throw new InvalidOperationException($"Cannot modify scorekeepers when the match status is {Status}.");
+        }
+    }
+
     public HockeyPeriodScore AddPeriodScore(int periodNumber, HockeyPeriodType periodType)
     {
         HockeyMatchTeam home = HomeMatchTeam
@@ -250,9 +291,31 @@ public class HockeyMatch : BaseEntity
 
         ActualEndTime = actualEndTime ?? DateTime.UtcNow;
         Status = HockeyMatchStatus.Finished;
-        if (resultType is not null)
-            ResultType = resultType;
+        ResultType = resultType ?? ResultType ?? InferResultType();
     }
+
+    /// <summary>
+    /// Derives the result from the score and the overtime / shootout flags.
+    /// </summary>
+    public HockeyMatchResultType InferResultType()
+    {
+        if (HomeScore == AwayScore)
+            return HockeyMatchResultType.Draw;
+
+        bool homeWon = HomeScore > AwayScore;
+        if (WentToShootout)
+            return homeWon ? HockeyMatchResultType.ShootoutHomeWin : HockeyMatchResultType.ShootoutAwayWin;
+        if (WentToOvertime)
+            return homeWon ? HockeyMatchResultType.OvertimeHomeWin : HockeyMatchResultType.OvertimeAwayWin;
+        return homeWon ? HockeyMatchResultType.HomeWin : HockeyMatchResultType.AwayWin;
+    }
+
+    /// <summary>
+    /// Result used for standings: the stored result, or one inferred from the score once the match is finished.
+    /// Null while the match has not been decided.
+    /// </summary>
+    public HockeyMatchResultType? StandingResultType =>
+        ResultType ?? (Status == HockeyMatchStatus.Finished ? InferResultType() : null);
 
     /// <summary>
     /// Stores floorball-style bracket forwarding: round, order, and the next match slot for the winner.

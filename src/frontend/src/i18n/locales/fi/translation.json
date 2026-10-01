@@ -56,6 +56,40 @@
       "Draw": "Arpa"
     }
   },
+  "matchScorekeepers": {
+    "title": "Ottelun toimitsijat",
+    "add": "Lisää toimitsija",
+    "remove": "Poista toimitsija",
+    "none": "Ei toimitsijoita (valinnainen).",
+    "unknownPerson": "Tuntematon henkilö",
+    "modalTitle": "Valitse toimitsija",
+    "searchPlaceholder": "Hae henkilöä nimellä...",
+    "searchError": "Henkilöhaku epäonnistui",
+    "noPersons": "Henkilöitä ei löytynyt.",
+    "pick": "Lisää",
+    "added": "Lisätty",
+    "errors": {
+      "add": "Toimitsijan lisääminen epäonnistui",
+      "remove": "Toimitsijan poistaminen epäonnistui"
+    }
+  },
+  "bulkSaveDialog": {
+    "title": "Kirjaa torjunnat massana",
+    "close": "Sulje",
+    "count": "Torjuntojen määrä",
+    "countHelp": "Jokainen torjunta tallennetaan omana tapahtumanaan, joten poisto, erätilastot ym. toimivat normaalisti.",
+    "period": "Erä",
+    "periodOption": "Erä {{period}}",
+    "time": "Aika erän sisällä",
+    "minutes": "Minuutit",
+    "seconds": "Sekunnit",
+    "useCurrentTimer": "Käytä kellon aikaa",
+    "lastMinute": "Erän viimeiselle minuutille",
+    "cancel": "Peruuta",
+    "recording": "Tallennetaan…",
+    "submit_one": "Kirjaa {{count}} torjunta",
+    "submit_other": "Kirjaa {{count}} torjuntaa"
+  },
   "matchPage": {
     "navigation": {
       "summary": "Yhteenveto",
@@ -99,7 +133,14 @@
       "status": "Tila",
       "overtime": "Jatkoaika",
       "shootout": "Voittomaalikilpailu",
-      "notStarted": "Ottelu ei ole vielä alkanut."
+      "notStarted": "Ottelu ei ole vielä alkanut.",
+      "title": "Ottelun tiedot",
+      "decidedInOvertime": "Ratkesi jatkoajalla",
+      "decidedInShootout": "Ratkesi voittomaalikilpailussa",
+      "decidedInExtraTime": "Ratkesi jatkoajalla",
+      "decidedInPenaltyShootout": "Ratkesi rangaistuspotkukilpailussa",
+      "referees": "Tuomarit",
+      "scorekeepers": "Toimitsijat"
     },
     "skipToShootout": "Siirry rankkareihin",
     "skippingToShootout": "Siirretään rankkareihin..."
@@ -1812,10 +1853,15 @@
       },
       "status": {
         "Scheduled": "Aikataulutettu",
+        "scheduled": "Aikataulutettu",
         "InProgress": "Käynnissä",
+        "inProgress": "Käynnissä",
         "Completed": "Päättynyt",
+        "completed": "Päättynyt",
         "Cancelled": "Peruttu",
-        "Postponed": "Lykätty"
+        "cancelled": "Peruttu",
+        "Postponed": "Lykätty",
+        "postponed": "Lykätty"
       },
       "actions": {
         "open": "Avaa ottelu",
@@ -2178,6 +2224,9 @@
     "back": "Takaisin",
     "backTo": "Takaisin",
     "loading": "Ladataan...",
+    "optional": "(valinnainen)",
+    "loadingSeasonDetails": "Ladataan kauden tietoja...",
+    "autoSelected": "Valittu automaattisesti",
     "cannotBeUndone": "Tätä toimintoa ei voi perua.",
     "bulk": {
       "selected_one": "{{count}} valittu",
@@ -3314,6 +3363,9 @@
         "suspended": "Keskeytetty"
       },
       "manage": {
+        "bulkSavesTitle": "Kirjaa useita torjuntoja kerralla",
+        "deleteBulkSaves_one": "Poista {{count}} torjunta",
+        "deleteBulkSaves_other": "Poista {{count}} torjuntaa",
         "finished": "PÄÄTTYNYT",
         "reopenMatch": "Avaa ottelu",
         "reopenMatchTitle": "Avaa ottelu uudelleen muokattavaksi",
@@ -3834,7 +3886,27 @@
       "colGpTitle": "Pelatut ottelut",
       "colGaTitle": "Päästetyt maalit",
       "colSvTitle": "Torjuntaprosentti",
-      "colSoTitle": "Nollapelit"
+      "colSoTitle": "Nollapelit",
+      "floorballColumns": {
+        "gp": "O",
+        "gpTitle": "Ottelut",
+        "w": "V",
+        "wTitle": "Voitot varsinaisella peliajalla",
+        "otw": "JA",
+        "otwTitle": "Jatkoaika- ja rankkarivoitot",
+        "otl": "JAH",
+        "otlTitle": "Jatkoaika- ja rankkarihäviöt",
+        "l": "H",
+        "lTitle": "Häviöt varsinaisella peliajalla",
+        "gf": "TM",
+        "gfTitle": "Tehdyt maalit",
+        "ga": "PM",
+        "gaTitle": "Päästetyt maalit",
+        "gd": "ME",
+        "gdTitle": "Maaliero",
+        "pts": "PTS",
+        "ptsTitle": "Pisteet"
+      }
     },
     "errors": {
       "loadLeagueData": "Sarjan tietojen lataus epäonnistui",
@@ -3991,7 +4063,7 @@
     "searchGoalie": "Hae maalivahtia nimellä tai pelinumerolla...",
     "noMatchingGoalies": "Ei vastaavia pelaajia",
     "clearGoalie": "Tyhjennä",
-    "hockeyRosterHint": "Valitse otteluun pukeutuvat pelaajat. Maalivahti on pakollinen ja pelaajia on oltava vähintään 15.",
+    "hockeyRosterHint": "Valitse otteluun pukeutuvat pelaajat. Maalivahti on pakollinen.",
     "floorballRosterHint": "Valitse ottelun kenttäpelaajat ja aseta heidän roolinsa. Maalivahti valitaan erikseen ylhäältä.",
     "footballRosterHint": "Valitse ottelun pelaajat, aseta pelipaikka ja merkitse avauskokoonpano.",
     "inRoster": "Kokoonpanossa",

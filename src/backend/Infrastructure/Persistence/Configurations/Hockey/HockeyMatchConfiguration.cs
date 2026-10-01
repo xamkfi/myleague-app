@@ -42,6 +42,7 @@ public class HockeyMatchConfiguration : BaseEntityConfiguration<HockeyMatch>
         builder.Ignore(m => m.AwayTeamId);
         builder.Ignore(m => m.HomeScore);
         builder.Ignore(m => m.AwayScore);
+        builder.Ignore(m => m.StandingResultType);
 
         builder.OwnsOne(m => m.MatchRules, ConfigureMatchRules);
 
@@ -59,6 +60,18 @@ public class HockeyMatchConfiguration : BaseEntityConfiguration<HockeyMatch>
             .OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(m => m.Officials)
             .HasField("_officials")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        // Scorekeepers reference persons in CommonDbContext, so only the PersonId is stored.
+        builder.OwnsMany(m => m.Scorekeepers, scorekeeper =>
+        {
+            scorekeeper.ToTable("HockeyMatchScorekeepers");
+            scorekeeper.WithOwner().HasForeignKey("MatchId");
+            scorekeeper.Property(s => s.PersonId).IsRequired();
+            scorekeeper.HasKey("MatchId", nameof(HockeyMatchScorekeeper.PersonId));
+        });
+        builder.Navigation(m => m.Scorekeepers)
+            .HasField("_scorekeepers")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasMany(m => m.PeriodScores)

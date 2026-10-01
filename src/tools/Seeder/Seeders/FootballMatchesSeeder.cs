@@ -19,9 +19,12 @@ public static class FootballMatchesSeeder
         List<FootballSeasonDto> seasons,
         List<FootballTeamDto> teams,
         List<FootballRefereeDto> referees,
-        Dictionary<string, Guid> emailToRefereeId)
+        Dictionary<string, Guid> emailToRefereeId,
+        IReadOnlyDictionary<string, Guid>? scorekeeperEmailToPersonId = null)
     {
         List<FootballMatchDto> created = new List<FootballMatchDto>();
+        IReadOnlyDictionary<string, Guid> scorekeeperMap = scorekeeperEmailToPersonId
+            ?? new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
         Dictionary<Guid, FootballTeamDto> rosterCache = new Dictionary<Guid, FootballTeamDto>();
         Random rng = new Random(42);
 
@@ -65,6 +68,10 @@ public static class FootballMatchesSeeder
                 created.Add(matchToSimulate);
                 Console.WriteLine($"Created football match: {match.HomeTeamName} vs {match.AwayTeamName} ({matchToSimulate.Id})");
             }
+
+            // Scorekeepers must be set before simulation; completed matches reject the change.
+            await MatchScorekeepersSeeder.EnsureAsync(
+                http, "api/football-matches", matchToSimulate.Id, matchToSimulate.Scorekeepers, match.ScorekeeperEmails, scorekeeperMap);
 
             if (FootballMatchSimulator.IsPastScheduled(matchToSimulate.ScheduledDateTime)
                 || (DateTime.TryParse(match.ScheduledDateTime, out DateTime seedScheduled) && FootballMatchSimulator.IsPastScheduled(seedScheduled)))

@@ -1,6 +1,6 @@
 import type { FootballMatchDto } from '../../../types/football/footballTypes';
 import { FootballMatchStatus } from '../../../types/football/footballTypes';
-import type { MatchTabType } from '../../../components/match';
+import { MatchInfoCard, type MatchTabType } from '../../../components/match';
 import MatchEvents from './MatchEvents';
 import MatchLineups from './MatchLineups';
 import MatchStats from './MatchStats';
@@ -27,12 +27,16 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
         return (
           <div className="tab-content">
             <div className="summary-content">
-              {(match.wentToExtraTime || match.wentToPenaltyShootout) && (
-                <div className="match-notes">
-                  {match.wentToExtraTime && <span>{t('football.match.extraTime', 'Extra time')}</span>}
-                  {match.wentToPenaltyShootout && <span>{t('football.match.penaltyShootout', 'Penalty shootout')}</span>}
-                </div>
-              )}
+              <MatchInfoCard
+                decision={match.wentToPenaltyShootout ? 'shootout' : match.wentToExtraTime ? 'overtime' : null}
+                decisionLabel={match.wentToPenaltyShootout
+                  ? t('matchPage.matchInfo.decidedInPenaltyShootout', 'Decided by penalty shootout')
+                  : match.wentToExtraTime
+                    ? t('matchPage.matchInfo.decidedInExtraTime', 'Decided in extra time')
+                    : undefined}
+                referees={match.refereeDetails}
+                scorekeepers={match.scorekeepers}
+              />
 
               {!hasStarted && !hasEvents && (
                 <p className="match-pending">{t('matchPage.matchInfo.notStarted')}</p>

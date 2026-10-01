@@ -2843,6 +2843,11 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<int>("TeamsAdvancing")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("_rankingCriteria")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -2850,11 +2855,6 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .HasColumnType("character varying(64)")
                         .HasColumnName("RankingCriteria")
                         .HasDefaultValueSql("'0,1,2,4,5'");
-
-                    b.Property<int>("TeamsAdvancing")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
 
                     b.HasDiscriminator().HasValue("Season");
                 });
@@ -4128,6 +4128,23 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                                 .HasForeignKey("HockeyMatchId");
                         });
 
+                    b.OwnsMany("Domain.Entities.Hockey.Matches.HockeyMatchScorekeeper", "Scorekeepers", b1 =>
+                        {
+                            b1.Property<Guid>("MatchId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid>("PersonId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("MatchId", "PersonId");
+
+                            b1.ToTable("HockeyMatchScorekeepers", "hockey");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MatchId");
+                        });
+
                     b.Navigation("Competition");
 
                     b.Navigation("CompetitionDivision");
@@ -4136,6 +4153,8 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                         .IsRequired();
 
                     b.Navigation("PlayoffSeries");
+
+                    b.Navigation("Scorekeepers");
 
                     b.Navigation("TournamentGroup");
                 });

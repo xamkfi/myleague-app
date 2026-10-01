@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Features.Common.Shared;
 using Application.Features.Football.Matches.DTOs;
 using Application.Features.Football.Matches.Mappings;
 using Application.Features.Football.Matches.Queries;
@@ -103,7 +104,10 @@ public class GetFootballMatchByIdHandler : IRequestHandler<GetFootballMatchByIdQ
                 clubLookup.TryGetValue(match.AwayTeam.ClubId, out awayClub);
             }
 
-            FootballMatchDto matchDto = FootballMatchMapper.ToDto(match, playerPersonLookup, homeClub, awayClub);
+            Dictionary<Guid, Person> staffPersonLookup = await MatchPersonLookup.LoadAsync(
+                _personRepository, FootballMatchMapper.CollectStaffPersonIds(match));
+
+            FootballMatchDto matchDto = FootballMatchMapper.ToDto(match, playerPersonLookup, homeClub, awayClub, staffPersonLookup);
             return Result<FootballMatchDto>.Success(matchDto);
         }
         catch (Exception ex)

@@ -15,6 +15,7 @@ using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Teams;
 using Domain.Enums.Hockey.Matches;
+using Domain.Repositories.Common;
 using Domain.Repositories.Hockey;
 using Domain.ValueObjects.Hockey.Rules;
 using Microsoft.Extensions.Logging;
@@ -213,6 +214,8 @@ public class HockeyMatchHandlerTests
 
         GetHockeyMatchByIdHandler handler = new(
             _matchRepo.Object,
+            Mock.Of<IHockeyOfficialRepository>(),
+            Mock.Of<IPersonRepository>(),
             Mock.Of<ILogger<GetHockeyMatchByIdHandler>>());
 
         Result<HockeyMatchDto> result = await handler.Handle(
@@ -231,6 +234,8 @@ public class HockeyMatchHandlerTests
 
         GetHockeyMatchByIdHandler handler = new(
             _matchRepo.Object,
+            Mock.Of<IHockeyOfficialRepository>(),
+            Mock.Of<IPersonRepository>(),
             Mock.Of<ILogger<GetHockeyMatchByIdHandler>>());
 
         Result<HockeyMatchDto> result = await handler.Handle(
@@ -326,7 +331,7 @@ public class HockeyMatchHandlerTests
     }
 
     [Fact]
-    public async Task ConfirmRoster_Standalone_UsesDefaultRules_RequiresGoalieAndMinDressed()
+    public async Task ConfirmRoster_Standalone_UsesDefaultRules_RequiresGoalieWithoutMinDressed()
     {
         HockeyMatch match = CreateStandaloneMatch();
         Club club = new("Tappara HC");
@@ -345,9 +350,31 @@ public class HockeyMatchHandlerTests
             CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Contain("minimum dressed players");
+        result.Error.Should().NotContain("minimum dressed players");
         result.Error.Should().Contain("goalie");
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ConfirmRoster_Standalone_WithGoalieAndFewPlayers_Succeeds()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Club club = new("Tappara HC");
+        HockeyTeam team = new("Tappara", club, TeamCategory.Adult);
+        HockeyTeamPlayer goalie = team.AddPlayer(new HockeyPlayer(Guid.NewGuid(), HockeyPosition.Goalie), HockeyPosition.Goalie, jerseyNumber: 1);
+        HockeyTeamPlayer skater = team.AddPlayer(new HockeyPlayer(Guid.NewGuid(), HockeyPosition.Center), HockeyPosition.Center, jerseyNumber: 12);
+
+        match.AssignMatchTeam(team.Id, HockeyTeamSlot.Home);
+        HockeyMatchTeam matchTeam = match.HomeMatchTeam!;
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+        _teamRepo.Setup(r => r.GetByIdAsync(team.Id)).ReturnsAsync(team);
+
+        Result<HockeyMatchDto> result = await CreateConfirmRosterHandler().Handle(
+            new ConfirmHockeyMatchRosterCommand(match.Id, matchTeam.Id, new[] { goalie.Id, skater.Id }),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue(result.Error);
     }
 
     [Fact]
@@ -387,6 +414,48 @@ public class HockeyMatchHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Data!.HomeScore.Should().Be(1);
         result.Data.Events.Should().ContainSingle(e => e.EventType == HockeyMatchEventType.Goal.ToString());
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RecordShot_WithBulkCount_RecordsThatManySavedShotsInOneSave()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Club club = new("Tappara HC");
+        HockeyTeam home = new("Tappara", club, TeamCategory.Adult);
+        HockeyTeam away = new("Ilves", club, TeamCategory.Adult);
+        HockeyTeamPlayer goalie = away.AddPlayer(new HockeyPlayer(Guid.NewGuid(), HockeyPosition.Goalie), HockeyPosition.Goalie, jerseyNumber: 30);
+
+        match.AssignMatchTeam(home.Id, HockeyTeamSlot.Home);
+        match.AssignMatchTeam(away.Id, HockeyTeamSlot.Away);
+        HockeyMatchTeam awaySide = match.AwayMatchTeam!;
+        HockeyMatchPlayerSelection selection = awaySide.CreateOrReplacePlayerSelection(HockeyPlayerSelectionSource.Manual);
+        HockeyMatchActivePlayer activeGoalie = selection.AddActivePlayer(goalie, isGoalie: true);
+        selection.Confirm();
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        RecordHockeyShotHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<RecordHockeyShotHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new RecordHockeyShotCommand(
+                match.Id,
+                match.HomeMatchTeam!.Id,
+                PeriodNumber: 1,
+                TimeInSeconds: 1140,
+                HockeyShotResult.Saved,
+                CountsAsShotOnGoal: true,
+                GoalieActivePlayerId: activeGoalie.Id,
+                Description: "Saved",
+                Count: 20),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue(result.Error);
+        match.Events.OfType<HockeyShot>().Should().HaveCount(20)
+            .And.OnlyContain(s => s.ShotResult == HockeyShotResult.Saved && s.GoalieActivePlayerId == activeGoalie.Id);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 

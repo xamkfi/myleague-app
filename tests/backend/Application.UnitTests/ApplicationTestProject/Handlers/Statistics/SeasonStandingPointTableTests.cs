@@ -66,6 +66,10 @@ public class SeasonStandingPointTableTests
         FloorballTeamSeasonStatisticsDto awayRow = floorballRows.Single(row => row.TeamId == away.Id);
         homeRow.Points.Should().Be(5 + 1);
         awayRow.Points.Should().Be(0 + 4);
+        homeRow.RegulationWins.Should().Be(1);
+        homeRow.OvertimeLosses.Should().Be(1);
+        awayRow.OvertimeWins.Should().Be(1);
+        awayRow.RegulationLosses.Should().Be(1);
     }
 
     [Fact]
@@ -123,8 +127,72 @@ public class SeasonStandingPointTableTests
 
         result.IsSuccess.Should().BeTrue();
         List<HockeyTeamCompetitionStatisticsDto> hockeyRows = result.Data ?? [];
-        hockeyRows.Single(row => row.TeamId == homeId).Points.Should().Be(4 + 1 + 2 + 1);
-        hockeyRows.Single(row => row.TeamId == awayId).Points.Should().Be(0 + 3 + 0 + 1);
+        HockeyTeamCompetitionStatisticsDto homeRow = hockeyRows.Single(row => row.TeamId == homeId);
+        HockeyTeamCompetitionStatisticsDto awayRow = hockeyRows.Single(row => row.TeamId == awayId);
+        homeRow.Points.Should().Be(4 + 1 + 2 + 1);
+        awayRow.Points.Should().Be(0 + 3 + 0 + 1);
+
+        homeRow.GamesPlayed.Should().Be(4);
+        homeRow.RegulationWins.Should().Be(1);
+        homeRow.ShootoutWins.Should().Be(1);
+        homeRow.OvertimeLosses.Should().Be(1);
+        homeRow.RegulationLosses.Should().Be(0);
+        homeRow.Ties.Should().Be(1);
+        homeRow.GoalsFor.Should().Be(10);
+        homeRow.GoalsAgainst.Should().Be(8);
+        homeRow.GoalDifference.Should().Be(2);
+
+        awayRow.GamesPlayed.Should().Be(4);
+        awayRow.RegulationLosses.Should().Be(1);
+        awayRow.OvertimeWins.Should().Be(1);
+        awayRow.ShootoutLosses.Should().Be(1);
+        awayRow.Ties.Should().Be(1);
+        awayRow.GoalsFor.Should().Be(8);
+        awayRow.GoalsAgainst.Should().Be(10);
+    }
+
+    [Fact]
+    public async Task HockeyTable_FinishedWithoutResultType_FillsRecordFromScoreAndOvertimeFlag()
+    {
+        HockeySeason season = new("Jääkiekko", Start, End);
+        Guid homeId = Guid.NewGuid();
+        Guid awayId = Guid.NewGuid();
+        HockeyCompetitionTeam homeMembership = season.AddTeam(homeId);
+        HockeyCompetitionTeam awayMembership = season.AddTeam(awayId);
+        season.Publish();
+        season.Activate();
+
+        HockeyMatch match = new(
+            new DateTime(2026, 10, 3, 18, 0, 0, DateTimeKind.Utc),
+            HockeyMatchType.League,
+            competitionId: season.Id);
+        match.AssignMatchTeam(homeId, HockeyTeamSlot.Home, homeMembership);
+        match.AssignMatchTeam(awayId, HockeyTeamSlot.Away, awayMembership);
+        match.SetTeamGoals(HockeyTeamSlot.Home, 2);
+        match.SetTeamGoals(HockeyTeamSlot.Away, 3);
+        match.SetWentToOvertime(true);
+        match.MarkFinished();
+
+        GetHockeyCompetitionStandingsHandler handler = CreateHockeyHandler(
+            season,
+            new Dictionary<Guid, string> { [homeId] = "Home", [awayId] = "Away" },
+            [match]);
+
+        Result<List<HockeyTeamCompetitionStatisticsDto>> result = await handler.Handle(
+            new GetHockeyCompetitionStandingsQuery(season.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        match.ResultType.Should().Be(HockeyMatchResultType.OvertimeAwayWin);
+        HockeyStandingRules rules = season.GetEffectiveRules().StandingRules;
+        HockeyTeamCompetitionStatisticsDto homeRow = result.Data!.Single(row => row.TeamId == homeId);
+        HockeyTeamCompetitionStatisticsDto awayRow = result.Data!.Single(row => row.TeamId == awayId);
+        homeRow.GamesPlayed.Should().Be(1);
+        homeRow.OvertimeLosses.Should().Be(1);
+        homeRow.Points.Should().Be(rules.OvertimeLossPoints);
+        awayRow.OvertimeWins.Should().Be(1);
+        awayRow.GoalsFor.Should().Be(3);
+        awayRow.Points.Should().Be(rules.OvertimeWinPoints);
     }
 
     private static (FloorballTeam Team, FloorballPlayer Scorer, FloorballPlayer Goalie) CreateFloorballSide(string name)

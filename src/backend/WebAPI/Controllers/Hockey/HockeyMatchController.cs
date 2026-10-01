@@ -394,6 +394,39 @@ public class HockeyMatchController : BaseApiController
     }
 
     /// <summary>
+    /// Adds a person as a scorekeeper (toimitsija) to the match.
+    /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [HttpPost("{matchId:guid}/scorekeepers")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddScorekeeper(
+        Guid matchId,
+        [FromBody] AddMatchScorekeeperRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new AddHockeyMatchScorekeeperCommand(matchId, request.PersonId), cancellationToken);
+        return HandleResult(result, "Scorekeeper added to hockey match successfully", "Failed to add scorekeeper");
+    }
+
+    /// <summary>
+    /// Removes a scorekeeper (toimitsija) from the match.
+    /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [HttpDelete("{matchId:guid}/scorekeepers/{personId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemoveScorekeeper(
+        Guid matchId,
+        Guid personId,
+        CancellationToken cancellationToken = default)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new RemoveHockeyMatchScorekeeperCommand(matchId, personId), cancellationToken);
+        return HandleResult(result, "Scorekeeper removed from hockey match successfully", "Failed to remove scorekeeper");
+    }
+
+    /// <summary>
     /// Creates a period score row.
     /// </summary>
     [Authorize(Roles = AuthRoles.AdminOnly)]
@@ -595,7 +628,7 @@ public class HockeyMatchController : BaseApiController
     }
 
     /// <summary>
-    /// Records a shot.
+    /// Records a shot. Set <c>count</c> above 1 to record that many saves at once.
     /// </summary>
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("{matchId:guid}/events/shots")]
@@ -614,7 +647,8 @@ public class HockeyMatchController : BaseApiController
             request.CountsAsShotOnGoal,
             request.ShooterActivePlayerId,
             request.GoalieActivePlayerId,
-            request.Description), cancellationToken);
+            request.Description,
+            request.Count), cancellationToken);
 
         return HandleResult(result, "Shot recorded successfully", "Failed to record shot");
     }

@@ -1,3 +1,5 @@
+using Application.Features.Common.Shared;
+using Application.Features.Common.Shared.DTOs;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Matches.DTOs;
@@ -44,9 +46,15 @@ public static class FloorballMatchMapper
     /// <param name="playerPersonLookup">Dictionary mapping player IDs to their person data</param>
     /// <param name="homeClub">Optional club entity for the home team (used for logo fallback)</param>
     /// <param name="awayClub">Optional club entity for the away team (used for logo fallback)</param>
+    /// <param name="staffPersonLookup">Optional persons keyed by person ID for referee and scorekeeper names</param>
     /// <returns>The mapped DTO</returns>
     /// <exception cref="ArgumentNullException">Thrown when match is null</exception>
-    public static FloorballMatchDto ToDto(FloorballMatch match, Dictionary<Guid, Person> playerPersonLookup, Club? homeClub = null, Club? awayClub = null)
+    public static FloorballMatchDto ToDto(
+        FloorballMatch match,
+        Dictionary<Guid, Person> playerPersonLookup,
+        Club? homeClub = null,
+        Club? awayClub = null,
+        IReadOnlyDictionary<Guid, Person>? staffPersonLookup = null)
     {
         if (match == null)
             throw new ArgumentNullException(nameof(match));
@@ -167,7 +175,32 @@ public static class FloorballMatchMapper
             awayActivePlayers,
             match.TournamentGroupId,
             match.TournamentStage?.ToString(),
-            competitionType);
+            competitionType,
+            MapRefereeDetails(match, staffPersonLookup),
+            MapScorekeepers(match, staffPersonLookup));
+    }
+
+    /// <summary>
+    /// Collects the person IDs of the match referees and scorekeepers for a name lookup.
+    /// </summary>
+    public static IEnumerable<Guid> CollectStaffPersonIds(FloorballMatch match)
+    {
+        return match.Officials.Select(r => r.PersonId)
+            .Concat(match.Scorekeepers.Select(s => s.PersonId));
+    }
+
+    private static List<MatchPersonDto> MapRefereeDetails(FloorballMatch match, IReadOnlyDictionary<Guid, Person>? staffPersonLookup)
+    {
+        return match.Officials
+            .Select(r => new MatchPersonDto(r.Id, MatchPersonLookup.NameOf(r.PersonId, staffPersonLookup)))
+            .ToList();
+    }
+
+    private static List<MatchPersonDto> MapScorekeepers(FloorballMatch match, IReadOnlyDictionary<Guid, Person>? staffPersonLookup)
+    {
+        return match.Scorekeepers
+            .Select(s => new MatchPersonDto(s.PersonId, MatchPersonLookup.NameOf(s.PersonId, staffPersonLookup)))
+            .ToList();
     }
 
     /// <summary>
@@ -281,7 +314,9 @@ public static class FloorballMatchMapper
                 : new List<FloorballActiveLineupPlayerDto>(),
             match.TournamentGroupId,
             match.TournamentStage?.ToString(),
-            ResolveCompetitionType(match)
+            ResolveCompetitionType(match),
+            MapRefereeDetails(match, null),
+            MapScorekeepers(match, null)
         );
     }
 

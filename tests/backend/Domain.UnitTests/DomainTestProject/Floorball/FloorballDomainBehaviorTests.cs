@@ -287,4 +287,49 @@ public class FloorballDomainBehaviorTests
         act.Should().Throw<InvalidOperationException>();
         ready.Match.Status.Should().Be(FloorballMatchStatus.Cancelled);
     }
+
+    [Fact]
+    public void AddScorekeeper_SamePersonTwice_KeepsSingleEntry()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        Guid personId = Guid.NewGuid();
+
+        ready.Match.AddScorekeeper(personId);
+        ready.Match.AddScorekeeper(personId);
+
+        ready.Match.Scorekeepers.Should().ContainSingle(s => s.PersonId == personId);
+    }
+
+    [Fact]
+    public void RemoveScorekeeper_LastScorekeeper_LeavesEmptyList()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        Guid personId = Guid.NewGuid();
+        ready.Match.AddScorekeeper(personId);
+
+        ready.Match.RemoveScorekeeper(personId);
+
+        ready.Match.Scorekeepers.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AddScorekeeper_EmptyPersonId_Throws()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+
+        Action act = () => ready.Match.AddScorekeeper(Guid.Empty);
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void AddScorekeeper_CancelledMatch_Throws()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        ready.Match.Cancel();
+
+        Action act = () => ready.Match.AddScorekeeper(Guid.NewGuid());
+
+        act.Should().Throw<InvalidOperationException>();
+    }
 }

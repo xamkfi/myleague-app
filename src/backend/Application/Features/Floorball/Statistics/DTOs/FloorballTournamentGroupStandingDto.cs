@@ -17,6 +17,12 @@ namespace Application.Features.Floorball.Statistics.DTOs;
 /// <param name="GoalDifference">GoalsFor minus GoalsAgainst</param>
 /// <param name="Points">Standings points (3 for a win, 1 for a draw, 0 for a loss)</param>
 /// <param name="TeamShortName">Short name shown when the team has no logo</param>
+/// <param name="RegulationWins">Wins decided in regulation time</param>
+/// <param name="OvertimeWins">Wins decided in overtime without a shootout</param>
+/// <param name="ShootoutWins">Wins decided by a shootout</param>
+/// <param name="RegulationLosses">Losses decided in regulation time</param>
+/// <param name="OvertimeLosses">Losses decided in overtime without a shootout</param>
+/// <param name="ShootoutLosses">Losses decided by a shootout</param>
 public record FloorballTournamentGroupStandingDto(
     Guid TeamId,
     string TeamName,
@@ -29,4 +35,10 @@ public record FloorballTournamentGroupStandingDto(
     int GoalsAgainst,
     int GoalDifference,
     int Points,
-    string TeamShortName);
+    string TeamShortName,
+    int RegulationWins = 0,
+    int OvertimeWins = 0,
+    int ShootoutWins = 0,
+    int RegulationLosses = 0,
+    int OvertimeLosses = 0,
+    int ShootoutLosses = 0);

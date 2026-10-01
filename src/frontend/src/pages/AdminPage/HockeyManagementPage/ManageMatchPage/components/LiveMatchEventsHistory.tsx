@@ -10,12 +10,42 @@ interface LiveMatchEventsHistoryProps {
   teamNamesByMatchTeamId: Map<string, string>;
   playerNames: Map<string, string>;
   onDeleteEvent?: (event: HockeyMatchEventDto) => void;
+  onDeleteEvents?: (events: HockeyMatchEventDto[]) => void;
   canDelete?: boolean;
   busy?: boolean;
 }
 
+interface HistoryRow {
+  event: HockeyMatchEventDto;
+  members: HockeyMatchEventDto[];
+}
+
 const SHOT_RESULT_SET: ReadonlySet<string> = new Set(HOCKEY_SHOT_RESULTS);
 const PERIOD_PREVIEW_COUNT = 5;
+
+function isSave(event: HockeyMatchEventDto): boolean {
+  return event.eventType.toLowerCase().includes('shot') && event.description === 'Saved';
+}
+
+/** Collapses consecutive saves with the same team and clock (bulk-recorded) into one row. */
+function groupSaves(events: HockeyMatchEventDto[]): HistoryRow[] {
+  const rows: HistoryRow[] = [];
+  for (const event of events) {
+    const previous: HistoryRow | undefined = rows[rows.length - 1];
+    if (
+      previous
+      && isSave(event)
+      && isSave(previous.event)
+      && previous.event.matchTeamId === event.matchTeamId
+      && previous.event.gameTimeSeconds === event.gameTimeSeconds
+    ) {
+      previous.members.push(event);
+      continue;
+    }
+    rows.push({ event, members: [event] });
+  }
+  return rows;
+}
 
 function eventLabel(
   eventType: string,
@@ -104,39 +134,54 @@ function periodTitle(periodNumber: number, overtimeLabel: string, shootoutLabel:
 }
 
 function EventRow({
-  event,
+  row,
   teamName,
   canRemove,
   busy,
   onDeleteEvent,
+  onDeleteEvents,
 }: {
-  event: HockeyMatchEventDto;
+  row: HistoryRow;
   teamName: string;
   canRemove: boolean;
   busy: boolean;
   onDeleteEvent?: (event: HockeyMatchEventDto) => void;
+  onDeleteEvents?: (events: HockeyMatchEventDto[]) => void;
 }) {
   const { t } = useTranslation();
+  const { event, members } = row;
   const meta = eventLabel(event.eventType, event.description, t);
   const detail = formatEventDetail(event, t);
+  const isBulk: boolean = members.length > 1;
+
+  const handleDelete = (): void => {
+    if (isBulk && onDeleteEvents) {
+      onDeleteEvents(members);
+      return;
+    }
+    onDeleteEvent?.(event);
+  };
 
   return (
-    <li className="events-history__row">
+    <li className={`events-history__row${isBulk ? ' events-history__row--bulk' : ''}`}>
       <span className="events-history__icon" aria-hidden="true">{meta.icon}</span>
       <span className="events-history__body">
         <strong>{meta.label}</strong>
+        {isBulk && <span className="events-history__count"> ×{members.length}</span>}
         {teamName ? ` ${teamName}` : ''}
         {' · '}
         {formatHockeyClock(event.gameTimeSeconds)}
         {detail ? ` · ${detail}` : ''}
       </span>
-      {canRemove && onDeleteEvent && (
+      {canRemove && (onDeleteEvent || onDeleteEvents) && (
         <button
           type="button"
           className="events-history__delete"
           disabled={busy}
-          onClick={() => onDeleteEvent(event)}
-          aria-label={t('common.delete', 'Delete')}
+          onClick={handleDelete}
+          aria-label={isBulk
+            ? t('hockey.matches.manage.deleteBulkSaves', 'Delete {{count}} saves', { count: members.length })
+            : t('common.delete', 'Delete')}
         >
           ×
         </button>
@@ -149,6 +194,7 @@ function LiveMatchEventsHistory({
   events,
   teamNamesByMatchTeamId,
   onDeleteEvent,
+  onDeleteEvents,
   canDelete = true,
   busy = false,
 }: LiveMatchEventsHistoryProps) {
@@ -166,7 +212,8 @@ function LiveMatchEventsHistory({
       .sort((left, right) => right[0] - left[0])
       .map(([periodNumber, periodEvents]) => ({
         periodNumber,
-        events: [...periodEvents].reverse(),
+        eventCount: periodEvents.length,
+        rows: groupSaves([...periodEvents].reverse()),
       }));
   }, [events]);
 
@@ -197,8 +244,8 @@ function LiveMatchEventsHistory({
       <div className="events-history__periods">
         {periodGroups.map((group) => {
           const isExpanded = expandedPeriods.has(group.periodNumber);
-          const visible = isExpanded ? group.events : group.events.slice(0, PERIOD_PREVIEW_COUNT);
-          const hiddenCount = group.events.length - visible.length;
+          const visible = isExpanded ? group.rows : group.rows.slice(0, PERIOD_PREVIEW_COUNT);
+          const hiddenCount = group.rows.length - visible.length;
           return (
             <section key={group.periodNumber} className="events-history__period">
               <header className="events-history__period-header">
@@ -211,27 +258,29 @@ function LiveMatchEventsHistory({
                   )}
                 </h4>
                 <span className="events-history__period-count">
-                  {t('hockey.matches.eventCount', '{{count}} events', { count: group.events.length })}
+                  {t('hockey.matches.eventCount', '{{count}} events', { count: group.eventCount })}
                 </span>
               </header>
               <ul className="events-history__list">
-                {visible.map((event) => {
+                {visible.map((row) => {
+                  const { event } = row;
                   const type = event.eventType.toLowerCase();
                   const canRemove = canDelete && (type.includes('goal') || type.includes('penalty') || type.includes('shot'));
                   const teamName = event.matchTeamId ? teamNamesByMatchTeamId.get(event.matchTeamId) ?? '' : '';
                   return (
                     <EventRow
                       key={event.id}
-                      event={event}
+                      row={row}
                       teamName={teamName}
                       canRemove={canRemove}
                       busy={busy}
                       onDeleteEvent={onDeleteEvent}
+                      onDeleteEvents={onDeleteEvents}
                     />
                   );
                 })}
               </ul>
-              {group.events.length > PERIOD_PREVIEW_COUNT && (
+              {group.rows.length > PERIOD_PREVIEW_COUNT && (
                 <button
                   type="button"
                   className="events-history__expand"
@@ -239,7 +288,7 @@ function LiveMatchEventsHistory({
                 >
                   {isExpanded
                     ? t('hockey.matches.showLatestEvents', 'Show latest {{count}}', { count: PERIOD_PREVIEW_COUNT })
-                    : t('hockey.matches.showAllPeriodEvents', 'Show all {{count}} events', { count: group.events.length })}
+                    : t('hockey.matches.showAllPeriodEvents', 'Show all {{count}} events', { count: group.rows.length })}
                 </button>
               )}
               {!isExpanded && hiddenCount > 0 && (

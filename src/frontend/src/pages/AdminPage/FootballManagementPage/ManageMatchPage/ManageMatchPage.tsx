@@ -18,6 +18,7 @@ import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ActiveRosterCard from './components/ActiveRosterCard';
 import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from './components/OfficialsSelectorSection';
+import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import FootballAssignTeamsDialog from '../Components/FootballAssignTeamsDialog';
@@ -56,10 +57,12 @@ interface ManageMatchPageContentProps {
 
 const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageContentProps) => {
   const timerContext = useMatchTimerContext();
+  const { t } = useTranslation();
 
   const [selectedOfficials, setSelectedOfficials] = useState<string[]>(match.officials || []);
   const [officialOptions, setOfficialOptions] = useState<Array<{ id: string; name: string }>>([]);
   const [officialsSaving, setOfficialsSaving] = useState(false);
+  const [scorekeepersSaving, setScorekeepersSaving] = useState<boolean>(false);
 
   const [showEndMatchConfirmation, setShowEndMatchConfirmation] = useState(false);
   const [showReopenConfirmation, setShowReopenConfirmation] = useState(false);
@@ -665,6 +668,28 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     }
   }, [match.id, matchData, setMatch]);
 
+  const handleScorekeeperChange = useCallback(async (personId: string, action: 'add' | 'remove'): Promise<void> => {
+    if (!match.id) return;
+    try {
+      setScorekeepersSaving(true);
+      matchData.setError(null);
+      const resp = action === 'add'
+        ? await footballMatchService.addScorekeeper(match.id, personId)
+        : await footballMatchService.removeScorekeeper(match.id, personId);
+      if (resp.success && resp.data) {
+        matchData.setCurrentMatch(resp.data);
+        setMatch(resp.data);
+      }
+    } catch (error) {
+      const fallback: string = action === 'add'
+        ? t('matchScorekeepers.errors.add', 'Failed to add scorekeeper')
+        : t('matchScorekeepers.errors.remove', 'Failed to remove scorekeeper');
+      matchData.setError(error instanceof Error ? error.message : fallback);
+    } finally {
+      setScorekeepersSaving(false);
+    }
+  }, [match.id, matchData, setMatch, t]);
+
   const currentTimeFormatted = timerContext.formatTime(
     Math.floor(timerContext.elapsedTimeSeconds / 60),
     timerContext.elapsedTimeSeconds % 60,
@@ -800,6 +825,14 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             onAddRow={() => setSelectedOfficials((prev) => [...prev, ''])}
             onSelect={handleOfficialSelect}
             onRemove={handleOfficialRemove}
+            disabled={matchData.currentMatch.status === 'Completed' || matchData.currentMatch.status === 'Cancelled'}
+          />
+
+          <ScorekeepersSection
+            scorekeepers={matchData.currentMatch.scorekeepers ?? []}
+            saving={scorekeepersSaving}
+            onAdd={(personId) => handleScorekeeperChange(personId, 'add')}
+            onRemove={(personId) => handleScorekeeperChange(personId, 'remove')}
             disabled={matchData.currentMatch.status === 'Completed' || matchData.currentMatch.status === 'Cancelled'}
           />
 

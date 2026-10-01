@@ -225,9 +225,21 @@
     border-bottom: 1px solid $color-neutral-medium-grey;
   }
 
+  &__row--bulk {
+    border-left: 4px solid #3b82f6;
+    padding-left: 6px;
+    background: #f5f9ff;
+  }
+
   &__body {
     flex: 1;
     font-size: 13px;
+  }
+
+  &__count {
+    font-weight: map.get($font-weights, 'bold');
+    color: #1e40af;
+    white-space: nowrap;
   }
 
   &__delete {

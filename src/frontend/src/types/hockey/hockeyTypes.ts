@@ -1,3 +1,5 @@
+import type { MatchPersonDto } from '../common/matchPersonTypes';
+
 export const HOCKEY_POSITIONS = [
   'Goalie',
   'Defenseman',
@@ -667,6 +669,8 @@ export interface HockeyMatchDto {
   events: HockeyMatchEventDto[];
   officials: HockeyMatchOfficialDto[];
   periodScores: HockeyPeriodScoreDto[];
+  refereeDetails?: MatchPersonDto[] | null;
+  scorekeepers?: MatchPersonDto[] | null;
 }
 
 export interface CreateHockeyMatchRequest {
@@ -791,6 +795,8 @@ export interface RecordHockeyShotRequest {
   shooterActivePlayerId?: string;
   goalieActivePlayerId?: string;
   description?: string;
+  /** Records this many identical saved shots (bulk saves). Requires shotResult 'Saved' and a goalie. */
+  count?: number;
 }
 
 export interface HockeyTeamCompetitionStatisticsDto {

@@ -40,19 +40,23 @@ public class RecordHockeyShotHandler : IRequestHandler<RecordHockeyShotCommand, 
                 return Result<HockeyMatchDto>.NotFound("HockeyMatch", request.MatchId);
             }
 
-            HockeyShot shot = new(
-                match.Id,
-                request.ShootingMatchTeamId,
-                request.PeriodNumber,
-                TimeSpan.FromSeconds(request.TimeInSeconds),
-                request.ShotResult,
-                request.CountsAsShotOnGoal,
-                request.ShooterActivePlayerId,
-                request.GoalieActivePlayerId,
-                description: request.Description);
+            int shotCount = request.Count < 1 ? 1 : request.Count;
+            for (int index = 0; index < shotCount; index++)
+            {
+                HockeyShot shot = new(
+                    match.Id,
+                    request.ShootingMatchTeamId,
+                    request.PeriodNumber,
+                    TimeSpan.FromSeconds(request.TimeInSeconds),
+                    request.ShotResult,
+                    request.CountsAsShotOnGoal,
+                    request.ShooterActivePlayerId,
+                    request.GoalieActivePlayerId,
+                    description: request.Description);
 
-            match.AddEvent(shot);
-            _matchRepository.MarkEventAsAdded(shot);
+                match.AddEvent(shot);
+                _matchRepository.MarkEventAsAdded(shot);
+            }
 
             HockeyDomainValidationResult validation = HockeyMatchValidationService.ValidateEventPlayerReferences(match);
             if (!validation.IsValid)
@@ -61,7 +65,7 @@ public class RecordHockeyShotHandler : IRequestHandler<RecordHockeyShotCommand, 
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            _logger.LogInformation("Recorded shot on match {MatchId}", request.MatchId);
+            _logger.LogInformation("Recorded {Count} shot(s) on match {MatchId}", shotCount, request.MatchId);
             return Result<HockeyMatchDto>.Success(HockeyMatchMapper.ToDto(match));
         }
         catch (InvalidOperationException ex)

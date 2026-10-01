@@ -365,4 +365,39 @@ public class FootballMatchTests
         rules.PointsFor(FootballGameResult.Draw).Should().Be(1);
         rules.PointsFor(FootballGameResult.Loss).Should().Be(0);
     }
+
+    [Fact]
+    public void AddScorekeeper_SamePersonTwice_KeepsSingleEntry()
+    {
+        FootballMatch match = new(CreateSeason(), null, null, DateTime.UtcNow, "Pitch");
+        Guid personId = Guid.NewGuid();
+
+        match.AddScorekeeper(personId);
+        match.AddScorekeeper(personId);
+
+        match.Scorekeepers.Should().ContainSingle(s => s.PersonId == personId);
+    }
+
+    [Fact]
+    public void RemoveScorekeeper_LastScorekeeper_LeavesEmptyList()
+    {
+        FootballMatch match = new(CreateSeason(), null, null, DateTime.UtcNow, "Pitch");
+        Guid personId = Guid.NewGuid();
+        match.AddScorekeeper(personId);
+
+        match.RemoveScorekeeper(personId);
+
+        match.Scorekeepers.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AddScorekeeper_CancelledMatch_Throws()
+    {
+        FootballMatch match = new(CreateSeason(), null, null, DateTime.UtcNow, "Pitch");
+        match.Cancel();
+
+        Action act = () => match.AddScorekeeper(Guid.NewGuid());
+
+        act.Should().Throw<InvalidOperationException>();
+    }
 }

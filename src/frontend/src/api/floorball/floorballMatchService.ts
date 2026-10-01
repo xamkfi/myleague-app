@@ -11,6 +11,7 @@ import type { FloorballPosition } from '../../types/floorball/floorballTypes';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
+import { addMatchScorekeeper, removeMatchScorekeeper } from '../common/matchScorekeeperApi';
 
 // Phase 2 of the floorball match controller refactor split the original FloorballMatchController
 // into smaller controllers grouped by concern: queries+CRUD live at api/floorball-matches; the
@@ -722,5 +723,17 @@ export const floorballMatchService = {
       console.error('Error in floorballMatchService.deleteOfficial:', error);
       throw error;
     }
-  }
+  },
+
+  /**
+   * Add a person as a scorekeeper (toimitsija).
+   */
+  addScorekeeper: (matchId: string, personId: string): Promise<ApiResponse<FloorballMatchDto>> =>
+    addMatchScorekeeper<FloorballMatchDto>(MATCHES_PATH, matchId, personId),
+
+  /**
+   * Remove a scorekeeper (toimitsija).
+   */
+  removeScorekeeper: (matchId: string, personId: string): Promise<ApiResponse<FloorballMatchDto>> =>
+    removeMatchScorekeeper<FloorballMatchDto>(MATCHES_PATH, matchId, personId),
 };

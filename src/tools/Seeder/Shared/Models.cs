@@ -139,6 +139,8 @@ public class FloorballMatchSeed
 	public string ScheduledDateTime { get; init; } = string.Empty;
 	public string? Venue { get; init; }
 	public string? RefereeEmail { get; init; }
+	/// <summary>Optional scorekeeper (toimitsija) emails from ScorekeeperPersons.</summary>
+	public List<string> ScorekeeperEmails { get; init; } = new List<string>();
 }
 
 public class HockeySeasonSeed
@@ -275,6 +277,8 @@ public class HockeyMatchSeed
 	public string? Venue { get; init; }
 	/// <summary>When true, simulate the match to Finished and recalculate stats.</summary>
 	public bool SimulateCompleted { get; init; } = false;
+	/// <summary>Optional scorekeeper (toimitsija) emails from ScorekeeperPersons.</summary>
+	public List<string> ScorekeeperEmails { get; init; } = new List<string>();
 }
 
 public class FootballTeamSeed
@@ -306,6 +310,8 @@ public class FootballMatchSeed
 	/// <summary>When true, simulate the match to Finished and recalculate stats.</summary>
 	public bool SimulateCompleted { get; init; } = false;
 	public string? RefereeEmail { get; init; }
+	/// <summary>Optional scorekeeper (toimitsija) emails from ScorekeeperPersons.</summary>
+	public List<string> ScorekeeperEmails { get; init; } = new List<string>();
 }
 
 public class LoginDevResponse

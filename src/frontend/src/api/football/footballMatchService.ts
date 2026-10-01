@@ -11,6 +11,7 @@ import type { FootballPosition } from '../../types/football/footballTypes';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
+import { addMatchScorekeeper, removeMatchScorekeeper } from '../common/matchScorekeeperApi';
 
 // Phase 2 of the Football match controller refactor split the original FootballMatchController
 // into smaller controllers grouped by concern: queries+CRUD live at api/football-matches; the
@@ -651,5 +652,17 @@ export const footballMatchService = {
       console.error('Error in footballMatchService.deleteOfficial:', error);
       throw error;
     }
-  }
+  },
+
+  /**
+   * Add a person as a scorekeeper (toimitsija).
+   */
+  addScorekeeper: (matchId: string, personId: string): Promise<ApiResponse<FootballMatchDto>> =>
+    addMatchScorekeeper<FootballMatchDto>(MATCHES_PATH, matchId, personId),
+
+  /**
+   * Remove a scorekeeper (toimitsija).
+   */
+  removeScorekeeper: (matchId: string, personId: string): Promise<ApiResponse<FootballMatchDto>> =>
+    removeMatchScorekeeper<FootballMatchDto>(MATCHES_PATH, matchId, personId),
 };

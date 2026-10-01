@@ -1,3 +1,5 @@
+import type { MatchPersonDto } from '../common/matchPersonTypes';
+
 export enum FootballPosition {
   None = 'None',
   Goalkeeper = 'Goalkeeper',
@@ -265,6 +267,8 @@ export interface FootballMatchDto {
   playoffMatchOrder?: number | null;
   nextMatchId?: string | null;
   nextMatchSlot?: string | null;
+  refereeDetails?: MatchPersonDto[] | null;
+  scorekeepers?: MatchPersonDto[] | null;
 }
 
 export interface CreateFootballMatchRequest {
