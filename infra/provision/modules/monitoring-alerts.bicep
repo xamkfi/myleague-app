@@ -491,6 +491,7 @@ resource budget 'Microsoft.Consumption/budgets@2023-11-01' = {
     timeGrain: 'Monthly'
     timePeriod: {
       startDate: budgetStartDate
+      endDate: '2036-09-01T00:00:00Z'
     }
     notifications: {
       actual80Percent: {
