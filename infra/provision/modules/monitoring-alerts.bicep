@@ -43,8 +43,8 @@ param enableAvailabilityTest bool = false
 @description('Monthly cost budget for this resource group in USD. Email notifications at 80% and 100%.')
 param monthlyBudgetAmount int = 35
 
-@description('Start date of the budget period (first day of the current month). Do not override.')
-param budgetStartDate string = utcNow('yyyy-MM-01')
+@description('Start date of the cost budget. Must be the first day of a month and must stay unchanged after the budget is created; Azure rejects updates to this value.')
+param budgetStartDate string = '2026-09-01'
 
 @description('Tags to apply to created resources')
 param tags object = {}
