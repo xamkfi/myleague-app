@@ -2118,6 +2118,24 @@
           "Forward": "Forward"
         },
         "saveLineup": "Save lineup"
+      },
+      "assignTeams": {
+        "action": "Assign teams",
+        "actionMissing": "Assign teams",
+        "actionChange": "Change teams",
+        "missingBanner": "This match does not have both teams yet. Assign teams before starting.",
+        "placeholderBody": "Both teams must be assigned before the live desk can open.",
+        "title": "Assign teams",
+        "hint": "Leave a team unselected to reset it to TBD. Playoff changes propagate to the next match when its feeder match has not finished yet.",
+        "notEditable": "Teams can only be changed when the match is Scheduled or Postponed.",
+        "sameTeam": "Home and away teams cannot be the same.",
+        "homePlaceholder": "Select home team (optional)",
+        "awayPlaceholder": "Select away team (optional)",
+        "noTeams": "No teams found",
+        "clearHome": "Clear home team",
+        "clearAway": "Clear away team",
+        "save": "Save teams",
+        "genericError": "Failed to save teams."
       }
     }
   },
@@ -2721,6 +2739,26 @@
       },
       "errors": {
         "hasMatches": "Cannot delete a season that has a match that has started, finished, or been cancelled."
+      }
+    },
+    "matches": {
+      "assignTeams": {
+        "action": "Assign teams",
+        "actionMissing": "Assign teams",
+        "actionChange": "Change teams",
+        "missingBanner": "This match does not have both teams yet. Assign teams before starting.",
+        "placeholderBody": "Both teams must be assigned before the live desk can open.",
+        "title": "Assign teams",
+        "hint": "Leave a team unselected to reset it to TBD. Playoff changes propagate to the next match when its feeder match has not finished yet.",
+        "notEditable": "Teams can only be changed when the match is Scheduled or Postponed.",
+        "sameTeam": "Home and away teams cannot be the same.",
+        "homePlaceholder": "Select home team (optional)",
+        "awayPlaceholder": "Select away team (optional)",
+        "noTeams": "No teams found",
+        "clearHome": "Clear home team",
+        "clearAway": "Clear away team",
+        "save": "Save teams",
+        "genericError": "Failed to save teams."
       }
     }
   },
