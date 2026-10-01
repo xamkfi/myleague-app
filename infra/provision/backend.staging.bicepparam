@@ -55,5 +55,8 @@ param enableAvailabilityTest = false
 // Monthly cost budget (USD) for the staging resource group
 param monthlyBudgetAmount = 35
 
+// Must match the existing budget; Azure rejects changes to the start date
+param budgetStartDate = '2026-09-01T00:00:00Z'
+
 // Log Analytics daily ingestion cap (GB) - hard guard against runaway costs
 param appInsightsDailyCapGb = 1
