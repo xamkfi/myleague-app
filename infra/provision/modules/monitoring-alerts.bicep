@@ -43,8 +43,8 @@ param enableAvailabilityTest bool = false
 @description('Monthly cost budget for this resource group in USD. Email notifications at 80% and 100%.')
 param monthlyBudgetAmount int = 35
 
-@description('Start date of the cost budget. Must be the first day of a month and must stay unchanged after the budget is created; Azure rejects updates to this value.')
-param budgetStartDate string = '2026-09-01T00:00:00Z'
+@description('Start date of the cost budget, e.g. 2026-09-01T00:00:00Z. Must be the first day of a month and must stay unchanged after the budget is created; Azure rejects updates to this value.')
+param budgetStartDate string
 
 @description('Tags to apply to created resources')
 param tags object = {}
@@ -491,7 +491,7 @@ resource budget 'Microsoft.Consumption/budgets@2023-11-01' = {
     timeGrain: 'Monthly'
     timePeriod: {
       startDate: budgetStartDate
-      endDate: '2036-09-01T00:00:00Z'
+      endDate: dateTimeAdd(budgetStartDate, 'P10Y')
     }
     notifications: {
       actual80Percent: {
