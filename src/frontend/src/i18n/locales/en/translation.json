@@ -203,6 +203,7 @@
     "unknownPerson": "Unknown person",
     "modalTitle": "Select scorekeeper",
     "searchPlaceholder": "Search persons by name...",
+    "searchHint": "Type at least 2 characters to search all persons.",
     "searchError": "Failed to search persons",
     "noPersons": "No persons found.",
     "pick": "Add",
