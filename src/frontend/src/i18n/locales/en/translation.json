@@ -2759,6 +2759,16 @@
         "clearAway": "Clear away team",
         "save": "Save teams",
         "genericError": "Failed to save teams."
+      },
+      "actions": {
+        "open": "Open Match",
+        "manage": "Manage",
+        "live": "Live View",
+        "start": "Start Match",
+        "cancel": "Cancel Match",
+        "reactivate": "Reactivate Match",
+        "edit": "Edit match details",
+        "menu": "Match actions menu"
       }
     }
   },

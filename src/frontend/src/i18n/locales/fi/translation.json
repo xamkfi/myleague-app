@@ -2768,6 +2768,16 @@
         "clearAway": "Tyhjennä vierasjoukkue",
         "save": "Tallenna joukkueet",
         "genericError": "Joukkueiden tallennus epäonnistui."
+      },
+      "actions": {
+        "open": "Avaa ottelu",
+        "manage": "Hallitse",
+        "live": "Live-näkymä",
+        "start": "Käynnistä ottelu",
+        "cancel": "Peruuta ottelu",
+        "reactivate": "Aktivoi ottelu uudelleen",
+        "edit": "Muokkaa ottelun tietoja",
+        "menu": "Ottelun toiminnot"
       }
     }
   },
