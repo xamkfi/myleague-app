@@ -15,12 +15,23 @@ async function sendScorekeeperRequest<TMatch>(
   fallbackError: string,
 ): Promise<ApiResponse<TMatch>> {
   const response = await authFetch(url, init);
-  const apiResponse: ApiResponse<TMatch> = await response.json();
-  if (!response.ok) {
-    throw new Error(await parseErrorResponse(apiResponse, fallbackError));
+  const raw: string = await response.text();
+  let apiResponse: ApiResponse<TMatch> | null = null;
+  if (raw.length > 0) {
+    try {
+      apiResponse = JSON.parse(raw) as ApiResponse<TMatch>;
+    } catch (error: unknown) {
+      if (error instanceof SyntaxError) {
+        throw new Error(fallbackError);
+      }
+      throw error;
+    }
   }
-  if (!apiResponse.success) {
-    throw new Error(apiResponse.errors?.join(', ') || fallbackError);
+  if (!response.ok) {
+    throw new Error(apiResponse ? await parseErrorResponse(apiResponse, fallbackError) : fallbackError);
+  }
+  if (!apiResponse?.success) {
+    throw new Error(apiResponse?.errors?.join(', ') || fallbackError);
   }
   return apiResponse;
 }

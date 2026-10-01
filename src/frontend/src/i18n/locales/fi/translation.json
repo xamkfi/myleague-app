@@ -2126,6 +2126,24 @@
           "Forward": "Hyökkääjä"
         },
         "saveLineup": "Tallenna kentällinen"
+      },
+      "assignTeams": {
+        "action": "Aseta joukkueet",
+        "actionMissing": "Aseta joukkueet",
+        "actionChange": "Vaihda joukkueita",
+        "missingBanner": "Ottelulta puuttuu toinen tai molemmat joukkueet. Aseta joukkueet ennen aloitusta.",
+        "placeholderBody": "Molemmat joukkueet on asetettava, ennen kuin live-pöytä avautuu.",
+        "title": "Aseta joukkueet",
+        "hint": "Jätä joukkue valitsematta jos haluat palauttaa sen TBD-tilaan. Playoff-otteluiden muutokset välittyvät automaattisesti seuraavaan otteluun mikäli sen syöttävä ottelu ei ole vielä päättynyt.",
+        "notEditable": "Joukkueita voi muuttaa vain kun ottelu on Aikataulutettu- tai Siirretty-tilassa.",
+        "sameTeam": "Koti- ja vierasjoukkue eivät voi olla samat.",
+        "homePlaceholder": "Valitse kotijoukkue (valinnainen)",
+        "awayPlaceholder": "Valitse vierasjoukkue (valinnainen)",
+        "noTeams": "Joukkueita ei löytynyt",
+        "clearHome": "Tyhjennä kotijoukkue",
+        "clearAway": "Tyhjennä vierasjoukkue",
+        "save": "Tallenna joukkueet",
+        "genericError": "Joukkueiden tallennus epäonnistui."
       }
     }
   },
@@ -2730,6 +2748,36 @@
       },
       "errors": {
         "hasMatches": "Kautta ei voi poistaa, koska jokin ottelu on alkanut, päättynyt tai peruttu."
+      }
+    },
+    "matches": {
+      "assignTeams": {
+        "action": "Aseta joukkueet",
+        "actionMissing": "Aseta joukkueet",
+        "actionChange": "Muuta joukkueita",
+        "missingBanner": "Ottelulta puuttuu toinen tai molemmat joukkueet. Aseta joukkueet ennen aloitusta.",
+        "placeholderBody": "Molemmat joukkueet on asetettava, ennen kuin live-pöytä avautuu.",
+        "title": "Aseta joukkueet",
+        "hint": "Jätä joukkue valitsematta jos haluat palauttaa sen TBD-tilaan. Playoff-otteluiden muutokset välittyvät automaattisesti seuraavaan otteluun mikäli sen syöttävä ottelu ei ole vielä päättynyt.",
+        "notEditable": "Joukkueita voi muuttaa vain kun ottelu on Aikataulutettu- tai Siirretty-tilassa.",
+        "sameTeam": "Koti- ja vierasjoukkue eivät voi olla samat.",
+        "homePlaceholder": "Valitse kotijoukkue (valinnainen)",
+        "awayPlaceholder": "Valitse vierasjoukkue (valinnainen)",
+        "noTeams": "Joukkueita ei löytynyt",
+        "clearHome": "Tyhjennä kotijoukkue",
+        "clearAway": "Tyhjennä vierasjoukkue",
+        "save": "Tallenna joukkueet",
+        "genericError": "Joukkueiden tallennus epäonnistui."
+      },
+      "actions": {
+        "open": "Avaa ottelu",
+        "manage": "Hallitse",
+        "live": "Live-näkymä",
+        "start": "Käynnistä ottelu",
+        "cancel": "Peruuta ottelu",
+        "reactivate": "Aktivoi ottelu uudelleen",
+        "edit": "Muokkaa ottelun tietoja",
+        "menu": "Ottelun toiminnot"
       }
     }
   },
