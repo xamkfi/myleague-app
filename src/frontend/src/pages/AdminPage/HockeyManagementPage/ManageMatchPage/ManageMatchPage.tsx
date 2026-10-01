@@ -116,6 +116,10 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   const [bulkSaveShootingTeamId, setBulkSaveShootingTeamId] = useState<string | null>(null);
   const [bulkSaveError, setBulkSaveError] = useState<string | null>(null);
   const restoredStatusRef = useRef('');
+  // Roster name lookups only need the two teams in this match; resolving every team would be
+  // one request per player and per person across the whole league.
+  const matchTeamIdsRef = useRef<string[]>([]);
+  matchTeamIdsRef.current = match.matchTeams.map((side) => side.teamId);
   const eventStampRef = useRef<{ periodNumber: number; timeInSeconds: number } | null>(null);
 
   const getElapsedSeconds = useCallback((): number => {
@@ -157,11 +161,15 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
     ]);
     setTeams(teamList);
     setTeamNames(await loadTeamNameMap(teamList));
-    const rosterNames = await loadHockeyRosterNameMaps(teamList);
-    setPlayerNames(rosterNames.byTeamPlayerId);
+    // Officials first: resolving roster names fetches one request per player and per person,
+    // which on a full production database would leave the referee picker empty for minutes.
     setOfficials(officialList);
-    const people = await loadPersonNameMap(officialList.map((item) => item.personId));
-    setOfficialNames(people);
+    setOfficialNames(await loadPersonNameMap(officialList.map((item) => item.personId)));
+    const matchTeamIds = new Set(matchTeamIdsRef.current);
+    const rosterNames = await loadHockeyRosterNameMaps(
+      teamList.filter((team) => matchTeamIds.has(team.id)),
+    );
+    setPlayerNames(rosterNames.byTeamPlayerId);
   }, []);
 
   useEffect(() => {
