@@ -533,7 +533,45 @@
 }
 
 @media (max-width: map.get($breakpoints, 'tablet')) {
+  .eard-overlay {
+    padding: 12px;
+  }
+
+  .eard-dialog {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .eard-body {
     grid-template-columns: 1fr;
+    padding: 12px;
+  }
+
+  .eard-filters {
+    flex-direction: column;
+  }
+
+  .eard-table-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .eard-table {
+    table-layout: fixed;
+
+    &__action {
+      width: auto;
+    }
+  }
+
+  .eard-player-name,
+  .eard-position-badge {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .eard-add-buttons {
+    flex-wrap: wrap;
+    justify-content: flex-start;
   }
 }

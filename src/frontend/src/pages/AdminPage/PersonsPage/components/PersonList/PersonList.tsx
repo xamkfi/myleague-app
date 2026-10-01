@@ -401,7 +401,67 @@ const PersonList = ({ onEditPerson, refreshTrigger }: PersonListProps) => {
           />
 
           <div className="admin-table__wrapper persons-table-area">
-            <table className="admin-table">
+            <ul className="persons-cards">
+              {paginatedPersons.map(person => (
+                <li
+                  key={person.id}
+                  className={`persons-card ${selectedPersons.has(person.id) ? 'persons-card--selected' : ''}`}
+                >
+                  <div className="persons-card__top">
+                    <input
+                      type="checkbox"
+                      checked={selectedPersons.has(person.id)}
+                      onChange={() => togglePersonSelection(person.id)}
+                      aria-label={person.fullName}
+                    />
+                    <button
+                      type="button"
+                      className="persons-card__name"
+                      onClick={() => togglePersonSelection(person.id)}
+                    >
+                      {person.fullName}
+                    </button>
+                    <ActionsDropdown
+                      ariaLabel={t('admin.persons.actions.menu', 'Person actions menu')}
+                      actions={[
+                        { label: t('admin.persons.actions.edit', 'Edit'), onClick: () => handleEdit(person.id) },
+                        { label: t('admin.persons.actions.delete', 'Delete'), onClick: () => handleDelete(person.id), variant: 'danger' },
+                      ]}
+                    />
+                  </div>
+                  <dl className="persons-card__details">
+                    <div>
+                      <dt>{t('admin.persons.table.birthDate', 'Birth Date')}</dt>
+                      <dd>{formatBirthDate(person.birthDate)}</dd>
+                    </div>
+                    <div>
+                      <dt>{t('admin.persons.table.email', 'Email')}</dt>
+                      <dd>{person.contactInfo?.email || '-'}</dd>
+                    </div>
+                    <div>
+                      <dt>{t('admin.persons.table.registered', 'Registered')}</dt>
+                      <dd>
+                        <button
+                          className={`admin-table__toggle-btn ${person.isRegistered ? 'admin-table__toggle-btn--on' : 'admin-table__toggle-btn--off'}`}
+                          onClick={() => handleToggleRegistration(person.id, person.isRegistered)}
+                          disabled={updatingRegistration === person.id}
+                          title={t('admin.persons.actions.toggleRegistration', 'Click to toggle registration status')}
+                        >
+                          {updatingRegistration === person.id ? (
+                            <span className="loading-spinner">⏳</span>
+                          ) : (
+                            person.isRegistered
+                              ? t('admin.persons.status.registered', 'Yes')
+                              : t('admin.persons.status.notRegistered', 'No')
+                          )}
+                        </button>
+                      </dd>
+                    </div>
+                  </dl>
+                </li>
+              ))}
+            </ul>
+            <table className="admin-table persons-table">
               <thead>
           <tr>
             <th className="admin-table__checkbox-col">

@@ -242,20 +242,23 @@ $sidebar-transition: width 0.25s ease, padding 0.25s ease;
 
   &-dropdown-trigger {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
+    min-height: 40px;
     border-radius: 8px;
+    overflow: hidden;
 
     &-content {
       display: flex;
       align-items: center;
       gap: map.get($spacing, 'sm');
       flex: 1;
+      min-width: 0;
       padding: 0.5rem map.get($spacing, 'base');
       color: rgba(255, 255, 255, 0.9);
       text-decoration: none;
       transition: all 0.2s ease;
-      border-radius: 8px 0 0 8px;
+      border-radius: 0;
       font-size: 0.95rem;
       white-space: nowrap;
       overflow: hidden;
@@ -279,26 +282,33 @@ $sidebar-transition: width 0.25s ease, padding 0.25s ease;
   }
 
   &-dropdown-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    flex: 0 0 1.75rem;
     font-size: 0.6rem;
-    color: rgba(255, 255, 255, 0.7);
-    transition: all 0.2s ease;
-    padding: 0.5rem map.get($spacing, 'sm');
+    color: rgba(255, 255, 255, 0.85);
+    background: transparent;
+    padding: 0;
     cursor: pointer;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0;
 
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 255, 255, 0.9);
-    }
+    &__glyph {
+      display: block;
+      line-height: 1;
+      transition: transform 0.2s ease;
 
-    &.open {
-      transform: rotate(-180deg);
+      &.open {
+        transform: rotate(180deg);
+      }
     }
   }
 
   &-submenu {
     list-style: none;
-    margin: map.get($spacing, 'xs') 0 0 0;
+    width: 100%;
+    margin: 0.25rem 0 0 0;
     padding: 0;
 
     &-item {
@@ -307,8 +317,10 @@ $sidebar-transition: width 0.25s ease, padding 0.25s ease;
       > a {
         display: flex;
         align-items: center;
+        box-sizing: border-box;
+        min-height: 40px;
         gap: map.get($spacing, 'sm');
-        padding: 0.45rem map.get($spacing, 'base') 0.45rem 2.5rem;
+        padding: 0.5rem map.get($spacing, 'base') 0.5rem 2.15rem;
         color: rgba(255, 255, 255, 0.85);
         text-decoration: none;
         transition: all 0.2s ease;
@@ -458,7 +470,7 @@ $sidebar-transition: width 0.25s ease, padding 0.25s ease;
   &-item--sport {
     &:not(.active) {
       > a,
-      .admin-navbar-dropdown-trigger-content {
+      .admin-navbar-dropdown-trigger {
         box-shadow: inset 3px 0 0 var(--sport-accent);
       }
     }
@@ -479,12 +491,20 @@ $sidebar-transition: width 0.25s ease, padding 0.25s ease;
         }
       }
 
-      .admin-navbar-dropdown-trigger-content {
+      .admin-navbar-dropdown-trigger {
         background-color: var(--sport-accent);
-        color: $color-white;
 
         &:hover {
           background-color: color-mix(in srgb, var(--sport-accent) 86%, white);
+        }
+      }
+
+      .admin-navbar-dropdown-trigger-content {
+        background-color: transparent;
+        color: $color-white;
+
+        &:hover {
+          background-color: transparent;
           color: $color-white;
         }
 
@@ -495,13 +515,8 @@ $sidebar-transition: width 0.25s ease, padding 0.25s ease;
       }
 
       .admin-navbar-dropdown-arrow {
-        background-color: var(--sport-accent);
-        color: rgba(255, 255, 255, 0.92);
-
-        &:hover {
-          background-color: color-mix(in srgb, var(--sport-accent) 86%, white);
-          color: $color-white;
-        }
+        background-color: transparent;
+        color: $color-white;
       }
 
       .admin-navbar-submenu-item.active > a {
@@ -544,6 +559,25 @@ $sidebar-transition: width 0.25s ease, padding 0.25s ease;
     top: -2px;
     right: -4px;
     margin: 0;
+  }
+
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    width: $sidebar-width;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 110;
+
+    &--collapsed {
+      width: $sidebar-width;
+    }
+
+    &--mobile-open {
+      transform: translateX(0);
+    }
+
+    .admin-navbar-toggle {
+      display: none;
+    }
   }
 
   // Scrollbar styling

@@ -82,7 +82,7 @@ function LiveMatchQuickActions({
           className="action-btn save-btn"
           disabled={loading || !canRecord || !teamId}
         >
-          <span className="btn-label">{t('hockey.matches.shot', 'Record Shot')}</span>
+          <span className="btn-label">{t('hockey.matches.eventShot', 'Shot')}</span>
           <span className="btn-meta">
             <span className={`btn-key ${keybindsEnabled ? '' : 'disabled'}`}>({shotKeyLabel})</span>
             <span className="btn-icon" aria-hidden="true">🏒</span>

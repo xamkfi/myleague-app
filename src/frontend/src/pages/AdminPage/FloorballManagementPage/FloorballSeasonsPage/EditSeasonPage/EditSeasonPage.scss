@@ -714,6 +714,17 @@
 // Responsive
 // ══════════════════════════════════════
 @media (max-width: map.get($breakpoints, 'tablet')) {
+  .tab-navigation {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab-button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 0.85rem 1rem;
+  }
+
   .edit-season-container { padding: map.get($spacing, 'base'); }
   .edit-season-form { padding: map.get($spacing, 'md'); }
   .teams-management, .divisions-management { padding: map.get($spacing, 'md'); }

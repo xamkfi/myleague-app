@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -25,22 +25,88 @@ function isSportKind(value: string | null): value is SportKind {
   return value === 'floorball' || value === 'football' || value === 'hockey';
 }
 
+const CLOSED_SPORT_MENU_KEY = 'admin-closed-sport-menu';
+
+function sportFromPath(pathname: string): SportKind | null {
+  if (pathname.startsWith('/admin/floorball')) {
+    return 'floorball';
+  }
+  if (pathname.startsWith('/admin/football')) {
+    return 'football';
+  }
+  if (pathname.startsWith('/admin/hockey')) {
+    return 'hockey';
+  }
+  return null;
+}
+
+function readClosedSport(): SportKind | null {
+  try {
+    const value = sessionStorage.getItem(CLOSED_SPORT_MENU_KEY);
+    return isSportKind(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeClosedSport(sport: SportKind | null): void {
+  try {
+    if (sport) {
+      sessionStorage.setItem(CLOSED_SPORT_MENU_KEY, sport);
+    } else {
+      sessionStorage.removeItem(CLOSED_SPORT_MENU_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 interface AdminNavBarProps {
   collapsed: boolean;
+  mobileOpen: boolean;
   onToggleCollapse: () => void;
 }
 
-function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
+function AdminNavBar({ collapsed, mobileOpen, onToggleCollapse }: AdminNavBarProps) {
   const { t } = useTranslation();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [floorballDropdownOpen, setFloorballDropdownOpen] = useState(false);
-  const [footballDropdownOpen, setFootballDropdownOpen] = useState(false);
-  const [hockeyDropdownOpen, setHockeyDropdownOpen] = useState(false);
+  const [closedSport, setClosedSport] = useState<SportKind | null>(readClosedSport);
+  const [extraOpenSport, setExtraOpenSport] = useState<SportKind | null>(null);
   const [siteContentDropdownOpen, setSiteContentDropdownOpen] = useState(false);
+  const browsingSport = sportFromPath(location.pathname);
+
+  useEffect(() => {
+    if (closedSport && closedSport !== browsingSport) {
+      setClosedSport(null);
+      writeClosedSport(null);
+    }
+  }, [browsingSport, closedSport]);
+
+  const isSportMenuOpen = (sport: SportKind): boolean =>
+    extraOpenSport === sport || (browsingSport === sport && closedSport !== sport);
+
+  const toggleSportMenu = (sport: SportKind) => {
+    if (isSportMenuOpen(sport)) {
+      if (extraOpenSport === sport) {
+        setExtraOpenSport(null);
+      }
+      if (browsingSport === sport) {
+        setClosedSport(sport);
+        writeClosedSport(sport);
+      }
+      return;
+    }
+
+    setExtraOpenSport(sport);
+    if (closedSport === sport) {
+      setClosedSport(null);
+      writeClosedSport(null);
+    }
+  };
   const inProgress = useInProgressMatches();
   const footballInProgress = useInProgressFootballMatches();
   const hockeyLive = useHockeyInProgressMatches();
@@ -108,7 +174,7 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
 
   return (
     <nav
-      className={`admin-navbar ${collapsed ? 'admin-navbar--collapsed' : ''}`}
+      className={`admin-navbar ${collapsed ? 'admin-navbar--collapsed' : ''} ${mobileOpen ? 'admin-navbar--mobile-open' : ''}`}
       data-sport={contextSport ?? undefined}
     >
       <div className="admin-navbar-header">
@@ -205,18 +271,18 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                       />
                     )}
                   </Link>
-                  <span 
-                    className={`admin-navbar-dropdown-arrow ${floorballDropdownOpen ? 'open' : ''}`}
+                  <span
+                    className="admin-navbar-dropdown-arrow"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setFloorballDropdownOpen(!floorballDropdownOpen);
+                      toggleSportMenu('floorball');
                     }}
                   >
-                    ▼
+                    <span className={`admin-navbar-dropdown-arrow__glyph ${isSportMenuOpen('floorball') ? 'open' : ''}`}>▼</span>
                   </span>
                 </div>
               )}
-              {!collapsed && floorballDropdownOpen && (
+              {!collapsed && isSportMenuOpen('floorball') && (
                 <ul className="admin-navbar-submenu">
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/floorball/teams') ? 'active' : ''}`}>
                     <Link to="/admin/floorball/teams">
@@ -309,17 +375,17 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                     )}
                   </Link>
                   <span
-                    className={`admin-navbar-dropdown-arrow ${footballDropdownOpen ? 'open' : ''}`}
+                    className="admin-navbar-dropdown-arrow"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setFootballDropdownOpen(!footballDropdownOpen);
+                      toggleSportMenu('football');
                     }}
                   >
-                    ▼
+                    <span className={`admin-navbar-dropdown-arrow__glyph ${isSportMenuOpen('football') ? 'open' : ''}`}>▼</span>
                   </span>
                 </div>
               )}
-              {!collapsed && footballDropdownOpen && (
+              {!collapsed && isSportMenuOpen('football') && (
                 <ul className="admin-navbar-submenu">
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/football/teams') ? 'active' : ''}`}>
                     <Link to="/admin/football/teams">
@@ -409,17 +475,17 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                     )}
                   </Link>
                   <span
-                    className={`admin-navbar-dropdown-arrow ${hockeyDropdownOpen ? 'open' : ''}`}
+                    className="admin-navbar-dropdown-arrow"
                     onClick={(event) => {
                       event.stopPropagation();
-                      setHockeyDropdownOpen(!hockeyDropdownOpen);
+                      toggleSportMenu('hockey');
                     }}
                   >
-                    ▼
+                    <span className={`admin-navbar-dropdown-arrow__glyph ${isSportMenuOpen('hockey') ? 'open' : ''}`}>▼</span>
                   </span>
                 </div>
               )}
-              {!collapsed && hockeyDropdownOpen && (
+              {!collapsed && isSportMenuOpen('hockey') && (
                 <ul className="admin-navbar-submenu">
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/hockey/teams') ? 'active' : ''}`}>
                     <Link to="/admin/hockey/teams">
@@ -510,13 +576,13 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                     <span>{t('admin.siteContent.titleShort', 'Sisällöt')}</span>
                   </Link>
                   <span
-                    className={`admin-navbar-dropdown-arrow ${siteContentDropdownOpen ? 'open' : ''}`}
+                    className="admin-navbar-dropdown-arrow"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSiteContentDropdownOpen(!siteContentDropdownOpen);
                     }}
                   >
-                    ▼
+                    <span className={`admin-navbar-dropdown-arrow__glyph ${siteContentDropdownOpen ? 'open' : ''}`}>▼</span>
                   </span>
                 </div>
               )}

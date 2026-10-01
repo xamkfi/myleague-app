@@ -410,11 +410,69 @@
     }
 
     .players-table-wrapper {
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 0.35rem 0.65rem;
+
       table.players-table {
-        font-size: 0.875rem;
-        
-        th, td {
-          padding: 0.75rem 0.5rem;
+        display: block;
+        width: 100%;
+        min-width: 0;
+
+        thead {
+          display: none;
+        }
+
+        tbody {
+          display: flex;
+          flex-direction: column;
+        }
+
+        tr {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+          column-gap: 0.5rem;
+          row-gap: 0.2rem;
+          align-items: center;
+          min-width: 0;
+          padding: 0.55rem 0;
+        }
+
+        td {
+          min-width: 0;
+          width: auto;
+          padding: 0;
+          overflow-wrap: break-word;
+
+          &.select-column {
+            grid-column: 1;
+            grid-row: 1 / span 2;
+            width: auto;
+          }
+
+          &.name-column {
+            grid-column: 2 / -1;
+            grid-row: 1;
+          }
+
+          &.position-column,
+          &.team-column {
+            grid-row: 2;
+          }
+
+          &.position-column {
+            grid-column: 2;
+          }
+
+          &.team-column {
+            grid-column: 3;
+            text-align: right;
+          }
+
+          &.no-players {
+            grid-column: 1 / -1;
+          }
         }
       }
     }

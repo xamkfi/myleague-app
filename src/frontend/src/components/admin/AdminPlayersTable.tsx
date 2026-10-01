@@ -44,12 +44,84 @@ export default function AdminPlayersTable({
     return `${licence.teamName} — ${licence.competitionName}`;
   };
 
+  const actionsFor = (player: AdminPlayerRow): AdminAction[] => [
+    {
+      label: t('common.viewPublic'),
+      onClick: () => navigate(getPlayerPath(sport, player.id)),
+    },
+    {
+      label: labels.assignToTeam,
+      onClick: () => onAssignToTeam(player),
+    },
+    {
+      label: player.isActive ? labels.deactivate : labels.activate,
+      onClick: () => onStatusChange(player, !player.isActive),
+      variant: 'status',
+    },
+    ...(extraActions ? extraActions(player) : []),
+    {
+      label: labels.delete,
+      onClick: () => onDelete(player),
+      variant: 'danger',
+    },
+  ];
+
   if (players.length === 0) {
     return <div className="no-data-state">{labels.noPlayers}</div>;
   }
 
   return (
-    <table className="admin-table">
+    <>
+    <ul className="admin-player-cards">
+      {players.map((player) => (
+        <li
+          key={player.rowKey ?? player.id}
+          className={`admin-player-card${selectedPlayers.has(player.id) ? ' admin-player-card--selected' : ''}`}
+          onClick={() => onToggleSelection(player.id)}
+        >
+          <div className="admin-player-card__top">
+            <input
+              type="checkbox"
+              checked={selectedPlayers.has(player.id)}
+              onChange={() => onToggleSelection(player.id)}
+              onClick={(event) => event.stopPropagation()}
+              aria-label={`${player.firstName} ${player.lastName}`}
+            />
+            <PlayerLink sport={sport} playerId={player.id} className="admin-player-card__name">
+              {player.firstName} {player.lastName}
+            </PlayerLink>
+            <div
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
+            >
+              <ActionsDropdown
+                actions={actionsFor(player)}
+                ariaLabel={labels.actionsMenu}
+              />
+            </div>
+          </div>
+          <dl className="admin-player-card__details">
+            <div>
+              <dt>{labels.licences}</dt>
+              <dd>
+                {player.licences.length === 0 ? (
+                  <span className="admin-table__muted">{labels.noActiveLicences}</span>
+                ) : (
+                  <ul className="admin-table__licences">
+                    {player.licences.map((licence) => (
+                      <li key={`${licence.teamId}-${licence.competitionId ?? 'base'}`}>
+                        {formatLicence(licence)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </dd>
+            </div>
+          </dl>
+        </li>
+      ))}
+    </ul>
+    <table className="admin-table admin-players-table">
       <thead>
         <tr>
           <th className="admin-table__checkbox-col">
@@ -74,8 +146,6 @@ export default function AdminPlayersTable({
       </thead>
       <tbody>
         {players.map((player) => {
-          const publicPath = getPlayerPath(sport, player.id);
-
           return (
             <tr
               key={player.rowKey ?? player.id}
@@ -115,27 +185,7 @@ export default function AdminPlayersTable({
               </td>
               <td className="admin-table__actions-col" onClick={(event) => event.stopPropagation()}>
                 <ActionsDropdown
-                  actions={[
-                    {
-                      label: t('common.viewPublic'),
-                      onClick: () => navigate(publicPath),
-                    },
-                    {
-                      label: labels.assignToTeam,
-                      onClick: () => onAssignToTeam(player),
-                    },
-                    {
-                      label: player.isActive ? labels.deactivate : labels.activate,
-                      onClick: () => onStatusChange(player, !player.isActive),
-                      variant: 'status',
-                    },
-                    ...(extraActions ? extraActions(player) : []),
-                    {
-                      label: labels.delete,
-                      onClick: () => onDelete(player),
-                      variant: 'danger',
-                    },
-                  ]}
+                  actions={actionsFor(player)}
                   ariaLabel={labels.actionsMenu}
                 />
               </td>
@@ -144,5 +194,6 @@ export default function AdminPlayersTable({
         })}
       </tbody>
     </table>
+    </>
   );
 }

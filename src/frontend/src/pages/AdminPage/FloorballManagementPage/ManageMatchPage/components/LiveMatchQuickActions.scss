@@ -2,7 +2,7 @@
 @use '../../../../../styles/variables' as *;
 .quick-actions-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
   margin-bottom: 0;
   grid-auto-rows: auto;
@@ -52,6 +52,7 @@
     flex-direction: column;
     gap: 4px;
     align-items: stretch;
+    min-width: 0;
   }
 }
 
@@ -184,5 +185,21 @@
 }
 .btn-key.disabled { opacity: 0.35; }
 .btn-icon { font-size: 14px; line-height: 16px; flex: 0 0 auto; }
+
+@media (max-width: 768px) {
+  .action-btn {
+    min-width: 0;
+    height: auto;
+    min-height: 40px;
+  }
+
+  .btn-label {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+}
 
 

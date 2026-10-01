@@ -85,6 +85,12 @@
   background-color: #f9fafb;
 }
 
+@media (max-width: 768px) {
+  .divisions-page {
+    padding: 0;
+  }
+}
+
 @media (max-width: 900px) {
   .divisions-page__filters {
     grid-template-columns: 1fr;
