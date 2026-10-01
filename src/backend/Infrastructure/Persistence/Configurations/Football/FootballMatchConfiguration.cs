@@ -42,6 +42,16 @@ public class FootballMatchConfiguration : IEntityTypeConfiguration<FootballMatch
                 j => j.HasOne<FootballReferee>().WithMany().HasForeignKey("OfficialsId"),
                 j => j.HasOne<FootballMatch>().WithMany().HasForeignKey("MatchesId"));
 
+        // Scorekeepers reference persons in CommonDbContext, so only the PersonId is stored.
+        builder.OwnsMany(m => m.Scorekeepers, scorekeeper =>
+        {
+            scorekeeper.ToTable("FootballMatchScorekeepers");
+            scorekeeper.WithOwner().HasForeignKey("MatchId");
+            scorekeeper.Property(s => s.PersonId).IsRequired();
+            scorekeeper.HasKey("MatchId", nameof(FootballMatchScorekeeper.PersonId));
+        });
+        builder.Navigation(m => m.Scorekeepers).HasField("_scorekeepers");
+
         builder.HasMany(m => m.PeriodScores).WithOne().HasForeignKey(p => p.MatchId).OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(m => m.PeriodScores).HasField("_periodScores").EnableLazyLoading(false);
 

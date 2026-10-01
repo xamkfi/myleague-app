@@ -103,10 +103,26 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
             setTournaments(response.data);
           }
         } else {
-          const response = await floorballSeasonService.getAll(true);
+          const response = await floorballSeasonService.getActive();
 
           if (response.success && response.data) {
-            setSeasons(response.data);
+            const activeSeasons = response.data.filter((season) => season.isActive);
+
+            if (
+              lockedCompetitionIdFromUrl &&
+              !activeSeasons.some((season) => season.id === lockedCompetitionIdFromUrl)
+            ) {
+              const lockedResponse = await floorballSeasonService.getById(
+                lockedCompetitionIdFromUrl,
+                true,
+              );
+
+              if (lockedResponse.success && lockedResponse.data) {
+                activeSeasons.unshift(lockedResponse.data);
+              }
+            }
+
+            setSeasons(activeSeasons);
           }
         }
       } catch (err) {
@@ -117,7 +133,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
     };
 
     load();
-  }, [isTournament]);
+  }, [isTournament, lockedCompetitionIdFromUrl]);
 
   // ── Load selected competition details ────────────────────────────────
   useEffect(() => {
@@ -451,11 +467,7 @@ const CreateMatchPage = ({ mode = 'season' }: CreateMatchPageProps) => {
 
                   {competitions.map((competition) => (
                     <option key={competition.id} value={competition.id}>
-                      {isTournament
-                        ? competition.name
-                        : `${(competition as FloorballSeasonDto).name}` +
-                          ((competition as FloorballSeasonDto).isActive ? ' (Active)' : '') +
-                          ((competition as FloorballSeasonDto).isCompleted ? ' (Completed)' : '')}
+                      {competition.name}
                     </option>
                   ))}
                 </select>

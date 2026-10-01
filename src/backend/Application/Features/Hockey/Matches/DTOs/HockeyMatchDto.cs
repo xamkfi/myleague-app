@@ -1,7 +1,10 @@
+using Application.Features.Common.Shared.DTOs;
+
 namespace Application.Features.Hockey.Matches.DTOs;
 
 /// <summary>
-/// Summary DTO for a hockey match.
+/// Summary DTO for a hockey match. <c>RefereeDetails</c> (Id = official ID) and <c>Scorekeepers</c>
+/// (Id = person ID) carry display names, which are empty unless the handler resolved them.
 /// </summary>
 public record HockeyMatchDto(
     Guid Id,
@@ -30,7 +33,9 @@ public record HockeyMatchDto(
     IReadOnlyCollection<HockeyMatchTeamDto> MatchTeams,
     IReadOnlyCollection<HockeyMatchEventDto> Events,
     IReadOnlyCollection<HockeyMatchOfficialDto> Officials,
-    IReadOnlyCollection<HockeyPeriodScoreDto> PeriodScores);
+    IReadOnlyCollection<HockeyPeriodScoreDto> PeriodScores,
+    IReadOnlyCollection<MatchPersonDto>? RefereeDetails = null,
+    IReadOnlyCollection<MatchPersonDto>? Scorekeepers = null);
 
 /// <summary>
 /// One side of a hockey match (home/away).

@@ -15,6 +15,7 @@ using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Teams;
 using Domain.Enums.Hockey.Matches;
+using Domain.Repositories.Common;
 using Domain.Repositories.Hockey;
 using Domain.ValueObjects.Hockey.Rules;
 using Microsoft.Extensions.Logging;
@@ -213,6 +214,8 @@ public class HockeyMatchHandlerTests
 
         GetHockeyMatchByIdHandler handler = new(
             _matchRepo.Object,
+            Mock.Of<IHockeyOfficialRepository>(),
+            Mock.Of<IPersonRepository>(),
             Mock.Of<ILogger<GetHockeyMatchByIdHandler>>());
 
         Result<HockeyMatchDto> result = await handler.Handle(
@@ -231,6 +234,8 @@ public class HockeyMatchHandlerTests
 
         GetHockeyMatchByIdHandler handler = new(
             _matchRepo.Object,
+            Mock.Of<IHockeyOfficialRepository>(),
+            Mock.Of<IPersonRepository>(),
             Mock.Of<ILogger<GetHockeyMatchByIdHandler>>());
 
         Result<HockeyMatchDto> result = await handler.Handle(

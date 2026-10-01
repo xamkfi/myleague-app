@@ -58,6 +58,9 @@ public class HockeyMatch : BaseEntity
     public IReadOnlyCollection<HockeyMatchOfficial> Officials => _officials.AsReadOnly();
     private readonly List<HockeyMatchOfficial> _officials = new();
 
+    public IReadOnlyCollection<HockeyMatchScorekeeper> Scorekeepers => _scorekeepers.AsReadOnly();
+    private readonly List<HockeyMatchScorekeeper> _scorekeepers = new();
+
     public IReadOnlyCollection<HockeyPeriodScore> PeriodScores => _periodScores.AsReadOnly();
     private readonly List<HockeyPeriodScore> _periodScores = new();
 
@@ -207,6 +210,44 @@ public class HockeyMatch : BaseEntity
             return;
 
         _officials.Remove(existing);
+    }
+
+    /// <summary>
+    /// Adds a scorekeeper (toimitsija) to the match. Adding the same person twice is a no-op.
+    /// </summary>
+    public void AddScorekeeper(Guid personId)
+    {
+        EnsureCanModifyScorekeepers();
+
+        if (_scorekeepers.Any(s => s.PersonId == personId))
+            return;
+
+        _scorekeepers.Add(new HockeyMatchScorekeeper(personId));
+    }
+
+    /// <summary>
+    /// Removes a scorekeeper (toimitsija) from the match. Scorekeepers are optional, so the list may become empty.
+    /// </summary>
+    public void RemoveScorekeeper(Guid personId)
+    {
+        EnsureCanModifyScorekeepers();
+
+        HockeyMatchScorekeeper? existing = _scorekeepers.FirstOrDefault(s => s.PersonId == personId);
+        if (existing is null)
+            return;
+
+        _scorekeepers.Remove(existing);
+    }
+
+    private void EnsureCanModifyScorekeepers()
+    {
+        if (Status is HockeyMatchStatus.Finished
+            or HockeyMatchStatus.Cancelled
+            or HockeyMatchStatus.Postponed
+            or HockeyMatchStatus.Forfeit)
+        {
+            throw new InvalidOperationException($"Cannot modify scorekeepers when the match status is {Status}.");
+        }
     }
 
     public HockeyPeriodScore AddPeriodScore(int periodNumber, HockeyPeriodType periodType)

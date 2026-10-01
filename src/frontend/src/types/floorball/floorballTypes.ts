@@ -1,3 +1,5 @@
+import type { MatchPersonDto } from '../common/matchPersonTypes';
+
 // Enums
 export enum FloorballPosition {
   None = 'None',
@@ -312,6 +314,8 @@ export interface FloorballMatchDto {
    * that consumed the DTO before the field existed.
    */
   competitionType?: FloorballCompetitionType;
+  refereeDetails?: MatchPersonDto[] | null;
+  scorekeepers?: MatchPersonDto[] | null;
 }
 
 export interface CreateFloorballMatchRequest {

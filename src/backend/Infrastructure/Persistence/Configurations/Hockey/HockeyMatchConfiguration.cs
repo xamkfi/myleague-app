@@ -61,6 +61,18 @@ public class HockeyMatchConfiguration : BaseEntityConfiguration<HockeyMatch>
             .HasField("_officials")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
+        // Scorekeepers reference persons in CommonDbContext, so only the PersonId is stored.
+        builder.OwnsMany(m => m.Scorekeepers, scorekeeper =>
+        {
+            scorekeeper.ToTable("HockeyMatchScorekeepers");
+            scorekeeper.WithOwner().HasForeignKey("MatchId");
+            scorekeeper.Property(s => s.PersonId).IsRequired();
+            scorekeeper.HasKey("MatchId", nameof(HockeyMatchScorekeeper.PersonId));
+        });
+        builder.Navigation(m => m.Scorekeepers)
+            .HasField("_scorekeepers")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         builder.HasMany(m => m.PeriodScores)
             .WithOne(p => p.Match)
             .HasForeignKey(p => p.MatchId)

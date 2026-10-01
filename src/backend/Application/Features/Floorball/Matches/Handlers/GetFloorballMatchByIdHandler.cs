@@ -1,3 +1,4 @@
+using Application.Features.Common.Shared;
 using Application.Features.Floorball.Players.Queries;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Matches.DTOs;
@@ -143,7 +144,10 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
                 ? resolvedAwayClub
                 : null;
 
-            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, playerPersonLookup, homeClub, awayClub);
+            Dictionary<Guid, Person> staffPersonLookup = await MatchPersonLookup.LoadAsync(
+                _personRepository, FloorballMatchMapper.CollectStaffPersonIds(match));
+
+            FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match, playerPersonLookup, homeClub, awayClub, staffPersonLookup);
             _logger.LogInformation("Successfully retrieved floorball match: {MatchId}", match.Id);
 
             return Result<FloorballMatchDto>.Success(matchDto);

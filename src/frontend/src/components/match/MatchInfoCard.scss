@@ -1,0 +1,71 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.match-info-card {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: $border-radius-default;
+  background: $color-white;
+  overflow: hidden;
+
+  &__decision {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: $color-neutral-light-grey;
+    color: $color-neutral-black;
+    font-family: $font-family-display;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+
+    i {
+      color: $color-blue-deep;
+      font-size: 14px;
+    }
+  }
+
+  &__officials {
+    margin: 0;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__decision + &__officials {
+    border-top: 1px solid $color-neutral-medium-grey;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: minmax(110px, max-content) 1fr;
+    gap: 12px;
+    align-items: baseline;
+    font-family: $font-family-body;
+    font-size: 14px;
+
+    dt {
+      color: $color-neutral-dark-grey;
+      font-size: 12px;
+      font-weight: map.get($font-weights, 'semibold');
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    dd {
+      margin: 0;
+      color: $color-neutral-black;
+    }
+
+    @media (max-width: map.get($breakpoints, 'mobile')) {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import type { FloorballMatchDto } from '../../../types/floorball/floorballTypes';
 import { FloorballMatchStatus } from '../../../types/floorball/floorballTypes';
-import type { MatchTabType } from '../../../components/match';
+import { MatchInfoCard, type MatchTabType } from '../../../components/match';
 import MatchEvents from './MatchEvents';
 import MatchLineups from './MatchLineups';
 import MatchStats from './MatchStats';
@@ -24,12 +24,11 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
         return (
           <div className="tab-content">
             <div className="summary-content">
-              {(match.wentToOvertime || match.wentToShootout) && (
-                <div className="match-notes">
-                  {match.wentToOvertime && <span>{t('matchPage.matchInfo.overtime')}</span>}
-                  {match.wentToShootout && <span>{t('matchPage.matchInfo.shootout')}</span>}
-                </div>
-              )}
+              <MatchInfoCard
+                decision={match.wentToShootout ? 'shootout' : match.wentToOvertime ? 'overtime' : null}
+                referees={match.refereeDetails}
+                scorekeepers={match.scorekeepers}
+              />
 
               {!hasStarted && !hasEvents && (
                 <p className="match-pending">{t('matchPage.matchInfo.notStarted')}</p>

@@ -56,6 +56,23 @@
       "Draw": "Arpa"
     }
   },
+  "matchScorekeepers": {
+    "title": "Ottelun toimitsijat",
+    "add": "Lisää toimitsija",
+    "remove": "Poista toimitsija",
+    "none": "Ei toimitsijoita (valinnainen).",
+    "unknownPerson": "Tuntematon henkilö",
+    "modalTitle": "Valitse toimitsija",
+    "searchPlaceholder": "Hae henkilöä nimellä...",
+    "searchError": "Henkilöhaku epäonnistui",
+    "noPersons": "Henkilöitä ei löytynyt.",
+    "pick": "Lisää",
+    "added": "Lisätty",
+    "errors": {
+      "add": "Toimitsijan lisääminen epäonnistui",
+      "remove": "Toimitsijan poistaminen epäonnistui"
+    }
+  },
   "matchPage": {
     "navigation": {
       "summary": "Yhteenveto",
@@ -99,7 +116,14 @@
       "status": "Tila",
       "overtime": "Jatkoaika",
       "shootout": "Voittomaalikilpailu",
-      "notStarted": "Ottelu ei ole vielä alkanut."
+      "notStarted": "Ottelu ei ole vielä alkanut.",
+      "title": "Ottelun tiedot",
+      "decidedInOvertime": "Ratkesi jatkoajalla",
+      "decidedInShootout": "Ratkesi voittomaalikilpailussa",
+      "decidedInExtraTime": "Ratkesi jatkoajalla",
+      "decidedInPenaltyShootout": "Ratkesi rangaistuspotkukilpailussa",
+      "referees": "Tuomarit",
+      "scorekeepers": "Toimitsijat"
     },
     "skipToShootout": "Siirry rankkareihin",
     "skippingToShootout": "Siirretään rankkareihin..."
@@ -1812,10 +1836,15 @@
       },
       "status": {
         "Scheduled": "Aikataulutettu",
+        "scheduled": "Aikataulutettu",
         "InProgress": "Käynnissä",
+        "inProgress": "Käynnissä",
         "Completed": "Päättynyt",
+        "completed": "Päättynyt",
         "Cancelled": "Peruttu",
-        "Postponed": "Lykätty"
+        "cancelled": "Peruttu",
+        "Postponed": "Lykätty",
+        "postponed": "Lykätty"
       },
       "actions": {
         "open": "Avaa ottelu",
@@ -2178,6 +2207,9 @@
     "back": "Takaisin",
     "backTo": "Takaisin",
     "loading": "Ladataan...",
+    "optional": "(valinnainen)",
+    "loadingSeasonDetails": "Ladataan kauden tietoja...",
+    "autoSelected": "Valittu automaattisesti",
     "cannotBeUndone": "Tätä toimintoa ei voi perua.",
     "bulk": {
       "selected_one": "{{count}} valittu",

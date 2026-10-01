@@ -455,7 +455,8 @@ public static class Program
 		if (scope.HasFlag(SeedScope.SeasonMatches))
 		{
 			Dictionary<string, Guid> emailToRefereeId = FloorballMatchesSeeder.BuildEmailToRefereeIdMap(allReferees, refereeEmailToPersonId);
-			result.Matches = await FloorballMatchesSeeder.SeedAsync(http, jsonOptions, config.FloorballMatches, result.Seasons, result.Teams, result.Referees, emailToRefereeId);
+			Dictionary<string, Guid> scorekeeperEmailToPersonId = await MatchScorekeepersSeeder.SeedPersonsAsync(http, jsonOptions, config.ScorekeeperPersons);
+			result.Matches = await FloorballMatchesSeeder.SeedAsync(http, jsonOptions, config.FloorballMatches, result.Seasons, result.Teams, result.Referees, emailToRefereeId, scorekeeperEmailToPersonId);
 		}
 
 		if (scope.HasFlag(SeedScope.Tournaments))
@@ -567,7 +568,8 @@ public static class Program
 		if (scope.HasFlag(SeedScope.SeasonMatches))
 		{
 			Dictionary<string, Guid> emailToRefereeId = FootballRefereesSeeder.BuildEmailToRefereeIdMap(allReferees, refereeEmailToPersonId);
-			result.Matches = await FootballMatchesSeeder.SeedAsync(http, jsonOptions, config.FootballMatches, result.Seasons, result.Teams, result.Referees, emailToRefereeId);
+			Dictionary<string, Guid> scorekeeperEmailToPersonId = await MatchScorekeepersSeeder.SeedPersonsAsync(http, jsonOptions, config.ScorekeeperPersons);
+			result.Matches = await FootballMatchesSeeder.SeedAsync(http, jsonOptions, config.FootballMatches, result.Seasons, result.Teams, result.Referees, emailToRefereeId, scorekeeperEmailToPersonId);
 		}
 
 		if (scope.HasFlag(SeedScope.Tournaments))
@@ -706,8 +708,9 @@ public static class Program
 
 		if (scope.HasFlag(SeedScope.HockeySeasonMatches))
 		{
+			Dictionary<string, Guid> scorekeeperEmailToPersonId = await MatchScorekeepersSeeder.SeedPersonsAsync(http, jsonOptions, config.ScorekeeperPersons);
 			result.Matches = await HockeyMatchesSeeder.SeedAsync(
-				http, jsonOptions, config.HockeyMatches, result.Seasons, result.Teams, result.Officials);
+				http, jsonOptions, config.HockeyMatches, result.Seasons, result.Teams, result.Officials, scorekeeperEmailToPersonId);
 		}
 
 		if (scope.HasFlag(SeedScope.HockeyTournaments))

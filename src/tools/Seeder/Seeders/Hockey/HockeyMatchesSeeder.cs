@@ -17,9 +17,12 @@ public static class HockeyMatchesSeeder
         List<HockeyMatchSeed> matches,
         List<HockeySeasonDto> seasons,
         List<HockeyTeamDto> teams,
-        IReadOnlyList<Application.Features.Hockey.Officials.DTOs.HockeyOfficialDto>? officials = null)
+        IReadOnlyList<Application.Features.Hockey.Officials.DTOs.HockeyOfficialDto>? officials = null,
+        IReadOnlyDictionary<string, Guid>? scorekeeperEmailToPersonId = null)
     {
         List<HockeyMatchDto> created = new List<HockeyMatchDto>();
+        IReadOnlyDictionary<string, Guid> scorekeeperMap = scorekeeperEmailToPersonId
+            ?? new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
         HashSet<Guid> competitionsNeedingRecalc = new HashSet<Guid>();
         Dictionary<Guid, HockeyTeamDto> rosterCache = new Dictionary<Guid, HockeyTeamDto>();
 
@@ -46,6 +49,8 @@ public static class HockeyMatchesSeeder
             {
                 created.Add(existing);
                 Console.WriteLine("Hockey match exists, skipping create: " + match.HomeTeamName + " vs " + match.AwayTeamName + " (" + existing.Id + ")");
+                await MatchScorekeepersSeeder.EnsureAsync(
+                    http, "api/HockeyMatch", existing.Id, existing.Scorekeepers, match.ScorekeeperEmails, scorekeeperMap);
 
                 if (match.SimulateCompleted || scheduled <= DateTime.UtcNow.AddMinutes(-5))
                 {
@@ -105,6 +110,8 @@ public static class HockeyMatchesSeeder
 
             created.Add(matchDto);
             Console.WriteLine("Created hockey match: " + match.HomeTeamName + " vs " + match.AwayTeamName + " (" + matchDto.Id + ")");
+            await MatchScorekeepersSeeder.EnsureAsync(
+                http, "api/HockeyMatch", matchDto.Id, matchDto.Scorekeepers, match.ScorekeeperEmails, scorekeeperMap);
 
             if (match.SimulateCompleted || scheduled <= DateTime.UtcNow.AddMinutes(-5))
             {

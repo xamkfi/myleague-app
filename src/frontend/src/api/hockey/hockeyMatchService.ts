@@ -142,6 +142,20 @@ export const hockeyMatchService = {
       { method: 'DELETE' },
     ),
 
+  addScorekeeper: (matchId: string, personId: string): Promise<HockeyMatchDto> =>
+    hockeyRequest<HockeyMatchDto>(
+      `/HockeyMatch/${matchId}/scorekeepers`,
+      'Failed to add scorekeeper',
+      { method: 'POST', ...jsonBody({ personId }) },
+    ),
+
+  removeScorekeeper: (matchId: string, personId: string): Promise<HockeyMatchDto> =>
+    hockeyRequest<HockeyMatchDto>(
+      `/HockeyMatch/${matchId}/scorekeepers/${personId}`,
+      'Failed to remove scorekeeper',
+      { method: 'DELETE' },
+    ),
+
   start: (matchId: string): Promise<HockeyMatchDto> =>
     hockeyRequest<HockeyMatchDto>(`/HockeyMatch/${matchId}/start`, 'Failed to start match', {
       method: 'POST',

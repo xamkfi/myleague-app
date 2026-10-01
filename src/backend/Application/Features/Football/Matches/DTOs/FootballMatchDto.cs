@@ -1,3 +1,4 @@
+using Application.Features.Common.Shared.DTOs;
 using Domain.Enums.Football;
 
 namespace Application.Features.Football.Matches.DTOs;
@@ -36,4 +37,6 @@ public record FootballMatchDto(
     FootballPlayoffRound? PlayoffRound = null,
     int? PlayoffMatchOrder = null,
     Guid? NextMatchId = null,
-    FootballPlayoffSlot? NextMatchSlot = null);
+    FootballPlayoffSlot? NextMatchSlot = null,
+    IReadOnlyCollection<MatchPersonDto>? RefereeDetails = null,
+    IReadOnlyCollection<MatchPersonDto>? Scorekeepers = null);

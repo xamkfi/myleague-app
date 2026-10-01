@@ -21,6 +21,7 @@ import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ActiveRosterCard from './components/ActiveRosterCard';
 import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from './components/OfficialsSelectorSection';
+import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
 import BulkSaveDialog, { type BulkSavePayload } from './components/BulkSaveDialog';
 import type { EventGroup, ProcessedEvent } from './components/types';
@@ -79,6 +80,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   const [selectedOfficials, setSelectedOfficials] = useState<string[]>(match.officials || []);
   const [officialOptions, setOfficialOptions] = useState<OfficialOption[]>([]);
   const [officialsSaving, setOfficialsSaving] = useState<boolean>(false);
+  const [scorekeepersSaving, setScorekeepersSaving] = useState<boolean>(false);
 
   // Dialog state
   const [showEndMatchConfirmation, setShowEndMatchConfirmation] = useState<boolean>(false);
@@ -611,6 +613,32 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     }
   }, [match.id, applyMatchUpdate, setError, reportError, t]);
 
+  const handleScorekeeperAdd = useCallback(async (personId: string): Promise<void> => {
+    setScorekeepersSaving(true);
+    setError(null);
+    try {
+      const resp = await floorballMatchService.addScorekeeper(match.id, personId);
+      if (resp.success && resp.data) applyMatchUpdate(resp.data);
+    } catch (error) {
+      reportError(error, t('matchScorekeepers.errors.add', 'Failed to add scorekeeper'));
+    } finally {
+      setScorekeepersSaving(false);
+    }
+  }, [match.id, applyMatchUpdate, setError, reportError, t]);
+
+  const handleScorekeeperRemove = useCallback(async (personId: string): Promise<void> => {
+    setScorekeepersSaving(true);
+    setError(null);
+    try {
+      const resp = await floorballMatchService.removeScorekeeper(match.id, personId);
+      if (resp.success && resp.data) applyMatchUpdate(resp.data);
+    } catch (error) {
+      reportError(error, t('matchScorekeepers.errors.remove', 'Failed to remove scorekeeper'));
+    } finally {
+      setScorekeepersSaving(false);
+    }
+  }, [match.id, applyMatchUpdate, setError, reportError, t]);
+
   const isStartMatchDisabled: boolean = !homeGoalieId || !awayGoalieId || !currentMatch.homeTeamId || !currentMatch.awayTeamId;
   const startDisabledReason: string | undefined = !currentMatch.homeTeamId || !currentMatch.awayTeamId
     ? t('floorball.matches.manage.startDisabled.assignTeams', 'Assign both teams before starting')
@@ -737,6 +765,14 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             onAddRow={() => setSelectedOfficials(prev => [...prev, ''])}
             onSelect={handleOfficialSelect}
             onRemove={handleOfficialRemove}
+            disabled={isMatchClosed}
+          />
+
+          <ScorekeepersSection
+            scorekeepers={currentMatch.scorekeepers ?? []}
+            saving={scorekeepersSaving}
+            onAdd={handleScorekeeperAdd}
+            onRemove={handleScorekeeperRemove}
             disabled={isMatchClosed}
           />
 
