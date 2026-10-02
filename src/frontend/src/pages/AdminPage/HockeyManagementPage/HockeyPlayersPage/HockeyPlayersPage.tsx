@@ -10,8 +10,6 @@ import Pagination from '../../../../components/Pagination';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import { hockeyTeamService } from '../../../../api/hockey/hockeyTeamService';
 import { hockeyPlayerService } from '../../../../api/hockey/hockeyPlayerService';
-import { personApi } from '../../../../api/admin/personApi';
-import { mapWithConcurrency } from '../../../../utils/mapWithConcurrency';
 import type { HockeyPosition, HockeyTeamDto } from '../../../../types/hockey/hockeyTypes';
 import type { ActivePlayerLicence } from '../../../../types/activePlayerLicence';
 import PlayersTable, { type HockeyPlayerListRow } from './components/PlayersTable';
@@ -47,29 +45,33 @@ function HockeyPlayersPage() {
         hockeyTeamService.getAll(),
         hockeyPlayerService.getAllPages(),
       ]);
-      const people = await loadPersonNames(profiles.map((player) => player.personId));
       const byPlayer = new Map<string, HockeyPlayerListRow>();
+      for (const profile of profiles) {
+        const firstName = profile.firstName ?? profile.id.slice(0, 8);
+        const lastName = profile.lastName ?? '';
+        byPlayer.set(profile.id, {
+          playerId: profile.id,
+          teamId: '',
+          teamIds: [],
+          firstName,
+          lastName,
+          name: `${firstName} ${lastName}`.trim(),
+          position: profile.primaryPosition,
+          isActive: profile.isActive,
+          licences: [],
+        });
+      }
       for (const team of teams) {
         for (const row of team.roster) {
-          const profile = profiles.find((player) => player.id === row.playerId);
-          const names = profile ? people.get(profile.personId) : undefined;
-          const firstName = names?.firstName ?? row.playerId.slice(0, 8);
-          const lastName = names?.lastName ?? '';
-          const licence = openHockeyLicence(team, row);
           const existing = byPlayer.get(row.playerId);
           if (!existing) {
-            byPlayer.set(row.playerId, {
-              playerId: row.playerId,
-              teamId: team.id,
-              teamIds: [team.id],
-              firstName,
-              lastName,
-              name: `${firstName} ${lastName}`.trim(),
-              position: row.position,
-              isActive: row.rosterStatus === 'Active',
-              licences: licence ? [licence] : [],
-            });
             continue;
+          }
+          const licence = openHockeyLicence(team, row);
+          if (existing.teamIds.length === 0) {
+            existing.teamId = team.id;
+            existing.position = row.position;
+            existing.isActive = row.rosterStatus === 'Active';
           }
           if (!existing.teamIds.includes(team.id)) {
             existing.teamIds.push(team.id);
@@ -82,7 +84,11 @@ function HockeyPlayersPage() {
           }
         }
       }
-      const list = [...byPlayer.values()];
+      const list = [...byPlayer.values()].sort((left, right) =>
+        `${left.lastName} ${left.firstName}`.localeCompare(`${right.lastName} ${right.firstName}`, undefined, {
+          sensitivity: 'base',
+        }),
+      );
       setRows(list);
       setTeamOptions(
         [...teams]
@@ -128,6 +134,9 @@ function HockeyPlayersPage() {
   const paged = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleStatusChange = async (player: HockeyPlayerListRow, isActive: boolean): Promise<void> => {
+    if (!player.teamId) {
+      return;
+    }
     const team = (await hockeyTeamService.getById(player.teamId));
     const row = team.roster.find((item) => item.playerId === player.playerId);
     if (!row) {
@@ -291,21 +300,6 @@ function HockeyPlayersPage() {
 }
 
 export default HockeyPlayersPage;
-
-async function loadPersonNames(
-  personIds: string[],
-): Promise<Map<string, { firstName: string; lastName: string }>> {
-  const unique = [...new Set(personIds.filter(Boolean))];
-  const entries = await mapWithConcurrency(unique, async (personId) => {
-    try {
-      const person = await personApi.getById(personId);
-      return [personId, { firstName: person.firstName, lastName: person.lastName }] as const;
-    } catch {
-      return [personId, { firstName: personId.slice(0, 8), lastName: '' }] as const;
-    }
-  });
-  return new Map(entries);
-}
 
 function openHockeyLicence(
   team: HockeyTeamDto,
