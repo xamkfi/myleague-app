@@ -170,6 +170,12 @@ public class FootballApiClient : ImportApiClient
         return await ReadDataOrNull<FootballSeasonDto>(resp, $"Create football season '{name}'");
     }
 
+    public async Task<bool> CompleteSeasonAsync(Guid seasonId)
+    {
+        HttpResponseMessage resp = await Http.PutAsync($"api/FootballSeason/{seasonId}/complete", null);
+        return await OkOrAlready(resp, "CompleteFootballSeason");
+    }
+
     public async Task<FootballSeasonDto?> UpdateSeasonAsync(
         FootballSeasonDto season,
         TeamCategory teamCategory)
