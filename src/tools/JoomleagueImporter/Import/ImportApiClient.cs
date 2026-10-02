@@ -429,7 +429,8 @@ public class ImportApiClient : IDisposable
         string body = await resp.Content.ReadAsStringAsync();
         if (body.Contains("already", StringComparison.OrdinalIgnoreCase)
             || body.Contains("in status Active", StringComparison.OrdinalIgnoreCase)
-            || body.Contains("status is Active", StringComparison.OrdinalIgnoreCase))
+            || body.Contains("status is Active", StringComparison.OrdinalIgnoreCase)
+            || body.Contains("status Completed", StringComparison.OrdinalIgnoreCase))
             return true;
         Console.WriteLine($"  WARN: {operation} failed: {Truncate(body)}");
         return false;

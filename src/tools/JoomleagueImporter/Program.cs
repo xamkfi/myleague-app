@@ -273,6 +273,8 @@ public static class Program
             }
             await matches.ImportProjectMatchesAsync(pi, season, refereeId);
             await HistoricalRosterApplicator.DeactivateFloorballAsync(pi, season.Id, idMap, api);
+            if (await api.CompleteSeasonAsync(season.Id))
+                Console.WriteLine("  Season marked completed (historical).");
         });
 
         Console.WriteLine("--- Current club memberships ---");
@@ -322,6 +324,8 @@ public static class Program
             }
             await matches.ImportProjectMatchesAsync(pi, season, refereeId);
             await HistoricalRosterApplicator.DeactivateFootballAsync(pi, season.Id, idMap, api);
+            if (await api.CompleteSeasonAsync(season.Id))
+                Console.WriteLine("  Season marked completed (historical).");
         });
 
         Console.WriteLine("--- Current club memberships ---");

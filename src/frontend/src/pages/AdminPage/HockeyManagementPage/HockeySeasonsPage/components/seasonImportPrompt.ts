@@ -1,7 +1,13 @@
-export const HOCKEY_SEASON_IMPORT_AI_PROMPT: string = `You are converting an ice hockey league-season schedule (and optional team-roster sheets) into a single JSON file for the MyLeague season import feature. Output ONLY the JSON object — no markdown fences, no commentary, no trailing text.
+export const HOCKEY_SEASON_IMPORT_AI_PROMPT: string = `You are converting an ice hockey league-season schedule (and optional team-roster sheets) into one JSON file for the MyLeague season import.
 
-# Strict output rules
-- Return one JSON object that exactly matches the schema below.
+# How to deliver the result
+- Do not paste the JSON into the chat. Do not wrap it in a markdown code block.
+- Create a downloadable file named myleague-season-import.json and attach it so the user can download it.
+- The file contains only the JSON object. No commentary, no markdown fences, no trailing text inside the file.
+- In the chat, write one short sentence that the file is ready to download. Do not repeat the JSON there.
+
+# Strict file rules
+- The file is one JSON object that exactly matches the schema below.
 - Use UTF-8. Preserve Finnish/Swedish/etc. diacritics verbatim.
 - Use ISO 8601 datetimes with an explicit timezone offset for matches, e.g. "2025-09-13T18:00:00+03:00". The Finnish summer offset is +03:00, winter is +02:00.
 - Use plain ISO dates ("YYYY-MM-DD") with NO time for the season's startDate/endDate.
@@ -53,13 +59,14 @@ export const HOCKEY_SEASON_IMPORT_AI_PROMPT: string = `You are converting an ice
   ]
 }
 
-# Quality checklist before you respond
+# Quality checklist before you attach the file
 - Every team listed in "matches" exists in "teams".
 - Every team.divisionName exists in "divisions".
 - All match datetimes fall between season.startDate and season.endDate (inclusive).
 - No trailing commas; the JSON parses with JSON.parse on the first try.
+- The chat message does not contain the JSON.
 
-Now produce the JSON for the attached schedule image(s).
+Now create the downloadable myleague-season-import.json file for the attached schedule image(s).
 `;
 
 export function buildHockeySeasonPromptFileName(): string {
