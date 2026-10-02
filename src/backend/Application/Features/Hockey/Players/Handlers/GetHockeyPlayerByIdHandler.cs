@@ -2,7 +2,9 @@ using Application.Common;
 using Application.Features.Hockey.Players.DTOs;
 using Application.Features.Hockey.Players.Mappings;
 using Application.Features.Hockey.Players.Queries;
+using Domain.Entities.Common;
 using Domain.Entities.Hockey.Teams;
+using Domain.Repositories.Common;
 using Domain.Repositories.Hockey;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -15,13 +17,16 @@ namespace Application.Features.Hockey.Players.Handlers;
 public class GetHockeyPlayerByIdHandler : IRequestHandler<GetHockeyPlayerByIdQuery, Result<HockeyPlayerDto>>
 {
     private readonly IHockeyPlayerRepository _playerRepository;
+    private readonly IPersonRepository _personRepository;
     private readonly ILogger<GetHockeyPlayerByIdHandler> _logger;
 
     public GetHockeyPlayerByIdHandler(
         IHockeyPlayerRepository playerRepository,
+        IPersonRepository personRepository,
         ILogger<GetHockeyPlayerByIdHandler> logger)
     {
         _playerRepository = playerRepository;
+        _personRepository = personRepository;
         _logger = logger;
     }
 
@@ -35,7 +40,8 @@ public class GetHockeyPlayerByIdHandler : IRequestHandler<GetHockeyPlayerByIdQue
                 return Result<HockeyPlayerDto>.NotFound("HockeyPlayer", request.Id);
             }
 
-            return Result<HockeyPlayerDto>.Success(HockeyPlayerMapper.ToDto(player));
+            Person? person = await _personRepository.GetByIdAsync(player.PersonId);
+            return Result<HockeyPlayerDto>.Success(HockeyPlayerMapper.ToDto(player, person));
         }
         catch (Exception ex)
         {

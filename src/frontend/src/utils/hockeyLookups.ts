@@ -26,6 +26,10 @@ export async function loadPersonNameMap(personIds: string[]): Promise<Map<string
   return new Map(entries);
 }
 
+export function hockeyPlayerName(player: HockeyPlayerDto): string {
+  return `${player.firstName ?? ''} ${player.lastName ?? ''}`.trim();
+}
+
 export async function loadHockeyPlayersById(playerIds: string[]): Promise<Array<HockeyPlayerDto | null>> {
   const unique = [...new Set(playerIds.filter(Boolean))];
   return mapWithConcurrency(unique, async (playerId) => {
@@ -88,10 +92,12 @@ export async function loadHockeyRosterNameMaps(teams: HockeyTeamDto[]): Promise<
   const playerIds = [...new Set(teams.flatMap((team) => team.roster.map((row) => row.playerId)))];
   const profiles = await loadHockeyPlayersById(playerIds);
   const valid = profiles.filter((player) => player !== null);
-  const people = await loadPersonNameMap(valid.map((player) => player.personId));
+  const people = await loadPersonNameMap(
+    valid.filter((player) => !hockeyPlayerName(player)).map((player) => player.personId),
+  );
   const byPlayerId = new Map<string, string>();
   for (const player of valid) {
-    byPlayerId.set(player.id, people.get(player.personId) ?? player.id.slice(0, 8));
+    byPlayerId.set(player.id, hockeyPlayerName(player) || people.get(player.personId) || player.id.slice(0, 8));
   }
   const byTeamPlayerId = new Map<string, string>();
   for (const team of teams) {

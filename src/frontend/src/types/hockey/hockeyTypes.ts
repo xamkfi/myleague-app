@@ -353,6 +353,8 @@ export interface HockeyPlayerDto {
   careerGoals: number;
   careerAssists: number;
   careerPenaltyMinutes: number;
+  firstName?: string | null;
+  lastName?: string | null;
 }
 
 export interface CreateHockeyPlayerRequest {

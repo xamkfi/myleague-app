@@ -1,4 +1,5 @@
 using Application.Features.Hockey.Players.DTOs;
+using Domain.Entities.Common;
 using Domain.Entities.Hockey.Teams;
 
 namespace Application.Features.Hockey.Players.Mappings;
@@ -9,9 +10,9 @@ namespace Application.Features.Hockey.Players.Mappings;
 public static class HockeyPlayerMapper
 {
     /// <summary>
-    /// Maps a hockey player to a DTO.
+    /// Maps a hockey player to a DTO. Pass the linked person to include the name.
     /// </summary>
-    public static HockeyPlayerDto ToDto(HockeyPlayer player)
+    public static HockeyPlayerDto ToDto(HockeyPlayer player, Person? person = null)
     {
         return new HockeyPlayerDto(
             player.Id,
@@ -24,6 +25,8 @@ public static class HockeyPlayerMapper
             player.CareerGamesPlayed,
             player.CareerGoals,
             player.CareerAssists,
-            player.CareerPenaltyMinutes);
+            player.CareerPenaltyMinutes,
+            person?.FirstName,
+            person?.LastName);
     }
 }

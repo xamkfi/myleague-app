@@ -7,7 +7,8 @@ import type { HockeyPosition, HockeyTeamDto } from '../../../../types/hockey/hoc
 import SearchField from '../../../../components/SearchField';
 import Button from '../../../../components/Button/Button';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
-import { loadHockeyPlayersById, loadPersonNameMap } from '../../../../utils/hockeyLookups';
+import { hockeyPlayerService } from '../../../../api/hockey/hockeyPlayerService';
+import { hockeyPlayerName } from '../../../../utils/hockeyLookups';
 import './AddPlayerToRosterPage.scss';
 
 interface AvailableHockeyPlayerRow {
@@ -41,41 +42,31 @@ function AddHockeyPlayerToRosterPage() {
     }
     try {
       setLoading(true);
-      const [team, allTeams] = await Promise.all([
+      const [team, allTeams, profiles] = await Promise.all([
         hockeyTeamService.getById(teamId, competitionId || null),
         hockeyTeamService.getAll(),
+        hockeyPlayerService.getAllPages(),
       ]);
       setCurrentTeam(team);
 
       const currentPlayerIds = new Set(team.roster.map((row) => row.playerId));
-      const unique = new Map<string, { teamName: string; position: HockeyPosition }>();
+      const teamNameByPlayerId = new Map<string, string>();
       for (const otherTeam of allTeams) {
         for (const row of otherTeam.roster) {
-          if (currentPlayerIds.has(row.playerId) || unique.has(row.playerId)) {
-            continue;
+          if (!teamNameByPlayerId.has(row.playerId)) {
+            teamNameByPlayerId.set(row.playerId, otherTeam.name);
           }
-          unique.set(row.playerId, { teamName: otherTeam.name, position: row.position });
         }
       }
 
-      const playerIds = [...unique.keys()];
-      const profiles = await loadHockeyPlayersById(playerIds);
-      const valid = profiles.filter((player) => player !== null);
-      const people = await loadPersonNameMap(valid.map((player) => player.personId));
-      const rows: AvailableHockeyPlayerRow[] = [];
-      for (const playerId of playerIds) {
-        const meta = unique.get(playerId);
-        const profile = valid.find((player) => player.id === playerId);
-        if (!meta) {
-          continue;
-        }
-        rows.push({
-          playerId,
-          name: profile ? people.get(profile.personId) ?? playerId.slice(0, 8) : playerId.slice(0, 8),
-          position: profile?.primaryPosition ?? meta.position,
-          currentTeamName: meta.teamName,
-        });
-      }
+      const rows: AvailableHockeyPlayerRow[] = profiles
+        .filter((profile) => !currentPlayerIds.has(profile.id))
+        .map((profile) => ({
+          playerId: profile.id,
+          name: hockeyPlayerName(profile) || profile.id.slice(0, 8),
+          position: profile.primaryPosition,
+          currentTeamName: teamNameByPlayerId.get(profile.id) ?? '',
+        }));
       rows.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
       setAvailablePlayers(rows);
       setError(null);
@@ -142,6 +133,7 @@ function AddHockeyPlayerToRosterPage() {
     try {
       setSaving(true);
       setError(null);
+      const failures: string[] = [];
       for (const playerId of selectedPlayers) {
         const row = availablePlayers.find((player) => player.playerId === playerId);
         try {
@@ -154,8 +146,15 @@ function AddHockeyPlayerToRosterPage() {
             competitionId || null,
           );
         } catch (err) {
-          console.error(`Failed to add player ${playerId}:`, err);
+          failures.push(`${row?.name ?? playerId}: ${err instanceof Error ? err.message : String(err)}`);
         }
+      }
+      if (failures.length > 0) {
+        setSaving(false);
+        setSelectedPlayers(new Set());
+        await loadData();
+        setError(failures.join('\n'));
+        return;
       }
       const query = competitionId ? `?competitionId=${encodeURIComponent(competitionId)}` : '';
       navigate(`/admin/hockey/teams/${teamId}/roster${query}`);
