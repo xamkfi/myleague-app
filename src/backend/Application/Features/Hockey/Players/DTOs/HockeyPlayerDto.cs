@@ -14,4 +14,6 @@ public record HockeyPlayerDto(
     int CareerGamesPlayed,
     int CareerGoals,
     int CareerAssists,
-    int CareerPenaltyMinutes);
+    int CareerPenaltyMinutes,
+    string? FirstName = null,
+    string? LastName = null);

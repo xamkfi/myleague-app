@@ -50,7 +50,7 @@ public class CreateHockeyPlayerHandler : IRequestHandler<CreateHockeyPlayerComma
                     "Hockey player already exists for person {PersonId} ({PlayerId}), returning existing",
                     request.PersonId,
                     existing.Id);
-                return Result<HockeyPlayerDto>.Success(HockeyPlayerMapper.ToDto(existing));
+                return Result<HockeyPlayerDto>.Success(HockeyPlayerMapper.ToDto(existing, person));
             }
 
             HockeyPlayer player = new(
@@ -64,7 +64,7 @@ public class CreateHockeyPlayerHandler : IRequestHandler<CreateHockeyPlayerComma
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Created hockey player {PlayerId} for person {PersonId}", player.Id, request.PersonId);
-            return Result<HockeyPlayerDto>.Success(HockeyPlayerMapper.ToDto(player));
+            return Result<HockeyPlayerDto>.Success(HockeyPlayerMapper.ToDto(player, person));
         }
         catch (ArgumentException ex)
         {

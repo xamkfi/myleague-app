@@ -4,7 +4,9 @@ using Application.Features.Hockey.Players.Mappings;
 using Application.Features.Hockey.Players.Queries;
 using Application.Services.Common;
 using Domain.Common;
+using Domain.Entities.Common;
 using Domain.Entities.Hockey.Teams;
+using Domain.Repositories.Common;
 using Domain.Repositories.Hockey;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -18,15 +20,18 @@ public class GetPagedHockeyPlayersHandler
     : IRequestHandler<GetPagedHockeyPlayersQuery, Result<PagedResult<HockeyPlayerDto>>>
 {
     private readonly IHockeyPlayerRepository _playerRepository;
+    private readonly IPersonRepository _personRepository;
     private readonly IPaginationService _paginationService;
     private readonly ILogger<GetPagedHockeyPlayersHandler> _logger;
 
     public GetPagedHockeyPlayersHandler(
         IHockeyPlayerRepository playerRepository,
+        IPersonRepository personRepository,
         IPaginationService paginationService,
         ILogger<GetPagedHockeyPlayersHandler> logger)
     {
         _playerRepository = playerRepository;
+        _personRepository = personRepository;
         _paginationService = paginationService;
         _logger = logger;
     }
@@ -52,7 +57,15 @@ public class GetPagedHockeyPlayersHandler
                 request.TeamCategory,
                 cancellationToken);
 
-            IReadOnlyList<HockeyPlayerDto> items = pagedPlayers.Items.Select(HockeyPlayerMapper.ToDto).ToList();
+            IEnumerable<Person> persons = await _personRepository.GetByIdsAsync(
+                pagedPlayers.Items.Select(player => player.PersonId).Distinct());
+            Dictionary<Guid, Person> personsById = persons
+                .GroupBy(person => person.Id)
+                .ToDictionary(group => group.Key, group => group.First());
+
+            IReadOnlyList<HockeyPlayerDto> items = pagedPlayers.Items
+                .Select(player => HockeyPlayerMapper.ToDto(player, personsById.GetValueOrDefault(player.PersonId)))
+                .ToList();
             return Result<PagedResult<HockeyPlayerDto>>.Success(
                 PagedResult.Create(items, pagedPlayers.TotalCount, pagedPlayers.Page, pagedPlayers.PageSize));
         }
