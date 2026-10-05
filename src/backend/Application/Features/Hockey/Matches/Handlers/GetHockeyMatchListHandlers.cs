@@ -218,7 +218,8 @@ public class GetHockeyMatchesHandler
                 searchQuery: null,
                 request.TeamCategory,
                 excludeDraftCompetitions: !request.IncludeDrafts,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken,
+                statuses: request.Statuses);
 
             IReadOnlyList<Guid> teamIds = pagedMatches.Items
                 .SelectMany(match => match.MatchTeams.Select(team => team.TeamId))

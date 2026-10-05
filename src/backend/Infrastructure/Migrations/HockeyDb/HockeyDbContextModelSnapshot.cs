@@ -2594,6 +2594,11 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsLoanGoalkeeper")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("LicenseNumber")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
@@ -4134,7 +4139,6 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                                 .HasColumnType("uuid");
 
                             b1.Property<Guid>("PersonId")
-                                .ValueGeneratedOnAdd()
                                 .HasColumnType("uuid");
 
                             b1.HasKey("MatchId", "PersonId");

@@ -1,0 +1,21 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.expand-list-toggle {
+  display: block;
+  width: 100%;
+  padding: map.get($spacing, "sm");
+  background: $color-neutral-light-grey;
+  border: none;
+  border-top: 1px solid $color-neutral-medium-grey;
+  color: $color-neutral-black;
+  font-size: map.get($font-sizes, "sm");
+  font-weight: map.get($font-weights, "medium");
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: $color-neutral-medium-grey;
+  }
+}

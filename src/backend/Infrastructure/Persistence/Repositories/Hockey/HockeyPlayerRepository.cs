@@ -31,6 +31,21 @@ public class HockeyPlayerRepository : IHockeyPlayerRepository
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
+    public async Task<Dictionary<Guid, HockeyPlayer>> GetByIdsAsync(
+        IEnumerable<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        List<Guid> playerIds = ids.Distinct().ToList();
+        if (playerIds.Count == 0)
+        {
+            return new Dictionary<Guid, HockeyPlayer>();
+        }
+
+        return await _dbContext.HockeyPlayers
+            .Where(player => playerIds.Contains(player.Id))
+            .ToDictionaryAsync(player => player.Id, cancellationToken);
+    }
+
     public async Task<HockeyPlayer?> GetByPersonIdAsync(Guid personId)
     {
         return await _dbContext.HockeyPlayers

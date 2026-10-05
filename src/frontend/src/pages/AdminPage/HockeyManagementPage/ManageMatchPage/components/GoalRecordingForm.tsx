@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { HOCKEY_GOAL_STRENGTHS, type HockeyGoalStrength } from '../../../../../types/hockey/hockeyTypes';
 import './GoalRecordingForm.scss';
 import { formatPlayerOptionLabel, sortPlayersForSelect, type HockeyFormPlayer } from './eventFormHelpers';
+import EventTimeInput from '../../../../../components/match/EventTimeInput';
 
 interface GoalRecordingFormProps {
   showGoalForm: boolean;
@@ -17,6 +18,9 @@ interface GoalRecordingFormProps {
   onAssistChange: (assistId: string) => void;
   onSecondaryAssistChange: (assistId: string) => void;
   onStrengthChange: (strength: HockeyGoalStrength) => void;
+  timeMinutes: number;
+  timeSeconds: number;
+  onTimeChange: (minutes: number, seconds: number) => void;
   onRecordGoal: () => Promise<void>;
   onClose: () => void;
 }
@@ -34,6 +38,9 @@ function GoalRecordingForm({
   onAssistChange,
   onSecondaryAssistChange,
   onStrengthChange,
+  timeMinutes,
+  timeSeconds,
+  onTimeChange,
   onRecordGoal,
   onClose,
 }: GoalRecordingFormProps) {
@@ -153,6 +160,13 @@ function GoalRecordingForm({
                   ))}
                 </select>
               </div>
+              <EventTimeInput
+                idPrefix="goal-time"
+                label={t('hockey.matches.eventTime', 'Time')}
+                minutes={timeMinutes}
+                seconds={timeSeconds}
+                onChange={onTimeChange}
+              />
             </div>
             <div className="form-actions">
               <button onClick={onClose} className="cancel-btn" type="button" disabled={loading}>{t('common.cancel', 'Cancel')}</button>

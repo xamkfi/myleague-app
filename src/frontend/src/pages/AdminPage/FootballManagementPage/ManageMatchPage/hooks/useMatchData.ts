@@ -3,26 +3,23 @@ import { footballTeamService } from '../../../../../api/football/footballTeamSer
 import type { FootballPlayerDto } from '../../../../../api/football/footballPlayerService';
 import { footballMatchService } from '../../../../../api/football/footballMatchService';
 import type { FootballMatchDto, FootballTeam, FootballTeamPlayer } from '../../../../../types/football/footballTypes';
+import { rosterDisplayName } from '../../../../../types/loanGoalkeeper';
 import type { StateUpdate } from '../components/types';
 
-function splitPlayerName(fullName: string): { firstName: string; lastName: string } {
-  const trimmed = fullName.trim();
-  const spaceIndex = trimmed.indexOf(' ');
-  if (spaceIndex === -1) {
-    return { firstName: trimmed, lastName: '' };
-  }
-  return {
-    firstName: trimmed.slice(0, spaceIndex),
-    lastName: trimmed.slice(spaceIndex + 1),
-  };
-}
-
-/** Players on this competition's active roster, not earlier seasons of the same team. */
+/**
+ * Every player on the competition roster is selectable for the match, whether or not the
+ * licence is paid (`isActive`).
+ */
 function rosterToPlayers(roster: FootballTeamPlayer[]): FootballPlayerDto[] {
+  const seen: Set<string> = new Set<string>();
   return roster
-    .filter((row) => row.isActive)
+    .filter((row) => {
+      if (seen.has(row.playerId)) return false;
+      seen.add(row.playerId);
+      return true;
+    })
     .map((row) => {
-      const { firstName, lastName } = splitPlayerName(row.playerName);
+      const { firstName, lastName } = rosterDisplayName(row.playerName);
       return {
         id: row.playerId,
         personId: '',
@@ -126,9 +123,10 @@ export const useMatchData = ({
 
     const allPlayers = [...homePlayers, ...awayPlayers];
     const player = allPlayers.find((p) => p.id === playerId);
-    return player
-      ? `${player.person.firstName} ${player.person.lastName}`
-      : `Player ${playerId.slice(0, 8)}...`;
+    if (!player) {
+      return `Player ${playerId.slice(0, 8)}...`;
+    }
+    return [player.person.firstName, player.person.lastName].filter((part) => part.trim().length > 0).join(' ');
   }, [homePlayers, awayPlayers]);
 
   return {
@@ -143,6 +141,15 @@ export const useMatchData = ({
     error,
     setError,
     loadTeamData,
+    appendPlayer: (teamId: string, player: FootballPlayerDto): void => {
+      const add = (current: FootballPlayerDto[]): FootballPlayerDto[] =>
+        current.some((item) => item.id === player.id) ? current : [...current, player];
+      if (teamId === match.homeTeamId) {
+        setHomePlayers(add);
+      } else if (teamId === match.awayTeamId) {
+        setAwayPlayers(add);
+      }
+    },
     loadCurrentMatchStatus,
     getPlayersForTeam,
     getPlayerNameById,

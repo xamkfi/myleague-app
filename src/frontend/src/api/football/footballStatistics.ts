@@ -290,11 +290,12 @@ export const footballStatisticsService = {
   },
 
   /**
-   * Get season statistics summary
+   * Get season statistics summary. `topN` caps each player leaderboard; the UI shows the
+   * first 10 and lets the visitor expand the rest.
    */
-  getSeasonStatistics: async (competitionId: string): Promise<FootballSeasonStatisticsSummaryDto> => {
+  getSeasonStatistics: async (competitionId: string, topN: number = 100): Promise<FootballSeasonStatisticsSummaryDto> => {
     try {
-      const response = await fetch(`${API_URL}/football/statistics/season/${competitionId}`);
+      const response = await fetch(`${API_URL}/football/statistics/season/${competitionId}?topN=${topN}`);
       
       if (!response.ok) {
         const errorMessage = await parseErrorResponse(response, 'Failed to fetch season statistics');

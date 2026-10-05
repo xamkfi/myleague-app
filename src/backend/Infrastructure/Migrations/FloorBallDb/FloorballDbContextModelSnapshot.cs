@@ -1252,6 +1252,11 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsLoanGoalkeeper")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid");
 

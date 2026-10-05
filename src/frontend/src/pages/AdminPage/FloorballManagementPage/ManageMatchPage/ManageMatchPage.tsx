@@ -749,6 +749,8 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             initialAwayLineup={currentMatch.awayActivePlayers ?? []}
             initialHomeGoalieId={homeGoalieId}
             initialAwayGoalieId={awayGoalieId}
+            competitionId={currentMatch.competitionId}
+            onPlayerAdded={matchData.appendPlayer}
             onClose={() => setIsLineupDialogOpen(false)}
             onSaved={(updated) => {
               setCurrentMatch(updated);

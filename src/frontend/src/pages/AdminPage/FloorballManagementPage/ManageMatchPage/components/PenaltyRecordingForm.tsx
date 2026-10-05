@@ -5,6 +5,7 @@ import type { FloorballMatchDto, FloorballTeam } from '../../../../../types/floo
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
 import type { PenaltyForm } from './types';
 import { formatPlayerOptionLabel, sortPlayersForSelect } from './eventFormHelpers';
+import EventTimeInput from '../../../../../components/match/EventTimeInput';
 
 interface PenaltyRecordingFormProps {
   showPenaltyForm: boolean;
@@ -33,17 +34,6 @@ const PENALTY_TYPE_OPTIONS: ReadonlyArray<{ value: string; labelKey: string; fal
 ];
 
 const DESCRIPTION_MAX_LENGTH: number = 280;
-
-/**
- * Clamps a numeric input value to a valid range, mirroring the helper in `GoalRecordingForm`.
- * Kept inline (instead of being shared) because the two forms otherwise own their own input
- * semantics and we want to keep their files self-contained for readability.
- */
-const clampInt = (raw: string, min: number, max: number): number => {
-  const parsed: number = parseInt(raw, 10);
-  if (Number.isNaN(parsed)) return min;
-  return Math.max(min, Math.min(max, parsed));
-};
 
 const PenaltyRecordingForm = ({
   showPenaltyForm,
@@ -179,40 +169,15 @@ const PenaltyRecordingForm = ({
                 </select>
               </div>
 
-              <div className="field field--time">
-                <label htmlFor="penalty-time-minutes">{t('floorball.matches.manage.penaltyForm.time')}</label>
-                <div className="time-input-group">
-                  <input
-                    id="penalty-time-minutes"
-                    type="number"
-                    className="time-input time-input-minutes"
-                    value={penaltyForm.timeMinutes}
-                    onChange={(e) =>
-                      setPenaltyForm((prev) => ({ ...prev, timeMinutes: clampInt(e.target.value, 0, 99) }))
-                    }
-                    min={0}
-                    max={99}
-                    placeholder="MM"
-                    aria-label={t('floorball.matches.manage.timeMinutesAria', 'Minutes')}
-                  />
-                  <span className="time-separator" aria-hidden="true">
-                    :
-                  </span>
-                  <input
-                    id="penalty-time-seconds"
-                    type="number"
-                    className="time-input time-input-seconds"
-                    value={penaltyForm.timeSeconds}
-                    onChange={(e) =>
-                      setPenaltyForm((prev) => ({ ...prev, timeSeconds: clampInt(e.target.value, 0, 59) }))
-                    }
-                    min={0}
-                    max={59}
-                    placeholder="SS"
-                    aria-label={t('floorball.matches.manage.timeSecondsAria', 'Seconds')}
-                  />
-                </div>
-              </div>
+              <EventTimeInput
+                idPrefix="penalty-time"
+                label={t('floorball.matches.manage.penaltyForm.time')}
+                minutes={penaltyForm.timeMinutes}
+                seconds={penaltyForm.timeSeconds}
+                onChange={(timeMinutes, timeSeconds) =>
+                  setPenaltyForm((prev) => ({ ...prev, timeMinutes, timeSeconds }))
+                }
+              />
             </div>
 
             <div className="field field--description">

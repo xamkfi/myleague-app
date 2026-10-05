@@ -23,6 +23,11 @@ public class HockeyPlayer : BaseEntity
     public int CareerFaceoffWins { get; private set; }
     public int CareerFaceoffAttempts { get; private set; }
 
+    /// <summary>
+    /// Whether this profile is the team's reusable loan goalkeeper placeholder.
+    /// </summary>
+    public bool IsLoanGoalkeeper { get; private set; }
+
     public decimal CareerFaceoffPercentage =>
         CareerFaceoffAttempts > 0
             ? Math.Round((decimal)CareerFaceoffWins / CareerFaceoffAttempts, 4)
@@ -46,7 +51,13 @@ public class HockeyPlayer : BaseEntity
         Catches = catches;
         LicenseNumber = licenseNumber;
         IsActive = true;
+        IsLoanGoalkeeper = false;
     }
+
+    /// <summary>
+    /// Marks this profile as the team's reusable loan goalkeeper.
+    /// </summary>
+    public void MarkAsLoanGoalkeeper() => IsLoanGoalkeeper = true;
 
     public void UpdateActiveStatus(bool isActive) => IsActive = isActive;
 

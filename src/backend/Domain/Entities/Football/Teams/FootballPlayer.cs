@@ -15,6 +15,11 @@ public class FootballPlayer : BaseEntity
     public int CareerGoals { get; private set; }
     public int CareerAssists { get; private set; }
 
+    /// <summary>
+    /// Whether this profile is the team's reusable loan goalkeeper placeholder.
+    /// </summary>
+    public bool IsLoanGoalkeeper { get; private set; }
+
     private FootballPlayer()
     {
         Person = null!;
@@ -33,7 +38,13 @@ public class FootballPlayer : BaseEntity
         PersonId = personId;
         IsActive = true;
         Position = position;
+        IsLoanGoalkeeper = false;
     }
+
+    /// <summary>
+    /// Marks this profile as the team's reusable loan goalkeeper.
+    /// </summary>
+    public void MarkAsLoanGoalkeeper() => IsLoanGoalkeeper = true;
 
     public void UpdateActiveStatus(bool isActive) => IsActive = isActive;
 

@@ -164,15 +164,20 @@ public class FootballStatisticsController : BaseApiController
     /// <summary>
     /// Gets season statistics summary
     /// </summary>
+    /// <param name="competitionId">The season or tournament ID</param>
+    /// <param name="topN">Maximum rows per player leaderboard (1-100, default 10)</param>
     [HttpGet("season/{competitionId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<FootballSeasonStatisticsSummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ApiResponse<FootballSeasonStatisticsSummaryDto>>> GetSeasonStatistics(Guid competitionId)
+    public async Task<ActionResult<ApiResponse<FootballSeasonStatisticsSummaryDto>>> GetSeasonStatistics(
+        Guid competitionId,
+        [FromQuery] int topN = 10)
     {
-        _logger.LogInformation("Getting season statistics summary for Season: {CompetitionId}", competitionId);
+        _logger.LogInformation("Getting season statistics summary for Season: {CompetitionId}, TopN: {TopN}", competitionId, topN);
 
-        GetFootballSeasonStatisticsSummaryQuery query = new GetFootballSeasonStatisticsSummaryQuery(competitionId);
+        GetFootballSeasonStatisticsSummaryQuery query = new GetFootballSeasonStatisticsSummaryQuery(competitionId, topN);
         Result<FootballSeasonStatisticsSummaryDto> result = await _mediator.Send(query);
 
         return HandleResult(result, "Season statistics retrieved successfully", "Failed to retrieve season statistics");

@@ -13,5 +13,6 @@ namespace Application.Features.Floorball.Statistics.Queries;
 /// <summary>
 /// Query for retrieving comprehensive season statistics summary
 /// </summary>
-/// <param name="SeasonId">The season ID</param>
-public record GetFloorballSeasonStatisticsSummaryQuery(Guid CompetitionId) : IRequest<Result<FloorballSeasonStatisticsSummaryDto>>;
+/// <param name="CompetitionId">The season or tournament ID</param>
+/// <param name="TopN">Maximum rows in each player leaderboard (scorers, assists, goalies)</param>
+public record GetFloorballSeasonStatisticsSummaryQuery(Guid CompetitionId, int TopN = 10) : IRequest<Result<FloorballSeasonStatisticsSummaryDto>>;

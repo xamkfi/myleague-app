@@ -3,6 +3,7 @@ using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Matches.Queries;
 using Domain.Common;
 using Domain.Enums.Common;
+using Domain.Enums.Hockey.Matches;
 using FluentAssertions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -52,6 +53,7 @@ public class HockeyMatchControllerTests
                 EndDate = end,
                 TeamCategory = TeamCategory.Adult,
                 SortOrder = "asc",
+                Statuses = [HockeyMatchStatus.Scheduled, HockeyMatchStatus.Warmup],
             },
             CancellationToken.None);
 
@@ -64,7 +66,10 @@ public class HockeyMatchControllerTests
                     && query.StartDate == start
                     && query.EndDate == end
                     && query.TeamCategory == TeamCategory.Adult
-                    && query.SortOrder == "asc"),
+                    && query.SortOrder == "asc"
+                    && query.Statuses != null
+                    && query.Statuses.Contains(HockeyMatchStatus.Scheduled)
+                    && query.Statuses.Contains(HockeyMatchStatus.Warmup)),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }

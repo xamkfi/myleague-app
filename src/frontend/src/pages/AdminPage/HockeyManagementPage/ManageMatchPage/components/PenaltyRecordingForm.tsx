@@ -8,6 +8,7 @@ import {
 } from '../../../../../types/hockey/hockeyTypes';
 import './PenaltyRecordingForm.scss';
 import { formatPlayerOptionLabel, sortPlayersForSelect, type HockeyFormPlayer } from './eventFormHelpers';
+import EventTimeInput from '../../../../../components/match/EventTimeInput';
 
 interface PenaltyRecordingFormProps {
   showPenaltyForm: boolean;
@@ -22,6 +23,9 @@ interface PenaltyRecordingFormProps {
   onOffenceChange: (offence: HockeyPenaltyOffence) => void;
   onSeverityChange: (severity: HockeyPenaltySeverity) => void;
   onMinutesChange: (minutes: number) => void;
+  timeMinutes: number;
+  timeSeconds: number;
+  onTimeChange: (minutes: number, seconds: number) => void;
   onRecordPenalty: () => Promise<void>;
   onClose: () => void;
 }
@@ -39,6 +43,9 @@ function PenaltyRecordingForm({
   onOffenceChange,
   onSeverityChange,
   onMinutesChange,
+  timeMinutes,
+  timeSeconds,
+  onTimeChange,
   onRecordPenalty,
   onClose,
 }: PenaltyRecordingFormProps) {
@@ -127,6 +134,13 @@ function PenaltyRecordingForm({
                   {[2, 4, 5, 10].map((minutes) => <option key={minutes} value={minutes}>{minutes}</option>)}
                 </select>
               </div>
+              <EventTimeInput
+                idPrefix="penalty-time"
+                label={t('hockey.matches.eventTime', 'Time')}
+                minutes={timeMinutes}
+                seconds={timeSeconds}
+                onChange={onTimeChange}
+              />
             </div>
             <div className="form-actions">
               <button onClick={onClose} className="cancel-btn" type="button" disabled={loading}>{t('common.cancel', 'Cancel')}</button>

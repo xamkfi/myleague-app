@@ -798,6 +798,11 @@ namespace MyLeague.Infrastructure.Migrations.FootballDb
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsLoanGoalkeeper")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid");
 

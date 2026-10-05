@@ -6,6 +6,7 @@ import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballP
 import type { GoalForm } from './types';
 import { FLOORBALL_GOAL_TYPE_OPTIONS } from '../../../../../utils/floorballGoalType';
 import { formatPlayerOptionLabel, sortPlayersForSelect } from './eventFormHelpers';
+import EventTimeInput from '../../../../../components/match/EventTimeInput';
 
 interface GoalRecordingFormProps {
   showGoalForm: boolean;
@@ -19,17 +20,6 @@ interface GoalRecordingFormProps {
   onRecordGoal: () => Promise<void>;
   onClose: () => void;
 }
-
-/**
- * Clamps a numeric input value to a valid range, treating empty/NaN input as 0. Used by the
- * time fields so manual typing of "00" or partially-deleted values doesn't surface NaN to
- * the goal form state.
- */
-const clampInt = (raw: string, min: number, max: number): number => {
-  const parsed: number = parseInt(raw, 10);
-  if (Number.isNaN(parsed)) return min;
-  return Math.max(min, Math.min(max, parsed));
-};
 
 const GoalRecordingForm = ({
   showGoalForm,
@@ -184,40 +174,15 @@ const GoalRecordingForm = ({
                 </select>
               </div>
 
-              <div className="field field--time">
-                <label htmlFor="goal-time-minutes">{t('floorball.matches.manage.goalForm.time')}</label>
-                <div className="time-input-group">
-                  <input
-                    id="goal-time-minutes"
-                    type="number"
-                    className="time-input time-input-minutes"
-                    value={goalForm.timeMinutes}
-                    onChange={(e) =>
-                      setGoalForm((prev) => ({ ...prev, timeMinutes: clampInt(e.target.value, 0, 99) }))
-                    }
-                    min={0}
-                    max={99}
-                    placeholder="MM"
-                    aria-label={t('floorball.matches.manage.timeMinutesAria', 'Minutes')}
-                  />
-                  <span className="time-separator" aria-hidden="true">
-                    :
-                  </span>
-                  <input
-                    id="goal-time-seconds"
-                    type="number"
-                    className="time-input time-input-seconds"
-                    value={goalForm.timeSeconds}
-                    onChange={(e) =>
-                      setGoalForm((prev) => ({ ...prev, timeSeconds: clampInt(e.target.value, 0, 59) }))
-                    }
-                    min={0}
-                    max={59}
-                    placeholder="SS"
-                    aria-label={t('floorball.matches.manage.timeSecondsAria', 'Seconds')}
-                  />
-                </div>
-              </div>
+              <EventTimeInput
+                idPrefix="goal-time"
+                label={t('floorball.matches.manage.goalForm.time')}
+                minutes={goalForm.timeMinutes}
+                seconds={goalForm.timeSeconds}
+                onChange={(timeMinutes, timeSeconds) =>
+                  setGoalForm((prev) => ({ ...prev, timeMinutes, timeSeconds }))
+                }
+              />
             </div>
 
             {missingJersey && (

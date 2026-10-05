@@ -48,7 +48,8 @@ public class GetHockeyMatchesHandlerTests
                 null,
                 TeamCategory.Youth,
                 It.IsAny<bool>(),
-                It.IsAny<CancellationToken>()))
+                It.IsAny<CancellationToken>(),
+                null))
             .ReturnsAsync(PagedResult.Create(new List<HockeyMatch> { match }, 1, 1, 100));
 
         GetHockeyMatchesHandler handler = CreateHandler();
@@ -91,7 +92,8 @@ public class GetHockeyMatchesHandlerTests
                 It.IsAny<string?>(),
                 It.IsAny<TeamCategory?>(),
                 It.IsAny<bool>(),
-                It.IsAny<CancellationToken>()))
+                It.IsAny<CancellationToken>(),
+                It.IsAny<IReadOnlyCollection<HockeyMatchStatus>?>()))
             .ReturnsAsync(PagedResult.Create(new List<HockeyMatch> { match }, 1, 1, 25));
 
         _teamRepo
@@ -116,6 +118,45 @@ public class GetHockeyMatchesHandlerTests
         item.AwayTeamName.Should().Be("Tappara");
         item.HomeTeamId.Should().Be(homeTeamId);
         item.AwayTeamId.Should().Be(awayTeamId);
+    }
+
+    [Fact]
+    public async Task Handle_PassesStatusFilters()
+    {
+        List<HockeyMatchStatus> statuses =
+        [
+            HockeyMatchStatus.Scheduled,
+            HockeyMatchStatus.Warmup,
+        ];
+
+        _matchRepo
+            .Setup(repository => repository.GetPagedAsync(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<HockeyMatchStatus?>(),
+                It.IsAny<string>(),
+                It.IsAny<string?>(),
+                It.IsAny<TeamCategory?>(),
+                It.IsAny<bool>(),
+                It.IsAny<CancellationToken>(),
+                It.Is<IReadOnlyCollection<HockeyMatchStatus>?>(filters =>
+                    filters != null
+                    && filters.Count == 2
+                    && filters.Contains(HockeyMatchStatus.Scheduled)
+                    && filters.Contains(HockeyMatchStatus.Warmup))))
+            .ReturnsAsync(PagedResult.Create(new List<HockeyMatch>(), 0, 1, 25));
+
+        GetHockeyMatchesHandler handler = CreateHandler();
+
+        Result<PagedResult<HockeyMatchListDto>> result = await handler.Handle(
+            new GetHockeyMatchesQuery(Statuses: statuses),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
     }
 
     private GetHockeyMatchesHandler CreateHandler() =>
