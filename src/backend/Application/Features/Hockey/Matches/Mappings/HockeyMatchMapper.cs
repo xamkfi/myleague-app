@@ -99,6 +99,8 @@ public static class HockeyMatchMapper
         Guid? losingActivePlayerId = matchEvent is HockeyFaceoff faceoff
             ? faceoff.LosingActivePlayerId
             : null;
+        HockeyGoal? goal = matchEvent as HockeyGoal;
+        HockeyPenalty? penalty = matchEvent as HockeyPenalty;
 
         return new HockeyMatchEventDto(
             matchEvent.Id,
@@ -108,7 +110,13 @@ public static class HockeyMatchMapper
             matchEvent.MatchTeamId,
             matchEvent.MatchActivePlayerId,
             matchEvent.Description,
-            losingActivePlayerId);
+            losingActivePlayerId,
+            goal?.PrimaryAssistActivePlayerId,
+            goal?.SecondaryAssistActivePlayerId,
+            goal?.GoalStrength.ToString(),
+            penalty?.Offence.ToString(),
+            penalty?.Severity.ToString(),
+            penalty?.PenaltyMinutes);
     }
 
     public static HockeyMatchOfficialDto ToOfficialDto(HockeyMatchOfficial official)

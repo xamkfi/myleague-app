@@ -1,18 +1,18 @@
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { HockeyMatchDto, HockeyMatchEventDto, HockeyTeamDto } from '../../types/hockey/hockeyTypes';
 import { hockeyHomeTeam } from '../../types/hockey/hockeyTypes';
+import { resolveHockeyCareerPlayerId } from '../../utils/hockeyLookups';
 import {
-  formatHockeyClock,
-  hockeyActivePlayerLabel,
-  resolveHockeyCareerPlayerId,
-} from '../../utils/hockeyLookups';
-import {
-  hockeyPublicEventDetail,
-  hockeyPublicEventLabel,
-  isPublicHockeyEvent,
+  hockeyGoalStrengthAbbreviation,
+  isHockeyGoalEvent,
+  isHockeyPenaltyEvent,
 } from '../../utils/hockeyEventDisplay';
+import { formatEventTimeMmSs, formatMatchEventTime } from '../../utils/matchEventFormat';
 import { getPlayerPath } from '../../utils/sportRoutes';
+import MatchEventTimeline, {
+  type TimelineEvent,
+  type TimelinePlayer,
+} from '../../components/match/MatchEventTimeline';
 
 interface HockeyMatchEventsProps {
   match: HockeyMatchDto;
@@ -22,112 +22,110 @@ interface HockeyMatchEventsProps {
   playerNames: Map<string, string>;
 }
 
-function eventRowClass(typeClass: string): string {
-  return typeClass ? `event-row ${typeClass}` : 'event-row';
-}
+type HockeyPeriodKind = 'regular' | 'overtime' | 'shootout';
 
-function EventPlayerLink({
-  match,
-  teams,
-  matchActivePlayerId,
-  playerNames,
-}: {
-  match: HockeyMatchDto;
-  teams: HockeyTeamDto[];
-  matchActivePlayerId: string | null | undefined;
-  playerNames: Map<string, string>;
-}) {
-  if (!matchActivePlayerId) {
-    return null;
-  }
-
-  const label = hockeyActivePlayerLabel(match, matchActivePlayerId, playerNames);
-  if (!label) {
-    return null;
-  }
-
-  const playerId = resolveHockeyCareerPlayerId(match, teams, matchActivePlayerId);
-  if (!playerId) {
-    return <span>{label}</span>;
-  }
-
-  return (
-    <Link className="event-player-link" to={getPlayerPath('hockey', playerId)}>
-      {label}
-    </Link>
-  );
-}
+const REGULATION_PERIODS: number = 3;
 
 function HockeyMatchEvents({ match, teams, homeName, awayName, playerNames }: HockeyMatchEventsProps) {
   const { t } = useTranslation();
   const home = hockeyHomeTeam(match);
-  const events = [...match.events]
-    .filter((eventItem) => isPublicHockeyEvent(eventItem))
-    .sort((a, b) => {
-      if (a.periodNumber !== b.periodNumber) {
-        return a.periodNumber - b.periodNumber;
+
+  const periodKind = (period: number): HockeyPeriodKind => {
+    const periodType: string | undefined = match.periodScores.find((row) => row.periodNumber === period)?.periodType;
+    if (periodType === 'Shootout') return 'shootout';
+    if (periodType === 'Overtime') return 'overtime';
+    if (periodType === 'RegularPeriod') return 'regular';
+    return period > REGULATION_PERIODS ? 'overtime' : 'regular';
+  };
+
+  const periodTitle = (period: number): string => {
+    const kind: HockeyPeriodKind = periodKind(period);
+    if (kind === 'shootout') return t('matchPage.events.shootoutName');
+    if (kind === 'overtime') return t('matchPage.events.overtimeName');
+    return t('matchPage.events.periodName', { number: period });
+  };
+
+  const eventClock = (period: number, timeInSeconds: number): string => {
+    const kind: HockeyPeriodKind = periodKind(period);
+    const clock: string = formatEventTimeMmSs(timeInSeconds);
+    if (kind === 'shootout') return `${t('matchPage.events.shootoutShort')} - ${clock}`;
+    if (kind === 'overtime') return `${t('matchPage.events.overtimeShort')} - ${clock}`;
+    return formatMatchEventTime(period, timeInSeconds);
+  };
+
+  const toPlayer = (matchActivePlayerId: string | null | undefined): TimelinePlayer | undefined => {
+    if (!matchActivePlayerId) return undefined;
+    for (const side of match.matchTeams) {
+      const active = side.activePlayers.find((row) => row.id === matchActivePlayerId);
+      if (!active) continue;
+      const careerPlayerId: string | undefined = resolveHockeyCareerPlayerId(match, teams, matchActivePlayerId);
+      return {
+        name: playerNames.get(active.teamPlayerId) ?? '',
+        jerseyNumber: Number.isFinite(active.jerseyNumber) ? active.jerseyNumber : undefined,
+        href: careerPlayerId ? getPlayerPath('hockey', careerPlayerId) : undefined,
+      };
+    }
+    return undefined;
+  };
+
+  const penaltyLabel = (event: HockeyMatchEventDto): string | undefined => {
+    const parts: string[] = [];
+    if (event.penaltyOffence) {
+      parts.push(t(`hockey.matches.penaltyOffences.${event.penaltyOffence}`, event.penaltyOffence).toLowerCase());
+    }
+    if (typeof event.penaltyMinutes === 'number' && event.penaltyMinutes > 0) {
+      parts.push(t('hockeyPage.penaltyMinutesShort', '{{count}} min', { count: event.penaltyMinutes }));
+    }
+    return parts.length > 0 ? parts.join(', ') : undefined;
+  };
+
+  const events: TimelineEvent[] = match.events
+    .filter((event) => isHockeyGoalEvent(event) || isHockeyPenaltyEvent(event))
+    .map((event): TimelineEvent => {
+      const side: 'home' | 'away' = home && event.matchTeamId === home.id ? 'home' : 'away';
+      if (isHockeyGoalEvent(event)) {
+        const abbreviation: string = hockeyGoalStrengthAbbreviation(event.goalStrength);
+        return {
+          key: event.id,
+          kind: 'goal',
+          periodNumber: event.periodNumber,
+          timeInSeconds: event.gameTimeSeconds,
+          side,
+          player: toPlayer(event.matchActivePlayerId),
+          assists: [
+            toPlayer(event.primaryAssistActivePlayerId),
+            toPlayer(event.secondaryAssistActivePlayerId),
+          ].filter((assist): assist is TimelinePlayer => assist !== undefined),
+          goalBadge: abbreviation
+            ? {
+                abbreviation,
+                label: t(`hockey.matches.goalStrengths.${event.goalStrength}`, event.goalStrength ?? ''),
+              }
+            : null,
+        };
       }
-      return a.gameTimeSeconds - b.gameTimeSeconds;
+      return {
+        key: event.id,
+        kind: 'penalty',
+        periodNumber: event.periodNumber,
+        timeInSeconds: event.gameTimeSeconds,
+        side,
+        player: toPlayer(event.matchActivePlayerId),
+        penaltyLabel: penaltyLabel(event),
+        description: event.description ?? undefined,
+      };
     });
 
   return (
-    <div className="events-section">
-      <h3>{t('hockeyPage.eventLog', 'Event log')}</h3>
-      <div className="match-events">
-        {events.length === 0 ? (
-          <p>{t('hockeyPage.noEvents', 'No events recorded yet')}</p>
-        ) : (
-          events.map((eventItem: HockeyMatchEventDto) => {
-            const extra = hockeyPublicEventDetail(eventItem, t);
-            const isHomeEvent = Boolean(home && eventItem.matchTeamId === home.id);
-            const meta = hockeyPublicEventLabel(eventItem, t);
-            return (
-              <div key={eventItem.id} className={eventRowClass(meta.typeClass)}>
-                <span className="event-time">
-                  P{eventItem.periodNumber} {formatHockeyClock(eventItem.gameTimeSeconds)}
-                </span>
-                <span className={`event-type-badge ${meta.typeClass}`} title={meta.label}>
-                  <span className="badge-letter">{meta.badge}</span>
-                </span>
-                {eventItem.matchTeamId && (
-                  <span className={`event-team-short ${isHomeEvent ? 'home-team' : 'away-team'}`}>
-                    {isHomeEvent ? homeName : awayName}
-                  </span>
-                )}
-                <span className="event-details">
-                  {meta.label}
-                  {eventItem.matchActivePlayerId && (
-                    <>
-                      {' · '}
-                      <EventPlayerLink
-                        match={match}
-                        teams={teams}
-                        matchActivePlayerId={eventItem.matchActivePlayerId}
-                        playerNames={playerNames}
-                      />
-                    </>
-                  )}
-                  {eventItem.losingActivePlayerId && (
-                    <>
-                      {' · '}
-                      <EventPlayerLink
-                        match={match}
-                        teams={teams}
-                        matchActivePlayerId={eventItem.losingActivePlayerId}
-                        playerNames={playerNames}
-                      />
-                    </>
-                  )}
-                  {!eventItem.matchActivePlayerId && eventItem.description?.trim()
-                    ? ` · ${eventItem.description.trim()}`
-                    : ''}
-                  {extra ? ` · ${extra}` : ''}
-                </span>
-              </div>
-            );
-          })
-        )}
-      </div>
+    <div className="summary-events-section">
+      <MatchEventTimeline
+        events={events}
+        home={{ name: homeName, logo: teams.find((team) => team.id === match.homeTeamId)?.logoUrl ?? null }}
+        away={{ name: awayName, logo: teams.find((team) => team.id === match.awayTeamId)?.logoUrl ?? null }}
+        periodTitle={periodTitle}
+        eventClock={eventClock}
+        emptyMessage={t('hockeyPage.noEvents', 'No events recorded yet')}
+      />
     </div>
   );
 }

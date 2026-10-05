@@ -345,7 +345,8 @@
       "overtimeShort": "OT",
       "shootoutShort": "SO",
       "timeout": "Timeout",
-      "noEvents": "No match events yet"
+      "noEvents": "No match events yet",
+      "unknownPlayer": "Unknown player"
     },
     "timer": {
       "start": "Start Timer",
@@ -2126,6 +2127,12 @@
         "goalkeeper": "Goalkeeper",
         "selectGoalkeeper": "Select goalkeeper",
         "selectGoalkeeperRequired": "Goalkeeper is required to start the match",
+        "loanGoalkeeper": "Loan goalkeeper",
+        "loanGoalkeeperHint": "Creates a loan goalkeeper for the team and sets them as the goalkeeper. If one already exists, that same player is selected.",
+        "loanGoalkeeperConfirmTitle": "Set loan goalkeeper",
+        "loanGoalkeeperConfirmMessage": "Set a loan goalkeeper for {{team}}? The player is created if this team does not have one yet. Otherwise the existing loan goalkeeper is selected.",
+        "loanGoalkeeperConfirm": "Yes, set loan goalkeeper",
+        "loanGoalkeeperFailed": "Failed to add loan goalkeeper",
         "noGoalkeeper": "No goalkeeper selected (required to start match)",
         "players": "Field players",
         "player": "Player",
@@ -2793,6 +2800,14 @@
         "clearAway": "Clear away team",
         "save": "Save teams",
         "genericError": "Failed to save teams."
+      },
+      "lineup": {
+        "loanGoalkeeper": "Loan goalkeeper",
+        "loanGoalkeeperHint": "Creates a loan goalkeeper for the team and sets them as the goalkeeper. If one already exists, that same player is selected.",
+        "loanGoalkeeperConfirmTitle": "Set loan goalkeeper",
+        "loanGoalkeeperConfirmMessage": "Set a loan goalkeeper for {{team}}? The player is created if this team does not have one yet. Otherwise the existing loan goalkeeper is selected.",
+        "loanGoalkeeperConfirm": "Yes, set loan goalkeeper",
+        "loanGoalkeeperFailed": "Failed to add loan goalkeeper"
       },
       "actions": {
         "open": "Open Match",
@@ -3663,6 +3678,12 @@
         "goalkeeper": "Goalkeeper",
         "selectGoalkeeper": "Select goalkeeper",
         "selectGoalkeeperRequired": "Goalkeeper is required to start the match",
+        "loanGoalkeeper": "Loan goalkeeper",
+        "loanGoalkeeperHint": "Creates a loan goalkeeper for the team and sets them as the goalkeeper. If one already exists, that same player is selected.",
+        "loanGoalkeeperConfirmTitle": "Set loan goalkeeper",
+        "loanGoalkeeperConfirmMessage": "Set a loan goalkeeper for {{team}}? The player is created if this team does not have one yet. Otherwise the existing loan goalkeeper is selected.",
+        "loanGoalkeeperConfirm": "Yes, set loan goalkeeper",
+        "loanGoalkeeperFailed": "Failed to add loan goalkeeper",
         "players": "Field players",
         "player": "Player",
         "position": "Position",
@@ -3705,6 +3726,7 @@
       "penalizedPlayer": "Penalized player",
       "matchCompleted": "Match Completed",
       "startMatch": "Start Match",
+      "eventTime": "Time",
       "goalStrengths": {
         "EvenStrength": "Even strength",
         "PowerPlayOneMan": "Power play (1)",
@@ -3785,6 +3807,7 @@
     "final": "FINAL",
     "eventLog": "Event log",
     "noEvents": "No events recorded yet",
+    "penaltyMinutesShort": "{{count}} min",
     "home": "Home",
     "away": "Away",
     "score": "Score",
@@ -3935,6 +3958,10 @@
       "statistics": "Statistics",
       "results": "Results",
       "fixtures": "Fixtures"
+    },
+    "stats": {
+      "showMore": "Show more ({{count}})",
+      "showLess": "Show less"
     },
     "summary": {
       "title": "League Summary",

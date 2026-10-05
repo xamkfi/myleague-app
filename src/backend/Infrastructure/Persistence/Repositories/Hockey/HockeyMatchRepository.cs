@@ -240,7 +240,8 @@ public class HockeyMatchRepository : IHockeyMatchRepository
         string? searchQuery = null,
         TeamCategory? teamCategory = null,
         bool excludeDraftCompetitions = false,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IReadOnlyCollection<HockeyMatchStatus>? statuses = null)
     {
         IQueryable<HockeyMatch> query = BuildListQuery();
 
@@ -269,6 +270,12 @@ public class HockeyMatchRepository : IHockeyMatchRepository
         if (status is HockeyMatchStatus statusFilter)
         {
             query = query.Where(m => m.Status == statusFilter);
+        }
+
+        if (statuses is { Count: > 0 })
+        {
+            List<HockeyMatchStatus> statusFilters = statuses.Distinct().ToList();
+            query = query.Where(match => statusFilters.Contains(match.Status));
         }
 
         if (teamCategory is TeamCategory categoryFilter)

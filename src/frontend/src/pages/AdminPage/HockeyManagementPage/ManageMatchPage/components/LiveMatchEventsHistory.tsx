@@ -8,7 +8,8 @@ import './LiveMatchEventsHistory.scss';
 interface LiveMatchEventsHistoryProps {
   events: HockeyMatchEventDto[];
   teamNamesByMatchTeamId: Map<string, string>;
-  playerNames: Map<string, string>;
+  /** Display labels ("#12 Name") keyed by match active player id. */
+  activePlayerLabels: Map<string, string>;
   onDeleteEvent?: (event: HockeyMatchEventDto) => void;
   onDeleteEvents?: (events: HockeyMatchEventDto[]) => void;
   canDelete?: boolean;
@@ -80,11 +81,48 @@ function eventLabel(
   return { label: eventType, icon: '•' };
 }
 
+function formatGoalDetail(event: HockeyMatchEventDto, activePlayerLabels: Map<string, string>): string {
+  const scorer: string = event.matchActivePlayerId ? activePlayerLabels.get(event.matchActivePlayerId) ?? '' : '';
+  const assists: string[] = [event.primaryAssistActivePlayerId, event.secondaryAssistActivePlayerId]
+    .map((id) => (id ? activePlayerLabels.get(id) ?? '' : ''))
+    .filter(Boolean);
+  if (!scorer) {
+    return '';
+  }
+  return assists.length > 0 ? `${scorer} (${assists.join(', ')})` : scorer;
+}
+
+function formatPenaltyDetail(
+  event: HockeyMatchEventDto,
+  activePlayerLabels: Map<string, string>,
+  t: (key: string, fallback: string, options?: Record<string, unknown>) => string,
+): string {
+  const parts: string[] = [];
+  const player: string = event.matchActivePlayerId ? activePlayerLabels.get(event.matchActivePlayerId) ?? '' : '';
+  if (player) {
+    parts.push(player);
+  }
+  if (event.penaltyOffence) {
+    parts.push(t(`hockey.matches.penaltyOffences.${event.penaltyOffence}`, event.penaltyOffence));
+  }
+  if (typeof event.penaltyMinutes === 'number' && event.penaltyMinutes > 0) {
+    parts.push(t('hockeyPage.penaltyMinutesShort', '{{count}} min', { count: event.penaltyMinutes }));
+  }
+  return parts.join(' · ');
+}
+
 function formatEventDetail(
   event: HockeyMatchEventDto,
-  t: (key: string, fallback: string) => string,
+  activePlayerLabels: Map<string, string>,
+  t: (key: string, fallback: string, options?: Record<string, unknown>) => string,
 ): string {
   const type = event.eventType.toLowerCase();
+  if (type === 'goal') {
+    return formatGoalDetail(event, activePlayerLabels);
+  }
+  if (type === 'penalty') {
+    return formatPenaltyDetail(event, activePlayerLabels, t);
+  }
   const description = event.description;
   if (!description) {
     return '';
@@ -136,6 +174,7 @@ function periodTitle(periodNumber: number, overtimeLabel: string, shootoutLabel:
 function EventRow({
   row,
   teamName,
+  activePlayerLabels,
   canRemove,
   busy,
   onDeleteEvent,
@@ -143,6 +182,7 @@ function EventRow({
 }: {
   row: HistoryRow;
   teamName: string;
+  activePlayerLabels: Map<string, string>;
   canRemove: boolean;
   busy: boolean;
   onDeleteEvent?: (event: HockeyMatchEventDto) => void;
@@ -151,7 +191,7 @@ function EventRow({
   const { t } = useTranslation();
   const { event, members } = row;
   const meta = eventLabel(event.eventType, event.description, t);
-  const detail = formatEventDetail(event, t);
+  const detail = formatEventDetail(event, activePlayerLabels, t);
   const isBulk: boolean = members.length > 1;
 
   const handleDelete = (): void => {
@@ -193,6 +233,7 @@ function EventRow({
 function LiveMatchEventsHistory({
   events,
   teamNamesByMatchTeamId,
+  activePlayerLabels,
   onDeleteEvent,
   onDeleteEvents,
   canDelete = true,
@@ -272,6 +313,7 @@ function LiveMatchEventsHistory({
                       key={event.id}
                       row={row}
                       teamName={teamName}
+                      activePlayerLabels={activePlayerLabels}
                       canRemove={canRemove}
                       busy={busy}
                       onDeleteEvent={onDeleteEvent}

@@ -12,6 +12,12 @@
   padding: 24px;
 }
 
+.eard-confirm-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+}
+
 .eard-dialog {
   background: $color-white;
   border-radius: 12px;
@@ -128,6 +134,24 @@
       outline: 2px solid $color-blue-deep;
       outline-offset: -2px;
     }
+  }
+
+  &__controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    .eard-field__select {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: $color-neutral-dark-grey;
   }
 
   &__warning {

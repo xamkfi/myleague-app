@@ -332,10 +332,12 @@ function HockeyLeaguePage() {
                 {players.length > 0 && (
                   <div className="standing-container">
                     <HockeyPlayerStatsTables
-                      players={[...players].sort((left, right) => right.points - left.points).slice(0, 10)}
-                      goalies={[...goalies].sort((left, right) => right.savePercentage - left.savePercentage).slice(0, 5)}
+                      players={players}
+                      goalies={goalies}
                       playerNames={playerNames}
                       teamNames={teamNames}
+                      collapsedPlayerCount={10}
+                      collapsedGoalieCount={5}
                     />
                     <button
                       type="button"

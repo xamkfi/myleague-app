@@ -12,6 +12,7 @@ public class FootballPlayerConfiguration : IEntityTypeConfiguration<FootballPlay
         builder.Property(p => p.PersonId).IsRequired();
         builder.Ignore(p => p.Person);
         builder.Property(p => p.IsActive).IsRequired();
+        builder.Property(p => p.IsLoanGoalkeeper).IsRequired().HasDefaultValue(false);
         builder.OwnsOne(p => p.Position, positionBuilder =>
         {
             positionBuilder.Property(p => p.PrimaryPosition).IsRequired().HasConversion<string>();

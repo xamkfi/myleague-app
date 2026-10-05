@@ -186,12 +186,14 @@
       gap: map.get($spacing, 'sm');
     }
 
-    .news-section-container {
+    // Matches come right after the hero carousel on narrow screens so visitors
+    // see live and upcoming games without scrolling past the news list.
+    .sidebar-container {
+      width: 100%;
       order: 1;
     }
 
-    .sidebar-container {
-      width: 100%;
+    .news-section-container {
       order: 2;
     }
   }

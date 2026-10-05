@@ -6,12 +6,18 @@ import type {
   HockeyPlayerCompetitionStatisticsDto,
 } from '../../types/hockey/hockeyTypes';
 import { formatHockeyFaceoffPercentage } from '../../utils/hockeyLookups';
+import { useExpandableList, type ExpandableList } from '../../hooks/useExpandableList';
+import ExpandListToggle from '../../components/ExpandListToggle/ExpandListToggle';
 
 interface HockeyPlayerStatsTablesProps {
   players: HockeyPlayerCompetitionStatisticsDto[];
   goalies: HockeyGoalieCompetitionStatisticsDto[];
   playerNames: Map<string, string>;
   teamNames: Map<string, string>;
+  /** When set, only this many skaters are shown until the visitor expands the list. */
+  collapsedPlayerCount?: number;
+  /** When set, only this many goalies are shown until the visitor expands the list. */
+  collapsedGoalieCount?: number;
 }
 
 function HockeyPlayerStatsTables({
@@ -19,10 +25,20 @@ function HockeyPlayerStatsTables({
   goalies,
   playerNames,
   teamNames,
+  collapsedPlayerCount,
+  collapsedGoalieCount,
 }: HockeyPlayerStatsTablesProps) {
   const { t } = useTranslation();
-  const scorers = [...players].sort((a, b) => b.points - a.points || b.goals - a.goals);
-  const rankedGoalies = [...goalies].sort((a, b) => b.savePercentage - a.savePercentage);
+  const allScorers: HockeyPlayerCompetitionStatisticsDto[] =
+    [...players].sort((a, b) => b.points - a.points || b.goals - a.goals);
+  const allGoalies: HockeyGoalieCompetitionStatisticsDto[] =
+    [...goalies].sort((a, b) => b.savePercentage - a.savePercentage);
+  const scorersList: ExpandableList<HockeyPlayerCompetitionStatisticsDto> =
+    useExpandableList(allScorers, collapsedPlayerCount ?? allScorers.length);
+  const goaliesList: ExpandableList<HockeyGoalieCompetitionStatisticsDto> =
+    useExpandableList(allGoalies, collapsedGoalieCount ?? allGoalies.length);
+  const scorers: HockeyPlayerCompetitionStatisticsDto[] = scorersList.visible;
+  const rankedGoalies: HockeyGoalieCompetitionStatisticsDto[] = goaliesList.visible;
   const namedTeams = [...teamNames.entries()].map(([id, name]) => ({ id, name }));
 
   return (
@@ -78,6 +94,7 @@ function HockeyPlayerStatsTables({
           </tbody>
         </table>
         </div>
+        <ExpandListToggle list={scorersList} totalCount={allScorers.length} />
       </div>
       {rankedGoalies.length > 0 && (
         <div className="standing-container">
@@ -127,6 +144,7 @@ function HockeyPlayerStatsTables({
             </tbody>
           </table>
           </div>
+          <ExpandListToggle list={goaliesList} totalCount={allGoalies.length} />
         </div>
       )}
     </>

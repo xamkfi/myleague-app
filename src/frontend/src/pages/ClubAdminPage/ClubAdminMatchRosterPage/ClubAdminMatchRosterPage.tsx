@@ -73,6 +73,16 @@ function matchesPlayerSearch(player: RosterPlayerOption, query: string): boolean
   return haystack.includes(needle);
 }
 
+/** Every team-roster player is selectable regardless of licence status (`isActive`). */
+function uniqueRosterRows<T extends { playerId: string }>(roster: T[]): T[] {
+  const seen: Set<string> = new Set<string>();
+  return roster.filter((row) => {
+    if (seen.has(row.playerId)) return false;
+    seen.add(row.playerId);
+    return true;
+  });
+}
+
 function isInMatchRoster(
   player: RosterPlayerOption,
   selections: Record<string, SelectionState>,
@@ -155,7 +165,7 @@ function ClubAdminMatchRosterPage() {
           status: match.status,
         });
 
-        const activeRoster = team.roster.filter((p) => p.isActive);
+        const activeRoster = uniqueRosterRows(team.roster);
         setPlayers(activeRoster.map((p) => ({
           playerId: p.playerId,
           playerName: p.playerName,
@@ -190,7 +200,7 @@ function ClubAdminMatchRosterPage() {
           status: match.status,
         });
 
-        const activeRoster = team.roster.filter((p) => p.isActive);
+        const activeRoster = uniqueRosterRows(team.roster);
         setPlayers(activeRoster.map((p) => ({
           playerId: p.playerId,
           playerName: p.playerName,

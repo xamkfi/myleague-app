@@ -64,10 +64,10 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
                 (await _statisticsRepository.GetTeamStandingsAsync(request.CompetitionId, cancellationToken)).ToList();
 
             List<FootballPlayerSeasonStatistics> topScorers =
-                (await _statisticsRepository.GetTopScorersAsync(request.CompetitionId, 10, cancellationToken)).ToList();
+                (await _statisticsRepository.GetTopScorersAsync(request.CompetitionId, request.TopN, cancellationToken)).ToList();
 
             List<FootballPlayerSeasonStatistics> topAssists =
-                (await _statisticsRepository.GetTopAssistsAsync(request.CompetitionId, 10, cancellationToken)).ToList();
+                (await _statisticsRepository.GetTopAssistsAsync(request.CompetitionId, request.TopN, cancellationToken)).ToList();
 
             if (teamStats.Count == 0)
             {

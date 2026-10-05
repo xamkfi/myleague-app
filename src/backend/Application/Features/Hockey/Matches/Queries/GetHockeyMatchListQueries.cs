@@ -47,7 +47,8 @@ public record GetHockeyMatchesQuery(
     DateTime? EndDate = null,
     TeamCategory? TeamCategory = null,
     string SortOrder = "desc",
-    bool IncludeDrafts = false) : IRequest<Result<PagedResult<HockeyMatchListDto>>>
+    bool IncludeDrafts = false,
+    IReadOnlyList<HockeyMatchStatus>? Statuses = null) : IRequest<Result<PagedResult<HockeyMatchListDto>>>
 {
     public const string ResourceKey = "HockeyMatches";
 }

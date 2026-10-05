@@ -63,6 +63,7 @@ export interface GetHockeyMatchesRequest {
   endDate?: string;
   teamCategory?: string;
   sortOrder?: 'asc' | 'desc' | string;
+  statuses?: HockeyMatchStatus[];
 }
 
 export interface HockeyMatchListDto {
@@ -623,6 +624,12 @@ export interface HockeyMatchEventDto {
   matchActivePlayerId: string | null;
   losingActivePlayerId?: string | null;
   description: string | null;
+  primaryAssistActivePlayerId?: string | null;
+  secondaryAssistActivePlayerId?: string | null;
+  goalStrength?: string | null;
+  penaltyOffence?: string | null;
+  penaltySeverity?: string | null;
+  penaltyMinutes?: number | null;
 }
 
 export interface HockeyMatchOfficialDto {

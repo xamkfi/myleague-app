@@ -42,18 +42,26 @@ export const hockeyMatchService = {
   getAllPages: (params: Omit<GetPagedHockeyMatchesRequest, 'page' | 'pageSize'> = {}): Promise<HockeyMatchDto[]> =>
     loadAllPaged((page, pageSize) => hockeyMatchService.getPaged({ ...params, page, pageSize })),
 
-  getList: (params: GetHockeyMatchesRequest = {}): Promise<PaginatedApiResponse<HockeyMatchListDto>> =>
-    hockeyPagedRequest<HockeyMatchListDto>(
-      `/HockeyMatch${toQueryString({
+  getList: (params: GetHockeyMatchesRequest = {}): Promise<PaginatedApiResponse<HockeyMatchListDto>> => {
+    const search = new URLSearchParams(
+      toQueryString({
         page: params.page,
         pageSize: params.pageSize,
         startDate: params.startDate,
         endDate: params.endDate,
         teamCategory: params.teamCategory,
         sortOrder: params.sortOrder,
-      })}`,
+      }).replace(/^\?/, ''),
+    );
+    for (const status of params.statuses ?? []) {
+      search.append('statuses', status);
+    }
+    const query = search.toString();
+    return hockeyPagedRequest<HockeyMatchListDto>(
+      `/HockeyMatch${query ? `?${query}` : ''}`,
       'Failed to fetch hockey matches',
-    ),
+    );
+  },
 
   getAllListPages: (params: Omit<GetHockeyMatchesRequest, 'page' | 'pageSize'> = {}): Promise<HockeyMatchListDto[]> =>
     loadAllPaged((page, pageSize) => hockeyMatchService.getList({ ...params, page, pageSize })),

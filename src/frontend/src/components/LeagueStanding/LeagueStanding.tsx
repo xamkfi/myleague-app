@@ -21,6 +21,10 @@ import { getPlayerPath, getTeamPath, type SportKind } from '../../utils/sportRou
 import { TeamLink, PlayerLink } from '../SportLinks';
 import TeamLogoMark from '../TeamLogoMark/TeamLogoMark';
 import { FloorballDecisionCells, FloorballDecisionColGroup, FloorballDecisionHeaderCells } from './FloorballDecisionColumns';
+import { useExpandableList, type ExpandableList } from '../../hooks/useExpandableList';
+import ExpandListToggle from '../ExpandListToggle/ExpandListToggle';
+
+const LEADERBOARD_COLLAPSED_SIZE = 10;
 
 type StandingView = 'standings' | 'scorers' | 'assists' | 'goalies';
 type LeagueSeasonSummary = FloorballSeasonStatisticsSummaryDto | FootballSeasonStatisticsSummaryDto;
@@ -90,6 +94,13 @@ export default function LeagueStanding({
   }, [showGoalies, activeView]);
 
   const seasonId = seasonSummary?.competitionId;
+  const allScorers: LeaguePlayerStat[] = seasonSummary?.topScorers || [];
+  const allAssists: LeaguePlayerStat[] = seasonSummary?.topAssists || [];
+  const allGoalies: FloorballGoalieSeasonStatisticsDto[] = getGoalies(seasonSummary);
+  const scorersList: ExpandableList<LeaguePlayerStat> = useExpandableList(allScorers, LEADERBOARD_COLLAPSED_SIZE);
+  const assistsList: ExpandableList<LeaguePlayerStat> = useExpandableList(allAssists, LEADERBOARD_COLLAPSED_SIZE);
+  const goaliesList: ExpandableList<FloorballGoalieSeasonStatisticsDto> =
+    useExpandableList(allGoalies, LEADERBOARD_COLLAPSED_SIZE);
 
   const navigateToTeam = (teamId: string) => {
     const team = teams?.find((item) => item.id === teamId);
@@ -312,7 +323,7 @@ export default function LeagueStanding({
   };
 
   const renderTopScorersTable = () => {
-    const scorers: LeaguePlayerStat[] = seasonSummary?.topScorers || [];
+    const scorers: LeaguePlayerStat[] = scorersList.visible;
 
     if (!seasonSummary || scorers.length === 0) {
       return (
@@ -324,6 +335,7 @@ export default function LeagueStanding({
     }
 
     return (
+      <>
       <table className="standing-table">
         <colgroup>
           <col className="rank-col" />
@@ -372,11 +384,13 @@ export default function LeagueStanding({
           })}
         </tbody>
       </table>
+      <ExpandListToggle list={scorersList} totalCount={allScorers.length} />
+      </>
     );
   };
 
   const renderTopAssistsTable = () => {
-    const assists: LeaguePlayerStat[] = seasonSummary?.topAssists || [];
+    const assists: LeaguePlayerStat[] = assistsList.visible;
 
     if (!seasonSummary || assists.length === 0) {
       return (
@@ -388,6 +402,7 @@ export default function LeagueStanding({
     }
 
     return (
+      <>
       <table className="standing-table">
         <colgroup>
           <col className="rank-col" />
@@ -436,11 +451,13 @@ export default function LeagueStanding({
           })}
         </tbody>
       </table>
+      <ExpandListToggle list={assistsList} totalCount={allAssists.length} />
+      </>
     );
   };
 
   const renderGoaliesTable = () => {
-    const goalies = getGoalies(seasonSummary);
+    const goalies: FloorballGoalieSeasonStatisticsDto[] = goaliesList.visible;
 
     if (!seasonSummary || goalies.length === 0) {
       return (
@@ -452,6 +469,7 @@ export default function LeagueStanding({
     }
 
     return (
+      <>
       <table className="standing-table">
         <colgroup>
           <col className="rank-col" />
@@ -506,6 +524,8 @@ export default function LeagueStanding({
           })}
         </tbody>
       </table>
+      <ExpandListToggle list={goaliesList} totalCount={allGoalies.length} />
+      </>
     );
   };
 
