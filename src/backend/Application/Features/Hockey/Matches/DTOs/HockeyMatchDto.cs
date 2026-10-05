@@ -77,7 +77,13 @@ public record HockeyMatchEventDto(
     Guid? MatchTeamId,
     Guid? MatchActivePlayerId,
     string? Description,
-    Guid? LosingActivePlayerId = null);
+    Guid? LosingActivePlayerId = null,
+    Guid? PrimaryAssistActivePlayerId = null,
+    Guid? SecondaryAssistActivePlayerId = null,
+    string? GoalStrength = null,
+    string? PenaltyOffence = null,
+    string? PenaltySeverity = null,
+    int? PenaltyMinutes = null);
 
 /// <summary>
 /// Official assigned to a match.

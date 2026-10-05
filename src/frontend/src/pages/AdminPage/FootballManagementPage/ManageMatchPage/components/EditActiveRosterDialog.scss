@@ -12,6 +12,12 @@
   padding: 24px;
 }
 
+.eard-confirm-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+}
+
 .eard-dialog {
   background: $color-white;
   border-radius: 12px;
@@ -65,6 +71,17 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+}
+
+.eard-loan-goalkeeper {
+  align-self: flex-start;
+}
+
+.eard-loan-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: $color-neutral-dark-grey;
 }
 
 .eard-column {

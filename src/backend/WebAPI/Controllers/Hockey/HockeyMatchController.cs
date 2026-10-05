@@ -75,7 +75,8 @@ public class HockeyMatchController : BaseApiController
                 request.EndDate,
                 request.TeamCategory,
                 request.SortOrder,
-                IncludeDrafts(request.IncludeDrafts)),
+                IncludeDrafts(request.IncludeDrafts),
+                request.Statuses),
             cancellationToken);
         return HandlePaginatedResult(result, "Hockey matches retrieved successfully", "Failed to retrieve hockey matches");
     }

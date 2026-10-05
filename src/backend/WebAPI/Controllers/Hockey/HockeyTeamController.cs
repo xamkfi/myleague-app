@@ -347,4 +347,26 @@ public class HockeyTeamController : BaseApiController
             await _mediator.Send(new RemoveHockeyTeamStaffCommand(teamId, staffId), cancellationToken),
             "Staff removed from hockey team successfully",
             "Failed to remove staff from hockey team");
+
+    /// <summary>
+    /// Creates the team's loan goalkeeper, or returns the existing one and ensures a roster
+    /// row for the given competition.
+    /// </summary>
+    /// <param name="teamId">Team ID</param>
+    /// <param name="competitionId">Competition roster to attach the goalkeeper to</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The loan goalkeeper</returns>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [HttpPost("{teamId:guid}/loan-goalkeeper")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyLoanGoalkeeperDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyLoanGoalkeeperDto>>> EnsureLoanGoalkeeper(
+        Guid teamId,
+        [FromQuery] Guid? competitionId = null,
+        CancellationToken cancellationToken = default) =>
+        HandleResult(
+            await _mediator.Send(new EnsureHockeyLoanGoalkeeperCommand(teamId, competitionId), cancellationToken),
+            "Loan goalkeeper ensured successfully",
+            "Failed to ensure loan goalkeeper");
 }

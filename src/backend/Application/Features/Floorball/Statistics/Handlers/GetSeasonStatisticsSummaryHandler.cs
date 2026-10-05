@@ -90,15 +90,15 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
 
             // Get top scorers
             List<Domain.Entities.Floorball.Statistics.FloorballPlayerSeasonStatistics> topScorers = 
-                (await _statisticsRepository.GetTopScorersAsync(request.CompetitionId, 10, cancellationToken)).ToList();
+                (await _statisticsRepository.GetTopScorersAsync(request.CompetitionId, request.TopN, cancellationToken)).ToList();
 
             // Get top assist leaders
             List<Domain.Entities.Floorball.Statistics.FloorballPlayerSeasonStatistics> topAssists = 
-                (await _statisticsRepository.GetTopAssistsAsync(request.CompetitionId, 10, cancellationToken)).ToList();
+                (await _statisticsRepository.GetTopAssistsAsync(request.CompetitionId, request.TopN, cancellationToken)).ToList();
 
             // Get top goalies (minimum 5 games played)
             List<Domain.Entities.Floorball.Statistics.FloorballGoalieSeasonStatistics> topGoalies = 
-                (await _statisticsRepository.GetTopGoaliesAsync(request.CompetitionId, 10, 1, cancellationToken)).ToList();
+                (await _statisticsRepository.GetTopGoaliesAsync(request.CompetitionId, request.TopN, 1, cancellationToken)).ToList();
 
             if (teamStats.Count == 0)
             {

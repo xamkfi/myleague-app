@@ -411,5 +411,27 @@ namespace WebAPI.Controllers.Football
 
             return HandleResult(result, "Team logo updated successfully", "Failed to update team logo");
         }
+
+        /// <summary>
+        /// Creates the team's loan goalkeeper, or returns the existing one and ensures a roster
+        /// row for the given competition.
+        /// </summary>
+        /// <param name="teamId">Team ID</param>
+        /// <param name="competitionId">Competition roster to attach the goalkeeper to</param>
+        /// <returns>The loan goalkeeper</returns>
+        [HttpPost("{teamId:guid}/loan-goalkeeper")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
+        [ProducesResponseType(typeof(ApiResponse<FootballLoanGoalkeeperDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FootballLoanGoalkeeperDto>>> EnsureLoanGoalkeeper(
+            Guid teamId,
+            [FromQuery] Guid? competitionId = null)
+        {
+            _logger.LogInformation("Ensuring loan goalkeeper for football team {TeamId}", teamId);
+            Result<FootballLoanGoalkeeperDto> result = await _mediator.Send(
+                new EnsureFootballLoanGoalkeeperCommand(teamId, competitionId));
+            return HandleResult(result, "Loan goalkeeper ensured successfully", "Failed to ensure loan goalkeeper");
+        }
     }
 }

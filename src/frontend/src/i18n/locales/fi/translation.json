@@ -206,7 +206,8 @@
       "overtimeShort": "JA",
       "shootoutShort": "VM",
       "timeout": "Aikalisä",
-      "noEvents": "Ei ottelutapahtumia"
+      "noEvents": "Ei ottelutapahtumia",
+      "unknownPlayer": "Tuntematon pelaaja"
     },
     "timer": {
       "start": "Käynnistä kello",
@@ -2134,6 +2135,12 @@
         "goalkeeper": "Maalivahti",
         "selectGoalkeeper": "Valitse maalivahti",
         "selectGoalkeeperRequired": "Maalivahti on pakollinen ottelun aloittamiseksi",
+        "loanGoalkeeper": "Lainavahti",
+        "loanGoalkeeperHint": "Luo joukkueelle lainavahdin ja asettaa sen maalivahdiksi. Jos lainavahti on jo luotu, käytetään samaa pelaajaa.",
+        "loanGoalkeeperConfirmTitle": "Aseta lainavahti",
+        "loanGoalkeeperConfirmMessage": "Haluatko asettaa lainavahdin joukkueelle {{team}}? Pelaaja luodaan, jos sitä ei vielä ole. Muuten valitaan olemassa oleva lainavahti.",
+        "loanGoalkeeperConfirm": "Kyllä, aseta lainavahti",
+        "loanGoalkeeperFailed": "Lainavahdin lisääminen epäonnistui",
         "noGoalkeeper": "Maalivahtia ei ole valittu (vaaditaan ottelun aloittamiseksi)",
         "players": "Kenttäpelaajat",
         "player": "Pelaaja",
@@ -2802,6 +2809,14 @@
         "clearAway": "Tyhjennä vierasjoukkue",
         "save": "Tallenna joukkueet",
         "genericError": "Joukkueiden tallennus epäonnistui."
+      },
+      "lineup": {
+        "loanGoalkeeper": "Lainavahti",
+        "loanGoalkeeperHint": "Luo joukkueelle lainavahdin ja asettaa sen maalivahdiksi. Jos lainavahti on jo luotu, käytetään samaa pelaajaa.",
+        "loanGoalkeeperConfirmTitle": "Aseta lainavahti",
+        "loanGoalkeeperConfirmMessage": "Haluatko asettaa lainavahdin joukkueelle {{team}}? Pelaaja luodaan, jos sitä ei vielä ole. Muuten valitaan olemassa oleva lainavahti.",
+        "loanGoalkeeperConfirm": "Kyllä, aseta lainavahti",
+        "loanGoalkeeperFailed": "Lainavahdin lisääminen epäonnistui"
       },
       "actions": {
         "open": "Avaa ottelu",
@@ -3636,6 +3651,12 @@
         "goalkeeper": "Maalivahti",
         "selectGoalkeeper": "Valitse maalivahti",
         "selectGoalkeeperRequired": "Maalivahti on pakollinen ottelun aloittamiseksi",
+        "loanGoalkeeper": "Lainavahti",
+        "loanGoalkeeperHint": "Luo joukkueelle lainavahdin ja asettaa sen maalivahdiksi. Jos lainavahti on jo luotu, käytetään samaa pelaajaa.",
+        "loanGoalkeeperConfirmTitle": "Aseta lainavahti",
+        "loanGoalkeeperConfirmMessage": "Haluatko asettaa lainavahdin joukkueelle {{team}}? Pelaaja luodaan, jos sitä ei vielä ole. Muuten valitaan olemassa oleva lainavahti.",
+        "loanGoalkeeperConfirm": "Kyllä, aseta lainavahti",
+        "loanGoalkeeperFailed": "Lainavahdin lisääminen epäonnistui",
         "players": "Kenttäpelaajat",
         "player": "Pelaaja",
         "position": "Pelipaikka",
@@ -3712,6 +3733,7 @@
         "allSeasons": "Kaikki kaudet",
         "allCompetitions": "Kaikki kilpailut"
       },
+      "eventTime": "Aika",
       "goalStrengths": {
         "EvenStrength": "Tasarajoitus",
         "PowerPlayOneMan": "Ylivoima (1)",
@@ -3792,6 +3814,7 @@
     "final": "LOPPU",
     "eventLog": "Tapahtumat",
     "noEvents": "Ei tapahtumia vielä",
+    "penaltyMinutesShort": "{{count}} min",
     "home": "Koti",
     "away": "Vieras",
     "score": "Tulos",
@@ -3924,6 +3947,10 @@
       "statistics": "Tilastot",
       "results": "Tulokset",
       "fixtures": "Otteluohjelma"
+    },
+    "stats": {
+      "showMore": "Näytä lisää ({{count}})",
+      "showLess": "Näytä vähemmän"
     },
     "summary": {
       "title": "Sarjan Yhteenveto",

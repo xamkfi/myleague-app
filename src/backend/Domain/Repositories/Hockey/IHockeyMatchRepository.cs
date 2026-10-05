@@ -77,5 +77,6 @@ public interface IHockeyMatchRepository
         string? searchQuery = null,
         TeamCategory? teamCategory = null,
         bool excludeDraftCompetitions = false,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        IReadOnlyCollection<HockeyMatchStatus>? statuses = null);
 }

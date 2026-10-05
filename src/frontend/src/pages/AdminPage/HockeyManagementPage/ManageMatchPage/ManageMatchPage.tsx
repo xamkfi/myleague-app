@@ -32,7 +32,12 @@ import {
   type HockeyShotResult,
   type HockeyTeamDto,
 } from '../../../../types/hockey/hockeyTypes';
-import { loadHockeyRosterNameMaps, loadPersonNameMap, loadTeamNameMap } from '../../../../utils/hockeyLookups';
+import {
+  hockeyActivePlayerLabel,
+  loadHockeyRosterNameMaps,
+  loadPersonNameMap,
+  loadTeamNameMap,
+} from '../../../../utils/hockeyLookups';
 import { hockeyCompetitionKind, loadHockeyEnrolledTeams } from '../../../../utils/enrolledCompetitionTeams';
 import {
   DEFAULT_HOCKEY_MATCH_RULES,
@@ -98,6 +103,8 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   const [assistId, setAssistId] = useState('');
   const [secondaryAssistId, setSecondaryAssistId] = useState('');
   const [goalStrength, setGoalStrength] = useState<HockeyGoalStrength>('EvenStrength');
+  const [eventTimeMinutes, setEventTimeMinutes] = useState(0);
+  const [eventTimeSeconds, setEventTimeSeconds] = useState(0);
   const [penaltyMinutes, setPenaltyMinutes] = useState(2);
   const [penaltyOffence, setPenaltyOffence] = useState<HockeyPenaltyOffence>('Tripping');
   const [penaltySeverity, setPenaltySeverity] = useState<HockeyPenaltySeverity>('Minor');
@@ -383,7 +390,9 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
     if (!side) {
       return;
     }
-    captureEventStamp();
+    const stamp = captureEventStamp();
+    setEventTimeMinutes(Math.floor(stamp.timeInSeconds / 60));
+    setEventTimeSeconds(stamp.timeInSeconds % 60);
     if (kind === 'goal' || kind === 'penalty') {
       stopClock();
     }
@@ -416,6 +425,11 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
     setEventForm('faceoff');
   };
 
+  const handleEventTimeChange = (minutes: number, seconds: number): void => {
+    setEventTimeMinutes(minutes);
+    setEventTimeSeconds(seconds);
+  };
+
   const closeEventForm = (): void => {
     clearEventStamp();
     setEventForm(null);
@@ -424,7 +438,10 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   const submitEvent = async (): Promise<void> => {
     const stamp = eventStampRef.current;
     const periodNumber = stamp?.periodNumber ?? timer.currentPeriod;
-    const timeInSeconds = stamp?.timeInSeconds ?? getInPeriodSeconds();
+    const stampSeconds = stamp?.timeInSeconds ?? getInPeriodSeconds();
+    const timeInSeconds = eventForm === 'goal' || eventForm === 'penalty'
+      ? eventTimeMinutes * 60 + eventTimeSeconds
+      : stampSeconds;
     if (eventForm === 'goal' && playerId) {
       const defendingGoalieId = hockeyOpposingGoalieId(match, selectedTeamId);
       await run(() => hockeyMatchService.recordGoal(match.id, {
@@ -573,6 +590,16 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
     return names;
   }, [match.matchTeams, teamNames]);
 
+  const activePlayerLabels = useMemo(() => {
+    const labels = new Map<string, string>();
+    for (const side of match.matchTeams) {
+      for (const active of side.activePlayers) {
+        labels.set(active.id, hockeyActivePlayerLabel(match, active.id, playerNames));
+      }
+    }
+    return labels;
+  }, [match, playerNames]);
+
   const selectedOfficialIds = match.officials.map((item) => item.officialId);
   const officialOptions = officials.map((item) => ({
     id: item.id,
@@ -669,7 +696,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
           <LiveMatchEventsHistory
             events={match.events}
             teamNamesByMatchTeamId={teamNamesByMatchTeamId}
-            playerNames={playerNames}
+            activePlayerLabels={activePlayerLabels}
             canDelete={canRecord}
             busy={busy}
             onDeleteEvent={(eventItem) => setPendingDelete([eventItem])}
@@ -730,6 +757,9 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         onAssistChange={setAssistId}
         onSecondaryAssistChange={setSecondaryAssistId}
         onStrengthChange={setGoalStrength}
+        timeMinutes={eventTimeMinutes}
+        timeSeconds={eventTimeSeconds}
+        onTimeChange={handleEventTimeChange}
         onRecordGoal={submitEvent}
         onClose={closeEventForm}
       />
@@ -746,6 +776,9 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         onOffenceChange={setPenaltyOffence}
         onSeverityChange={setPenaltySeverity}
         onMinutesChange={setPenaltyMinutes}
+        timeMinutes={eventTimeMinutes}
+        timeSeconds={eventTimeSeconds}
+        onTimeChange={handleEventTimeChange}
         onRecordPenalty={submitEvent}
         onClose={closeEventForm}
       />
@@ -812,6 +845,22 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         homeTeam={homeTeamEntity}
         awayTeam={awayTeamEntity}
         playerNames={playerNames}
+        onLoanGoalkeeperAdded={(teamId, row, displayName) => {
+          setTeams((current) => current.map((team) => {
+            if (team.id !== teamId) {
+              return team;
+            }
+            if (team.roster.some((item) => item.id === row.id)) {
+              return team;
+            }
+            return { ...team, roster: [...team.roster, row] };
+          }));
+          setPlayerNames((current) => {
+            const next = new Map(current);
+            next.set(row.id, displayName);
+            return next;
+          });
+        }}
         onClose={() => setIsLineupDialogOpen(false)}
         onSaved={setMatch}
         onError={setError}

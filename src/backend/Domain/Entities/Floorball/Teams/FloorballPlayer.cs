@@ -48,6 +48,11 @@ public class FloorballPlayer : BaseEntity
     public int CareerAssists { get; private set; }
 
     /// <summary>
+    /// Gets whether this profile is the team's reusable loan goalkeeper placeholder.
+    /// </summary>
+    public bool IsLoanGoalkeeper { get; private set; }
+
+    /// <summary>
     /// Private constructor for EF Core
     /// </summary>
     private FloorballPlayer()
@@ -59,6 +64,7 @@ public class FloorballPlayer : BaseEntity
         Position = new Position(FloorballPosition.None);
         CareerGoals = 0;
         CareerAssists = 0;
+        IsLoanGoalkeeper = false;
     }
 
     /// <summary>
@@ -81,7 +87,15 @@ public class FloorballPlayer : BaseEntity
         Position = position;
         CareerGoals = 0;
         CareerAssists = 0;
-        
+        IsLoanGoalkeeper = false;
+    }
+
+    /// <summary>
+    /// Marks this profile as the team's reusable loan goalkeeper.
+    /// </summary>
+    public void MarkAsLoanGoalkeeper()
+    {
+        IsLoanGoalkeeper = true;
     }
 
     /// <summary>

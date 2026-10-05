@@ -122,6 +122,13 @@ public record GetHockeyMatchesRequest : PagedRequestBase
     /// <summary>Sort order for scheduled start time (<c>asc</c> or <c>desc</c>).</summary>
     public string SortOrder { get; init; } = "desc";
 
+    /// <summary>
+    /// Optional match statuses. Accepts one or more values
+    /// (for example ?statuses=Scheduled&amp;statuses=Warmup). When omitted, every status is returned.
+    /// </summary>
+    [FromQuery(Name = "statuses")]
+    public List<HockeyMatchStatus>? Statuses { get; init; }
+
     /// <summary>When true, a system administrator also receives matches from draft competitions.</summary>
     public bool IncludeDrafts { get; init; }
 }

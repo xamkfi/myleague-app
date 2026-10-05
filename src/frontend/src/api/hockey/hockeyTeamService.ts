@@ -10,6 +10,7 @@ import type {
   UpdateHockeyTeamRequest,
 } from '../../types/hockey/hockeyTypes';
 import { hockeyPagedRequest, hockeyRequest, jsonBody, withTeamCategory } from './hockeyApi';
+import type { LoanGoalkeeperDto } from '../../types/loanGoalkeeper';
 
 function uniqueById<T extends { id: string }>(items: T[]): T[] {
   const seen = new Set<string>();
@@ -88,6 +89,19 @@ export const hockeyTeamService = {
       method: 'PUT',
       ...jsonBody({ logoUrl }),
     }),
+
+  ensureLoanGoalkeeper: (teamId: string, competitionId?: string | null): Promise<LoanGoalkeeperDto> => {
+    const params = new URLSearchParams();
+    if (competitionId) {
+      params.set('competitionId', competitionId);
+    }
+    const query = params.toString();
+    return hockeyRequest<LoanGoalkeeperDto>(
+      `/HockeyTeam/${teamId}/loan-goalkeeper${query ? `?${query}` : ''}`,
+      'Failed to ensure loan goalkeeper',
+      { method: 'POST' },
+    );
+  },
 
   addPlayer: (
     teamId: string,

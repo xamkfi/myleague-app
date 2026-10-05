@@ -14,6 +14,10 @@ public interface IHockeyPlayerRepository
 
     Task<HockeyPlayer?> GetByIdAsync(Guid id);
 
+    Task<Dictionary<Guid, HockeyPlayer>> GetByIdsAsync(
+        IEnumerable<Guid> ids,
+        CancellationToken cancellationToken = default);
+
     Task<HockeyPlayer?> GetByPersonIdAsync(Guid personId);
 
     Task<bool> ExistsAsync(Guid id);

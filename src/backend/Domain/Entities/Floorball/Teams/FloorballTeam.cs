@@ -330,12 +330,22 @@ public class FloorballTeam : BaseEntity
     public bool HasActiveRosterMembership(Guid playerId, Guid? competitionId) =>
         _roster.Any(p => p.IsActive && p.PlayerId == playerId && p.CompetitionId == competitionId);
 
+    /// <summary>
+    /// Whether the player has a roster row for the competition, regardless of licence status.
+    /// </summary>
+    public bool HasRosterMembership(Guid playerId, Guid? competitionId) =>
+        _roster.Any(p => p.PlayerId == playerId && p.CompetitionId == competitionId);
+
+    /// <summary>
+    /// Match-day eligibility: any roster player may be selected or credited with events,
+    /// even when their licence is unpaid (<see cref="FloorballTeamPlayer.IsActive"/> false).
+    /// </summary>
     public bool IsPlayerOnRoster(Guid playerId, Guid? competitionId)
     {
-        if (HasActiveRosterMembership(playerId, competitionId))
+        if (HasRosterMembership(playerId, competitionId))
             return true;
-        if (competitionId.HasValue && !_roster.Any(p => p.IsActive && p.CompetitionId == competitionId))
-            return HasActiveRosterMembership(playerId, null);
+        if (competitionId.HasValue && !_roster.Any(p => p.CompetitionId == competitionId))
+            return HasRosterMembership(playerId, null);
         return false;
     }
 

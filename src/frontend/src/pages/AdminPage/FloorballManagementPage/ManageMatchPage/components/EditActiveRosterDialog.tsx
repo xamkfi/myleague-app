@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { floorballMatchService } from '../../../../../api/floorball/floorballMatchService';
+import { floorballTeamService } from '../../../../../api/floorball/floorballTeamService';
 import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballPlayerService';
+import ConfirmationDialog from '../../../../../components/ConfirmationDialog/ConfirmationDialog';
+import { formatPersonName } from '../../../../../types/loanGoalkeeper';
 import {
   FloorballPosition,
   type FloorballActiveLineupPlayer,
@@ -25,6 +28,8 @@ interface EditActiveRosterDialogProps {
   initialAwayLineup: FloorballActiveLineupPlayer[];
   initialHomeGoalieId: string;
   initialAwayGoalieId: string;
+  competitionId?: string | null;
+  onPlayerAdded: (teamId: string, player: FloorballPlayerDto) => void;
   onClose: () => void;
   onSaved: (updatedMatch: FloorballMatchDto) => void;
   onError: (message: string | null) => void;
@@ -50,6 +55,8 @@ interface TeamColumnProps {
   onAddPlayer: (playerId: string, role: FieldRole) => void;
   onRemovePlayer: (playerId: string) => void;
   onSetGoalie: (goalieId: string) => void;
+  onUseLoanGoalkeeper: () => void;
+  loanGoalkeeperBusy: boolean;
 }
 
 const sortPlayers = (a: FloorballPlayerDto, b: FloorballPlayerDto): number => {
@@ -101,7 +108,7 @@ const RoleChipsRow = ({
       <ul className="eard-selected-chips">
         {players.map((p: FloorballPlayerDto) => (
           <li key={p.id} className="eard-chip">
-            {p.jerseyNumber !== undefined && (
+            {p.jerseyNumber != null && (
               <span className="eard-chip__jersey">#{p.jerseyNumber}</span>
             )}
             <span className="eard-chip__name">
@@ -130,6 +137,8 @@ const TeamColumn = ({
   onAddPlayer,
   onRemovePlayer,
   onSetGoalie,
+  onUseLoanGoalkeeper,
+  loanGoalkeeperBusy,
 }: TeamColumnProps): ReactElement => {
   const { t } = useTranslation();
   const [search, setSearch] = useState<string>('');
@@ -179,19 +188,31 @@ const TeamColumn = ({
           {t('floorball.matches.lineup.goalkeeper', 'Goalkeeper')}
           <span className="eard-required-marker" aria-hidden="true">*</span>
         </span>
-        <select
-          className="eard-field__select"
-          value={state.goalieId}
-          onChange={(e: ChangeEvent<HTMLSelectElement>) => onSetGoalie(e.target.value)}
-        >
-          <option value="">{t('floorball.matches.lineup.selectGoalkeeper', 'Select goalkeeper')}</option>
-          {goalieOptions.map((p: FloorballPlayerDto) => (
-            <option key={p.id} value={p.id}>
-              {p.jerseyNumber !== undefined ? `#${p.jerseyNumber} ` : ''}
-              {p.person.firstName} {p.person.lastName}
-            </option>
-          ))}
-        </select>
+        <div className="eard-field__controls">
+          <select
+            className="eard-field__select"
+            value={state.goalieId}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => onSetGoalie(e.target.value)}
+          >
+            <option value="">{t('floorball.matches.lineup.selectGoalkeeper', 'Select goalkeeper')}</option>
+            {goalieOptions.map((p: FloorballPlayerDto) => (
+              <option key={p.id} value={p.id}>
+                {p.jerseyNumber != null ? `#${p.jerseyNumber} ` : ''}
+                {formatPersonName(p.person.firstName, p.person.lastName)}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="eard-btn eard-btn--ghost eard-btn--sm"
+            onClick={onUseLoanGoalkeeper}
+            disabled={loanGoalkeeperBusy}
+          >
+            {loanGoalkeeperBusy
+              ? t('common.saving', 'Saving...')
+              : t('floorball.matches.lineup.loanGoalkeeper', 'Lainavahti')}
+          </button>
+        </div>
         {!state.goalieId && (
           <span className="eard-field__warning">
             <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>
@@ -199,6 +220,9 @@ const TeamColumn = ({
           </span>
         )}
       </label>
+      <p className="eard-field__hint">
+        {t('floorball.matches.lineup.loanGoalkeeperHint', 'Creates a loan goalkeeper for the team and sets them as the goalkeeper. If one already exists, that same player is selected.')}
+      </p>
 
       <div className="eard-section">
         <div className="eard-section__header">
@@ -285,7 +309,7 @@ const TeamColumn = ({
                 {availablePlayers.map((player: FloorballPlayerDto) => (
                   <tr key={player.id}>
                     <td className="eard-table__jersey">
-                      {player.jerseyNumber !== undefined ? `#${player.jerseyNumber}` : '–'}
+                      {player.jerseyNumber != null ? `#${player.jerseyNumber}` : '–'}
                     </td>
                     <td>
                       <span className="eard-player-name">
@@ -349,6 +373,8 @@ const EditActiveRosterDialog = ({
   initialAwayLineup,
   initialHomeGoalieId,
   initialAwayGoalieId,
+  competitionId,
+  onPlayerAdded,
   onClose,
   onSaved,
   onError,
@@ -363,9 +389,14 @@ const EditActiveRosterDialog = ({
     goalieId: initialAwayGoalieId,
   });
   const [saving, setSaving] = useState<boolean>(false);
+  const [loanSide, setLoanSide] = useState<'home' | 'away' | null>(null);
+  const [pendingLoanSide, setPendingLoanSide] = useState<'home' | 'away' | null>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setPendingLoanSide(null);
+      return;
+    }
     setHomeState({
       players: lineupToMap(initialHomeLineup),
       goalieId: initialHomeGoalieId,
@@ -432,7 +463,45 @@ const EditActiveRosterDialog = ({
     [updateTeamState]
   );
 
-  const canSave: boolean = Boolean(homeState.goalieId) && Boolean(awayState.goalieId) && !saving;
+  const addLoanGoalkeeper = useCallback(
+    async (side: 'home' | 'away'): Promise<void> => {
+      const teamId = side === 'home' ? homeTeamId : awayTeamId;
+      try {
+        setLoanSide(side);
+        onError(null);
+        const result = await floorballTeamService.ensureLoanGoalkeeper(teamId, competitionId);
+        const player: FloorballPlayerDto = {
+          id: result.playerId,
+          personId: '',
+          person: {
+            id: '',
+            firstName: result.displayName,
+            lastName: '',
+            birthDate: '',
+            fullName: result.displayName,
+            isRegistered: false,
+          },
+          isActive: true,
+          position: FloorballPosition.Goalkeeper,
+          careerGoals: 0,
+          careerAssists: 0,
+        };
+        onPlayerAdded(teamId, player);
+        setGoalie(side, result.playerId);
+      } catch (error) {
+        const message = error instanceof Error
+          ? error.message
+          : t('floorball.matches.lineup.loanGoalkeeperFailed', 'Failed to add loan goalkeeper');
+        onError(message);
+      } finally {
+        setLoanSide(null);
+        setPendingLoanSide(null);
+      }
+    },
+    [awayTeamId, competitionId, homeTeamId, onError, onPlayerAdded, setGoalie, t],
+  );
+
+  const canSave: boolean = Boolean(homeState.goalieId) && Boolean(awayState.goalieId) && !saving && loanSide === null;
 
   const handleSave = useCallback(async (): Promise<void> => {
     if (!canSave) return;
@@ -476,9 +545,23 @@ const EditActiveRosterDialog = ({
     }
   }, [canSave, homeState, awayState, matchId, homeTeamId, awayTeamId, onClose, onSaved, onError]);
 
+  const pendingTeamName: string = pendingLoanSide === 'home'
+    ? homeTeamName
+    : pendingLoanSide === 'away'
+      ? awayTeamName
+      : '';
+
+  const confirmLoanGoalkeeper = (): void => {
+    if (pendingLoanSide === null || loanSide !== null) {
+      return;
+    }
+    void addLoanGoalkeeper(pendingLoanSide);
+  };
+
   if (!isOpen) return null;
 
   return (
+    <>
     <div className="eard-overlay" onClick={onClose}>
       <div
         className="eard-dialog"
@@ -510,6 +593,8 @@ const EditActiveRosterDialog = ({
             onAddPlayer={(id, role) => addPlayer('home', id, role)}
             onRemovePlayer={(id) => removePlayer('home', id)}
             onSetGoalie={(id) => setGoalie('home', id)}
+            onUseLoanGoalkeeper={() => setPendingLoanSide('home')}
+            loanGoalkeeperBusy={loanSide !== null}
           />
           <TeamColumn
             teamLabel={awayTeamName}
@@ -518,6 +603,8 @@ const EditActiveRosterDialog = ({
             onAddPlayer={(id, role) => addPlayer('away', id, role)}
             onRemovePlayer={(id) => removePlayer('away', id)}
             onSetGoalie={(id) => setGoalie('away', id)}
+            onUseLoanGoalkeeper={() => setPendingLoanSide('away')}
+            loanGoalkeeperBusy={loanSide !== null}
           />
         </div>
 
@@ -551,6 +638,22 @@ const EditActiveRosterDialog = ({
         </footer>
       </div>
     </div>
+    {pendingLoanSide !== null && (
+      <div className="eard-confirm-layer">
+        <ConfirmationDialog
+          isOpen
+          icon="ℹ️"
+          title={t('floorball.matches.lineup.loanGoalkeeperConfirmTitle', 'Set loan goalkeeper')}
+          message={t('floorball.matches.lineup.loanGoalkeeperConfirmMessage', 'Set a loan goalkeeper for {{team}}? The player is created if this team does not have one yet. Otherwise the existing loan goalkeeper is selected.', { team: pendingTeamName })}
+          confirmText={t('floorball.matches.lineup.loanGoalkeeperConfirm', 'Yes, set loan goalkeeper')}
+          cancelText={t('common.cancel', 'Cancel')}
+          isLoading={loanSide !== null}
+          onConfirm={confirmLoanGoalkeeper}
+          onCancel={() => setPendingLoanSide(null)}
+        />
+      </div>
+    )}
+    </>
   );
 };
 
