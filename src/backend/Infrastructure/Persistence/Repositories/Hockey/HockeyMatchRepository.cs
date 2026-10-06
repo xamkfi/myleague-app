@@ -5,6 +5,7 @@ using Domain.Entities.Hockey.Matches.Events;
 using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Matches;
+using Domain.Enums.Hockey.Statistics;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Contexts;
@@ -194,10 +195,48 @@ public class HockeyMatchRepository : IHockeyMatchRepository
 
     public async Task<IReadOnlyList<HockeyMatch>> GetByTeamIdAsync(Guid teamId)
     {
-        return await BuildDetailQuery()
+        return await BuildListQuery()
             .Where(m => m.MatchTeams.Any(t => t.TeamId == teamId))
             .OrderBy(m => m.ScheduledStartTime)
             .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<HockeyMatch>> GetScheduledForTeamsAsync(
+        IReadOnlyCollection<Guid> teamIds,
+        DateTime from,
+        CancellationToken cancellationToken = default)
+    {
+        if (teamIds.Count == 0)
+            return Array.Empty<HockeyMatch>();
+
+        List<Guid> teamFilter = teamIds.Distinct().ToList();
+        DateTime fromUtc = DateTime.SpecifyKind(from, DateTimeKind.Utc);
+        return await BuildListQuery()
+            .Where(m => m.Status == HockeyMatchStatus.Scheduled && m.ScheduledStartTime >= fromUtc)
+            .Where(m => m.MatchTeams.Any(t => teamFilter.Contains(t.TeamId)))
+            .OrderBy(m => m.ScheduledStartTime)
+            .ThenBy(m => m.Id)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<HockeyMatch>> GetRecentForTeamPlayersAsync(
+        IReadOnlyCollection<Guid> teamPlayerIds,
+        int limit,
+        CancellationToken cancellationToken = default)
+    {
+        if (teamPlayerIds.Count == 0 || limit <= 0)
+            return Array.Empty<HockeyMatch>();
+
+        return await BuildListQuery()
+            .Include(m => m.MatchTeams)
+                .ThenInclude(t => t.PlayerSelection!)
+                    .ThenInclude(s => s.ActivePlayers)
+            .Where(m => m.MatchTeams.Any(t => t.PlayerSelection != null
+                && t.PlayerSelection.ActivePlayers.Any(a => teamPlayerIds.Contains(a.TeamPlayerId))))
+            .OrderByDescending(m => m.ScheduledStartTime)
+            .ThenBy(m => m.Id)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<bool> HasAnyForTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
@@ -211,11 +250,31 @@ public class HockeyMatchRepository : IHockeyMatchRepository
         return await BuildStatisticsQuery().FirstOrDefaultAsync(m => m.Id == id);
     }
 
-    public async Task<IReadOnlyList<HockeyMatch>> GetByCompetitionIdForStatisticsAsync(Guid competitionId)
+    public async Task<IReadOnlyList<HockeyMatch>> GetForStatisticsAsync(
+        Guid competitionId,
+        HockeyStatisticsScope scope,
+        Guid? competitionDivisionId = null,
+        Guid? tournamentGroupId = null,
+        Guid? playoffSeriesId = null,
+        CancellationToken cancellationToken = default)
     {
-        return await BuildStatisticsQuery()
+        IQueryable<HockeyMatch> query = BuildStatisticsQuery()
             .Where(m => m.CompetitionId == competitionId)
-            .ToListAsync();
+            .Where(m => m.CountsTowardStandings
+                || m.CountsTowardTeamStatistics
+                || m.CountsTowardPlayerStatistics
+                || m.CountsTowardGoalieStatistics);
+
+        query = scope switch
+        {
+            HockeyStatisticsScope.Competition => query,
+            HockeyStatisticsScope.Division => query.Where(m => m.CompetitionDivisionId == competitionDivisionId),
+            HockeyStatisticsScope.TournamentGroup => query.Where(m => m.TournamentGroupId == tournamentGroupId),
+            HockeyStatisticsScope.PlayoffSeries => query.Where(m => m.PlayoffSeriesId == playoffSeriesId),
+            _ => query.Where(_ => false)
+        };
+
+        return await query.ToListAsync(cancellationToken);
     }
 
     public void MarkEventAsAdded(HockeyMatchEvent matchEvent)
@@ -226,6 +285,48 @@ public class HockeyMatchRepository : IHockeyMatchRepository
     public void MarkEventAsDeleted(HockeyMatchEvent matchEvent)
     {
         _dbContext.Entry(matchEvent).State = EntityState.Deleted;
+    }
+
+    public async Task<IReadOnlyList<HockeyMatch>> GetLiveAsync(
+        Guid? competitionId,
+        DateTime upcomingUntil,
+        DateTime finishedSince,
+        CancellationToken cancellationToken = default)
+    {
+        HockeyMatchStatus[] liveStatuses =
+        [
+            HockeyMatchStatus.Warmup,
+            HockeyMatchStatus.InProgress,
+            HockeyMatchStatus.Intermission,
+            HockeyMatchStatus.Overtime,
+            HockeyMatchStatus.Shootout,
+        ];
+        DateTime upcomingUntilUtc = DateTime.SpecifyKind(upcomingUntil, DateTimeKind.Utc);
+        DateTime finishedSinceUtc = DateTime.SpecifyKind(finishedSince, DateTimeKind.Utc);
+        DateTime staleScheduledBefore = finishedSinceUtc.AddHours(-12);
+
+        IQueryable<HockeyMatch> query = _dbContext.HockeyMatches
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(m => m.MatchTeams)
+            .Include(m => m.Competition);
+
+        if (competitionId is Guid competitionFilter)
+        {
+            query = query.Where(m => m.CompetitionId == competitionFilter);
+        }
+
+        return await query
+            .Where(m =>
+                liveStatuses.Contains(m.Status)
+                || (m.Status == HockeyMatchStatus.Scheduled
+                    && m.ScheduledStartTime <= upcomingUntilUtc
+                    && m.ScheduledStartTime >= staleScheduledBefore)
+                || ((m.Status == HockeyMatchStatus.Finished || m.Status == HockeyMatchStatus.Forfeit)
+                    && m.ActualEndTime >= finishedSinceUtc))
+            .OrderBy(m => m.ScheduledStartTime)
+            .ThenBy(m => m.Id)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<PagedResult<HockeyMatch>> GetPagedAsync(
@@ -241,13 +342,20 @@ public class HockeyMatchRepository : IHockeyMatchRepository
         TeamCategory? teamCategory = null,
         bool excludeDraftCompetitions = false,
         CancellationToken cancellationToken = default,
-        IReadOnlyCollection<HockeyMatchStatus>? statuses = null)
+        IReadOnlyCollection<HockeyMatchStatus>? statuses = null,
+        bool activeSeasonsOnly = false)
     {
         IQueryable<HockeyMatch> query = BuildListQuery();
 
         if (competitionId is Guid competitionFilter)
         {
             query = query.Where(m => m.CompetitionId == competitionFilter);
+        }
+
+        if (activeSeasonsOnly)
+        {
+            query = query.Where(m =>
+                m.Competition is HockeySeason && m.Competition.Status == HockeyCompetitionStatus.Active);
         }
 
         if (teamId is Guid teamFilter)
@@ -298,8 +406,8 @@ public class HockeyMatchRepository : IHockeyMatchRepository
         }
 
         query = string.Equals(sortOrder, "asc", StringComparison.OrdinalIgnoreCase)
-            ? query.OrderBy(m => m.ScheduledStartTime)
-            : query.OrderByDescending(m => m.ScheduledStartTime);
+            ? query.OrderBy(m => m.ScheduledStartTime).ThenBy(m => m.Id)
+            : query.OrderByDescending(m => m.ScheduledStartTime).ThenBy(m => m.Id);
 
         int totalCount = await query.CountAsync(cancellationToken);
         List<HockeyMatch> items = await query
@@ -313,6 +421,7 @@ public class HockeyMatchRepository : IHockeyMatchRepository
     private IQueryable<HockeyMatch> BuildListQuery() =>
         _dbContext.HockeyMatches
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(m => m.MatchTeams)
             .Include(m => m.Officials)
             .Include(m => m.PeriodScores)
@@ -320,6 +429,7 @@ public class HockeyMatchRepository : IHockeyMatchRepository
 
     private IQueryable<HockeyMatch> BuildDetailQuery() =>
         _dbContext.HockeyMatches
+            .AsSplitQuery()
             .Include(m => m.MatchTeams)
                 .ThenInclude(t => t.PlayerSelection!)
                     .ThenInclude(s => s.ActivePlayers)
@@ -335,6 +445,7 @@ public class HockeyMatchRepository : IHockeyMatchRepository
 
     private IQueryable<HockeyMatch> BuildStatisticsQuery() =>
         _dbContext.HockeyMatches
+            .AsSplitQuery()
             .Include(m => m.MatchTeams)
                 .ThenInclude(t => t.PlayerSelection!)
                     .ThenInclude(s => s.ActivePlayers)

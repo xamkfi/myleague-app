@@ -45,7 +45,7 @@ public class RecalculateHockeyMatchStatisticsHandler
             if (match is null)
                 return Result.NotFound("HockeyMatch", request.MatchId);
 
-            await HockeyStatisticsHandlerSupport.AttachTeamPlayersAsync(match, _teamRepository);
+            await HockeyStatisticsHandlerSupport.AttachTeamPlayersAsync(match, _teamRepository, cancellationToken);
 
             List<HockeyMatchTeamStatistics> teams = new();
             List<HockeyMatchPlayerStatistics> players = new();

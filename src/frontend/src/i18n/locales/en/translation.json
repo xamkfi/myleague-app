@@ -4328,8 +4328,7 @@
     "verify": "Verify",
     "verifying": "Verifying...",
     "back": "Back",
-    "codeSent": "A login code has been sent to your email.",
-    "emailNotFound": "No account was found for this email address. Check the address and try again.",
+    "codeSent": "If an account exists for this email address, a login code has been sent to it.",
     "unexpectedError": "An unexpected error occurred.",
     "logout": "Log out"
   },

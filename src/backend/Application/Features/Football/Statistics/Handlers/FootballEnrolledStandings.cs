@@ -102,7 +102,7 @@ internal static class FootballEnrolledStandings
 
         FootballStandingRules rules = competition.StandingRules;
         List<StandingMatchResult> results = new();
-        IEnumerable<FootballMatch> validMatches = (await matches.GetByCompetitionIdAsync(competition.Id))
+        IEnumerable<FootballMatch> validMatches = (await matches.GetByCompetitionIdReadOnlyAsync(competition.Id))
             .Where(match => match.Status == FootballMatchStatus.Completed
                 && match.PlayoffRound is null
                 && match.HomeTeamId is Guid homeId && homeId != Guid.Empty

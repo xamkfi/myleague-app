@@ -2,6 +2,8 @@ import { HubConnection, HubConnectionBuilder, LogLevel, HubConnectionState } fro
 import { API_URL } from '../constants/config';
 
 const TOKEN_STORAGE_KEY = 'myleague_auth_tokens';
+/** Covers the automatic reconnect schedule below (0 s, 2 s, 10 s, 30 s). */
+const RECONNECT_WAIT_MS = 45_000;
 
 export interface MatchEvent {
   eventType: string;
@@ -49,11 +51,32 @@ export class SignalRService {
       return;
     }
 
-    this.connectPromise = this.startConnection();
+    this.connectPromise = this.connection ? this.resumeConnection(this.connection) : this.startConnection();
     try {
       await this.connectPromise;
     } finally {
       this.connectPromise = null;
+    }
+  }
+
+  /** Reuses an existing hub connection so handlers and automatic reconnect are not duplicated. */
+  private async resumeConnection(connection: HubConnection): Promise<void> {
+    if (connection.state === HubConnectionState.Disconnected) {
+      try {
+        await connection.start();
+        await this.resubscribeAll();
+      } catch {
+        /* ensureConnected reports the failure */
+      }
+      return;
+    }
+
+    const deadline = Date.now() + RECONNECT_WAIT_MS;
+    const isSettled = (): boolean =>
+      connection.state === HubConnectionState.Connected
+      || connection.state === HubConnectionState.Disconnected;
+    while (!isSettled() && Date.now() < deadline) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 250));
     }
   }
 

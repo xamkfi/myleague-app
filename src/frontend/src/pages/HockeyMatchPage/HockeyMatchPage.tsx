@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import HockeyMatchEvents from './HockeyMatchEvents';
@@ -10,7 +10,7 @@ import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
 import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
 import { hockeyTournamentService } from '../../api/hockey/hockeyTournamentService';
 import type { HockeyMatchDto, HockeyMatchStatisticsDto, HockeyTeamDto } from '../../types/hockey/hockeyTypes';
-import { isHockeyMatchFinished, isHockeyMatchLive } from '../../types/hockey/hockeyTypes';
+import { hockeyLiveStateChanged, isHockeyMatchFinished, isHockeyMatchLive } from '../../types/hockey/hockeyTypes';
 import { useAudience } from '../../context/AudienceContext';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
 import {
@@ -25,6 +25,11 @@ import { getTeamPath, getLeaguePath, getTournamentPath } from '../../utils/sport
 import { getTeamSlug } from '../../utils/slugUtils';
 import '../FloorballMatchPage/FloorballMatchPage.scss';
 import '../../components/LeagueStanding/LeagueStanding.scss';
+
+const LIVE_POLL_MS = 3_000;
+const UPCOMING_POLL_MS = 30_000;
+/** Penalties and shots do not change the live row, so refresh the full match this often anyway. */
+const POLLS_PER_FULL_REFRESH = 10;
 
 function HockeyMatchPage() {
   const { t } = useTranslation();
@@ -42,11 +47,28 @@ function HockeyMatchPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<MatchTabType>('summary');
 
+  const matchRef = useRef<HockeyMatchDto | null>(match);
+  const pollsSinceFullRefreshRef = useRef(0);
+  useEffect(() => {
+    matchRef.current = match;
+  }, [match]);
+
   const refreshLiveData = useCallback(async (): Promise<void> => {
-    if (!id) {
+    const current = matchRef.current;
+    if (!id || !current) {
       return;
     }
     try {
+      pollsSinceFullRefreshRef.current += 1;
+      const fullRefreshDue = pollsSinceFullRefreshRef.current >= POLLS_PER_FULL_REFRESH;
+      if (!fullRefreshDue) {
+        const liveRows = await hockeyMatchService.getLive(current.competitionId ?? undefined);
+        const live = liveRows.find((row) => row.id === id);
+        if (!live || !hockeyLiveStateChanged(current, live)) {
+          return;
+        }
+      }
+      pollsSinceFullRefreshRef.current = 0;
       const [loaded, box] = await Promise.all([
         hockeyMatchService.getById(id),
         hockeyStatisticsService.getMatchStats(id).catch(() => null),
@@ -95,12 +117,16 @@ function HockeyMatchPage() {
       .finally(() => setLoading(false));
   }, [id, audience.teamCategory]);
 
-  const liveOrUpcoming = Boolean(
-    match && !isHockeyMatchFinished(match.status) && match.status !== 'Cancelled',
+  const live = Boolean(match && isHockeyMatchLive(match.status));
+  const upcoming = Boolean(
+    match && !live && !isHockeyMatchFinished(match.status) && match.status !== 'Cancelled',
   );
-  useIntervalWhen(liveOrUpcoming, () => {
+  useIntervalWhen(live, () => {
     void refreshLiveData();
-  }, 3000);
+  }, LIVE_POLL_MS);
+  useIntervalWhen(upcoming, () => {
+    void refreshLiveData();
+  }, UPCOMING_POLL_MS);
 
   const namedTeams = teams.map((team) => ({ id: team.id, name: team.name }));
   const homeName = match?.homeTeamId ? teamNames.get(match.homeTeamId) ?? t('hockeyPage.home', 'Home') : 'TBD';

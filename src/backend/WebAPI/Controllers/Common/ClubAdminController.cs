@@ -42,6 +42,8 @@ namespace WebAPI.Controllers.Common;
 [Authorize(Roles = AuthRoles.ClubAdminOrAdmin)]
 public class ClubAdminController : BaseApiController
 {
+    private const int MaxBatchTeamIds = 50;
+
     private readonly IMediator _mediator;
     private readonly IClubAdminAccessService _accessService;
     private readonly ILogger<ClubAdminController> _logger;
@@ -78,80 +80,78 @@ public class ClubAdminController : BaseApiController
     }
 
     /// <summary>
-    /// Gets the upcoming (scheduled) floorball matches for a team under a club the current user manages
+    /// Gets the upcoming (scheduled) floorball matches for several teams the current user manages, earliest first
     /// </summary>
-    [HttpGet("floorball/teams/{teamId:guid}/upcoming-matches")]
+    [HttpGet("floorball/upcoming-matches")]
     [ProducesResponseType(typeof(ApiResponse<List<FloorballMatchDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetFloorballUpcomingMatches(
-        Guid teamId,
+    public async Task<ActionResult<ApiResponse<List<FloorballMatchDto>>>> GetFloorballUpcomingMatchesForTeams(
+        [FromQuery] List<Guid> teamIds,
         CancellationToken cancellationToken)
     {
-        ActionResult? accessError = await CheckFloorballTeamAccessAsync(teamId);
+        List<Guid> distinctTeamIds = teamIds.Distinct().ToList();
+        ActionResult? accessError = await CheckTeamsAccessAsync(distinctTeamIds, CheckFloorballTeamAccessAsync);
         if (accessError != null)
         {
             return accessError;
         }
 
-        Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(
-            new GetFloorballMatchesByTeamQuery(
-                Page: 1,
-                PageSize: 100,
-                TeamId: teamId,
-                StartDate: DateTime.UtcNow.Date),
+        Result<IEnumerable<FloorballMatchDto>> result = await _mediator.Send(
+            new GetFloorballUpcomingMatchesForTeamsQuery(distinctTeamIds, DateTime.UtcNow.Date),
             cancellationToken);
 
-        if (!result.IsSuccess || result.Data is null)
-        {
-            return BadRequest(ApiResponse<List<FloorballMatchDto>>.ErrorResponse(
-                result.Error ?? "Failed to retrieve upcoming matches"));
-        }
-
-        List<FloorballMatchDto> upcoming = result.Data.Items
-            .Where(m => m.Status == FloorballMatchStatus.Scheduled)
-            .OrderBy(m => m.ScheduledDateTime)
-            .ToList();
-
-        return Ok(ApiResponse<List<FloorballMatchDto>>.SuccessResponse(upcoming, "Upcoming matches retrieved successfully"));
+        return HandleListResult(result, "Upcoming matches retrieved successfully", "Failed to retrieve upcoming matches");
     }
 
     /// <summary>
-    /// Gets the upcoming (scheduled) football matches for a team under a club the current user manages
+    /// Gets the upcoming (scheduled) football matches for several teams the current user manages, earliest first
     /// </summary>
-    [HttpGet("football/teams/{teamId:guid}/upcoming-matches")]
+    [HttpGet("football/upcoming-matches")]
     [ProducesResponseType(typeof(ApiResponse<List<FootballMatchDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ApiResponse<List<FootballMatchDto>>>> GetFootballUpcomingMatches(
-        Guid teamId,
+    public async Task<ActionResult<ApiResponse<List<FootballMatchDto>>>> GetFootballUpcomingMatchesForTeams(
+        [FromQuery] List<Guid> teamIds,
         CancellationToken cancellationToken)
     {
-        ActionResult? accessError = await CheckFootballTeamAccessAsync(teamId);
+        List<Guid> distinctTeamIds = teamIds.Distinct().ToList();
+        ActionResult? accessError = await CheckTeamsAccessAsync(distinctTeamIds, CheckFootballTeamAccessAsync);
         if (accessError != null)
         {
             return accessError;
         }
 
-        Result<PagedResult<FootballMatchDto>> result = await _mediator.Send(
-            new GetFootballMatchesByTeamQuery(
-                Page: 1,
-                PageSize: 100,
-                TeamId: teamId,
-                StartDate: DateTime.UtcNow.Date,
-                EndDate: null),
+        Result<IEnumerable<FootballMatchDto>> result = await _mediator.Send(
+            new GetFootballUpcomingMatchesForTeamsQuery(distinctTeamIds, DateTime.UtcNow.Date),
             cancellationToken);
 
-        if (!result.IsSuccess || result.Data is null)
+        return HandleListResult(result, "Upcoming matches retrieved successfully", "Failed to retrieve upcoming matches");
+    }
+
+    /// <summary>
+    /// Gets the upcoming (scheduled) hockey matches for several teams the current user manages, earliest first
+    /// </summary>
+    [HttpGet("hockey/upcoming-matches")]
+    [ProducesResponseType(typeof(ApiResponse<List<HockeyMatchDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<List<HockeyMatchDto>>>> GetHockeyUpcomingMatchesForTeams(
+        [FromQuery] List<Guid> teamIds,
+        CancellationToken cancellationToken)
+    {
+        List<Guid> distinctTeamIds = teamIds.Distinct().ToList();
+        ActionResult? accessError = await CheckTeamsAccessAsync(distinctTeamIds, CheckHockeyTeamAccessAsync);
+        if (accessError != null)
         {
-            return BadRequest(ApiResponse<List<FootballMatchDto>>.ErrorResponse(
-                result.Error ?? "Failed to retrieve upcoming matches"));
+            return accessError;
         }
 
-        List<FootballMatchDto> upcoming = result.Data.Items
-            .Where(m => m.Status == FootballMatchStatus.Scheduled)
-            .OrderBy(m => m.ScheduledDateTime)
-            .ToList();
+        Result<IEnumerable<HockeyMatchDto>> result = await _mediator.Send(
+            new GetHockeyUpcomingMatchesForTeamsQuery(distinctTeamIds, DateTime.UtcNow.Date),
+            cancellationToken);
 
-        return Ok(ApiResponse<List<FootballMatchDto>>.SuccessResponse(upcoming, "Upcoming matches retrieved successfully"));
+        return HandleListResult(result, "Upcoming matches retrieved successfully", "Failed to retrieve upcoming matches");
     }
 
     /// <summary>
@@ -345,41 +345,6 @@ public class ClubAdminController : BaseApiController
     }
 
     /// <summary>
-    /// Gets the upcoming (scheduled) hockey matches for a team under a club the current user manages
-    /// </summary>
-    [HttpGet("hockey/teams/{teamId:guid}/upcoming-matches")]
-    [ProducesResponseType(typeof(ApiResponse<List<HockeyMatchDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ApiResponse<List<HockeyMatchDto>>>> GetHockeyUpcomingMatches(
-        Guid teamId,
-        CancellationToken cancellationToken)
-    {
-        ActionResult? accessError = await CheckHockeyTeamAccessAsync(teamId);
-        if (accessError != null)
-        {
-            return accessError;
-        }
-
-        Result<IEnumerable<HockeyMatchDto>> result = await _mediator.Send(
-            new GetHockeyMatchesByTeamQuery(teamId),
-            cancellationToken);
-
-        if (!result.IsSuccess || result.Data is null)
-        {
-            return BadRequest(ApiResponse<List<HockeyMatchDto>>.ErrorResponse(
-                result.Error ?? "Failed to retrieve upcoming matches"));
-        }
-
-        DateTime fromDate = DateTime.UtcNow.Date;
-        List<HockeyMatchDto> upcoming = result.Data
-            .Where(m => m.Status == HockeyMatchStatus.Scheduled.ToString() && m.ScheduledStartTime >= fromDate)
-            .OrderBy(m => m.ScheduledStartTime)
-            .ToList();
-
-        return Ok(ApiResponse<List<HockeyMatchDto>>.SuccessResponse(upcoming, "Upcoming matches retrieved successfully"));
-    }
-
-    /// <summary>
     /// Updates the jersey number of a player on a hockey team under a club the current user manages
     /// </summary>
     [HttpPut("hockey/teams/{teamId:guid}/players/{playerId:guid}/jersey-number")]
@@ -487,6 +452,27 @@ public class ClubAdminController : BaseApiController
     /// Returns null when the caller may manage the floorball team, otherwise the error result.
     /// Site admins always pass; club admins must manage the club that owns the team.
     /// </summary>
+    private async Task<ActionResult?> CheckTeamsAccessAsync(
+        IReadOnlyCollection<Guid> teamIds,
+        Func<Guid, Task<ActionResult?>> checkTeamAccess)
+    {
+        if (teamIds.Count > MaxBatchTeamIds)
+        {
+            return BadRequest(ApiResponse.ErrorResponse($"At most {MaxBatchTeamIds} team ids are allowed."));
+        }
+
+        foreach (Guid teamId in teamIds)
+        {
+            ActionResult? accessError = await checkTeamAccess(teamId);
+            if (accessError != null)
+            {
+                return accessError;
+            }
+        }
+
+        return null;
+    }
+
     private async Task<ActionResult?> CheckFloorballTeamAccessAsync(Guid teamId)
     {
         if (IsSystemAdmin)

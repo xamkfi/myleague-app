@@ -136,25 +136,20 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
 
   // Fetch status counts (lightweight queries)
   const fetchStatusCounts = useCallback(async () => {
-    const seasonFilter = selectedCompetitionId || undefined;
-    const searchFilter = searchQuery.trim() || undefined;
-    const baseFilters = { includeDrafts: true, competitionId: seasonFilter, searchQuery: searchFilter, competitionType };
-
     try {
-      const [totalRes, scheduledRes, inProgressRes, completedRes, cancelledRes] = await Promise.all([
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Scheduled }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.InProgress }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Completed }),
-        footballMatchService.getAll({ pageSize: 1, ...baseFilters, status: FootballMatchStatus.Cancelled }),
-      ]);
+      const counts = await footballMatchService.getStatusCounts({
+        includeDrafts: true,
+        competitionId: selectedCompetitionId || undefined,
+        searchQuery: searchQuery.trim() || undefined,
+        competitionType,
+      });
 
       setStatusCounts({
-        total: totalRes.pagination?.totalCount ?? 0,
-        scheduled: scheduledRes.pagination?.totalCount ?? 0,
-        inProgress: inProgressRes.pagination?.totalCount ?? 0,
-        completed: completedRes.pagination?.totalCount ?? 0,
-        cancelled: cancelledRes.pagination?.totalCount ?? 0,
+        total: counts.total,
+        scheduled: counts.scheduled,
+        inProgress: counts.inProgress,
+        completed: counts.completed,
+        cancelled: counts.cancelled,
       });
     } catch (err) {
       console.error('Error fetching status counts:', err);

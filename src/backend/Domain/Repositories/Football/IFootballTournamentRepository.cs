@@ -23,6 +23,13 @@ public interface IFootballTournamentRepository
     Task<List<FootballTournament>> GetActiveAsync(
         Domain.Enums.Common.TeamCategory? teamCategory = null,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Counts matches per tournament in one grouped query. Tournaments without matches are absent.
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, int>> GetMatchCountsAsync(
+        IReadOnlyCollection<Guid> tournamentIds,
+        CancellationToken ct = default);
     Task AddAsync(FootballTournament tournament, CancellationToken ct = default);
     Task UpdateAsync(FootballTournament tournament, CancellationToken ct = default);
     Task DeleteAsync(FootballTournament tournament, CancellationToken ct = default);

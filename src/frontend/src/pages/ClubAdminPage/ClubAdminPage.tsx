@@ -98,27 +98,35 @@ function ClubAdminPage() {
         const hockeyTeamNames = allTeams.some((team) => team.sport === 'hockey')
           ? new Map((await hockeyTeamService.getAll()).map((team) => [team.id, team.name]))
           : new Map<string, string>();
-        const matchEntries = await Promise.all(
-          allTeams.map(async (team): Promise<[string, UpcomingMatchSummary[]]> => {
-            const key = upcomingKey(team);
-            try {
-              if (team.sport === 'floorball') {
-                const matches = await clubAdminService.getFloorballUpcomingMatches(team.teamId);
-                return [key, matches.map((m) => toFloorballSummary(m, team.teamId))];
-              }
-              if (team.sport === 'football') {
-                const matches = await clubAdminService.getFootballUpcomingMatches(team.teamId);
-                return [key, matches.map((m) => toFootballSummary(m, team.teamId))];
-              }
-              const matches = await clubAdminService.getHockeyUpcomingMatches(team.teamId);
-              return [key, matches.map((m) => toHockeySummary(m, team.teamId, hockeyTeamNames))];
-            } catch {
-              return [key, []];
-            }
-          }),
-        );
+        const teamIdsFor = (sport: ClubAdminSport): string[] =>
+          allTeams.filter((team) => team.sport === sport).map((team) => team.teamId);
+        const [floorballMatches, footballMatches, hockeyMatches] = await Promise.all([
+          clubAdminService.getFloorballUpcomingMatches(teamIdsFor('floorball')).catch((): FloorballMatchDto[] => []),
+          clubAdminService.getFootballUpcomingMatches(teamIdsFor('football')).catch((): FootballMatchDto[] => []),
+          clubAdminService.getHockeyUpcomingMatches(teamIdsFor('hockey')).catch((): HockeyMatchDto[] => []),
+        ]);
         if (cancelled) return;
-        setUpcomingByTeam(Object.fromEntries(matchEntries));
+
+        const upcoming: UpcomingByTeam = {};
+        for (const team of allTeams) {
+          const { teamId } = team;
+          let summaries: UpcomingMatchSummary[];
+          if (team.sport === 'floorball') {
+            summaries = floorballMatches
+              .filter((m) => m.homeTeamId === teamId || m.awayTeamId === teamId)
+              .map((m) => toFloorballSummary(m, teamId));
+          } else if (team.sport === 'football') {
+            summaries = footballMatches
+              .filter((m) => m.homeTeamId === teamId || m.awayTeamId === teamId)
+              .map((m) => toFootballSummary(m, teamId));
+          } else {
+            summaries = hockeyMatches
+              .filter((m) => m.matchTeams.some((side) => side.teamId === teamId))
+              .map((m) => toHockeySummary(m, teamId, hockeyTeamNames));
+          }
+          upcoming[upcomingKey(team)] = summaries;
+        }
+        setUpcomingByTeam(upcoming);
       } catch (err: unknown) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : t('clubAdmin.loadError', 'Failed to load your clubs'));

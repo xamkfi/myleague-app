@@ -8,6 +8,7 @@ using Domain.Repositories.Football;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MyLeague.Infrastructure.Persistence.Contexts;
+using MyLeague.Infrastructure.Persistence.Repositories.Common;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Football;
 
@@ -172,6 +173,64 @@ public class FootballStatisticsRepository : IFootballStatisticsRepository
         AllTimeCompetitionFilter competitionType,
         CancellationToken cancellationToken = default)
     {
+        return await AllTimeStatisticsQuery(teamCategory, competitionType)
+            .Select(s => new AllTimePlayerStatRow(
+                s.PlayerId,
+                s.Player.PersonId,
+                s.Player.IsLoanPlayer || s.Player.IsLoanGoalkeeper,
+                s.TeamId,
+                s.Team.Name,
+                s.Competition.StartDate,
+                s.GamesPlayed,
+                s.Goals,
+                s.Assists,
+                s.Points,
+                0,
+                s.YellowCards,
+                s.RedCards))
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<PagedResult<AllTimePlayerTotals>> GetAllTimePlayerPageAsync(
+        TeamCategory teamCategory,
+        AllTimeCompetitionFilter competitionType,
+        AllTimePlayerPageRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<FootballPlayerSeasonStatistics> query = AllTimeStatisticsQuery(teamCategory, competitionType);
+        if (request.TeamId is Guid teamId)
+        {
+            query = query.Where(s => s.TeamId == teamId);
+        }
+
+        IQueryable<AllTimeTotalsRow> totals = query
+            .GroupBy(s => new { s.PlayerId, s.Player.PersonId })
+            .Select(group => new AllTimeTotalsRow
+            {
+                PlayerId = group.Key.PlayerId,
+                PersonId = group.Key.PersonId,
+                GamesPlayed = group.Sum(s => s.GamesPlayed),
+                Goals = group.Sum(s => s.Goals),
+                Assists = group.Sum(s => s.Assists),
+                Points = group.Sum(s => s.Points),
+                YellowCards = group.Sum(s => s.YellowCards),
+                RedCards = group.Sum(s => s.RedCards),
+            });
+        IQueryable<AllTimeTeamRow> teamRows = query.Select(s => new AllTimeTeamRow
+        {
+            PlayerId = s.PlayerId,
+            TeamName = s.Team.Name,
+            CompetitionStart = s.Competition.StartDate,
+            GamesPlayed = s.GamesPlayed,
+        });
+        return AllTimePlayerStatisticsQuery.PageAsync(totals, teamRows, request, cancellationToken);
+    }
+
+    private IQueryable<FootballPlayerSeasonStatistics> AllTimeStatisticsQuery(
+        TeamCategory teamCategory,
+        AllTimeCompetitionFilter competitionType)
+    {
         IQueryable<FootballPlayerSeasonStatistics> query = _context.FootballPlayerSeasonStatistics
             .AsNoTracking()
             .Where(s => !s.Player.IsLoanPlayer && !s.Player.IsLoanGoalkeeper)
@@ -192,22 +251,7 @@ public class FootballStatisticsRepository : IFootballStatisticsRepository
             _ => throw new ArgumentOutOfRangeException(nameof(competitionType), competitionType, null)
         };
 
-        return await query
-            .Select(s => new AllTimePlayerStatRow(
-                s.PlayerId,
-                s.Player.PersonId,
-                s.Player.IsLoanPlayer || s.Player.IsLoanGoalkeeper,
-                s.TeamId,
-                s.Team.Name,
-                s.Competition.StartDate,
-                s.GamesPlayed,
-                s.Goals,
-                s.Assists,
-                s.Points,
-                0,
-                s.YellowCards,
-                s.RedCards))
-            .ToListAsync(cancellationToken);
+        return query;
     }
 
     public async Task<List<FootballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)

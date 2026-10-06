@@ -37,7 +37,7 @@ public class UserConfiguration : BaseEntityConfiguration<User>
             .HasColumnType("timestamp with time zone");
 
         builder.Property(u => u.LoginCode)
-            .HasMaxLength(10);
+            .HasMaxLength(128);
 
         builder.Property(u => u.LoginCodeExpiresAt)
             .HasColumnType("timestamp with time zone");

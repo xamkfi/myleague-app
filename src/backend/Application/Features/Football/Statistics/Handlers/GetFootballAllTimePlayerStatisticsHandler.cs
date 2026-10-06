@@ -40,13 +40,12 @@ public class GetFootballAllTimePlayerStatisticsHandler
             request.Sort,
             request.Direction);
 
-        List<AllTimePlayerStatRow> rows = await _statisticsRepository.GetAllTimePlayerStatRowsAsync(
-            request.TeamCategory,
-            request.CompetitionType,
-            cancellationToken);
-
         PagedResult<FootballAllTimePlayerStatisticsDto> page = await AllTimePlayerStatisticsPager.PageAsync(
-            rows,
+            (pageRequest, ct) => _statisticsRepository.GetAllTimePlayerPageAsync(
+                request.TeamCategory,
+                request.CompetitionType,
+                pageRequest,
+                ct),
             new AllTimePageRequest(
                 request.Page,
                 request.PageSize,
@@ -65,7 +64,8 @@ public class GetFootballAllTimePlayerStatisticsHandler
                 player.Assists,
                 player.Points,
                 player.YellowCards,
-                player.RedCards));
+                player.RedCards),
+            cancellationToken);
 
         return Result<PagedResult<FootballAllTimePlayerStatisticsDto>>.Success(page);
     }

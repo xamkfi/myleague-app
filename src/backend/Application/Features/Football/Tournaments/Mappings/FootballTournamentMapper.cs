@@ -17,7 +17,13 @@ public static class FootballTournamentMapper
     /// <summary>
     /// Maps a FootballTournament entity to a FootballTournamentDto
     /// </summary>
-    public static FootballTournamentDto ToDto(FootballTournament tournament)
+    public static FootballTournamentDto ToDto(FootballTournament tournament) =>
+        ToDto(tournament, tournament?.Matches.Count ?? 0);
+
+    /// <summary>
+    /// Maps a tournament loaded without its matches, using a separately counted match total.
+    /// </summary>
+    public static FootballTournamentDto ToDto(FootballTournament tournament, int matchCount)
     {
         if (tournament == null)
             throw new ArgumentNullException(nameof(tournament));
@@ -30,7 +36,6 @@ public static class FootballTournamentMapper
             .ToList();
 
         int teamCount = tournament.Groups.Sum(g => g.Teams.Count);
-        int matchCount = tournament.Matches.Count;
 
         List<FootballPlayoffScheduleSlotDto> playoffSlots = tournament.PlayoffSchedule
             .OrderBy(s => s.Round)

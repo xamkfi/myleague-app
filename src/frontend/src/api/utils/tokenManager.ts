@@ -1,6 +1,7 @@
-import { authService } from '../auth/authService';
+import { authService, RefreshRejectedError } from '../auth/authService';
 
 const TOKEN_STORAGE_KEY = 'myleague_auth_tokens';
+const REFRESH_LOCK_NAME = 'myleague-token-refresh';
 
 const MAX_REFRESH_BUFFER_MS = 3 * 60_000;
 const MIN_REFRESH_BUFFER_MS = 15_000;
@@ -144,16 +145,46 @@ async function performRefresh(refreshToken: string): Promise<StoredTokens | null
     storeTokens(stored);
     return stored;
   } catch (err) {
-    console.warn('Token refresh failed, clearing session:', err);
-    clearStoredTokens();
+    if (err instanceof RefreshRejectedError && (err.status === 400 || err.status === 401)) {
+      console.warn('Token refresh rejected, clearing session:', err);
+      clearStoredTokens();
+      return null;
+    }
+    // Network failures and server errors keep the session so a later check can retry.
+    console.warn('Token refresh failed, keeping session for retry:', err);
     return null;
   }
 }
 
+async function refreshUnderLock(startingRefreshToken: string): Promise<StoredTokens | null> {
+  const current = getStoredTokens();
+  if (!current) return null;
+
+  // Another tab rotated the refresh token while we waited; re-sending the old one would
+  // trigger the backend's reuse detection and revoke every session for this user.
+  if (
+    current.refreshToken !== startingRefreshToken &&
+    !isTokenExpired(current.expiresAt) &&
+    !isTokenNearExpiry(current)
+  ) {
+    emit(current);
+    return current;
+  }
+
+  return performRefresh(current.refreshToken);
+}
+
+function withRefreshLock(callback: () => Promise<StoredTokens | null>): Promise<StoredTokens | null> {
+  if (typeof navigator !== 'undefined' && 'locks' in navigator) {
+    return navigator.locks.request(REFRESH_LOCK_NAME, callback);
+  }
+  return callback();
+}
+
 /**
- * Refresh the tokens using the stored refresh token. Concurrent callers share the same
- * in-flight promise so we never issue parallel refresh requests (which would invalidate
- * each other due to refresh-token rotation on the backend).
+ * Refresh the tokens using the stored refresh token. Concurrent callers in this tab share
+ * the same in-flight promise, and a Web Lock serializes refreshes across tabs, so the same
+ * refresh token is never sent twice (the backend rotates it on every refresh).
  */
 export function refreshTokens(): Promise<StoredTokens | null> {
   if (inFlightRefresh) return inFlightRefresh;
@@ -161,7 +192,8 @@ export function refreshTokens(): Promise<StoredTokens | null> {
   const tokens = getStoredTokens();
   if (!tokens) return Promise.resolve(null);
 
-  inFlightRefresh = performRefresh(tokens.refreshToken).finally(() => {
+  const startingRefreshToken = tokens.refreshToken;
+  inFlightRefresh = withRefreshLock(() => refreshUnderLock(startingRefreshToken)).finally(() => {
     inFlightRefresh = null;
   });
   return inFlightRefresh;
@@ -177,7 +209,10 @@ export async function getValidAccessToken(): Promise<string | null> {
 
   if (isTokenExpired(tokens.expiresAt) || isTokenNearExpiry(tokens)) {
     const refreshed = await refreshTokens();
-    return refreshed?.accessToken ?? null;
+    if (refreshed) return refreshed.accessToken;
+
+    const remaining = getStoredTokens();
+    return remaining && !isTokenExpired(remaining.expiresAt) ? remaining.accessToken : null;
   }
 
   return tokens.accessToken;

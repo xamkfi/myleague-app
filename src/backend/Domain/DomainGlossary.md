@@ -32,7 +32,13 @@ An ordered intro card on a season's public pages. Each block has a title and HTM
 A single floorball game between two teams (home and away). Tracks scores, events, periods, status, referees, etc.
 
 ### FloorballPlayer
-A Person with a player role in floorball. Tracks player-specific attributes like position preferences and career statistics.
+A Person with a player role in floorball. Tracks player-specific attributes like position preferences and career statistics. `IsLoanGoalkeeper` marks the one reusable loan-goalkeeper placeholder on a team. `IsLoanPlayer` and `LoanPlayerNumber` mark reusable loan-player placeholders (Lainapelaaja #1, #2, …). Football and hockey players use the same flags.
+
+### Loan goalkeeper
+A placeholder player named Lainavahti that a team can select as the match goalkeeper when it has no named goalkeeper. Each team has at most one. The same player is added to a competition roster the first time that competition needs them. Jersey number is left empty.
+
+### Loan player
+A placeholder field player named Lainapelaaja #N that a team can add to a match lineup when it is short of players. A team can have several. The next request reuses the lowest-numbered existing loan players and creates only the missing ones. Each gets the lowest jersey number from 1 to 99 that no other player on the team is using. The same player is added to a competition roster the first time that competition needs them. Floorball defaults the roster position to forward, hockey to center, and football to midfielder.
 
 ### FloorballReferee 
 A Person with a referee role in floorball. Tracks referee-specific attributes like license status and match count.
@@ -135,6 +141,9 @@ Point allocation for league tables. Default is 3 points for a regulation win, 1 
 
 ### FloorballStandingRules
 Point allocation for a floorball season table. Default is 3 for a regulation win, 1 for a draw, 2 for a win in overtime or a shootout, and 1 for a loss in overtime or a shootout. A regulation loss is 0. Tournaments keep the older shootout-only split.
+
+### All-time player statistics
+A public ranking that sums a player's competition statistics across seasons, and optionally tournaments, inside one team category. Loan placeholders are left out. The team shown is the team from the latest competition. The totals are calculated when the list is requested. They are not the player's `CareerGoals` or `CareerAssists` fields.
 
 ## Historical names
 

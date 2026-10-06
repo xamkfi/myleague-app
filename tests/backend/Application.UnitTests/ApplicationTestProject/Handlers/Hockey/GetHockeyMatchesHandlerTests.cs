@@ -49,7 +49,8 @@ public class GetHockeyMatchesHandlerTests
                 TeamCategory.Youth,
                 It.IsAny<bool>(),
                 It.IsAny<CancellationToken>(),
-                null))
+                null,
+                false))
             .ReturnsAsync(PagedResult.Create(new List<HockeyMatch> { match }, 1, 1, 100));
 
         GetHockeyMatchesHandler handler = CreateHandler();
@@ -93,7 +94,8 @@ public class GetHockeyMatchesHandlerTests
                 It.IsAny<TeamCategory?>(),
                 It.IsAny<bool>(),
                 It.IsAny<CancellationToken>(),
-                It.IsAny<IReadOnlyCollection<HockeyMatchStatus>?>()))
+                It.IsAny<IReadOnlyCollection<HockeyMatchStatus>?>(),
+                It.IsAny<bool>()))
             .ReturnsAsync(PagedResult.Create(new List<HockeyMatch> { match }, 1, 1, 25));
 
         _teamRepo
@@ -147,7 +149,8 @@ public class GetHockeyMatchesHandlerTests
                     filters != null
                     && filters.Count == 2
                     && filters.Contains(HockeyMatchStatus.Scheduled)
-                    && filters.Contains(HockeyMatchStatus.Warmup))))
+                    && filters.Contains(HockeyMatchStatus.Warmup)),
+                It.IsAny<bool>()))
             .ReturnsAsync(PagedResult.Create(new List<HockeyMatch>(), 0, 1, 25));
 
         GetHockeyMatchesHandler handler = CreateHandler();

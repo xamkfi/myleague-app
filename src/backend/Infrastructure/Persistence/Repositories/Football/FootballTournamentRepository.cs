@@ -1,4 +1,5 @@
 using Domain.Entities.Football.Competitions;
+using Domain.Entities.Football.Matches;
 using Domain.Enums.Football;
 using Domain.Repositories.Football;
 using Microsoft.EntityFrameworkCore;
@@ -159,21 +160,19 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         }
 
         /// <summary>
-        /// Gets all football tournaments. Eagerly loads Groups (with their teams) and Matches so that
-        /// the listing DTO can report accurate teamCount/matchCount/group counts. AsSplitQuery is used to
-        /// avoid the cartesian explosion that would otherwise occur when including multiple unrelated
-        /// collections (Groups.Teams + Matches) on the same root.
+        /// Gets all football tournaments, read-only, with Teams and Groups (with their teams).
+        /// Matches are not loaded; use <see cref="GetMatchCountsAsync"/> for listing counts.
         /// </summary>
         public async Task<List<FootballTournament>> GetAllAsync(
             Domain.Enums.Common.TeamCategory? teamCategory = null,
             CancellationToken ct = default)
         {
             IQueryable<FootballTournament> query = _entities
+                .AsNoTracking()
                 .Include(t => t.Teams)
                 .Include(t => t.Groups)
                     .ThenInclude(g => g.Teams)
                         .ThenInclude(gt => gt.Team)
-                .Include(t => t.Matches)
                 .AsSplitQuery();
 
             if (teamCategory.HasValue)
@@ -185,19 +184,18 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         }
 
         /// <summary>
-        /// Gets active football tournaments. Same eager-loading strategy as GetAllAsync so the listing DTO
-        /// can populate group/team/match counts.
+        /// Gets active football tournaments. Same loading strategy as GetAllAsync.
         /// </summary>
         public async Task<List<FootballTournament>> GetActiveAsync(
             Domain.Enums.Common.TeamCategory? teamCategory = null,
             CancellationToken ct = default)
         {
             IQueryable<FootballTournament> query = _entities
+                .AsNoTracking()
                 .Include(t => t.Teams)
                 .Include(t => t.Groups)
                     .ThenInclude(g => g.Teams)
                         .ThenInclude(gt => gt.Team)
-                .Include(t => t.Matches)
                 .AsSplitQuery()
                 .Where(t => t.IsActive && t.TournamentStatus != FootballTournamentStatus.Completed);
 
@@ -207,6 +205,24 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
             }
 
             return await query.ToListAsync(ct);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyDictionary<Guid, int>> GetMatchCountsAsync(
+            IReadOnlyCollection<Guid> tournamentIds,
+            CancellationToken ct = default)
+        {
+            if (tournamentIds.Count == 0)
+            {
+                return new Dictionary<Guid, int>();
+            }
+
+            return await _dbContext.Set<FootballMatch>()
+                .AsNoTracking()
+                .Where(m => tournamentIds.Contains(m.CompetitionId))
+                .GroupBy(m => m.CompetitionId)
+                .Select(group => new { CompetitionId = group.Key, Count = group.Count() })
+                .ToDictionaryAsync(row => row.CompetitionId, row => row.Count, ct);
         }
 
         /// <summary>

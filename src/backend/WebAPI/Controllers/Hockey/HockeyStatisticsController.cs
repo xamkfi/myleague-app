@@ -9,6 +9,9 @@ using Domain.Enums.Hockey.Statistics;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
+using WebAPI.DependencyInjections;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
@@ -327,6 +330,8 @@ public class HockeyStatisticsController : BaseApiController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Players ordered by the requested column</returns>
     [HttpGet("all-time")]
+    [EnableRateLimiting(PublicTrafficProtectionExtensions.PublicStatsPolicy)]
+    [OutputCache(PolicyName = PublicTrafficProtectionExtensions.PublicStatsCachePolicy)]
     [ProducesResponseType(typeof(PaginatedApiResponse<HockeyAllTimePlayerStatisticsDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(PaginatedApiResponse<HockeyAllTimePlayerStatisticsDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(PaginatedApiResponse<HockeyAllTimePlayerStatisticsDto>), StatusCodes.Status500InternalServerError)]
@@ -360,6 +365,8 @@ public class HockeyStatisticsController : BaseApiController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Teams ordered by name</returns>
     [HttpGet("all-time/teams")]
+    [EnableRateLimiting(PublicTrafficProtectionExtensions.PublicStatsPolicy)]
+    [OutputCache(PolicyName = PublicTrafficProtectionExtensions.PublicStatsCachePolicy)]
     [ProducesResponseType(typeof(ApiResponse<List<AllTimeTeamOptionDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<List<AllTimeTeamOptionDto>>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<List<AllTimeTeamOptionDto>>>> GetAllTimeTeams(

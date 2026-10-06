@@ -20,7 +20,8 @@ public record GetAllFootballMatchesQuery(
     Guid? TournamentGroupId = null,
     FootballCompetitionType? CompetitionType = null,
     TeamCategory? TeamCategory = null,
-    bool IncludeDrafts = false) : IRequest<Result<PagedResult<FootballMatchDto>>>
+    bool IncludeDrafts = false,
+    bool ActiveOnly = false) : IRequest<Result<PagedResult<FootballMatchDto>>>
 {
     public const string ResourceKey = "FootballMatches";
 }

@@ -323,7 +323,9 @@ public class SeasonStandingPointTableTests
         competitions.Setup(repository => repository.GetByIdAsync(season.Id)).ReturnsAsync(season);
         Mock<IFloorballTournamentRepository> tournaments = new();
         Mock<IFloorballMatchRepository> matchRepository = new();
-        matchRepository.Setup(repository => repository.GetByCompetitionIdAsync(season.Id)).ReturnsAsync(matches.ToList());
+        matchRepository
+            .Setup(repository => repository.GetByCompetitionIdReadOnlyAsync(season.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(matches.ToList());
         Mock<IClubRepository> clubs = new();
         clubs
             .Setup(repository => repository.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
@@ -351,7 +353,9 @@ public class SeasonStandingPointTableTests
         competitions.Setup(repository => repository.GetByIdAsync(season.Id)).ReturnsAsync(season);
         Mock<IFootballTournamentRepository> tournaments = new();
         Mock<IFootballMatchRepository> matchRepository = new();
-        matchRepository.Setup(repository => repository.GetByCompetitionIdAsync(season.Id)).ReturnsAsync(matches.ToList());
+        matchRepository
+            .Setup(repository => repository.GetByCompetitionIdReadOnlyAsync(season.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(matches.ToList());
         Mock<IClubRepository> clubs = new();
         clubs
             .Setup(repository => repository.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))

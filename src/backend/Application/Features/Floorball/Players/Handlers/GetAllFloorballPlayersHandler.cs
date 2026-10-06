@@ -135,12 +135,14 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
             IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>> licencesByPlayer =
                 await _teamRepository.GetOpenPlayerLicencesByPlayerIdsAsync(playerIds, cancellationToken);
 
-            // Load Person data for each player and create DTOs with team information
+            List<Guid> personIds = pagedPlayersWithTeams.Items.Select(item => item.Player.PersonId).Distinct().ToList();
+            Dictionary<Guid, Person> personsById = (await _personRepository.GetByIdsAsync(personIds))
+                .ToDictionary(person => person.Id);
+
             List<FloorballPlayerDto> playerDtos = new List<FloorballPlayerDto>();
             foreach ((FloorballPlayer player, FloorballTeam? team) in pagedPlayersWithTeams.Items)
             {
-                // Get the associated person
-                Person? person = await _personRepository.GetByIdAsync(player.PersonId);
+                Person? person = personsById.GetValueOrDefault(player.PersonId);
                 
                 // Create team DTO if team exists
                 FloorballTeamNameDto? teamDto = team != null ? new FloorballTeamNameDto { Id = team.Id, Name = team.Name } : null;
@@ -152,7 +154,7 @@ public class GetAllFloorballPlayersHandler : BasePagedQueryHandler<GetAllFloorba
                     FloorballPlayerDto playerDto = new FloorballPlayerDto(
                         player.Id,
                         player.PersonId,
-                        PersonMapper.ToDto(person),
+                        PersonMapper.ToDto(person, request.IncludePrivateData),
                         player.IsActive,
                         player.Position.PrimaryPosition,
                         player.CareerGoals,

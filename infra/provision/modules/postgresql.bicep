@@ -100,7 +100,7 @@ resource allowAzureServices 'Microsoft.DBforPostgreSQL/flexibleServers/firewallR
 output fqdn string = postgresServer.properties.fullyQualifiedDomainName
 
 @description('The connection string for the PostgreSQL database')
-output connectionString string = 'Host=${postgresServer.properties.fullyQualifiedDomainName};Database=${databaseName};Username=${administratorLogin};Password=${administratorPassword};SSL Mode=Require;Trust Server Certificate=true'
+output connectionString string = 'Host=${postgresServer.properties.fullyQualifiedDomainName};Database=${databaseName};Username=${administratorLogin};Password=${administratorPassword};SSL Mode=VerifyFull'
 
 @description('The resource ID of the PostgreSQL server')
 output id string = postgresServer.id

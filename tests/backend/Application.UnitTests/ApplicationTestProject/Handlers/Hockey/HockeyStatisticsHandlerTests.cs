@@ -77,8 +77,6 @@ public class HockeyStatisticsHandlerTests
         match.AssignMatchTeam(away.Id, HockeyTeamSlot.Away);
 
         _matchRepo.Setup(r => r.GetByIdForStatisticsAsync(match.Id)).ReturnsAsync(match);
-        _teamRepo.Setup(r => r.GetByIdAsync(home.Id)).ReturnsAsync(home);
-        _teamRepo.Setup(r => r.GetByIdAsync(away.Id)).ReturnsAsync(away);
 
         RecalculateHockeyMatchStatisticsHandler handler = new(
             _matchRepo.Object,
@@ -145,10 +143,14 @@ public class HockeyStatisticsHandlerTests
         match.MarkFinished(resultType: HockeyMatchResultType.HomeWin);
 
         _competitionRepo.Setup(r => r.GetByIdAsync(season.Id)).ReturnsAsync(season);
-        _matchRepo.Setup(r => r.GetByCompetitionIdForStatisticsAsync(season.Id))
+        _matchRepo.Setup(r => r.GetForStatisticsAsync(
+                season.Id,
+                HockeyStatisticsScope.Competition,
+                null,
+                null,
+                null,
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<HockeyMatch> { match });
-        _teamRepo.Setup(r => r.GetByIdAsync(home.Id)).ReturnsAsync(home);
-        _teamRepo.Setup(r => r.GetByIdAsync(away.Id)).ReturnsAsync(away);
 
         List<HockeyTeamCompetitionStatistics>? capturedTeams = null;
         _statsRepo
@@ -186,6 +188,74 @@ public class HockeyStatisticsHandlerTests
         rankedTeams.Should().HaveCount(2);
         rankedTeams.Select(t => t.StandingRank).Should().BeEquivalentTo(new[] { 1, 2 });
         rankedTeams.Single(t => t.TeamId == home.Id).StandingRank.Should().Be(1);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RecalculateScopes_SeveralScopes_LoadsMatchesOnceAndReplacesEachScope()
+    {
+        HockeySeason season = CreateSeason();
+        Guid divisionId = Guid.NewGuid();
+        _competitionRepo.Setup(r => r.GetByIdAsync(season.Id)).ReturnsAsync(season);
+        _matchRepo.Setup(r => r.GetForStatisticsAsync(
+                season.Id,
+                HockeyStatisticsScope.Competition,
+                null,
+                null,
+                null,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<HockeyMatch>());
+
+        RecalculateHockeyCompetitionStatisticsHandler handler = new(
+            _competitionRepo.Object,
+            _matchRepo.Object,
+            _teamRepo.Object,
+            _statsRepo.Object,
+            _unitOfWork.Object,
+            Mock.Of<ILogger<RecalculateHockeyCompetitionStatisticsHandler>>());
+
+        Result result = await handler.Handle(
+            new RecalculateHockeyCompetitionScopesCommand(
+                season.Id,
+                new[]
+                {
+                    new HockeyStatisticsScopeTarget(HockeyStatisticsScope.Competition),
+                    new HockeyStatisticsScopeTarget(HockeyStatisticsScope.Division, CompetitionDivisionId: divisionId)
+                }),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        _matchRepo.Verify(
+            r => r.GetForStatisticsAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<HockeyStatisticsScope>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        _statsRepo.Verify(
+            r => r.ReplaceCompetitionStatisticsAsync(
+                season.Id,
+                HockeyStatisticsScope.Competition,
+                null,
+                null,
+                null,
+                It.IsAny<IReadOnlyList<HockeyTeamCompetitionStatistics>>(),
+                It.IsAny<IReadOnlyList<HockeyPlayerCompetitionStatistics>>(),
+                It.IsAny<IReadOnlyList<HockeyGoalieCompetitionStatistics>>()),
+            Times.Once);
+        _statsRepo.Verify(
+            r => r.ReplaceCompetitionStatisticsAsync(
+                season.Id,
+                HockeyStatisticsScope.Division,
+                divisionId,
+                null,
+                null,
+                It.IsAny<IReadOnlyList<HockeyTeamCompetitionStatistics>>(),
+                It.IsAny<IReadOnlyList<HockeyPlayerCompetitionStatistics>>(),
+                It.IsAny<IReadOnlyList<HockeyGoalieCompetitionStatistics>>()),
+            Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 

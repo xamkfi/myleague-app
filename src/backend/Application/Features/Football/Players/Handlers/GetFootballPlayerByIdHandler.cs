@@ -81,7 +81,7 @@ public class GetFootballPlayerByIdHandler : IRequestHandler<GetFootballPlayerByI
             FootballPlayerDto playerDto = new FootballPlayerDto(
                 player.Id,
                 player.PersonId,
-                PersonMapper.ToDto(person),
+                PersonMapper.ToDto(person, request.IncludePrivateData),
                 player.IsActive,
                 player.Position.PrimaryPosition,
                 player.CareerGoals,

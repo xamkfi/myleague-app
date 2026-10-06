@@ -6,7 +6,6 @@ namespace Application.Features.Common.Organization.Persons.DTOs;
 public record PersonWithTeamsDto(
     int Id,
     string Name,
-    int Age,
     List<PersonTeamDto> teams,
     int totalMatchesPlayed
 );

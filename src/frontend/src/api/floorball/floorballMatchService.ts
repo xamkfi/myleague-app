@@ -8,6 +8,7 @@ import type {
   AssignMatchTeamsRequest
 } from '../../types/floorball/floorballTypes';
 import type { FloorballPosition } from '../../types/floorball/floorballTypes';
+import type { MatchStatusCountsDto, MatchStatusCountsRequest } from '../../types/common/matchStatusCounts';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
@@ -41,6 +42,7 @@ export const floorballMatchService = {
       if (params?.competitionType) searchParams.append('competitionType', params.competitionType);
       if (params?.teamCategory) searchParams.append('teamCategory', params.teamCategory);
       if (params?.includeDrafts) searchParams.append('includeDrafts', 'true');
+      if (params?.activeOnly) searchParams.append('activeOnly', 'true');
 
       const url = `${API_URL}/${MATCHES_PATH}?${searchParams.toString()}`;
       
@@ -61,6 +63,24 @@ export const floorballMatchService = {
       console.error('Error in floorballMatchService.getAll:', error);
       throw error;
     }
+  },
+
+  /**
+   * Count matches per status with the same filters as getAll
+   */
+  getStatusCounts: async (params: MatchStatusCountsRequest = {}): Promise<MatchStatusCountsDto> => {
+    const searchParams = new URLSearchParams();
+    if (params.competitionId) searchParams.append('competitionId', params.competitionId);
+    if (params.searchQuery) searchParams.append('searchQuery', params.searchQuery);
+    if (params.competitionType) searchParams.append('competitionType', params.competitionType);
+    if (params.includeDrafts) searchParams.append('includeDrafts', 'true');
+
+    const response = await authFetch(`${API_URL}/${MATCHES_PATH}/status-counts?${searchParams.toString()}`);
+    const apiResponse: ApiResponse<MatchStatusCountsDto> = await response.json();
+    if (!response.ok || !apiResponse.success || !apiResponse.data) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to count floorball matches'));
+    }
+    return apiResponse.data;
   },
 
   /**

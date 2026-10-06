@@ -15,6 +15,16 @@ namespace Application.Features.Common.Content.Images.Handlers
 {
     public class UploadImageCommandHandler : IRequestHandler<UploadImageCommand, Result<Uri>>
     {
+        private static readonly IReadOnlyDictionary<string, string[]> AllowedContentTypesByExtension =
+            new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+            {
+                [".jpg"] = new[] { "image/jpeg", "image/jpg" },
+                [".jpeg"] = new[] { "image/jpeg", "image/jpg" },
+                [".png"] = new[] { "image/png" },
+                [".gif"] = new[] { "image/gif" },
+                [".webp"] = new[] { "image/webp" },
+            };
+
         private readonly IImageStorageService _imageStorageService;
         private readonly ILogger<UploadImageCommandHandler> _logger;
 
@@ -28,12 +38,28 @@ namespace Application.Features.Common.Content.Images.Handlers
 
         public async Task<Result<Uri>> Handle(UploadImageCommand request, CancellationToken cancellationToken)
         {
+            string fileExtension = Path.GetExtension(request.FileName ?? string.Empty).ToLowerInvariant();
+            if (!AllowedContentTypesByExtension.TryGetValue(fileExtension, out string[]? allowedContentTypes))
+            {
+                return Result<Uri>.ValidationFailure(new[]
+                {
+                    "Invalid file extension. Allowed extensions: " + string.Join(", ", AllowedContentTypesByExtension.Keys)
+                });
+            }
+
+            if (request.ContentType is null
+                || !allowedContentTypes.Contains(request.ContentType.ToLowerInvariant()))
+            {
+                return Result<Uri>.ValidationFailure(new[]
+                {
+                    "The file content type does not match its extension."
+                });
+            }
+
             try
             {
                 _logger.LogInformation("Processing image upload: {FileName}", request.FileName);
 
-                // Generate unique file name for image
-                string fileExtension = Path.GetExtension(request.FileName);
                 string uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
 
                 Uri imageUrl = await _imageStorageService.SaveImage(
@@ -44,6 +70,10 @@ namespace Application.Features.Common.Content.Images.Handlers
                 _logger.LogInformation("Image upload completed: {ImageUrl}", imageUrl);
 
                 return Result<Uri>.Success(imageUrl);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

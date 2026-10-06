@@ -131,4 +131,10 @@ public record GetHockeyMatchesRequest : PagedRequestBase
 
     /// <summary>When true, a system administrator also receives matches from draft competitions.</summary>
     public bool IncludeDrafts { get; init; }
+
+    /// <summary>Optional competition (season or tournament) filter.</summary>
+    public Guid? CompetitionId { get; init; }
+
+    /// <summary>When true, only matches from active league seasons are returned.</summary>
+    public bool ActiveSeasonsOnly { get; init; }
 }

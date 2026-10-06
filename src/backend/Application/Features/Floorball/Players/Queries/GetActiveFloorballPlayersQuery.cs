@@ -23,7 +23,8 @@ namespace Application.Features.Floorball.Players.Queries
         int Page = 1,
         int PageSize = 0, // 0 means use default from configuration
         string? Position = null,
-        Guid? TeamId = null
+        Guid? TeamId = null,
+        bool IncludePrivateData = false
     ) : IRequest<Result<PagedResult<FloorballPlayerDto>>>
     {
         /// <summary>

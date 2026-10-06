@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import type { FootballMatchDto, FootballTeam } from '../../types/football/footballTypes';
+import { FootballMatchStatus, type FootballMatchDto, type FootballTeam } from '../../types/football/footballTypes';
 import { footballTeamNameSearchService } from '../../api/football/footballTeamNameSearchService';
 import { footballTeamService } from '../../api/football/footballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
@@ -20,6 +20,9 @@ import FootballLeagueStanding from '../FootballLeaguePage/components/FootballLea
 import TeamNavbar from '../../components/TeamNavbar/TeamNavbar';
 import { isGuid } from '../../utils/sportRoutes';
 import { isNotFoundError } from '../../api/utils/isNotFoundError';
+
+const SUMMARY_UPCOMING_LIMIT = 10;
+const SUMMARY_FINISHED_LIMIT = 5;
 
 function seasonIncludesTeam(season: FootballSeasonDto, teamId: string): boolean {
   return season.seasonDivisions?.some((seasonDivision) => seasonDivision.teamIds?.includes(teamId)) ?? false;
@@ -172,7 +175,7 @@ function FootballTeamPage() {
   // Fetch matches with pagination when team changes or page changes
   useEffect(() => {
     const fetchMatches = async () => {
-      if (!team) return;
+      if (!team || activeTab !== 'results') return;
 
       try {
         setMatchesLoading(true);
@@ -197,27 +200,49 @@ function FootballTeamPage() {
       }
     };
     fetchMatches();
-  }, [team, currentPage, currentSeason?.id]);
+  }, [team, currentPage, currentSeason?.id, activeTab]);
 
   useEffect(() => {
+    if (!team) return;
+    let cancelled = false;
     const fetchSummaryMatches = async () => {
-      if (!team) return;
-
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
       try {
-        const response = await footballMatchService.getAll({
-          teamId: team.id,
-          competitionId: currentSeason?.id,
-          page: 1,
-          pageSize: 100,
-          sortOrder: 'desc',
-        });
-        setSummaryMatches(response.data || []);
+        const [upcoming, finished] = await Promise.all([
+          footballMatchService.getAll({
+            teamId: team.id,
+            competitionId: currentSeason?.id,
+            page: 1,
+            pageSize: SUMMARY_UPCOMING_LIMIT,
+            sortOrder: 'asc',
+            startDate: startOfToday.toISOString(),
+          }),
+          footballMatchService.getAll({
+            teamId: team.id,
+            competitionId: currentSeason?.id,
+            page: 1,
+            pageSize: SUMMARY_FINISHED_LIMIT,
+            sortOrder: 'desc',
+            status: FootballMatchStatus.Completed,
+          }),
+        ]);
+        if (cancelled) return;
+        const byId = new Map<string, FootballMatchDto>();
+        for (const match of [...(upcoming.data ?? []), ...(finished.data ?? [])]) {
+          byId.set(match.id, match);
+        }
+        setSummaryMatches([...byId.values()]);
       } catch (error) {
+        if (cancelled) return;
         console.error('Failed to fetch summary matches:', error);
         setSummaryMatches([]);
       }
     };
     fetchSummaryMatches();
+    return () => {
+      cancelled = true;
+    };
   }, [team, currentSeason?.id]);
 
   // Function to fetch data for specific tabs

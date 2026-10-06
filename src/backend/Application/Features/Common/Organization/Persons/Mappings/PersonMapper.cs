@@ -46,6 +46,34 @@ namespace Application.Features.Common.Organization.Persons.Mappings
             );
         }
 
+        /// <summary>
+        /// Maps a Person to a PersonDto without birth date, address, or contact information,
+        /// for responses that anonymous callers can read.
+        /// </summary>
+        public static PersonDto ToRedactedDto(Person person)
+        {
+            if (person == null)
+                throw new ArgumentNullException(nameof(person));
+
+            return new PersonDto(
+                person.Id,
+                person.FirstName,
+                person.LastName,
+                null,
+                person.FullName,
+                person.role,
+                person.IsRegistered,
+                null,
+                null
+            );
+        }
+
+        /// <summary>
+        /// Maps with <see cref="ToDto"/> when private data is allowed, otherwise <see cref="ToRedactedDto"/>.
+        /// </summary>
+        public static PersonDto ToDto(Person person, bool includePrivateData) =>
+            includePrivateData ? ToDto(person) : ToRedactedDto(person);
+
         public static PersonPublicDto ToPublicDto(Person person)
         {
             if (person == null)
@@ -55,7 +83,6 @@ namespace Application.Features.Common.Organization.Persons.Mappings
                 person.Id,
                 person.FirstName,
                 person.LastName,
-                person.BirthDate,
                 person.FullName,
                 person.IsRegistered
             );

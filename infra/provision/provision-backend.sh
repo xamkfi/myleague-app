@@ -340,7 +340,7 @@ cat << EOF
    az webapp deploy --resource-group $RESOURCE_GROUP --name $APP_SERVICE_NAME --src-path ./app.zip --type zip
 
 2. Run database migrations:
-   export ConnectionStrings__DefaultConnection="Host=$POSTGRES_FQDN;Database=myleague;Username=myleagueadmin;Password=<your-password>;SSL Mode=Require;Trust Server Certificate=true"
+   export ConnectionStrings__DefaultConnection="Host=$POSTGRES_FQDN;Database=myleague;Username=myleagueadmin;Password=<your-password>;SSL Mode=VerifyFull"
    dotnet ef database update --project ../Infrastructure/Infrastructure.csproj
 
 3. View logs:

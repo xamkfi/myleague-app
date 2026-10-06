@@ -64,6 +64,8 @@ export interface GetHockeyMatchesRequest {
   teamCategory?: string;
   sortOrder?: 'asc' | 'desc' | string;
   statuses?: HockeyMatchStatus[];
+  competitionId?: string;
+  activeSeasonsOnly?: boolean;
 }
 
 export interface HockeyMatchListDto {
@@ -680,6 +682,36 @@ export interface HockeyMatchDto {
   periodScores: HockeyPeriodScoreDto[];
   refereeDetails?: MatchPersonDto[] | null;
   scorekeepers?: MatchPersonDto[] | null;
+}
+
+/** Score and clock state from GET /HockeyMatch/live, used for polling. */
+export type HockeyLiveMatchDto = Pick<
+  HockeyMatchDto,
+  | 'id'
+  | 'competitionId'
+  | 'matchType'
+  | 'status'
+  | 'resultType'
+  | 'currentPeriodNumber'
+  | 'wentToOvertime'
+  | 'wentToShootout'
+  | 'scheduledStartTime'
+  | 'actualStartTime'
+  | 'actualEndTime'
+  | 'homeTeamId'
+  | 'awayTeamId'
+  | 'homeScore'
+  | 'awayScore'
+>;
+
+/** True when the live row differs from the loaded match in status, score, or period. */
+export function hockeyLiveStateChanged(match: HockeyMatchDto, live: HockeyLiveMatchDto): boolean {
+  return match.status !== live.status
+    || match.homeScore !== live.homeScore
+    || match.awayScore !== live.awayScore
+    || match.currentPeriodNumber !== live.currentPeriodNumber
+    || match.wentToOvertime !== live.wentToOvertime
+    || match.wentToShootout !== live.wentToShootout;
 }
 
 export interface CreateHockeyMatchRequest {

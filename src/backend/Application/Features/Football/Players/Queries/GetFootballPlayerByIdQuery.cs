@@ -16,5 +16,5 @@ namespace Application.Features.Football.Players.Queries
     /// Query for retrieving a football player by Id
     /// </summary>
     /// <param name="Id"></param>
-    public record GetFootballPlayerByIdQuery(Guid Id) : IRequest<Result<FootballPlayerDto>>;
+    public record GetFootballPlayerByIdQuery(Guid Id, bool IncludePrivateData = false) : IRequest<Result<FootballPlayerDto>>;
 }

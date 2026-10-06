@@ -26,13 +26,42 @@ public interface IFootballMatchRepository
         FootballCompetitionType? competitionType = null,
         Domain.Enums.Common.TeamCategory? teamCategory = null,
         bool excludeDraftCompetitions = false,
+        bool activeCompetitionsOnly = false,
+        IReadOnlyCollection<Guid>? teamIds = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Counts matches per status with the same filters as the admin match list.
+    /// Statuses without matches are absent from the result.
+    /// </summary>
+    Task<IReadOnlyDictionary<FootballMatchStatus, int>> GetStatusCountsAsync(
+        Guid? competitionId,
+        string? searchQuery,
+        FootballCompetitionType? competitionType,
+        bool excludeDraftCompetitions,
         CancellationToken cancellationToken = default);
     Task<IEnumerable<FootballMatch>> GetByCompetitionIdAsync(Guid competitionId);
+
+    /// <summary>
+    /// Same shape as <see cref="GetByCompetitionIdAsync"/> but does not track entities. Use for reads only.
+    /// </summary>
+    Task<IReadOnlyList<FootballMatch>> GetByCompetitionIdReadOnlyAsync(Guid competitionId, CancellationToken cancellationToken = default);
     Task<IEnumerable<FootballMatch>> GetByTournamentGroupAsync(
         Guid tournamentGroupId,
         FootballMatchStatus? status = null,
         CancellationToken cancellationToken = default);
     Task<IEnumerable<FootballMatch>> GetByTeamIdAsync(Guid teamId);
+
+    /// <summary>
+    /// Latest completed matches of <paramref name="teamIds"/> where the player was in the lineup
+    /// or recorded an event. Filtered and limited in SQL; only that page loads events.
+    /// Does not track entities.
+    /// </summary>
+    Task<IReadOnlyList<FootballMatch>> GetRecentCompletedForPlayerAsync(
+        Guid playerId,
+        IReadOnlyCollection<Guid> teamIds,
+        int limit,
+        CancellationToken cancellationToken = default);
 
     Task<bool> HasAnyForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
     Task<IEnumerable<FootballMatch>> GetUpcomingByTeamIdAsync(Guid teamId, int count = 5);

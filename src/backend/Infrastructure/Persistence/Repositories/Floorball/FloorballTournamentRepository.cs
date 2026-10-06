@@ -165,21 +165,19 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
-        /// Gets all floorball tournaments. Eagerly loads Groups (with their teams) and Matches so that
-        /// the listing DTO can report accurate teamCount/matchCount/group counts. AsSplitQuery is used to
-        /// avoid the cartesian explosion that would otherwise occur when including multiple unrelated
-        /// collections (Groups.Teams + Matches) on the same root.
+        /// Gets all floorball tournaments, read-only, with Teams and Groups (with their teams).
+        /// Matches are not loaded; use <see cref="GetMatchCountsAsync"/> for listing counts.
         /// </summary>
         public async Task<List<FloorballTournament>> GetAllAsync(
             Domain.Enums.Common.TeamCategory? teamCategory = null,
             CancellationToken ct = default)
         {
             IQueryable<FloorballTournament> query = _entities
+                .AsNoTracking()
                 .Include(t => t.Teams)
                 .Include(t => t.Groups)
                     .ThenInclude(g => g.Teams)
                         .ThenInclude(gt => gt.Team)
-                .Include(t => t.Matches)
                 .AsSplitQuery();
 
             if (teamCategory.HasValue)
@@ -191,19 +189,18 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
         }
 
         /// <summary>
-        /// Gets active floorball tournaments. Same eager-loading strategy as GetAllAsync so the listing DTO
-        /// can populate group/team/match counts.
+        /// Gets active floorball tournaments. Same loading strategy as GetAllAsync.
         /// </summary>
         public async Task<List<FloorballTournament>> GetActiveAsync(
             Domain.Enums.Common.TeamCategory? teamCategory = null,
             CancellationToken ct = default)
         {
             IQueryable<FloorballTournament> query = _entities
+                .AsNoTracking()
                 .Include(t => t.Teams)
                 .Include(t => t.Groups)
                     .ThenInclude(g => g.Teams)
                         .ThenInclude(gt => gt.Team)
-                .Include(t => t.Matches)
                 .AsSplitQuery()
                 .Where(t => t.IsActive && t.TournamentStatus != FloorballTournamentStatus.Completed);
 
@@ -213,6 +210,24 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
             }
 
             return await query.ToListAsync(ct);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyDictionary<Guid, int>> GetMatchCountsAsync(
+            IReadOnlyCollection<Guid> tournamentIds,
+            CancellationToken ct = default)
+        {
+            if (tournamentIds.Count == 0)
+            {
+                return new Dictionary<Guid, int>();
+            }
+
+            return await _dbContext.Set<FloorballMatch>()
+                .AsNoTracking()
+                .Where(m => tournamentIds.Contains(m.CompetitionId))
+                .GroupBy(m => m.CompetitionId)
+                .Select(group => new { CompetitionId = group.Key, Count = group.Count() })
+                .ToDictionaryAsync(row => row.CompetitionId, row => row.Count, ct);
         }
 
         /// <summary>

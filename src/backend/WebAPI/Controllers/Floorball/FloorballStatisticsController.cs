@@ -12,6 +12,9 @@ using Application.Features.Floorball.Teams.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
+using WebAPI.DependencyInjections;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
 using WebAPI.Models.Common.Pagination;
@@ -262,6 +265,8 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Page, sort, team category, and competition type</param>
         /// <returns>Players ordered by the requested column</returns>
         [HttpGet("all-time")]
+        [EnableRateLimiting(PublicTrafficProtectionExtensions.PublicStatsPolicy)]
+        [OutputCache(PolicyName = PublicTrafficProtectionExtensions.PublicStatsCachePolicy)]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballAllTimePlayerStatisticsDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballAllTimePlayerStatisticsDto>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(PaginatedApiResponse<FloorballAllTimePlayerStatisticsDto>), StatusCodes.Status500InternalServerError)]
@@ -293,6 +298,8 @@ namespace WebAPI.Controllers.Floorball
         /// <param name="request">Team category and competition type</param>
         /// <returns>Teams ordered by name</returns>
         [HttpGet("all-time/teams")]
+        [EnableRateLimiting(PublicTrafficProtectionExtensions.PublicStatsPolicy)]
+        [OutputCache(PolicyName = PublicTrafficProtectionExtensions.PublicStatsCachePolicy)]
         [ProducesResponseType(typeof(ApiResponse<List<AllTimeTeamOptionDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<List<AllTimeTeamOptionDto>>), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse<List<AllTimeTeamOptionDto>>>> GetAllTimeTeams(

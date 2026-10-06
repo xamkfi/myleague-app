@@ -80,7 +80,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFootballSeas
             Dictionary<Guid, TournamentTeamAggregate>? tournamentAggregates = null;
             if (isTournament)
             {
-                tournamentMatches = (await _footballMatchRepository.GetByCompetitionIdAsync(request.CompetitionId)).ToList();
+                tournamentMatches = (await _footballMatchRepository.GetByCompetitionIdReadOnlyAsync(request.CompetitionId, cancellationToken)).ToList();
                 tournamentAggregates = BuildTournamentGroupStageAggregates(tournamentMatches, standingRules);
             }
 

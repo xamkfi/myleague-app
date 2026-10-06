@@ -6,6 +6,7 @@ import MatchLineups from './MatchLineups';
 import MatchStats from './MatchStats';
 import MatchStandings from './MatchStandings';
 import { useTranslation } from 'react-i18next';
+import { useMatchRosters, type MatchRosters } from './useMatchRosters';
 
 interface MatchTabContentProps {
   activeTab: MatchTabType;
@@ -18,6 +19,10 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
     match.status === FloorballMatchStatus.InProgress ||
     match.status === FloorballMatchStatus.Completed;
   const hasEvents: boolean = match.goalEvents.length > 0 || match.penaltyEvents.length > 0;
+  const rosters: MatchRosters = useMatchRosters(
+    match,
+    activeTab === 'lineups' || (activeTab === 'summary' && hasEvents)
+  );
   const renderTabContent = () => {
     switch (activeTab) {
       case 'summary':
@@ -42,7 +47,7 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
 
               {hasEvents && (
                 <div className="summary-events-section">
-                  <MatchEvents match={match} />
+                  <MatchEvents match={match} homeRoster={rosters.home} awayRoster={rosters.away} />
                 </div>
               )}
             </div>
@@ -52,7 +57,7 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
       case 'lineups':
         return (
           <div className="tab-content">
-            <MatchLineups match={match} />
+            <MatchLineups match={match} homeRoster={rosters.home} awayRoster={rosters.away} />
           </div>
         );
       

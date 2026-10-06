@@ -20,6 +20,7 @@ namespace WebAPI.Controllers.Common
     /// Controller for managing persons
     /// </summary>
     [Route("api/[controller]")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     public class PersonsController : BaseApiController
     {
         private readonly IMediator _mediator;
@@ -318,6 +319,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="id">Person ID or sport-specific player ID</param>
         /// <returns>Person identity and linked sport player profiles</returns>
         [HttpGet("{id:guid}/player-sports")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<PersonPlayerSportsDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PersonPlayerSportsDto>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse<PersonPlayerSportsDto>), StatusCodes.Status500InternalServerError)]
@@ -335,6 +337,7 @@ namespace WebAPI.Controllers.Common
         /// <param name="id">Person ID</param>
         /// <returns>Person with teams information</returns>
         [HttpGet("{id:guid}/teams")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<PersonWithTeamsDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<PersonWithTeamsDto>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse<PersonWithTeamsDto>), StatusCodes.Status500InternalServerError)]

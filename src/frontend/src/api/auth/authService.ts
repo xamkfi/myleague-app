@@ -5,6 +5,17 @@ import { parseErrorResponse } from '../utils/ParseErrorResponse';
 
 const BASE_URL = `${API_URL}/Auth`;
 
+/** Thrown when the refresh endpoint answers with a non-success HTTP status. */
+export class RefreshRejectedError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'RefreshRejectedError';
+    this.status = status;
+  }
+}
+
 export const authService = {
   /**
    * Request a login code to be sent to the specified email.
@@ -62,9 +73,16 @@ export const authService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
     });
-    const data: ApiResponse<AuthTokenResponse> = await response.json();
+    const data: ApiResponse<AuthTokenResponse> | null = await response
+      .json()
+      .catch((): null => null);
 
-    if (!response.ok || !data?.success) {
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(data, 'Failed to refresh tokens');
+      throw new RefreshRejectedError(errorMessage || 'Failed to refresh tokens', response.status);
+    }
+
+    if (!data?.success) {
       const errorMessage = await parseErrorResponse(data, 'Failed to refresh tokens');
       throw new Error(errorMessage || 'Failed to refresh tokens');
     }

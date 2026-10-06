@@ -20,6 +20,22 @@ public record RecalculateHockeyCompetitionStatisticsCommand(
     Guid? PlayoffSeriesId = null) : IRequest<Result>;
 
 /// <summary>
+/// One aggregate scope inside a competition.
+/// </summary>
+public record HockeyStatisticsScopeTarget(
+    HockeyStatisticsScope Scope,
+    Guid? CompetitionDivisionId = null,
+    Guid? TournamentGroupId = null,
+    Guid? PlayoffSeriesId = null);
+
+/// <summary>
+/// Recalculates several aggregate scopes of one competition from a single match and roster load.
+/// </summary>
+public record RecalculateHockeyCompetitionScopesCommand(
+    Guid CompetitionId,
+    IReadOnlyList<HockeyStatisticsScopeTarget> Scopes) : IRequest<Result>;
+
+/// <summary>
 /// Deletes competition aggregate statistics for a competition (optionally scoped) without rebuilding.
 /// </summary>
 public record ResetHockeyCompetitionStatisticsCommand(

@@ -4317,8 +4317,7 @@
     "verify": "Vahvista",
     "verifying": "Vahvistetaan...",
     "back": "Takaisin",
-    "codeSent": "Kirjautumiskoodi on lähetetty sähköpostiisi.",
-    "emailNotFound": "Sähköpostiosoitetta ei löydy. Tarkista osoite ja yritä uudelleen.",
+    "codeSent": "Jos osoitteelle on käyttäjätili, kirjautumiskoodi on lähetetty siihen.",
     "unexpectedError": "Odottamaton virhe tapahtui.",
     "logout": "Kirjaudu ulos"
   },

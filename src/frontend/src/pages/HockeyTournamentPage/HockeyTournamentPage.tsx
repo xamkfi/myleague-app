@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
@@ -19,6 +19,7 @@ import { isHockeyMatchFinished, shouldRefreshHockeyMatches } from '../../types/h
 import { formatHockeyDate, loadTeamNameMap, uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
 import { useAudience } from '../../context/AudienceContext';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
+import { mergeHockeyLiveMatches } from '../../utils/hockeyLiveMatches';
 import '../FloorballTournamentPage/FloorballTournamentPage.scss';
 import '../../components/MatchesList/MatchesList.scss';
 import '../../components/LeagueStanding/LeagueStanding.scss';
@@ -55,6 +56,10 @@ function HockeyTournamentPage() {
     : 'summary';
   const [tournament, setTournament] = useState<HockeyTournamentDto | null>(null);
   const [matches, setMatches] = useState<HockeyMatchDto[]>([]);
+  const matchesRef = useRef<HockeyMatchDto[]>(matches);
+  useEffect(() => {
+    matchesRef.current = matches;
+  }, [matches]);
   const [teamNames, setTeamNames] = useState<Map<string, string>>(new Map());
   const [teamLogos, setTeamLogos] = useState<Map<string, string | null>>(new Map());
   const [teamMarks, setTeamMarks] = useState<Map<string, string | null>>(new Map());
@@ -92,7 +97,13 @@ function HockeyTournamentPage() {
       return;
     }
     try {
-      setMatches(await hockeyMatchService.getByCompetition(id));
+      const liveRows = await hockeyMatchService.getLive(id);
+      const merge = mergeHockeyLiveMatches(matchesRef.current, liveRows);
+      if (merge.needsFullReload) {
+        setMatches(await hockeyMatchService.getByCompetition(id));
+      } else if (merge.changed) {
+        setMatches(merge.matches);
+      }
     } catch {
       /* keep last known scores */
     }

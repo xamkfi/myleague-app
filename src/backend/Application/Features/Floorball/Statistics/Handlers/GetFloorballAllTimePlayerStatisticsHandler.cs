@@ -40,13 +40,12 @@ public class GetFloorballAllTimePlayerStatisticsHandler
             request.Sort,
             request.Direction);
 
-        List<AllTimePlayerStatRow> rows = await _statisticsRepository.GetAllTimePlayerStatRowsAsync(
-            request.TeamCategory,
-            request.CompetitionType,
-            cancellationToken);
-
         PagedResult<FloorballAllTimePlayerStatisticsDto> page = await AllTimePlayerStatisticsPager.PageAsync(
-            rows,
+            (pageRequest, ct) => _statisticsRepository.GetAllTimePlayerPageAsync(
+                request.TeamCategory,
+                request.CompetitionType,
+                pageRequest,
+                ct),
             new AllTimePageRequest(
                 request.Page,
                 request.PageSize,
@@ -64,7 +63,8 @@ public class GetFloorballAllTimePlayerStatisticsHandler
                 player.Goals,
                 player.Assists,
                 player.Points,
-                player.PenaltyMinutes));
+                player.PenaltyMinutes),
+            cancellationToken);
 
         return Result<PagedResult<FloorballAllTimePlayerStatisticsDto>>.Success(page);
     }

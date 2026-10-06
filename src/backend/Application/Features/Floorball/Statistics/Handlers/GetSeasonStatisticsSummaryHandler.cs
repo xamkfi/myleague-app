@@ -113,7 +113,7 @@ public class GetSeasonStatisticsSummaryHandler : IRequestHandler<GetFloorballSea
             Dictionary<Guid, TournamentTeamAggregate>? tournamentAggregates = null;
             if (isTournament)
             {
-                tournamentMatches = (await _floorballMatchRepository.GetByCompetitionIdAsync(request.CompetitionId)).ToList();
+                tournamentMatches = (await _floorballMatchRepository.GetByCompetitionIdReadOnlyAsync(request.CompetitionId, cancellationToken)).ToList();
                 tournamentAggregates = BuildTournamentGroupStageAggregates(tournamentMatches);
             }
 
