@@ -1,5 +1,9 @@
+using Domain.Common;
 using Domain.Entities;
+using Domain.Entities.Football.Competitions;
 using Domain.Entities.Football.Statistics;
+using Domain.Enums.Common;
+using Domain.Enums.Football;
 using Domain.Repositories.Football;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -163,6 +167,49 @@ public class FootballStatisticsRepository : IFootballStatisticsRepository
     }
 
     /// <inheritdoc />
+    public async Task<List<AllTimePlayerStatRow>> GetAllTimePlayerStatRowsAsync(
+        TeamCategory teamCategory,
+        AllTimeCompetitionFilter competitionType,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<FootballPlayerSeasonStatistics> query = _context.FootballPlayerSeasonStatistics
+            .AsNoTracking()
+            .Where(s => !s.Player.IsLoanPlayer && !s.Player.IsLoanGoalkeeper)
+            .Where(s => s.Competition.TeamCategory == teamCategory);
+
+        query = competitionType switch
+        {
+            AllTimeCompetitionFilter.Season => query.Where(s =>
+                s.Competition is FootballSeason
+                && (s.Competition.IsActive || s.Competition.IsCompleted || s.Competition.EndDate < DateTime.UtcNow)),
+            AllTimeCompetitionFilter.Tournament => query.Where(s =>
+                s.Competition is FootballTournament
+                && ((FootballTournament)s.Competition).TournamentStatus != FootballTournamentStatus.Draft),
+            AllTimeCompetitionFilter.All => query.Where(s =>
+                (s.Competition is FootballSeason && (s.Competition.IsActive || s.Competition.IsCompleted || s.Competition.EndDate < DateTime.UtcNow))
+                || (s.Competition is FootballTournament
+                    && ((FootballTournament)s.Competition).TournamentStatus != FootballTournamentStatus.Draft)),
+            _ => throw new ArgumentOutOfRangeException(nameof(competitionType), competitionType, null)
+        };
+
+        return await query
+            .Select(s => new AllTimePlayerStatRow(
+                s.PlayerId,
+                s.Player.PersonId,
+                s.Player.IsLoanPlayer || s.Player.IsLoanGoalkeeper,
+                s.TeamId,
+                s.Team.Name,
+                s.Competition.StartDate,
+                s.GamesPlayed,
+                s.Goals,
+                s.Assists,
+                s.Points,
+                0,
+                s.YellowCards,
+                s.RedCards))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<List<FootballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default)
     {
         return await _context.FootballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Competition).Include(x => x.Team)

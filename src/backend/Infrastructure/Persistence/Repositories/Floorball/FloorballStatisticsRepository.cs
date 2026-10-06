@@ -1,5 +1,7 @@
 using Domain.Common;
 using Domain.Entities;
+using Domain.Enums.Common;
+using Domain.Enums.Floorball;
 using Domain.Entities.Floorball.Competitions;
 using Domain.Entities.Floorball.Matches;
 using Domain.Entities.Floorball.Matches.Events;
@@ -187,6 +189,50 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
         return await _context.FloorballPlayerSeasonStatistics.Include(x => x.Player).Include(x => x.Competition).Include(x => x.Team)
             .Where(s => s.PlayerId == playerId)
             .OrderByDescending(s => s.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<List<AllTimePlayerStatRow>> GetAllTimePlayerStatRowsAsync(
+        TeamCategory teamCategory,
+        AllTimeCompetitionFilter competitionType,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<FloorballPlayerSeasonStatistics> query = _context.FloorballPlayerSeasonStatistics
+            .AsNoTracking()
+            .Where(s => !s.Player.IsLoanPlayer && !s.Player.IsLoanGoalkeeper)
+            .Where(s => s.Competition.TeamCategory == teamCategory);
+
+        query = competitionType switch
+        {
+            AllTimeCompetitionFilter.Season => query.Where(s =>
+                s.Competition is FloorballSeason
+                && (s.Competition.IsActive || s.Competition.IsCompleted || s.Competition.EndDate < DateTime.UtcNow)),
+            AllTimeCompetitionFilter.Tournament => query.Where(s =>
+                s.Competition is FloorballTournament
+                && ((FloorballTournament)s.Competition).TournamentStatus != FloorballTournamentStatus.Draft),
+            AllTimeCompetitionFilter.All => query.Where(s =>
+                (s.Competition is FloorballSeason && (s.Competition.IsActive || s.Competition.IsCompleted || s.Competition.EndDate < DateTime.UtcNow))
+                || (s.Competition is FloorballTournament
+                    && ((FloorballTournament)s.Competition).TournamentStatus != FloorballTournamentStatus.Draft)),
+            _ => throw new ArgumentOutOfRangeException(nameof(competitionType), competitionType, null)
+        };
+
+        return await query
+            .Select(s => new AllTimePlayerStatRow(
+                s.PlayerId,
+                s.Player.PersonId,
+                s.Player.IsLoanPlayer || s.Player.IsLoanGoalkeeper,
+                s.TeamId,
+                s.Team.Name,
+                s.Competition.StartDate,
+                s.GamesPlayed,
+                s.Goals,
+                s.Assists,
+                s.Points,
+                s.PenaltyMinutes,
+                0,
+                0))
             .ToListAsync(cancellationToken);
     }
 

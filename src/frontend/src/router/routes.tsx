@@ -27,6 +27,8 @@ const FloorballTeamPage = lazyWithRetry(() => import('../pages/FloorballTeamPage
 const MatchPage = lazyWithRetry(() => import('../pages/FloorballMatchPage/FloorballMatchPage'));
 const LeaguePage = lazyWithRetry(() => import('../pages/FloorballLeaguePage/FloorballLeaguePage'));
 const FloorballPage = lazyWithRetry(() => import('../pages/FloorballPage/FloorballPage'));
+const AllTimeStatsPage = lazyWithRetry(() => import('../pages/AllTimeStatsPage/AllTimeStatsPage'));
+const AllTimeStatsHubPage = lazyWithRetry(() => import('../pages/AllTimeStatsPage/AllTimeStatsHubPage'));
 const ClubsPage = lazyWithRetry(() => import('../pages/ClubsPage/ClubsPage'));
 const EventCalendarPage = lazyWithRetry(() => import('../pages/EventCalendarPage/EventCalendarPage'));
 const NotFoundPage = lazyWithRetry(() => import('../pages/NotFoundPage/NotFoundPage'));
@@ -382,16 +384,32 @@ export const routes: RouteObject[] = [
     element: <SuspenseWrapper><SportsPage /></SuspenseWrapper>
   },
   {
+    path: '/sports/all-time',
+    element: <SuspenseWrapper><AllTimeStatsHubPage /></SuspenseWrapper>
+  },
+  {
     path: '/sports/floorball',
     element: <SuspenseWrapper><FloorballPage /></SuspenseWrapper>
+  },
+  {
+    path: '/sports/floorball/all-time',
+    element: <SuspenseWrapper><AllTimeStatsPage sport="floorball" /></SuspenseWrapper>
   },
   {
     path: '/sports/football',
     element: <SuspenseWrapper><FootballPage /></SuspenseWrapper>
   },
   {
+    path: '/sports/football/all-time',
+    element: <SuspenseWrapper><AllTimeStatsPage sport="football" /></SuspenseWrapper>
+  },
+  {
     path: '/sports/icehockey',
     element: <SuspenseWrapper><HockeyPage /></SuspenseWrapper>
+  },
+  {
+    path: '/sports/icehockey/all-time',
+    element: <SuspenseWrapper><AllTimeStatsPage sport="hockey" /></SuspenseWrapper>
   },
   {
     path: '/hockey/league/:id',

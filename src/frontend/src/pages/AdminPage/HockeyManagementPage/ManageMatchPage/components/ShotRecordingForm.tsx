@@ -9,6 +9,8 @@ import {
 const SHOT_RESULTS_FOR_FORM = HOCKEY_SHOT_RESULTS.filter((result) => result !== 'Goal');
 import './ShotRecordingForm.scss';
 import { formatPlayerOptionLabel, sortPlayersForSelect, type HockeyFormPlayer } from './eventFormHelpers';
+import EventPeriodSelect from './EventPeriodSelect';
+import EventTimeInput from '../../../../../components/match/EventTimeInput';
 
 interface ShotRecordingFormProps {
   showShotForm: boolean;
@@ -19,6 +21,14 @@ interface ShotRecordingFormProps {
   loading: boolean;
   onPlayerChange: (playerId: string) => void;
   onResultChange: (result: HockeyShotResult) => void;
+  periodNumber: number;
+  periods: readonly number[];
+  overtimePeriodNumber: number;
+  shootoutPeriodNumber: number;
+  onPeriodChange: (periodNumber: number) => void;
+  timeMinutes: number;
+  timeSeconds: number;
+  onTimeChange: (minutes: number, seconds: number) => void;
   onRecordShot: () => Promise<void>;
   onClose: () => void;
 }
@@ -32,6 +42,14 @@ function ShotRecordingForm({
   loading,
   onPlayerChange,
   onResultChange,
+  periodNumber,
+  periods,
+  overtimePeriodNumber,
+  shootoutPeriodNumber,
+  onPeriodChange,
+  timeMinutes,
+  timeSeconds,
+  onTimeChange,
   onRecordShot,
   onClose,
 }: ShotRecordingFormProps) {
@@ -127,6 +145,21 @@ function ShotRecordingForm({
                   </p>
                 )}
               </div>
+              <EventPeriodSelect
+                id="shot-period"
+                periodNumber={periodNumber}
+                periods={periods}
+                overtimePeriodNumber={overtimePeriodNumber}
+                shootoutPeriodNumber={shootoutPeriodNumber}
+                onChange={onPeriodChange}
+              />
+              <EventTimeInput
+                idPrefix="shot-time"
+                label={t('hockey.matches.eventTime', 'Time')}
+                minutes={timeMinutes}
+                seconds={timeSeconds}
+                onChange={onTimeChange}
+              />
             </div>
             <div className="form-actions">
               <button onClick={onClose} className="cancel-btn" type="button" disabled={loading}>

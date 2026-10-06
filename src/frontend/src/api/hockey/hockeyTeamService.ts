@@ -11,6 +11,7 @@ import type {
 } from '../../types/hockey/hockeyTypes';
 import { hockeyPagedRequest, hockeyRequest, jsonBody, withTeamCategory } from './hockeyApi';
 import type { LoanGoalkeeperDto } from '../../types/loanGoalkeeper';
+import type { LoanPlayerDto } from '../../types/loanPlayer';
 
 function uniqueById<T extends { id: string }>(items: T[]): T[] {
   const seen = new Set<string>();
@@ -99,6 +100,19 @@ export const hockeyTeamService = {
     return hockeyRequest<LoanGoalkeeperDto>(
       `/HockeyTeam/${teamId}/loan-goalkeeper${query ? `?${query}` : ''}`,
       'Failed to ensure loan goalkeeper',
+      { method: 'POST' },
+    );
+  },
+
+  ensureLoanPlayers: (teamId: string, count: number, competitionId?: string | null): Promise<LoanPlayerDto[]> => {
+    const params = new URLSearchParams();
+    params.set('count', String(count));
+    if (competitionId) {
+      params.set('competitionId', competitionId);
+    }
+    return hockeyRequest<LoanPlayerDto[]>(
+      `/HockeyTeam/${teamId}/loan-players?${params.toString()}`,
+      'Failed to ensure loan players',
       { method: 'POST' },
     );
   },

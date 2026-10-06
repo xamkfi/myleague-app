@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import CatalogPage from '../../components/CatalogPage/CatalogPage';
 import SportIcon, { type SportIconSport } from '../../components/SportIcon/SportIcon';
+import TrophyIcon from '../../components/TrophyIcon/TrophyIcon';
+import { ALL_TIME_STATS_HUB_PATH } from '../../utils/sportRoutes';
 import './SportsPage.scss';
 
 interface SportItem {
@@ -80,6 +82,16 @@ function SportsPage() {
               );
             })}
           </div>
+          <Link to={ALL_TIME_STATS_HUB_PATH} className="sports-page__all-time">
+            <span className="sports-page__all-time-icon">
+              <TrophyIcon size={24} />
+            </span>
+            <span className="sports-page__all-time-text">
+              <span className="sports-page__all-time-title">{t('allTimeStats.title')}</span>
+              <span className="sports-page__all-time-description">{t('allTimeStats.hubDescription')}</span>
+            </span>
+            <span className="sports-page__all-time-link">{t('allTimeStats.cta')} →</span>
+          </Link>
       </CatalogPage>
     </PageTemplate>
   );

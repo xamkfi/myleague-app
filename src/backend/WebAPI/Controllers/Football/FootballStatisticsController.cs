@@ -1,4 +1,6 @@
 using Application.Common;
+using Domain.Common;
+using Application.Features.Common.Shared.DTOs;
 using Application.Features.Football.Players.DTOs;
 using Application.Features.Football.Statistics.DTOs;
 using Application.Features.Football.Statistics.Queries;
@@ -7,6 +9,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 
 namespace WebAPI.Controllers.Football;
 
@@ -214,5 +217,53 @@ public class FootballStatisticsController : BaseApiController
         Result<List<FootballTournamentGroupStandingDto>> result = await _mediator.Send(query);
 
         return HandleResult(result, "Tournament group standings retrieved successfully", "Failed to retrieve tournament group standings");
+    }
+
+    /// <summary>
+    /// Gets paged all-time player statistics summed across public competitions.
+    /// </summary>
+    /// <param name="request">Page, sort, team category, and competition type</param>
+    /// <returns>Players ordered by the requested column</returns>
+    [HttpGet("all-time")]
+    [ProducesResponseType(typeof(PaginatedApiResponse<FootballAllTimePlayerStatisticsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedApiResponse<FootballAllTimePlayerStatisticsDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(PaginatedApiResponse<FootballAllTimePlayerStatisticsDto>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<PaginatedApiResponse<FootballAllTimePlayerStatisticsDto>>> GetAllTimePlayerStatistics(
+        [FromQuery] GetAllTimePlayerStatisticsRequest request)
+    {
+        _logger.LogInformation(
+            "Getting football all-time player statistics page {Page} sorted by {Sort}",
+            request.Page,
+            request.Sort);
+
+        GetFootballAllTimePlayerStatisticsQuery query = new(
+            request.Page,
+            request.PageSize,
+            request.TeamCategory,
+            request.CompetitionType,
+            request.Sort,
+            request.Direction,
+            request.Search,
+            request.TeamId);
+        Result<PagedResult<FootballAllTimePlayerStatisticsDto>> result = await _mediator.Send(query);
+
+        return HandlePaginatedResult(result, "All-time player statistics retrieved successfully", "Failed to retrieve all-time player statistics");
+    }
+
+    /// <summary>
+    /// Gets the teams that have public all-time player statistics.
+    /// </summary>
+    /// <param name="request">Team category and competition type</param>
+    /// <returns>Teams ordered by name</returns>
+    [HttpGet("all-time/teams")]
+    [ProducesResponseType(typeof(ApiResponse<List<AllTimeTeamOptionDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<List<AllTimeTeamOptionDto>>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<List<AllTimeTeamOptionDto>>>> GetAllTimeTeams(
+        [FromQuery] GetAllTimeTeamsRequest request)
+    {
+        GetFootballAllTimeTeamsQuery query = new(request.TeamCategory, request.CompetitionType);
+        Result<List<AllTimeTeamOptionDto>> result = await _mediator.Send(query);
+
+        return HandleResult(result, "All-time teams retrieved successfully", "Failed to retrieve all-time teams");
     }
 }
