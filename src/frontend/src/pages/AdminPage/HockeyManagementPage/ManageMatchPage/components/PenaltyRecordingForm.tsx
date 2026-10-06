@@ -8,6 +8,7 @@ import {
 } from '../../../../../types/hockey/hockeyTypes';
 import './PenaltyRecordingForm.scss';
 import { formatPlayerOptionLabel, sortPlayersForSelect, type HockeyFormPlayer } from './eventFormHelpers';
+import EventPeriodSelect from './EventPeriodSelect';
 import EventTimeInput from '../../../../../components/match/EventTimeInput';
 
 interface PenaltyRecordingFormProps {
@@ -23,6 +24,11 @@ interface PenaltyRecordingFormProps {
   onOffenceChange: (offence: HockeyPenaltyOffence) => void;
   onSeverityChange: (severity: HockeyPenaltySeverity) => void;
   onMinutesChange: (minutes: number) => void;
+  periodNumber: number;
+  periods: readonly number[];
+  overtimePeriodNumber: number;
+  shootoutPeriodNumber: number;
+  onPeriodChange: (periodNumber: number) => void;
   timeMinutes: number;
   timeSeconds: number;
   onTimeChange: (minutes: number, seconds: number) => void;
@@ -43,6 +49,11 @@ function PenaltyRecordingForm({
   onOffenceChange,
   onSeverityChange,
   onMinutesChange,
+  periodNumber,
+  periods,
+  overtimePeriodNumber,
+  shootoutPeriodNumber,
+  onPeriodChange,
   timeMinutes,
   timeSeconds,
   onTimeChange,
@@ -134,6 +145,14 @@ function PenaltyRecordingForm({
                   {[2, 4, 5, 10].map((minutes) => <option key={minutes} value={minutes}>{minutes}</option>)}
                 </select>
               </div>
+              <EventPeriodSelect
+                id="penalty-period"
+                periodNumber={periodNumber}
+                periods={periods}
+                overtimePeriodNumber={overtimePeriodNumber}
+                shootoutPeriodNumber={shootoutPeriodNumber}
+                onChange={onPeriodChange}
+              />
               <EventTimeInput
                 idPrefix="penalty-time"
                 label={t('hockey.matches.eventTime', 'Time')}

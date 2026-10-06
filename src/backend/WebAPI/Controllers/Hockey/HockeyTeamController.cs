@@ -369,4 +369,28 @@ public class HockeyTeamController : BaseApiController
             await _mediator.Send(new EnsureHockeyLoanGoalkeeperCommand(teamId, competitionId), cancellationToken),
             "Loan goalkeeper ensured successfully",
             "Failed to ensure loan goalkeeper");
+
+    /// <summary>
+    /// Ensures the team has the requested number of loan players. Existing loan players are
+    /// reused before new ones are created, and each is attached to the given competition roster.
+    /// </summary>
+    /// <param name="teamId">Team ID</param>
+    /// <param name="count">How many loan players this match needs</param>
+    /// <param name="competitionId">Competition roster to attach the players to</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The first <paramref name="count"/> loan players</returns>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [HttpPost("{teamId:guid}/loan-players")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<HockeyLoanPlayerDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<HockeyLoanPlayerDto>>>> EnsureLoanPlayers(
+        Guid teamId,
+        [FromQuery] int count,
+        [FromQuery] Guid? competitionId = null,
+        CancellationToken cancellationToken = default) =>
+        HandleResult(
+            await _mediator.Send(new EnsureHockeyLoanPlayersCommand(teamId, competitionId, count), cancellationToken),
+            "Loan players ensured successfully",
+            "Failed to ensure loan players");
 }

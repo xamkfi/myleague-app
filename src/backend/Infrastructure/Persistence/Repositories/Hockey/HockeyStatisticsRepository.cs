@@ -1,4 +1,8 @@
+using Domain.Common;
+using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Statistics;
+using Domain.Enums.Common;
+using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Statistics;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
@@ -348,6 +352,46 @@ public class HockeyStatisticsRepository : IHockeyStatisticsRepository
             s.CompetitionDivisionId == competitionDivisionId &&
             s.TournamentGroupId == tournamentGroupId &&
             s.PlayoffSeriesId == playoffSeriesId);
+
+    public async Task<List<AllTimePlayerStatRow>> GetAllTimePlayerStatRowsAsync(
+        TeamCategory teamCategory,
+        AllTimeCompetitionFilter competitionType,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<HockeyPlayerCompetitionStatistics> query = _dbContext.HockeyPlayerCompetitionStatistics
+            .AsNoTracking()
+            .Where(s => s.Scope == HockeyStatisticsScope.Competition)
+            .Where(s => s.Player != null && !s.Player.IsLoanPlayer && !s.Player.IsLoanGoalkeeper)
+            .Where(s => s.Competition != null && s.Competition.TeamCategory == teamCategory)
+            .Where(s =>
+                s.Competition!.Status != HockeyCompetitionStatus.Draft
+                || (s.Competition is HockeySeason && s.Competition.EndDate < DateTime.UtcNow));
+
+        query = competitionType switch
+        {
+            AllTimeCompetitionFilter.Season => query.Where(s => s.Competition is HockeySeason),
+            AllTimeCompetitionFilter.Tournament => query.Where(s => s.Competition is HockeyTournament),
+            AllTimeCompetitionFilter.All => query,
+            _ => throw new ArgumentOutOfRangeException(nameof(competitionType), competitionType, null)
+        };
+
+        return await query
+            .Select(s => new AllTimePlayerStatRow(
+                s.PlayerId,
+                s.Player!.PersonId,
+                s.Player.IsLoanPlayer || s.Player.IsLoanGoalkeeper,
+                s.TeamId,
+                s.Team!.Name,
+                s.Competition!.StartDate,
+                s.GamesPlayed,
+                s.Goals,
+                s.Assists,
+                s.Points,
+                s.PenaltyMinutes,
+                0,
+                0))
+            .ToListAsync(cancellationToken);
+    }
 
     private static IQueryable<HockeyGoalieCompetitionStatistics> FilterGoalieScope(
         IQueryable<HockeyGoalieCompetitionStatistics> query,

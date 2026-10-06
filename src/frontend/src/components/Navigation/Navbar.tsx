@@ -7,6 +7,8 @@ import SearchBar from '../SearchBar';
 import { MAHL_INFO_PAGES } from '../../constants/mahlInfoPages';
 import AudienceSwitcher from '../AudienceSwitcher/AudienceSwitcher';
 import SportIcon, { type SportIconSport } from '../SportIcon/SportIcon';
+import TrophyIcon from '../TrophyIcon/TrophyIcon';
+import { ALL_TIME_STATS_HUB_PATH } from '../../utils/sportRoutes';
 import mahlLogo from '../../assets/logos/Mahl_primary_V3.svg';
 
 interface NavbarSportLink {
@@ -143,7 +145,7 @@ function Navbar() {
               <span className="dropdown-icon">▼</span>
             </div>
             {activeDropdown === 'sports' && (
-              <ul className="dropdown-menu">
+              <ul className="dropdown-menu dropdown-menu--end">
                 <li>
                   <Link to="/sports" onClick={() => setActiveDropdown(null)}>{t('sports.allSports')}</Link>
                 </li>
@@ -166,6 +168,17 @@ function Navbar() {
                     )}
                   </li>
                 ))}
+                <li className="dropdown-divider" role="separator" />
+                <li>
+                  <Link
+                    to={ALL_TIME_STATS_HUB_PATH}
+                    onClick={() => setActiveDropdown(null)}
+                    className="navbar-sport-link"
+                  >
+                    <TrophyIcon size={18} className="navbar-trophy-icon" />
+                    {t('allTimeStats.title')}
+                  </Link>
+                </li>
               </ul>
             )}
           </li>
@@ -254,6 +267,12 @@ function Navbar() {
                     )}
                   </li>
                 ))}
+                <li>
+                  <Link to={ALL_TIME_STATS_HUB_PATH} onClick={closeMobileMenu} className="navbar-sport-link">
+                    <TrophyIcon size={18} className="navbar-trophy-icon" />
+                    {t('allTimeStats.title')}
+                  </Link>
+                </li>
               </ul>
             </li>
             <li className="mobile-navbar-item">

@@ -32,6 +32,28 @@ export const formatPlayerOptionLabel = (player: HockeyFormPlayer): string => {
   return `${jersey} - ${player.name}`;
 };
 
+/**
+ * Periods a scorekeeper can attach an event to: every period already started, up to and
+ * including the live period. Overtime and the shootout stay out until they are the live
+ * period or have been started. The live period is always included so the form default
+ * matches a real option.
+ */
+export function hockeyRecordablePeriods(
+  startedPeriods: ReadonlySet<number>,
+  currentPeriod: number,
+): number[] {
+  const periods = new Set<number>();
+  for (const period of startedPeriods) {
+    if (period >= 1 && period <= currentPeriod) {
+      periods.add(period);
+    }
+  }
+  if (currentPeriod >= 1) {
+    periods.add(currentPeriod);
+  }
+  return [...periods].sort((left, right) => left - right);
+}
+
 export const toFormPlayers = (
   players: HockeyMatchActivePlayerDto[],
   names: Map<string, string>,

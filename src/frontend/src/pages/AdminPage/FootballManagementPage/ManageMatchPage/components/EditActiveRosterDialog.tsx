@@ -6,6 +6,7 @@ import { footballTeamService } from '../../../../../api/football/footballTeamSer
 import type { FootballPlayerDto } from '../../../../../api/football/footballPlayerService';
 import ConfirmationDialog from '../../../../../components/ConfirmationDialog/ConfirmationDialog';
 import { formatPersonName } from '../../../../../types/loanGoalkeeper';
+import { parseLoanPlayerCount } from '../../../../../types/loanPlayer';
 import {
   FootballPosition,
   type FootballLineupPlayer,
@@ -99,8 +100,13 @@ interface TeamColumnProps {
   onToggleOnField: (playerId: string) => void;
   onChangePosition: (playerId: string, position: FootballPosition) => void;
   onUseLoanGoalkeeper: () => void;
+  onUseLoanPlayers: (count: number) => void;
   loanGoalkeeperBusy: boolean;
 }
+
+type PendingLoanAction =
+  | { kind: 'goalkeeper'; side: 'home' | 'away' }
+  | { kind: 'players'; side: 'home' | 'away'; count: number };
 
 const TeamColumn = ({
   teamLabel,
@@ -110,10 +116,13 @@ const TeamColumn = ({
   onToggleOnField,
   onChangePosition,
   onUseLoanGoalkeeper,
+  onUseLoanPlayers,
   loanGoalkeeperBusy,
 }: TeamColumnProps): ReactElement => {
   const { t } = useTranslation();
   const [search, setSearch] = useState<string>('');
+  const [loanPlayerCount, setLoanPlayerCount] = useState<string>('1');
+  const parsedLoanPlayerCount: number | null = parseLoanPlayerCount(loanPlayerCount);
 
   const sortedPlayers: FootballPlayerDto[] = useMemo(
     () => [...players].sort(sortPlayers),
@@ -156,6 +165,37 @@ const TeamColumn = ({
       </button>
       <p className="eard-loan-hint">
         {t('football.matches.lineup.loanGoalkeeperHint', 'Creates a loan goalkeeper for the team and sets them as the goalkeeper. If one already exists, that same player is selected.')}
+      </p>
+      <div className="eard-loan-players">
+        <label className="eard-loan-players__count">
+          <span>{t('football.matches.lineup.loanPlayersCount', 'Count')}</span>
+          <input
+            type="number"
+            min={1}
+            max={20}
+            value={loanPlayerCount}
+            onChange={(event: ChangeEvent<HTMLInputElement>) => setLoanPlayerCount(event.target.value)}
+            disabled={loanGoalkeeperBusy}
+            aria-label={t('football.matches.lineup.loanPlayersCount', 'Count')}
+          />
+        </label>
+        <button
+          type="button"
+          className="eard-btn eard-btn--ghost eard-btn--sm"
+          onClick={() => {
+            if (parsedLoanPlayerCount !== null) {
+              onUseLoanPlayers(parsedLoanPlayerCount);
+            }
+          }}
+          disabled={loanGoalkeeperBusy || parsedLoanPlayerCount === null}
+        >
+          {loanGoalkeeperBusy
+            ? t('common.saving', 'Saving...')
+            : t('football.matches.lineup.loanPlayers', 'Lainapelaajat')}
+        </button>
+      </div>
+      <p className="eard-loan-hint">
+        {t('football.matches.lineup.loanPlayersHint', 'Adds the requested number of loan players to this match. Existing loan players are used first, and only the missing ones are created.')}
       </p>
 
       {validationMessage && (
@@ -293,13 +333,13 @@ const EditActiveRosterDialog = ({
   );
   const [saving, setSaving] = useState<boolean>(false);
   const [loanSide, setLoanSide] = useState<'home' | 'away' | null>(null);
-  const [pendingLoanSide, setPendingLoanSide] = useState<'home' | 'away' | null>(null);
+  const [pendingLoan, setPendingLoan] = useState<PendingLoanAction | null>(null);
   const wasOpenRef = useRef(false);
 
   useEffect(() => {
     if (!isOpen) {
       wasOpenRef.current = false;
-      setPendingLoanSide(null);
+      setPendingLoan(null);
       return;
     }
     if (wasOpenRef.current) {
@@ -395,9 +435,70 @@ const EditActiveRosterDialog = ({
       onError(message);
     } finally {
       setLoanSide(null);
-      setPendingLoanSide(null);
+      setPendingLoan(null);
     }
   }, [awayTeamId, competitionId, homeTeamId, onError, onPlayerAdded, placeLoanGoalkeeper, t]);
+
+  const placeLoanPlayers = useCallback((side: 'home' | 'away', playerIds: string[]): void => {
+    const updater = (prev: TeamLineupMap): TeamLineupMap => {
+      const next = new Map(prev);
+      for (const playerId of playerIds) {
+        const current = next.get(playerId);
+        if (current?.isOnField === true && current.isSentOff !== true) {
+          continue;
+        }
+        next.set(playerId, {
+          position: FootballPosition.Midfielder,
+          isOnField: true,
+          isSentOff: false,
+        });
+      }
+      return next;
+    };
+    if (side === 'home') {
+      setHomeState(updater);
+    } else {
+      setAwayState(updater);
+    }
+  }, []);
+
+  const addLoanPlayers = useCallback(async (side: 'home' | 'away', count: number): Promise<void> => {
+    const teamId = side === 'home' ? homeTeamId : awayTeamId;
+    try {
+      setLoanSide(side);
+      onError(null);
+      const results = await footballTeamService.ensureLoanPlayers(teamId, count, competitionId);
+      for (const result of results) {
+        const player: FootballPlayerDto = {
+          id: result.playerId,
+          personId: '',
+          person: {
+            id: '',
+            firstName: result.firstName,
+            lastName: result.lastName,
+            birthDate: '',
+            fullName: result.displayName,
+            isRegistered: false,
+          },
+          isActive: true,
+          position: FootballPosition.Midfielder,
+          careerGoals: 0,
+          careerAssists: 0,
+          jerseyNumber: result.jerseyNumber,
+        };
+        onPlayerAdded(teamId, player);
+      }
+      placeLoanPlayers(side, results.map((result) => result.playerId));
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : t('football.matches.lineup.loanPlayersFailed', 'Failed to add loan players');
+      onError(message);
+    } finally {
+      setLoanSide(null);
+      setPendingLoan(null);
+    }
+  }, [awayTeamId, competitionId, homeTeamId, onError, onPlayerAdded, placeLoanPlayers, t]);
 
   const homeError: string | null = validateTeamLineup(toDraft(homeState), rules);
   const awayError: string | null = validateTeamLineup(toDraft(awayState), rules);
@@ -432,17 +533,21 @@ const EditActiveRosterDialog = ({
     }
   }, [canSave, homeState, awayState, matchId, homeTeamId, awayTeamId, onClose, onSaved, onError]);
 
-  const pendingTeamName: string = pendingLoanSide === 'home'
+  const pendingTeamName: string = pendingLoan?.side === 'home'
     ? homeTeamName
-    : pendingLoanSide === 'away'
+    : pendingLoan?.side === 'away'
       ? awayTeamName
       : '';
 
-  const confirmLoanGoalkeeper = (): void => {
-    if (pendingLoanSide === null || loanSide !== null) {
+  const confirmLoan = (): void => {
+    if (pendingLoan === null || loanSide !== null) {
       return;
     }
-    void addLoanGoalkeeper(pendingLoanSide);
+    if (pendingLoan.kind === 'goalkeeper') {
+      void addLoanGoalkeeper(pendingLoan.side);
+      return;
+    }
+    void addLoanPlayers(pendingLoan.side, pendingLoan.count);
   };
 
   if (!isOpen) return null;
@@ -480,7 +585,8 @@ const EditActiveRosterDialog = ({
             rules={rules}
             onToggleOnField={(id) => toggleOnField('home', id)}
             onChangePosition={(id, position) => changePosition('home', id, position)}
-            onUseLoanGoalkeeper={() => setPendingLoanSide('home')}
+            onUseLoanGoalkeeper={() => setPendingLoan({ kind: 'goalkeeper', side: 'home' })}
+            onUseLoanPlayers={(count) => setPendingLoan({ kind: 'players', side: 'home', count })}
             loanGoalkeeperBusy={loanSide !== null}
           />
           <TeamColumn
@@ -490,7 +596,8 @@ const EditActiveRosterDialog = ({
             rules={rules}
             onToggleOnField={(id) => toggleOnField('away', id)}
             onChangePosition={(id, position) => changePosition('away', id, position)}
-            onUseLoanGoalkeeper={() => setPendingLoanSide('away')}
+            onUseLoanGoalkeeper={() => setPendingLoan({ kind: 'goalkeeper', side: 'away' })}
+            onUseLoanPlayers={(count) => setPendingLoan({ kind: 'players', side: 'away', count })}
             loanGoalkeeperBusy={loanSide !== null}
           />
         </div>
@@ -525,18 +632,24 @@ const EditActiveRosterDialog = ({
         </footer>
       </div>
     </div>
-    {pendingLoanSide !== null && (
+    {pendingLoan !== null && (
       <div className="eard-confirm-layer">
         <ConfirmationDialog
           isOpen
           icon="ℹ️"
-          title={t('football.matches.lineup.loanGoalkeeperConfirmTitle', 'Set loan goalkeeper')}
-          message={t('football.matches.lineup.loanGoalkeeperConfirmMessage', 'Set a loan goalkeeper for {{team}}? The player is created if this team does not have one yet. Otherwise the existing loan goalkeeper is selected.', { team: pendingTeamName })}
-          confirmText={t('football.matches.lineup.loanGoalkeeperConfirm', 'Yes, set loan goalkeeper')}
+          title={pendingLoan.kind === 'players'
+            ? t('football.matches.lineup.loanPlayersConfirmTitle', 'Add loan players')
+            : t('football.matches.lineup.loanGoalkeeperConfirmTitle', 'Set loan goalkeeper')}
+          message={pendingLoan.kind === 'players'
+            ? t('football.matches.lineup.loanPlayersConfirmMessage', 'Add {{count}} loan players for {{team}}? Existing loan players are used first.', { team: pendingTeamName, count: pendingLoan.count })
+            : t('football.matches.lineup.loanGoalkeeperConfirmMessage', 'Set a loan goalkeeper for {{team}}? The player is created if this team does not have one yet. Otherwise the existing loan goalkeeper is selected.', { team: pendingTeamName })}
+          confirmText={pendingLoan.kind === 'players'
+            ? t('football.matches.lineup.loanPlayersConfirm', 'Yes, add loan players')
+            : t('football.matches.lineup.loanGoalkeeperConfirm', 'Yes, set loan goalkeeper')}
           cancelText={t('common.cancel', 'Cancel')}
           isLoading={loanSide !== null}
-          onConfirm={confirmLoanGoalkeeper}
-          onCancel={() => setPendingLoanSide(null)}
+          onConfirm={confirmLoan}
+          onCancel={() => setPendingLoan(null)}
         />
       </div>
     )}

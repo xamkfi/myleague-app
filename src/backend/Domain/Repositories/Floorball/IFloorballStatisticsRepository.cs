@@ -1,5 +1,6 @@
 using Domain.Common;
 using Domain.Entities.Floorball.Competitions;
+using Domain.Enums.Common;
 using Domain.Entities.Floorball.Matches;
 using Domain.Entities.Floorball.Matches.Events;
 using Domain.Entities.Floorball.Officials;
@@ -125,6 +126,15 @@ public interface IFloorballStatisticsRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Player statistics across all seasons</returns>
     Task<List<FloorballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets public competition player statistics rows for an all-time ranking.
+    /// Loan profiles and unpublished competitions are excluded.
+    /// </summary>
+    Task<List<AllTimePlayerStatRow>> GetAllTimePlayerStatRowsAsync(
+        TeamCategory teamCategory,
+        AllTimeCompetitionFilter competitionType,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds or updates player season statistics

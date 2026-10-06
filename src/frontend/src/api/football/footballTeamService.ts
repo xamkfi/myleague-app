@@ -13,6 +13,7 @@ import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
 import type { LoanGoalkeeperDto } from '../../types/loanGoalkeeper';
+import type { LoanPlayerDto } from '../../types/loanPlayer';
 
 export const footballTeamService = {
   /**
@@ -230,6 +231,31 @@ export const footballTeamService = {
     }
     if (!apiResponse.success || !apiResponse.data) {
       throw new Error(apiResponse.errors?.join(', ') || 'Failed to ensure loan goalkeeper');
+    }
+    return apiResponse.data;
+  },
+
+  ensureLoanPlayers: async (
+    teamId: string,
+    count: number,
+    competitionId?: string | null,
+  ): Promise<LoanPlayerDto[]> => {
+    const params = new URLSearchParams();
+    params.set('count', String(count));
+    if (competitionId) {
+      params.set('competitionId', competitionId);
+    }
+    const response = await authFetch(
+      `${API_URL}/FootballTeam/${teamId}/loan-players?${params.toString()}`,
+      { method: 'POST' },
+    );
+    const apiResponse: ApiResponse<LoanPlayerDto[]> = await response.json();
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(apiResponse, 'Failed to ensure loan players');
+      throw new Error(errorMessage || 'Failed to ensure loan players');
+    }
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to ensure loan players');
     }
     return apiResponse.data;
   },

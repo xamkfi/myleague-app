@@ -53,6 +53,16 @@ public class FloorballPlayer : BaseEntity
     public bool IsLoanGoalkeeper { get; private set; }
 
     /// <summary>
+    /// Gets whether this profile is a reusable loan-player placeholder.
+    /// </summary>
+    public bool IsLoanPlayer { get; private set; }
+
+    /// <summary>
+    /// Gets the 1-based sequence used in the name Lainapelaaja #N. Zero when this is not a loan player.
+    /// </summary>
+    public int LoanPlayerNumber { get; private set; }
+
+    /// <summary>
     /// Private constructor for EF Core
     /// </summary>
     private FloorballPlayer()
@@ -65,6 +75,8 @@ public class FloorballPlayer : BaseEntity
         CareerGoals = 0;
         CareerAssists = 0;
         IsLoanGoalkeeper = false;
+        IsLoanPlayer = false;
+        LoanPlayerNumber = 0;
     }
 
     /// <summary>
@@ -88,6 +100,8 @@ public class FloorballPlayer : BaseEntity
         CareerGoals = 0;
         CareerAssists = 0;
         IsLoanGoalkeeper = false;
+        IsLoanPlayer = false;
+        LoanPlayerNumber = 0;
     }
 
     /// <summary>
@@ -96,6 +110,19 @@ public class FloorballPlayer : BaseEntity
     public void MarkAsLoanGoalkeeper()
     {
         IsLoanGoalkeeper = true;
+    }
+
+    /// <summary>
+    /// Marks this profile as a reusable loan player with a stable sequence number.
+    /// </summary>
+    /// <param name="loanPlayerNumber">1-based sequence shown as Lainapelaaja #N</param>
+    public void MarkAsLoanPlayer(int loanPlayerNumber)
+    {
+        if (loanPlayerNumber < 1)
+            throw new ArgumentOutOfRangeException(nameof(loanPlayerNumber), "Loan player number must be at least 1.");
+
+        IsLoanPlayer = true;
+        LoanPlayerNumber = loanPlayerNumber;
     }
 
     /// <summary>

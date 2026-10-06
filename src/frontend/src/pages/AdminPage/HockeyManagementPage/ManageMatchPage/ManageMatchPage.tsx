@@ -57,7 +57,7 @@ import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from '../../../../components/match/OfficialsSelectorSection';
 import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
 import BulkSaveDialog, { type BulkSavePayload } from '../../../../components/match/BulkSaveDialog';
-import { toFormPlayers } from './components/eventFormHelpers';
+import { hockeyRecordablePeriods, toFormPlayers } from './components/eventFormHelpers';
 import './ManageMatchPage.scss';
 
 type EventFormKind = 'goal' | 'penalty' | 'shot' | 'faceoff' | null;
@@ -103,6 +103,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   const [assistId, setAssistId] = useState('');
   const [secondaryAssistId, setSecondaryAssistId] = useState('');
   const [goalStrength, setGoalStrength] = useState<HockeyGoalStrength>('EvenStrength');
+  const [eventPeriodNumber, setEventPeriodNumber] = useState(1);
   const [eventTimeMinutes, setEventTimeMinutes] = useState(0);
   const [eventTimeSeconds, setEventTimeSeconds] = useState(0);
   const [penaltyMinutes, setPenaltyMinutes] = useState(2);
@@ -385,14 +386,23 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
     : undefined;
   const bulkSaveGoalieId: string = bulkSaveShootingTeamId ? hockeyOpposingGoalieId(match, bulkSaveShootingTeamId) : '';
   const bulkSavePeriod: number = Math.max(1, Math.min(timer.currentPeriod, periodManagement.overtimePeriodNumber));
+  const recordablePeriods: number[] = useMemo(
+    () => hockeyRecordablePeriods(periodManagement.startedPeriods, timer.currentPeriod),
+    [periodManagement.startedPeriods, timer.currentPeriod],
+  );
+
+  const applyEventStamp = (): void => {
+    const stamp = captureEventStamp();
+    setEventPeriodNumber(stamp.periodNumber);
+    setEventTimeMinutes(Math.floor(stamp.timeInSeconds / 60));
+    setEventTimeSeconds(stamp.timeInSeconds % 60);
+  };
 
   const openEventForm = (kind: EventFormKind, side: HockeyMatchTeamDto | undefined): void => {
     if (!side) {
       return;
     }
-    const stamp = captureEventStamp();
-    setEventTimeMinutes(Math.floor(stamp.timeInSeconds / 60));
-    setEventTimeSeconds(stamp.timeInSeconds % 60);
+    applyEventStamp();
     if (kind === 'goal' || kind === 'penalty') {
       stopClock();
     }
@@ -416,7 +426,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   }, [timer.callbacks, timer.isRunning]);
 
   const openFaceoffForm = (): void => {
-    captureEventStamp();
+    applyEventStamp();
     resumeClock();
     const defaultWinner = home?.id ?? away?.id ?? '';
     setFaceoffWinnerId((current) => current || defaultWinner);
@@ -436,12 +446,8 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   };
 
   const submitEvent = async (): Promise<void> => {
-    const stamp = eventStampRef.current;
-    const periodNumber = stamp?.periodNumber ?? timer.currentPeriod;
-    const stampSeconds = stamp?.timeInSeconds ?? getInPeriodSeconds();
-    const timeInSeconds = eventForm === 'goal' || eventForm === 'penalty'
-      ? eventTimeMinutes * 60 + eventTimeSeconds
-      : stampSeconds;
+    const periodNumber = eventPeriodNumber >= 1 ? eventPeriodNumber : timer.currentPeriod;
+    const timeInSeconds = eventTimeMinutes * 60 + eventTimeSeconds;
     if (eventForm === 'goal' && playerId) {
       const defendingGoalieId = hockeyOpposingGoalieId(match, selectedTeamId);
       await run(() => hockeyMatchService.recordGoal(match.id, {
@@ -757,6 +763,11 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         onAssistChange={setAssistId}
         onSecondaryAssistChange={setSecondaryAssistId}
         onStrengthChange={setGoalStrength}
+        periodNumber={eventPeriodNumber}
+        periods={recordablePeriods}
+        overtimePeriodNumber={periodManagement.overtimePeriodNumber}
+        shootoutPeriodNumber={periodManagement.shootoutPeriodNumber}
+        onPeriodChange={setEventPeriodNumber}
         timeMinutes={eventTimeMinutes}
         timeSeconds={eventTimeSeconds}
         onTimeChange={handleEventTimeChange}
@@ -776,6 +787,11 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         onOffenceChange={setPenaltyOffence}
         onSeverityChange={setPenaltySeverity}
         onMinutesChange={setPenaltyMinutes}
+        periodNumber={eventPeriodNumber}
+        periods={recordablePeriods}
+        overtimePeriodNumber={periodManagement.overtimePeriodNumber}
+        shootoutPeriodNumber={periodManagement.shootoutPeriodNumber}
+        onPeriodChange={setEventPeriodNumber}
         timeMinutes={eventTimeMinutes}
         timeSeconds={eventTimeSeconds}
         onTimeChange={handleEventTimeChange}
@@ -806,6 +822,14 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         loading={busy}
         onPlayerChange={setPlayerId}
         onResultChange={setShotResult}
+        periodNumber={eventPeriodNumber}
+        periods={recordablePeriods}
+        overtimePeriodNumber={periodManagement.overtimePeriodNumber}
+        shootoutPeriodNumber={periodManagement.shootoutPeriodNumber}
+        onPeriodChange={setEventPeriodNumber}
+        timeMinutes={eventTimeMinutes}
+        timeSeconds={eventTimeSeconds}
+        onTimeChange={handleEventTimeChange}
         onRecordShot={submitEvent}
         onClose={closeEventForm}
       />
@@ -836,6 +860,14 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         onSpotChange={setFaceoffSpot}
         onWinningPlayerChange={setFaceoffWinnerPlayerId}
         onLosingPlayerChange={setFaceoffLoserPlayerId}
+        periodNumber={eventPeriodNumber}
+        periods={recordablePeriods}
+        overtimePeriodNumber={periodManagement.overtimePeriodNumber}
+        shootoutPeriodNumber={periodManagement.shootoutPeriodNumber}
+        onPeriodChange={setEventPeriodNumber}
+        timeMinutes={eventTimeMinutes}
+        timeSeconds={eventTimeSeconds}
+        onTimeChange={handleEventTimeChange}
         onRecordFaceoff={submitEvent}
         onClose={closeEventForm}
       />

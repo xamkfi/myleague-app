@@ -53,6 +53,22 @@ export function getPlayerPath(sport: SportKind, playerId: string): string {
   return `/player/${playerId}?sport=${sport}`;
 }
 
+export function getSportHomePath(sport: SportKind): string {
+  if (sport === 'football') {
+    return '/sports/football';
+  }
+  if (sport === 'hockey') {
+    return '/sports/icehockey';
+  }
+  return '/sports/floorball';
+}
+
+export const ALL_TIME_STATS_HUB_PATH = '/sports/all-time';
+
+export function getAllTimeStatsPath(sport: SportKind): string {
+  return `${getSportHomePath(sport)}/all-time`;
+}
+
 export function getMatchPath(sport: SportKind, matchId: string): string {
   if (sport === 'football') {
     return `/football/match/${matchId}`;

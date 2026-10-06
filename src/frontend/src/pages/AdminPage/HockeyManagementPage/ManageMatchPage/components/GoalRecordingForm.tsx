@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { HOCKEY_GOAL_STRENGTHS, type HockeyGoalStrength } from '../../../../../types/hockey/hockeyTypes';
 import './GoalRecordingForm.scss';
 import { formatPlayerOptionLabel, sortPlayersForSelect, type HockeyFormPlayer } from './eventFormHelpers';
+import EventPeriodSelect from './EventPeriodSelect';
 import EventTimeInput from '../../../../../components/match/EventTimeInput';
 
 interface GoalRecordingFormProps {
@@ -18,6 +19,11 @@ interface GoalRecordingFormProps {
   onAssistChange: (assistId: string) => void;
   onSecondaryAssistChange: (assistId: string) => void;
   onStrengthChange: (strength: HockeyGoalStrength) => void;
+  periodNumber: number;
+  periods: readonly number[];
+  overtimePeriodNumber: number;
+  shootoutPeriodNumber: number;
+  onPeriodChange: (periodNumber: number) => void;
   timeMinutes: number;
   timeSeconds: number;
   onTimeChange: (minutes: number, seconds: number) => void;
@@ -38,6 +44,11 @@ function GoalRecordingForm({
   onAssistChange,
   onSecondaryAssistChange,
   onStrengthChange,
+  periodNumber,
+  periods,
+  overtimePeriodNumber,
+  shootoutPeriodNumber,
+  onPeriodChange,
   timeMinutes,
   timeSeconds,
   onTimeChange,
@@ -160,6 +171,14 @@ function GoalRecordingForm({
                   ))}
                 </select>
               </div>
+              <EventPeriodSelect
+                id="goal-period"
+                periodNumber={periodNumber}
+                periods={periods}
+                overtimePeriodNumber={overtimePeriodNumber}
+                shootoutPeriodNumber={shootoutPeriodNumber}
+                onChange={onPeriodChange}
+              />
               <EventTimeInput
                 idPrefix="goal-time"
                 label={t('hockey.matches.eventTime', 'Time')}

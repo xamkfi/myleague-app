@@ -8,6 +8,8 @@ import {
 } from '../../../../../types/hockey/hockeyTypes';
 import './GoalRecordingForm.scss';
 import { formatPlayerOptionLabel, sortPlayersForSelect, type HockeyFormPlayer } from './eventFormHelpers';
+import EventPeriodSelect from './EventPeriodSelect';
+import EventTimeInput from '../../../../../components/match/EventTimeInput';
 
 interface FaceoffRecordingFormProps {
   showFaceoffForm: boolean;
@@ -28,6 +30,14 @@ interface FaceoffRecordingFormProps {
   onSpotChange: (spot: HockeyFaceoffSpot) => void;
   onWinningPlayerChange: (playerId: string) => void;
   onLosingPlayerChange: (playerId: string) => void;
+  periodNumber: number;
+  periods: readonly number[];
+  overtimePeriodNumber: number;
+  shootoutPeriodNumber: number;
+  onPeriodChange: (periodNumber: number) => void;
+  timeMinutes: number;
+  timeSeconds: number;
+  onTimeChange: (minutes: number, seconds: number) => void;
   onRecordFaceoff: () => Promise<void>;
   onClose: () => void;
 }
@@ -51,6 +61,14 @@ function FaceoffRecordingForm({
   onSpotChange,
   onWinningPlayerChange,
   onLosingPlayerChange,
+  periodNumber,
+  periods,
+  overtimePeriodNumber,
+  shootoutPeriodNumber,
+  onPeriodChange,
+  timeMinutes,
+  timeSeconds,
+  onTimeChange,
   onRecordFaceoff,
   onClose,
 }: FaceoffRecordingFormProps) {
@@ -186,6 +204,21 @@ function FaceoffRecordingForm({
                   ))}
                 </select>
               </div>
+              <EventPeriodSelect
+                id="faceoff-period"
+                periodNumber={periodNumber}
+                periods={periods}
+                overtimePeriodNumber={overtimePeriodNumber}
+                shootoutPeriodNumber={shootoutPeriodNumber}
+                onChange={onPeriodChange}
+              />
+              <EventTimeInput
+                idPrefix="faceoff-time"
+                label={t('hockey.matches.eventTime', 'Time')}
+                minutes={timeMinutes}
+                seconds={timeSeconds}
+                onChange={onTimeChange}
+              />
             </div>
             <div className="form-actions">
               <button onClick={onClose} className="cancel-btn" type="button" disabled={loading}>{t('common.cancel', 'Cancel')}</button>

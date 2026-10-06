@@ -1,7 +1,9 @@
 using Application.Common;
+using Application.Features.Common.Shared.DTOs;
 using Application.Features.Hockey.Statistics.Commands;
 using Application.Features.Hockey.Statistics.DTOs;
 using Application.Features.Hockey.Statistics.Queries;
+using Domain.Common;
 using Domain.Constants;
 using Domain.Enums.Hockey.Statistics;
 using MediatR;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Common;
 using WebAPI.Models.Common;
+using WebAPI.Models.Common.Pagination;
 using WebAPI.Models.Hockey;
 
 namespace WebAPI.Controllers.Hockey;
@@ -20,13 +23,15 @@ namespace WebAPI.Controllers.Hockey;
 public class HockeyStatisticsController : BaseApiController
 {
     private readonly IMediator _mediator;
+    private readonly ILogger<HockeyStatisticsController> _logger;
 
     /// <summary>
     /// Creates a new <see cref="HockeyStatisticsController"/>.
     /// </summary>
-    public HockeyStatisticsController(IMediator mediator)
+    public HockeyStatisticsController(IMediator mediator, ILogger<HockeyStatisticsController> logger)
     {
         _mediator = mediator;
+        _logger = logger;
     }
 
     /// <summary>
@@ -313,5 +318,57 @@ public class HockeyStatisticsController : BaseApiController
                 playoffSeriesId,
                 topN), cancellationToken);
         return HandleResult(result, "Competition statistics summary retrieved successfully", "Failed to retrieve summary");
+    }
+
+    /// <summary>
+    /// Gets paged all-time skater statistics summed across public competitions.
+    /// </summary>
+    /// <param name="request">Page, sort, team category, and competition type</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Players ordered by the requested column</returns>
+    [HttpGet("all-time")]
+    [ProducesResponseType(typeof(PaginatedApiResponse<HockeyAllTimePlayerStatisticsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedApiResponse<HockeyAllTimePlayerStatisticsDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(PaginatedApiResponse<HockeyAllTimePlayerStatisticsDto>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<PaginatedApiResponse<HockeyAllTimePlayerStatisticsDto>>> GetAllTimePlayerStatistics(
+        [FromQuery] GetAllTimePlayerStatisticsRequest request,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation(
+            "Getting hockey all-time player statistics page {Page} sorted by {Sort}",
+            request.Page,
+            request.Sort);
+
+        GetHockeyAllTimePlayerStatisticsQuery query = new(
+            request.Page,
+            request.PageSize,
+            request.TeamCategory,
+            request.CompetitionType,
+            request.Sort,
+            request.Direction,
+            request.Search,
+            request.TeamId);
+        Result<PagedResult<HockeyAllTimePlayerStatisticsDto>> result = await _mediator.Send(query, cancellationToken);
+
+        return HandlePaginatedResult(result, "All-time player statistics retrieved successfully", "Failed to retrieve all-time player statistics");
+    }
+
+    /// <summary>
+    /// Gets the teams that have public all-time player statistics.
+    /// </summary>
+    /// <param name="request">Team category and competition type</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Teams ordered by name</returns>
+    [HttpGet("all-time/teams")]
+    [ProducesResponseType(typeof(ApiResponse<List<AllTimeTeamOptionDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<List<AllTimeTeamOptionDto>>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<List<AllTimeTeamOptionDto>>>> GetAllTimeTeams(
+        [FromQuery] GetAllTimeTeamsRequest request,
+        CancellationToken cancellationToken)
+    {
+        GetHockeyAllTimeTeamsQuery query = new(request.TeamCategory, request.CompetitionType);
+        Result<List<AllTimeTeamOptionDto>> result = await _mediator.Send(query, cancellationToken);
+
+        return HandleResult(result, "All-time teams retrieved successfully", "Failed to retrieve all-time teams");
     }
 }

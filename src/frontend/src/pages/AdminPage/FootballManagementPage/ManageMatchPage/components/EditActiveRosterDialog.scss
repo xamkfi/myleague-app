@@ -84,6 +84,30 @@
   color: $color-neutral-dark-grey;
 }
 
+.eard-loan-players {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &__count {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: $color-neutral-black;
+
+    input {
+      width: 4.5rem;
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid $color-neutral-medium-grey;
+      border-radius: 4px;
+      font-family: $font-family-body;
+      font-size: 14px;
+    }
+  }
+}
+
 .eard-column {
   display: flex;
   flex-direction: column;
