@@ -21,6 +21,15 @@ public class GetHockeyMatchesByTeamQueryValidator : AbstractValidator<GetHockeyM
     }
 }
 
+public class GetHockeyPlayerRecentMatchesQueryValidator : AbstractValidator<GetHockeyPlayerRecentMatchesQuery>
+{
+    public GetHockeyPlayerRecentMatchesQueryValidator()
+    {
+        RuleFor(x => x.PlayerId).NotEmpty();
+        RuleFor(x => x.Limit).InclusiveBetween(1, 200);
+    }
+}
+
 public class GetPagedHockeyMatchesQueryValidator : AbstractValidator<GetPagedHockeyMatchesQuery>
 {
     private readonly IPaginationService _paginationService;

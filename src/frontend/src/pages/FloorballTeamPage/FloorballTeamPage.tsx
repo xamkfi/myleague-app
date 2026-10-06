@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import type { FloorballMatchDto, FloorballTeam } from '../../types/floorball/floorballTypes';
+import { FloorballMatchStatus, type FloorballMatchDto, type FloorballTeam } from '../../types/floorball/floorballTypes';
 import { floorballTeamNameSearchService } from '../../api/floorball/floorballTeamNameSearchService';
 import { floorballTeamService } from '../../api/floorball/floorballTeamService';
 import { findTeamBySlug, createClubSlug } from '../../utils/slugUtils';
@@ -20,6 +20,9 @@ import Statistics from './components/Statistics';
 import LeagueStanding from '../../components/LeagueStanding/LeagueStanding';
 import TeamNavbar from '../../components/TeamNavbar/TeamNavbar';
 import { isNotFoundError } from '../../api/utils/isNotFoundError';
+
+const SUMMARY_UPCOMING_LIMIT = 10;
+const SUMMARY_FINISHED_LIMIT = 5;
 
 function seasonIncludesTeam(season: FloorballSeasonDto, teamId: string): boolean {
   return season.seasonDivisions?.some((seasonDivision) => seasonDivision.teamIds?.includes(teamId)) ?? false;
@@ -145,7 +148,7 @@ function FloorballTeamPage() {
   // Fetch matches with pagination when team changes or page changes
   useEffect(() => {
     const fetchMatches = async () => {
-      if (!team) return;
+      if (!team || activeTab !== 'results') return;
 
       try {
         setMatchesLoading(true);
@@ -170,27 +173,49 @@ function FloorballTeamPage() {
       }
     };
     fetchMatches();
-  }, [team, currentPage, currentSeason?.id]);
+  }, [team, currentPage, currentSeason?.id, activeTab]);
 
   useEffect(() => {
+    if (!team) return;
+    let cancelled = false;
     const fetchSummaryMatches = async () => {
-      if (!team) return;
-
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
       try {
-        const response = await floorballMatchService.getAll({
-          teamId: team.id,
-          competitionId: currentSeason?.id,
-          page: 1,
-          pageSize: 100,
-          sortOrder: 'desc',
-        });
-        setSummaryMatches(response.data || []);
+        const [upcoming, finished] = await Promise.all([
+          floorballMatchService.getAll({
+            teamId: team.id,
+            competitionId: currentSeason?.id,
+            page: 1,
+            pageSize: SUMMARY_UPCOMING_LIMIT,
+            sortOrder: 'asc',
+            startDate: startOfToday.toISOString(),
+          }),
+          floorballMatchService.getAll({
+            teamId: team.id,
+            competitionId: currentSeason?.id,
+            page: 1,
+            pageSize: SUMMARY_FINISHED_LIMIT,
+            sortOrder: 'desc',
+            status: FloorballMatchStatus.Completed,
+          }),
+        ]);
+        if (cancelled) return;
+        const byId = new Map<string, FloorballMatchDto>();
+        for (const match of [...(upcoming.data ?? []), ...(finished.data ?? [])]) {
+          byId.set(match.id, match);
+        }
+        setSummaryMatches([...byId.values()]);
       } catch (error) {
+        if (cancelled) return;
         console.error('Failed to fetch summary matches:', error);
         setSummaryMatches([]);
       }
     };
     fetchSummaryMatches();
+    return () => {
+      cancelled = true;
+    };
   }, [team, currentSeason?.id]);
 
   // Function to fetch data for specific tabs

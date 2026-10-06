@@ -92,7 +92,7 @@ public class GetFloorballPlayerByIdHandler : IRequestHandler<GetFloorballPlayerB
             FloorballPlayerDto playerDto = new FloorballPlayerDto(
                 player.Id,
                 player.PersonId,
-                PersonMapper.ToDto(person),
+                PersonMapper.ToDto(person, request.IncludePrivateData),
                 player.IsActive,
                 player.Position.PrimaryPosition,
                 player.CareerGoals,

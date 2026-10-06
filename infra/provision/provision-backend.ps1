@@ -360,7 +360,7 @@ Write-Host @"
    az webapp deploy --resource-group $ResourceGroupName --name $($outputs.appServiceName.value) --src-path ./app.zip --type zip
 
 2. Run database migrations:
-   `$env:ConnectionStrings__DefaultConnection = "Host=$($outputs.postgresServerFqdn.value);Database=myleague;Username=myleagueadmin;Password=<your-password>;SSL Mode=Require;Trust Server Certificate=true"
+   `$env:ConnectionStrings__DefaultConnection = "Host=$($outputs.postgresServerFqdn.value);Database=myleague;Username=myleagueadmin;Password=<your-password>;SSL Mode=VerifyFull"
    dotnet ef database update --project ../Infrastructure/Infrastructure.csproj
 
 3. View logs:

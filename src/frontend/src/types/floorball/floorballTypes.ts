@@ -382,4 +382,5 @@ export interface GetFloorballMatchesRequest {
   competitionType?: FloorballCompetitionType;
   teamCategory?: TeamCategory;
   includeDrafts?: boolean;
+  activeOnly?: boolean;
 } 

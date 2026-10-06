@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Application.Common;
 using Application.Configuration;
 using Application.Features.Auth.Commands;
@@ -54,7 +56,7 @@ public class VerifyLoginCodeHandler : IRequestHandler<VerifyLoginCodeCommand, Re
 
         if (!user.IsActive && !_loginCodeConfig.AutoFillLoginCode)
         {
-            return Result<AuthTokenDto>.Failure("This account has been deactivated.");
+            return Result<AuthTokenDto>.Failure("Invalid email or login code.");
         }
 
         // Check if there is an active login code
@@ -74,8 +76,12 @@ public class VerifyLoginCodeHandler : IRequestHandler<VerifyLoginCodeCommand, Re
 
         EffectiveAuthSettings authSettings = await _siteSettingsProvider.GetEffectiveAsync(cancellationToken);
 
-        // Check brute-force attempts
-        if (user.LoginCodeAttempts >= authSettings.LoginCodeMaxAttempts)
+        // Consume an attempt in the database before comparing, so parallel requests cannot exceed the limit
+        bool attemptAllowed = await _userRepository.TryConsumeLoginAttemptAsync(
+            user.Id,
+            authSettings.LoginCodeMaxAttempts,
+            cancellationToken);
+        if (!attemptAllowed)
         {
             user.ClearLoginCode();
             await _userRepository.UpdateAsync(user);
@@ -83,14 +89,9 @@ public class VerifyLoginCodeHandler : IRequestHandler<VerifyLoginCodeCommand, Re
             return Result<AuthTokenDto>.Failure("Too many failed attempts. Please request a new login code.");
         }
 
-        // Validate the code
-        if (!string.Equals(user.LoginCode, request.Code, StringComparison.Ordinal))
+        if (!LoginCodeMatches(user.LoginCode, request.Code))
         {
-            user.IncrementLoginCodeAttempts();
-            await _userRepository.UpdateAsync(user);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            int remainingAttempts = authSettings.LoginCodeMaxAttempts - user.LoginCodeAttempts;
+            int remainingAttempts = authSettings.LoginCodeMaxAttempts - (user.LoginCodeAttempts + 1);
             _logger.LogInformation("Failed login code attempt for {Email}. {Remaining} attempts remaining.", request.Email, remainingAttempts);
             return Result<AuthTokenDto>.Failure("Invalid login code.");
         }
@@ -121,5 +122,17 @@ public class VerifyLoginCodeHandler : IRequestHandler<VerifyLoginCodeCommand, Re
             expiresAt,
             authSettings.SessionExpiryWarningMinutes);
         return Result<AuthTokenDto>.Success(tokenDto);
+    }
+
+    private bool LoginCodeMatches(string storedHash, string? submittedCode)
+    {
+        if (string.IsNullOrEmpty(submittedCode))
+        {
+            return false;
+        }
+
+        byte[] expected = Encoding.UTF8.GetBytes(storedHash);
+        byte[] actual = Encoding.UTF8.GetBytes(_jwtTokenService.HashToken(submittedCode));
+        return CryptographicOperations.FixedTimeEquals(expected, actual);
     }
 }

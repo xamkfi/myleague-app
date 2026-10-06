@@ -101,20 +101,11 @@ namespace Application.Features.Football.Players.Handlers
                 FootballTeam currentTeam = await SelectLatestTeamAsync(playerTeams, player.Id, cancellationToken);
                 FootballTeamPlayer? teamPlayer = LatestRosterRow(currentTeam, player.Id);
 
-                List<FootballMatch> allMatches = new List<FootballMatch>();
-                foreach (FootballTeam team in playerTeams)
-                {
-                    IEnumerable<FootballMatch> teamMatches = await _matchRepository.GetByTeamIdAsync(team.Id);
-                    allMatches.AddRange(teamMatches.Where(m =>
-                        m.Status == FootballMatchStatus.Completed &&
-                        PlayerAppearedInMatch(m, player.Id)));
-                }
-
-                List<FootballMatch> recentMatches = allMatches
-                    .DistinctBy(match => match.Id)
-                    .OrderByDescending(m => m.ScheduledDateTime)
-                    .Take(request.Limit)
-                    .ToList();
+                IReadOnlyList<FootballMatch> recentMatches = await _matchRepository.GetRecentCompletedForPlayerAsync(
+                    player.Id,
+                    playerTeams.Select(team => team.Id).Distinct().ToList(),
+                    request.Limit,
+                    cancellationToken);
 
                 // Build the response
                 List<FootballPlayerMatchDto> playerMatchDtos = new List<FootballPlayerMatchDto>();
@@ -241,12 +232,6 @@ namespace Application.Features.Football.Players.Handlers
                 .Where(row => row.PlayerId == playerId)
                 .OrderByDescending(row => row.UpdatedAt)
                 .FirstOrDefault();
-        }
-
-        private static bool PlayerAppearedInMatch(FootballMatch match, Guid playerId)
-        {
-            return CompleteFootballMatchHandler.CollectMatchParticipants(match)
-                .Any(participant => participant.PlayerId == playerId);
         }
 
         /// <summary>

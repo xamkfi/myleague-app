@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { floorballTeamService } from "../../../api/floorball/floorballTeamService";
 import { getPlayerPath } from "../../../utils/sportRoutes";
 import {
     FloorballPosition,
@@ -81,39 +80,17 @@ const buildActiveRoster = (
     return entries;
 };
 
-export default function MatchLineups({ match }: { match: FloorballMatchDto }) {
+interface MatchLineupsProps {
+    match: FloorballMatchDto;
+    homeRoster: FloorballTeamPlayer[];
+    awayRoster: FloorballTeamPlayer[];
+}
+
+export default function MatchLineups({ match, homeRoster, awayRoster }: MatchLineupsProps) {
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const [homeLookup, setHomeLookup] = useState<RosterLookup>(new Map());
-    const [awayLookup, setAwayLookup] = useState<RosterLookup>(new Map());
-
-    useEffect(() => {
-        let cancelled: boolean = false;
-        async function fetchRosters(): Promise<void> {
-            try {
-                // Placeholder fixtures have no rosters to look up; lineup section will simply
-                // render the "not set" state for both sides until teams are assigned.
-                if (!match.homeTeamId || !match.awayTeamId) {
-                    setHomeLookup(new Map());
-                    setAwayLookup(new Map());
-                    return;
-                }
-                const [homeResponse, awayResponse] = await Promise.all([
-                    floorballTeamService.getById(match.homeTeamId, match.competitionId),
-                    floorballTeamService.getById(match.awayTeamId, match.competitionId),
-                ]);
-                if (cancelled) return;
-                setHomeLookup(buildRosterLookup(homeResponse.roster));
-                setAwayLookup(buildRosterLookup(awayResponse.roster));
-            } catch (error) {
-                console.error('Failed to load team rosters for match lineup', error);
-            }
-        }
-        fetchRosters();
-        return () => {
-            cancelled = true;
-        };
-    }, [match.homeTeamId, match.awayTeamId, match.competitionId]);
+    const homeLookup: RosterLookup = useMemo(() => buildRosterLookup(homeRoster), [homeRoster]);
+    const awayLookup: RosterLookup = useMemo(() => buildRosterLookup(awayRoster), [awayRoster]);
 
     const homeActiveRoster: ActiveRosterEntry[] = useMemo(
         () => buildActiveRoster(match.homeActivePlayers ?? [], match.homeActiveGoalieId, homeLookup),

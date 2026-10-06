@@ -4,6 +4,7 @@ import type {
   GetPagedHockeyMatchesRequest,
   HockeyGoalStrength,
   HockeyMatchDto,
+  HockeyLiveMatchDto,
   HockeyMatchListDto,
   HockeyMatchType,
   HockeyOfficialRole,
@@ -51,6 +52,8 @@ export const hockeyMatchService = {
         endDate: params.endDate,
         teamCategory: params.teamCategory,
         sortOrder: params.sortOrder,
+        competitionId: params.competitionId,
+        activeSeasonsOnly: params.activeSeasonsOnly || undefined,
       }).replace(/^\?/, ''),
     );
     for (const status of params.statuses ?? []) {
@@ -79,6 +82,18 @@ export const hockeyMatchService = {
     hockeyRequest<HockeyMatchDto[]>(
       `/HockeyMatch/team/${teamId}`,
       'Failed to fetch hockey matches for team',
+    ),
+
+  getLive: (competitionId?: string): Promise<HockeyLiveMatchDto[]> =>
+    hockeyRequest<HockeyLiveMatchDto[]>(
+      `/HockeyMatch/live${toQueryString({ competitionId })}`,
+      'Failed to fetch live hockey matches',
+    ),
+
+  getRecentByPlayer: (playerId: string, limit = 50): Promise<HockeyMatchDto[]> =>
+    hockeyRequest<HockeyMatchDto[]>(
+      `/HockeyMatch/player/${playerId}/recent?limit=${limit}`,
+      'Failed to fetch hockey matches for player',
     ),
 
   create: (data: CreateHockeyMatchRequest): Promise<HockeyMatchDto> =>

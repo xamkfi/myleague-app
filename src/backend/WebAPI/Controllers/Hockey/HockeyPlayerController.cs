@@ -64,7 +64,7 @@ public class HockeyPlayerController : BaseApiController
     public async Task<ActionResult<ApiResponse<HockeyPlayerDto>>> GetPlayerById(Guid id,
         CancellationToken cancellationToken = default)
     {
-        Result<HockeyPlayerDto> result = await _mediator.Send(new GetHockeyPlayerByIdQuery(id), cancellationToken);
+        Result<HockeyPlayerDto> result = await _mediator.Send(new GetHockeyPlayerByIdQuery(id, IncludePrivateData), cancellationToken);
         return HandleResult(result, "Hockey player retrieved successfully", "Hockey player not found");
     }
 

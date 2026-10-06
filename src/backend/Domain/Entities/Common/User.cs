@@ -40,7 +40,7 @@ namespace Domain.Entities.Common
         public DateTime? LastLoginAt { get; set; }
 
         /// <summary>
-        /// The pending login code (6-digit), null when no code is active
+        /// SHA-256 hash (Base64) of the pending login code, null when no code is active
         /// </summary>
         public string? LoginCode { get; set; }
 

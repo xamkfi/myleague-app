@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
@@ -36,6 +36,7 @@ import { activeHockeyDivisionGroups, splitStandingsByDivision } from '../../util
 import { useAudience } from '../../context/AudienceContext';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
+import { mergeHockeyLiveMatches } from '../../utils/hockeyLiveMatches';
 import '../FloorballLeaguePage/FloorballLeaguePage.scss';
 import '../FloorballLeaguePage/components/SummarySection.scss';
 import '../FloorballLeaguePage/components/FixturesSection.scss';
@@ -99,6 +100,10 @@ function HockeyLeaguePage() {
   const [season, setSeason] = useState<HockeySeasonDto | null>(null);
   const [teams, setTeams] = useState<HockeyTeamDto[]>([]);
   const [allMatches, setAllMatches] = useState<HockeyMatchDto[]>([]);
+  const allMatchesRef = useRef<HockeyMatchDto[]>(allMatches);
+  useEffect(() => {
+    allMatchesRef.current = allMatches;
+  }, [allMatches]);
   const [standings, setStandings] = useState<HockeyTeamCompetitionStatisticsDto[]>([]);
   const [players, setPlayers] = useState<HockeyPlayerCompetitionStatisticsDto[]>([]);
   const [goalies, setGoalies] = useState<HockeyGoalieCompetitionStatisticsDto[]>([]);
@@ -193,8 +198,13 @@ function HockeyLeaguePage() {
       return;
     }
     try {
-      const matchList = await hockeyMatchService.getByCompetition(id);
-      setAllMatches(matchList);
+      const liveRows = await hockeyMatchService.getLive(id);
+      const merge = mergeHockeyLiveMatches(allMatchesRef.current, liveRows);
+      if (merge.needsFullReload) {
+        setAllMatches(await hockeyMatchService.getByCompetition(id));
+      } else if (merge.changed) {
+        setAllMatches(merge.matches);
+      }
     } catch {
       /* keep last known scores */
     }

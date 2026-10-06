@@ -3,6 +3,7 @@ using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Matches.Events;
 using Domain.Enums.Common;
 using Domain.Enums.Hockey.Matches;
+using Domain.Enums.Hockey.Statistics;
 
 namespace Domain.Repositories.Hockey;
 
@@ -39,9 +40,28 @@ public interface IHockeyMatchRepository
     Task<bool> DeleteIfScheduledAsync(Guid matchId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Loads matches where the given career team appears as home or away.
+    /// Loads matches where the given career team appears as home or away,
+    /// without events, lines, on-ice state, or player selections. Does not track entities.
     /// </summary>
     Task<IReadOnlyList<HockeyMatch>> GetByTeamIdAsync(Guid teamId);
+
+    /// <summary>
+    /// Loads scheduled matches starting at or after <paramref name="from"/> for any of the given career teams,
+    /// earliest first, with the same graph as <see cref="GetByTeamIdAsync"/>. Does not track entities.
+    /// </summary>
+    Task<IReadOnlyList<HockeyMatch>> GetScheduledForTeamsAsync(
+        IReadOnlyCollection<Guid> teamIds,
+        DateTime from,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Latest matches where any of <paramref name="teamPlayerIds"/> was dressed, newest first,
+    /// with player selections but no events, lines, or on-ice state. Does not track entities.
+    /// </summary>
+    Task<IReadOnlyList<HockeyMatch>> GetRecentForTeamPlayersAsync(
+        IReadOnlyCollection<Guid> teamPlayerIds,
+        int limit,
+        CancellationToken cancellationToken = default);
 
     Task<bool> HasAnyForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
 
@@ -51,9 +71,16 @@ public interface IHockeyMatchRepository
     Task<HockeyMatch?> GetByIdForStatisticsAsync(Guid id);
 
     /// <summary>
-    /// Loads competition matches with events and rosters for aggregate recalculation.
+    /// Loads statistics-eligible matches of one aggregate scope with events and rosters.
+    /// The scope filter runs in SQL; <see cref="HockeyStatisticsScope.Competition"/> loads the whole competition.
     /// </summary>
-    Task<IReadOnlyList<HockeyMatch>> GetByCompetitionIdForStatisticsAsync(Guid competitionId);
+    Task<IReadOnlyList<HockeyMatch>> GetForStatisticsAsync(
+        Guid competitionId,
+        HockeyStatisticsScope scope,
+        Guid? competitionDivisionId = null,
+        Guid? tournamentGroupId = null,
+        Guid? playoffSeriesId = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Marks a newly created match event as added for EF change tracking.
@@ -64,6 +91,16 @@ public interface IHockeyMatchRepository
     /// Marks a removed match event as deleted for EF change tracking.
     /// </summary>
     void MarkEventAsDeleted(HockeyMatchEvent matchEvent);
+
+    /// <summary>
+    /// No-tracking load of matches that are live, scheduled to start by <paramref name="upcomingUntil"/>,
+    /// or finished since <paramref name="finishedSince"/>. Includes match teams and competition only.
+    /// </summary>
+    Task<IReadOnlyList<HockeyMatch>> GetLiveAsync(
+        Guid? competitionId,
+        DateTime upcomingUntil,
+        DateTime finishedSince,
+        CancellationToken cancellationToken = default);
 
     Task<PagedResult<HockeyMatch>> GetPagedAsync(
         int page,
@@ -78,5 +115,6 @@ public interface IHockeyMatchRepository
         TeamCategory? teamCategory = null,
         bool excludeDraftCompetitions = false,
         CancellationToken cancellationToken = default,
-        IReadOnlyCollection<HockeyMatchStatus>? statuses = null);
+        IReadOnlyCollection<HockeyMatchStatus>? statuses = null,
+        bool activeSeasonsOnly = false);
 }

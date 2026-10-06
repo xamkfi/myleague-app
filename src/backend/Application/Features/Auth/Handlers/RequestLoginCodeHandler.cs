@@ -13,19 +13,16 @@ namespace Application.Features.Auth.Handlers;
 
 /// <summary>
 /// Handler for requesting a login code. Generates a cryptographically random code,
-/// stores it on the user, and sends it via email.
+/// stores its hash on the user, and sends the code via email. Unknown and deactivated
+/// emails get the same successful result so callers cannot tell which accounts exist.
 /// </summary>
 public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, Result<string?>>
 {
-    /// <summary>
-    /// Returned when the email does not match an account. The login page maps this text to a translated message.
-    /// </summary>
-    public const string EmailNotFoundMessage = "No account was found for this email address.";
-
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
     private readonly ISiteSettingsProvider _siteSettingsProvider;
+    private readonly IJwtTokenService _jwtTokenService;
     private readonly LoginCodeConfiguration _loginCodeConfig;
     private readonly ILogger<RequestLoginCodeHandler> _logger;
 
@@ -34,6 +31,7 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
         IUnitOfWork unitOfWork,
         IEmailService emailService,
         ISiteSettingsProvider siteSettingsProvider,
+        IJwtTokenService jwtTokenService,
         IOptions<LoginCodeConfiguration> loginCodeConfig,
         ILogger<RequestLoginCodeHandler> logger)
     {
@@ -41,6 +39,7 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
         _unitOfWork = unitOfWork;
         _emailService = emailService;
         _siteSettingsProvider = siteSettingsProvider;
+        _jwtTokenService = jwtTokenService;
         _loginCodeConfig = loginCodeConfig.Value;
         _logger = logger;
     }
@@ -51,7 +50,7 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
         if (user == null)
         {
             _logger.LogInformation("Login code requested for non-existent email: {Email}", request.Email);
-            return Result<string?>.Failure(EmailNotFoundMessage);
+            return Result<string?>.Success(null);
         }
 
         if (!user.IsActive && !_loginCodeConfig.AutoFillLoginCode)
@@ -66,7 +65,7 @@ public class RequestLoginCodeHandler : IRequestHandler<RequestLoginCodeCommand, 
         string code = GenerateSecureCode(_loginCodeConfig.CodeLength);
         DateTime expiresAt = DateTime.UtcNow.AddMinutes(authSettings.LoginCodeExpirationMinutes);
 
-        user.SetLoginCode(code, expiresAt);
+        user.SetLoginCode(_jwtTokenService.HashToken(code), expiresAt);
         await _userRepository.UpdateAsync(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

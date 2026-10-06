@@ -26,7 +26,8 @@ namespace Application.Features.Floorball.Players.Queries
         string? Position = null,
         Guid? TeamId = null,
         string? SearchTerm = null,
-        bool? HasActiveLicence = null
+        bool? HasActiveLicence = null,
+        bool IncludePrivateData = false
     ) : IRequest<Result<PagedResult<FloorballPlayerDto>>>
     {
         /// <summary>

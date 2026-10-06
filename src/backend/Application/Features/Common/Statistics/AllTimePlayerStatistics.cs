@@ -49,68 +49,10 @@ public static class AllTimeStatSortRules
 }
 
 /// <summary>
-/// Sums competition statistics rows into one all-time row per player.
+/// Helpers over competition statistics rows for all-time lists.
 /// </summary>
 public static class AllTimePlayerStatistics
 {
-    /// <summary>
-    /// Drops loan profiles and players with no games, then sums the remaining rows.
-    /// The team name is the team from the latest competition, then the one with more games.
-    /// </summary>
-    public static List<AllTimePlayerAggregate> Aggregate(IEnumerable<AllTimePlayerStatRow> rows)
-    {
-        ArgumentNullException.ThrowIfNull(rows);
-
-        return rows
-            .Where(row => !row.IsLoanProfile)
-            .GroupBy(row => row.PlayerId)
-            .Select(group =>
-            {
-                AllTimePlayerStatRow latest = group
-                    .OrderByDescending(row => row.CompetitionStart)
-                    .ThenByDescending(row => row.GamesPlayed)
-                    .ThenBy(row => row.TeamName, StringComparer.Ordinal)
-                    .First();
-
-                return new AllTimePlayerAggregate(
-                    group.Key,
-                    latest.PersonId,
-                    latest.TeamName,
-                    group.Sum(row => row.GamesPlayed),
-                    group.Sum(row => row.Goals),
-                    group.Sum(row => row.Assists),
-                    group.Sum(row => row.Points),
-                    group.Sum(row => row.PenaltyMinutes),
-                    group.Sum(row => row.YellowCards),
-                    group.Sum(row => row.RedCards));
-            })
-            .Where(player => player.GamesPlayed > 0)
-            .ToList();
-    }
-
-    /// <summary>
-    /// Orders aggregated players by the requested column. Ties break by points, goals, assists, then player id.
-    /// </summary>
-    public static List<AllTimePlayerAggregate> Rank(
-        IEnumerable<AllTimePlayerStatRow> rows,
-        AllTimeStatSort sort,
-        AllTimeSortDirection direction)
-    {
-        List<AllTimePlayerAggregate> players = Aggregate(rows);
-        bool descending = direction == AllTimeSortDirection.Desc;
-
-        IOrderedEnumerable<AllTimePlayerAggregate> ordered = descending
-            ? players.OrderByDescending(player => PrimaryValue(player, sort))
-            : players.OrderBy(player => PrimaryValue(player, sort));
-
-        return ordered
-            .ThenByDescending(player => player.Points)
-            .ThenByDescending(player => player.Goals)
-            .ThenByDescending(player => player.Assists)
-            .ThenBy(player => player.PlayerId)
-            .ToList();
-    }
-
     /// <summary>
     /// Lists the teams that have at least one non-loan player with games, named by their latest competition row.
     /// </summary>
@@ -127,18 +69,6 @@ public static class AllTimePlayerStatistics
             .OrderBy(team => team.TeamName, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
     }
-
-    private static int PrimaryValue(AllTimePlayerAggregate player, AllTimeStatSort sort) => sort switch
-    {
-        AllTimeStatSort.Games => player.GamesPlayed,
-        AllTimeStatSort.Goals => player.Goals,
-        AllTimeStatSort.Assists => player.Assists,
-        AllTimeStatSort.Points => player.Points,
-        AllTimeStatSort.Penalties => player.PenaltyMinutes,
-        AllTimeStatSort.YellowCards => player.YellowCards,
-        AllTimeStatSort.RedCards => player.RedCards,
-        _ => throw new ArgumentOutOfRangeException(nameof(sort), sort, "Unsupported all-time sort column.")
-    };
 }
 
 /// <summary>
@@ -155,77 +85,78 @@ public sealed record AllTimePageRequest(
     Guid? TeamId);
 
 /// <summary>
-/// Pages a ranked all-time list and fills player names from the person catalogue.
+/// Loads one ranked all-time page from the database and fills player names from the person catalogue.
 /// </summary>
 public static class AllTimePlayerStatisticsPager
 {
     /// <summary>
-    /// Ranks the source rows, optionally filters by player name, takes one page, and maps each row
+    /// Resolves the name search to person ids, loads the summed and ranked page, and maps each row
     /// with the resolved person name and its rank before the name filter.
     /// </summary>
     public static async Task<PagedResult<TDto>> PageAsync<TDto>(
-        IReadOnlyList<AllTimePlayerStatRow> rows,
+        Func<AllTimePlayerPageRequest, CancellationToken, Task<PagedResult<AllTimePlayerTotals>>> loadPage,
         AllTimePageRequest request,
         IPersonRepository personRepository,
-        Func<AllTimePlayerAggregate, string, int, TDto> map)
+        Func<AllTimePlayerAggregate, string, int, TDto> map,
+        CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(rows);
+        ArgumentNullException.ThrowIfNull(loadPage);
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(personRepository);
         ArgumentNullException.ThrowIfNull(map);
 
-        int page = request.Page;
-        int pageSize = request.PageSize;
-        IEnumerable<AllTimePlayerStatRow> scoped = request.TeamId is Guid teamId
-            ? rows.Where(row => row.TeamId == teamId)
-            : rows;
-
-        List<RankedPlayer> ranked = AllTimePlayerStatistics.Rank(scoped, request.Sort, request.Direction)
-            .Select((player, index) => new RankedPlayer(player, index + 1))
-            .ToList();
         string? term = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim();
+        IReadOnlyCollection<Guid>? personIds = term is null
+            ? null
+            : (await personRepository.GetIdsByNameContainsAsync(term, cancellationToken)).ToList();
 
-        List<RankedPlayer> matches;
-        Dictionary<Guid, string> names;
-        if (term is null)
-        {
-            matches = ranked;
-            names = await ResolveNamesAsync(
-                personRepository,
-                ranked.Skip((page - 1) * pageSize).Take(pageSize));
-        }
-        else
-        {
-            names = await ResolveNamesAsync(personRepository, ranked);
-            matches = ranked
-                .Where(entry => names.TryGetValue(entry.Player.PersonId, out string? fullName)
-                    && fullName.Contains(term, StringComparison.CurrentCultureIgnoreCase))
-                .ToList();
-        }
+        PagedResult<AllTimePlayerTotals> page = await loadPage(
+            new AllTimePlayerPageRequest(
+                request.Page,
+                request.PageSize,
+                request.Sort,
+                request.Direction,
+                request.TeamId,
+                personIds),
+            cancellationToken);
 
-        List<TDto> dtos = matches
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(entry =>
+        Dictionary<Guid, string> names = await ResolveNamesAsync(personRepository, page.Items);
+
+        List<TDto> dtos = page.Items
+            .Select(player =>
             {
-                string playerName = names.TryGetValue(entry.Player.PersonId, out string? fullName)
+                string playerName = names.TryGetValue(player.PersonId, out string? fullName)
                     ? fullName
                     : string.Empty;
-                return map(entry.Player, playerName, entry.Rank);
+                AllTimePlayerAggregate aggregate = new(
+                    player.PlayerId,
+                    player.PersonId,
+                    player.TeamName,
+                    player.GamesPlayed,
+                    player.Goals,
+                    player.Assists,
+                    player.Points,
+                    player.PenaltyMinutes,
+                    player.YellowCards,
+                    player.RedCards);
+                return map(aggregate, playerName, player.Rank);
             })
             .ToList();
 
-        return PagedResult.Create(dtos, matches.Count, page, pageSize);
+        return PagedResult.Create(dtos, page.TotalCount, request.Page, request.PageSize);
     }
 
     private static async Task<Dictionary<Guid, string>> ResolveNamesAsync(
         IPersonRepository personRepository,
-        IEnumerable<RankedPlayer> players)
+        IEnumerable<AllTimePlayerTotals> players)
     {
-        IEnumerable<Person> persons = await personRepository.GetByIdsAsync(
-            players.Select(entry => entry.Player.PersonId).Distinct());
+        List<Guid> personIds = players.Select(player => player.PersonId).Distinct().ToList();
+        if (personIds.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        IEnumerable<Person> persons = await personRepository.GetByIdsAsync(personIds);
         return persons.ToDictionary(person => person.Id, person => person.FullName);
     }
-
-    private sealed record RankedPlayer(AllTimePlayerAggregate Player, int Rank);
 }

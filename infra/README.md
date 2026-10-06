@@ -293,7 +293,7 @@ az postgres flexible-server firewall-rule create \
 ### Run database migrations manually
 
 ```powershell
-$env:ConnectionStrings__DefaultConnection = "Host=myleague-staging-postgres.postgres.database.azure.com;Database=myleague;Username=myleagueadmin;Password=YourPassword;SSL Mode=Require;Trust Server Certificate=true"
+$env:ConnectionStrings__DefaultConnection = "Host=myleague-staging-postgres.postgres.database.azure.com;Database=myleague;Username=myleagueadmin;Password=YourPassword;SSL Mode=VerifyFull"
 
 cd src/backend/WebAPI
 dotnet ef database update --project ../Infrastructure/Infrastructure.csproj

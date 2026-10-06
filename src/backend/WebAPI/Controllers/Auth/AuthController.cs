@@ -7,8 +7,10 @@ using Application.Features.Common.Organization.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using WebAPI.Controllers.Common;
+using WebAPI.DependencyInjections;
 using WebAPI.Models.Auth;
 using WebAPI.Models.Common;
 
@@ -46,6 +48,7 @@ public class AuthController : BaseApiController
     /// <param name="request">The login request containing the email</param>
     /// <returns>Success when a code was issued, or 400 when the email has no account</returns>
     [HttpPost("login")]
+    [EnableRateLimiting(PublicTrafficProtectionExtensions.AuthPolicy)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse>> Login([FromBody] LoginRequest request)
@@ -84,6 +87,7 @@ public class AuthController : BaseApiController
     /// <param name="request">The verify request containing email and code</param>
     /// <returns>Authentication tokens if the code is valid</returns>
     [HttpPost("verify")]
+    [EnableRateLimiting(PublicTrafficProtectionExtensions.AuthPolicy)]
     [ProducesResponseType(typeof(ApiResponse<AuthTokenDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
@@ -109,6 +113,7 @@ public class AuthController : BaseApiController
     /// <param name="request">The refresh request containing the refresh token</param>
     /// <returns>New authentication tokens</returns>
     [HttpPost("refresh")]
+    [EnableRateLimiting(PublicTrafficProtectionExtensions.AuthPolicy)]
     [ProducesResponseType(typeof(ApiResponse<AuthTokenDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<AuthTokenDto>>> Refresh([FromBody] RefreshTokenRequest request)
@@ -149,6 +154,7 @@ public class AuthController : BaseApiController
     /// <returns>Success or error response</returns>
     [AllowAnonymous]
     [HttpPost("verify-admin-email")]
+    [EnableRateLimiting(PublicTrafficProtectionExtensions.AuthPolicy)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse>> VerifyAdminEmail([FromBody] VerifyAdminEmailRequest request)

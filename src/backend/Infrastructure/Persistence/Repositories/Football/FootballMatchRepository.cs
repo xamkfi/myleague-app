@@ -30,6 +30,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         public override async Task<FootballMatch?> GetByIdAsync(Guid id)
         {
             return await _entities
+                .AsSplitQuery()
                 .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
@@ -93,7 +94,95 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
             FootballCompetitionType? competitionType = null,
             Domain.Enums.Common.TeamCategory? teamCategory = null,
             bool excludeDraftCompetitions = false,
+            bool activeCompetitionsOnly = false,
+            IReadOnlyCollection<Guid>? teamIds = null,
             CancellationToken cancellationToken = default)
+        {
+            IQueryable<FootballMatch> query = ApplyListFilters(
+                _entities
+                    .AsNoTracking()
+                    .AsSplitQuery()
+                    .Include(m => m.Competition)
+                    .Include(m => m.HomeTeam)
+                    .Include(m => m.AwayTeam)
+                    .Include(m => m.Officials)
+                    .Include(m => m.PeriodScores),
+                competitionId,
+                teamId,
+                startDate,
+                endDate,
+                status,
+                searchQuery,
+                tournamentGroupId,
+                competitionType,
+                teamCategory,
+                excludeDraftCompetitions,
+                activeCompetitionsOnly);
+
+            if (teamIds is { Count: > 0 })
+            {
+                List<Guid?> teamFilter = teamIds.Select(id => (Guid?)id).ToList();
+                query = query.Where(m => teamFilter.Contains(m.HomeTeamId) || teamFilter.Contains(m.AwayTeamId));
+            }
+
+            // Apply ordering by scheduled date
+            IOrderedQueryable<FootballMatch> ordered = sortOrder == "desc"
+                ? query.OrderByDescending(m => m.ScheduledDateTime).ThenBy(m => m.Id)
+                : query.OrderBy(m => m.ScheduledDateTime).ThenBy(m => m.Id);
+
+            // Get total count before pagination
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            // Apply pagination
+            List<FootballMatch> items = await ordered
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return PagedResult.Create(items, totalCount, page, pageSize);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyDictionary<FootballMatchStatus, int>> GetStatusCountsAsync(
+            Guid? competitionId,
+            string? searchQuery,
+            FootballCompetitionType? competitionType,
+            bool excludeDraftCompetitions,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<FootballMatch> query = ApplyListFilters(
+                _entities.AsNoTracking(),
+                competitionId,
+                teamId: null,
+                startDate: null,
+                endDate: null,
+                status: null,
+                searchQuery,
+                tournamentGroupId: null,
+                competitionType,
+                teamCategory: null,
+                excludeDraftCompetitions,
+                activeCompetitionsOnly: false);
+
+            return await query
+                .GroupBy(m => m.Status)
+                .Select(group => new { Status = group.Key, Count = group.Count() })
+                .ToDictionaryAsync(row => row.Status, row => row.Count, cancellationToken);
+        }
+
+        private static IQueryable<FootballMatch> ApplyListFilters(
+            IQueryable<FootballMatch> query,
+            Guid? competitionId,
+            Guid? teamId,
+            DateTime? startDate,
+            DateTime? endDate,
+            FootballMatchStatus? status,
+            string? searchQuery,
+            Guid? tournamentGroupId,
+            FootballCompetitionType? competitionType,
+            Domain.Enums.Common.TeamCategory? teamCategory,
+            bool excludeDraftCompetitions,
+            bool activeCompetitionsOnly)
         {
             DateTime? startDateUtc = startDate.HasValue
                 ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc)
@@ -102,15 +191,6 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                 ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc)
                 : null;
 
-            IQueryable<FootballMatch> query = _entities
-                .Include(m => m.Competition)
-                .Include(m => m.HomeTeam)
-                .Include(m => m.AwayTeam)
-                .Include(m => m.Officials)
-                .Include(m => m.PeriodScores)
-                .AsQueryable();
-
-            // Apply filters
             if (competitionId.HasValue)
             {
                 query = query.Where(m => m.CompetitionId == competitionId.Value);
@@ -166,6 +246,11 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                         && ((FootballTournament)match.Competition).TournamentStatus != FootballTournamentStatus.Draft));
             }
 
+            if (activeCompetitionsOnly)
+            {
+                query = query.Where(match => match.Competition.IsActive);
+            }
+
             // Apply search query filter (team names)
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
@@ -176,26 +261,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                 );
             }
 
-            // Apply ordering by scheduled date
-            if (sortOrder == "desc")
-            {
-                query = query.OrderByDescending(m => m.ScheduledDateTime);
-            }
-            else
-            {
-                query = query.OrderBy(m => m.ScheduledDateTime);
-            }
-
-            // Get total count before pagination
-            int totalCount = await query.CountAsync(cancellationToken);
-
-            // Apply pagination
-            List<FootballMatch> items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-
-            return PagedResult.Create(items, totalCount, page, pageSize);
+            return query;
         }
 
         /// <summary>
@@ -205,15 +271,28 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         /// <returns>A collection of matches in the competition</returns>
         public async Task<IEnumerable<FootballMatch>> GetByCompetitionIdAsync(Guid competitionId)
         {
-            return await _entities
+            return await CompetitionMatchesQuery(competitionId).ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<FootballMatch>> GetByCompetitionIdReadOnlyAsync(
+            Guid competitionId,
+            CancellationToken cancellationToken = default)
+        {
+            return await CompetitionMatchesQuery(competitionId)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+
+        private IQueryable<FootballMatch> CompetitionMatchesQuery(Guid competitionId) =>
+            _entities
+                .AsSplitQuery()
                 .Include(m => m.Competition)
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
                 .Include(m => m.Officials)
                 .Include(m => m.PeriodScores)
-                .Where(m => m.CompetitionId == competitionId)
-                .ToListAsync();
-        }
+                .Where(m => m.CompetitionId == competitionId);
 
         /// <summary>
         /// Gets matches assigned to a specific tournament group, optionally filtered by status.
@@ -256,6 +335,57 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                 .Include(m => m.Events)
                 .Where(m => m.HomeTeamId == teamId || m.AwayTeamId == teamId)
                 .ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<FootballMatch>> GetRecentCompletedForPlayerAsync(
+            Guid playerId,
+            IReadOnlyCollection<Guid> teamIds,
+            int limit,
+            CancellationToken cancellationToken = default)
+        {
+            if (teamIds.Count == 0 || limit <= 0)
+            {
+                return Array.Empty<FootballMatch>();
+            }
+
+            List<Guid?> nullableTeamIds = teamIds.Select(id => (Guid?)id).ToList();
+            List<Guid> matchIds = await _entities
+                .AsNoTracking()
+                .Where(m => m.Status == FootballMatchStatus.Completed)
+                .Where(m => nullableTeamIds.Contains(m.HomeTeamId) || nullableTeamIds.Contains(m.AwayTeamId))
+                .Where(m => m.Lineup.Any(p => p.PlayerId == playerId)
+                    || m.Events.Any(e =>
+                        (e is FootballGoal
+                            && (((FootballGoal)e).ScoringPlayerId == playerId
+                                || ((FootballGoal)e).AssistingPlayerId == playerId))
+                        || (e is FootballCard && ((FootballCard)e).PlayerId == playerId)
+                        || (e is FootballSubstitution
+                            && (((FootballSubstitution)e).PlayerOffId == playerId
+                                || ((FootballSubstitution)e).PlayerOnId == playerId))))
+                .OrderByDescending(m => m.ScheduledDateTime)
+                .ThenBy(m => m.Id)
+                .Select(m => m.Id)
+                .Take(limit)
+                .ToListAsync(cancellationToken);
+
+            if (matchIds.Count == 0)
+            {
+                return Array.Empty<FootballMatch>();
+            }
+
+            return await _entities
+                .AsNoTracking()
+                .AsSplitQuery()
+                .Include(m => m.Competition)
+                .Include(m => m.HomeTeam)
+                .Include(m => m.AwayTeam)
+                .Include(m => m.PeriodScores)
+                .Include(m => m.Events)
+                .Where(m => matchIds.Contains(m.Id))
+                .OrderByDescending(m => m.ScheduledDateTime)
+                .ThenBy(m => m.Id)
+                .ToListAsync(cancellationToken);
         }
 
         /// <summary>

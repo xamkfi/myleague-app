@@ -1,5 +1,6 @@
 using Domain.Constants;
 using Application.Common;
+using Application.Features.Common.Shared.DTOs;
 using Application.Features.Football.Matches.Commands;
 using Application.Features.Football.Matches.DTOs;
 using Application.Features.Football.Matches.Queries;
@@ -55,10 +56,32 @@ public class FootballMatchesController : BaseApiController
             request.TournamentGroupId,
             request.CompetitionType,
             request.TeamCategory,
-            IncludeDrafts(request.IncludeDrafts));
+            IncludeDrafts(request.IncludeDrafts),
+            request.ActiveOnly);
 
         Result<PagedResult<FootballMatchDto>> result = await _mediator.Send(query, cancellationToken);
         return HandlePaginatedResult(result, "Football matches retrieved successfully", "Failed to retrieve football matches");
+    }
+
+    /// <summary>
+    /// Counts football matches per status with the same filters as the match list.
+    /// </summary>
+    [HttpGet("status-counts")]
+    [ProducesResponseType(typeof(ApiResponse<MatchStatusCountsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponse<MatchStatusCountsDto>>> GetStatusCounts(
+        [FromQuery] GetFootballMatchStatusCountsRequest request,
+        CancellationToken cancellationToken)
+    {
+        Result<MatchStatusCountsDto> result = await _mediator.Send(
+            new GetFootballMatchStatusCountsQuery(
+                request.CompetitionId,
+                request.SearchQuery,
+                request.CompetitionType,
+                IncludeDrafts(request.IncludeDrafts)),
+            cancellationToken);
+
+        return HandleResult(result, "Football match status counts retrieved successfully", "Failed to count football matches");
     }
 
     /// <summary>

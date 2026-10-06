@@ -102,4 +102,15 @@ public class UserRepository : RepositoryBase<User, CommonDbContext>, IUserReposi
     {
         return await _entities.CountAsync(u => u.Role == role);
     }
+
+    public async Task<bool> TryConsumeLoginAttemptAsync(Guid userId, int maxAttempts, CancellationToken cancellationToken = default)
+    {
+        int updated = await _entities
+            .Where(u => u.Id == userId && u.LoginCodeAttempts < maxAttempts)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(u => u.LoginCodeAttempts, u => u.LoginCodeAttempts + 1),
+                cancellationToken);
+
+        return updated == 1;
+    }
 }

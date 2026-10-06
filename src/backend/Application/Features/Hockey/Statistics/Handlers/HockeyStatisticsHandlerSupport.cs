@@ -18,26 +18,42 @@ namespace Application.Features.Hockey.Statistics.Handlers;
 /// </summary>
 internal static class HockeyStatisticsHandlerSupport
 {
-    public static async Task AttachTeamPlayersAsync(
+    public static Task AttachTeamPlayersAsync(
         HockeyMatch match,
-        IHockeyTeamRepository teamRepository)
-    {
-        Dictionary<Guid, HockeyTeam> teamCache = new();
+        IHockeyTeamRepository teamRepository,
+        CancellationToken cancellationToken = default) =>
+        AttachTeamPlayersAsync(new[] { match }, teamRepository, cancellationToken);
 
-        foreach (HockeyMatchTeam matchTeam in match.MatchTeams)
+    /// <summary>
+    /// Loads every team that has a player selection in <paramref name="matches"/> with one query
+    /// and attaches roster rows to the active players.
+    /// </summary>
+    public static async Task AttachTeamPlayersAsync(
+        IReadOnlyCollection<HockeyMatch> matches,
+        IHockeyTeamRepository teamRepository,
+        CancellationToken cancellationToken = default)
+    {
+        List<Guid> teamIds = matches
+            .SelectMany(m => m.MatchTeams)
+            .Where(t => t.PlayerSelection is not null)
+            .Select(t => t.TeamId)
+            .Distinct()
+            .ToList();
+        if (teamIds.Count == 0)
+            return;
+
+        IReadOnlyDictionary<Guid, HockeyTeam> teams =
+            await teamRepository.GetByIdsWithRosterAsync(teamIds, cancellationToken);
+        Dictionary<Guid, Dictionary<Guid, HockeyTeamPlayer>> rostersByTeam = teams.ToDictionary(
+            pair => pair.Key,
+            pair => pair.Value.Roster.ToDictionary(r => r.Id));
+
+        foreach (HockeyMatchTeam matchTeam in matches.SelectMany(m => m.MatchTeams))
         {
-            if (matchTeam.PlayerSelection is null)
+            if (matchTeam.PlayerSelection is null
+                || !rostersByTeam.TryGetValue(matchTeam.TeamId, out Dictionary<Guid, HockeyTeamPlayer>? rosterById))
                 continue;
 
-            if (!teamCache.TryGetValue(matchTeam.TeamId, out HockeyTeam? team))
-            {
-                team = await teamRepository.GetByIdAsync(matchTeam.TeamId);
-                if (team is null)
-                    continue;
-                teamCache[matchTeam.TeamId] = team;
-            }
-
-            Dictionary<Guid, HockeyTeamPlayer> rosterById = team.Roster.ToDictionary(r => r.Id);
             foreach (HockeyMatchActivePlayer active in matchTeam.PlayerSelection.ActivePlayers)
             {
                 if (rosterById.TryGetValue(active.TeamPlayerId, out HockeyTeamPlayer? teamPlayer))

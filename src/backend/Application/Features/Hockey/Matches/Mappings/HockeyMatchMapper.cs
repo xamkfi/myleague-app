@@ -12,6 +12,24 @@ public static class HockeyMatchMapper
 {
     public static HockeyMatchDto ToDto(HockeyMatch match) => ToDto(match, null, null);
 
+    public static HockeyLiveMatchDto ToLiveDto(HockeyMatch match) =>
+        new(
+            match.Id,
+            match.CompetitionId,
+            match.MatchType.ToString(),
+            match.Status.ToString(),
+            match.ResultType?.ToString(),
+            match.CurrentPeriodNumber,
+            match.WentToOvertime,
+            match.WentToShootout,
+            match.ScheduledStartTime,
+            match.ActualStartTime,
+            match.ActualEndTime,
+            match.HomeTeamId,
+            match.AwayTeamId,
+            match.HomeScore,
+            match.AwayScore);
+
     /// <param name="match">The match to map</param>
     /// <param name="officialNames">Optional display names keyed by official ID</param>
     /// <param name="scorekeeperNames">Optional display names keyed by person ID</param>

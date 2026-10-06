@@ -235,24 +235,12 @@ export function HockeyPlayerProfile({
         .filter((row) => row.playerId === loaded.id && row.competitionId)
         .map((row) => row.competitionId as string));
 
-      const matchesById = new Map<string, HockeyMatchDto>();
-      const teamMatchLists = await Promise.all(
-        orderedTeams.map((team) => hockeyMatchService.getByTeam(team.id).catch(() => [] as HockeyMatchDto[])),
-      );
-      for (const list of teamMatchLists) {
-        for (const match of list) {
-          matchesById.set(match.id, match);
-        }
-      }
-
       const teamPlayerIds = new Set(
         playerTeams.flatMap((team) => team.roster.filter((row) => row.playerId === loaded.id).map((row) => row.id)),
       );
-      const played = [...matchesById.values()]
-        .filter((match) => match.matchTeams.some((side) =>
-          side.activePlayers.some((entry) => teamPlayerIds.has(entry.teamPlayerId))))
-        .sort((a, b) => new Date(b.scheduledStartTime).getTime() - new Date(a.scheduledStartTime).getTime())
-        .slice(0, 50);
+      const played = await hockeyMatchService
+        .getRecentByPlayer(loaded.id, 50)
+        .catch(() => [] as HockeyMatchDto[]);
 
       const matchCompetitionIds = played
         .map((match) => match.competitionId)

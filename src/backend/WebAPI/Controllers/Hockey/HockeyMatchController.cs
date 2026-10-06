@@ -76,7 +76,9 @@ public class HockeyMatchController : BaseApiController
                 request.TeamCategory,
                 request.SortOrder,
                 IncludeDrafts(request.IncludeDrafts),
-                request.Statuses),
+                request.Statuses,
+                request.CompetitionId,
+                request.ActiveSeasonsOnly),
             cancellationToken);
         return HandlePaginatedResult(result, "Hockey matches retrieved successfully", "Failed to retrieve hockey matches");
     }
@@ -124,6 +126,44 @@ public class HockeyMatchController : BaseApiController
     {
         Result<IEnumerable<HockeyMatchDto>> result = await _mediator.Send(
             new GetHockeyMatchesByTeamQuery(teamId),
+            cancellationToken);
+        return HandleListResult(result, "Hockey matches retrieved successfully", "Failed to retrieve hockey matches");
+    }
+
+    /// <summary>
+    /// Gets live, about-to-start, and just-finished matches with score and status only.
+    /// Meant for short-interval polling; optionally scoped to one competition.
+    /// </summary>
+    [HttpGet("live")]
+    [ProducesResponseType(typeof(ApiResponse<List<HockeyLiveMatchDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<HockeyLiveMatchDto>>>> GetLive(
+        [FromQuery] Guid? competitionId,
+        [FromQuery] bool includeDrafts = false,
+        CancellationToken cancellationToken = default)
+    {
+        Result<IEnumerable<HockeyLiveMatchDto>> result = await _mediator.Send(
+            new GetHockeyLiveMatchesQuery(competitionId, IncludeDrafts(includeDrafts)),
+            cancellationToken);
+        return HandleListResult(result, "Live hockey matches retrieved successfully", "Failed to retrieve live hockey matches");
+    }
+
+    /// <summary>
+    /// Gets the latest matches a career player was dressed for, newest first.
+    /// Includes player selections but not events, lines, or on-ice state.
+    /// </summary>
+    /// <param name="playerId">Career player id.</param>
+    /// <param name="limit">Maximum number of matches (1-200, default 50).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    [HttpGet("player/{playerId:guid}/recent")]
+    [ProducesResponseType(typeof(ApiResponse<List<HockeyMatchDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<List<HockeyMatchDto>>>> GetRecentByPlayer(
+        Guid playerId,
+        [FromQuery] int limit = 50,
+        CancellationToken cancellationToken = default)
+    {
+        Result<IEnumerable<HockeyMatchDto>> result = await _mediator.Send(
+            new GetHockeyPlayerRecentMatchesQuery(playerId, limit),
             cancellationToken);
         return HandleListResult(result, "Hockey matches retrieved successfully", "Failed to retrieve hockey matches");
     }

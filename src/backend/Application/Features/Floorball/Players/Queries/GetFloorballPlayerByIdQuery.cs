@@ -19,5 +19,5 @@ namespace Application.Features.Floorball.Players.Queries
     /// Query for retrieving a floorball player by Id
     /// </summary>
     /// <param name="Id"></param>
-    public record GetFloorballPlayerByIdQuery(Guid Id) : IRequest<Result<FloorballPlayerDto>>;
+    public record GetFloorballPlayerByIdQuery(Guid Id, bool IncludePrivateData = false) : IRequest<Result<FloorballPlayerDto>>;
 }

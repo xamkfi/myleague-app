@@ -54,7 +54,8 @@ namespace WebAPI.Controllers.Floorball
                 request.Position,
                 request.TeamId,
                 request.SearchTerm,
-                request.HasActiveLicence));
+                request.HasActiveLicence,
+                IncludePrivateData));
 
             return HandlePaginatedResult(result, "Floorball players retrieved successfully", "Failed to retrieve floorball players");
         }
@@ -76,7 +77,8 @@ namespace WebAPI.Controllers.Floorball
                 request.Page,
                 request.PageSize,
                 request.Position,
-                request.TeamId));
+                request.TeamId,
+                IncludePrivateData));
 
             return HandlePaginatedResult(result, "Active floorball players retrieved successfully", "Failed to retrieve active floorball players");
         }
@@ -94,7 +96,7 @@ namespace WebAPI.Controllers.Floorball
         {
             _logger.LogInformation("Getting floorball player with ID: {id}", id);
 
-            Result<FloorballPlayerDto> result = await _mediator.Send(new GetFloorballPlayerByIdQuery(id));
+            Result<FloorballPlayerDto> result = await _mediator.Send(new GetFloorballPlayerByIdQuery(id, IncludePrivateData));
 
             return HandleResult(result, "Floorball player retrieved successfully", "Failed to retrieve floorball player");
         }

@@ -85,4 +85,10 @@ public interface IUserRepository
     /// Counts users with the given role.
     /// </summary>
     Task<int> CountByRoleAsync(UserRole role);
+
+    /// <summary>
+    /// Atomically records one login-code verification attempt when the user is still under
+    /// <paramref name="maxAttempts"/>. Returns false when the limit was already reached.
+    /// </summary>
+    Task<bool> TryConsumeLoginAttemptAsync(Guid userId, int maxAttempts, CancellationToken cancellationToken = default);
 }

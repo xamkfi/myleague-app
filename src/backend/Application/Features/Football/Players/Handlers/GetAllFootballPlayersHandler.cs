@@ -124,12 +124,14 @@ public class GetAllFootballPlayersHandler : BasePagedQueryHandler<GetAllFootball
             IReadOnlyDictionary<Guid, IReadOnlyList<PlayerLicenceRow>> licencesByPlayer =
                 await _teamRepository.GetOpenPlayerLicencesByPlayerIdsAsync(playerIds, cancellationToken);
 
-            // Load Person data for each player and create DTOs with team information
+            List<Guid> personIds = pagedPlayersWithTeams.Items.Select(item => item.Player.PersonId).Distinct().ToList();
+            Dictionary<Guid, Person> personsById = (await _personRepository.GetByIdsAsync(personIds))
+                .ToDictionary(person => person.Id);
+
             List<FootballPlayerDto> playerDtos = new List<FootballPlayerDto>();
             foreach ((FootballPlayer player, FootballTeam? team) in pagedPlayersWithTeams.Items)
             {
-                // Get the associated person
-                Person? person = await _personRepository.GetByIdAsync(player.PersonId);
+                Person? person = personsById.GetValueOrDefault(player.PersonId);
                 
                 // Create team DTO if team exists
                 FootballTeamNameDto? teamDto = team != null ? new FootballTeamNameDto { Id = team.Id, Name = team.Name } : null;
@@ -141,7 +143,7 @@ public class GetAllFootballPlayersHandler : BasePagedQueryHandler<GetAllFootball
                     FootballPlayerDto playerDto = new FootballPlayerDto(
                         player.Id,
                         player.PersonId,
-                        PersonMapper.ToDto(person),
+                        PersonMapper.ToDto(person, request.IncludePrivateData),
                         player.IsActive,
                         player.Position.PrimaryPosition,
                         player.CareerGoals,

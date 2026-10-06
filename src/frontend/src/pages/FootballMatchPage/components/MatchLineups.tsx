@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { footballTeamService } from '../../../api/football/footballTeamService';
 import {
   FootballPosition,
   type FootballLineupPlayer,
@@ -73,37 +72,17 @@ const buildActiveRoster = (
   return entries;
 };
 
-export default function MatchLineups({ match }: { match: FootballMatchDto }) {
+interface MatchLineupsProps {
+  match: FootballMatchDto;
+  homeRoster: FootballTeamPlayer[];
+  awayRoster: FootballTeamPlayer[];
+}
+
+export default function MatchLineups({ match, homeRoster, awayRoster }: MatchLineupsProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [homeLookup, setHomeLookup] = useState<RosterLookup>(new Map());
-  const [awayLookup, setAwayLookup] = useState<RosterLookup>(new Map());
-
-  useEffect(() => {
-    let cancelled = false;
-    async function fetchRosters(): Promise<void> {
-      try {
-        if (!match.homeTeamId || !match.awayTeamId) {
-          setHomeLookup(new Map());
-          setAwayLookup(new Map());
-          return;
-        }
-        const [homeResponse, awayResponse] = await Promise.all([
-          footballTeamService.getById(match.homeTeamId),
-          footballTeamService.getById(match.awayTeamId),
-        ]);
-        if (cancelled) return;
-        setHomeLookup(buildRosterLookup(homeResponse.roster));
-        setAwayLookup(buildRosterLookup(awayResponse.roster));
-      } catch (error) {
-        console.error('Failed to load team rosters for match lineup', error);
-      }
-    }
-    void fetchRosters();
-    return () => {
-      cancelled = true;
-    };
-  }, [match.homeTeamId, match.awayTeamId]);
+  const homeLookup: RosterLookup = useMemo(() => buildRosterLookup(homeRoster), [homeRoster]);
+  const awayLookup: RosterLookup = useMemo(() => buildRosterLookup(awayRoster), [awayRoster]);
 
   const homeActiveRoster: ActiveRosterEntry[] = useMemo(
     () => buildActiveRoster(match.homeLineup ?? [], homeLookup),

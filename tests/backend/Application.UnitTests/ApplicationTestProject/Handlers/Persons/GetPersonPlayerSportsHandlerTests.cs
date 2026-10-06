@@ -81,7 +81,6 @@ public class GetPersonPlayerSportsHandlerTests
         result.Data.Should().NotBeNull();
         result.Data!.PersonId.Should().Be(person.Id);
         result.Data.FullName.Should().Be("Matti Pelaaja");
-        result.Data.BirthDate.Should().Be(person.BirthDate);
         result.Data.Sports.Should().HaveCount(3);
         result.Data.Sports.Should().Contain(s => s.Sport == "floorball" && s.PlayerId == floorballPlayer.Id);
         result.Data.Sports.Should().Contain(s => s.Sport == "football" && s.PlayerId == footballPlayer.Id);

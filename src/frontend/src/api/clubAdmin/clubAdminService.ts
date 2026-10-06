@@ -18,6 +18,14 @@ async function parseResponse<T>(response: Response, defaultError: string): Promi
   return apiResponse.data;
 }
 
+function teamIdsQuery(teamIds: string[]): string {
+  const params = new URLSearchParams();
+  for (const teamId of teamIds) {
+    params.append('teamIds', teamId);
+  }
+  return params.toString();
+}
+
 export const clubAdminService = {
   /** Gets all clubs (with their teams in both sports) the current user manages. */
   getMyClubs: async (): Promise<ClubAdminClub[]> => {
@@ -25,21 +33,24 @@ export const clubAdminService = {
     return parseResponse<ClubAdminClub[]>(response, 'Failed to load your clubs');
   },
 
-  /** Gets the upcoming (scheduled) floorball matches for a managed team. */
-  getFloorballUpcomingMatches: async (teamId: string): Promise<FloorballMatchDto[]> => {
-    const response = await authFetch(`${BASE_URL}/floorball/teams/${teamId}/upcoming-matches`);
+  /** Gets the upcoming (scheduled) floorball matches for several managed teams, earliest first. */
+  getFloorballUpcomingMatches: async (teamIds: string[]): Promise<FloorballMatchDto[]> => {
+    if (teamIds.length === 0) return [];
+    const response = await authFetch(`${BASE_URL}/floorball/upcoming-matches?${teamIdsQuery(teamIds)}`);
     return parseResponse<FloorballMatchDto[]>(response, 'Failed to load upcoming matches');
   },
 
-  /** Gets the upcoming (scheduled) football matches for a managed team. */
-  getFootballUpcomingMatches: async (teamId: string): Promise<FootballMatchDto[]> => {
-    const response = await authFetch(`${BASE_URL}/football/teams/${teamId}/upcoming-matches`);
+  /** Gets the upcoming (scheduled) football matches for several managed teams, earliest first. */
+  getFootballUpcomingMatches: async (teamIds: string[]): Promise<FootballMatchDto[]> => {
+    if (teamIds.length === 0) return [];
+    const response = await authFetch(`${BASE_URL}/football/upcoming-matches?${teamIdsQuery(teamIds)}`);
     return parseResponse<FootballMatchDto[]>(response, 'Failed to load upcoming matches');
   },
 
-  /** Gets the upcoming (scheduled) hockey matches for a managed team. */
-  getHockeyUpcomingMatches: async (teamId: string): Promise<HockeyMatchDto[]> => {
-    const response = await authFetch(`${BASE_URL}/hockey/teams/${teamId}/upcoming-matches`);
+  /** Gets the upcoming (scheduled) hockey matches for several managed teams, earliest first. */
+  getHockeyUpcomingMatches: async (teamIds: string[]): Promise<HockeyMatchDto[]> => {
+    if (teamIds.length === 0) return [];
+    const response = await authFetch(`${BASE_URL}/hockey/upcoming-matches?${teamIdsQuery(teamIds)}`);
     return parseResponse<HockeyMatchDto[]>(response, 'Failed to load upcoming matches');
   },
 

@@ -105,7 +105,6 @@ namespace MyLeague.Infrastructure.Services.ImageStorage
                 ".png" => "image/png",
                 ".gif" => "image/gif",
                 ".webp" => "image/webp",
-                ".svg" => "image/svg+xml",
                 _ => "application/octet-stream"
             };
         }

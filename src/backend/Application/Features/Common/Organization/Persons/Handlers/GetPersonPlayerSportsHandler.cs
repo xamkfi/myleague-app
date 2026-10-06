@@ -110,7 +110,6 @@ public class GetPersonPlayerSportsHandler : IRequestHandler<GetPersonPlayerSport
         return Result<PersonPlayerSportsDto>.Success(new PersonPlayerSportsDto(
             person.Id,
             person.FullName,
-            person.BirthDate,
             sports,
             licences));
     }

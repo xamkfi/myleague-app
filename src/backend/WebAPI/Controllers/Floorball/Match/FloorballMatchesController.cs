@@ -1,5 +1,6 @@
 using Domain.Constants;
 using Application.Common;
+using Application.Features.Common.Shared.DTOs;
 using Application.Features.Floorball.Matches.Commands;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Matches.Queries;
@@ -66,12 +67,34 @@ namespace WebAPI.Controllers.Floorball
                 request.TournamentGroupId,
                 request.CompetitionType,
                 request.TeamCategory,
-                IncludeDrafts(request.IncludeDrafts)
+                IncludeDrafts(request.IncludeDrafts),
+                request.ActiveOnly
             );
 
             Result<PagedResult<FloorballMatchDto>> result = await _mediator.Send(query, cancellationToken);
 
             return HandlePaginatedResult(result, "Floorball matches retrieved successfully", "Failed to retrieve floorball matches");
+        }
+
+        /// <summary>
+        /// Counts floorball matches per status with the same filters as the match list.
+        /// </summary>
+        [HttpGet("status-counts")]
+        [ProducesResponseType(typeof(ApiResponse<MatchStatusCountsDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<MatchStatusCountsDto>>> GetStatusCounts(
+            [FromQuery] GetFloorballMatchStatusCountsRequest request,
+            CancellationToken cancellationToken)
+        {
+            Result<MatchStatusCountsDto> result = await _mediator.Send(
+                new GetFloorballMatchStatusCountsQuery(
+                    request.CompetitionId,
+                    request.SearchQuery,
+                    request.CompetitionType,
+                    IncludeDrafts(request.IncludeDrafts)),
+                cancellationToken);
+
+            return HandleResult(result, "Floorball match status counts retrieved successfully", "Failed to count floorball matches");
         }
 
         /// <summary>

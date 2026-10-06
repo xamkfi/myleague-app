@@ -628,8 +628,8 @@ namespace MyLeague.Infrastructure.Migrations.CommonDb
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LoginCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<int>("LoginCodeAttempts")
                         .ValueGeneratedOnAdd()

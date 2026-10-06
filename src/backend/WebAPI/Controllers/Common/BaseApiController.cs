@@ -26,6 +26,12 @@ public abstract class BaseApiController : ControllerBase
         requested && User.IsInRole(AuthRoles.SystemAdmin);
 
     /// <summary>
+    /// True only for a signed-in system administrator. Anonymous callers and other roles must not
+    /// receive birth dates, addresses, contact details, or licence numbers.
+    /// </summary>
+    protected bool IncludePrivateData => User.IsInRole(AuthRoles.SystemAdmin);
+
+    /// <summary>
     /// Returns 200 OK with a success envelope when <paramref name="result"/> succeeded and
     /// carries a non-null payload, otherwise delegates to <see cref="ToErrorResponse{T}"/>.
     /// </summary>

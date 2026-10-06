@@ -31,6 +31,16 @@ public interface IFootballStatisticsRepository
         TeamCategory teamCategory,
         AllTimeCompetitionFilter competitionType,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sums, ranks, and pages public all-time player totals in the database.
+    /// Loan profiles, players without games, and unpublished competitions are excluded.
+    /// </summary>
+    Task<PagedResult<AllTimePlayerTotals>> GetAllTimePlayerPageAsync(
+        TeamCategory teamCategory,
+        AllTimeCompetitionFilter competitionType,
+        AllTimePlayerPageRequest request,
+        CancellationToken cancellationToken = default);
     Task SavePlayerSeasonStatisticsAsync(FootballPlayerSeasonStatistics statistics, CancellationToken cancellationToken = default);
 
     Task<FootballMatchTeamStatistics?> GetMatchTeamStatisticsAsync(Guid matchId, Guid teamId, CancellationToken cancellationToken = default);
