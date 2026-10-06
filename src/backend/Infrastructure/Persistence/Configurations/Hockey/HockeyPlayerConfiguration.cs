@@ -15,6 +15,8 @@ public class HockeyPlayerConfiguration : BaseEntityConfiguration<HockeyPlayer>
         builder.Property(p => p.LicenseNumber).HasMaxLength(50);
         builder.Property(p => p.IsActive).IsRequired();
         builder.Property(p => p.IsLoanGoalkeeper).IsRequired().HasDefaultValue(false);
+        builder.Property(p => p.IsLoanPlayer).IsRequired().HasDefaultValue(false);
+        builder.Property(p => p.LoanPlayerNumber).IsRequired().HasDefaultValue(0);
         builder.Property(p => p.PrimaryPosition).IsRequired().HasConversion<string>();
         builder.Property(p => p.Shoots).IsRequired().HasConversion<string>();
         builder.Property(p => p.Catches).HasConversion<string>();

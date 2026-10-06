@@ -1,4 +1,6 @@
+using Domain.Common;
 using Domain.Entities.Football.Statistics;
+using Domain.Enums.Common;
 
 namespace Domain.Repositories.Football;
 
@@ -20,6 +22,15 @@ public interface IFootballStatisticsRepository
     Task<List<FootballPlayerSeasonStatistics>> GetTopScorersAsync(Guid competitionId, int topN, CancellationToken cancellationToken = default);
     Task<List<FootballPlayerSeasonStatistics>> GetTopAssistsAsync(Guid competitionId, int topN, CancellationToken cancellationToken = default);
     Task<List<FootballPlayerSeasonStatistics>> GetPlayerCareerStatisticsAsync(Guid playerId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets public competition player statistics rows for an all-time ranking.
+    /// Loan profiles and unpublished competitions are excluded.
+    /// </summary>
+    Task<List<AllTimePlayerStatRow>> GetAllTimePlayerStatRowsAsync(
+        TeamCategory teamCategory,
+        AllTimeCompetitionFilter competitionType,
+        CancellationToken cancellationToken = default);
     Task SavePlayerSeasonStatisticsAsync(FootballPlayerSeasonStatistics statistics, CancellationToken cancellationToken = default);
 
     Task<FootballMatchTeamStatistics?> GetMatchTeamStatisticsAsync(Guid matchId, Guid teamId, CancellationToken cancellationToken = default);

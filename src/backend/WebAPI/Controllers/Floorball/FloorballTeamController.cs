@@ -433,5 +433,29 @@ namespace WebAPI.Controllers.Floorball
                 new EnsureFloorballLoanGoalkeeperCommand(teamId, competitionId));
             return HandleResult(result, "Loan goalkeeper ensured successfully", "Failed to ensure loan goalkeeper");
         }
+
+        /// <summary>
+        /// Ensures the team has the requested number of loan players. Existing loan players are
+        /// reused before new ones are created, and each is attached to the given competition roster.
+        /// </summary>
+        /// <param name="teamId">Team ID</param>
+        /// <param name="count">How many loan players this match needs</param>
+        /// <param name="competitionId">Competition roster to attach the players to</param>
+        /// <returns>The first <paramref name="count"/> loan players</returns>
+        [HttpPost("{teamId:guid}/loan-players")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
+        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<FloorballLoanPlayerDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<IReadOnlyList<FloorballLoanPlayerDto>>>> EnsureLoanPlayers(
+            Guid teamId,
+            [FromQuery] int count,
+            [FromQuery] Guid? competitionId = null)
+        {
+            _logger.LogInformation("Ensuring {Count} loan players for floorball team {TeamId}", count, teamId);
+            Result<IReadOnlyList<FloorballLoanPlayerDto>> result = await _mediator.Send(
+                new EnsureFloorballLoanPlayersCommand(teamId, competitionId, count));
+            return HandleResult(result, "Loan players ensured successfully", "Failed to ensure loan players");
+        }
     }
 }

@@ -1,4 +1,6 @@
+using Domain.Common;
 using Domain.Entities.Hockey.Statistics;
+using Domain.Enums.Common;
 using Domain.Enums.Hockey.Statistics;
 
 namespace Domain.Repositories.Hockey;
@@ -108,4 +110,14 @@ public interface IHockeyStatisticsRepository
     Task<int> RemoveExpiredCacheAsync(CancellationToken cancellationToken = default);
 
     Task RemoveCompetitionCacheAsync(Guid competitionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets public competition-scope skater rows for an all-time ranking.
+    /// Division, group, and playoff slices are omitted so a player is not counted twice.
+    /// Loan profiles and unpublished competitions are excluded.
+    /// </summary>
+    Task<List<AllTimePlayerStatRow>> GetAllTimePlayerStatRowsAsync(
+        TeamCategory teamCategory,
+        AllTimeCompetitionFilter competitionType,
+        CancellationToken cancellationToken = default);
 }

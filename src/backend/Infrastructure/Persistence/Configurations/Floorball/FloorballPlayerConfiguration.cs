@@ -35,6 +35,14 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
                 .IsRequired()
                 .HasDefaultValue(false);
 
+            builder.Property(p => p.IsLoanPlayer)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            builder.Property(p => p.LoanPlayerNumber)
+                .IsRequired()
+                .HasDefaultValue(0);
+
             builder.OwnsOne(p => p.Position, positionBuilder =>
             {
                 positionBuilder.Property(p => p.PrimaryPosition)

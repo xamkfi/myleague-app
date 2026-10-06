@@ -105,7 +105,87 @@
   }
 }
 
+.sports-page__all-time {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'md');
+  margin-top: map.get($spacing, 'md');
+  padding: map.get($spacing, 'md');
+  background: $color-white;
+  border: 1px solid $color-neutral-light-grey;
+  border-radius: map.get($border-radius, 'lg-plus');
+  box-shadow: $box-shadow-drop-1;
+  text-decoration: none;
+  @include transition(all);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border-color: $color-blue-light;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-blue-secondary;
+    outline-offset: 2px;
+  }
+
+  &-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: $color-neutral-light-grey;
+    color: $color-blue-deep;
+  }
+
+  &-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &-title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'medium');
+    line-height: 1.3;
+    text-transform: uppercase;
+    color: $color-blue-deep;
+  }
+
+  &-description {
+    margin: 0;
+    font-family: $font-family-body;
+    font-size: map.get($font-sizes, 'sm');
+    line-height: 1.6;
+    color: $color-neutral-dark-grey;
+  }
+
+  &-link {
+    flex-shrink: 0;
+    color: $color-blue-secondary-muted;
+    font-weight: map.get($font-weights, 'semibold');
+    font-size: map.get($font-sizes, 'sm');
+    white-space: nowrap;
+
+    .sports-page__all-time:hover & {
+      color: $color-blue-deep;
+    }
+  }
+}
+
 @media (max-width: map.get($breakpoints, 'desktop')) {
+  .sports-page__all-time {
+    max-width: 480px;
+    flex-wrap: wrap;
+  }
+
   .sports-page__grid {
     grid-template-columns: 1fr;
     max-width: 480px;
