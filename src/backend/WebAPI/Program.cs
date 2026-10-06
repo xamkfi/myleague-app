@@ -105,20 +105,36 @@ builder.Services.Configure<FrontendConfiguration>(
 
 // Add JWT authentication
 const string JwtSecretFallback = "development-secret-key-that-is-at-least-32-characters-long!!";
-builder.Services.PostConfigure<JwtConfiguration>(options =>
-{
-    if (string.IsNullOrWhiteSpace(options.SecretKey))
-    {
-        options.SecretKey = JwtSecretFallback;
-        Log.Warning("JWT SecretKey is not set; using fallback. Set Jwt:SecretKey or Jwt__SecretKey for production.");
-    }
-});
+const int JwtSecretMinimumBytes = 32;
 
 JwtConfiguration jwtConfig = builder.Configuration
     .GetSection(JwtConfiguration.SectionName)
     .Get<JwtConfiguration>() ?? new JwtConfiguration();
 if (string.IsNullOrWhiteSpace(jwtConfig.SecretKey))
+{
+    if (!builder.Environment.IsDevelopment())
+    {
+        throw new InvalidOperationException(
+            "Jwt:SecretKey (Jwt__SecretKey) must be set outside the Development environment.");
+    }
+
     jwtConfig.SecretKey = JwtSecretFallback;
+    Log.Warning("JWT SecretKey is not set; using the Development fallback key.");
+}
+else if (Encoding.UTF8.GetByteCount(jwtConfig.SecretKey) < JwtSecretMinimumBytes)
+{
+    throw new InvalidOperationException(
+        $"Jwt:SecretKey must be at least {JwtSecretMinimumBytes} bytes.");
+}
+
+string effectiveJwtSecret = jwtConfig.SecretKey;
+builder.Services.PostConfigure<JwtConfiguration>(options =>
+{
+    if (string.IsNullOrWhiteSpace(options.SecretKey))
+    {
+        options.SecretKey = effectiveJwtSecret;
+    }
+});
 
 builder.Services.AddAuthentication(options =>
 {
@@ -159,6 +175,7 @@ builder.Services.AddAuthorization();
 
 // Register WebAPI-layer services
 builder.Services.AddSingleton<IMatchEventRateLimiter, MatchEventRateLimiter>();
+builder.Services.AddPublicTrafficProtection();
 
 // Register application services
 builder.Services.AddApplication();
@@ -184,6 +201,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseForwardedHeaders();
+
 // Use custom middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
@@ -198,6 +217,8 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
+app.UseOutputCache();
 
 // Map controllers
 app.MapControllers();

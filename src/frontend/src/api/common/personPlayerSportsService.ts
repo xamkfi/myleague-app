@@ -21,7 +21,6 @@ export interface PersonPlayerLicence {
 export interface PersonPlayerSports {
   personId: string;
   fullName: string;
-  birthDate: string | null;
   sports: PersonSportPlayer[];
   licences: PersonPlayerLicence[];
 }

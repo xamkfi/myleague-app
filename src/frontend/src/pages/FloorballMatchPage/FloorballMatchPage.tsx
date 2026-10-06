@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { floorballMatchService } from '../../api/floorball/floorballMatchService';
 import { FloorballMatchStatus, type FloorballMatchDto } from '../../types/floorball/floorballTypes';
@@ -16,6 +16,8 @@ import { getCompetitionPath, isTournamentCompetition } from '../../utils/competi
 import { getTeamPath } from '../../utils/sportRoutes';
 import { slugify } from '../../utils/slugUtils';
 
+const LIVE_RELOAD_DEBOUNCE_MS = 400;
+
 export default function FloorballMatchPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -24,16 +26,23 @@ export default function FloorballMatchPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<MatchTabType>('summary');
 
+  const latestRequestRef = useRef(0);
+
   const loadMatch = useCallback(async () => {
     if (!id) return;
+    const requestId = ++latestRequestRef.current;
     try {
       const response = await floorballMatchService.getById(id);
+      if (requestId !== latestRequestRef.current) return;
       setMatch(response.data);
     } catch (err) {
+      if (requestId !== latestRequestRef.current) return;
       console.error(err);
       setError((err as Error).message);
     } finally {
-      setLoading(false);
+      if (requestId === latestRequestRef.current) {
+        setLoading(false);
+      }
     }
   }, [id]);
 
@@ -43,6 +52,14 @@ export default function FloorballMatchPage() {
     if (!id || !isLive) return;
 
     let unsubscribeCallback: (() => void) | null = null;
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleReload = () => {
+      if (reloadTimer) clearTimeout(reloadTimer);
+      reloadTimer = setTimeout(() => {
+        reloadTimer = null;
+        void loadMatch();
+      }, LIVE_RELOAD_DEBOUNCE_MS);
+    };
 
     const setupMatchSignalR = async () => {
       try {
@@ -56,7 +73,7 @@ export default function FloorballMatchPage() {
             case MATCH_NOTIFICATION_EVENTS.SAVE_RECORDED:
             case MATCH_NOTIFICATION_EVENTS.MATCH_STARTED:
             case MATCH_NOTIFICATION_EVENTS.MATCH_COMPLETED:
-              loadMatch();
+              scheduleReload();
               break;
             default:
               break;
@@ -70,6 +87,7 @@ export default function FloorballMatchPage() {
     void setupMatchSignalR();
 
     return () => {
+      if (reloadTimer) clearTimeout(reloadTimer);
       if (unsubscribeCallback) {
         unsubscribeCallback();
       }

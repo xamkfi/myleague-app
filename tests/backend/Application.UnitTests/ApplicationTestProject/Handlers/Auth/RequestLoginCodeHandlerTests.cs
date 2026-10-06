@@ -15,6 +15,15 @@ namespace ApplicationTestProject.Handlers.Auth;
 
 public class RequestLoginCodeHandlerTests
 {
+    private readonly Mock<IJwtTokenService> _jwtTokenService = new();
+
+    public RequestLoginCodeHandlerTests()
+    {
+        _jwtTokenService
+            .Setup(s => s.HashToken(It.IsAny<string>()))
+            .Returns((string token) => $"hash:{token}");
+    }
+
     [Fact]
     public async Task Handle_WhenUserExists_UsesProviderLoginCodeMinutes()
     {
@@ -42,6 +51,7 @@ public class RequestLoginCodeHandlerTests
             uow.Object,
             email.Object,
             provider.Object,
+            _jwtTokenService.Object,
             Options.Create(loginCodeConfig),
             logger.Object);
 
@@ -65,7 +75,37 @@ public class RequestLoginCodeHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenUserDoesNotExist_ReturnsFailureAndDoesNotSendCode()
+    public async Task Handle_WhenUserExists_StoresHashNotPlainCode()
+    {
+        User user = new("admin@mahl.fi", Guid.NewGuid(), UserRole.SystemAdmin);
+        Mock<IUserRepository> users = new();
+        Mock<ISiteSettingsProvider> provider = new();
+
+        users.Setup(r => r.GetByEmailAsync("admin@mahl.fi")).ReturnsAsync(user);
+        provider
+            .Setup(p => p.GetEffectiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new EffectiveAuthSettings(15, 7, 3, 5, 5, true));
+
+        RequestLoginCodeHandler handler = new(
+            users.Object,
+            new Mock<IUnitOfWork>().Object,
+            new Mock<IEmailService>().Object,
+            provider.Object,
+            _jwtTokenService.Object,
+            Options.Create(new LoginCodeConfiguration { CodeLength = 6, AutoFillLoginCode = true }),
+            new Mock<ILogger<RequestLoginCodeHandler>>().Object);
+
+        Result<string?> result = await handler.Handle(
+            new RequestLoginCodeCommand("admin@mahl.fi"),
+            CancellationToken.None);
+
+        result.Data.Should().NotBeNull();
+        user.LoginCode.Should().Be($"hash:{result.Data}");
+        user.LoginCode.Should().NotBe(result.Data);
+    }
+
+    [Fact]
+    public async Task Handle_WhenUserDoesNotExist_ReturnsSuccessWithoutCodeAndDoesNotSendCode()
     {
         Mock<IUserRepository> users = new();
         Mock<IUnitOfWork> uow = new();
@@ -87,6 +127,7 @@ public class RequestLoginCodeHandlerTests
             uow.Object,
             email.Object,
             provider.Object,
+            _jwtTokenService.Object,
             Options.Create(loginCodeConfig),
             logger.Object);
 
@@ -94,8 +135,8 @@ public class RequestLoginCodeHandlerTests
             new RequestLoginCodeCommand("missing@mahl.fi"),
             CancellationToken.None);
 
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be(RequestLoginCodeHandler.EmailNotFoundMessage);
+        result.IsSuccess.Should().BeTrue();
+        result.Data.Should().BeNull();
         users.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
         uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         email.Verify(

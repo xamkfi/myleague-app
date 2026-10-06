@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { footballMatchService } from '../../api/football/footballMatchService';
 import { FootballMatchStatus, type FootballMatchDto } from '../../types/football/footballTypes';
@@ -19,6 +19,8 @@ import {
 import { getTeamPath } from '../../utils/sportRoutes';
 import { slugify } from '../../utils/slugUtils';
 
+const LIVE_RELOAD_DEBOUNCE_MS = 400;
+
 export default function FootballMatchPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -27,16 +29,23 @@ export default function FootballMatchPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<MatchTabType>('summary');
 
+  const latestRequestRef = useRef(0);
+
   const loadMatch = useCallback(async () => {
     if (!id) return;
+    const requestId = ++latestRequestRef.current;
     try {
       const response = await footballMatchService.getById(id);
+      if (requestId !== latestRequestRef.current) return;
       setMatch(response.data);
     } catch (err) {
+      if (requestId !== latestRequestRef.current) return;
       console.error(err);
       setError((err as Error).message);
     } finally {
-      setLoading(false);
+      if (requestId === latestRequestRef.current) {
+        setLoading(false);
+      }
     }
   }, [id]);
 
@@ -46,6 +55,14 @@ export default function FootballMatchPage() {
     if (!id || !isLive) return;
 
     let unsubscribeCallback: (() => void) | null = null;
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleReload = () => {
+      if (reloadTimer) clearTimeout(reloadTimer);
+      reloadTimer = setTimeout(() => {
+        reloadTimer = null;
+        void loadMatch();
+      }, LIVE_RELOAD_DEBOUNCE_MS);
+    };
 
     const setupMatchSignalR = async () => {
       try {
@@ -59,7 +76,7 @@ export default function FootballMatchPage() {
             case FOOTBALL_MATCH_NOTIFICATION_EVENTS.SUBSTITUTION_RECORDED:
             case FOOTBALL_MATCH_NOTIFICATION_EVENTS.MATCH_STARTED:
             case FOOTBALL_MATCH_NOTIFICATION_EVENTS.MATCH_COMPLETED:
-              loadMatch();
+              scheduleReload();
               break;
             default:
               break;
@@ -73,6 +90,7 @@ export default function FootballMatchPage() {
     void setupMatchSignalR();
 
     return () => {
+      if (reloadTimer) clearTimeout(reloadTimer);
       if (unsubscribeCallback) {
         unsubscribeCallback();
       }

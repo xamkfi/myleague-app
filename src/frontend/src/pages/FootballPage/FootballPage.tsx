@@ -210,28 +210,30 @@ function FootballPage() {
           }),
         );
 
-        const activeSeasons = seasons.some((season) => season.isActive)
-          ? seasons.filter((season) => season.isActive)
-          : seasons;
+        const hasActiveSeason = seasons.some((season) => season.isActive);
+        const upcomingFilter = {
+          page: 1,
+          pageSize: MAX_UPCOMING_MATCHES,
+          status: FootballMatchStatus.Scheduled,
+          startDate: new Date().toISOString(),
+          sortOrder: 'asc',
+          competitionType: 'Season' as const,
+          teamCategory: audience.teamCategory,
+        };
+        const upcomingRequests = hasActiveSeason
+          ? [footballMatchService.getAll({ ...upcomingFilter, activeOnly: true })]
+          : seasons.map((season) => footballMatchService.getAll({ ...upcomingFilter, competitionId: season.id }));
         const matchesTask = Promise.all(
-          activeSeasons.map(async (season) => {
-            try {
-              const result = await footballMatchService.getBySeason(season.id);
-              return result.data ?? [];
-            } catch (err) {
-              console.error(`Failed to fetch matches for season ${season.id}:`, err);
-              return [];
-            }
-          }),
+          upcomingRequests.map((request) =>
+            request
+              .then((result) => result.data ?? [])
+              .catch((err: unknown) => {
+                console.error('Failed to fetch upcoming matches:', err);
+                return [];
+              })),
         ).then((matchLists) => {
-          const now = Date.now();
           const upcoming = matchLists
             .flat()
-            .filter(
-              (match) =>
-                match.status === FootballMatchStatus.Scheduled &&
-                new Date(match.scheduledDateTime).getTime() >= now,
-            )
             .sort(
               (left, right) =>
                 new Date(left.scheduledDateTime).getTime()

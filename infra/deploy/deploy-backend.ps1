@@ -310,7 +310,7 @@ if (-not $SkipMigrations) {
     if ($shouldMigrate) {
         Write-Host ""
         Write-Host "  To run migrations, you need the database connection string." -ForegroundColor Yellow
-        Write-Host "  Format: Host=<fqdn>;Database=myleague;Username=<user>;Password=<pass>;SSL Mode=Require;Trust Server Certificate=true" -ForegroundColor Gray
+        Write-Host "  Format: Host=<fqdn>;Database=myleague;Username=<user>;Password=<pass>;SSL Mode=VerifyFull" -ForegroundColor Gray
         Write-Host ""
 
         $connString = Read-Host "  Enter PostgreSQL connection string"

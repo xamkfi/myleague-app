@@ -47,7 +47,7 @@ public class GetFloorballMatchesBySeasonHandler : IRequestHandler<GetFloorballMa
         {
             _logger.LogInformation("Retrieving floorball matches for season: {SeasonId}", request.CompetitionId);
             
-            IEnumerable<FloorballMatch> matches = await _matchRepository.GetByCompetitionIdAsync(request.CompetitionId);
+            IEnumerable<FloorballMatch> matches = await _matchRepository.GetByCompetitionIdReadOnlyAsync(request.CompetitionId, cancellationToken);
             if (!request.IncludeDrafts)
             {
                 matches = matches.Where(match => PublicCompetitionVisibility.IsPublicMatch(match.Competition)).ToList();

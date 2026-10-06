@@ -39,9 +39,12 @@ public class GetActiveFootballTournamentsHandler : IRequestHandler<GetActiveFoot
         {
             _logger.LogInformation("Retrieving active football tournaments");
 
-            IEnumerable<FootballTournament> tournaments = await _tournamentRepository.GetActiveAsync(request.TeamCategory, cancellationToken);
+            List<FootballTournament> tournaments = await _tournamentRepository.GetActiveAsync(request.TeamCategory, cancellationToken);
+            IReadOnlyDictionary<Guid, int> matchCounts = await _tournamentRepository.GetMatchCountsAsync(
+                tournaments.Select(t => t.Id).ToList(),
+                cancellationToken);
             List<FootballTournamentDto> tournamentDtos = tournaments
-                .Select(t => FootballTournamentMapper.ToDto(t))
+                .Select(t => FootballTournamentMapper.ToDto(t, matchCounts.GetValueOrDefault(t.Id)))
                 .ToList();
 
             _logger.LogInformation("Successfully retrieved {TournamentCount} active football tournaments", tournamentDtos.Count);

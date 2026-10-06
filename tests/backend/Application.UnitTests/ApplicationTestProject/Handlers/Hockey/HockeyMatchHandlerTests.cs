@@ -1227,7 +1227,7 @@ public class HockeyMatchHandlerTests
             .Setup(m => m.Send(It.IsAny<RecalculateHockeyMatchStatisticsCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
         mediator
-            .Setup(m => m.Send(It.IsAny<RecalculateHockeyCompetitionStatisticsCommand>(), It.IsAny<CancellationToken>()))
+            .Setup(m => m.Send(It.IsAny<RecalculateHockeyCompetitionScopesCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
         MarkHockeyMatchFinishedHandler handler = new(
@@ -1250,9 +1250,10 @@ public class HockeyMatchHandlerTests
             Times.Once);
         mediator.Verify(
             m => m.Send(
-                It.Is<RecalculateHockeyCompetitionStatisticsCommand>(command =>
+                It.Is<RecalculateHockeyCompetitionScopesCommand>(command =>
                     command.CompetitionId == season.Id
-                    && command.Scope == HockeyStatisticsScope.Competition),
+                    && command.Scopes.Count == 1
+                    && command.Scopes[0].Scope == HockeyStatisticsScope.Competition),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }

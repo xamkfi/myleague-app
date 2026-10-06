@@ -29,7 +29,7 @@ public class GetFootballMatchesBySeasonHandler
     {
         try
         {
-            IEnumerable<FootballMatch> matches = await _matchRepository.GetByCompetitionIdAsync(request.CompetitionId);
+            IEnumerable<FootballMatch> matches = await _matchRepository.GetByCompetitionIdReadOnlyAsync(request.CompetitionId, cancellationToken);
             if (!request.IncludeDrafts)
             {
                 matches = matches.Where(match => PublicCompetitionVisibility.IsPublicMatch(match.Competition)).ToList();

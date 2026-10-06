@@ -55,8 +55,21 @@ public interface IFloorballMatchRepository
         FloorballCompetitionType? competitionType = null,
         Domain.Enums.Common.TeamCategory? teamCategory = null,
         bool excludeDraftCompetitions = false,
+        bool activeCompetitionsOnly = false,
+        IReadOnlyCollection<Guid>? teamIds = null,
         CancellationToken cancellationToken = default);
-        
+
+    /// <summary>
+    /// Counts matches per status with the same filters as the admin match list.
+    /// Statuses without matches are absent from the result.
+    /// </summary>
+    Task<IReadOnlyDictionary<FloorballMatchStatus, int>> GetStatusCountsAsync(
+        Guid? competitionId,
+        string? searchQuery,
+        FloorballCompetitionType? competitionType,
+        bool excludeDraftCompetitions,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Gets the total count of floorball matches with filtering
     /// </summary>
@@ -83,6 +96,11 @@ public interface IFloorballMatchRepository
     Task<IEnumerable<FloorballMatch>> GetByCompetitionIdAsync(Guid competitionId);
 
     /// <summary>
+    /// Same shape as <see cref="GetByCompetitionIdAsync"/> but does not track entities. Use for reads only.
+    /// </summary>
+    Task<IReadOnlyList<FloorballMatch>> GetByCompetitionIdReadOnlyAsync(Guid competitionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets matches assigned to a specific tournament group, optionally filtered by status.
     /// </summary>
     /// <param name="tournamentGroupId">The tournament group ID</param>
@@ -100,6 +118,17 @@ public interface IFloorballMatchRepository
     /// <param name="teamId">The team ID</param>
     /// <returns>A collection of matches involving the team</returns>
     Task<IEnumerable<FloorballMatch>> GetByTeamIdAsync(Guid teamId);
+
+    /// <summary>
+    /// Latest completed matches of <paramref name="teamIds"/> where the player was in the lineup,
+    /// in goal, or recorded an event. Filtered and limited in SQL; only that page loads events.
+    /// Does not track entities.
+    /// </summary>
+    Task<IReadOnlyList<FloorballMatch>> GetRecentCompletedForPlayerAsync(
+        Guid playerId,
+        IReadOnlyCollection<Guid> teamIds,
+        int limit,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns true when the team appears as home or away in any match.

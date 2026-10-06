@@ -8,7 +8,6 @@ namespace Application.Features.Common.Organization.Persons.DTOs
         Guid? Id,
         string FirstName,
         string LastName,
-        DateTime? BirthDate,
         string FullName,
         bool? IsRegistered);
 }

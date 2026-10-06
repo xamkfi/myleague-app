@@ -41,7 +41,9 @@ public class GetHockeyPlayerByIdHandler : IRequestHandler<GetHockeyPlayerByIdQue
             }
 
             Person? person = await _personRepository.GetByIdAsync(player.PersonId);
-            return Result<HockeyPlayerDto>.Success(HockeyPlayerMapper.ToDto(player, person));
+            HockeyPlayerDto dto = HockeyPlayerMapper.ToDto(player, person);
+            return Result<HockeyPlayerDto>.Success(
+                request.IncludePrivateData ? dto : dto with { LicenseNumber = null });
         }
         catch (Exception ex)
         {

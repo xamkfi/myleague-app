@@ -7,4 +7,4 @@ namespace Application.Features.Hockey.Players.Queries;
 /// <summary>
 /// Query to retrieve a hockey player by id.
 /// </summary>
-public record GetHockeyPlayerByIdQuery(Guid Id) : IRequest<Result<HockeyPlayerDto>>;
+public record GetHockeyPlayerByIdQuery(Guid Id, bool IncludePrivateData = false) : IRequest<Result<HockeyPlayerDto>>;

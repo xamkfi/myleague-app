@@ -64,6 +64,29 @@ public record GetFloorballMatchesRequest : PagedRequestBase
     /// When true, a system administrator also receives matches from draft competitions.
     /// </summary>
     public bool IncludeDrafts { get; init; }
+
+    /// <summary>
+    /// When true, only matches of active competitions are returned.
+    /// </summary>
+    public bool ActiveOnly { get; init; }
+}
+
+/// <summary>
+/// Filters for counting floorball matches per status.
+/// </summary>
+public record GetFloorballMatchStatusCountsRequest
+{
+    /// <summary>Optional competition (season or tournament) filter.</summary>
+    public Guid? CompetitionId { get; init; }
+
+    /// <summary>Optional team-name search (case-insensitive, partial match).</summary>
+    public string? SearchQuery { get; init; }
+
+    /// <summary>Optional competition type filter (Season or Tournament).</summary>
+    public FloorballCompetitionType? CompetitionType { get; init; }
+
+    /// <summary>When true, a system administrator also counts matches from draft competitions.</summary>
+    public bool IncludeDrafts { get; init; }
 }
 
 /// <summary>

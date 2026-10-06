@@ -68,7 +68,6 @@ public class GetPersonWithTeamsQueryHandler : IRequestHandler<GetPersonWithTeams
                 return Result<PersonWithTeamsDto>.Success(new PersonWithTeamsDto(
                     GetPersonIdAsInt(person.Id),
                     person.FullName,
-                    CalculateAge(person.BirthDate) ?? 0,
                     new List<PersonTeamDto>(),
                     0
                 ));
@@ -113,7 +112,6 @@ public class GetPersonWithTeamsQueryHandler : IRequestHandler<GetPersonWithTeams
             PersonWithTeamsDto result = new PersonWithTeamsDto(
                 GetPersonIdAsInt(person.Id),
                 person.FullName,
-                CalculateAge(person.BirthDate) ?? 0,
                 personTeams,
                 totalMatchesPlayed
             );
@@ -125,17 +123,6 @@ public class GetPersonWithTeamsQueryHandler : IRequestHandler<GetPersonWithTeams
             _logger.LogError(ex, "Error occurred while getting person with teams for PersonId: {PersonId}", request.PersonId);
             return Result<PersonWithTeamsDto>.Failure($"Error retrieving person with teams: {ex.Message}");
         }
-    }
-
-    private static int? CalculateAge(DateTime? birthDate)
-    {
-        if (!birthDate.HasValue)
-            return null;
-            
-        DateTime today = DateTime.UtcNow;
-        int age = today.Year - birthDate.Value.Year;
-        if (birthDate.Value.Date > today.AddYears(-age)) age--;
-        return age;
     }
 
     private static int GetPersonIdAsInt(Guid personId)

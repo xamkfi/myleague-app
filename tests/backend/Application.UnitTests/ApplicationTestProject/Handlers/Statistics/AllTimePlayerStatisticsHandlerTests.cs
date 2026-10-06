@@ -1,4 +1,4 @@
-using Application.Common;
+﻿using Application.Common;
 using Application.Features.Common.Shared.DTOs;
 using Application.Features.Floorball.Statistics.DTOs;
 using Application.Features.Floorball.Statistics.Handlers;
@@ -29,36 +29,47 @@ namespace ApplicationTestProject.Handlers.Statistics;
 public class AllTimePlayerStatisticsHandlerTests
 {
     [Fact]
-    public async Task Floorball_Handle_SumsTwoSeasons_ExcludesLoanPlayer_OrdersByGoals()
+    public async Task Floorball_Handle_MapsRepositoryPage_AndPassesRequest()
     {
         Person aino = new("Aino", "Aalto");
         Person bea = new("Bea", "Berg");
+        Guid teamId = Guid.NewGuid();
         Guid ainoPlayerId = Guid.NewGuid();
         Guid beaPlayerId = Guid.NewGuid();
-        Guid loanPlayerId = Guid.NewGuid();
-
-        List<AllTimePlayerStatRow> rows =
-        [
-            Row(ainoPlayerId, aino.Id, "Old Club", new DateTime(2024, 9, 1), games: 10, goals: 5, assists: 3, points: 8, penalties: 2),
-            Row(ainoPlayerId, aino.Id, "New Club", new DateTime(2025, 9, 1), games: 8, goals: 4, assists: 2, points: 6, penalties: 4),
-            Row(beaPlayerId, bea.Id, "Solo", new DateTime(2025, 9, 1), games: 6, goals: 2, assists: 20, points: 22, penalties: 1),
-            Row(loanPlayerId, Guid.NewGuid(), "Loan", new DateTime(2025, 9, 1), games: 9, goals: 30, assists: 0, points: 30, penalties: 0, loan: true),
-            Row(Guid.NewGuid(), Guid.NewGuid(), "Bench", new DateTime(2025, 9, 1), games: 0, goals: 0, assists: 0, points: 0, penalties: 12)
-        ];
+        AllTimePlayerPageRequest? captured = null;
+        Mock<IFloorballStatisticsRepository> repository = new();
+        repository
+            .Setup(repo => repo.GetAllTimePlayerPageAsync(
+                TeamCategory.Women,
+                AllTimeCompetitionFilter.Tournament,
+                It.IsAny<AllTimePlayerPageRequest>(),
+                It.IsAny<CancellationToken>()))
+            .Callback((TeamCategory _, AllTimeCompetitionFilter _, AllTimePlayerPageRequest pageRequest, CancellationToken _) => captured = pageRequest)
+            .ReturnsAsync(Page(
+                26,
+                Totals(26, ainoPlayerId, aino.Id, "New Club", games: 18, goals: 9, assists: 5, points: 14, penalties: 6),
+                Totals(27, beaPlayerId, bea.Id, "Solo", games: 6, goals: 2, assists: 20, points: 22, penalties: 1)));
 
         GetFloorballAllTimePlayerStatisticsHandler handler = new(
-            FloorballRepository(rows),
+            repository.Object,
             Persons(aino, bea),
             Mock.Of<ILogger<GetFloorballAllTimePlayerStatisticsHandler>>());
 
         Result<PagedResult<FloorballAllTimePlayerStatisticsDto>> result = await handler.Handle(
-            new GetFloorballAllTimePlayerStatisticsQuery(Sort: AllTimeStatSort.Goals),
+            new GetFloorballAllTimePlayerStatisticsQuery(
+                Page: 2,
+                TeamCategory: TeamCategory.Women,
+                CompetitionType: AllTimeCompetitionFilter.Tournament,
+                Sort: AllTimeStatSort.Goals,
+                Direction: AllTimeSortDirection.Asc,
+                TeamId: teamId),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Data.Should().NotBeNull();
-        List<FloorballAllTimePlayerStatisticsDto> players = result.Data!.Items.ToList();
-        players.Should().HaveCount(2);
+        captured.Should().Be(new AllTimePlayerPageRequest(2, 25, AllTimeStatSort.Goals, AllTimeSortDirection.Asc, teamId, null));
+        result.Data!.TotalCount.Should().Be(26);
+        List<FloorballAllTimePlayerStatisticsDto> players = result.Data.Items.ToList();
+        players.Select(player => player.Rank).Should().Equal(26, 27);
         players[0].PlayerId.Should().Be(ainoPlayerId);
         players[0].PlayerName.Should().Be("Aino Aalto");
         players[0].TeamName.Should().Be("New Club");
@@ -67,31 +78,26 @@ public class AllTimePlayerStatisticsHandlerTests
         players[0].Assists.Should().Be(5);
         players[0].Points.Should().Be(14);
         players[0].PenaltyMinutes.Should().Be(6);
-        players[1].PlayerId.Should().Be(beaPlayerId);
-        players[1].Goals.Should().Be(2);
-        players.Should().NotContain(player => player.PlayerId == loanPlayerId);
+        players[1].PlayerName.Should().Be("Bea Berg");
     }
 
     [Fact]
-    public async Task Football_Handle_SumsCardsAcrossSeasons_OrdersByYellowCards()
+    public async Task Football_Handle_MapsCards()
     {
         Person aino = new("Aino", "Aalto");
-        Person bea = new("Bea", "Berg");
         Guid ainoPlayerId = Guid.NewGuid();
-        Guid beaPlayerId = Guid.NewGuid();
-        Guid loanPlayerId = Guid.NewGuid();
-
-        List<AllTimePlayerStatRow> rows =
-        [
-            Row(ainoPlayerId, aino.Id, "Old Club", new DateTime(2024, 4, 1), games: 5, goals: 3, assists: 1, points: 4, yellow: 2, red: 0),
-            Row(ainoPlayerId, aino.Id, "New Club", new DateTime(2025, 4, 1), games: 5, goals: 1, assists: 1, points: 2, yellow: 1, red: 1),
-            Row(beaPlayerId, bea.Id, "Solo", new DateTime(2025, 4, 1), games: 8, goals: 10, assists: 10, points: 20, yellow: 1, red: 0),
-            Row(loanPlayerId, Guid.NewGuid(), "Loan", new DateTime(2025, 4, 1), games: 4, goals: 1, assists: 0, points: 1, yellow: 8, red: 2, loan: true)
-        ];
+        Mock<IFootballStatisticsRepository> repository = new();
+        repository
+            .Setup(repo => repo.GetAllTimePlayerPageAsync(
+                It.IsAny<TeamCategory>(),
+                It.IsAny<AllTimeCompetitionFilter>(),
+                It.IsAny<AllTimePlayerPageRequest>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Page(1, Totals(1, ainoPlayerId, aino.Id, "New Club", games: 10, goals: 4, assists: 2, points: 6, yellow: 3, red: 1)));
 
         GetFootballAllTimePlayerStatisticsHandler handler = new(
-            FootballRepository(rows),
-            Persons(aino, bea),
+            repository.Object,
+            Persons(aino),
             Mock.Of<ILogger<GetFootballAllTimePlayerStatisticsHandler>>());
 
         Result<PagedResult<FootballAllTimePlayerStatisticsDto>> result = await handler.Handle(
@@ -99,40 +105,33 @@ public class AllTimePlayerStatisticsHandlerTests
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        List<FootballAllTimePlayerStatisticsDto> players = result.Data!.Items.ToList();
-        players.Should().HaveCount(2);
-        players[0].PlayerId.Should().Be(ainoPlayerId);
-        players[0].TeamName.Should().Be("New Club");
-        players[0].GamesPlayed.Should().Be(10);
-        players[0].Goals.Should().Be(4);
-        players[0].Assists.Should().Be(2);
-        players[0].Points.Should().Be(6);
-        players[0].YellowCards.Should().Be(3);
-        players[0].RedCards.Should().Be(1);
-        players[1].YellowCards.Should().Be(1);
-        players.Should().NotContain(player => player.PlayerId == loanPlayerId);
+        FootballAllTimePlayerStatisticsDto player = result.Data!.Items.Single();
+        player.PlayerId.Should().Be(ainoPlayerId);
+        player.PlayerName.Should().Be("Aino Aalto");
+        player.TeamName.Should().Be("New Club");
+        player.GamesPlayed.Should().Be(10);
+        player.Points.Should().Be(6);
+        player.YellowCards.Should().Be(3);
+        player.RedCards.Should().Be(1);
     }
 
     [Fact]
-    public async Task Hockey_Handle_SumsTwoSeasons_ExcludesLoanPlayer_OrdersByPenalties()
+    public async Task Hockey_Handle_MapsPenalties()
     {
         Person aino = new("Aino", "Aalto");
-        Person bea = new("Bea", "Berg");
         Guid ainoPlayerId = Guid.NewGuid();
-        Guid beaPlayerId = Guid.NewGuid();
-        Guid loanPlayerId = Guid.NewGuid();
-
-        List<AllTimePlayerStatRow> rows =
-        [
-            Row(ainoPlayerId, aino.Id, "Old Club", new DateTime(2024, 9, 1), games: 10, goals: 2, assists: 2, points: 4, penalties: 6),
-            Row(ainoPlayerId, aino.Id, "New Club", new DateTime(2025, 9, 1), games: 12, goals: 3, assists: 1, points: 4, penalties: 8),
-            Row(beaPlayerId, bea.Id, "Solo", new DateTime(2025, 9, 1), games: 20, goals: 15, assists: 15, points: 30, penalties: 4),
-            Row(loanPlayerId, Guid.NewGuid(), "Loan", new DateTime(2025, 9, 1), games: 7, goals: 1, assists: 0, points: 1, penalties: 40, loan: true)
-        ];
+        Mock<IHockeyStatisticsRepository> repository = new();
+        repository
+            .Setup(repo => repo.GetAllTimePlayerPageAsync(
+                It.IsAny<TeamCategory>(),
+                It.IsAny<AllTimeCompetitionFilter>(),
+                It.IsAny<AllTimePlayerPageRequest>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Page(1, Totals(1, ainoPlayerId, aino.Id, "New Club", games: 22, goals: 5, assists: 3, points: 8, penalties: 14)));
 
         GetHockeyAllTimePlayerStatisticsHandler handler = new(
-            HockeyRepository(rows),
-            Persons(aino, bea),
+            repository.Object,
+            Persons(aino),
             Mock.Of<ILogger<GetHockeyAllTimePlayerStatisticsHandler>>());
 
         Result<PagedResult<HockeyAllTimePlayerStatisticsDto>> result = await handler.Handle(
@@ -140,38 +139,35 @@ public class AllTimePlayerStatisticsHandlerTests
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        List<HockeyAllTimePlayerStatisticsDto> players = result.Data!.Items.ToList();
-        players.Should().HaveCount(2);
-        players[0].PlayerId.Should().Be(ainoPlayerId);
-        players[0].PlayerName.Should().Be("Aino Aalto");
-        players[0].TeamName.Should().Be("New Club");
-        players[0].GamesPlayed.Should().Be(22);
-        players[0].Goals.Should().Be(5);
-        players[0].Assists.Should().Be(3);
-        players[0].Points.Should().Be(8);
-        players[0].PenaltyMinutes.Should().Be(14);
-        players[1].PenaltyMinutes.Should().Be(4);
-        players.Should().NotContain(player => player.PlayerId == loanPlayerId);
+        HockeyAllTimePlayerStatisticsDto player = result.Data!.Items.Single();
+        player.PlayerName.Should().Be("Aino Aalto");
+        player.GamesPlayed.Should().Be(22);
+        player.Goals.Should().Be(5);
+        player.Assists.Should().Be(3);
+        player.Points.Should().Be(8);
+        player.PenaltyMinutes.Should().Be(14);
     }
 
     [Fact]
-    public async Task Floorball_Handle_Search_KeepsRankFromFullList()
+    public async Task Floorball_Handle_Search_PassesMatchingPersonIds_KeepsRepositoryRank()
     {
         Person aino = new("Aino", "Aalto");
-        Person bea = new("Bea", "Berg");
         Person cecilia = new("Cecilia", "Corn");
         Guid ceciliaPlayerId = Guid.NewGuid();
-
-        List<AllTimePlayerStatRow> rows =
-        [
-            Row(Guid.NewGuid(), aino.Id, "A", new DateTime(2025, 9, 1), games: 10, goals: 10, assists: 10, points: 20),
-            Row(Guid.NewGuid(), bea.Id, "B", new DateTime(2025, 9, 1), games: 10, goals: 5, assists: 5, points: 10),
-            Row(ceciliaPlayerId, cecilia.Id, "C", new DateTime(2025, 9, 1), games: 10, goals: 1, assists: 1, points: 2)
-        ];
+        AllTimePlayerPageRequest? captured = null;
+        Mock<IFloorballStatisticsRepository> repository = new();
+        repository
+            .Setup(repo => repo.GetAllTimePlayerPageAsync(
+                It.IsAny<TeamCategory>(),
+                It.IsAny<AllTimeCompetitionFilter>(),
+                It.IsAny<AllTimePlayerPageRequest>(),
+                It.IsAny<CancellationToken>()))
+            .Callback((TeamCategory _, AllTimeCompetitionFilter _, AllTimePlayerPageRequest pageRequest, CancellationToken _) => captured = pageRequest)
+            .ReturnsAsync(Page(1, Totals(3, ceciliaPlayerId, cecilia.Id, "C", games: 10, goals: 1, assists: 1, points: 2)));
 
         GetFloorballAllTimePlayerStatisticsHandler handler = new(
-            FloorballRepository(rows),
-            Persons(aino, bea, cecilia),
+            repository.Object,
+            Persons(aino, cecilia),
             Mock.Of<ILogger<GetFloorballAllTimePlayerStatisticsHandler>>());
 
         Result<PagedResult<FloorballAllTimePlayerStatisticsDto>> result = await handler.Handle(
@@ -179,46 +175,11 @@ public class AllTimePlayerStatisticsHandlerTests
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        List<FloorballAllTimePlayerStatisticsDto> players = result.Data!.Items.ToList();
-        players.Should().ContainSingle();
-        players[0].PlayerId.Should().Be(ceciliaPlayerId);
-        players[0].Rank.Should().Be(3);
+        captured!.PersonIds.Should().Equal(cecilia.Id);
+        FloorballAllTimePlayerStatisticsDto player = result.Data!.Items.Single();
+        player.PlayerId.Should().Be(ceciliaPlayerId);
+        player.Rank.Should().Be(3);
         result.Data.TotalCount.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task Floorball_Handle_TeamFilter_RanksWithinTeamOnly()
-    {
-        Person aino = new("Aino", "Aalto");
-        Person bea = new("Bea", "Berg");
-        Person cecilia = new("Cecilia", "Corn");
-        Guid teamId = Guid.NewGuid();
-        Guid otherTeamId = Guid.NewGuid();
-        Guid beaPlayerId = Guid.NewGuid();
-        Guid ceciliaPlayerId = Guid.NewGuid();
-
-        List<AllTimePlayerStatRow> rows =
-        [
-            Row(Guid.NewGuid(), aino.Id, "Other", new DateTime(2025, 9, 1), games: 10, goals: 30, assists: 0, points: 30, teamId: otherTeamId),
-            Row(beaPlayerId, bea.Id, "Club", new DateTime(2024, 9, 1), games: 10, goals: 4, assists: 4, points: 8, teamId: teamId),
-            Row(beaPlayerId, bea.Id, "Club", new DateTime(2025, 9, 1), games: 10, goals: 2, assists: 2, points: 4, teamId: teamId),
-            Row(ceciliaPlayerId, cecilia.Id, "Club", new DateTime(2025, 9, 1), games: 10, goals: 5, assists: 5, points: 10, teamId: teamId)
-        ];
-
-        GetFloorballAllTimePlayerStatisticsHandler handler = new(
-            FloorballRepository(rows),
-            Persons(aino, bea, cecilia),
-            Mock.Of<ILogger<GetFloorballAllTimePlayerStatisticsHandler>>());
-
-        Result<PagedResult<FloorballAllTimePlayerStatisticsDto>> result = await handler.Handle(
-            new GetFloorballAllTimePlayerStatisticsQuery(TeamId: teamId),
-            CancellationToken.None);
-
-        result.IsSuccess.Should().BeTrue();
-        List<FloorballAllTimePlayerStatisticsDto> players = result.Data!.Items.ToList();
-        players.Select(player => player.PlayerId).Should().Equal(beaPlayerId, ceciliaPlayerId);
-        players.Select(player => player.Rank).Should().Equal(1, 2);
-        players[0].Points.Should().Be(12);
     }
 
     [Fact]
@@ -276,30 +237,6 @@ public class AllTimePlayerStatisticsHandlerTests
         result.ShouldHaveValidationErrorFor(query => query.Sort);
     }
 
-    private static IFloorballStatisticsRepository FloorballRepository(List<AllTimePlayerStatRow> rows)
-    {
-        Mock<IFloorballStatisticsRepository> repository = new();
-        repository
-            .Setup(repo => repo.GetAllTimePlayerStatRowsAsync(
-                It.IsAny<TeamCategory>(),
-                It.IsAny<AllTimeCompetitionFilter>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(rows);
-        return repository.Object;
-    }
-
-    private static IFootballStatisticsRepository FootballRepository(List<AllTimePlayerStatRow> rows)
-    {
-        Mock<IFootballStatisticsRepository> repository = new();
-        repository
-            .Setup(repo => repo.GetAllTimePlayerStatRowsAsync(
-                It.IsAny<TeamCategory>(),
-                It.IsAny<AllTimeCompetitionFilter>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(rows);
-        return repository.Object;
-    }
-
     private static IHockeyStatisticsRepository HockeyRepository(List<AllTimePlayerStatRow> rows)
     {
         Mock<IHockeyStatisticsRepository> repository = new();
@@ -312,12 +249,35 @@ public class AllTimePlayerStatisticsHandlerTests
         return repository.Object;
     }
 
+    private static PagedResult<AllTimePlayerTotals> Page(int totalCount, params AllTimePlayerTotals[] items) =>
+        PagedResult.Create(items.ToList(), totalCount, 1, 25);
+
+    private static AllTimePlayerTotals Totals(
+        int rank,
+        Guid playerId,
+        Guid personId,
+        string team,
+        int games,
+        int goals,
+        int assists,
+        int points,
+        int penalties = 0,
+        int yellow = 0,
+        int red = 0) =>
+        new(rank, playerId, personId, team, games, goals, assists, points, penalties, yellow, red);
+
     private static IPersonRepository Persons(params Person[] people)
     {
         Mock<IPersonRepository> repository = new();
         repository
             .Setup(repo => repo.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync((IEnumerable<Guid> ids) => people.Where(person => ids.Contains(person.Id)).ToList());
+        repository
+            .Setup(repo => repo.GetIdsByNameContainsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string term, CancellationToken _) => people
+                .Where(person => person.FullName.Contains(term.Trim(), StringComparison.OrdinalIgnoreCase))
+                .Select(person => person.Id)
+                .ToList());
         return repository.Object;
     }
 

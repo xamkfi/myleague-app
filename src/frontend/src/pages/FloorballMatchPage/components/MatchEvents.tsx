@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   FloorballMatchDto,
@@ -7,7 +7,6 @@ import type {
 import { formatEventTimeMmSs, formatMatchEventTime } from '../../../utils/matchEventFormat';
 import { getFloorballPeriodKind, type FloorballPeriodKind } from '../../../utils/floorballPeriod';
 import { getFloorballGoalTypeInfo } from '../../../utils/floorballGoalType';
-import { floorballTeamService } from '../../../api/floorball/floorballTeamService';
 import { getPlayerPath } from '../../../utils/sportRoutes';
 import MatchEventTimeline, {
   type TimelineEvent,
@@ -16,9 +15,11 @@ import MatchEventTimeline, {
 
 interface MatchEventsProps {
   match: FloorballMatchDto;
+  homeRoster: FloorballTeamPlayer[];
+  awayRoster: FloorballTeamPlayer[];
 }
 
-export default function MatchEvents({ match }: MatchEventsProps) {
+export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEventsProps) {
   const { t } = useTranslation();
   const numberOfPeriods: number = match.matchRules?.numberOfPeriods ?? 2;
 
@@ -39,39 +40,6 @@ export default function MatchEvents({ match }: MatchEventsProps) {
     if (kind === 'overtime') return `${t('matchPage.events.overtimeShort')} - ${clock}`;
     return formatMatchEventTime(period, timeInSeconds);
   };
-  const [homeRoster, setHomeRoster] = useState<FloorballTeamPlayer[]>([]);
-  const [awayRoster, setAwayRoster] = useState<FloorballTeamPlayer[]>([]);
-
-  // Hae molempien joukkueiden rosterit, jotta saamme pelaajan numeron tapahtumariville.
-  // Käytetään samaa palvelua kuin MatchLineups-komponentti.
-  useEffect(() => {
-    let cancelled: boolean = false;
-    async function fetchRosters() {
-      try {
-        // Skip roster lookups for placeholder fixtures — there are no events to enrich either.
-        if (!match.homeTeamId || !match.awayTeamId) {
-          setHomeRoster([]);
-          setAwayRoster([]);
-          return;
-        }
-
-        const [homeResponse, awayResponse] = await Promise.all([
-          floorballTeamService.getById(match.homeTeamId, match.competitionId),
-          floorballTeamService.getById(match.awayTeamId, match.competitionId),
-        ]);
-        if (cancelled) return;
-        setHomeRoster(homeResponse.roster ?? []);
-        setAwayRoster(awayResponse.roster ?? []);
-      } catch (err) {
-        console.error('Failed to load team rosters for match events:', err);
-      }
-    }
-    fetchRosters();
-    return () => {
-      cancelled = true;
-    };
-  }, [match.homeTeamId, match.awayTeamId, match.competitionId]);
-
   // Yksittäinen lookup-taulu kaikille pelaajille → paitanumero. Sama playerId voi olla
   // korkeintaan yhdessä rosterissa, joten yhdistäminen on turvallista.
   const jerseyByPlayerId: Map<string, number> = useMemo(() => {

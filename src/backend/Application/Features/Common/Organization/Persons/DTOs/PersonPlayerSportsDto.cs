@@ -1,12 +1,11 @@
 namespace Application.Features.Common.Organization.Persons.DTOs;
 
 /// <summary>
-/// Public player-sports view of a person. Does not include contact or address data.
+/// Public player-sports view of a person. Does not include birth date, contact, or address data.
 /// </summary>
 public record PersonPlayerSportsDto(
     Guid PersonId,
     string FullName,
-    DateTime? BirthDate,
     IReadOnlyList<PersonSportPlayerDto> Sports,
     IReadOnlyList<PersonPlayerLicenceDto> Licences);
 

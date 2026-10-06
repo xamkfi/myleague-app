@@ -166,6 +166,11 @@ public class ClubsController : BaseApiController
                 return Ok(ApiResponse<string>.SuccessResponse(result.Data.ToString(), "Image uploaded successfully"));
             }
 
+            if (result.ErrorKind == ResultErrorKind.Validation)
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse("Invalid image file", result.GetAllErrors().ToList()));
+            }
+
             string errorMessage = result.Error ?? result.GetErrorsString();
             _logger.LogError("Club logo upload failed: {Error}", errorMessage);
             return StatusCode(500, ApiResponse<string>.ErrorResponse(errorMessage));

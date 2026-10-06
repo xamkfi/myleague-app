@@ -29,6 +29,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         public async Task<FootballCompetition?> GetByIdAsync(Guid? id)
         {
             return await _entities
+                .AsSplitQuery()
                 .Include(s => s.Teams)
                 .Include(s => s.Matches)
                     .ThenInclude(m => m.HomeTeam)
@@ -56,6 +57,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
         public async Task<FootballCompetition?> GetByNameAsync(string name)
         {
             return await _entities
+                .AsSplitQuery()
                 .Include(s => s.Teams)
                 .Include(s => s.Matches)
                     .ThenInclude(m => m.HomeTeam)

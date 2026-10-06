@@ -54,7 +54,8 @@ namespace WebAPI.Controllers.Football
                 request.Position,
                 request.TeamId,
                 request.SearchTerm,
-                request.HasActiveLicence));
+                request.HasActiveLicence,
+                IncludePrivateData));
 
             return HandlePaginatedResult(result, "Football players retrieved successfully", "Failed to retrieve football players");
         }
@@ -76,7 +77,8 @@ namespace WebAPI.Controllers.Football
                 request.Page,
                 request.PageSize,
                 request.Position,
-                request.TeamId));
+                request.TeamId,
+                IncludePrivateData));
 
             return HandlePaginatedResult(result, "Active football players retrieved successfully", "Failed to retrieve active football players");
         }
@@ -94,7 +96,7 @@ namespace WebAPI.Controllers.Football
         {
             _logger.LogInformation("Getting football player with ID: {id}", id);
 
-            Result<FootballPlayerDto> result = await _mediator.Send(new GetFootballPlayerByIdQuery(id));
+            Result<FootballPlayerDto> result = await _mediator.Send(new GetFootballPlayerByIdQuery(id, IncludePrivateData));
 
             return HandleResult(result, "Football player retrieved successfully", "Failed to retrieve football player");
         }

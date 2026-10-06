@@ -76,31 +76,41 @@ export default function FootballLeaguePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch season statistics data
+  const needsSeasonSummary = activeTab === 'summary' || activeTab === 'statistics';
+  const [seasonSummaryLoadedFor, setSeasonSummaryLoadedFor] = useState<string | null>(null);
+
   useEffect(() => {
+    if (!id || !needsSeasonSummary || seasonSummaryLoadedFor === id) return;
+
+    let cancelled = false;
     const fetchSeasonData = async () => {
-      if (!id) return;
-      
       try {
         setLoading(true);
         setError(null);
         const data = await footballStatisticsService.getSeasonStatistics(id);
+        if (cancelled) return;
         setSeasonSummary(data);
+        setSeasonSummaryLoadedFor(id);
       } catch (err) {
+        if (cancelled) return;
         console.error('Failed to fetch season statistics:', err);
         if (isNotFoundError(err)) {
           setSeasonSummary(null);
           setError(null);
+          setSeasonSummaryLoadedFor(id);
         } else {
           setError(unwrapApiErrorMessage(err, t('leaguePage.errors.loadLeagueData')));
         }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchSeasonData();
-  }, [id, t]);
+    return () => {
+      cancelled = true;
+    };
+  }, [id, needsSeasonSummary, seasonSummaryLoadedFor, t]);
 
   useEffect(() => {
     if (!id) {

@@ -104,6 +104,160 @@ public class GetHockeyMatchesByTeamHandler
 }
 
 /// <summary>
+/// Handles loading upcoming scheduled matches for several teams in one query.
+/// </summary>
+public class GetHockeyUpcomingMatchesForTeamsHandler
+    : IRequestHandler<GetHockeyUpcomingMatchesForTeamsQuery, Result<IEnumerable<HockeyMatchDto>>>
+{
+    private readonly IHockeyMatchRepository _matchRepository;
+    private readonly ILogger<GetHockeyUpcomingMatchesForTeamsHandler> _logger;
+
+    public GetHockeyUpcomingMatchesForTeamsHandler(
+        IHockeyMatchRepository matchRepository,
+        ILogger<GetHockeyUpcomingMatchesForTeamsHandler> logger)
+    {
+        _matchRepository = matchRepository;
+        _logger = logger;
+    }
+
+    public async Task<Result<IEnumerable<HockeyMatchDto>>> Handle(
+        GetHockeyUpcomingMatchesForTeamsQuery request,
+        CancellationToken cancellationToken)
+    {
+        List<Guid> teamIds = request.TeamIds.Where(id => id != Guid.Empty).Distinct().ToList();
+        if (teamIds.Count == 0)
+        {
+            return Result<IEnumerable<HockeyMatchDto>>.Success(Array.Empty<HockeyMatchDto>());
+        }
+
+        try
+        {
+            IReadOnlyList<HockeyMatch> matches =
+                await _matchRepository.GetScheduledForTeamsAsync(teamIds, request.From, cancellationToken);
+            IEnumerable<HockeyMatch> visibleMatches = matches.Where(match =>
+                match.Competition is null || PublicCompetitionVisibility.IsPublic(match.Competition));
+            return Result<IEnumerable<HockeyMatchDto>>.Success(
+                visibleMatches.Select(HockeyMatchMapper.ToDto).ToList());
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Failed GetHockeyUpcomingMatchesForTeams for {TeamCount} teams", teamIds.Count);
+            return Result<IEnumerable<HockeyMatchDto>>.Failure(
+                "An error occurred while retrieving hockey matches.",
+                ex.Flatten());
+        }
+    }
+}
+
+/// <summary>
+/// Handles listing the latest matches a career player was dressed for.
+/// </summary>
+public class GetHockeyPlayerRecentMatchesHandler
+    : IRequestHandler<GetHockeyPlayerRecentMatchesQuery, Result<IEnumerable<HockeyMatchDto>>>
+{
+    private readonly IHockeyMatchRepository _matchRepository;
+    private readonly IHockeyTeamRepository _teamRepository;
+    private readonly ILogger<GetHockeyPlayerRecentMatchesHandler> _logger;
+
+    public GetHockeyPlayerRecentMatchesHandler(
+        IHockeyMatchRepository matchRepository,
+        IHockeyTeamRepository teamRepository,
+        ILogger<GetHockeyPlayerRecentMatchesHandler> logger)
+    {
+        _matchRepository = matchRepository;
+        _teamRepository = teamRepository;
+        _logger = logger;
+    }
+
+    public async Task<Result<IEnumerable<HockeyMatchDto>>> Handle(
+        GetHockeyPlayerRecentMatchesQuery request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            IReadOnlyList<Guid> teamPlayerIds =
+                await _teamRepository.GetTeamPlayerIdsByPlayerIdAsync(request.PlayerId, cancellationToken);
+            IReadOnlyList<HockeyMatch> matches = await _matchRepository.GetRecentForTeamPlayersAsync(
+                teamPlayerIds,
+                request.Limit,
+                cancellationToken);
+            IEnumerable<HockeyMatch> visibleMatches = matches.Where(match =>
+                match.Competition is null || PublicCompetitionVisibility.IsPublic(match.Competition));
+            return Result<IEnumerable<HockeyMatchDto>>.Success(
+                visibleMatches.Select(HockeyMatchMapper.ToDto).ToList());
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Failed GetHockeyPlayerRecentMatches for {PlayerId}", request.PlayerId);
+            return Result<IEnumerable<HockeyMatchDto>>.Failure(
+                "An error occurred while retrieving hockey matches.",
+                ex.Flatten());
+        }
+    }
+}
+
+/// <summary>
+/// Handles <see cref="GetHockeyLiveMatchesQuery"/> with a slim projection for polling.
+/// </summary>
+public class GetHockeyLiveMatchesHandler
+    : IRequestHandler<GetHockeyLiveMatchesQuery, Result<IEnumerable<HockeyLiveMatchDto>>>
+{
+    private static readonly TimeSpan UpcomingWindow = TimeSpan.FromHours(2);
+    private static readonly TimeSpan RecentlyFinishedWindow = TimeSpan.FromMinutes(10);
+
+    private readonly IHockeyMatchRepository _matchRepository;
+    private readonly ILogger<GetHockeyLiveMatchesHandler> _logger;
+
+    public GetHockeyLiveMatchesHandler(
+        IHockeyMatchRepository matchRepository,
+        ILogger<GetHockeyLiveMatchesHandler> logger)
+    {
+        _matchRepository = matchRepository;
+        _logger = logger;
+    }
+
+    public async Task<Result<IEnumerable<HockeyLiveMatchDto>>> Handle(
+        GetHockeyLiveMatchesQuery request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            DateTime now = DateTime.UtcNow;
+            IReadOnlyList<HockeyMatch> matches = await _matchRepository.GetLiveAsync(
+                request.CompetitionId,
+                now.Add(UpcomingWindow),
+                now.Subtract(RecentlyFinishedWindow),
+                cancellationToken);
+            IEnumerable<HockeyMatch> visibleMatches = request.IncludeDrafts
+                ? matches
+                : matches.Where(match =>
+                    match.Competition is null || PublicCompetitionVisibility.IsPublic(match.Competition));
+            return Result<IEnumerable<HockeyLiveMatchDto>>.Success(
+                visibleMatches.Select(HockeyMatchMapper.ToLiveDto).ToList());
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Failed GetHockeyLiveMatches for {CompetitionId}", request.CompetitionId);
+            return Result<IEnumerable<HockeyLiveMatchDto>>.Failure(
+                "An error occurred while retrieving live hockey matches.",
+                ex.Flatten());
+        }
+    }
+}
+
+/// <summary>
 /// Handles paginated hockey match listing without event or on-ice graphs.
 /// </summary>
 public class GetPagedHockeyMatchesHandler
@@ -209,7 +363,7 @@ public class GetHockeyMatchesHandler
             PagedResult<HockeyMatch> pagedMatches = await _matchRepository.GetPagedAsync(
                 request.Page,
                 pageSize,
-                competitionId: null,
+                request.CompetitionId,
                 teamId: null,
                 request.StartDate,
                 request.EndDate,
@@ -219,7 +373,8 @@ public class GetHockeyMatchesHandler
                 request.TeamCategory,
                 excludeDraftCompetitions: !request.IncludeDrafts,
                 cancellationToken: cancellationToken,
-                statuses: request.Statuses);
+                statuses: request.Statuses,
+                activeSeasonsOnly: request.ActiveSeasonsOnly);
 
             IReadOnlyList<Guid> teamIds = pagedMatches.Items
                 .SelectMany(match => match.MatchTeams.Select(team => team.TeamId))

@@ -32,6 +32,22 @@ public class HockeyTeamRepository : IHockeyTeamRepository
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    public async Task<IReadOnlyDictionary<Guid, HockeyTeam>> GetByIdsWithRosterAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids.Count == 0)
+        {
+            return new Dictionary<Guid, HockeyTeam>();
+        }
+
+        return await _dbContext.HockeyTeams
+            .AsNoTracking()
+            .Include(t => t.Roster)
+            .Where(t => ids.Contains(t.Id))
+            .ToDictionaryAsync(t => t.Id, cancellationToken);
+    }
+
     public async Task<IReadOnlyDictionary<Guid, string>> GetNamesByIdsAsync(
         IReadOnlyCollection<Guid> ids,
         CancellationToken cancellationToken = default)
@@ -72,6 +88,17 @@ public class HockeyTeamRepository : IHockeyTeamRepository
             .OrderBy(t => t.Name)
             .ToListAsync();
         return DistinctById(teams);
+    }
+
+    public async Task<IReadOnlyList<Guid>> GetTeamPlayerIdsByPlayerIdAsync(
+        Guid playerId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.HockeyTeamPlayers
+            .AsNoTracking()
+            .Where(row => row.PlayerId == playerId)
+            .Select(row => row.Id)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<PagedResult<HockeyTeam>> GetPagedAsync(

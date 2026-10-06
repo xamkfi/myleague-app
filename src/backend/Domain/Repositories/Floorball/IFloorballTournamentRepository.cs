@@ -121,6 +121,13 @@ public interface IFloorballTournamentRepository
         CancellationToken ct = default);
 
     /// <summary>
+    /// Counts matches per tournament in one grouped query. Tournaments without matches are absent.
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, int>> GetMatchCountsAsync(
+        IReadOnlyCollection<Guid> tournamentIds,
+        CancellationToken ct = default);
+
+    /// <summary>
     /// Adds a new floorball tournament
     /// </summary>
     /// <param name="tournament">The tournament to add</param>

@@ -55,7 +55,7 @@ public class GetTournamentPlayoffBracketHandler
                 return Result<FootballPlayoffBracketDto>.NotFound("FootballTournament", request.CompetitionId);
             }
 
-            IEnumerable<FootballMatch> all = await _matchRepository.GetByCompetitionIdAsync(request.CompetitionId);
+            IEnumerable<FootballMatch> all = await _matchRepository.GetByCompetitionIdReadOnlyAsync(request.CompetitionId, cancellationToken);
             List<FootballMatch> playoffMatches = all.Where(m => m.PlayoffRound != null).ToList();
 
             // Build a quick lookup of "is feeder match for X.Y completed?" so the frontend can show TBD.

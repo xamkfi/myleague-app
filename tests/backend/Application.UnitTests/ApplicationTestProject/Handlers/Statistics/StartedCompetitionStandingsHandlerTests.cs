@@ -460,7 +460,7 @@ public class StartedCompetitionStandingsHandlerTests
 
         Mock<IFloorballMatchRepository> matches = new();
         matches
-            .Setup(repository => repository.GetByCompetitionIdAsync(competition.Id))
+            .Setup(repository => repository.GetByCompetitionIdReadOnlyAsync(competition.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<Domain.Entities.Floorball.Matches.FloorballMatch>());
 
         return new FloorballStandingsHandler(
@@ -492,7 +492,7 @@ public class StartedCompetitionStandingsHandlerTests
 
         Mock<IFootballMatchRepository> matches = new();
         matches
-            .Setup(repository => repository.GetByCompetitionIdAsync(competition.Id))
+            .Setup(repository => repository.GetByCompetitionIdReadOnlyAsync(competition.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<Domain.Entities.Football.Matches.FootballMatch>());
 
         return new FootballStandingsHandler(
@@ -534,7 +534,7 @@ public class StartedCompetitionStandingsHandlerTests
 
         Mock<IFloorballMatchRepository> matches = new();
         matches
-            .Setup(repository => repository.GetByCompetitionIdAsync(competition.Id))
+            .Setup(repository => repository.GetByCompetitionIdReadOnlyAsync(competition.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<Domain.Entities.Floorball.Matches.FloorballMatch>());
 
         return new FloorballSummaryHandler(
@@ -575,7 +575,7 @@ public class StartedCompetitionStandingsHandlerTests
 
         Mock<IFootballMatchRepository> matches = new();
         matches
-            .Setup(repository => repository.GetByCompetitionIdAsync(competition.Id))
+            .Setup(repository => repository.GetByCompetitionIdReadOnlyAsync(competition.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<Domain.Entities.Football.Matches.FootballMatch>());
 
         return new FootballSummaryHandler(

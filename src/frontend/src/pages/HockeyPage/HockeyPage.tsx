@@ -5,7 +5,7 @@ import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
 import { hockeyStatisticsService } from '../../api/hockey/hockeyStatisticsService';
 import { hockeyMatchService } from '../../api/hockey/hockeyMatchService';
 import { hockeyTeamService } from '../../api/hockey/hockeyTeamService';
-import type { HockeySeasonDto, HockeyTeamDto } from '../../types/hockey/hockeyTypes';
+import type { HockeyMatchStatus, HockeySeasonDto, HockeyTeamDto } from '../../types/hockey/hockeyTypes';
 import { useAudience } from '../../context/AudienceContext';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { uniqueHockeyStandingsByTeamId } from '../../utils/hockeyLookups';
@@ -268,26 +268,26 @@ function HockeyPage() {
           }),
         );
 
-        const activeSeasons = pagedSeasons.some((season) => season.isActive)
-          ? pagedSeasons.filter((season) => season.isActive)
-          : pagedSeasons;
+        const hasActiveSeason = pagedSeasons.some((season) => season.isActive);
+        const upcomingFilter = {
+          page: 1,
+          pageSize: MAX_UPCOMING_MATCHES,
+          statuses: ['Scheduled' as HockeyMatchStatus],
+          startDate: new Date().toISOString(),
+          sortOrder: 'asc',
+          teamCategory: audience.teamCategory,
+        };
+        const upcomingRequests = hasActiveSeason
+          ? [hockeyMatchService.getList({ ...upcomingFilter, activeSeasonsOnly: true })]
+          : pagedSeasons.map((season) => hockeyMatchService.getList({ ...upcomingFilter, competitionId: season.id }));
         const matchesTask = Promise.all(
-          activeSeasons.map(async (season) => {
-            try {
-              return await hockeyMatchService.getByCompetition(season.id);
-            } catch {
-              return [];
-            }
-          }),
+          upcomingRequests.map((request) =>
+            request
+              .then((result) => result.data ?? [])
+              .catch(() => [])),
         ).then((matchLists) => {
-          const now = Date.now();
           const upcoming = matchLists
             .flat()
-            .filter(
-              (match) =>
-                match.status === 'Scheduled' &&
-                new Date(match.scheduledStartTime).getTime() >= now,
-            )
             .sort(
               (left, right) =>
                 new Date(left.scheduledStartTime).getTime()

@@ -154,42 +154,6 @@ function FloorballTournamentPage() {
     };
   }, [id]);
 
-  // Fetch statistics summary; treat "not found" as "no stats yet" (empty), not as an error.
-  useEffect(() => {
-    if (!id) return;
-    let cancelled = false;
-    const load = async () => {
-      try {
-        setStatsLoading(true);
-        setStatsError(null);
-        const data = await floorballStatisticsService.getSeasonStatistics(id);
-        if (!cancelled) {
-          setStatsSummary(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          const message = err instanceof Error ? err.message : 'Failed to load statistics';
-          if (isNotFoundError(err)) {
-            // Tournament has no completed matches yet — that's an expected empty state, not an error.
-            setStatsSummary(null);
-            setStatsError(null);
-          } else {
-            setStatsError(message);
-            setStatsSummary(null);
-          }
-        }
-      } finally {
-        if (!cancelled) {
-          setStatsLoading(false);
-        }
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
-
   // Fetch matches for results / fixtures tabs
   useEffect(() => {
     if (!id) return;
@@ -240,6 +204,50 @@ function FloorballTournamentPage() {
       tournament.tournamentStatus === 'Completed'
     );
   }, [tournament]);
+
+  const needsStats =
+    activeTab === 'summary' ||
+    activeTab === 'statistics' ||
+    (activeTab === 'playoffs' && tournament !== null && !showPlayoffsTab);
+  const [statsLoadedFor, setStatsLoadedFor] = useState<string | null>(null);
+
+  // Fetch statistics summary; treat "not found" as "no stats yet" (empty), not as an error.
+  useEffect(() => {
+    if (!id || !needsStats || statsLoadedFor === id) return;
+    let cancelled = false;
+    const load = async () => {
+      try {
+        setStatsLoading(true);
+        setStatsError(null);
+        const data = await floorballStatisticsService.getSeasonStatistics(id);
+        if (!cancelled) {
+          setStatsSummary(data);
+          setStatsLoadedFor(id);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          const message = err instanceof Error ? err.message : 'Failed to load statistics';
+          if (isNotFoundError(err)) {
+            // Tournament has no completed matches yet — that's an expected empty state, not an error.
+            setStatsSummary(null);
+            setStatsError(null);
+            setStatsLoadedFor(id);
+          } else {
+            setStatsError(message);
+            setStatsSummary(null);
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setStatsLoading(false);
+        }
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, needsStats, statsLoadedFor]);
 
   // Fetch playoff bracket when the tab is active and the tournament is in PlayoffStage / Completed.
   useEffect(() => {

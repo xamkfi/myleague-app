@@ -26,26 +26,16 @@ function LoginPage({ variant = 'admin' }: LoginPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const localizeAuthError = (message: string): string => {
-    if (message === 'No account was found for this email address.') {
-      return t(
-        'auth.emailNotFound',
-        'No account was found for this email address. Check the address and try again.',
-      );
-    }
-    return message;
-  };
-
   const parseApiError = (err: unknown): string => {
     if (!(err instanceof Error)) return t('auth.unexpectedError', 'An unexpected error occurred');
     try {
       const parsed = JSON.parse(err.message) as { title?: string; errors?: string[] };
       if (parsed.errors && parsed.errors.length > 0) {
-        return localizeAuthError(parsed.errors.join(', '));
+        return parsed.errors.join(', ');
       }
-      return localizeAuthError(parsed.title || err.message);
+      return parsed.title || err.message;
     } catch {
-      return localizeAuthError(err.message);
+      return err.message;
     }
   };
 
@@ -66,7 +56,10 @@ function LoginPage({ variant = 'admin' }: LoginPageProps) {
           'Development: the login code was filled automatically. No email was sent.',
         ));
       } else {
-        setSuccessMessage(t('auth.codeSent', 'A login code has been sent to your email.'));
+        setSuccessMessage(t(
+          'auth.codeSent',
+          'If an account exists for this email address, a login code has been sent to it.',
+        ));
       }
     } catch (err: unknown) {
       setError(parseApiError(err));

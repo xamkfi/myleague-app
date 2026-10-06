@@ -13,6 +13,13 @@ public interface IHockeyTeamRepository
 
     Task<HockeyTeam?> GetByIdAsync(Guid id);
 
+    /// <summary>
+    /// Loads teams with rosters only (no lines or staff) in one query. Does not track entities.
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, HockeyTeam>> GetByIdsWithRosterAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyDictionary<Guid, string>> GetNamesByIdsAsync(
         IReadOnlyCollection<Guid> ids,
         CancellationToken cancellationToken = default);
@@ -22,6 +29,13 @@ public interface IHockeyTeamRepository
     Task<IReadOnlyList<HockeyTeam>> GetByClubIdAsync(Guid clubId);
 
     Task<IReadOnlyList<HockeyTeam>> GetByPlayerIdAsync(Guid playerId);
+
+    /// <summary>
+    /// Every roster row id (current and past) that belongs to the career player.
+    /// </summary>
+    Task<IReadOnlyList<Guid>> GetTeamPlayerIdsByPlayerIdAsync(
+        Guid playerId,
+        CancellationToken cancellationToken = default);
 
     Task<PagedResult<HockeyTeam>> GetPagedAsync(
         int page,

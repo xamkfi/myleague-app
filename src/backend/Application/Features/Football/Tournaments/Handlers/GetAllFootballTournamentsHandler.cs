@@ -45,8 +45,12 @@ public class GetAllFootballTournamentsHandler : IRequestHandler<GetAllFootballTo
                 tournaments = tournaments.Where(PublicCompetitionVisibility.IsPublicTournament);
             }
 
-            List<FootballTournamentDto> tournamentDtos = tournaments
-                .Select(t => FootballTournamentMapper.ToDto(t))
+            List<FootballTournament> visible = tournaments.ToList();
+            IReadOnlyDictionary<Guid, int> matchCounts = await _tournamentRepository.GetMatchCountsAsync(
+                visible.Select(t => t.Id).ToList(),
+                cancellationToken);
+            List<FootballTournamentDto> tournamentDtos = visible
+                .Select(t => FootballTournamentMapper.ToDto(t, matchCounts.GetValueOrDefault(t.Id)))
                 .ToList();
 
             _logger.LogInformation("Successfully retrieved {TournamentCount} football tournaments", tournamentDtos.Count);

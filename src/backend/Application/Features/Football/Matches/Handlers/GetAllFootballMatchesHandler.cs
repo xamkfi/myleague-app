@@ -63,6 +63,7 @@ public class GetAllFootballMatchesHandler : BasePagedQueryHandler<GetAllFootball
                 competitionType: request.CompetitionType,
                 teamCategory: request.TeamCategory,
                 excludeDraftCompetitions: !request.IncludeDrafts,
+                activeCompetitionsOnly: request.ActiveOnly,
                 cancellationToken: cancellationToken);
 
             IEnumerable<FootballMatch> matches = pagedMatches.Items ?? Enumerable.Empty<FootballMatch>();

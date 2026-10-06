@@ -37,6 +37,29 @@ public class RecalculateHockeyCompetitionStatisticsCommandValidator
     }
 }
 
+public class RecalculateHockeyCompetitionScopesCommandValidator
+    : AbstractValidator<RecalculateHockeyCompetitionScopesCommand>
+{
+    public RecalculateHockeyCompetitionScopesCommandValidator()
+    {
+        RuleFor(x => x.CompetitionId).NotEmpty();
+        RuleFor(x => x.Scopes).NotEmpty();
+        RuleForEach(x => x.Scopes).ChildRules(scope =>
+        {
+            scope.RuleFor(s => s.Scope).IsInEnum();
+            scope.RuleFor(s => s.CompetitionDivisionId)
+                .NotEmpty()
+                .When(s => s.Scope == HockeyStatisticsScope.Division);
+            scope.RuleFor(s => s.TournamentGroupId)
+                .NotEmpty()
+                .When(s => s.Scope == HockeyStatisticsScope.TournamentGroup);
+            scope.RuleFor(s => s.PlayoffSeriesId)
+                .NotEmpty()
+                .When(s => s.Scope == HockeyStatisticsScope.PlayoffSeries);
+        });
+    }
+}
+
 public class ResetHockeyCompetitionStatisticsCommandValidator
     : AbstractValidator<ResetHockeyCompetitionStatisticsCommand>
 {

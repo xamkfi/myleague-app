@@ -89,7 +89,7 @@ internal static class FloorballEnrolledStandings
 
         FloorballStandingRules? seasonRules = SeasonRules(competition);
         Dictionary<Guid, int> pointsByTeam = new();
-        List<FloorballMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
+        List<FloorballMatch> validMatches = (await matches.GetByCompetitionIdReadOnlyAsync(competitionId))
             .Where(match => match.Status == FloorballMatchStatus.Completed
                 && match.PlayoffRound is null
                 && match.HomeTeamId is Guid
@@ -161,7 +161,7 @@ internal static class FloorballEnrolledStandings
 
         FloorballStandingRules? seasonRules = SeasonRules(competition);
         List<StandingMatchResult> results = new();
-        IEnumerable<FloorballMatch> validMatches = (await matches.GetByCompetitionIdAsync(competitionId))
+        IEnumerable<FloorballMatch> validMatches = (await matches.GetByCompetitionIdReadOnlyAsync(competitionId))
             .Where(match => match.Status == FloorballMatchStatus.Completed
                 && match.PlayoffRound is null
                 && match.HomeTeamId is Guid homeId && homeId != Guid.Empty

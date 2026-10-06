@@ -25,6 +25,7 @@ export default function CompetitionHero({ title, logoUrl, markLabel, meta, child
           src={bannerImage}
           alt=""
           aria-hidden="true"
+          decoding="async"
         />
         <div className="competition-hero__content">
           <div className="competition-hero__mark">

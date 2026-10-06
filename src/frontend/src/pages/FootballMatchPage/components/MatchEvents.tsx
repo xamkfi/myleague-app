@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type MouseEvent } from 'react';
+import { useMemo, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type {
   FootballMatchDto,
@@ -11,7 +11,6 @@ import { FootballCardType } from '../../../types/football/footballTypes';
 import { getPeriodName, getTeamInitials } from './matchUtils';
 import { formatMatchEventTime } from '../../../utils/matchEventFormat';
 import { getFootballGoalTypeInfo } from '../../../utils/footballGoalType';
-import { footballTeamService } from '../../../api/football/footballTeamService';
 import { getPlayerPath } from '../../../utils/sportRoutes';
 
 type MatchEventItem = {
@@ -23,6 +22,8 @@ type MatchEventItem = {
 
 interface MatchEventsProps {
   match: FootballMatchDto;
+  homeRoster: FootballTeamPlayer[];
+  awayRoster: FootballTeamPlayer[];
 }
 
 function cardLabel(cardType: FootballCardType | string): string {
@@ -33,37 +34,8 @@ function cardLabel(cardType: FootballCardType | string): string {
   return 'C';
 }
 
-export default function MatchEvents({ match }: MatchEventsProps) {
+export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEventsProps) {
   const navigate = useNavigate();
-  const [homeRoster, setHomeRoster] = useState<FootballTeamPlayer[]>([]);
-  const [awayRoster, setAwayRoster] = useState<FootballTeamPlayer[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function fetchRosters() {
-      try {
-        if (!match.homeTeamId || !match.awayTeamId) {
-          setHomeRoster([]);
-          setAwayRoster([]);
-          return;
-        }
-
-        const [homeResponse, awayResponse] = await Promise.all([
-          footballTeamService.getById(match.homeTeamId),
-          footballTeamService.getById(match.awayTeamId),
-        ]);
-        if (cancelled) return;
-        setHomeRoster(homeResponse.roster ?? []);
-        setAwayRoster(awayResponse.roster ?? []);
-      } catch (err) {
-        console.error('Failed to load team rosters for match events:', err);
-      }
-    }
-    void fetchRosters();
-    return () => {
-      cancelled = true;
-    };
-  }, [match.homeTeamId, match.awayTeamId]);
 
   const jerseyByPlayerId: Map<string, number> = useMemo(() => {
     const map: Map<string, number> = new Map<string, number>();

@@ -2,9 +2,9 @@
  * Tracks live hockey matches so admin UI can show live dots.
  *
  * Live updates strategy:
- *   Hockey has no SignalR status event yet. The hook polls GET /HockeyMatch/paged
- *   for each live status (Warmup, InProgress, Intermission, Overtime, Shootout)
- *   every 30s — the same fallback interval floorball/football use when SignalR is down.
+ *   Hockey has no SignalR status event yet. The hook polls GET /HockeyMatch/live
+ *   every 30s and keeps the rows with a live status (Warmup, InProgress, Intermission,
+ *   Overtime, Shootout) — the same fallback interval floorball/football use when SignalR is down.
  *
  * Sharing strategy:
  *   `<InProgressHockeyMatchesProvider>` exposes one fetch to the navbar, seasons
@@ -15,14 +15,14 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { hockeyMatchService } from '../api/hockey/hockeyMatchService';
 import {
-  LIVE_HOCKEY_STATUSES,
-  type HockeyMatchDto,
+  isHockeyMatchLive,
+  type HockeyLiveMatchDto,
 } from '../types/hockey/hockeyTypes';
 
 const POLL_INTERVAL_MS = 30_000;
 
 export interface HockeyInProgressState {
-  matches: HockeyMatchDto[];
+  matches: HockeyLiveMatchDto[];
   totalCount: number;
   countByCompetitionId: Map<string, number>;
   countByCompetitionType: { season: number; tournament: number };
@@ -41,11 +41,11 @@ const EMPTY_STATE: HockeyInProgressState = {
 
 export const InProgressHockeyMatchesContext = createContext<HockeyInProgressState | null>(null);
 
-function isHockeyTournamentMatch(match: HockeyMatchDto): boolean {
+function isHockeyTournamentMatch(match: HockeyLiveMatchDto): boolean {
   return match.matchType === 'TournamentGroup' || match.matchType === 'TournamentPlayoff';
 }
 
-const buildState = (matches: HockeyMatchDto[]): HockeyInProgressState => {
+const buildState = (matches: HockeyLiveMatchDto[]): HockeyInProgressState => {
   const countByCompetitionId: Map<string, number> = new Map();
   let seasonCount = 0;
   let tournamentCount = 0;
@@ -82,45 +82,25 @@ export const useHockeyInProgressMatchesController = (active: boolean): HockeyInP
   const isMountedRef = useRef(true);
 
   const fetchLive = useCallback(async (): Promise<void> => {
-    const pages = await Promise.allSettled(
-      LIVE_HOCKEY_STATUSES.map((status) =>
-        hockeyMatchService.getPaged({ status, page: 1, pageSize: 50 }),
-      ),
-    );
+    let rows: HockeyLiveMatchDto[];
+    try {
+      rows = await hockeyMatchService.getLive();
+    } catch {
+      if (isMountedRef.current) {
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error: prev.error ?? 'Failed to load live hockey matches',
+        }));
+      }
+      return;
+    }
 
     if (!isMountedRef.current) {
       return;
     }
 
-    const seen = new Set<string>();
-    const matches: HockeyMatchDto[] = [];
-    let failedCount = 0;
-
-    for (const page of pages) {
-      if (page.status === 'rejected') {
-        failedCount += 1;
-        continue;
-      }
-
-      for (const match of page.value.data) {
-        if (seen.has(match.id)) {
-          continue;
-        }
-        seen.add(match.id);
-        matches.push(match);
-      }
-    }
-
-    if (failedCount === LIVE_HOCKEY_STATUSES.length) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: prev.error ?? 'Failed to load live hockey matches',
-      }));
-      return;
-    }
-
-    setState(buildState(matches));
+    setState(buildState(rows.filter((row) => isHockeyMatchLive(row.status))));
   }, []);
 
   useEffect(() => {
