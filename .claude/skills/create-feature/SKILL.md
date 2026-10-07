@@ -57,7 +57,7 @@ Handler outline:
 3. `await repository.AddAsync` (or update)
 4. `await unitOfWork.SaveChangesAsync(cancellationToken)` — `IUnitOfWork` (common) or `IFloorballUnitOfWork` / `IFootballUnitOfWork` / `IHockeyUnitOfWork`
 5. `return Result<T>.Success(mapper.ToDto(...))`
-6. Catch unexpected exceptions, log, return `Failure` with a generic message
+6. Catch only the exception types a domain call can actually throw (`InvalidOperationException`, `ArgumentException`) and return `Failure`. Rethrow `OperationCanceledException`. Let anything else propagate to the API exception middleware. See the Exceptions section of `.claude/rules/backend.md`
 
 No AutoMapper. No extra DI registration for handlers or validators.
 
@@ -67,11 +67,11 @@ No AutoMapper. No extra DI registration for handlers or validators.
 - Ignore cross-context navigations; store `Guid` FKs
 - Implement the repository; register `AddScoped<I{Entity}Repository, {Entity}Repository>()` in `Infrastructure/DependencyInjections/DependencyInjection.cs`
 - Add `DbSet<T>` on the correct context only
-- Then follow `.cursor/skills/ef-migration/SKILL.md`
+- Then follow the `ef-migration` skill (`.claude/skills/ef-migration/SKILL.md`)
 
 ## 4. WebAPI
 
-Follow `.cursor/skills/create-api-endpoint/SKILL.md`. New resource: new controller under `Controllers/{area}/` inheriting `BaseApiController`.
+Follow the `create-api-endpoint` skill (`.claude/skills/create-api-endpoint/SKILL.md`). New resource: new controller under `Controllers/{area}/` inheriting `BaseApiController`.
 
 ## 5. Tests
 
@@ -81,11 +81,9 @@ Follow `.cursor/skills/create-api-endpoint/SKILL.md`. New resource: new controll
 | Application.UnitTests | handler success/failure + validator theories + mapper |
 | WebAPI.UnitTests | controller mapping if the action is non-trivial |
 
-See `.cursor/rules/testing.mdc`.
+See `.claude/rules/testing.md`.
 
 ## 6. Frontend (public or admin UI)
-
-Skip for hockey public pages. Otherwise:
 
 - `src/frontend/src/api/{area}/{entity}Service.ts` using `authFetch` + `parseErrorResponse`
 - Page under `src/frontend/src/pages/...` with colocated SCSS and `components/`
@@ -95,4 +93,17 @@ Skip for hockey public pages. Otherwise:
 
 ## Sport checklist
 
-Adding something that already exists for another sport: copy that sport's slice (names, routes, TPH, match events) and swap the sport prefix. Do not invent a third pattern.
+Floorball, football, and ice hockey are peers, and all three have public, admin, and club-admin UI. If you add something to one sport, ask whether the other two should get it in the same change.
+
+If the feature already exists for another sport, copy that sport's slice (names, routes, TPH, match events) and swap the sport prefix. Do not invent a new pattern.
+
+## Done when
+
+- Affected READMEs, rules, and skills are updated (see "Keep docs current" in `AGENTS.md`), and the glossary has the new terms
+- These pass:
+
+```bash
+dotnet build MyLeague.sln -c Release
+dotnet test MyLeague.sln
+cd src/frontend && pnpm lint && pnpm build   # if the frontend changed
+```

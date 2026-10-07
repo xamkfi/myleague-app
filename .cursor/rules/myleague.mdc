@@ -1,0 +1,8 @@
+---
+description: MyLeague project rules (shared with Claude Code; source of truth is .claude/)
+alwaysApply: true
+---
+
+Follow `AGENTS.md` at the repository root.
+
+Detailed rules live in `.claude/rules/` and multi-step workflows in `.claude/skills/<name>/SKILL.md`. Read the file that `AGENTS.md` maps to your task before you implement it. Do not copy those files into `.cursor/`; edit them in `.claude/` so every agent stays in sync.
