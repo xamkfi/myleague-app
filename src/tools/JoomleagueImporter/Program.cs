@@ -37,7 +37,7 @@ public static class Program
         string? excludeFilter;
         if (isHockey)
         {
-            includeFilter = config["JoomleagueImporter:Hockey:ProjectNameFilter"] ?? "jääkiekko|jaakiekko|hockey";
+            includeFilter = config["JoomleagueImporter:Hockey:ProjectNameFilter"] ?? "jääkiekko|jääkiekon|jaakiekko|jaakiekon|hockey";
             excludeFilter = config["JoomleagueImporter:Hockey:ProjectNameExcludeFilter"] ?? "manager|jääpallo|jaapallo|kaukalo|nhl";
         }
         else if (isFootball)
@@ -47,7 +47,7 @@ public static class Program
         }
         else
         {
-            includeFilter = config["JoomleagueImporter:ProjectNameFilter"] ?? "salibandy|sähly";
+            includeFilter = config["JoomleagueImporter:ProjectNameFilter"] ?? "salibandy|sähly|sahly|puuma";
             excludeFilter = config["JoomleagueImporter:ProjectNameExcludeFilter"];
         }
         string? projectIdFilter = GetArg(args, "project-id")
@@ -271,6 +271,8 @@ public static class Program
                 Console.WriteLine("  SKIP: season could not be created.");
                 return;
             }
+            if (season.IsCompleted)
+                return; // Imported and completed earlier; the API rejects any change to it.
             await matches.ImportProjectMatchesAsync(pi, season, refereeId);
             await HistoricalRosterApplicator.DeactivateFloorballAsync(pi, season.Id, idMap, api);
             if (await api.CompleteSeasonAsync(season.Id))
@@ -322,6 +324,8 @@ public static class Program
                 Console.WriteLine("  SKIP: season could not be created.");
                 return;
             }
+            if (season.IsCompleted)
+                return; // Imported and completed earlier; the API rejects any change to it.
             await matches.ImportProjectMatchesAsync(pi, season, refereeId);
             await HistoricalRosterApplicator.DeactivateFootballAsync(pi, season.Id, idMap, api);
             if (await api.CompleteSeasonAsync(season.Id))
@@ -374,6 +378,8 @@ public static class Program
                 Console.WriteLine("  SKIP: season could not be created.");
                 return;
             }
+            if (season.IsCompleted)
+                return; // Imported and completed earlier; the API rejects any change to it.
             await matches.ImportProjectMatchesAsync(pi, season, officialId);
             await api.RecalculateCompetitionAsync(season.Id);
             await HistoricalRosterApplicator.DeactivateHockeyAsync(pi, season.Id, idMap, api);
