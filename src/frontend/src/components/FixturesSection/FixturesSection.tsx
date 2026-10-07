@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import MatchRow from '../MatchRow';
-import FootballMatchRow from '../../pages/FootballLeaguePage/components/FootballMatchRow';
+import FootballMatchRow from '../../pages/football/FootballLeaguePage/components/FootballMatchRow';
 import { FloorballMatchStatus } from '../../types/floorball/floorballTypes';
 import { getMatchPath, type SportKind } from '../../utils/sportRoutes';
-import '../../pages/FloorballLeaguePage/components/FixturesSection.scss';
+import '../../pages/floorball/FloorballLeaguePage/components/FixturesSection.scss';
 
 function toRowStatus(status: string): FloorballMatchStatus {
   if (status === 'InProgress') {

@@ -1,5 +1,5 @@
 using Application.Common;
-using Application.DTOs.Common;
+using Application.Features.Common.Content.RulesSection.DTOs;
 using Domain.Repositories.Common;
 using MediatR;
 

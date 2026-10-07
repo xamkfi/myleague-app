@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Application.Common;
-using Application.DTOs.Common;
+using Application.Features.Common.Content.InfoPageContent.DTOs;
 using Application.Features.Common.Content.InfoPageContent.Mappings;
 using Domain.Repositories.Common;
 using MediatR;

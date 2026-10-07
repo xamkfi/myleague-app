@@ -19,9 +19,12 @@ WebAPI/
 │   │   └── Match/           Matches, Events, Lifecycle, Officials, Roster, Scorekeepers
 │   ├── Football/            same as Floorball
 │   │   └── Match/           Matches, Events, Lifecycle, Lineup, Officials, Scorekeepers
-│   ├── Hockey/              Competition, Match, Official, Player, Season, Statistics, Team, Tournament
+│   ├── Hockey/              Competition, Official, Player, Season, Statistics, Team, Tournament
+│   │   └── Match/           Matches, Events, Lifecycle, Lines, OnIce, Officials, Roster, Scorekeepers
+│   │                        (all under the shared /api/HockeyMatch prefix)
 │   └── Health/              HealthController (/api/health, /api/version)
-├── Models/                  Request records: Auth/ Common/ Floorball/ Football/ Hockey/
+├── Models/                  Request records: Auth/ Common/ Floorball/ Football/ Hockey/,
+│   │                        one file per resource or match concern (e.g. HockeyMatchEventRequest.cs)
 │   └── Common/              ApiResponse, Pagination/ (PaginatedApiResponse, PaginationMetadata, PagedRequestBase)
 ├── Middlewares/             ExceptionHandlingMiddleware
 ├── DependencyInjections/    AddOpenApiConfiguration, AddPublicTrafficProtection

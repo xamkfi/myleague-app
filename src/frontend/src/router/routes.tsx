@@ -15,18 +15,18 @@ const MahlInfoPage = lazyWithRetry(() => import('../pages/MahlInfoPage/MahlInfoP
 const PrivacyPolicyPage = lazyWithRetry(() => import('../pages/PrivacyPolicyPage/PrivacyPolicyPage'));
 const AgeGroupsPage = lazyWithRetry(() => import('../pages/AgeGroupsPage/AgeGroupsPage'));
 const RegisterPage = lazyWithRetry(() => import('../pages/RegisterPage/RegisterPage'));
-const TournamentsPage = lazyWithRetry(() => import('../pages/FloorballTournamentsPage/FloorballTournamentsPage'));
-const TournamentPage = lazyWithRetry(() => import('../pages/FloorballTournamentPage/FloorballTournamentPage'));
+const TournamentsPage = lazyWithRetry(() => import('../pages/floorball/FloorballTournamentsPage/FloorballTournamentsPage'));
+const TournamentPage = lazyWithRetry(() => import('../pages/floorball/FloorballTournamentPage/FloorballTournamentPage'));
 const SportsPage = lazyWithRetry(() => import('../pages/SportsPage/SportsPage'));
 const ClubPage = lazyWithRetry(() => import('../pages/ClubPage/ClubPage'));
 const PlayerPage = lazyWithRetry(() => import('../pages/PlayerPage/PlayerPage'));
 const SingleNewsPage = lazyWithRetry(() =>
   import('../pages/SingleNewsPage/SingleNewsPage').then((m) => ({ default: m.default as ComponentType<unknown> }))
 );
-const FloorballTeamPage = lazyWithRetry(() => import('../pages/FloorballTeamPage/FloorballTeamPage'));
-const MatchPage = lazyWithRetry(() => import('../pages/FloorballMatchPage/FloorballMatchPage'));
-const LeaguePage = lazyWithRetry(() => import('../pages/FloorballLeaguePage/FloorballLeaguePage'));
-const FloorballPage = lazyWithRetry(() => import('../pages/FloorballPage/FloorballPage'));
+const FloorballTeamPage = lazyWithRetry(() => import('../pages/floorball/FloorballTeamPage/FloorballTeamPage'));
+const MatchPage = lazyWithRetry(() => import('../pages/floorball/FloorballMatchPage/FloorballMatchPage'));
+const LeaguePage = lazyWithRetry(() => import('../pages/floorball/FloorballLeaguePage/FloorballLeaguePage'));
+const FloorballPage = lazyWithRetry(() => import('../pages/floorball/FloorballPage/FloorballPage'));
 const AllTimeStatsPage = lazyWithRetry(() => import('../pages/AllTimeStatsPage/AllTimeStatsPage'));
 const AllTimeStatsHubPage = lazyWithRetry(() => import('../pages/AllTimeStatsPage/AllTimeStatsHubPage'));
 const ClubsPage = lazyWithRetry(() => import('../pages/ClubsPage/ClubsPage'));
@@ -117,19 +117,19 @@ const ClubAdminRosterPage = lazyWithRetry(() => import('../pages/ClubAdminPage/C
 const ClubAdminMatchRosterPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminMatchRosterPage/ClubAdminMatchRosterPage'));
 
 // Public football pages
-const FootballPage = lazyWithRetry(() => import('../pages/FootballPage/FootballPage'));
-const FootballLeaguePage = lazyWithRetry(() => import('../pages/FootballLeaguePage/FootballLeaguePage'));
-const FootballTournamentsListPage = lazyWithRetry(() => import('../pages/FootballTournamentsListPage/FootballTournamentsListPage'));
-const FootballTournamentPage = lazyWithRetry(() => import('../pages/FootballTournamentPage/FootballTournamentPage'));
-const FootballMatchPage = lazyWithRetry(() => import('../pages/FootballMatchPage/FootballMatchPage'));
-const FootballTeamPage = lazyWithRetry(() => import('../pages/FootballTeamPage/FootballTeamPage'));
+const FootballPage = lazyWithRetry(() => import('../pages/football/FootballPage/FootballPage'));
+const FootballLeaguePage = lazyWithRetry(() => import('../pages/football/FootballLeaguePage/FootballLeaguePage'));
+const FootballTournamentsListPage = lazyWithRetry(() => import('../pages/football/FootballTournamentsListPage/FootballTournamentsListPage'));
+const FootballTournamentPage = lazyWithRetry(() => import('../pages/football/FootballTournamentPage/FootballTournamentPage'));
+const FootballMatchPage = lazyWithRetry(() => import('../pages/football/FootballMatchPage/FootballMatchPage'));
+const FootballTeamPage = lazyWithRetry(() => import('../pages/football/FootballTeamPage/FootballTeamPage'));
 
-const HockeyPage = lazyWithRetry(() => import('../pages/HockeyPage/HockeyPage'));
-const HockeyLeaguePage = lazyWithRetry(() => import('../pages/HockeyLeaguePage/HockeyLeaguePage'));
-const HockeyTournamentsPage = lazyWithRetry(() => import('../pages/HockeyTournamentsPage/HockeyTournamentsPage'));
-const HockeyTournamentPage = lazyWithRetry(() => import('../pages/HockeyTournamentPage/HockeyTournamentPage'));
-const HockeyMatchPage = lazyWithRetry(() => import('../pages/HockeyMatchPage/HockeyMatchPage'));
-const HockeyTeamPage = lazyWithRetry(() => import('../pages/HockeyTeamPage/HockeyTeamPage'));
+const HockeyPage = lazyWithRetry(() => import('../pages/hockey/HockeyPage/HockeyPage'));
+const HockeyLeaguePage = lazyWithRetry(() => import('../pages/hockey/HockeyLeaguePage/HockeyLeaguePage'));
+const HockeyTournamentsPage = lazyWithRetry(() => import('../pages/hockey/HockeyTournamentsPage/HockeyTournamentsPage'));
+const HockeyTournamentPage = lazyWithRetry(() => import('../pages/hockey/HockeyTournamentPage/HockeyTournamentPage'));
+const HockeyMatchPage = lazyWithRetry(() => import('../pages/hockey/HockeyMatchPage/HockeyMatchPage'));
+const HockeyTeamPage = lazyWithRetry(() => import('../pages/hockey/HockeyTeamPage/HockeyTeamPage'));
 const HockeyManagementPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyManagementPage'));
 const HockeyTeamsPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/HockeyTeamsPage'));
 const CreateHockeyTeamPage = lazyWithRetry(() => import('../pages/AdminPage/HockeyManagementPage/HockeyTeamsPage/CreateTeamPage'));

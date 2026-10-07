@@ -5,7 +5,7 @@ paths:
 
 # Frontend
 
-React 18 + TypeScript + Vite. Write function components with **explicit props types**. Do not use `React.FC`, and do not use `any`. Colocate a page with its `components/` folder and `*.scss`.
+React 18 + TypeScript + Vite. Write function components with **explicit props types**. Do not use `React.FC`, and do not use `any`. Colocate a page with its `components/` folder and `*.scss`. Public pages for one sport go under `pages/{floorball,football,hockey}/`, the same split as `api/` and `types/`.
 
 | Kind | Convention | Example |
 |------|------------|---------|

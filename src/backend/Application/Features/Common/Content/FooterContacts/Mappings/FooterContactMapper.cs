@@ -1,4 +1,4 @@
-using Application.DTOs.Common;
+using Application.Features.Common.Content.FooterContacts.DTOs;
 using Domain.Entities.Common;
 
 namespace Application.Features.Common.Content.FooterContacts.Mappings;

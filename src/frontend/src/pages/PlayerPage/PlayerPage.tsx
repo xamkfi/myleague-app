@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import SportIcon from '../../components/SportIcon/SportIcon';
 import UnderlineTabs from '../../components/UnderlineTabs/UnderlineTabs';
-import { FloorballPlayerProfile } from '../FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage';
-import { FootballPlayerProfile } from '../FootballPlayerPage/FootballPlayerPage';
-import { HockeyPlayerProfile } from '../HockeyPlayerPage/HockeyPlayerPage';
+import { FloorballPlayerProfile } from '../floorball/FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage';
+import { FootballPlayerProfile } from '../football/FootballPlayerPage/FootballPlayerPage';
+import { HockeyPlayerProfile } from '../hockey/HockeyPlayerPage/HockeyPlayerPage';
 import { PlayerLicenceSummary } from './PlayerLicenceSummary';
 import {
   personPlayerSportsService,
@@ -22,7 +22,7 @@ import { hockeySeasonService } from '../../api/hockey/hockeySeasonService';
 import { hockeyTournamentService } from '../../api/hockey/hockeyTournamentService';
 import { unwrapApiErrorMessage } from '../../api/utils/ParseErrorResponse';
 import './PlayerPage.scss';
-import '../FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage.scss';
+import '../floorball/FloorballTeamPlayerUserPage/FloorballTeamPlayerUserPage.scss';
 
 const VALID_SPORTS: PersonSportKind[] = ['floorball', 'football', 'hockey'];
 

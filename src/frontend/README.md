@@ -95,7 +95,10 @@ src/
 ├── functions/             ResizeImage.tsx
 ├── hooks/                 useMatchData, useMatchTimer, useIntervalWhen, in-progress match providers ...
 ├── i18n/                  i18n.ts, locales/fi/translation.json, locales/en/translation.json
-├── pages/                 route-level screens; AdminPage/ and ClubAdminPage/ hold the admin areas
+├── pages/                 route-level screens
+│   ├── floorball/ football/ hockey/   public sport pages (league, match, team, tournament, player)
+│   ├── AdminPage/ ClubAdminPage/      admin areas; sport admin lives in AdminPage/<Sport>ManagementPage/
+│   └── ...                            cross-sport pages (HomePage, PlayerPage, ClubsPage, NewsPage, ...)
 ├── router/                routes.tsx, SuspenseWrapper.tsx
 ├── services/              signalRService.ts and content helpers
 ├── styles/                variables.scss, common.scss, themes, AdminTable.scss
@@ -109,7 +112,7 @@ Import aliases (from `vite.config.ts`): `@variables` → `src/styles/variables.s
 
 ## Adding a page
 
-1. Create `src/pages/<Name>Page/<Name>Page.tsx` and a `<Name>Page.scss` next to it. Put page-only components in a `components/` folder beside it.
+1. Create `src/pages/<Name>Page/<Name>Page.tsx` and a `<Name>Page.scss` next to it. A public page for one sport goes under `src/pages/{floorball,football,hockey}/`. Put page-only components in a `components/` folder beside it.
 2. Write a function component with an explicit props type. Do not use `React.FC` or `any`.
 3. Add an API module under `src/api/<area>/` that calls `authFetch`, and add types under `src/types/`.
 4. Register the route in `src/router/routes.tsx` with `lazyWithRetry(() => import('...'))` inside `SuspenseWrapper`. Wrap admin routes in `<ProtectedRoute>` (defaults to `SystemAdmin`). For club-admin routes, pass `allowedRoles={['ClubAdmin', 'SystemAdmin']}` and `loginPath="/club-admin/login"`.
