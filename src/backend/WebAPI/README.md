@@ -1,133 +1,205 @@
 # WebAPI
 
-ASP.NET Core 10 host for MyLeague. Controllers translate HTTP to MediatR requests and wrap results in a consistent `ApiResponse` / paged envelope.
+ASP.NET Core 10 host. Controllers turn HTTP requests into MediatR commands and queries and wrap the `Result<T>` in an `ApiResponse` envelope. The project also hosts the SignalR hub, health endpoints, rate limiting, output caching, OpenAPI, and Scalar.
 
-See the [root README](../../../README.md) for ports, auth, and Docker. [WebAPIDevelopmentGuide.md](./WebAPIDevelopmentGuide.md) still imports `Application.Commands` / `Application.DTOs`, which are not the current namespaces. Follow this README and `.cursor/skills/create-api-endpoint/SKILL.md`.
+References Application and Infrastructure. Controllers never touch repositories or a `DbContext`.
 
-## Responsibilities
+Conventions: [backend rules](../../../.claude/rules/backend.md#webapi). New or changed endpoints: [create-api-endpoint](../../../.claude/skills/create-api-endpoint/SKILL.md).
 
-- Route HTTP to Application commands and queries
-- JWT bearer auth (and SignalR query-string tokens)
-- FluentValidation error mapping
-- CORS (Development only; Azure sets CORS in Bicep)
-- Serilog request logging; Application Insights when a connection string is present
-- Scalar / OpenAPI in Development
-- Health endpoints and a static dashboard (`/health-test.html`; `/health-ui` redirects there)
-- Match-event rate limiting (`IMatchEventRateLimiter`)
-
-## Technology
-
-- .NET 10 / ASP.NET Core 10
-- MediatR 12.5
-- FluentValidation.AspNetCore 11.3
-- JWT Bearer 10.0
-- Scalar.AspNetCore 1.2
-- Serilog (console, file, Seq, Application Insights)
-- Static health dashboard in `wwwroot/health-test.html` (the Xabaril HealthChecks.UI package is not referenced)
-
-## Structure
+## Folder map
 
 ```
 WebAPI/
 ├── Controllers/
-│   ├── Auth/
-│   ├── Common/              # Clubs, ClubAdmin, Divisions, Persons, Users,
-│   │                        # News, Search, Rules, Info pages, Footer contacts,
-│   │                        # Site settings, MatchTimer
-│   ├── Floorball/           # Teams, players, referees, team managers, seasons,
-│   │   └── Match/           #   tournaments, matches, events, officials, roster, lifecycle
-│   ├── Football/            # Parallel to floorball
-│   ├── Hockey/
-│   └── Health/
-├── Models/                  # Auth, Common, Floorball, Football, Hockey request types
-├── Middlewares/             # ExceptionHandlingMiddleware
-├── DependencyInjections/    # OpenAPI + Health Check UI
-├── Services/                # Match-event rate limiter
-├── appsettings*.json
+│   ├── Auth/                AuthController
+│   ├── Common/              BaseApiController, ApiErrorHttpMapper, ClubAdmin, Clubs, DataSubjectRights,
+│   │                        Divisions, FooterContact, InfoPageContent, MatchTimer, News, Persons,
+│   │                        RulesSection, Search, SiteSettings, Users
+│   ├── Floorball/           Player, Referee, Season, Statistics, Team, TeamManager, Tournament
+│   │   └── Match/           Matches, Events, Lifecycle, Officials, Roster, Scorekeepers
+│   ├── Football/            same as Floorball
+│   │   └── Match/           Matches, Events, Lifecycle, Lineup, Officials, Scorekeepers
+│   ├── Hockey/              Competition, Match, Official, Player, Season, Statistics, Team, Tournament
+│   └── Health/              HealthController (/api/health, /api/version)
+├── Models/                  Request records: Auth/ Common/ Floorball/ Football/ Hockey/
+│   └── Common/              ApiResponse, Pagination/ (PaginatedApiResponse, PaginationMetadata, PagedRequestBase)
+├── Middlewares/             ExceptionHandlingMiddleware
+├── DependencyInjections/    AddOpenApiConfiguration, AddPublicTrafficProtection
+├── Services/                IMatchEventRateLimiter, MatchEventRateLimiter, MatchEventRateLimits
+├── wwwroot/                 health-test.html, uploads/ (local image storage)
 ├── Program.cs
-└── Dockerfile
+└── appsettings*.json, Dockerfile
 ```
 
-## Endpoints
+## Request pipeline
 
-Full route tables live in the [root README](../../../README.md#api-overview). High-level groups:
+`Program.cs` registers services in this order: Application Insights (only when a connection string is set), Serilog, controllers (camelCase JSON, enums as strings), OpenAPI, CORS policy, options, JWT bearer, `IMatchEventRateLimiter`, `AddPublicTrafficProtection`, `AddApplication`, `AddInfrastructure`.
 
-| Area | Examples |
-|------|----------|
-| Auth | `/api/auth/login`, `/verify`, `/refresh`, `/logout`, `/me` |
-| Common | `/api/clubs`, `/api/club-admin`, `/api/news`, `/api/search`, `/api/site-settings` |
-| Floorball | `/api/floorballteam`, `/api/floorball-matches`, `/api/floorball/statistics` |
-| Football | `/api/footballteam`, `/api/football-matches`, `/api/football/statistics` |
-| Hockey | `/api/hockeyteam`, `/api/hockeymatch`, `/api/HockeyStatistics` |
-| Real-time | `/api/hubs/domainevent` |
-| Ops | `/health`, `/health/ready`, `/health/live`, `/health-ui` → `/health-test.html`, `/api/health`, `/api/version` |
+Middleware order:
 
-Scalar UI: `/scalar/v1` (Development). OpenAPI: `/swagger/v1/swagger.json`. Health check names and gaps: [HealthChecks-README.md](./HealthChecks-README.md).
+1. OpenAPI at `/swagger/v1/swagger.json` and Scalar at `/scalar/v1` (Development only)
+2. `UseForwardedHeaders`
+3. `ExceptionHandlingMiddleware`
+4. `UseSerilogRequestLogging`, `UseHttpsRedirection`
+5. `UseCors("Development")` (Development only; Azure sets CORS on the App Service in Bicep)
+6. `UseStaticFiles`, `UseAuthentication`, `UseAuthorization`, `UseRateLimiter`, `UseOutputCache`
+7. `MapControllers`, `MapHub<DomainEventHub>("/api/hubs/domainevent")`, health endpoints
 
-### Response shape
+## Key types
+
+| Type | Location | Purpose |
+|------|----------|---------|
+| `BaseApiController` | `Controllers/Common/` | Base class for every controller |
+| `ApiErrorHttpMapper` | `Controllers/Common/` | Picks the status code and safe message for a failed `Result` |
+| `ApiResponse`, `ApiResponse<T>` | `Models/Common/ApiResponse.cs` | Envelope: `success`, `message`, `errors`, `data` |
+| `PaginatedApiResponse<T>` | `Models/Common/Pagination/` | `data` is the item list; `pagination` holds the metadata |
+| `PagedRequestBase` | `Models/Common/Pagination/` | `Page` (≥ 1), `PageSize` (0–100, 0 = configured default) |
+| `ExceptionHandlingMiddleware` | `Middlewares/` | Turns unhandled exceptions into an `ApiResponse` |
+| `PublicTrafficProtectionExtensions` | `DependencyInjections/` | Forwarded headers, rate-limit policies, output-cache policy |
+
+`BaseApiController` helpers:
+
+| Helper | Use |
+|--------|-----|
+| `HandleResult(result, successMessage, defaultErrorMessage)` | Single payload |
+| `HandlePaginatedResult(...)` | `Result<PagedResult<T>>` → `PaginatedApiResponse<T>` |
+| `HandleListResult(...)` | `Result<IEnumerable<T>>` → `ApiResponse<List<T>>` |
+| `HandleVoidResult(...)` | Success without a body (delete, logout) |
+| `ToErrorResponse(result, defaultMessage)` | Failure only, for example after a custom success path such as `CreatedAtAction` |
+| `IncludeDrafts(requested)` | `true` only when requested by a SystemAdmin |
+| `IncludePrivateData` | `true` only for a SystemAdmin. Others must not get birth dates, addresses, contact details, or licence numbers |
+| `SanitizeForLog(value)` | Strips newlines from user input before logging |
+
+```csharp
+Result<ClubDto> result = await _mediator.Send(new GetClubByIdQuery(id));
+return HandleResult(result, "Club retrieved successfully", "Club not found");
+```
+
+## Responses and errors
+
+```json
+{ "success": true, "message": "Club retrieved successfully", "errors": [], "data": { } }
+```
 
 ```json
 {
   "success": true,
-  "data": { },
-  "message": "Operation completed successfully",
-  "errors": null
+  "message": "Hockey teams retrieved successfully",
+  "errors": [],
+  "data": [ ],
+  "pagination": {
+    "currentPage": 1, "pageSize": 15, "totalCount": 42, "totalPages": 3,
+    "hasNextPage": true, "hasPreviousPage": false, "startItem": 1, "endItem": 15
+  }
 }
 ```
 
-Paged payloads use `items`, `totalCount`, `page`, `pageSize`, `totalPages`.
+Failed `Result` (via `ApiErrorHttpMapper`):
 
-## Run
+| Condition | Status |
+|-----------|--------|
+| `ErrorKind == NotFound` | 404 |
+| `ErrorKind == Validation` | 400 |
+| Message contains "not found" (fallback for old handlers) | 404 |
+| Text contains `DbUpdateException:`, `PostgresException:`, and similar, outside Development | 500 with a generic message |
+| Anything else | 400 |
 
-**Docker (recommended):** from repo root, `docker compose up -d` — API at http://localhost:8080.
+Unhandled exceptions (`ExceptionHandlingMiddleware`):
 
-**Kestrel:**
+| Exception | Status |
+|-----------|--------|
+| `ArgumentException`, `InvalidOperationException` | 400 |
+| `KeyNotFoundException` | 404 |
+| `UnauthorizedAccessException` | 401 |
+| `DbUpdateException` | 409, names the unique constraint if there is one |
+| Anything else | 500; the exception text is shown only in Development |
+
+## Auth
+
+- JWT bearer. Issuer, audience, and key come from the `Jwt` section. Startup fails if `Jwt:SecretKey` is shorter than 32 bytes, or if it is empty outside Development. An empty key in Development falls back to a built-in key.
+- SignalR sends the token as `?access_token=` on paths under `/api/hubs`.
+- There is no fallback authorization policy. An action without `[Authorize]` is public. Writes use `[Authorize(Roles = AuthRoles.AdminOnly)]` or `[Authorize(Roles = AuthRoles.ClubAdminOrAdmin)]`.
+- Sign-in flow: `POST /api/auth/login` `{ "email" }` → `POST /api/auth/verify` `{ "email", "code" }` → `{ accessToken, refreshToken, expiresAt }`. Then `POST /api/auth/refresh`, `POST /api/auth/logout`, `GET /api/auth/me`.
+- With `LoginCode:AutoFillLoginCode` on (Development only), `/api/auth/login` returns the code in `data.autoFillCode`. Never enable it on a public environment.
+
+## Rate limiting and caching
+
+| Mechanism | Where | Limit |
+|-----------|-------|-------|
+| Policy `auth` | `/api/auth/login`, `/verify`, `/refresh`, `/verify-admin-email` | 10 requests per minute per client IP, 429 when exceeded |
+| Policy `public-stats` | `all-time` and `all-time/teams` in the floorball, football, and hockey statistics controllers | 60 per minute per client IP |
+| Output cache `public-stats-cache` | Same actions | 60 s, varies by every query parameter |
+| `IMatchEventRateLimiter` | Floorball and football match-event controllers | 429 for a repeat of the same match + event + player within 50 ms (goal, penalty) or 250 ms (single floorball save). Requests can set `SkipRateLimit` |
+
+The client IP comes from the last `X-Forwarded-For` entry (`ForwardLimit = 1`), which App Service appends. All of this is per process.
+
+## Endpoints
+
+Full route list: [root README](../../../README.md#api-overview). Route prefixes keep their historical style; do not rename them.
+
+| Area | Examples |
+|------|----------|
+| Auth | `/api/auth/login`, `/verify`, `/refresh`, `/logout`, `/verify-admin-email`, `/me` |
+| Common | `/api/clubs`, `/api/club-admin`, `/api/persons`, `/api/users`, `/api/divisions`, `/api/news`, `/api/search`, `/api/site-settings`, `/api/data-subject-rights`, `/api/matches/{matchId}/timer` |
+| Floorball | `/api/floorballteam`, `/api/floorballseason`, `/api/floorball-matches`, `/api/floorball/statistics` |
+| Football | `/api/footballteam`, `/api/footballseason`, `/api/football-matches`, `/api/football/statistics` |
+| Hockey | `/api/hockeyteam`, `/api/hockeyseason`, `/api/hockeymatch`, `/api/HockeyStatistics` |
+| Real-time | `/api/hubs/domainevent` |
+| Ops | `/health`, `/health/ready`, `/health/live`, `/health-ui`, `/api/health`, `/api/version` |
+
+## Health checks
+
+| Endpoint | Runs | Response |
+|----------|------|----------|
+| `/health/ready` | Checks tagged `ready`: PostgreSQL and the four DbContexts | `Healthy` / `Unhealthy` text, 503 when unhealthy |
+| `/health` | Every check, including memory, disk, row counts, and service resolution | JSON, 503 when unhealthy. Anonymous callers see only names and statuses; site admins also see descriptions and data |
+| `/health/live` | Nothing | `Alive` |
+| `/health-ui` | Redirects to `/health-test.html`, a static page that polls `/health` | HTML |
+
+Azure App Service (`healthCheckPath`), the production availability test, and the deploy workflows use `/health/ready`. Check names, tags, thresholds, and `/api/health/*`: [HealthChecks-README.md](./HealthChecks-README.md).
+
+## Configuration
+
+Main sections in `appsettings.json`:
+
+| Section | Notes |
+|---------|-------|
+| `ConnectionStrings:DefaultConnection` | `appsettings.json` points at host `postgres` (Compose); `appsettings.Development.json` at `localhost:5432` |
+| `Jwt` | `Issuer`, `Audience`, `SecretKey`, `AccessTokenExpirationMinutes` (15), `RefreshTokenExpirationDays` (7). Development: 60 min and 30 days |
+| `LoginCode` | `ExpirationMinutes` (10), `CodeLength` (6), `MaxAttempts` (5), `AutoFillLoginCode` (false; true in Development) |
+| `Pagination` | `Global` and per-resource `Resources:<ResourceKey>` page sizes |
+| `PeriodDurations`, `Seed:AdminEmail`, `Frontend:BaseUrl`, `App:BaseUrl`, `AzureCommunicationServices` | |
+| `ConnectionStrings:AzureBlobStorage`, `AzureStorage:ContainerName` | Image storage outside Development |
+
+Once an admin saves site settings, the `SiteSettings` row overrides the `Jwt` lifetimes and the `LoginCode` expiry and attempt limit. The `HealthChecks` section in `appsettings.json` is not read by any code.
+
+## Run locally
+
+Follow the [run-local skill](../../../.claude/skills/run-local/SKILL.md): PostgreSQL and Seq in Compose, the API on the host at port 8080, the UI with Vite on the host. Do not run the Compose `webapi` service at the same time; it also uses port 8080.
 
 ```bash
-cd src/backend/WebAPI
-dotnet run
+dotnet run --project src/backend/WebAPI/WebAPI.csproj --urls http://localhost:8080
 ```
 
-| Environment | URLs |
-|-------------|------|
-| Docker | http://localhost:8080 |
-| Development profile | https://localhost:65532 and http://localhost:65533 |
-
-`appsettings.Development.json` uses local PostgreSQL and `LoginCode:AutoFillLoginCode=true`. JWT lifetimes are longer in Development (60 minutes / 30 days) than the production defaults in `appsettings.json` (15 minutes / 7 days).
-
-Seed admin: `test@myleague.local` on first local startup. Docker override uses `test@myleague.fi`.
-
-## Configuration (essentials)
-
-```json
-{
-  "ConnectionStrings": { "DefaultConnection": "Host=localhost;Database=myleague;Username=postgres;Password=postgres;Port=5432" },
-  "Jwt": { "Issuer": "MyLeague", "Audience": "MyLeague", "AccessTokenExpirationMinutes": 15, "RefreshTokenExpirationDays": 7 },
-  "LoginCode": { "ExpirationMinutes": 10, "CodeLength": 6, "MaxAttempts": 5, "AutoFillLoginCode": false },
-  "Seed": { "AdminEmail": "" },
-  "Frontend": { "BaseUrl": "http://localhost:5173" }
-}
-```
-
-`LoginCode__AutoFillLoginCode` must stay `false` on any publicly reachable environment. See [`infra/README.md`](../../../infra/README.md).
-
-## Auth flow
-
-1. `POST /api/auth/login` `{ "email": "user@example.com" }`
-2. Code is emailed (or logged / auto-filled in Development)
-3. `POST /api/auth/verify` `{ "email": "...", "code": "123456" }` → `{ accessToken, refreshToken, expiresAt }`
-4. `Authorization: Bearer <accessToken>`; SignalR uses `?access_token=`
+`launchSettings.json` uses `https://localhost:65532` and `http://localhost:65533`; the local setup above does not use those ports. At startup the API applies migrations for all four contexts. In Development it seeds the sign-in users `test@myleague.local` (SystemAdmin) and `clubadmin@myleague.local` (ClubAdmin). It also seeds `Seed:AdminEmail` when set; `docker-compose.override.yml` sets it to `test@myleague.fi`. Sport data comes from `src/tools/Seeder`.
 
 ## Logging
 
-- Console and rolling files under `logs/myleague-api-{date}.log`
-- Seq at http://localhost:5341 when Compose is up
-- Application Insights when `APPLICATIONINSIGHTS_CONNECTION_STRING` is set (Azure). Registration is skipped locally so startup does not fail.
+- Serilog to the console and to `logs/myleague-api-<date>.log` (daily, 30 files kept).
+- Seq: `docker-compose.override.yml` adds the sink for the Compose `webapi` service through `Serilog__WriteTo__2__*` variables. An API started on the host logs to console and file only, unless you set the same variables with `serverUrl` `http://localhost:5341`.
+- Application Insights is registered only when `APPLICATIONINSIGHTS_CONNECTION_STRING` or `ApplicationInsights:ConnectionString` is set.
 
-## Contributing
+## Rules and pitfalls
 
-- Keep controllers thin: map request → command/query → `ApiResponse`.
-- Document actions with XML comments (feeds OpenAPI).
-- Add tests in `tests/backend/WebAPI.UnitTests/`.
+- Keep controllers thin. Map the request record field by field into the command; do not pass request models into Application.
+- Put XML `<summary>` comments on controllers and actions. They feed OpenAPI and Scalar.
+- Validation runs in the MediatR `ValidationBehavior`, not in ASP.NET Core model validation.
+- Rate limits, the output cache, `IMatchEventRateLimiter`, and the match timer are all in-memory. They assume one API instance.
 
-This project is part of MyLeague. See the [root README](../../../README.md).
+## Tests
+
+`tests/backend/WebAPI.UnitTests/WebApiTestProject`: `Controllers/<Area>/` (result mapping, including `ApiErrorHttpMapperTests`) and `Services/MatchEventRateLimiterTests.cs`. See [testing rules](../../../.claude/rules/testing.md).
+
+```bash
+dotnet test tests/backend/WebAPI.UnitTests/WebApiTestProject
+```

@@ -24,48 +24,82 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
 
-    i {
+    svg {
       color: $color-blue-deep;
-      font-size: 14px;
+      flex-shrink: 0;
     }
   }
 
+  // Referees and scorekeepers sit side by side and share the width evenly.
   &__officials {
     margin: 0;
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 
   &__decision + &__officials {
     border-top: 1px solid $color-neutral-medium-grey;
   }
 
-  &__row {
-    display: grid;
-    grid-template-columns: minmax(110px, max-content) 1fr;
-    gap: 12px;
-    align-items: baseline;
+  &__group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    text-align: center;
+
+    & + & {
+      border-left: 1px solid $color-neutral-medium-grey;
+    }
+  }
+
+  &__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: $color-neutral-dark-grey;
+    font-family: $font-family-display;
+    font-size: 12px;
+    font-weight: map.get($font-weights, 'semibold');
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+
+  &__icon {
+    display: inline-flex;
+    color: $color-blue-deep;
+  }
+
+  &__names {
+    margin: 0;
+
+    ul {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+  }
+
+  &__name {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: $color-neutral-light-grey;
+    color: $color-neutral-black;
     font-family: $font-family-body;
     font-size: 14px;
+    font-weight: map.get($font-weights, 'medium');
+    line-height: 1.5;
+  }
 
-    dt {
-      color: $color-neutral-dark-grey;
-      font-size: 12px;
-      font-weight: map.get($font-weights, 'semibold');
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    dd {
-      margin: 0;
-      color: $color-neutral-black;
-    }
-
-    @media (max-width: map.get($breakpoints, 'mobile')) {
-      grid-template-columns: 1fr;
-      gap: 2px;
+  @media (max-width: map.get($breakpoints, 'mobile')) {
+    &__group + &__group {
+      border-left: 0;
+      border-top: 1px solid $color-neutral-medium-grey;
     }
   }
 }

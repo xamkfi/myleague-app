@@ -23,8 +23,11 @@ export interface SeasonStandingsCardLabels {
 }
 
 export interface SeasonStandingsNavLink {
-  tab: string;
   label: string;
+  /** League page tab. Ignored when `to` is set. */
+  tab?: string;
+  /** App path for a link outside the league page. */
+  to?: string;
 }
 
 interface SeasonStandingsCardProps {
@@ -66,7 +69,7 @@ export default function SeasonStandingsCard({
       {isDark && (
         <nav className="fb-standings-card__links" aria-label={seasonName}>
           {links.map((link) => (
-            <Link key={link.tab} to={getLeaguePath(sport, seasonId, link.tab)}>
+            <Link key={link.to ?? link.tab} to={link.to ?? getLeaguePath(sport, seasonId, link.tab)}>
               {link.label}
             </Link>
           ))}

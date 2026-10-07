@@ -5,6 +5,7 @@ import {
   isHockeyMatchLive,
   type HockeyMatchDto,
 } from '../../types/hockey/hockeyTypes';
+import { hockeyPeriodScoreMap } from '../../utils/hockeyPeriodScores';
 
 interface HockeyMatchRowProps {
   match: HockeyMatchDto;
@@ -20,14 +21,6 @@ function toDisplayStatus(status: string): FloorballMatchStatus {
     return FloorballMatchStatus.Completed;
   }
   return FloorballMatchStatus.Scheduled;
-}
-
-function periodScoreMap(match: HockeyMatchDto): Record<number, { homeScore: number; awayScore: number }> {
-  const scores: Record<number, { homeScore: number; awayScore: number }> = {};
-  for (const period of match.periodScores) {
-    scores[period.periodNumber] = { homeScore: period.homeGoals, awayScore: period.awayGoals };
-  }
-  return scores;
 }
 
 function logoFor(
@@ -52,7 +45,7 @@ function HockeyMatchRow({ match, teamNames, teamLogos }: HockeyMatchRowProps) {
       awayTeamLogo={logoFor(match.awayTeamId, teamLogos)}
       homeScore={match.homeScore}
       awayScore={match.awayScore}
-      periodScores={periodScoreMap(match)}
+      periodScores={hockeyPeriodScoreMap(match)}
       status={toDisplayStatus(match.status)}
     />
   );

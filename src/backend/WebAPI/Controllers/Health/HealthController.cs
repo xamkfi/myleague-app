@@ -41,22 +41,8 @@ namespace WebAPI.Controllers.Health
             try
             {
                 HealthReport healthReport = await _healthCheckService.CheckHealthAsync();
-                
-                var response = new
-                {
-                    Status = healthReport.Status.ToString(),
-                    Duration = healthReport.TotalDuration.TotalMilliseconds,
-                    CheckedAt = DateTime.UtcNow,
-                    Checks = healthReport.Entries.Select(entry => new
-                    {
-                        Name = entry.Key,
-                        Status = entry.Value.Status.ToString(),
-                        entry.Value.Description,
-                        Duration = entry.Value.Duration.TotalMilliseconds,
-                        entry.Value.Data,
-                        entry.Value.Tags
-                    })
-                };
+
+                object response = HealthReportResponse.Create(healthReport, IncludePrivateData);
 
                 return healthReport.Status == HealthStatus.Healthy 
                     ? Ok(response) 
@@ -88,23 +74,8 @@ namespace WebAPI.Controllers.Health
             {
                 HealthReport healthReport = await _healthCheckService.CheckHealthAsync(
                     check => check.Tags.Contains(tag));
-                
-                var response = new
-                {
-                    Tag = tag,
-                    Status = healthReport.Status.ToString(),
-                    Duration = healthReport.TotalDuration.TotalMilliseconds,
-                    CheckedAt = DateTime.UtcNow,
-                    Checks = healthReport.Entries.Select(entry => new
-                    {
-                        Name = entry.Key,
-                        Status = entry.Value.Status.ToString(),
-                        entry.Value.Description,
-                        Duration = entry.Value.Duration.TotalMilliseconds,
-                        entry.Value.Data,
-                        entry.Value.Tags
-                    })
-                };
+
+                object response = HealthReportResponse.Create(healthReport, IncludePrivateData, tag);
 
                 return healthReport.Status == HealthStatus.Healthy 
                     ? Ok(response) 

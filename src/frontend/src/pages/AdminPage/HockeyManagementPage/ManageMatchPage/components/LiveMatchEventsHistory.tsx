@@ -307,7 +307,11 @@ function LiveMatchEventsHistory({
                   const { event } = row;
                   const type = event.eventType.toLowerCase();
                   const canRemove = canDelete && (type.includes('goal') || type.includes('penalty') || type.includes('shot'));
-                  const teamName = event.matchTeamId ? teamNamesByMatchTeamId.get(event.matchTeamId) ?? '' : '';
+                  // A save is stored on the shooting team; show the team whose goalie made it.
+                  const displayTeamId: string | null | undefined = isSave(event)
+                    ? [...teamNamesByMatchTeamId.keys()].find((id) => id !== event.matchTeamId)
+                    : event.matchTeamId;
+                  const teamName = displayTeamId ? teamNamesByMatchTeamId.get(displayTeamId) ?? '' : '';
                   return (
                     <EventRow
                       key={event.id}

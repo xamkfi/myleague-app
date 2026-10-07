@@ -195,12 +195,18 @@ export const HOCKEY_PENALTY_OFFENCES = [
   'CrossChecking',
   'Boarding',
   'Charging',
+  'IllegalCheck',
   'CheckingFromBehind',
+  'CheckingToHeadOrNeck',
   'Elbowing',
+  'Kneeing',
+  'Spearing',
+  'ButtEnding',
   'Roughing',
   'Fighting',
+  'GoalieInterference',
   'DelayOfGame',
-  'TooManyMen',
+  'TooManyPlayers',
   'UnsportsmanlikeConduct',
   'Other',
 ] as const;
@@ -238,6 +244,11 @@ export type HockeyCaptainRole = (typeof HOCKEY_CAPTAIN_ROLES)[number];
 
 export const HOCKEY_ROSTER_STATUSES = ['Active', 'Injured', 'Suspended', 'Inactive'] as const;
 export type HockeyRosterStatus = (typeof HOCKEY_ROSTER_STATUSES)[number];
+
+/** A hockey licence is paid while the roster status is Active (same rule as the admin roster). */
+export function hockeyLicenceActive(row: { rosterStatus: HockeyRosterStatus }): boolean {
+  return row.rosterStatus === 'Active';
+}
 
 export const HOCKEY_LINE_TYPES = [
   'ForwardLine',

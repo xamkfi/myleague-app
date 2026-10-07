@@ -1,0 +1,125 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+// Same colours as the audience switcher dots.
+$audience-colors: (
+  'adult': #1c356d,
+  'youth': #4e8100,
+  'women': #6e2238,
+);
+
+.team-category-picker {
+  margin: 0 0 map.get($spacing, 'md');
+  padding: 0;
+  border: 0;
+  min-width: 0;
+
+  &__legend {
+    padding: 0;
+    margin-bottom: map.get($spacing, 'xxs');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-neutral-black;
+  }
+
+  &__hint {
+    margin: 0 0 map.get($spacing, 'xs');
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-neutral-dark-grey;
+  }
+
+  &__options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__option {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'sm');
+    border: 2px solid $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'md');
+    background: $color-white;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+
+    input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    &:hover {
+      border-color: $color-neutral-dark-grey;
+    }
+
+    &:focus-within {
+      outline: 2px solid $color-blue-secondary;
+      outline-offset: 2px;
+    }
+
+    @each $id, $color in $audience-colors {
+      &--#{$id} {
+        .team-category-picker__dot {
+          background: $color;
+        }
+
+        &.is-selected {
+          border-color: $color;
+          background: rgba($color, 0.06);
+        }
+      }
+    }
+  }
+
+  &__dot {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    margin-top: 4px;
+    border-radius: 50%;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__title {
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-neutral-black;
+  }
+
+  &__description {
+    font-size: map.get($font-sizes, 'sm-xs');
+    color: $color-neutral-dark-grey;
+  }
+
+  &:disabled &__option {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.season-team-category {
+  &__saved {
+    margin: 0;
+    color: $color-green-muted;
+    font-weight: map.get($font-weights, 'semibold');
+  }
+
+  &__error {
+    margin: 0;
+    color: $color-red-muted;
+  }
+}
+
+@media (max-width: map.get($breakpoints, 'tablet')) {
+  .team-category-picker__options {
+    grid-template-columns: 1fr;
+  }
+}

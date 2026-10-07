@@ -14,7 +14,7 @@ interface LiveMatchQuickActionsProps {
   onShowGoalForm: (teamId: string) => void;
   onShowPenaltyForm: (teamId: string) => void;
   onShowShotForm: (teamId: string) => void;
-  /** Opens the bulk dialog for saves made by the opposing goalie against shots from `teamId`. */
+  /** Opens the bulk dialog for saves made by the goalie of `teamId`. */
   onShowBulkSaveForm?: (teamId: string) => void;
   onShowFaceoffForm: () => void;
   onRecordOffside: () => void;
@@ -75,32 +75,33 @@ function LiveMatchQuickActions({
 
   const renderTeamActions = (teamId: string | undefined, shotKeyLabel: string) => (
     <div className="team-actions">
-      <div className="save-action-group">
+      <button
+        type="button"
+        onClick={() => teamId && onShowShotForm(teamId)}
+        className="action-btn save-btn"
+        disabled={loading || !canRecord || !teamId}
+      >
+        <span className="btn-label">{t('hockey.matches.shot', 'Record Shot')}</span>
+        <span className="btn-meta">
+          <span className={`btn-key ${keybindsEnabled ? '' : 'disabled'}`}>({shotKeyLabel})</span>
+          <span className="btn-icon" aria-hidden="true">🏒</span>
+        </span>
+      </button>
+      {onShowBulkSaveForm && (
         <button
           type="button"
-          onClick={() => teamId && onShowShotForm(teamId)}
-          className="action-btn save-btn"
+          onClick={() => teamId && onShowBulkSaveForm(teamId)}
+          className="action-btn goalie-saves-btn"
           disabled={loading || !canRecord || !teamId}
+          title={t('hockey.matches.manage.bulkSavesTitle', "Record this team's goalie saves at once")}
         >
-          <span className="btn-label">{t('hockey.matches.shot', 'Record Shot')}</span>
+          <span className="btn-label">{t('hockey.matches.manage.goalieSaves', 'Goalie saves')}</span>
           <span className="btn-meta">
-            <span className={`btn-key ${keybindsEnabled ? '' : 'disabled'}`}>({shotKeyLabel})</span>
-            <span className="btn-icon" aria-hidden="true">🏒</span>
+            <span className="btn-key">+N</span>
+            <span className="btn-icon" aria-hidden="true">🧤</span>
           </span>
         </button>
-        {onShowBulkSaveForm && (
-          <button
-            type="button"
-            onClick={() => teamId && onShowBulkSaveForm(teamId)}
-            className="bulk-save-btn"
-            disabled={loading || !canRecord || !teamId}
-            title={t('hockey.matches.manage.bulkSavesTitle', 'Record multiple saved shots at once')}
-            aria-label={t('hockey.matches.manage.bulkSavesTitle', 'Record multiple saved shots at once')}
-          >
-            +N
-          </button>
-        )}
-      </div>
+      )}
       <button
         type="button"
         onClick={() => teamId && onShowGoalForm(teamId)}

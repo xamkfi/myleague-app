@@ -8,6 +8,7 @@ import {
   type FootballTeamPlayer,
 } from '../../../types/football/footballTypes';
 import { getPlayerPath } from '../../../utils/sportRoutes';
+import { LicenceLegend, LicenceStatusDot } from '../../../components/LicenceStatus/LicenceStatus';
 import './MatchLineups.scss';
 
 type RosterLookup = Map<string, FootballTeamPlayer>;
@@ -19,6 +20,7 @@ interface ActiveRosterEntry {
   position: FootballPosition;
   isOnField: boolean;
   isSentOff: boolean;
+  licenceActive?: boolean;
 }
 
 const POSITION_DISPLAY_ORDER: FootballPosition[] = [
@@ -35,10 +37,15 @@ const sortByJerseyThenName = (a: ActiveRosterEntry, b: ActiveRosterEntry): numbe
   return a.playerName.localeCompare(b.playerName, undefined, { sensitivity: 'base' });
 };
 
-const buildRosterLookup = (roster: FootballTeamPlayer[]): RosterLookup => {
+// The roster holds base and competition rows. Prefer the match competition's row,
+// because the licence is tracked per competition.
+const buildRosterLookup = (roster: FootballTeamPlayer[], competitionId: string): RosterLookup => {
   const byId: RosterLookup = new Map<string, FootballTeamPlayer>();
   for (const player of roster) {
-    byId.set(player.playerId, player);
+    const current: FootballTeamPlayer | undefined = byId.get(player.playerId);
+    if (!current || (player.competitionId === competitionId && current.competitionId !== competitionId)) {
+      byId.set(player.playerId, player);
+    }
   }
   return byId;
 };
@@ -67,6 +74,7 @@ const buildActiveRoster = (
       position: entry.position,
       isOnField: entry.isOnField,
       isSentOff: entry.isSentOff,
+      licenceActive: player.isActive,
     });
   }
   return entries;
@@ -81,8 +89,14 @@ interface MatchLineupsProps {
 export default function MatchLineups({ match, homeRoster, awayRoster }: MatchLineupsProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const homeLookup: RosterLookup = useMemo(() => buildRosterLookup(homeRoster), [homeRoster]);
-  const awayLookup: RosterLookup = useMemo(() => buildRosterLookup(awayRoster), [awayRoster]);
+  const homeLookup: RosterLookup = useMemo(
+    () => buildRosterLookup(homeRoster, match.competitionId),
+    [homeRoster, match.competitionId],
+  );
+  const awayLookup: RosterLookup = useMemo(
+    () => buildRosterLookup(awayRoster, match.competitionId),
+    [awayRoster, match.competitionId],
+  );
 
   const homeActiveRoster: ActiveRosterEntry[] = useMemo(
     () => buildActiveRoster(match.homeLineup ?? [], homeLookup),
@@ -139,7 +153,10 @@ export default function MatchLineups({ match, homeRoster, awayRoster }: MatchLin
                     onClick={() => handlePlayerClick(entry.playerId)}
                   >
                     <div className="lineup-col-number">
-                      <span className="jersey-badge">{entry.jerseyNumber}</span>
+                      <span className="jersey-badge licence-anchor">
+                        {entry.jerseyNumber}
+                        {entry.licenceActive !== undefined && <LicenceStatusDot active={entry.licenceActive} />}
+                      </span>
                     </div>
                     <div className="lineup-col-name player-link">
                       {entry.playerName}
@@ -160,6 +177,9 @@ export default function MatchLineups({ match, homeRoster, awayRoster }: MatchLin
 
   return (
     <div className="match-lineups-container">
+      {[...homeActiveRoster, ...awayActiveRoster].some((entry) => entry.licenceActive !== undefined) && (
+        <LicenceLegend />
+      )}
       <div className="match-lineups-grid">
         {renderTeamRoster(homeActiveRoster, match.homeTeamName ?? 'TBD')}
         {renderTeamRoster(awayActiveRoster, match.awayTeamName ?? 'TBD')}

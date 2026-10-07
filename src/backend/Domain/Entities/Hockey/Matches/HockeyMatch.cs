@@ -1,5 +1,6 @@
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches.Events;
+using Domain.Entities.Hockey.Teams;
 using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Matches;
 using Domain.Enums.Hockey.Teams;
@@ -262,7 +263,24 @@ public class HockeyMatch : BaseEntity
 
         HockeyPeriodScore periodScore = new(Id, periodNumber, periodType, home.Id, away.Id);
         _periodScores.Add(periodScore);
+        RecalculatePeriodGoals();
         return periodScore;
+    }
+
+    /// <summary>
+    /// Recounts each period row's goals from the goal events, so period scores always match the events.
+    /// </summary>
+    public void RecalculatePeriodGoals()
+    {
+        List<HockeyGoal> goals = _events.OfType<HockeyGoal>().ToList();
+        foreach (HockeyPeriodScore periodScore in _periodScores)
+        {
+            int homeGoals = goals.Count(g =>
+                g.PeriodNumber == periodScore.PeriodNumber && g.ScoringMatchTeamId == periodScore.HomeMatchTeamId);
+            int awayGoals = goals.Count(g =>
+                g.PeriodNumber == periodScore.PeriodNumber && g.ScoringMatchTeamId == periodScore.AwayMatchTeamId);
+            periodScore.SetGoals(homeGoals, awayGoals);
+        }
     }
 
     public void UpdateVenue(string? venue) => Venue = venue;
@@ -404,6 +422,7 @@ public class HockeyMatch : BaseEntity
             HockeyMatchTeam scoringTeam = _matchTeams.FirstOrDefault(t => t.Id == goal.ScoringMatchTeamId)
                 ?? throw new InvalidOperationException("Scoring match team must belong to this match.");
             scoringTeam.IncrementGoals();
+            RecalculatePeriodGoals();
         }
     }
 
@@ -426,6 +445,7 @@ public class HockeyMatch : BaseEntity
         }
 
         _events.Remove(matchEvent);
+        RecalculatePeriodGoals();
         return matchEvent;
     }
 
@@ -491,6 +511,7 @@ public class HockeyMatch : BaseEntity
             wasEmptyNet,
             description);
 
+        RecalculatePeriodGoals();
         return goal;
     }
 
@@ -586,6 +607,7 @@ public class HockeyMatch : BaseEntity
         }
 
         _events.Remove(matchEvent);
+        RecalculatePeriodGoals();
         return matchEvent;
     }
 
@@ -628,6 +650,78 @@ public class HockeyMatch : BaseEntity
     /// Returns true when any match side references the given competition-team id.
     /// Used by the competition aggregate to block removal of still-referenced teams.
     /// </summary>
+    /// <summary>
+    /// Sets one side's lineup to exactly <paramref name="teamPlayers"/>. Existing match-player rows are kept,
+    /// so recorded events keep their references: removed players are deactivated and returning players are
+    /// reactivated. Allowed in any match status, so a lineup can be corrected after the match.
+    /// A player who has recorded events in this match cannot be removed.
+    /// </summary>
+    public HockeyMatchPlayerSelection SyncPlayerSelection(
+        Guid matchTeamId,
+        IReadOnlyCollection<HockeyTeamPlayer> teamPlayers,
+        HockeyPlayerSelectionSource source,
+        Guid? userId = null)
+    {
+        ArgumentNullException.ThrowIfNull(teamPlayers);
+        HockeyMatchTeam matchTeam = _matchTeams.FirstOrDefault(t => t.Id == matchTeamId)
+            ?? throw new InvalidOperationException("Match team is not part of this match.");
+
+        HockeyMatchPlayerSelection selection = matchTeam.PlayerSelection
+            ?? matchTeam.CreateOrReplacePlayerSelection(source, userId);
+        selection.AttachMatchTeam(matchTeam);
+
+        HashSet<Guid> keptTeamPlayerIds = teamPlayers.Select(p => p.Id).ToHashSet();
+        List<HockeyMatchActivePlayer> removed = selection.ActivePlayers
+            .Where(p => p.IsActive && !keptTeamPlayerIds.Contains(p.TeamPlayerId))
+            .ToList();
+        foreach (HockeyMatchActivePlayer player in removed)
+        {
+            if (HasEventsForActivePlayer(player.Id))
+                throw new InvalidOperationException(
+                    $"Player #{player.JerseyNumber} has recorded events in this match. Edit or delete those events before removing the player from the lineup.");
+
+            selection.DeactivatePlayer(player.Id);
+            if (matchTeam.ActiveGoalieMatchPlayerId == player.Id)
+                matchTeam.ClearActiveGoalie();
+        }
+
+        IEnumerable<HockeyTeamPlayer> playersToAdd = teamPlayers
+            .DistinctBy(p => p.Id)
+            .Where(teamPlayer => !selection.ActivePlayers.Any(p => p.TeamPlayerId == teamPlayer.Id && p.IsActive));
+        foreach (HockeyTeamPlayer teamPlayer in playersToAdd)
+        {
+            selection.AddActivePlayer(teamPlayer, isGoalie: teamPlayer.Position == HockeyPosition.Goalie);
+        }
+
+        return selection;
+    }
+
+    /// <summary>
+    /// Whether any event in this match points at the given match player.
+    /// </summary>
+    public bool HasEventsForActivePlayer(Guid activePlayerId) =>
+        _events.Any(e => ReferencedActivePlayerIds(e).Contains(activePlayerId));
+
+    private static IEnumerable<Guid?> ReferencedActivePlayerIds(HockeyMatchEvent matchEvent) => matchEvent switch
+    {
+        HockeyGoal goal =>
+        [
+            goal.MatchActivePlayerId, goal.ScorerActivePlayerId, goal.PrimaryAssistActivePlayerId,
+            goal.SecondaryAssistActivePlayerId, goal.GoalieActivePlayerId,
+        ],
+        HockeyPenalty penalty =>
+            [penalty.MatchActivePlayerId, penalty.PenalizedActivePlayerId, penalty.ServedByActivePlayerId],
+        HockeyShot shot => [shot.MatchActivePlayerId, shot.ShooterActivePlayerId, shot.GoalieActivePlayerId],
+        HockeyFaceoff faceoff =>
+            [faceoff.MatchActivePlayerId, faceoff.WinningActivePlayerId, faceoff.LosingActivePlayerId],
+        HockeyGoalieChange change =>
+            [change.MatchActivePlayerId, change.OutgoingGoalieActivePlayerId, change.IncomingGoalieActivePlayerId],
+        HockeyShootoutAttempt attempt =>
+            [attempt.MatchActivePlayerId, attempt.ShooterActivePlayerId, attempt.GoalieActivePlayerId],
+        HockeyStoppage stoppage => [stoppage.MatchActivePlayerId, stoppage.ResponsibleActivePlayerId],
+        _ => [matchEvent.MatchActivePlayerId],
+    };
+
     public bool ReferencesCompetitionTeam(Guid competitionTeamId) =>
         _matchTeams.Any(t => t.CompetitionTeamId == competitionTeamId);
 

@@ -37,6 +37,7 @@ import { useAudience } from '../../context/AudienceContext';
 import type { SeasonContentBlockDto } from '../../types/common/seasonContent';
 import { useIntervalWhen } from '../../hooks/useIntervalWhen';
 import { mergeHockeyLiveMatches } from '../../utils/hockeyLiveMatches';
+import { hockeyPeriodScoreMap } from '../../utils/hockeyPeriodScores';
 import '../FloorballLeaguePage/FloorballLeaguePage.scss';
 import '../FloorballLeaguePage/components/SummarySection.scss';
 import '../FloorballLeaguePage/components/FixturesSection.scss';
@@ -58,14 +59,6 @@ function toFixtureStatus(status: string): string {
   return 'Scheduled';
 }
 
-function periodScoreMap(match: HockeyMatchDto): Record<number, { homeScore: number; awayScore: number }> {
-  const scores: Record<number, { homeScore: number; awayScore: number }> = {};
-  for (const period of match.periodScores) {
-    scores[period.periodNumber] = { homeScore: period.homeGoals, awayScore: period.awayGoals };
-  }
-  return scores;
-}
-
 function toFixtureMatch(
   match: HockeyMatchDto,
   teamNames: Map<string, string>,
@@ -81,7 +74,7 @@ function toFixtureMatch(
     awayTeamLogo: match.awayTeamId ? teamLogos.get(match.awayTeamId) ?? null : null,
     homeScore: match.homeScore,
     awayScore: match.awayScore,
-    periodScores: periodScoreMap(match),
+    periodScores: hockeyPeriodScoreMap(match),
   };
 }
 
@@ -409,6 +402,8 @@ function HockeyLeaguePage() {
             goalies={goalies}
             playerNames={playerNames}
             teamNames={teamNames}
+            collapsedPlayerCount={10}
+            collapsedGoalieCount={10}
           />
         );
       case 'results':

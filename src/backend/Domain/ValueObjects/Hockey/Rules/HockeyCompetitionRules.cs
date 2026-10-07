@@ -64,6 +64,17 @@ public class HockeyCompetitionRules : IEquatable<HockeyCompetitionRules>
             standingRules, RosterRules, VideoReviewRules, ContactRules);
     }
 
+    /// <summary>
+    /// Swaps only the standing rules on this instance. EF Core persists the rules as nested owned
+    /// types in the competition row, so replacing the whole graph while reusing the other parts
+    /// makes EF delete and null out the shared parts. Use this when the rules are already tracked.
+    /// </summary>
+    internal void ReplaceStandingRules(HockeyStandingRules standingRules)
+    {
+        ArgumentNullException.ThrowIfNull(standingRules);
+        StandingRules = standingRules;
+    }
+
     public override bool Equals(object? obj) => Equals(obj as HockeyCompetitionRules);
 
     public bool Equals(HockeyCompetitionRules? other)

@@ -14,7 +14,7 @@ public class CreateHockeySeasonCommandValidator : AbstractValidator<CreateHockey
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Season name is required.")
-            .MaximumLength(200).WithMessage("Season name cannot exceed 200 characters.");
+            .MaximumLength(100).WithMessage("Season name cannot exceed 100 characters.");
 
         RuleFor(x => x.StartDate)
             .NotEqual(default(DateTime)).WithMessage("Start date is required.");

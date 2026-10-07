@@ -15,7 +15,10 @@ interface ActiveRosterCardProps {
   onEditLineup: () => void;
   onSelectPlayer?: (playerId: string, side: 'left' | 'right') => void;
   selectedPlayerId?: string;
+  /** Disables player selection. */
   disabled?: boolean;
+  /** Disables the edit lineup button. Defaults to `disabled`. */
+  editDisabled?: boolean;
 }
 
 interface ChipPlayer {
@@ -55,6 +58,7 @@ function ActiveRosterCard({
   onSelectPlayer,
   selectedPlayerId,
   disabled = false,
+  editDisabled = disabled,
 }: ActiveRosterCardProps): ReactElement {
   const { t } = useTranslation();
   const leftChips = useMemo(() => toChips(leftPlayers, playerNames), [leftPlayers, playerNames]);
@@ -109,7 +113,7 @@ function ActiveRosterCard({
     <section className="active-roster-card">
       <div className="active-roster-card__header">
         <h3 className="active-roster-card__title">{t('hockey.matches.activeRoster', 'ACTIVE ROSTER')}</h3>
-        <button type="button" className="active-roster-card__edit" onClick={onEditLineup} disabled={disabled}>
+        <button type="button" className="active-roster-card__edit" onClick={onEditLineup} disabled={editDisabled}>
           {t('hockey.matches.editLineup', 'Edit lineup')}
         </button>
       </div>

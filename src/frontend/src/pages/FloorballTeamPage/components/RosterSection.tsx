@@ -11,7 +11,7 @@ export default function RosterSection({ team, playerStatistics }: RosterSectionP
   return (
     <SharedRosterSection
       sport="floorball"
-      players={team.roster}
+      players={team.roster.map((player) => ({ ...player, licenceActive: player.isActive }))}
       playerStatistics={playerStatistics}
       positionOrder={['Goalkeeper', 'Defender', 'Center', 'Forward']}
     />

@@ -2123,6 +2123,7 @@
       "updateMatch": "Päivitä ottelu",
       "matchCount": "ottelua",
       "lineup": {
+        "lockedHint": "Avaa ottelu muokataksesi kokoonpanoa.",
         "activeLineup": "Aktiivinen kentällinen",
         "editLineup": "Muokkaa kentällisiä",
         "editLineupTitle": "Muokkaa aktiivista kentällistä",
@@ -2636,6 +2637,8 @@
     }
   },
   "playerLicence": {
+    "statusOk": "Lisenssi kunnossa",
+    "statusMissing": "Lisenssi puuttuu",
     "column": "Lisenssi",
     "markPaid": "Merkitse lisenssi maksetuksi",
     "markUnpaid": "Merkitse lisenssi maksamattomaksi",
@@ -2818,6 +2821,7 @@
         "genericError": "Joukkueiden tallennus epäonnistui."
       },
       "lineup": {
+        "lockedHint": "Avaa ottelu muokataksesi kokoonpanoa.",
         "loanGoalkeeper": "Lainavahti",
         "loanGoalkeeperHint": "Luo joukkueelle lainavahdin ja asettaa sen maalivahdiksi. Jos lainavahti on jo luotu, käytetään samaa pelaajaa.",
         "loanGoalkeeperConfirmTitle": "Aseta lainavahti",
@@ -2873,6 +2877,16 @@
     "iceHockeyDescription": "Jääkiekko on intensiivinen joukkuelaji jäällä.",
     "viewLeagues": "Näytä sarjat",
     "comingSoon": "Tulossa pian"
+  },
+  "seasonGroup": {
+    "label": "Ryhmä",
+    "createHint": "Valitse, mihin ryhmään kausi lisätään. Kausi näkyy vain tämän ryhmän sivuilla.",
+    "editHint": "Kausi näkyy vain valitun ryhmän sivuilla. Ryhmän voi vaihtaa myös päättyneelle kaudelle, ja muutos tallentuu heti vahvistuksen jälkeen.",
+    "changed": "Kausi siirretty ryhmään {{group}}.",
+    "changeFailed": "Ryhmän vaihto epäonnistui.",
+    "confirmTitle": "Vaihdetaanko kauden ryhmä?",
+    "confirmMessage": "Kausi siirretään ryhmästä {{from}} ryhmään {{to}}. Se näkyy jatkossa vain ryhmän {{to}} sivuilla.",
+    "confirm": "Vaihda ryhmä"
   },
   "audience": {
     "filterLabel": "Kohderyhmä",
@@ -3475,7 +3489,9 @@
         "suspended": "Keskeytetty"
       },
       "manage": {
-        "bulkSavesTitle": "Kirjaa useita torjuntoja kerralla",
+        "bulkSavesTitle": "Kirjaa tämän joukkueen maalivahdin torjunnat kerralla",
+        "bulkSavesNeedGoalie": "Joukkueella ei ole maalivahtia kokoonpanossa.",
+        "goalieSaves": "Maalivahdin torjunnat",
         "deleteBulkSaves_one": "Poista {{count}} torjunta",
         "deleteBulkSaves_other": "Poista {{count}} torjuntaa",
         "finished": "PÄÄTTYNYT",
@@ -3692,12 +3708,15 @@
         "action": "Toiminto",
         "defenders": "Puolustajat",
         "forwards": "Hyökkääjät",
+        "backupGoalies": "Varamaalivahdit",
+        "noBackupGoalies": "Ei varamaalivahtia.",
         "noDefenders": "Ei valittuja puolustajia.",
         "noForwards": "Ei valittuja hyökkääjiä.",
         "saveLineup": "Tallenna kentällinen",
         "addAs": {
           "Defenseman": "Puolustaja",
-          "Forward": "Hyökkääjä"
+          "Forward": "Hyökkääjä",
+          "BackupGoalie": "Varamaalivahti"
         }
       },
       "createNewMatch": "Luo uusi ottelu",
@@ -3767,7 +3786,7 @@
       },
       "penaltyOffences": {
         "Tripping": "Kampitus",
-        "Hooking": "Hakaaminen",
+        "Hooking": "Koukkaaminen",
         "Holding": "Kiinnipitäminen",
         "Interference": "Estäminen",
         "Slashing": "Mailalla lyöminen",
@@ -3775,12 +3794,18 @@
         "CrossChecking": "Poikittaismaila",
         "Boarding": "Laitataklaus",
         "Charging": "Ryntääminen",
+        "IllegalCheck": "Väärä taklaus",
         "CheckingFromBehind": "Taklaus takaa",
+        "CheckingToHeadOrNeck": "Taklaus päähän tai niskaan",
         "Elbowing": "Kyynärpää",
+        "Kneeing": "Polvitaklaus",
+        "Spearing": "Keihästäminen",
+        "ButtEnding": "Päittäminen",
         "Roughing": "Kovakouraisuus",
         "Fighting": "Tappelu",
+        "GoalieInterference": "Maalivahdin estäminen",
         "DelayOfGame": "Pelin viivyttäminen",
-        "TooManyMen": "Liikaa pelaajia",
+        "TooManyPlayers": "Liikaa pelaajia",
         "UnsportsmanlikeConduct": "Epäurheilijamainen käytös",
         "Other": "Muu"
       },

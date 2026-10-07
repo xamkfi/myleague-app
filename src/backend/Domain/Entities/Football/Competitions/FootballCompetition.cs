@@ -94,12 +94,10 @@ public abstract class FootballCompetition : BaseEntity
         StandingRules = standingRules;
     }
 
-    public void UpdateTeamCategory(TeamCategory teamCategory)
-    {
-        if (IsCompleted)
-            throw new InvalidOperationException("Cannot update team category for a completed competition.");
-        TeamCategory = teamCategory;
-    }
+    /// <summary>
+    /// Updates the audience category. Allowed in any status, because it only decides where the competition is shown.
+    /// </summary>
+    public void UpdateTeamCategory(TeamCategory teamCategory) => TeamCategory = teamCategory;
 
     public void UpdateLogo(Uri? logoUrl)
     {

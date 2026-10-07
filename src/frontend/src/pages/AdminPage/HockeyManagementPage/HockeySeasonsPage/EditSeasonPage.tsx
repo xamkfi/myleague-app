@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import SeasonTeamCategorySection from '../../../../components/SeasonTeamCategorySection/SeasonTeamCategorySection';
 import { hockeySeasonService } from '../../../../api/hockey/hockeySeasonService';
 import { hockeyTeamService } from '../../../../api/hockey/hockeyTeamService';
 import { divisionService } from '../../../../api/common/divisionService';
@@ -242,6 +243,16 @@ function EditHockeySeasonPage() {
               }}
             >
               <ErrorPopup message={error} />
+              <SeasonTeamCategorySection
+                sport="hockey"
+                seasonId={season.id}
+                category={competitionCategory}
+                onChanged={(teamCategory) => {
+                  // The main form sends teamCategory too; keep it in step so a later save does not undo the change.
+                  setCompetitionCategory(teamCategory);
+                  setSeason((prev) => (prev ? { ...prev, teamCategory } : prev));
+                }}
+              />
               <div className="form-section">
                 <h3 className="form-section__title">
                   <i className="fas fa-info-circle"></i>
@@ -258,21 +269,6 @@ function EditHockeySeasonPage() {
                 <div className="form-group">
                   <label htmlFor="edit-code">{t('hockey.seasons.seasonCode', 'Season code')}</label>
                   <input id="edit-code" value={seasonCode} onChange={(event) => setSeasonCode(event.target.value)} disabled={saving} />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="edit-category">{t('hockey.teams.category', 'Category')}</label>
-                  <select
-                    id="edit-category"
-                    value={competitionCategory}
-                    onChange={(event) => setCompetitionCategory(event.target.value as HockeyTeamCategory)}
-                    disabled={saving}
-                  >
-                    {HOCKEY_TEAM_CATEGORIES.map((category) => (
-                      <option key={category} value={category}>
-                        {t(`hockey.teams.categories.${category}`, category)}
-                      </option>
-                    ))}
-                  </select>
                 </div>
               </div>
               <div className="form-section">

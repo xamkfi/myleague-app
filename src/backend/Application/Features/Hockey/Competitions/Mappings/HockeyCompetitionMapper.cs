@@ -168,14 +168,14 @@ public static class HockeyCompetitionMapper
     {
         ArgumentNullException.ThrowIfNull(season);
         HockeyStandingRules current = season.GetEffectiveRules().StandingRules;
-        season.UpdateCompetitionRules(season.GetEffectiveRules().WithStandingRules(new HockeyStandingRules(
+        season.UpdateStandingRules(new HockeyStandingRules(
             regulationWinPoints,
             overtimeWinPoints,
             shootoutWinPoints,
             overtimeLossPoints,
             shootoutLossPoints,
             tiePoints,
-            current.TieBreakers)));
+            current.TieBreakers));
     }
 
     /// <summary>

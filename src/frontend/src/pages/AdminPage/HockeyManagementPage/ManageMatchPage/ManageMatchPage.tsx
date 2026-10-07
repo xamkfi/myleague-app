@@ -12,6 +12,7 @@ import { hockeyStatisticsService } from '../../../../api/hockey/hockeyStatistics
 import { timerService } from '../../../../api/common/timerService';
 import { useIntervalWhen } from '../../../../hooks/useIntervalWhen';
 import {
+  hockeyActiveGoalieId,
   hockeyAwayTeam,
   hockeyHomeTeam,
   hockeyOpposingGoalieId,
@@ -121,7 +122,8 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   const [isLineupDialogOpen, setIsLineupDialogOpen] = useState(false);
   const [shouldStartTimer, setShouldStartTimer] = useState(false);
   const [showOfficialDraft, setShowOfficialDraft] = useState(false);
-  const [bulkSaveShootingTeamId, setBulkSaveShootingTeamId] = useState<string | null>(null);
+  // The match side whose goalie made the saves.
+  const [bulkSaveGoalieSideId, setBulkSaveGoalieSideId] = useState<string | null>(null);
   const [bulkSaveError, setBulkSaveError] = useState<string | null>(null);
   const restoredStatusRef = useRef('');
   // Roster name lookups only need the two teams in this match; resolving every team would be
@@ -381,10 +383,10 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   const awayTeamEntity = teams.find((item) => item.id === away?.teamId);
   const homeGoalieId = home?.activeGoalieMatchPlayerId ?? home?.activePlayers.find((player) => player.isGoalie)?.id ?? '';
   const awayGoalieId = away?.activeGoalieMatchPlayerId ?? away?.activePlayers.find((player) => player.isGoalie)?.id ?? '';
-  const bulkSaveDefendingSide: HockeyMatchTeamDto | undefined = bulkSaveShootingTeamId
-    ? match.matchTeams.find((side) => side.id !== bulkSaveShootingTeamId)
+  const bulkSaveDefendingSide: HockeyMatchTeamDto | undefined = bulkSaveGoalieSideId
+    ? match.matchTeams.find((side) => side.id === bulkSaveGoalieSideId)
     : undefined;
-  const bulkSaveGoalieId: string = bulkSaveShootingTeamId ? hockeyOpposingGoalieId(match, bulkSaveShootingTeamId) : '';
+  const bulkSaveGoalieId: string = hockeyActiveGoalieId(bulkSaveDefendingSide);
   const bulkSavePeriod: number = Math.max(1, Math.min(timer.currentPeriod, periodManagement.overtimePeriodNumber));
   const recordablePeriods: number[] = useMemo(
     () => hockeyRecordablePeriods(periodManagement.startedPeriods, timer.currentPeriod),
@@ -522,34 +524,36 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
     clearEventStamp();
   };
 
-  const openBulkSaveForm = (shootingTeamId: string): void => {
-    if (!hockeyOpposingGoalieId(match, shootingTeamId)) {
-      setError(t('hockey.matches.shotNeedsGoalie', 'A save requires an opposing goalie in the lineup.'));
+  const openBulkSaveForm = (goalieSideId: string): void => {
+    const goalieSide = match.matchTeams.find((side) => side.id === goalieSideId);
+    if (!hockeyActiveGoalieId(goalieSide)) {
+      setError(t('hockey.matches.manage.bulkSavesNeedGoalie', 'This team has no goalie in the lineup.'));
       return;
     }
     setBulkSaveError(null);
-    setBulkSaveShootingTeamId(shootingTeamId);
+    setBulkSaveGoalieSideId(goalieSideId);
   };
 
   const closeBulkSaveForm = (): void => {
-    setBulkSaveShootingTeamId(null);
+    setBulkSaveGoalieSideId(null);
     setBulkSaveError(null);
   };
 
   const submitBulkSaves = async ({ count, periodNumber, timeInSeconds }: BulkSavePayload): Promise<void> => {
-    if (!bulkSaveShootingTeamId) {
+    const shootingSide = match.matchTeams.find((side) => side.id !== bulkSaveGoalieSideId);
+    if (!bulkSaveGoalieSideId || !shootingSide) {
       return;
     }
-    const goalieId = hockeyOpposingGoalieId(match, bulkSaveShootingTeamId);
+    const goalieId = bulkSaveGoalieId;
     if (!goalieId) {
-      setBulkSaveError(t('hockey.matches.shotNeedsGoalie', 'A save requires an opposing goalie in the lineup.'));
+      setBulkSaveError(t('hockey.matches.manage.bulkSavesNeedGoalie', 'This team has no goalie in the lineup.'));
       return;
     }
     setBusy(true);
     setBulkSaveError(null);
     try {
       const updated = await hockeyMatchService.recordShot(match.id, {
-        shootingMatchTeamId: bulkSaveShootingTeamId,
+        shootingMatchTeamId: shootingSide.id,
         periodNumber,
         timeInSeconds,
         shotResult: 'Saved',
@@ -559,7 +563,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         count,
       });
       setMatch(updated);
-      setBulkSaveShootingTeamId(null);
+      setBulkSaveGoalieSideId(null);
     } catch (err) {
       setBulkSaveError(err instanceof Error ? err.message : t('hockey.matches.manage.errors.operationFailed', 'Operation failed'));
     } finally {
@@ -696,6 +700,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
               }
             }}
             disabled={finished || match.status === 'Cancelled'}
+            editDisabled={match.status === 'Cancelled'}
           />
         </div>
         <div className="right-section">
@@ -801,7 +806,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
       {bulkSaveDefendingSide && (
         <BulkSaveDialog
           isOpen
-          goalieName={playerNames.get(bulkSaveGoalieId) ?? ''}
+          goalieName={activePlayerLabels.get(bulkSaveGoalieId) ?? ''}
           teamName={teamNames.get(bulkSaveDefendingSide.teamId) ?? ''}
           currentPeriod={bulkSavePeriod}
           numberOfPeriods={Math.max(periodManagement.rules.numberOfPeriods, bulkSavePeriod)}

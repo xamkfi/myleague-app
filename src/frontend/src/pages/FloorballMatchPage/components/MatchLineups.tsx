@@ -8,6 +8,7 @@ import {
     type FloorballMatchDto,
     type FloorballTeamPlayer,
 } from "../../../types/floorball/floorballTypes";
+import { LicenceLegend, LicenceStatusDot } from "../../../components/LicenceStatus/LicenceStatus";
 import './MatchLineups.scss';
 
 type RosterLookup = Map<string, FloorballTeamPlayer>;
@@ -17,6 +18,7 @@ interface ActiveRosterEntry {
     playerName: string;
     jerseyNumber?: number;
     position: FloorballPosition;
+    licenceActive?: boolean;
 }
 
 // Display order for the per-match active lineup. Goalkeeper first, then field roles
@@ -62,6 +64,7 @@ const buildActiveRoster = (
                 playerName: goalie.playerName,
                 jerseyNumber: goalie.jerseyNumber,
                 position: FloorballPosition.Goalkeeper,
+                licenceActive: goalie.isActive,
             });
         }
     }
@@ -74,6 +77,7 @@ const buildActiveRoster = (
             playerName: player.playerName,
             jerseyNumber: player.jerseyNumber,
             position: entry.position,
+            licenceActive: player.isActive,
         });
     }
 
@@ -150,7 +154,12 @@ export default function MatchLineups({ match, homeRoster, awayRoster }: MatchLin
                                         onClick={() => handlePlayerClick(entry.playerId)}
                                     >
                                         <div className="lineup-col-number">
-                                            <span className="jersey-badge">{entry.jerseyNumber}</span>
+                                            <span className="jersey-badge licence-anchor">
+                                                {entry.jerseyNumber}
+                                                {entry.licenceActive !== undefined && (
+                                                    <LicenceStatusDot active={entry.licenceActive} />
+                                                )}
+                                            </span>
                                         </div>
                                         <div className="lineup-col-name player-link">
                                             {entry.playerName}
@@ -170,6 +179,9 @@ export default function MatchLineups({ match, homeRoster, awayRoster }: MatchLin
 
     return (
         <div className="match-lineups-container">
+            {[...homeActiveRoster, ...awayActiveRoster].some((entry) => entry.licenceActive !== undefined) && (
+                <LicenceLegend />
+            )}
             <div className="match-lineups-grid">
                 {renderTeamRoster(homeActiveRoster, match.homeTeamName ?? 'TBD')}
                 {renderTeamRoster(awayActiveRoster, match.awayTeamName ?? 'TBD')}

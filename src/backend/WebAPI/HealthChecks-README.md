@@ -1,330 +1,94 @@
-# MyLeague Health Checks Documentation
+# Health checks
 
-## Overview
+Reference for the API health endpoints and checks. Overview: [WebAPI README](./README.md#health-checks).
 
-The MyLeague API implements comprehensive health checks following Clean Architecture principles and Microsoft best practices. The health check system monitors various aspects of the application including database connectivity, system resources, and application services.
+| Piece | File |
+|-------|------|
+| Check registration (`AddMyLeagueHealthChecks`, `ReadyTag`) | `Infrastructure/HealthChecks/HealthCheckExtensions.cs` |
+| Custom checks | `Infrastructure/HealthChecks/DatabaseHealthCheck.cs`, `ApplicationServicesHealthCheck.cs` |
+| `/health`, `/health/ready`, `/health/live`, `/health-ui` | `WebAPI/Program.cs` |
+| `/api/health/*`, `/api/version` | `WebAPI/Controllers/Health/HealthController.cs` |
+| Dashboard | `WebAPI/wwwroot/health-test.html` |
 
-## Health Check Endpoints
+`AddInfrastructure` calls `AddMyLeagueHealthChecks`, so the checks exist wherever the API runs.
 
-### 1. Detailed Health Check
-- **URL**: `/health`
-- **Method**: GET
-- **Description**: Returns every check, including memory, disk, row counts, and service resolution. A failing diagnostic check makes this endpoint non-200. It does not remove the App Service instance from traffic.
-- **Response Format**: JSON with detailed status, duration, and data for each check
+## Endpoints
+
+| Endpoint | Checks run | Response | Status codes |
+|----------|-----------|----------|--------------|
+| `GET /health/ready` | Tagged `ready` | `Healthy` or `Unhealthy` (text/plain) | 200; 503 when any ready check is unhealthy |
+| `GET /health` | All | JSON report (below) | 200 for Healthy or Degraded; 503 for Unhealthy |
+| `GET /health/live` | None | `Alive` | 200 |
+| `GET /health-ui` | None | Redirect to `/health-test.html` | 302 |
+| `GET /api/health` | All | JSON report | 200 only when Healthy; 503 for Degraded or Unhealthy; 500 if the check run throws |
+| `GET /api/health/tag/{tag}` | Checks with that tag | JSON report plus `tag` | Same as `/api/health` |
+| `GET /api/health/ready` | Tagged `ready` | `"Healthy"` / `"Unhealthy"` as JSON strings | 200 / 503 |
+| `GET /api/health/live` | None | `"Alive"` | 200 |
+| `GET /api/version` | None | `{ "version": "..." }`: build date and short git SHA, set by the `SetBuildVersion` target in `WebAPI.csproj` | 200 |
+
+`/health/ready` is the probe. Azure App Service uses it as `healthCheckPath` (`infra/provision/modules/app-service.bicep`), the production availability test and health alert watch it (`monitoring-alerts.bicep`), and the deploy and release workflows smoke-test it. Memory, disk, row-count, and service-resolution checks are deliberately left out of it, so they cannot take the instance out of rotation.
+
+`/health` JSON as a `SystemAdmin` sees it. Anonymous callers get the same shape, but each check has only `name` and `status`:
 
 ```json
 {
   "status": "Unhealthy",
-  "duration": 15078.2765,
+  "duration": 15078.27,
   "checkedAt": "2025-05-29T17:41:20.4231028Z",
   "checks": [
-    {
-      "name": "self",
-      "status": "Healthy",
-      "description": "API is running",
-      "duration": 0.062,
-      "data": {},
-      "tags": []
-    },
-    {
-      "name": "postgresql-connection",
-      "status": "Unhealthy",
-      "description": "Name or service not known",
-      "duration": 7856.8907,
-      "data": {},
-      "tags": ["database", "postgresql"]
-    }
+    { "name": "self", "status": "Healthy", "description": "API is running", "duration": 0.06, "data": {}, "tags": [] },
+    { "name": "postgresql-connection", "status": "Unhealthy", "description": "Name or service not known", "duration": 7856.89, "data": {}, "tags": ["database", "postgresql", "ready"] }
   ]
 }
 ```
 
-### 2. Readiness Check
-- **URL**: `/health/ready`
-- **Method**: GET
-- **Description**: Checks tagged `ready` only: raw PostgreSQL plus `CommonDbContext`, `FloorballDbContext`, `FootballDbContext`, and `HockeyDbContext`
-- **Used by**: App Service `healthCheckPath`, the production availability test, and deploy smoke tests
-- **Response**: "Healthy" or "Unhealthy" (text/plain). HTTP 503 when any ready check fails
+## Checks
 
-### 3. Liveness Check
-- **URL**: `/health/live`
-- **Method**: GET
-- **Description**: Basic liveness probe
-- **Response**: "Alive" (text/plain)
+| Name | Tags | What it does | In `ready` |
+|------|------|--------------|------------|
+| `self` | none | Always Healthy | no |
+| `postgresql-connection` | `database`, `postgresql`, `ready` | Opens a raw Npgsql connection with `DefaultConnection` | yes |
+| `common-database` | `database`, `ef-core`, `common`, `ready` | `AddDbContextCheck<CommonDbContext>` | yes |
+| `floorball-database` | `database`, `ef-core`, `floorball`, `ready` | `AddDbContextCheck<FloorballDbContext>` | yes |
+| `football-database` | `database`, `ef-core`, `football`, `ready` | `AddDbContextCheck<FootballDbContext>` | yes |
+| `hockey-database` | `database`, `ef-core`, `hockey`, `ready` | `AddDbContextCheck<HockeyDbContext>` | yes |
+| `database-operations` | `database`, `custom` | `CanConnectAsync` on all four contexts, then counts clubs, floorball players, football teams, and hockey teams | no |
+| `application-services` | `services`, `dependencies` | Resolves `IClubRepository`, `IPersonRepository`, the floorball player, team, match, and competition repositories, and `IUnitOfWork`. Degraded if any fail | no |
+| `memory-usage` | `system`, `memory` | Process allocated memory above 1000 MB is Unhealthy | no |
+| `private-memory` | `system`, `memory` | Private memory above 1.5 GB is Unhealthy | no |
+| `disk-storage` | `system`, `storage` | Less than 1000 MB free on `C:\` (Windows) or `/` (Linux) is Unhealthy | no |
 
-### 4. Health Check Controller
-- **Base URL**: `/api/health`
-- **Methods**: 
-  - `GET /api/health` - Detailed health status
-  - `GET /api/health/tag/{tag}` - Health status filtered by tag
-  - `GET /api/health/ready` - Readiness check
-  - `GET /api/health/live` - Liveness check
+The thresholds are hardcoded in `HealthCheckExtensions.cs`. The `HealthChecks` section in `appsettings.json` is not read by any code; changing it has no effect.
 
-### 5. Health dashboard
-- **URL**: `/health-test.html` (static file in `wwwroot`)
-- **Alias**: `/health-ui` redirects to `/health-test.html`
-- The Xabaril HealthChecks.UI package is not referenced. There is no history store or separate UI host.
-- The page shows the current `/health` JSON: status, duration, description, and tags, and refreshes on a timer.
+## Dashboard
 
-## Access URLs
+`/health-test.html` is a static page. It fetches `/health` (falling back to `localhost:8080`, `65533`, and `65532`) and refreshes every 30 seconds. There is no history. The page sends no token, so it shows only check names and statuses. The Xabaril `HealthChecks.UI` package is not referenced, because it pulls in `KubernetesClient` (GHSA-w7r3-mgwf-4mqq).
 
-### Development (Visual Studio / dotnet run)
-- **Dashboard**: `http://localhost:65533/health-test.html` (`/health-ui` redirects here)
-- **Direct Health Endpoint**: `http://localhost:65533/health`
-- **API Documentation**: `http://localhost:65533/scalar/v1`
-- **HTTPS versions**: Replace `65533` with `65532`
+## Examples
 
-### Docker Environment
-- **Dashboard**: `http://localhost:8080/health-test.html` (`/health-ui` redirects here)
-- **Direct Health Endpoint**: `http://localhost:8080/health`
-- **API Documentation**: `http://localhost:8080/scalar/v1`
-
-## Implemented Health Checks
-
-### 1. Self Check
-- **Name**: `self`
-- **Description**: Basic API availability check
-- **Tags**: None
-- **Expected Status**: Always Healthy when API is running
-
-### 2. PostgreSQL Connection
-- **Name**: `postgresql-connection`
-- **Description**: Tests raw PostgreSQL database connectivity
-- **Tags**: `database`, `postgresql`, `ready`
-- **Common Issues**: "Name or service not known" when PostgreSQL is not running
-
-### 3. Common Database Context
-- **Name**: `common-database`
-- **Description**: Entity Framework Core health check for CommonDbContext
-- **Tags**: `database`, `ef-core`, `common`, `ready`
-- **Dependencies**: Requires PostgreSQL connection
-
-### 4. Floorball Database Context
-- **Name**: `floorball-database`
-- **Description**: Entity Framework Core health check for FloorballDbContext
-- **Tags**: `database`, `ef-core`, `floorball`, `ready`
-- **Dependencies**: Requires PostgreSQL connection
-
-### 5. Football Database Context
-- **Name**: `football-database`
-- **Description**: Entity Framework Core health check for FootballDbContext
-- **Tags**: `database`, `ef-core`, `football`, `ready`
-- **Dependencies**: Requires PostgreSQL connection
-
-### 6. Hockey Database Context
-- **Name**: `hockey-database`
-- **Description**: Entity Framework Core health check for HockeyDbContext
-- **Tags**: `database`, `ef-core`, `hockey`, `ready`
-- **Dependencies**: Requires PostgreSQL connection
-
-### 7. Database Operations
-- **Name**: `database-operations`
-- **Description**: Diagnostic count queries. Not included in `/health/ready`
-- **Tags**: `database`, `custom`
-- **Checks**:
-  - Connectivity for Common, Floorball, Football, and Hockey contexts
-  - Club count, floorball player count, football team count, hockey team count
-- **Common Issues**: "Common database is not accessible" when PostgreSQL is down
-
-### 8. Application Services
-- **Name**: `application-services`
-- **Description**: Diagnostic service resolution. Not included in `/health/ready`
-- **Tags**: `services`, `dependencies`
-- **Checks**:
-  - `IClubRepository`, `IPersonRepository`
-  - Floorball player, team, match, and competition repositories
-  - `IUnitOfWork`
-  - Football and hockey repositories are not part of this check
-  - Service resolution and instantiation
-- **Data Returned**:
-  - ServicesChecked: Number of services verified
-  - ServicesHealthy: Number of healthy services
-  - Individual service status for each repository
-
-### 9. Disk Storage
-- **Name**: `disk-storage`
-- **Description**: Diagnostic disk space check. Not included in `/health/ready`
-- **Tags**: `system`, `storage`
-- **Threshold**: 1000 MB minimum free space
-- **Platform**: Checks C:\ on Windows, / on Linux/Docker
-
-### 10. Memory Usage
-- **Name**: `memory-usage`
-- **Description**: Diagnostic process-memory check. Not included in `/health/ready`
-- **Tags**: `system`, `memory`
-- **Threshold**: 1000 MB maximum allocated memory
-- **Data**: Shows allocated megabytes in description
-
-### 11. Private Memory
-- **Name**: `private-memory`
-- **Description**: Diagnostic private-memory check. Not included in `/health/ready`
-- **Tags**: `system`, `memory`
-- **Threshold**: 1.5 GB maximum private memory
-
-## Health Check Tags
-
-Health checks are organized using tags for easy filtering:
-
-- **`database`**: All database-related checks
-- **`postgresql`**: PostgreSQL-specific checks
-- **`ef-core`**: Entity Framework Core checks
-- **`common`**: Common database context checks
-- **`floorball`**: Floorball database context checks
-- **`football`**: Football database context checks
-- **`hockey`**: Hockey database context checks
-- **`ready`**: Checks that `/health/ready` and `/api/health/ready` run
-- **`custom`**: Custom implementation checks
-- **`services`**: Application service checks
-- **`dependencies`**: Dependency injection checks
-- **`system`**: System resource checks
-- **`storage`**: Storage-related checks
-- **`memory`**: Memory-related checks
-
-## Configuration
-
-Thresholds are hardcoded in `Infrastructure/HealthChecks/HealthCheckExtensions.cs` (disk 1000 MB free, process memory 1000 MB, private memory 1.5 GB). `appsettings.json` has a `HealthChecks` section, but nothing reads it.
-
-Endpoints:
-
-- **Development**: `http://localhost:65533/health`
-- **Docker**: `http://localhost:8080/health`
-
-## Architecture
-
-### Infrastructure Layer
-- **Location**: `src/backend/Infrastructure/HealthChecks/`
-- **Components**:
-  - `DatabaseHealthCheck.cs` — connectivity and count queries
-  - `ApplicationServicesHealthCheck.cs` — service resolution
-  - `HealthCheckExtensions.cs` — registration (`AddMyLeagueHealthChecks`)
-
-### WebAPI Layer
-- `Controllers/Health/HealthController.cs` — `/api/health`
-- `Program.cs` — `/health`, `/health/ready`, `/health/live`, and the `/health-ui` redirect
-- `wwwroot/health-test.html` — static dashboard
-
-## Usage Examples
-
-### Checking Overall Health (Development)
 ```bash
-curl -X GET "http://localhost:65533/health" -H "accept: application/json"
+curl http://localhost:8080/health/ready
+curl http://localhost:8080/health
+curl http://localhost:8080/api/health/tag/database
 ```
-
-### Checking Overall Health (Docker)
-```bash
-curl -X GET "http://localhost:8080/health" -H "accept: application/json"
-```
-
-### Checking Database Health Only
-```bash
-curl -X GET "http://localhost:65533/api/health/tag/database" -H "accept: application/json"
-```
-
-### Simple Readiness Check
-```bash
-curl -X GET "http://localhost:65533/health/ready"
-```
-
-### Dashboard
-- **Development**: `http://localhost:65533/health-test.html` (`/health-ui` redirects here)
-- **Docker**: `http://localhost:8080/health-test.html`
-
-## Monitoring and Alerting
-
-### Kubernetes/Docker
-Use the readiness and liveness endpoints for container orchestration:
-
-```yaml
-livenessProbe:
-  httpGet:
-    path: /health/live
-    port: 8080
-  initialDelaySeconds: 30
-  periodSeconds: 10
-
-readinessProbe:
-  httpGet:
-    path: /health/ready
-    port: 8080
-  initialDelaySeconds: 5
-  periodSeconds: 5
-```
-
-### Load Balancers
-Configure load balancers to use `/health/ready` for health checks.
-
-### Monitoring Tools
-- Use `/health` endpoint for detailed monitoring
-- Parse JSON response for specific check statuses
-- Set up alerts based on health check status changes
-- Use the custom dashboard for visual monitoring
 
 ## Troubleshooting
 
-### Common Issues
+| Symptom | Cause |
+|---------|-------|
+| `postgresql-connection` says "Name or service not known" | `DefaultConnection` points at host `postgres` (the `appsettings.json` default) while the API runs on the host. Use `ASPNETCORE_ENVIRONMENT=Development` so `localhost:5432` applies |
+| `/health` is 503 but `/health/ready` is 200 | A diagnostic check failed (memory, disk). Readiness is unaffected |
+| `/api/health` is 503 but `/health` is 200 | `application-services` is Degraded. `/api/health` treats Degraded as a failure; `/health` does not |
+| `/health-test.html` returns 404 | `app.UseStaticFiles()` is missing from `Program.cs` or `wwwroot` was not published |
 
-1. **Database Connection Failures**
-   - **Error**: "Name or service not known" or "Connection refused"
-   - **Solution**: 
-     - Check connection string in appsettings
-     - Verify PostgreSQL server is running
-     - Check network connectivity
-     - For local development, ensure PostgreSQL is accessible on the configured host
+The custom checks log at Debug under `MyLeague.Infrastructure.HealthChecks`.
 
-2. **Dashboard shows no checks**
-   - Open `/health` directly and confirm it returns JSON
-   - Confirm `app.UseStaticFiles()` runs so `/health-test.html` is served
+## Security
 
-3. **Service Registration Issues**
-   - **Error**: Application services health check fails
-   - **Solution**:
-     - Verify dependency injection configuration
-     - Check for circular dependencies
-     - Review service lifetimes
-
-4. **Memory/Disk Warnings**
-   - **Solution**:
-     - Adjust thresholds in configuration
-     - Monitor resource usage trends
-     - Consider scaling or optimization
-
-5. **Static Files Not Served**
-   - **Error**: Custom health dashboard (health-test.html) returns 404
-   - **Solution**: Ensure `app.UseStaticFiles()` is configured in Program.cs
-
-### Debugging
-
-Enable detailed logging for health checks by setting log level to Debug:
-
-```json
-{
-  "Serilog": {
-    "MinimumLevel": {
-      "Override": {
-        "MyLeague.Infrastructure.HealthChecks": "Debug"
-      }
-    }
-  }
-}
-```
-
-## Best Practices
-
-1. **Regular Monitoring**: Check health endpoints regularly
-2. **Threshold Tuning**: Adjust resource thresholds based on environment
-3. **Alerting**: Set up alerts for health check failures
-4. **Documentation**: Keep health check documentation updated
-5. **Testing**: Include health checks in integration tests
-6. **Dashboard**: Use `/health-test.html` for a visual check; use `/health/ready` and `/health/live` for probes
-
-## Security Considerations
-
-- Health check endpoints expose system information
-- Consider authentication for detailed health endpoints in production
-- Use simple endpoints (`/health/ready`, `/health/live`) for external monitoring
-- Limit detailed information exposure in production environments
-- The custom health dashboard provides detailed system information - secure appropriately
+All health endpoints are anonymous, because CI, the Docker healthcheck, and the deploy smoke tests call `/health` without a token. `/health`, `/api/health`, and `/api/health/tag/{tag}` return each check's description, duration, data, and tags only to a `SystemAdmin` (send the JWT as a bearer token). Everyone else gets the overall status plus each check's name and status, so row counts, memory use, and exception messages stay private (`WebAPI/Controllers/Health/HealthReportResponse.cs`). Probes and external monitors should still call `/health/ready` or `/health/live`.
 
 ## Gaps
 
-- `application-services` resolves common and floorball repositories only.
-- Disk and memory thresholds are hardcoded; the `HealthChecks` appsettings section is unused. 
+- `application-services` checks only common and floorball repositories; football and hockey repositories are not resolved.
+- `database-operations` counts rows in one table per context only.
+- Thresholds cannot be changed through configuration.

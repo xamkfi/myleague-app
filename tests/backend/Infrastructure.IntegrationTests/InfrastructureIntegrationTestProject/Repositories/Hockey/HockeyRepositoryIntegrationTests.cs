@@ -42,6 +42,24 @@ public class HockeyMatchRepositoryTests : HockeyIntegrationTestBase
         reloaded!.Scorekeepers.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task SaveChangesAsync_OnModifiedMatch_SetsUpdatedAt()
+    {
+        HockeyMatch match = await SeedMatchAsync();
+        match.UpdatedAt.Should().BeNull();
+
+        HockeyMatch tracked = (await MatchRepository.GetByIdAsync(match.Id))!;
+        tracked.UpdateVenue("Hakametsä");
+        DateTime before = DateTime.UtcNow;
+        await DbContext.SaveChangesAsync();
+        DbContext.ChangeTracker.Clear();
+
+        HockeyMatch? reloaded = await MatchRepository.GetByIdAsync(match.Id);
+
+        reloaded!.UpdatedAt.Should().NotBeNull();
+        reloaded.UpdatedAt!.Value.Should().BeOnOrAfter(before);
+    }
+
     private async Task<HockeyMatch> SeedMatchAsync()
     {
         HockeyMatch match = new(
