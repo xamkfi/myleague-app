@@ -243,18 +243,16 @@ function EditHockeySeasonPage() {
               }}
             >
               <ErrorPopup message={error} />
-              {season && (
-                <SeasonTeamCategorySection
-                  sport="hockey"
-                  seasonId={season.id}
-                  category={competitionCategory}
-                  onChanged={(teamCategory) => {
+              <SeasonTeamCategorySection
+                sport="hockey"
+                seasonId={season.id}
+                category={competitionCategory}
+                onChanged={(teamCategory) => {
                   // The main form sends teamCategory too; keep it in step so a later save does not undo the change.
                   setCompetitionCategory(teamCategory);
                   setSeason((prev) => (prev ? { ...prev, teamCategory } : prev));
                 }}
-                />
-              )}
+              />
               <div className="form-section">
                 <h3 className="form-section__title">
                   <i className="fas fa-info-circle"></i>

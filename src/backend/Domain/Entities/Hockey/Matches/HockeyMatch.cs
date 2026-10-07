@@ -685,11 +685,11 @@ public class HockeyMatch : BaseEntity
                 matchTeam.ClearActiveGoalie();
         }
 
-        foreach (HockeyTeamPlayer teamPlayer in teamPlayers.DistinctBy(p => p.Id))
+        IEnumerable<HockeyTeamPlayer> playersToAdd = teamPlayers
+            .DistinctBy(p => p.Id)
+            .Where(teamPlayer => !selection.ActivePlayers.Any(p => p.TeamPlayerId == teamPlayer.Id && p.IsActive));
+        foreach (HockeyTeamPlayer teamPlayer in playersToAdd)
         {
-            if (selection.ActivePlayers.Any(p => p.TeamPlayerId == teamPlayer.Id && p.IsActive))
-                continue;
-
             selection.AddActivePlayer(teamPlayer, isGoalie: teamPlayer.Position == HockeyPosition.Goalie);
         }
 
