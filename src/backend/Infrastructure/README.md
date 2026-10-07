@@ -29,7 +29,6 @@ Infrastructure/
 │   └── Seeding/           DatabaseSeeder (users)
 ├── SignalR/               DomainEventHub, DomainEventNotifier, SignalRNotificationSender
 ├── HealthChecks/          HealthCheckExtensions, DatabaseHealthCheck, ApplicationServicesHealthCheck
-├── DTOs/Notifications/    notification records (not referenced by current code)
 └── Migrations/            CommonDb/  FloorBallDb/  FootballDb/  HockeyDb/
 ```
 
@@ -60,9 +59,7 @@ Which tables belong to which context: see the [database rules](../../../.claude/
 
 ### Audit fields
 
-`BaseEntity` sets `Id` and `CreatedAt` in its constructor. `CommonDbContext`, `FloorballDbContext`, and `FootballDbContext` override `SaveChangesAsync` and call `SaveChangesWithEventsAsync` (`Persistence/Extensions/DbContextExtensions.cs`). That method sets `UpdatedAt` on modified entities and stops `CreatedAt` from changing. Despite the name, it dispatches no events.
-
-`HockeyDbContext` has no such override, so hockey `UpdatedAt` is not set automatically.
+`BaseEntity` sets `Id` and `CreatedAt` in its constructor. All four contexts override `SaveChangesAsync` and call `SaveChangesWithEventsAsync` (`Persistence/Extensions/DbContextExtensions.cs`). That method sets `UpdatedAt` on modified entities and stops `CreatedAt` from changing. Despite the name, it dispatches no events.
 
 `BaseEntityConfiguration<T>` maps `Id`, `CreatedAt`, and `UpdatedAt` and adds audit indexes. Derived configurations override `ConfigureEntity`. About 35 of the 85 configuration files use it; the rest implement `IEntityTypeConfiguration<T>` directly. Either is fine, but copy whatever the sibling configuration in the same sport does.
 

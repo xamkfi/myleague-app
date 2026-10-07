@@ -88,34 +88,4 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-
-    /// <summary>
-    /// Add CORS configuration
-    /// </summary>
-    public static IServiceCollection AddCorsConfiguration(this IServiceCollection services)
-    {
-        services.AddCors(options =>
-        {
-            options.AddPolicy("AllowAll", policy =>
-            {
-                policy.WithOrigins(
-                        // Local development
-                        "http://localhost:3000",
-                        "http://localhost:5173",
-                        "http://localhost:5174",
-                        "http://localhost:5175",
-                        "http://localhost:4200",
-                        "http://127.0.0.1:5173",
-                        "http://127.0.0.1:5174",
-                        "http://127.0.0.1:5175",
-                        // Azure Static Web Apps (development azure static web app)
-                        "https://calm-tree-06b4ac003.2.azurestaticapps.net")
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials(); // Required for SignalR
-            });
-        });
-
-        return services;
-    }
 }

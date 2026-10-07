@@ -233,21 +233,8 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
     {
         context.Response.ContentType = "application/json";
 
-        var response = new
-        {
-            Status = report.Status.ToString(),
-            Duration = report.TotalDuration.TotalMilliseconds,
-            CheckedAt = DateTime.UtcNow,
-            Checks = report.Entries.Select(entry => new
-            {
-                Name = entry.Key,
-                Status = entry.Value.Status.ToString(),
-                Description = entry.Value.Description,
-                Duration = entry.Value.Duration.TotalMilliseconds,
-                Data = entry.Value.Data,
-                Tags = entry.Value.Tags
-            })
-        };
+        bool includeDetails = context.User.IsInRole(Domain.Constants.AuthRoles.SystemAdmin);
+        object response = WebAPI.Controllers.Health.HealthReportResponse.Create(report, includeDetails);
 
         await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
         {

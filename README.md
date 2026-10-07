@@ -196,15 +196,11 @@ Tools:
 | Tool | Purpose |
 |------|---------|
 | [Seeder](src/tools/Seeder/README.md) | Development and test dataset through the HTTP API |
-| [FloorballPlayerImporter](src/tools/FloorballPlayerImporter/README.md) | Roster JSON to players and teams |
-| [DataImporter](src/tools/DataImporter/README.md) | Persons from legacy `.jlg` XML |
 | [JoomleagueImporter](src/tools/JoomleagueImporter/README.md) | JoomLeague SQL dump to floorball, football, or hockey |
-| [MahlImporter](src/tools/MahlImporter/README.md) | Scrape and import historical MAHL data |
 | [TournamentExporter](src/tools/TournamentExporter/README.md) | Export live floorball tournaments as import JSON |
 
 Admins can also import seasons from JSON (all three sports) and floorball tournaments (one per file) in the admin UI.
 
-The `*DevelopmentGuide.md` files under `src/backend/` are older. They still describe event sourcing, AutoMapper, and `Result.Value`, which the code does not use. Prefer the layer READMEs.
 
 ## AI agents
 

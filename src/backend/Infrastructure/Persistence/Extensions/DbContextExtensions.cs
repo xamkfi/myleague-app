@@ -42,6 +42,10 @@ namespace MyLeague.Infrastructure.Persistence.Extensions
             {
                 result = await footballDbContext.SaveChangesWithoutEventsAsync(cancellationToken);
             }
+            else if (dbContext is HockeyDbContext hockeyDbContext)
+            {
+                result = await hockeyDbContext.SaveChangesWithoutEventsAsync(cancellationToken);
+            }
             else
             {
                 // For other DbContext types, call the base SaveChangesAsync directly

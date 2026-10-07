@@ -28,7 +28,7 @@ Reference for the API health endpoints and checks. Overview: [WebAPI README](./R
 
 `/health/ready` is the probe. Azure App Service uses it as `healthCheckPath` (`infra/provision/modules/app-service.bicep`), the production availability test and health alert watch it (`monitoring-alerts.bicep`), and the deploy and release workflows smoke-test it. Memory, disk, row-count, and service-resolution checks are deliberately left out of it, so they cannot take the instance out of rotation.
 
-`/health` JSON:
+`/health` JSON as a `SystemAdmin` sees it. Anonymous callers get the same shape, but each check has only `name` and `status`:
 
 ```json
 {
@@ -62,7 +62,7 @@ The thresholds are hardcoded in `HealthCheckExtensions.cs`. The `HealthChecks` s
 
 ## Dashboard
 
-`/health-test.html` is a static page. It fetches `/health` (falling back to `localhost:8080`, `65533`, and `65532`) and refreshes every 30 seconds. There is no history. The Xabaril `HealthChecks.UI` package is not referenced, because it pulls in `KubernetesClient` (GHSA-w7r3-mgwf-4mqq).
+`/health-test.html` is a static page. It fetches `/health` (falling back to `localhost:8080`, `65533`, and `65532`) and refreshes every 30 seconds. There is no history. The page sends no token, so it shows only check names and statuses. The Xabaril `HealthChecks.UI` package is not referenced, because it pulls in `KubernetesClient` (GHSA-w7r3-mgwf-4mqq).
 
 ## Examples
 
@@ -85,7 +85,7 @@ The custom checks log at Debug under `MyLeague.Infrastructure.HealthChecks`.
 
 ## Security
 
-All health endpoints are anonymous. `/health` and `/api/health` reveal row counts, memory use, and exception messages. Probes and external monitors should call `/health/ready` or `/health/live` only.
+All health endpoints are anonymous, because CI, the Docker healthcheck, and the deploy smoke tests call `/health` without a token. `/health`, `/api/health`, and `/api/health/tag/{tag}` return each check's description, duration, data, and tags only to a `SystemAdmin` (send the JWT as a bearer token). Everyone else gets the overall status plus each check's name and status, so row counts, memory use, and exception messages stay private (`WebAPI/Controllers/Health/HealthReportResponse.cs`). Probes and external monitors should still call `/health/ready` or `/health/live`.
 
 ## Gaps
 
