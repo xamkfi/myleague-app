@@ -1,192 +1,96 @@
 # FloorballPlayerImporter
 
-Console tool that imports floorball players from JSON roster files. It looks up persons by name, creates `FloorballPlayer` records if needed, and assigns jersey numbers and positions. Stack setup: [root README](../../../README.md).
+Adds floorball players to team rosters from simple JSON roster files through the HTTP API.
 
-## Features
+> **Status: does not work and is superseded.** The tool never logs in. The calls it depends on require the Admin role:
+>
+> - `GET api/persons/search`
+> - `POST api/clubs`
+> - `POST api/floorballteam`
+> - `POST api/floorballplayer`
+> - `POST api/floorballteam/{teamId}/players/{playerId}`
+>
+> Against the current API it finds no persons and cannot create anything. The project still builds and is still in `MyLeague.sln`.
+>
+> Use one of these instead:
+>
+> - The roster import in the admin UI: the season pages under **Admin → Floorball / Football / Hockey → Seasons**. It covers floorball, football, and hockey, and it is scoped to a competition.
+> - [TournamentExporter](../TournamentExporter/README.md) to copy tournament rosters between environments.
+> - [JoomleagueImporter](../JoomleagueImporter/README.md) for historical JoomLeague rosters.
 
-- **Club Auto-Creation**: Automatically creates clubs if they don't exist (using team name as club name)
-- **Team Auto-Creation**: Automatically creates teams if they don't exist (under the auto-created club)
-- **Person Lookup**: Finds existing persons in the system by first and last name
-- **Player Creation**: Automatically creates FloorballPlayer entities for persons who don't have one
-- **Team Assignment**: Adds players to teams with specified jersey numbers and positions
-- **Duplicate Prevention**: Skips players with duplicate jersey numbers (except jersey #0)
-- **Comprehensive Reporting**: Detailed statistics and error reporting
+## When to use it
 
-## Prerequisites
+Do not use it. This README describes what the code does, so that someone can fix it or delete it.
 
-- .NET 10 SDK
-- Backend API running (default: http://localhost:8080)
-- Persons must already exist in the system
+## Prerequisites (if fixed)
 
-**Note**: Clubs and teams will be created automatically if they don't exist. The club name will be the same as the team name.
+- .NET 10 SDK.
+- A WebAPI, plus code that logs in as an admin before the import. The tool has no login code today.
+- The persons must already exist in the API. The tool does not create persons.
+
+## Usage
+
+```bash
+dotnet run --project src/tools/FloorballPlayerImporter/FloorballPlayerImporter.csproj
+```
+
+There are no command-line options. The tool asks for the API URL and uses the configured value if you press Enter. It adds `http://` if the scheme is missing.
 
 ## Configuration
 
-Edit `appsettings.json` to configure the backend API URL:
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `BaseUrl` (root level of `appsettings.json`, or the `BaseUrl` environment variable) | `http://localhost:8080` | API base URL, the default answer to the prompt |
 
-```json
-{
-  "BaseUrl": "http://localhost:8080"
-}
-```
+## Input and output
 
-## JSON File Format
+**Input.** Every `*.json` file in the first `DataFiles` folder found, in this order:
 
-Create JSON files in the `DataFiles` folder with the following structure:
+1. Next to the build output.
+2. In the current directory.
+3. Up to four levels up from the build output.
+4. Next to `FloorballPlayerImporter.csproj`.
+
+Roster files contain personal data. `.gitignore` lists only three file names in this folder. A new file is not ignored, so do not commit it.
+
+Format, one team per file:
 
 ```json
 {
   "team": "Team Name",
   "players": [
-    {
-      "jerseyNumber": 10,
-      "firstName": "John",
-      "lastName": "Doe",
-      "position": "Forward"
-    }
+    { "jerseyNumber": 10, "firstName": "First", "lastName": "Last", "position": "Forward" }
   ]
 }
 ```
 
-### Supported Positions
-- `Forward`
-- `Center`
-- `Defender`
-- `Goalie` or `Goalkeeper`
+`position` values are case-insensitive:
 
-### Jersey Numbers
-- All jersey numbers are supported
-- Jersey number `0` can be assigned to multiple players
-- Other jersey numbers must be unique per team
+| Value | Position |
+|-------|----------|
+| `Forward` | Forward |
+| `Center` | Center |
+| `Defender` | Defender |
+| `Goalie`, `Goalkeeper` | Goalkeeper |
+| anything else | `None` |
 
-## Usage
+**Behavior per file:**
 
-### Build the project
+1. Find the floorball team by name. If it does not exist, create a club with the same name (or reuse one) and a team under it. The new team has no division, home arena `TBD`, colors White and Black, and category Adult.
+2. For each player, skip them if the jersey number is already taken on the team. Jersey `0` can repeat.
+3. Find the person by exact first and last name. If no person matches, skip the player.
+4. Reuse the person's floorball player record, or create one.
+5. Add the player to the team with the position and jersey number. No competition is given, so this is not a season-scoped roster entry.
 
-```bash
-cd src/tools/FloorballPlayerImporter
-dotnet build
-```
+**Output.** A console summary: clubs and teams created, players created and assigned, skips, and failures. The exit code is `1` if anything failed, else `0`.
 
-### Run the importer
+## Caveats
 
-```bash
-dotnet run
-```
+- No authentication, as described above.
+- Matching is on name only. Two persons with the same name cannot be told apart.
 
-The tool will:
-1. Scan the `DataFiles` folder for `*.json` files
-2. Process each file in the folder
-3. Display detailed progress for each player
-4. Show a comprehensive summary at the end
+## Related
 
-## Output Example
-
-```
-==========================================================
-Floorball Player Importer
-==========================================================
-Target API: http://localhost:8080/
-
-Using DataFiles folder: C:\...\DataFiles
-
-Found 1 JSON file(s) to process.
-
-Processing file: poyryn-pantterit-roster.json
-  Team: Pöyryn Pantterit
-  Players in file: 18
-  Team not found, creating new team: Pöyryn Pantterit
-  Creating new club: Pöyryn Pantterit
-  Created new club: Pöyryn Pantterit (ID: 12345678-1234-1234-1234-123456789012)
-  Created new team: Pöyryn Pantterit (ID: 87654321-4321-4321-4321-210987654321)
-  Using team (ID: 87654321-4321-4321-4321-210987654321)
-  Existing jersey numbers on team: 0
-  Processing: Antti Pänkäläinen (#3, Goalie)
-    Found person (ID: 11111111-1111-1111-1111-111111111111)
-    Created new FloorballPlayer (ID: 22222222-2222-2222-2222-222222222222)
-    SUCCESS: Added to team as Goalkeeper with jersey #3
-  ...
-
-============================================================
-Import Summary
-============================================================
-Clubs created: 1
-Teams created: 1
-Total players processed: 18
-New FloorballPlayers created: 5
-Players assigned to teams: 15
-Skipped (person not found): 2
-Skipped (duplicate jersey): 1
-Failed: 0
-
-------------------------------------------------------------
-Successfully Assigned Players (15):
-------------------------------------------------------------
-  ✓ Antti Pänkäläinen (#3)
-  ...
-```
-
-## Error Handling
-
-The tool handles several scenarios:
-
-- **Club/Team Auto-Creation**: If a club or team doesn't exist, it will be created automatically
-  - Club name will be the same as the team name
-  - Default values will be used for optional fields (HomeArena: "TBD", Colors: "White"/"Black", Category: Adult)
-- **Person Not Found**: If a person doesn't exist, that player is skipped (logged as warning)
-- **Duplicate Jersey**: If a jersey number is already in use (except 0), the player is skipped
-- **API Errors**: Any API failures are logged with detailed error messages
-
-## Project Structure
-
-```
-FloorballPlayerImporter/
-├── DataFiles/                      # JSON input files
-│   └── poyryn-pantterit-roster.json
-├── Models/
-│   └── TeamRosterImport.cs        # JSON data models
-├── FloorballPlayerImporter.csproj
-├── ImportStatistics.cs            # Statistics tracking
-├── PlayerImportService.cs         # Core import logic
-├── Program.cs                     # Main entry point
-├── appsettings.json              # Configuration
-└── README.md
-```
-
-## Development
-
-### Add Project Reference to Solution
-
-If you have a solution file, add the project:
-
-```bash
-dotnet sln add src/tools/FloorballPlayerImporter/FloorballPlayerImporter.csproj
-```
-
-### Dependencies
-
-The tool references:
-- `Application` - for DTOs and domain models
-- `WebAPI` - for API request/response models
-- `Microsoft.Extensions.Configuration` - for configuration management
-- `System.Net.Http.Json` - for HTTP client functionality
-
-## Troubleshooting
-
-### "Person not found" warnings
-- Check that persons are created in the system first
-- Verify the first and last names match exactly (case-insensitive)
-- Use the DataImporter tool to import persons if needed
-
-### "Duplicate jersey" warnings
-- Check the team's current roster for existing jersey numbers
-- Update the JSON file to use different jersey numbers
-- Only jersey #0 can be assigned to multiple players
-
-## Related tools
-
-- [Seeder](../Seeder/README.md) — persons, clubs, teams, players, matches
-- [DataImporter](../DataImporter/README.md) — persons from `.jlg` XML
-- [JoomleagueImporter](../JoomleagueImporter/README.md) — JoomLeague SQL dumps
+- [JoomleagueImporter](../JoomleagueImporter/README.md)
+- [TournamentExporter](../TournamentExporter/README.md)
 - [Root README](../../../README.md)
-

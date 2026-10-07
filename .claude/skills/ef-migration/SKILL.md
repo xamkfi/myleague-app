@@ -35,7 +35,7 @@ Design-time factories: `Persistence/Contexts/*DbContextFactory.cs` (Npgsql). Run
 
 ## Commands
 
-From `src/backend/Infrastructure`:
+`dotnet ef` is a global tool (there is no local tool manifest). If it is missing, run `dotnet tool install --global dotnet-ef`. Run these from `src/backend/Infrastructure`:
 
 ```bash
 dotnet ef migrations add AddClubManagers --context CommonDbContext --output-dir Migrations/CommonDb --startup-project ../WebAPI/WebAPI.csproj
@@ -68,9 +68,11 @@ dotnet ef migrations remove --context CommonDbContext --startup-project ../WebAP
 
 Only remove a migration that has **not** been applied anywhere shared. Never rewrite applied migration files; add a follow-up migration.
 
+If the change adds or moves a context, a configuration folder, or a migrations folder, update `.claude/rules/database.md` and the [Infrastructure README](../../../src/backend/Infrastructure/README.md).
+
 ## Do not
 
-- Use `--output-dir Migrations/Floorball` (wrong folder)
+- Use `--output-dir Migrations/Floorball` (wrong folder), or leave out `--output-dir`. That drops the migration at the root of `Migrations/`, which is how the two stray CommonDb migrations got there
 - Point two contexts at the same entity type
 - Hand-edit snapshots to "fix" cross-context discovery — fix the configuration with `Ignore` instead
 - Commit a migration that was generated against the wrong connection string

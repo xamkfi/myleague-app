@@ -1,362 +1,211 @@
 # MyLeague
 
-League management for floorball, football, and ice hockey.
+League management for floorball, football, and ice hockey: clubs, teams, players, officials, seasons, tournaments, live matches, and statistics. It has a public site, an admin area, and a club-admin area for all three sports.
 
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
-[![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10.0-blue.svg)](https://docs.microsoft.com/en-us/aspnet/core/)
-[![React](https://img.shields.io/badge/React-18.3-blue.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![Backend CI](https://github.com/xamkfi/myleague-app/actions/workflows/backend-ci.yaml/badge.svg)](https://github.com/xamkfi/myleague-app/actions/workflows/backend-ci.yaml)
 [![Frontend CI](https://github.com/xamkfi/myleague-app/actions/workflows/frontend-ci.yaml/badge.svg)](https://github.com/xamkfi/myleague-app/actions/workflows/frontend-ci.yaml)
 
-## Overview
+The backend is .NET 10 with Clean Architecture and CQRS (MediatR) on PostgreSQL. The frontend is a React 18 SPA built with Vite. Azure hosts staging and production; see [infra/README.md](infra/README.md).
 
-MyLeague is a sports league management system for clubs, teams, players, matches, seasons, and tournaments. The public site and admin tools cover **floorball**, **football**, and **ice hockey**. Floorball and football live pages use SignalR. The public hockey match page polls the REST API.
+## Features
 
-The backend follows Clean Architecture with CQRS (MediatR). Seasons and tournaments share a sport-specific `*Competition` base and are stored with EF Core Table-Per-Hierarchy (TPH), so matches, statistics, and standings use the same `competitionId` for both league seasons and tournaments.
+- **Three sports as peers:** floorball, football, and ice hockey each have public pages, admin tools, and club-admin tools.
+- **Seasons and tournaments:** groups, playoffs, and a lifecycle from draft to completed. Both are stored as one `*Competition` hierarchy, so matches and statistics use a single `competitionId`.
+- **Live matches:** goals, penalties, saves, lineups, and a match timer. Floorball and football pages update over SignalR. The hockey match page polls the REST API.
+- **Statistics:** standings, top scorers, team and player season stats, and all-time stats per sport.
+- **Content:** news with a hero carousel and tags, editable rules and info pages, MAHL pages, age groups, an event calendar, and search.
+- **Club admin:** club-scoped rosters and match-day tools.
+- **Auth:** passwordless email login code, then a JWT access token with refresh-token rotation. Roles are `SystemAdmin` and `ClubAdmin`.
+- **Privacy:** anonymous reads do not expose private person data. Admins can handle data-subject requests (access, export, erasure).
+- **Languages:** Finnish (default) and English through i18next.
+- **Observability:** Serilog to console and files, Seq locally, Application Insights in Azure.
+- **Dev data:** an HTTP seeder that creates clubs, teams, players, seasons, tournaments, and simulated matches.
 
-### Key features
-
-- **Multi-sport** — Floorball, football, and ice hockey in the public site and admin tools
-- **Seasons and tournaments** — Groups, playoffs, lifecycle (draft → registration → group stage → playoff → completed)
-- **Live matches** — Goals, penalties, saves/lineups, match timer, and SignalR updates
-- **Statistics** — Standings, top scorers, team/player season stats
-- **News and info pages** — Hero carousel, tagged articles, editable rules/info content, MAHL pages, age groups
-- **Event calendar** — Upcoming and past matches across sports
-- **Club admin** — Club-scoped roster and match-day tools
-- **Passwordless auth** — Email login code, JWT access token, refresh-token rotation
-- **Finnish / English** — i18next on the frontend
-- **Observability** — Serilog, Seq locally, Application Insights in Azure
-- **Dev dataset** — HTTP seeder for clubs, teams, players, seasons, tournaments, and simulated matches
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Presentation                             │
-│  ┌─────────────┐  ┌─────────────┐                           │
-│  │   WebAPI    │  │   React     │                           │
-│  │             │  │  Frontend   │                           │
-│  └─────────────┘  └─────────────┘                           │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────────┐
-│                    Application                              │
-│  Feature slices (Auth, Common, Floorball, Football, Hockey) │
-│  Commands / Queries / Handlers / DTOs / Validators          │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────────┐
-│                   Infrastructure                            │
-│  EF Core (PostgreSQL) · Auth · Images · SignalR · Seeding   │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────────┐
-│                      Domain                                 │
-│  Entities · Value objects · Enums · Repository contracts    │
-└─────────────────────────────────────────────────────────────┘
-```
-
-Azure hosting (staging + prod) is described in [`infra/README.md`](infra/README.md).
-
-## Technology stack
+## Tech stack
 
 | Area | Stack |
-|------|--------|
-| Backend | .NET 10, ASP.NET Core 10, EF Core 10, MediatR 12.5, FluentValidation 12, Serilog 10, Scalar/OpenAPI |
-| Frontend | React 18.3, TypeScript 5.8, Vite 6.4, Tailwind CSS 4.3, SCSS, React Router 7, i18next, SignalR client |
-| Data | PostgreSQL 16 |
-| Local ops | Docker Compose, Seq, pnpm 10, Node 22 |
-| Cloud | Azure App Service, Static Web Apps, PostgreSQL Flexible Server, Blob Storage, ACS Email, Application Insights |
+|------|-------|
+| Backend | .NET 10, ASP.NET Core 10, EF Core 10 (Npgsql), MediatR 12.5, FluentValidation, Serilog, SignalR, Scalar/OpenAPI |
+| Frontend | React 18.3, TypeScript 5.8, Vite 6.4, SCSS (Tailwind 4 is installed but barely used), React Router 7, i18next, SignalR client |
+| Data | PostgreSQL 16, four EF Core DbContexts (`Common`, `Floorball`, `Football`, `Hockey`) in one database |
+| Local tooling | Docker Compose (PostgreSQL, Seq), Node 22, pnpm 10 |
+| Cloud | Azure App Service, Static Web Apps, PostgreSQL Flexible Server, Blob Storage, Communication Services Email, Application Insights; Bicep and GitHub Actions |
 
-There is no AutoMapper. Feature mappers live next to the handlers they serve.
+There is no AutoMapper, no event sourcing, and no Redis. Mappers are static classes next to each feature.
 
-## Project structure
+## Repository layout
 
 ```
-myleague-app/
-├── src/
-│   ├── backend/
-│   │   ├── Domain/                 # Entities, value objects, enums, repository interfaces
-│   │   ├── Application/            # CQRS feature slices (Auth, Common, Floorball, Football, Hockey)
-│   │   ├── Infrastructure/         # EF Core contexts, auth, images, SignalR, health checks
-│   │   └── WebAPI/                 # Controllers, middleware, OpenAPI, Docker image
-│   ├── frontend/                   # React SPA (Vite)
-│   └── tools/
-│       ├── Seeder/                 # HTTP seeder (floorball, football, hockey)
-│       ├── FloorballPlayerImporter/
-│       ├── DataImporter/           # Legacy .jlg person import
-│       ├── JoomleagueImporter/     # JoomLeague SQL dump → floorball/football
-│       ├── MahlImporter/           # Scrape historical MAHL data
-│       └── TournamentExporter/     # Export/import floorball tournaments as JSON
-├── tests/backend/
-│   ├── Domain.UnitTests/
-│   ├── Application.UnitTests/
-│   ├── WebAPI.UnitTests/
-│   └── Infrastructure.IntegrationTests/
-├── infra/                          # Bicep + GitHub Actions deploy docs
-├── docker-compose.yml
-├── docker-compose.override.yml
-└── MyLeague.sln
+MyLeague.sln                solution: backend, tests, tools
+src/backend/Domain          entities, value objects, enums, repository interfaces
+src/backend/Application     CQRS feature slices: Features/{Auth,Common,Floorball,Football,Hockey}
+src/backend/Infrastructure  EF Core contexts, repositories, migrations, auth, email, images, SignalR
+src/backend/WebAPI          thin controllers, middleware, OpenAPI, health checks, Dockerfile
+src/frontend                React SPA (Vite, pnpm)
+src/tools                   Seeder, importers, TournamentExporter
+tests/backend               Domain, Application, WebAPI unit tests; Infrastructure integration tests
+tests/tools                 importer unit tests
+infra                       Bicep templates and deployment docs
+docker-compose*.yml         local stack (postgres, seq, webapi, frontend) and CI overlay
 ```
 
-Layer guides: [Domain](src/backend/Domain/README.md) · [Application](src/backend/Application/README.md) · [Infrastructure](src/backend/Infrastructure/README.md) · [WebAPI](src/backend/WebAPI/README.md) · [Frontend](src/frontend/README.md)
-
-## Getting started
+## Quick start
 
 ### Prerequisites
 
 - .NET 10 SDK
-- Node.js 22+ and [pnpm](https://pnpm.io/)
-- Docker Desktop (recommended) or a local PostgreSQL 16
-- Visual Studio 2026, VS Code, or Rider
+- Node.js 22 and [pnpm](https://pnpm.io/) 10
+- Docker Desktop
 - Git
 
-### Quick start with Docker
+### Run locally
 
-1. Clone and start services:
+PostgreSQL and Seq run in Docker. The API and the UI run on your machine, so you always run your current working tree.
+
+1. Start PostgreSQL and Seq from the repository root:
 
    ```bash
-   git clone https://github.com/xamkfi/myleague-app.git
-   cd myleague-app
-   docker compose up -d
+   docker compose up -d postgres seq
    ```
 
-   In Visual Studio you can also open `MyLeague.sln`, set the Docker Compose project as startup, and press F5.
+2. Start the API on port 8080 in Development mode. `appsettings.Development.json` already points at `localhost:5432`. Startup applies the migrations for all four DbContexts and creates the dev users.
 
-2. Seed a development dataset (optional, recommended):
+   ```bash
+   # Bash
+   ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/backend/WebAPI/WebAPI.csproj --urls http://localhost:8080
+   ```
+
+   ```powershell
+   # PowerShell
+   $env:ASPNETCORE_ENVIRONMENT = 'Development'; dotnet run --project src/backend/WebAPI/WebAPI.csproj --urls http://localhost:8080
+   ```
+
+3. Start the UI in another terminal:
+
+   ```bash
+   cd src/frontend
+   pnpm install
+   pnpm dev
+   ```
+
+   Keep `src/frontend/.env.development` at `VITE_API_URL=http://localhost:8080/api`.
+
+4. Seed sample data while the API is running. The seeder asks for the API URL; press Enter to accept `http://localhost:8080/`.
 
    ```bash
    dotnet run --project src/tools/Seeder/Seeder.csproj -- --scope=all
    ```
 
-   For football as well: `--sport=all`. See [Database seeding](#database-seeding).
+   `--scope=all` seeds floorball. Use `--sport=football --scope=all` for football and `--scope=hockey` for ice hockey. See the [Seeder README](src/tools/Seeder/README.md) for all options.
 
-3. Open:
+| Service | URL |
+|---------|-----|
+| UI | http://localhost:5173 |
+| API | http://localhost:8080 |
+| API docs (Scalar, Development only) | http://localhost:8080/scalar/v1 |
+| Health | http://localhost:8080/health (also `/health/ready`, `/health/live`) |
+| Seq | http://localhost:5341 |
+| PostgreSQL | `localhost:5432`, database `myleague`, user `postgres`, password `postgres` |
 
-   | Service | URL |
-   |---------|-----|
-   | Frontend | http://localhost:5173 |
-   | API docs (Scalar) | http://localhost:8080/scalar/v1 |
-   | Health | http://localhost:8080/health |
-   | Health dashboard | http://localhost:8080/health-ui (redirects to `/health-test.html`) |
-   | Seq | http://localhost:5341 |
-   | PostgreSQL | `localhost:5432` — database `myleague`, user/password `postgres` / `postgres` |
+The API run this way logs to the console and to `src/backend/WebAPI/logs/`. To also send logs to Seq, set `Serilog__WriteTo__2__Name=Seq` and `Serilog__WriteTo__2__Args__serverUrl=http://localhost:5341` before `dotnet run`.
 
-### Local backend (without Docker for the API)
+If `localhost:5432` rejects the password `postgres`, another PostgreSQL already owns that port. The workaround (move the container to port 5433) is in [.claude/skills/run-local/SKILL.md](.claude/skills/run-local/SKILL.md#port-5432-already-taken).
 
-1. Start PostgreSQL (or keep the Compose `postgres` service running).
-2. `src/backend/WebAPI/appsettings.Development.json` already points at `localhost:5432`.
-3. Apply migrations (the API also applies them on startup):
+To run the whole stack in containers instead, see [src/backend/README-Docker.md](src/backend/README-Docker.md).
 
-   ```bash
-   cd src/backend/Infrastructure
-   dotnet ef database update --context CommonDbContext
-   dotnet ef database update --context FloorballDbContext
-   dotnet ef database update --context FootballDbContext
-   dotnet ef database update --context HockeyDbContext
-   ```
+### Sign in
 
-4. Run the API:
+Development creates two users on startup:
 
-   ```bash
-   cd src/backend/WebAPI
-   dotnet run
-   ```
+| Email | Role |
+|-------|------|
+| `test@myleague.local` | Site admin (`SystemAdmin`) |
+| `clubadmin@myleague.local` | Club admin |
 
-   Local Kestrel ports are `https://localhost:65532` and `http://localhost:65533`.
+Enter the email at `/admin/login` or `/club-admin/login`. In Development no email is sent. The login code is written to the API log (`LOGIN CODE for ...`), and `LoginCode:AutoFillLoginCode=true` in `appsettings.Development.json` returns it to the UI so it fills in. Never enable `AutoFillLoginCode` on a public environment.
 
-5. Frontend (from `src/frontend`):
+Login codes have 6 digits, expire after 10 minutes, and lock after 5 failed attempts. Access tokens last 15 minutes and refresh tokens 7 days (60 minutes and 30 days in Development). Reusing a revoked refresh token revokes all of that user's tokens. More detail: [WebAPI README](src/backend/WebAPI/README.md#auth-flow).
 
-   ```bash
-   pnpm install
-   pnpm dev
-   ```
+## Tests and quality gates
 
-   `src/frontend/.env.development` defaults to `VITE_API_URL=http://localhost:8080/api` (Docker). For a local `dotnet run` API, change it to `http://localhost:65533/api` and restart Vite.
+CI runs these on pushes and pull requests to `development` and `master`. Run them before you open a PR:
+
+```bash
+dotnet build MyLeague.sln -c Release
+dotnet test MyLeague.sln
+```
+
+```bash
+cd src/frontend
+pnpm lint
+pnpm build    # also type-checks with tsc
+```
+
+There is no frontend test runner. Infrastructure integration tests use the EF Core InMemory provider, so `dotnet test` does not need a database.
+
+Run `npm install` once in the repository root to install the husky pre-commit hook. It lints staged frontend files.
+
+## Branching and releases
+
+- Branch from `development` and open pull requests into `development`.
+- Only `development` may merge into `master`. The `protect-master.yml` workflow fails any other pull request into `master`.
+- A merge into `development` deploys to staging automatically.
+- A merge into `master` starts the production releases (`release-production.yml` and `release-mahl-production.yml`). Each waits for one approval on its GitHub environment (`prod`, `mahl-prod`).
+
+Workflows, environments, OIDC setup, and costs are documented in [infra/README.md](infra/README.md).
 
 ## API overview
 
-Interactive docs: `/scalar/v1` (Development). OpenAPI JSON: `/swagger/v1/swagger.json`.
+Scalar UI: `/scalar/v1`. OpenAPI JSON: `/swagger/v1/swagger.json`. Both exist only in Development. Responses use the `ApiResponse` envelope described in the [WebAPI README](src/backend/WebAPI/README.md#response-shape).
 
-### Auth (`/api/auth`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/login` | Request a 6-digit login code |
-| POST | `/api/auth/verify` | Exchange email + code for JWT + refresh token |
-| POST | `/api/auth/refresh` | Rotate refresh token |
-| POST | `/api/auth/logout` | Revoke refresh token |
-| POST | `/api/auth/verify-admin-email` | Activate an invited admin from the email token |
-| GET | `/api/auth/me` | Current user |
-
-### Common
-
-| Resource | Base URL |
-|----------|----------|
-| Clubs | `/api/clubs` |
-| Club admin | `/api/club-admin` |
-| Divisions | `/api/divisions` |
-| Persons | `/api/persons` |
-| Users | `/api/users` |
-| News | `/api/news` |
-| Search | `/api/search` |
-| Rules | `/api/rulessection` |
-| Info pages | `/api/infopagecontent` |
-| Footer contacts | `/api/FooterContact` |
-| Site settings | `/api/site-settings` (admin; includes `POST …/player-licence-reset`) |
+| Area | Base routes |
+|------|-------------|
+| Auth | `/api/auth/login`, `/verify`, `/refresh`, `/logout`, `/verify-admin-email`, `/me` |
+| Organization | `/api/clubs`, `/api/divisions`, `/api/persons`, `/api/users`, `/api/club-admin` |
+| Content | `/api/news`, `/api/search`, `/api/rulessection`, `/api/infopagecontent`, `/api/footercontact` |
+| Admin | `/api/site-settings` (includes `POST /player-licence-reset`), `/api/data-subject-rights` |
 | Match timer | `/api/matches/{matchId}/timer` |
+| Real-time | `/api/hubs/domainevent` (SignalR; JWT in the `access_token` query parameter) |
+| System | `/health`, `/health/ready`, `/health/live`, `/health-ui`, `/api/health`, `/api/version` |
 
-### Sports
-
-| Sport | Teams / people | Competitions | Matches | Statistics |
-|-------|----------------|--------------|---------|------------|
+| Sport | Teams and people | Competitions | Matches | Statistics |
+|-------|------------------|--------------|---------|------------|
 | Floorball | `/api/floorballteam`, `/api/floorballplayer`, `/api/floorballreferee`, `/api/floorballteammanager` | `/api/floorballseason`, `/api/floorballtournament` | `/api/floorball-matches` | `/api/floorball/statistics` |
 | Football | `/api/footballteam`, `/api/footballplayer`, `/api/footballreferee`, `/api/footballteammanager` | `/api/footballseason`, `/api/footballtournament` | `/api/football-matches` | `/api/football/statistics` |
 | Hockey | `/api/hockeyteam`, `/api/hockeyplayer`, `/api/hockeyofficial` | `/api/hockeyseason`, `/api/hockeytournament`, `/api/hockeycompetition` | `/api/hockeymatch` | `/api/HockeyStatistics` |
 
-Match events, officials, lineups/rosters, and lifecycle sit under the match routes (for example `/api/floorball-matches/{id}/events`).
+For floorball and football, match events, officials, scorekeepers, rosters or lineups, and lifecycle actions are nested under the match route, for example `/api/floorball-matches/{matchId}/events`.
 
-### System
+## Documentation
 
-| Endpoint | Description |
-|----------|-------------|
-| `/health` | Detailed health (JSON) |
-| `/health/ready` | Readiness: PostgreSQL and the four DbContexts |
-| `/health/live` | Liveness |
-| `/health-ui` | Redirects to the static dashboard `/health-test.html` |
-| `/api/version` | Build date + git SHA |
-| `/api/hubs/domainevent` | SignalR hub (JWT via `access_token` query) |
+| Topic | Document |
+|-------|----------|
+| Domain layer | [src/backend/Domain/README.md](src/backend/Domain/README.md) |
+| Domain glossary | [src/backend/Domain/DomainGlossary.md](src/backend/Domain/DomainGlossary.md) |
+| Application layer | [src/backend/Application/README.md](src/backend/Application/README.md) |
+| Infrastructure layer | [src/backend/Infrastructure/README.md](src/backend/Infrastructure/README.md) |
+| WebAPI layer | [src/backend/WebAPI/README.md](src/backend/WebAPI/README.md) |
+| Health checks | [src/backend/WebAPI/HealthChecks-README.md](src/backend/WebAPI/HealthChecks-README.md) |
+| Frontend | [src/frontend/README.md](src/frontend/README.md) |
+| Docker Compose and Visual Studio | [src/backend/README-Docker.md](src/backend/README-Docker.md) |
+| Azure infrastructure and CI/CD | [infra/README.md](infra/README.md) |
+| Hockey domain diagrams | [docs/hockey/mermaid/](docs/hockey/mermaid/01-competitions.md) |
 
-## Database seeding
-
-[`src/tools/Seeder`](src/tools/Seeder/README.md) calls the running WebAPI over HTTP. It is idempotent and is the fastest way to get a usable database after `docker compose up` or a volume reset.
-
-```bash
-# Floorball (default)
-dotnet run --project src/tools/Seeder/Seeder.csproj -- --scope=all
-
-# Football 5v5 hobby set
-dotnet run --project src/tools/Seeder/Seeder.csproj -- --sport=football --scope=all
-
-# Hockey pipeline
-dotnet run --project src/tools/Seeder/Seeder.csproj -- --scope=hockey
-```
-
-Without `--scope`, the tool prompts for phases (persons, clubs, teams, seasons, matches, tournaments, …) and resolves dependencies. It authenticates through the Development login flow.
-
-Admin JSON import (no console tool): **Seasons → Import from JSON** for floorball, football, and hockey. **Admin → Floorball → Tournaments → Import from JSON** imports one tournament per file.
-
-### Other tools
+Tools:
 
 | Tool | Purpose |
 |------|---------|
-| [Seeder](src/tools/Seeder/README.md) | Dev/test dataset via HTTP |
-| [FloorballPlayerImporter](src/tools/FloorballPlayerImporter/README.md) | Roster JSON → players and teams |
+| [Seeder](src/tools/Seeder/README.md) | Development and test dataset through the HTTP API |
+| [FloorballPlayerImporter](src/tools/FloorballPlayerImporter/README.md) | Roster JSON to players and teams |
 | [DataImporter](src/tools/DataImporter/README.md) | Persons from legacy `.jlg` XML |
-| [JoomleagueImporter](src/tools/JoomleagueImporter/README.md) | JoomLeague SQL dump → floorball or football |
+| [JoomleagueImporter](src/tools/JoomleagueImporter/README.md) | JoomLeague SQL dump to floorball, football, or hockey |
 | [MahlImporter](src/tools/MahlImporter/README.md) | Scrape and import historical MAHL data |
-| [TournamentExporter](src/tools/TournamentExporter/README.md) | Pull live floorball tournaments into import JSON |
+| [TournamentExporter](src/tools/TournamentExporter/README.md) | Export live floorball tournaments as import JSON |
 
-## Testing
+Admins can also import seasons from JSON (all three sports) and floorball tournaments (one per file) in the admin UI.
 
-```bash
-dotnet test
-dotnet test --collect:"XPlat Code Coverage"
-dotnet test tests/backend/Domain.UnitTests/
-```
+The `*DevelopmentGuide.md` files under `src/backend/` are older. They still describe event sourcing, AutoMapper, and `Result.Value`, which the code does not use. Prefer the layer READMEs.
 
-Frontend: `pnpm lint` and `pnpm build` in `src/frontend`.
+## AI agents
 
-## Docker
-
-```bash
-docker compose up -d
-docker compose logs -f webapi
-docker compose down
-docker compose down -v          # wipe the database volume
-docker compose up --build
-```
-
-Services: `webapi` (8080), `frontend` (5173), `postgres` (5432), `seq` (5341).
-
-## Authentication
-
-No passwords are stored.
-
-1. `POST /api/auth/login` with an email.
-2. A 6-digit code is generated (10 minute lifetime, locked after 5 failed attempts).
-   - **Local `dotnet run`:** code is written to the console. Development also sets `LoginCode:AutoFillLoginCode` so the login response can include the code.
-   - **Docker:** find the code in `docker compose logs -f webapi`. Seed admin email is `test@myleague.fi`.
-   - **Azure:** Azure Communication Services Email. Keep `LoginCode__AutoFillLoginCode=false` on any public environment.
-3. `POST /api/auth/verify` returns a JWT and a refresh token.
-4. Send `Authorization: Bearer <accessToken>` on protected routes. SignalR uses `?access_token=`.
-5. Refresh rotates the refresh token; reuse of a revoked token revokes all tokens for that user.
-
-Default seed users:
-
-| Environment | Email | Notes |
-|-------------|-------|--------|
-| Local Development | `test@myleague.local` | Created on first startup (Admin) |
-| Docker | `test@myleague.fi` | `Seed__AdminEmail` in compose override |
-| Azure | `SEED_ADMIN_EMAIL` env var | Optional; created if missing |
-
-Production JWT defaults: 15 minute access token, 7 day refresh token. Development uses longer lifetimes (60 minutes / 30 days).
-
-## Azure and CI/CD
-
-Staging deploys automatically from `development`. Production is released from `master` after one GitHub `prod` environment approval.
-
-| Workflow | Role |
-|----------|------|
-| `backend-ci.yaml` / `frontend-ci.yaml` | Build, test, lint on `master` and `development` |
-| `protect-master.yml` | PRs to `master` must come from `development` |
-| `infra-deploy.yml` | Bicep provision (OIDC); staging auto, prod dispatch from `master` only |
-| `deploy-backend.yml` / `deploy-frontend.yml` | Staging app deploy + smoke tests; prod dispatch from `master` only |
-| `release-production.yml` | Prod infra + API + SPA + smoke tests after one Approve |
-
-Full environment map, costs, OIDC setup, and alerts: [`infra/README.md`](infra/README.md).
-
-Release path: feature branch → PR into `development` (staging auto) → PR from `development` into `master` → Approve the `prod` environment deployment.
-
-## Internationalization
-
-Frontend locales: **Finnish** (default) and **English** under `src/frontend/src/i18n/locales/`. Add a language by adding a JSON file and registering it in the i18n setup.
-
-## Contributing
-
-1. Branch from `development`.
-2. Follow the layer READMEs and `.cursor/rules/`. The `*DevelopmentGuide.md` files next to the backend READMEs still describe event sourcing and old namespaces; do not follow those parts.
-3. Keep new work in the existing feature-slice folders.
-4. Add tests for domain rules and handlers.
-5. Open a PR into `development`.
-
-## Roadmap
-
-Done:
-
-- Clean Architecture backend with CQRS
-- Floorball, football, and ice hockey public + admin UI
-- Hockey domain, API, and seeder
-- Passwordless auth and refresh-token rotation
-- Live match flow with SignalR
-- News, calendar, statistics, tournament import
-- Docker Compose, Seq, Azure infra, GitHub Actions CI/CD
-
-Next:
-
-- Scale-out SignalR (Redis or Azure SignalR) if the App Service plan goes beyond one instance
-- Richer reporting / analytics
-- Rate limiting beyond match-event limits
-
-## Resources
-
-- [Domain](src/backend/Domain/README.md)
-- [Application](src/backend/Application/README.md)
-- [Infrastructure](src/backend/Infrastructure/README.md)
-- [WebAPI](src/backend/WebAPI/README.md)
-- [Frontend](src/frontend/README.md)
-- [Infrastructure (Azure)](infra/README.md)
-- [Seeder](src/tools/Seeder/README.md)
+[AGENTS.md](AGENTS.md) is the entry point for coding agents: conventions, non-negotiables, and the checks to run. [CLAUDE.md](CLAUDE.md) loads it for Claude Code, and `.cursor/rules/myleague.mdc` loads it for Cursor. Detailed rules are in [.claude/rules/](.claude/rules/) and step-by-step workflows (new feature, new endpoint, EF migration, run locally, code review) are in [.claude/skills/](.claude/skills/). Edit them there, not in tool-specific copies.
