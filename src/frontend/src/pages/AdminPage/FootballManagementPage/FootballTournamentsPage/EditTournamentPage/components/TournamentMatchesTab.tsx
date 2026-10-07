@@ -9,7 +9,7 @@ import {
 import type { FootballTournamentDto } from '../../../../../../types/football/tournamentTypes';
 import ErrorPopup from '../../../../../../components/ErrorPopup/ErrorPopup';
 import SearchField from '../../../../../../components/SearchField/SearchField';
-import PlannedPlayoffSchedule from '../../../../../FootballTournamentPage/components/FootballPlannedPlayoffSchedule';
+import PlannedPlayoffSchedule from '../../../../../football/FootballTournamentPage/components/FootballPlannedPlayoffSchedule';
 import StatusTabs, {
   type MatchTab,
   type StatusCounts,

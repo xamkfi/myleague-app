@@ -1,0 +1,234 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import HockeyMatchEvents from './HockeyMatchEvents';
+import HockeyMatchStats from './HockeyMatchStats';
+import HockeyMatchLineups from './HockeyMatchLineups';
+import { hockeyMatchService } from '../../../api/hockey/hockeyMatchService';
+import { hockeyStatisticsService } from '../../../api/hockey/hockeyStatisticsService';
+import { hockeyTeamService } from '../../../api/hockey/hockeyTeamService';
+import { hockeySeasonService } from '../../../api/hockey/hockeySeasonService';
+import { hockeyTournamentService } from '../../../api/hockey/hockeyTournamentService';
+import type { HockeyMatchDto, HockeyMatchStatisticsDto, HockeyTeamDto } from '../../../types/hockey/hockeyTypes';
+import { hockeyLiveStateChanged, isHockeyMatchFinished, isHockeyMatchLive } from '../../../types/hockey/hockeyTypes';
+import { useAudience } from '../../../context/AudienceContext';
+import { useIntervalWhen } from '../../../hooks/useIntervalWhen';
+import {
+  hockeyStatusTranslationKey,
+  buildHockeyJerseyByCareerPlayerId,
+  loadHockeyRosterNameMaps,
+  loadTeamNameMap,
+  mergeHockeyMatchFaceoffWins,
+} from '../../../utils/hockeyLookups';
+import { MatchInfoCard, MatchPageShell, type MatchTabType } from '../../../components/match';
+import { getTeamPath, getLeaguePath, getTournamentPath } from '../../../utils/sportRoutes';
+import { getTeamSlug } from '../../../utils/slugUtils';
+import '../../floorball/FloorballMatchPage/FloorballMatchPage.scss';
+import '../../../components/LeagueStanding/LeagueStanding.scss';
+
+const LIVE_POLL_MS = 3_000;
+const UPCOMING_POLL_MS = 30_000;
+/** Penalties and shots do not change the live row, so refresh the full match this often anyway. */
+const POLLS_PER_FULL_REFRESH = 10;
+
+function HockeyMatchPage() {
+  const { t } = useTranslation();
+  const { audience } = useAudience();
+  const { id } = useParams<{ id: string }>();
+  const [match, setMatch] = useState<HockeyMatchDto | null>(null);
+  const [stats, setStats] = useState<HockeyMatchStatisticsDto | null>(null);
+  const [teams, setTeams] = useState<HockeyTeamDto[]>([]);
+  const [teamNames, setTeamNames] = useState<Map<string, string>>(new Map());
+  const [playerNames, setPlayerNames] = useState<Map<string, string>>(new Map());
+  const [careerPlayerNames, setCareerPlayerNames] = useState<Map<string, string>>(new Map());
+  const [competitionName, setCompetitionName] = useState('');
+  const [competitionPath, setCompetitionPath] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<MatchTabType>('summary');
+
+  const matchRef = useRef<HockeyMatchDto | null>(match);
+  const pollsSinceFullRefreshRef = useRef(0);
+  useEffect(() => {
+    matchRef.current = match;
+  }, [match]);
+
+  const refreshLiveData = useCallback(async (): Promise<void> => {
+    const current = matchRef.current;
+    if (!id || !current) {
+      return;
+    }
+    try {
+      pollsSinceFullRefreshRef.current += 1;
+      const fullRefreshDue = pollsSinceFullRefreshRef.current >= POLLS_PER_FULL_REFRESH;
+      if (!fullRefreshDue) {
+        const liveRows = await hockeyMatchService.getLive(current.competitionId ?? undefined);
+        const live = liveRows.find((row) => row.id === id);
+        if (!live || !hockeyLiveStateChanged(current, live)) {
+          return;
+        }
+      }
+      pollsSinceFullRefreshRef.current = 0;
+      const [loaded, box] = await Promise.all([
+        hockeyMatchService.getById(id),
+        hockeyStatisticsService.getMatchStats(id).catch(() => null),
+      ]);
+      setMatch(loaded);
+      setStats(box ? mergeHockeyMatchFaceoffWins(box, loaded) : null);
+    } catch {
+      /* keep last known live state */
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+    const load = async (): Promise<void> => {
+      const [loaded, teamList] = await Promise.all([
+        hockeyMatchService.getById(id),
+        hockeyTeamService.getAll(audience.teamCategory),
+      ]);
+      setMatch(loaded);
+      setTeams(teamList);
+      setTeamNames(await loadTeamNameMap(teamList));
+      const participating = teamList.filter(
+        (team) => team.id === loaded.homeTeamId || team.id === loaded.awayTeamId,
+      );
+      const names = await loadHockeyRosterNameMaps(participating);
+      setPlayerNames(names.byTeamPlayerId);
+      setCareerPlayerNames(names.byPlayerId);
+      const box = await hockeyStatisticsService.getMatchStats(id).catch(() => null);
+      setStats(box ? mergeHockeyMatchFaceoffWins(box, loaded) : null);
+      if (loaded.competitionId) {
+        const season = await hockeySeasonService.getById(loaded.competitionId).catch(() => null);
+        if (season) {
+          setCompetitionName(season.name);
+          setCompetitionPath(getLeaguePath('hockey', season.id));
+        } else {
+          const tournament = await hockeyTournamentService.getById(loaded.competitionId).catch(() => null);
+          setCompetitionName(tournament?.name ?? '');
+          setCompetitionPath(tournament ? getTournamentPath('hockey', tournament.id) : '');
+        }
+      }
+    };
+    void load()
+      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load match'))
+      .finally(() => setLoading(false));
+  }, [id, audience.teamCategory]);
+
+  const live = Boolean(match && isHockeyMatchLive(match.status));
+  const upcoming = Boolean(
+    match && !live && !isHockeyMatchFinished(match.status) && match.status !== 'Cancelled',
+  );
+  useIntervalWhen(live, () => {
+    void refreshLiveData();
+  }, LIVE_POLL_MS);
+  useIntervalWhen(upcoming, () => {
+    void refreshLiveData();
+  }, UPCOMING_POLL_MS);
+
+  const namedTeams = teams.map((team) => ({ id: team.id, name: team.name }));
+  const homeName = match?.homeTeamId ? teamNames.get(match.homeTeamId) ?? t('hockeyPage.home', 'Home') : 'TBD';
+  const awayName = match?.awayTeamId ? teamNames.get(match.awayTeamId) ?? t('hockeyPage.away', 'Away') : 'TBD';
+
+  return (
+    <MatchPageShell
+      isLoading={loading}
+      error={error}
+      competitionName={competitionName}
+      competitionPath={competitionPath}
+      header={
+        match
+          ? {
+              home: {
+                name: homeName,
+                logo: match.homeTeamId
+                  ? teams.find((team) => team.id === match.homeTeamId)?.logoUrl ?? null
+                  : null,
+                href: match.homeTeamId
+                  ? getTeamPath('hockey', getTeamSlug({ id: match.homeTeamId, name: homeName }, namedTeams))
+                  : null,
+              },
+              away: {
+                name: awayName,
+                logo: match.awayTeamId
+                  ? teams.find((team) => team.id === match.awayTeamId)?.logoUrl ?? null
+                  : null,
+                href: match.awayTeamId
+                  ? getTeamPath('hockey', getTeamSlug({ id: match.awayTeamId, name: awayName }, namedTeams))
+                  : null,
+              },
+              homeScore: match.homeScore,
+              awayScore: match.awayScore,
+              scheduledDateTime: match.scheduledStartTime,
+              venue: match.venue,
+              isScheduled: match.status === 'Scheduled',
+              isLive: isHockeyMatchLive(match.status),
+              isFinal: isHockeyMatchFinished(match.status),
+              statusLabel:
+                match.status !== 'Scheduled' &&
+                !isHockeyMatchLive(match.status) &&
+                !isHockeyMatchFinished(match.status)
+                  ? t(hockeyStatusTranslationKey(match.status), match.status)
+                  : null,
+            }
+          : undefined
+      }
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      tableVariant="season"
+      showTableTab={false}
+      showStatsTab
+    >
+      {match && activeTab === 'summary' && (
+        <div className="tab-content">
+          <div className="summary-content">
+            <MatchInfoCard
+              decision={match.wentToShootout ? 'shootout' : match.wentToOvertime ? 'overtime' : null}
+              referees={match.refereeDetails}
+              scorekeepers={match.scorekeepers}
+            />
+            <HockeyMatchEvents
+              match={match}
+              teams={teams}
+              homeName={homeName}
+              awayName={awayName}
+              playerNames={playerNames}
+            />
+          </div>
+        </div>
+      )}
+      {match && activeTab === 'stats' && (
+        <div className="tab-content">
+          {!stats ? (
+            <p>{t('hockeyPage.noStats', 'No statistics yet')}</p>
+          ) : (
+            <HockeyMatchStats
+              stats={stats}
+              homeName={homeName}
+              awayName={awayName}
+              homeTeamId={match.homeTeamId}
+              awayTeamId={match.awayTeamId}
+              playerNames={careerPlayerNames}
+              jerseyByPlayerId={buildHockeyJerseyByCareerPlayerId(match, teams)}
+            />
+          )}
+        </div>
+      )}
+      {match && activeTab === 'lineups' && (
+        <div className="tab-content">
+          <HockeyMatchLineups
+            match={match}
+            homeName={homeName}
+            awayName={awayName}
+            teams={teams}
+            playerNames={playerNames}
+          />
+        </div>
+      )}
+    </MatchPageShell>
+  );
+}
+
+export default HockeyMatchPage;

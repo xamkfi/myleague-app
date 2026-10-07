@@ -1,5 +1,7 @@
 using Application.Common;
-using Application.DTOs.Common;
+using Application.Features.Common.Content.FooterContacts.DTOs;
+using Application.Features.Common.Content.InfoPageContent.DTOs;
+using Application.Features.Common.Content.RulesSection.DTOs;
 using Application.Features.Common.Content.FooterContacts.Queries;
 using Application.Features.Common.Content.InfoPageContent.Queries;
 using Application.Features.Common.Content.RulesSection.Queries;

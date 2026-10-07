@@ -1,6 +1,6 @@
 using Domain.Constants;
 using Application.Common;
-using Application.DTOs.Common;
+using Application.Features.Common.Content.InfoPageContent.DTOs;
 using Application.Features.Common.Content.InfoPageContent.Commands;
 using Application.Features.Common.Content.InfoPageContent.Queries;
 using MediatR;

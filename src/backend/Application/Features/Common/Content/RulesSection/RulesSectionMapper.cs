@@ -1,4 +1,4 @@
-using Application.DTOs.Common;
+using Application.Features.Common.Content.RulesSection.DTOs;
 using Domain.Entities.Common;
 
 namespace Application.Features.Common.Content.RulesSection;
