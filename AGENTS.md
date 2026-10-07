@@ -19,7 +19,7 @@ This file is the shared entry point for every coding agent. Claude Code loads it
 | Run the app locally | `.claude/skills/run-local/SKILL.md` |
 | Review / PR feedback | `.claude/skills/review-code/SKILL.md` |
 
-Layer details: [Domain](src/backend/Domain/README.md) · [Application](src/backend/Application/README.md) · [Infrastructure](src/backend/Infrastructure/README.md) · [WebAPI](src/backend/WebAPI/README.md) · [Frontend](src/frontend/README.md). Prefer those READMEs over the older `*DevelopmentGuide.md` files, which still describe event sourcing, AutoMapper, and `Result.Value`; the code uses none of them.
+Layer details: [Domain](src/backend/Domain/README.md) · [Application](src/backend/Application/README.md) · [Infrastructure](src/backend/Infrastructure/README.md) · [WebAPI](src/backend/WebAPI/README.md) · [Frontend](src/frontend/README.md).
 
 ## Layout
 
@@ -82,7 +82,6 @@ How to write docs:
 - Write only what is true now, and check it against the code. Do not add roadmap items, "coming soon" notes, or a changelog.
 - Keep each fact in one place and link to it from elsewhere. Rules and skills hold conventions; READMEs hold orientation, setup, and structure.
 - Never put secret values in docs. Refer to config keys and secrets by name.
-- Leave the old `*DevelopmentGuide.md` files alone. Do not copy content out of them, because they are known to be stale.
 
 ## Running locally
 

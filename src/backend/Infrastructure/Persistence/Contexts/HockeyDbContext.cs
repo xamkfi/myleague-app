@@ -6,6 +6,7 @@ using Domain.Entities.Hockey.Teams;
 using Domain.ValueObjects.Hockey.Matches;
 using Microsoft.EntityFrameworkCore;
 using MyLeague.Infrastructure.Persistence.Configurations.Hockey;
+using MyLeague.Infrastructure.Persistence.Extensions;
 
 using Domain.Entities.Hockey.Officials;
 
@@ -16,7 +17,30 @@ namespace MyLeague.Infrastructure.Persistence.Contexts;
 /// </summary>
 public class HockeyDbContext : DbContext
 {
+    private bool _isDispatchingEvents;
+
     public HockeyDbContext(DbContextOptions<HockeyDbContext> options) : base(options) { }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        if (_isDispatchingEvents)
+            return await base.SaveChangesAsync(cancellationToken);
+
+        return await this.SaveChangesWithEventsAsync(cancellationToken);
+    }
+
+    internal async Task<int> SaveChangesWithoutEventsAsync(CancellationToken cancellationToken = default)
+    {
+        _isDispatchingEvents = true;
+        try
+        {
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+        finally
+        {
+            _isDispatchingEvents = false;
+        }
+    }
 
     public DbSet<HockeyTeam> HockeyTeams => Set<HockeyTeam>();
     public DbSet<HockeyPlayer> HockeyPlayers => Set<HockeyPlayer>();

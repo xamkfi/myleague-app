@@ -48,7 +48,7 @@ A slice uses whichever of `Commands/`, `Queries/`, `Handlers/`, `DTOs/`, `Mappin
 |------|----------|-------|
 | `Result<T>`, `Result` | `Common/Result.cs` | Payload is `.Data`. Factories: `Success`, `Failure`, `ValidationFailure`, `NotFound(entityName, key)`. Also `IsSuccess`, `Error`, `ErrorKind`, `GetAllErrors()` |
 | `ResultErrorKind` | `Common/Result.cs` | `None`, `Failure`, `NotFound`, `Validation`. WebAPI maps `NotFound` to 404 and `Validation` to 400 |
-| `PagedResult<T>` | `Domain/Common/PagedResult.cs` | `Application/Common/PagedResult.cs` is an empty stub; do not add to it |
+| `PagedResult<T>` | `Domain/Common/PagedResult.cs` | Lives in Domain so repositories can return it |
 | `BasePagedQueryHandler<TQuery, TResult>` | `Common/BasePagedQueryHandler.cs` | Validates page and page size against `IPaginationService` |
 | `ExceptionExtensions.Flatten()` | `Common/ExceptionExtensions.cs` | Turns an exception chain into `"Type: message"` strings for `Result.Failure(msg, errors)` |
 | `IPaginationService` | `Services/Common/` | Reads `Pagination:Global` and `Pagination:Resources:<ResourceKey>` from appsettings. Page size 0 means "use the default" |

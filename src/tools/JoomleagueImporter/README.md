@@ -9,7 +9,7 @@ Imports historical floorball, football, or ice hockey data from a JoomLeague MyS
 
 Do not use it for development test data. Use the [Seeder](../Seeder/README.md) for that.
 
-This tool replaces the older [MahlImporter](../MahlImporter/README.md) and [DataImporter](../DataImporter/README.md).
+This tool replaces the older MahlImporter and DataImporter tools, which have been removed.
 
 ## Prerequisites
 
@@ -188,5 +188,4 @@ dotnet test tests/tools/JoomleagueImporter.UnitTests/JoomleagueImporter.UnitTest
 ## Related
 
 - [Seeder](../Seeder/README.md): development test data
-- [MahlImporter](../MahlImporter/README.md): older scraper, replaced by this tool
 - [Root README](../../../README.md)

@@ -152,7 +152,7 @@ Full route list: [root README](../../../README.md#api-overview). Route prefixes 
 | Endpoint | Runs | Response |
 |----------|------|----------|
 | `/health/ready` | Checks tagged `ready`: PostgreSQL and the four DbContexts | `Healthy` / `Unhealthy` text, 503 when unhealthy |
-| `/health` | Every check, including memory, disk, row counts, and service resolution | JSON, 503 when unhealthy |
+| `/health` | Every check, including memory, disk, row counts, and service resolution | JSON, 503 when unhealthy. Anonymous callers see only names and statuses; site admins also see descriptions and data |
 | `/health/live` | Nothing | `Alive` |
 | `/health-ui` | Redirects to `/health-test.html`, a static page that polls `/health` | HTML |
 
@@ -193,8 +193,7 @@ dotnet run --project src/backend/WebAPI/WebAPI.csproj --urls http://localhost:80
 
 - Keep controllers thin. Map the request record field by field into the command; do not pass request models into Application.
 - Put XML `<summary>` comments on controllers and actions. They feed OpenAPI and Scalar.
-- `ServiceCollectionExtensions.AddCorsConfiguration` (`AllowAll`) is not called. The active CORS policy is the `Development` policy in `Program.cs`.
-- `FluentValidation.AspNetCore` is referenced but not wired up. Validation runs in the MediatR `ValidationBehavior`.
+- Validation runs in the MediatR `ValidationBehavior`, not in ASP.NET Core model validation.
 - Rate limits, the output cache, `IMatchEventRateLimiter`, and the match timer are all in-memory. They assume one API instance.
 
 ## Tests
