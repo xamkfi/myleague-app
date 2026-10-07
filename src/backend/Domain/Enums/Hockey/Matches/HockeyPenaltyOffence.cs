@@ -88,6 +88,14 @@ public enum HockeyPenaltyOffence
     /// <summary>
     /// GoalieInterference
     /// </summary>
-    GoalieInterference = 20
+    GoalieInterference = 20,
+    /// <summary>
+    /// IllegalCheck: an illegal body check not covered by a more specific offence
+    /// </summary>
+    IllegalCheck = 21,
+    /// <summary>
+    /// Other: any offence not listed
+    /// </summary>
+    Other = 22
 }
 

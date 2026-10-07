@@ -2,6 +2,7 @@ using Domain.Entities.Hockey.Competitions;
 using Domain.Enums.Common;
 using Domain.Services.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MyLeague.Infrastructure.Persistence.Configurations.Hockey;
@@ -16,6 +17,12 @@ public class HockeySeasonConfiguration : IEntityTypeConfiguration<HockeySeason>
             .HasDefaultValue(0)
             .IsRequired();
 
+        // The domain edits this list in place, so EF needs a comparer that looks at the contents.
+        ValueComparer<List<StandingSortCriterion>> rankingCriteriaComparer = new(
+            (a, b) => a == null && b == null || a != null && b != null && a.SequenceEqual(b),
+            criteria => criteria == null ? 0 : criteria.Aggregate(0, (hash, item) => HashCode.Combine(hash, item)),
+            criteria => criteria == null ? new List<StandingSortCriterion>() : criteria.ToList());
+
         builder.Property<List<StandingSortCriterion>>("_rankingCriteria")
             .HasColumnName("RankingCriteria")
             .HasMaxLength(64)
@@ -27,7 +34,8 @@ public class HockeySeasonConfiguration : IEntityTypeConfiguration<HockeySeason>
                     ? StandingSortCriteria.Default.ToList()
                     : stored.Split(',', StringSplitOptions.RemoveEmptyEntries)
                         .Select(item => (StandingSortCriterion)int.Parse(item))
-                        .ToList());
+                        .ToList())
+            .Metadata.SetValueComparer(rankingCriteriaComparer);
 
         builder.HasMany(season => season.ContentBlocks)
             .WithOne()

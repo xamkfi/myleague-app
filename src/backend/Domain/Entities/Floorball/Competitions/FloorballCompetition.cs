@@ -169,13 +169,11 @@ public abstract class FloorballCompetition : BaseEntity
     }
 
     /// <summary>
-    /// Updates the audience / age-group category for this competition.
+    /// Updates the audience / age-group category for this competition. Allowed in any status,
+    /// because the category only decides which audience's pages show the competition.
     /// </summary>
     public void UpdateTeamCategory(TeamCategory teamCategory)
     {
-        if (IsCompleted)
-            throw new InvalidOperationException("Cannot update team category for a completed competition.");
-
         TeamCategory = teamCategory;
     }
 

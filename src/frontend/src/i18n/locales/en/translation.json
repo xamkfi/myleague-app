@@ -2115,6 +2115,7 @@
       "updateMatch": "Update Match",
       "matchCount": "match(es)",
       "lineup": {
+        "lockedHint": "Reopen the match to edit the lineup.",
         "activeLineup": "Active lineup",
         "editLineup": "Edit lineup",
         "editLineupTitle": "Edit active lineup",
@@ -2628,6 +2629,8 @@
     }
   },
   "playerLicence": {
+    "statusOk": "Licence OK",
+    "statusMissing": "No valid licence",
     "column": "Licence",
     "markPaid": "Mark licence paid",
     "markUnpaid": "Mark licence unpaid",
@@ -2809,6 +2812,7 @@
         "genericError": "Failed to save teams."
       },
       "lineup": {
+        "lockedHint": "Reopen the match to edit the lineup.",
         "loanGoalkeeper": "Loan goalkeeper",
         "loanGoalkeeperHint": "Creates a loan goalkeeper for the team and sets them as the goalkeeper. If one already exists, that same player is selected.",
         "loanGoalkeeperConfirmTitle": "Set loan goalkeeper",
@@ -2864,6 +2868,16 @@
     "iceHockeyDescription": "Ice hockey is an intense team sport played on ice.",
     "viewLeagues": "View leagues",
     "comingSoon": "Coming soon"
+  },
+  "seasonGroup": {
+    "label": "Group",
+    "createHint": "Choose which group the season is added to. The season only shows on that group's pages.",
+    "editHint": "The season only shows on the selected group's pages. The group can be changed for completed seasons too, and the change is saved as soon as you confirm it.",
+    "changed": "Season moved to {{group}}.",
+    "changeFailed": "Failed to change the season group.",
+    "confirmTitle": "Change the season group?",
+    "confirmMessage": "The season moves from {{from}} to {{to}}. From now on it only shows on the {{to}} pages.",
+    "confirm": "Change group"
   },
   "audience": {
     "filterLabel": "Audience",
@@ -3468,7 +3482,9 @@
         "suspended": "Suspended"
       },
       "manage": {
-        "bulkSavesTitle": "Record multiple saved shots at once",
+        "bulkSavesTitle": "Record this team's goalie saves at once",
+        "bulkSavesNeedGoalie": "This team has no goalie in the lineup.",
+        "goalieSaves": "Goalie saves",
         "deleteBulkSaves_one": "Delete {{count}} save",
         "deleteBulkSaves_other": "Delete {{count}} saves",
         "finished": "FINISHED",
@@ -3719,12 +3735,15 @@
         "action": "Action",
         "defenders": "Defenders",
         "forwards": "Forwards",
+        "backupGoalies": "Backup goalies",
+        "noBackupGoalies": "No backup goalie.",
         "noDefenders": "No defenders selected.",
         "noForwards": "No forwards selected.",
         "saveLineup": "Save lineup",
         "addAs": {
           "Defenseman": "Defender",
-          "Forward": "Forward"
+          "Forward": "Forward",
+          "BackupGoalie": "Backup goalie"
         }
       },
       "createNewMatch": "Create New Match",
@@ -3768,12 +3787,18 @@
         "CrossChecking": "Cross-checking",
         "Boarding": "Boarding",
         "Charging": "Charging",
+        "IllegalCheck": "Illegal check",
         "CheckingFromBehind": "Checking from behind",
+        "CheckingToHeadOrNeck": "Checking to the head or neck",
         "Elbowing": "Elbowing",
+        "Kneeing": "Kneeing",
+        "Spearing": "Spearing",
+        "ButtEnding": "Butt-ending",
         "Roughing": "Roughing",
         "Fighting": "Fighting",
+        "GoalieInterference": "Goaltender interference",
         "DelayOfGame": "Delay of game",
-        "TooManyMen": "Too many men",
+        "TooManyPlayers": "Too many players",
         "UnsportsmanlikeConduct": "Unsportsmanlike conduct",
         "Other": "Other"
       },

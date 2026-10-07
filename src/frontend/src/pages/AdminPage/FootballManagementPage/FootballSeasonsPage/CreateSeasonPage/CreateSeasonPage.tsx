@@ -12,6 +12,8 @@ import { useDivisions } from '../../../../../hooks/useDivisions';
 import { SportsCategory } from '../../../../../types/common/sports';
 import '../EditSeasonPage/EditSeasonPage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import TeamCategoryPicker from '../../../../../components/TeamCategoryPicker/TeamCategoryPicker';
+import { useAudience } from '../../../../../context/AudienceContext';
 import SeasonStandingsSettings from '../../../../../components/SeasonStandingsSettings/SeasonStandingsSettings';
 import { DEFAULT_STANDING_SORT, STANDING_SORT_OPTIONS } from '../../../../../components/SeasonStandingsSettings/standingSort';
 
@@ -23,8 +25,11 @@ export const CreateSeasonPage = () => {
     () => divisions.filter((division) => division.sportType === SportsCategory.Football),
     [divisions]
   );
+  const { audience } = useAudience();
   const [formData, setFormData] = useState<CreateFootballSeasonRequest>({
     name: '',
+    // Starts from the group the admin is browsing; the picker at the top makes it explicit.
+    teamCategory: audience.teamCategory,
     startDate: '',
     endDate: '',
     divisionIds: [],
@@ -234,6 +239,16 @@ export const CreateSeasonPage = () => {
         <div className="edit-season-content">
           <form onSubmit={handleSubmit} className="edit-season-form">
             <ErrorPopup message={error} />
+
+            <div className="form-section">
+              <TeamCategoryPicker
+                name="create-season-group"
+                value={formData.teamCategory ?? audience.teamCategory}
+                onChange={(teamCategory) => setFormData((prev) => ({ ...prev, teamCategory }))}
+                hint={t('seasonGroup.createHint')}
+                disabled={loading}
+              />
+            </div>
 
             {/* Basic Information Section */}
             <div className="form-section">

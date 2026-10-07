@@ -277,6 +277,30 @@ public class FootballSeasonController : BaseApiController
     }
 
     /// <summary>
+    /// Moves a football season to another audience group (adult, youth, women).
+    /// Works in any season status, including completed seasons.
+    /// </summary>
+    /// <param name="id">Season ID</param>
+    /// <param name="request">The new audience group</param>
+    [HttpPut("{id:guid}/team-category")]
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse>> ChangeSeasonTeamCategory(
+        Guid id,
+        [FromBody] ChangeTeamCategoryRequest request,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Changing football season {SeasonId} team category to {TeamCategory}", id, request.TeamCategory);
+
+        Result result = await _mediator.Send(
+            new ChangeFootballSeasonTeamCategoryCommand(id, request.TeamCategory!.Value),
+            cancellationToken);
+        return HandleVoidResult(result, "Season group updated successfully", "Failed to update season group");
+    }
+
+    /// <summary>
     /// Activate season
     /// </summary>
     [HttpPut("{id:guid}/activate")]

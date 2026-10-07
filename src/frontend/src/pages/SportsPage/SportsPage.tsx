@@ -45,6 +45,8 @@ function SportsPage() {
   return (
     <PageTemplate title={t('nav.sports')} fullBleed>
       <CatalogPage title={t('sportsPage.title')} description={t('sportsPage.description')}>
+        {/* One child: CatalogPage lays its children out in a row. */}
+        <div className="sports-page">
           <div className="sports-page__grid">
             {SPORTS.map((sport) => {
               const cardClass = sport.enabled
@@ -92,6 +94,7 @@ function SportsPage() {
             </span>
             <span className="sports-page__all-time-link">{t('allTimeStats.cta')} →</span>
           </Link>
+        </div>
       </CatalogPage>
     </PageTemplate>
   );

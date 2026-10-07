@@ -81,10 +81,5 @@ public class UpdateHockeySeasonHandler : IRequestHandler<UpdateHockeySeasonComma
             _logger.LogWarning(ex, "Invalid UpdateHockeySeason for season {SeasonId}", request.SeasonId);
             return Result<HockeySeasonDto>.Failure(ex.Message, ex.Flatten());
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed UpdateHockeySeason for season {SeasonId}", request.SeasonId);
-            return Result<HockeySeasonDto>.Failure("An error occurred while updating the hockey season.", ex.Flatten());
-        }
     }
 }

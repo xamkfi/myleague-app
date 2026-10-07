@@ -17,6 +17,8 @@ import './EditActiveRosterDialog.scss';
 
 type PositionFilter = 'all' | 'field' | 'goalkeeper';
 type FieldRole = 'Defenseman' | 'Forward';
+// A dressed goalie who is not the starting goalie.
+type LineupRole = FieldRole | 'BackupGoalie';
 
 const FIELD_ROLES: FieldRole[] = ['Defenseman', 'Forward'];
 
@@ -30,7 +32,7 @@ interface HockeyLineupPlayer {
 }
 
 interface TeamLineupState {
-  players: Map<string, FieldRole>;
+  players: Map<string, LineupRole>;
   goalieId: string;
 }
 
@@ -50,7 +52,7 @@ interface TeamColumnProps {
   teamLabel: string;
   players: HockeyLineupPlayer[];
   state: TeamLineupState;
-  onAddPlayer: (playerId: string, role: FieldRole) => void;
+  onAddPlayer: (playerId: string, role: LineupRole) => void;
   onRemovePlayer: (playerId: string) => void;
   onSetGoalie: (goalieId: string) => void;
   onUseLoanGoalkeeper: () => void;
@@ -203,6 +205,11 @@ const TeamColumn = ({
     [sortedPlayers, state.players],
   );
 
+  const backupGoalies = useMemo(
+    () => sortedPlayers.filter((player) => state.players.get(player.id) === 'BackupGoalie'),
+    [sortedPlayers, state.players],
+  );
+
   const availablePlayers = useMemo(() => {
     return sortedPlayers.filter(
       (player) =>
@@ -321,6 +328,13 @@ const TeamColumn = ({
             onRemove={onRemovePlayer}
             removeAriaLabel={t('hockey.matches.lineup.removePlayer', 'Remove from lineup')}
           />
+          <RoleChipsRow
+            label={t('hockey.matches.lineup.backupGoalies', 'Backup goalies')}
+            emptyLabel={t('hockey.matches.lineup.noBackupGoalies', 'No backup goalie.')}
+            players={backupGoalies}
+            onRemove={onRemovePlayer}
+            removeAriaLabel={t('hockey.matches.lineup.removePlayer', 'Remove from lineup')}
+          />
         </div>
 
         <div className="eard-filters">
@@ -409,6 +423,17 @@ const TeamColumn = ({
                               : t('hockey.matches.lineup.addAs.Forward', 'Forward')}
                           </button>
                         ))}
+                        {player.position === 'Goalie' && (
+                          <button
+                            type="button"
+                            className="eard-btn eard-btn--sm eard-btn--add eard-btn--add-backupgoalie"
+                            onClick={() => onAddPlayer(player.id, 'BackupGoalie')}
+                            title={t('hockey.matches.lineup.addAs.BackupGoalie', 'Backup goalie')}
+                          >
+                            <i className="fas fa-plus" aria-hidden="true"></i>
+                            {t('hockey.matches.lineup.addAs.BackupGoalie', 'Backup goalie')}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -432,12 +457,16 @@ const lineupFromMatch = (
     matchTeam?.activeGoalieMatchPlayerId
       ? (active.find((player) => player.id === matchTeam.activeGoalieMatchPlayerId)?.teamPlayerId ?? '')
       : (active.find((player) => player.isGoalie)?.teamPlayerId ?? '');
-  const players = new Map<string, FieldRole>();
+  const players = new Map<string, LineupRole>();
   for (const player of active) {
-    if (player.teamPlayerId === goalieId || player.isGoalie) {
+    if (player.teamPlayerId === goalieId) {
       continue;
     }
-    players.set(player.teamPlayerId, fieldRoleFromPosition(player.position));
+    // Keep other dressed goalies, or every save would drop them from the lineup.
+    players.set(
+      player.teamPlayerId,
+      player.isGoalie || player.position === 'Goalie' ? 'BackupGoalie' : fieldRoleFromPosition(player.position),
+    );
   }
   return { players, goalieId };
 };
@@ -508,7 +537,7 @@ function EditActiveRosterDialog({
   );
 
   const addPlayer = useCallback(
-    (side: 'home' | 'away', playerId: string, role: FieldRole): void => {
+    (side: 'home' | 'away', playerId: string, role: LineupRole): void => {
       updateTeamState(side, (prev) => {
         if (playerId === prev.goalieId) {
           return prev;

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { PlayerLink } from '../SportLinks';
 import type { SportKind } from '../../utils/sportRoutes';
+import { LicenceLegend, LicenceStatusDot } from '../LicenceStatus/LicenceStatus';
 import '../../pages/FloorballTeamPage/components/RosterSection.scss';
 
 export interface RosterPlayerRow {
@@ -12,6 +13,8 @@ export interface RosterPlayerRow {
   goals?: number;
   assists?: number;
   nameSuffix?: string;
+  /** Licence paid for this team. Leave undefined to hide the indicator. */
+  licenceActive?: boolean;
 }
 
 export interface RosterStatRow {
@@ -42,8 +45,11 @@ export default function RosterSection({
     (a, b) => positionOrder.indexOf(a) - positionOrder.indexOf(b),
   );
 
+  const showLicence: boolean = players.some((player) => player.licenceActive !== undefined);
+
   return (
     <div className="roster-section">
+      {showLicence && <LicenceLegend />}
       {playerPositions.map((pos) => (
         <div className="roster-container" key={pos}>
           <div className="roster-position-header">
@@ -68,7 +74,10 @@ export default function RosterSection({
                       className={`table roster-player${isCreator ? ' roster-player--creator' : ''}`}
                       key={player.playerId}
                     >
-                      <div className="roster-jersey row">{player.jerseyNumber ?? '—'}</div>
+                      <div className="roster-jersey row licence-anchor">
+                        {player.jerseyNumber ?? '—'}
+                        {player.licenceActive !== undefined && <LicenceStatusDot active={player.licenceActive} />}
+                      </div>
                       <div className="roster-player-name">
                         <PlayerLink sport={sport} playerId={player.playerId}>
                           {isCreator ? (

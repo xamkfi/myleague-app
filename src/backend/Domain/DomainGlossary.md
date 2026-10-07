@@ -114,10 +114,17 @@ An optional brief description or excerpt of a news article used for preview purp
 ## Hockey
 
 ### HockeyCompetition
-Abstract TPH root for hockey seasons and tournaments. Owns registered teams, matches, divisions and playoffs. `TeamCategory` (Adult, Youth, Women) is the audience filter used by public lists, same as floorball and football competitions. `CompetitionType` is stored as the string discriminator `Season` or `Tournament`.
+Abstract TPH root for hockey seasons and tournaments. Owns registered teams, matches, divisions and playoffs. `TeamCategory` (Adult, Youth, Women) is the audience filter used by public lists, same as floorball and football competitions. In all three sports it can be changed in any status, including completed, because it only decides where a competition is shown. Admins move a season with `PUT /api/{Sport}Season/{id}/team-category`. `CompetitionType` is stored as the string discriminator `Season` or `Tournament`.
 
 ### HockeyMatch
 A hockey game between two sides (`HockeyMatchTeam` home/away). Playoff bracket progress is stored on the match (`PlayoffRound`, `PlayoffMatchOrder`, `NextMatchId`, `NextMatchSlot`), matching floorball. Series wins are derived from finished match scores, not a stored win counter.
+
+Each `HockeyPeriodScore` row holds that period's goals, recounted from the `HockeyGoal` events whenever a goal is added, edited, or removed.
+
+The lineup is a `HockeyMatchPlayerSelection` of `HockeyMatchActivePlayer` rows. Events point at these rows, so `SyncPlayerSelection` edits the lineup in place: removed players are deactivated, returning players are reactivated, and a player who has events in the match cannot be removed. An admin can correct the lineup in any match status. Floorball and football lineups lock once the match is completed; reopening the match unlocks them.
+
+### HockeyPenaltyOffence
+The offence on a hockey penalty, stored as its name. `IllegalCheck` covers an illegal hit that no more specific offence describes, and `Other` covers anything not listed.
 
 ### HockeyPlayoffSeries
 Best-of series within a hockey competition. Completing enough finished match wins marks the series winner via `HockeyCompetition.CompletePlayoffSeries`.

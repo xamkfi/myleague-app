@@ -21,6 +21,7 @@ import { useDivisions } from '../../../../../hooks/useDivisions';
 import { SportsCategory } from '../../../../../types/common/sports';
 import './EditSeasonPage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import SeasonTeamCategorySection from '../../../../../components/SeasonTeamCategorySection/SeasonTeamCategorySection';
 import SeasonContentBlocksEditor from '../../../../../components/SeasonContentBlocksEditor/SeasonContentBlocksEditor';
 import {
   toContentBlockDrafts,
@@ -537,6 +538,18 @@ const EditSeasonPage = () => {
           {activeTab === 'details' && (
             <form onSubmit={handleSubmit} className="edit-season-form">
               <ErrorPopup message={error} />
+              {season && (
+                <SeasonTeamCategorySection
+                  sport="football"
+                  seasonId={season.id}
+                  category={season.teamCategory ?? 'Adult'}
+                  onChanged={(teamCategory) => {
+                  setSeason((prev) => (prev ? { ...prev, teamCategory } : prev));
+                  // The main form sends teamCategory too; keep it in step so a later save does not undo the change.
+                  setFormData((prev) => ({ ...prev, teamCategory }));
+                }}
+                />
+              )}
 
               <div className="form-section">
                 <h3 className="form-section__title">

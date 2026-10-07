@@ -293,6 +293,7 @@ function FootballPage() {
     results: t('leaguePage.tabs.results'),
     statistics: t('leaguePage.tabs.statistics'),
     summary: t('leaguePage.tabs.summary'),
+    rules: t('nav.rules'),
   };
 
   const fallbackInfo = (

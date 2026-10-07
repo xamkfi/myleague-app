@@ -207,7 +207,7 @@ function Navbar() {
         <div className="mobile-menu-content">
           <div className="mobile-audience">
             <span className="mobile-audience-label">{t('audience.switcherLabel')}</span>
-            <AudienceSwitcher variant="block" />
+            <AudienceSwitcher variant="block" onSelect={closeMobileMenu} />
           </div>
 
           <div className="mobile-search">

@@ -18,7 +18,7 @@ public class CreateHockeySeasonRequest
     /// Name of the season.
     /// </summary>
     [Required]
-    [StringLength(200)]
+    [StringLength(100)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
@@ -93,7 +93,7 @@ public class UpdateHockeySeasonRequest
 {
     /// <summary>Season name.</summary>
     [Required]
-    [StringLength(200)]
+    [StringLength(100)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>Start date.</summary>

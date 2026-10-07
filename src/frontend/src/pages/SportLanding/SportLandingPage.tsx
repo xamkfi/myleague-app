@@ -70,6 +70,7 @@ export interface SportLandingLabels {
   results: string;
   statistics: string;
   summary: string;
+  rules: string;
 }
 
 const PAGE_SIZE = 6;
@@ -128,7 +129,8 @@ export default function SportLandingPage({
     { tab: 'statistics', label: labels.statistics },
     { tab: 'summary', label: labels.summary },
   ];
-  const navLinks = extraNavLinks ? [...defaultNav, ...extraNavLinks] : defaultNav;
+  const rulesLink: SeasonStandingsNavLink = { to: `/saannot?sport=${sport}`, label: labels.rules };
+  const navLinks = [...defaultNav, ...(extraNavLinks ?? []), rulesLink];
 
   const renderStandingsCard = (data: SportLandingSeasonData, isDark: boolean) => (
     <SeasonStandingsCard
