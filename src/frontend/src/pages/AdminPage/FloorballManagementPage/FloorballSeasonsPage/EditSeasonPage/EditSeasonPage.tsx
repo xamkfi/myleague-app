@@ -531,14 +531,12 @@ const EditSeasonPage = () => {
           {activeTab === 'details' && (
             <form onSubmit={handleSubmit} className="edit-season-form">
               <ErrorPopup message={error} />
-              {season && (
-                <SeasonTeamCategorySection
-                  sport="floorball"
-                  seasonId={season.id}
-                  category={season.teamCategory ?? 'Adult'}
-                  onChanged={(teamCategory) => setSeason((prev) => (prev ? { ...prev, teamCategory } : prev))}
-                />
-              )}
+              <SeasonTeamCategorySection
+                sport="floorball"
+                seasonId={season.id}
+                category={season.teamCategory ?? 'Adult'}
+                onChanged={(teamCategory) => setSeason((prev) => (prev ? { ...prev, teamCategory } : prev))}
+              />
 
               <div className="form-section">
                 <h3 className="form-section__title">
