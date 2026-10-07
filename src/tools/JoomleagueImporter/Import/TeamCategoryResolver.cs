@@ -6,7 +6,8 @@ namespace JoomleagueImporter.Import;
 /// <summary>
 /// Infers <see cref="TeamCategory"/> from JoomLeague project / team names.
 /// Uses Finnish and English keywords present in the historical MAHL dump
-/// (e.g. "SALIBANDY PMT 2026 | NAISET", "… | MIEHET", junior markers).
+/// (e.g. "SALIBANDY PMT 2026 | NAISET", "PUUMALIIGA 2024-2025" (women's floorball),
+/// "… | MIEHET", junior markers).
 /// Defaults to <see cref="TeamCategory.Adult"/> when nothing matches.
 /// </summary>
 internal static partial class TeamCategoryResolver
@@ -47,7 +48,7 @@ internal static partial class TeamCategoryResolver
     }
 
     [GeneratedRegex(
-        @"\b(naiset|naisten|nainen|ladies|women|woman)\b",
+        @"\b(naiset|naisten|nainen|ladies|women|woman|puuma\w*)\b",
         RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
     private static partial Regex WomenRegex();
 

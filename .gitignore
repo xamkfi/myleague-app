@@ -389,7 +389,9 @@ src/tools/JoomleagueImporter/id-map-staging-smoke-football.json
 src/tools/JoomleagueImporter/id-map-local-floorball.json
 src/tools/JoomleagueImporter/id-map-local-football.json
 src/tools/JoomleagueImporter/id-map-local-hockey.json
+src/tools/JoomleagueImporter/id-map-mahl-prod-*.json
 docs/student-guide/
+_import_tmp/
 
 # Claude Code personal overrides
 .claude/settings.local.json

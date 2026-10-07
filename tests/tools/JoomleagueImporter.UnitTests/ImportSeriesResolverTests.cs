@@ -17,6 +17,10 @@ public class ImportSeriesResolverTests
     [InlineData("2025-2026 | JÄÄKIEKKO LIIGA", "Jääkiekko Liiga", TeamCategory.Adult, false)]
     [InlineData("JÄÄKIEKKO +40", "Jääkiekko +40", TeamCategory.Adult, false)]
     [InlineData("SALIBANDY JUNIORIT", "Salibandy Sarja", TeamCategory.Youth, false)]
+    [InlineData("PUUMALIIGA 2024-2025", "Salibandy Puumaliiga", TeamCategory.Women, false)]
+    [InlineData("2019-2020 PUUMA LIIGA | DIVARI", "Salibandy Puumaliiga", TeamCategory.Women, false)]
+    [InlineData("2019-2020 PUUMA LIIGA | TASONMITTAUS", "Salibandy Tasonmittaus", TeamCategory.Women, false)]
+    [InlineData("JÄÄKIEKON PMT 2026 | KILPA", "Jääkiekko PMT", TeamCategory.Adult, true)]
     public void Resolve_ProjectName_MapsBandAndAudience(
         string projectName,
         string divisionName,
