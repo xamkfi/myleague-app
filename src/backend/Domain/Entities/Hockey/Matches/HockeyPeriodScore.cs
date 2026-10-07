@@ -90,6 +90,15 @@ public class HockeyPeriodScore : BaseEntity
         AwayFaceoffWins = awayFaceoffWins;
     }
 
+    internal void SetGoals(int homeGoals, int awayGoals)
+    {
+        EnsureNonNegative(homeGoals, nameof(homeGoals));
+        EnsureNonNegative(awayGoals, nameof(awayGoals));
+
+        HomeGoals = homeGoals;
+        AwayGoals = awayGoals;
+    }
+
     internal void MarkCompleted() => IsCompleted = true;
 
     private static void EnsureNonNegative(int value, string paramName)

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { AUDIENCE_REGISTRY, type AudienceThemeId } from '../../audience/audienceRegistry';
 import { useAudience } from '../../context/AudienceContext';
 import './AudienceSwitcher.scss';
@@ -7,10 +8,13 @@ import './AudienceSwitcher.scss';
 interface AudienceSwitcherProps {
   /** 'block' stretches the control to full width for the mobile menu. */
   variant?: 'brand' | 'block';
+  /** Called after a selection, for example to close the mobile menu. */
+  onSelect?: () => void;
 }
 
-function AudienceSwitcher({ variant = 'brand' }: AudienceSwitcherProps) {
+function AudienceSwitcher({ variant = 'brand', onSelect }: AudienceSwitcherProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { audience, selectedAudienceId, setAudience } = useAudience();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,8 +43,14 @@ function AudienceSwitcher({ variant = 'brand' }: AudienceSwitcherProps) {
   }, [isOpen]);
 
   const handleSelect = (id: AudienceThemeId) => {
-    setAudience(id);
     setIsOpen(false);
+    onSelect?.();
+    if (id === selectedAudienceId) {
+      return;
+    }
+    setAudience(id);
+    // Pages loaded for the previous group (seasons, teams, matches) do not belong to the new one.
+    navigate('/');
   };
 
   return (

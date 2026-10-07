@@ -5,7 +5,6 @@ using Application.Features.Hockey.Matches.Mappings;
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
 using Domain.Entities.Hockey.Teams;
-using Domain.Enums.Hockey.Teams;
 using Domain.Repositories.Hockey;
 using Domain.Services.Hockey;
 using Domain.ValueObjects.Hockey.Rules;
@@ -76,10 +75,7 @@ public class ConfirmHockeyMatchRosterHandler
                 rosterRules = competition.GetEffectiveRules().RosterRules;
             }
 
-            HockeyMatchPlayerSelection selection = matchTeam.CreateOrReplacePlayerSelection(
-                request.Source,
-                request.ConfirmedByUserId);
-
+            List<HockeyTeamPlayer> teamPlayers = new();
             foreach (Guid teamPlayerId in request.TeamPlayerIds.Distinct())
             {
                 HockeyTeamPlayer? teamPlayer = team.Roster.FirstOrDefault(p => p.Id == teamPlayerId);
@@ -88,9 +84,15 @@ public class ConfirmHockeyMatchRosterHandler
                     return Result<HockeyMatchDto>.NotFound("HockeyTeamPlayer", teamPlayerId);
                 }
 
-                bool isGoalie = teamPlayer.Position == HockeyPosition.Goalie;
-                selection.AddActivePlayer(teamPlayer, isGoalie: isGoalie);
+                teamPlayers.Add(teamPlayer);
             }
+
+            // Update the lineup in place so events recorded for kept players stay valid.
+            HockeyMatchPlayerSelection selection = match.SyncPlayerSelection(
+                matchTeam.Id,
+                teamPlayers,
+                request.Source,
+                request.ConfirmedByUserId);
 
             HockeyDomainValidationResult validation = HockeyRosterValidationService.ValidateMatchSelection(selection, rosterRules);
             if (!validation.IsValid)
@@ -119,13 +121,6 @@ public class ConfirmHockeyMatchRosterHandler
         {
             _logger.LogWarning(ex, "Invalid ConfirmRoster for match {MatchId}", request.MatchId);
             return Result<HockeyMatchDto>.Failure(ex.Message, ex.Flatten());
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed ConfirmRoster for match {MatchId}", request.MatchId);
-            return Result<HockeyMatchDto>.Failure(
-                "An error occurred while confirming the hockey match roster.",
-                ex.Flatten());
         }
     }
 }

@@ -216,6 +216,7 @@ const ActiveRosterCard = ({
           className="active-roster-card__edit"
           onClick={onEditLineup}
           disabled={disabled}
+          title={disabled ? t('football.matches.lineup.lockedHint', 'Reopen the match to edit the lineup.') : undefined}
         >
           <i className="fas fa-pen" aria-hidden="true"></i>
           {t('football.matches.lineup.editLineup', 'Edit lineup')}

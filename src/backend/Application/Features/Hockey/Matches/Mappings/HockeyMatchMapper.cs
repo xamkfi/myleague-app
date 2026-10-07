@@ -81,6 +81,7 @@ public static class HockeyMatchMapper
     {
         IReadOnlyCollection<HockeyMatchActivePlayerDto> players =
             team.PlayerSelection?.ActivePlayers
+                .Where(p => p.IsActive)
                 .Select(ToActivePlayerDto)
                 .ToList()
             ?? (IReadOnlyCollection<HockeyMatchActivePlayerDto>)Array.Empty<HockeyMatchActivePlayerDto>();

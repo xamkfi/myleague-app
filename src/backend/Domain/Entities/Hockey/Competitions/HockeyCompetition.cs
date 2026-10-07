@@ -104,11 +104,30 @@ public abstract class HockeyCompetition : BaseEntity
         CompetitionRules = competitionRules;
     }
 
-    public void UpdateTeamCategory(TeamCategory teamCategory)
+    /// <summary>
+    /// Replaces the point values and tie-breakers. Other rule parts are left as they are.
+    /// </summary>
+    public void UpdateStandingRules(HockeyStandingRules standingRules)
     {
+        ArgumentNullException.ThrowIfNull(standingRules);
         EnsureMutable();
-        TeamCategory = teamCategory;
+
+        if (CompetitionRules is null)
+        {
+            CompetitionRules = HockeyCompetitionRules.Default().WithStandingRules(standingRules);
+            return;
+        }
+
+        if (CompetitionRules.StandingRules.Equals(standingRules))
+            return;
+
+        CompetitionRules.ReplaceStandingRules(standingRules);
     }
+
+    /// <summary>
+    /// Updates the audience category. Allowed in any status, because it only decides where the competition is shown.
+    /// </summary>
+    public void UpdateTeamCategory(TeamCategory teamCategory) => TeamCategory = teamCategory;
 
     public void UpdateLogo(Uri? logoUrl)
     {

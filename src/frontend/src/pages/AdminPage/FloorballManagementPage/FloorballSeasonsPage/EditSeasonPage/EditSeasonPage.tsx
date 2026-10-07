@@ -16,6 +16,7 @@ import { clubService, type Club } from '../../../../../api/common/clubService';
 import { useDivisions } from '../../../../../hooks/useDivisions';
 import './EditSeasonPage.scss';
 import ErrorPopup from '../../../../../components/ErrorPopup/ErrorPopup';
+import SeasonTeamCategorySection from '../../../../../components/SeasonTeamCategorySection/SeasonTeamCategorySection';
 import SeasonStandingsSettings from '../../../../../components/SeasonStandingsSettings/SeasonStandingsSettings';
 import { DEFAULT_STANDING_SORT, STANDING_SORT_OPTIONS, normalizeStandingCriteria } from '../../../../../components/SeasonStandingsSettings/standingSort';
 import SeasonContentBlocksEditor from '../../../../../components/SeasonContentBlocksEditor/SeasonContentBlocksEditor';
@@ -530,6 +531,14 @@ const EditSeasonPage = () => {
           {activeTab === 'details' && (
             <form onSubmit={handleSubmit} className="edit-season-form">
               <ErrorPopup message={error} />
+              {season && (
+                <SeasonTeamCategorySection
+                  sport="floorball"
+                  seasonId={season.id}
+                  category={season.teamCategory ?? 'Adult'}
+                  onChanged={(teamCategory) => setSeason((prev) => (prev ? { ...prev, teamCategory } : prev))}
+                />
+              )}
 
               <div className="form-section">
                 <h3 className="form-section__title">

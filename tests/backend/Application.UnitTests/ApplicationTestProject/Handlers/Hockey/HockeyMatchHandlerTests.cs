@@ -657,7 +657,7 @@ public class HockeyMatchHandlerTests
     }
 
     [Fact]
-    public async Task DeactivateRosterPlayer_MarksInactive()
+    public async Task DeactivateRosterPlayer_MarksInactiveAndHidesFromDto()
     {
         HockeyMatch match = CreateStandaloneMatch();
         Club club = new("Tappara HC");
@@ -683,8 +683,9 @@ public class HockeyMatchHandlerTests
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
+        active.IsActive.Should().BeFalse();
         result.Data!.MatchTeams.Single(t => t.Id == homeSide.Id).ActivePlayers
-            .Should().ContainSingle(p => p.Id == active.Id && !p.IsActive);
+            .Should().NotContain(p => p.Id == active.Id);
         result.Data.MatchTeams.Single(t => t.Id == homeSide.Id).IsConfirmedRoster.Should().BeFalse();
     }
 

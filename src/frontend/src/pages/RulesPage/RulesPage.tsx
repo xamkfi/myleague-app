@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
 import MahlInfoLayout from "../../components/MahlInfoLayout/MahlInfoLayout";
 import SportIcon from "../../components/SportIcon/SportIcon";
@@ -40,8 +41,37 @@ function sportFromSectionTitle(title: string): string {
     return title;
 }
 
+interface SportSectionTarget {
+    topSectionId: string;
+    sportSectionId: string;
+}
+
+/** Finds the section for `?sport=` (floorball, football or hockey), either a sport tab or a top-level section. */
+function findSportSection(
+    sections: RulesSection[],
+    topLevel: RulesSection[],
+    sport: string,
+): SportSectionTarget | null {
+    for (const top of topLevel) {
+        if (top.sectionType === "SportGroup") {
+            const match = getChildSections(sections, top.id).find(
+                (child) => sportFromSectionTitle(child.title) === sport,
+            );
+            if (match) {
+                return { topSectionId: top.id, sportSectionId: match.id };
+            }
+        } else if (sportFromSectionTitle(top.title) === sport) {
+            return { topSectionId: top.id, sportSectionId: "" };
+        }
+    }
+
+    return null;
+}
+
 export default function RulesPage() {
     const { t } = useTranslation();
+    const [searchParams] = useSearchParams();
+    const requestedSport = searchParams.get("sport");
 
     const [sections, setSections] = useState<RulesSection[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -67,8 +97,14 @@ export default function RulesPage() {
 
                 const topLevel = getTopLevelSections(loadedSections);
                 const firstSection = topLevel[0];
+                const requested = requestedSport
+                    ? findSportSection(loadedSections, topLevel, requestedSport)
+                    : null;
 
-                if (firstSection) {
+                if (requested) {
+                    setActiveSectionId(requested.topSectionId);
+                    setActiveSportSectionId(requested.sportSectionId);
+                } else if (firstSection) {
                     setActiveSectionId(firstSection.id);
 
                     if (firstSection.sectionType === "SportGroup") {
@@ -101,7 +137,7 @@ export default function RulesPage() {
         return () => {
             isMounted = false;
         };
-    }, [t]);
+    }, [t, requestedSport]);
 
     const topLevelSections = useMemo(
         () => getTopLevelSections(sections),

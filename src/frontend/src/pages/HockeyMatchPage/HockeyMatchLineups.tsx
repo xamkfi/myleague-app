@@ -4,11 +4,13 @@ import {
   HOCKEY_POSITIONS,
   hockeyAwayTeam,
   hockeyHomeTeam,
+  hockeyLicenceActive,
   type HockeyMatchActivePlayerDto,
   type HockeyMatchDto,
   type HockeyTeamDto,
 } from '../../types/hockey/hockeyTypes';
 import { getPlayerPath } from '../../utils/sportRoutes';
+import { LicenceLegend, LicenceStatusDot } from '../../components/LicenceStatus/LicenceStatus';
 import '../FloorballMatchPage/components/MatchLineups.scss';
 
 interface HockeyMatchLineupsProps {
@@ -75,7 +77,12 @@ function HockeyMatchLineups({
               const label = playerNames.get(player.teamPlayerId) ?? `#${player.jerseyNumber}`;
               return (
                 <div key={player.id} className="lineup-row lineup-row-player">
-                  <div className="lineup-col-number">{player.jerseyNumber}</div>
+                  <div className="lineup-col-number">
+                    <span className="jersey-badge licence-anchor">
+                      {player.jerseyNumber}
+                      {roster && <LicenceStatusDot active={hockeyLicenceActive(roster)} />}
+                    </span>
+                  </div>
                   <div className="lineup-col-name">
                     {roster ? (
                       <Link to={getPlayerPath('hockey', roster.playerId)}>{label}{captain}</Link>
@@ -95,8 +102,13 @@ function HockeyMatchLineups({
     );
   };
 
+  const hasRosterData: boolean = [home, away].some((side) => side
+    && side.activePlayers.length > 0
+    && teams.some((team) => team.id === side.teamId));
+
   return (
     <div className="match-lineups-container">
+      {hasRosterData && <LicenceLegend />}
       <div className="match-lineups-grid">
         {renderSide(home, homeName)}
         {renderSide(away, awayName)}

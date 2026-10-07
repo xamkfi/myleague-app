@@ -1,6 +1,12 @@
 @use 'sass:map';
 @use '@variables' as *;
 
+.sports-page {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'md');
+}
+
 .sports-page__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -109,7 +115,6 @@
   display: flex;
   align-items: center;
   gap: map.get($spacing, 'md');
-  margin-top: map.get($spacing, 'md');
   padding: map.get($spacing, 'md');
   background: $color-white;
   border: 1px solid $color-neutral-light-grey;
@@ -182,13 +187,18 @@
 
 @media (max-width: map.get($breakpoints, 'desktop')) {
   .sports-page__all-time {
+    width: 100%;
     max-width: 480px;
+    margin-inline: auto;
+    box-sizing: border-box;
     flex-wrap: wrap;
   }
 
   .sports-page__grid {
     grid-template-columns: 1fr;
+    width: 100%;
     max-width: 480px;
+    margin-inline: auto;
   }
 }
 

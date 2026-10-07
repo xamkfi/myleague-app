@@ -1,0 +1,49 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.licence-anchor {
+  position: relative;
+}
+
+.licence-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  // White ring keeps the dot readable on any row background.
+  box-shadow: 0 0 0 2px $color-white;
+  pointer-events: auto;
+}
+
+.licence-dot--ok {
+  background: $color-green-muted;
+}
+
+.licence-dot--missing {
+  background: $color-red-muted;
+}
+
+.licence-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: map.get($spacing, 'sm');
+  margin-bottom: map.get($spacing, 'sm');
+  font-size: map.get($font-sizes, 'sm-xs');
+  color: $color-neutral-dark-grey;
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+}

@@ -331,6 +331,30 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Moves a floorball season to another audience group (adult, youth, women).
+        /// Works in any season status, including completed seasons.
+        /// </summary>
+        /// <param name="id">Season ID</param>
+        /// <param name="request">The new audience group</param>
+        [HttpPut("{id:guid}/team-category")]
+        [Authorize(Roles = AuthRoles.AdminOnly)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse>> ChangeSeasonTeamCategory(
+            Guid id,
+            [FromBody] ChangeTeamCategoryRequest request,
+            CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Changing floorball season {SeasonId} team category to {TeamCategory}", id, request.TeamCategory);
+
+            Result result = await _mediator.Send(
+                new ChangeFloorballSeasonTeamCategoryCommand(id, request.TeamCategory!.Value),
+                cancellationToken);
+            return HandleVoidResult(result, "Season group updated successfully", "Failed to update season group");
+        }
+
+        /// <summary>
         /// Activates a floorball season
         /// </summary>
         /// <param name="id">Season ID</param>

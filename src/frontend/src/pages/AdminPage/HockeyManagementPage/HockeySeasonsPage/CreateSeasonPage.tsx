@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
+import TeamCategoryPicker from '../../../../components/TeamCategoryPicker/TeamCategoryPicker';
+import { useAudience } from '../../../../context/AudienceContext';
 import { hockeySeasonService } from '../../../../api/hockey/hockeySeasonService';
 import { divisionService } from '../../../../api/common/divisionService';
 import { SportsCategory } from '../../../../types/common/sports';
-import { HOCKEY_STANDING_POINT_DEFAULTS, HOCKEY_TEAM_CATEGORIES, type HockeySeasonPointSettings, type HockeyTeamCategory } from '../../../../types/hockey/hockeyTypes';
+import { HOCKEY_STANDING_POINT_DEFAULTS, type HockeySeasonPointSettings, type HockeyTeamCategory } from '../../../../types/hockey/hockeyTypes';
 import HockeySeasonPointFields from './HockeySeasonPointFields';
 import SeasonStandingsSettings from '../../../../components/SeasonStandingsSettings/SeasonStandingsSettings';
 import { DEFAULT_STANDING_SORT, STANDING_SORT_OPTIONS } from '../../../../components/SeasonStandingsSettings/standingSort';
@@ -20,7 +22,9 @@ function CreateHockeySeasonPage() {
   const [endDate, setEndDate] = useState('');
   const [seasonCode, setSeasonCode] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
-  const [teamCategory, setTeamCategory] = useState<HockeyTeamCategory>('Adult');
+  const { audience } = useAudience();
+  // Starts from the group the admin is browsing; the picker at the top makes it explicit.
+  const [teamCategory, setTeamCategory] = useState<HockeyTeamCategory>(audience.teamCategory);
   const [selectedDivisionIds, setSelectedDivisionIds] = useState<string[]>([]);
   const [teamsAdvancing, setTeamsAdvancing] = useState(0);
   const [rankingCriteria, setRankingCriteria] = useState<string[]>([...DEFAULT_STANDING_SORT]);
@@ -75,6 +79,13 @@ function CreateHockeySeasonPage() {
         </div>
         <ErrorPopup message={error} />
         <form className="create-team-form" onSubmit={handleSubmit}>
+          <TeamCategoryPicker
+            name="create-season-group"
+            value={teamCategory}
+            onChange={setTeamCategory}
+            hint={t('seasonGroup.createHint')}
+            disabled={loading}
+          />
           <div className="form-group">
             <label htmlFor="name">{t('hockey.seasons.name', 'Name')} *</label>
             <input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -96,20 +107,6 @@ function CreateHockeySeasonPage() {
           <div className="form-group">
             <label htmlFor="code">{t('hockey.seasons.code', 'Season code')}</label>
             <input id="code" value={seasonCode} onChange={(e) => setSeasonCode(e.target.value)} placeholder="2026-27" />
-          </div>
-          <div className="form-group">
-            <label htmlFor="category">{t('hockey.teams.category', 'Category')}</label>
-            <select
-              id="category"
-              value={teamCategory}
-              onChange={(event) => setTeamCategory(event.target.value as HockeyTeamCategory)}
-            >
-              {HOCKEY_TEAM_CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {t(`hockey.teams.categories.${category}`, category)}
-                </option>
-              ))}
-            </select>
           </div>
           <div className="form-group">
             <label>{t('hockey.seasons.divisions', 'Divisions')}</label>

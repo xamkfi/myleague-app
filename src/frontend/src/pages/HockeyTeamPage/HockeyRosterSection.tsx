@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import SharedRosterSection from '../../components/RosterSection/RosterSection';
 import {
   HOCKEY_POSITIONS,
+  hockeyLicenceActive,
   type HockeyPlayerCompetitionStatisticsDto,
   type HockeyTeamDto,
 } from '../../types/hockey/hockeyTypes';
@@ -30,6 +31,7 @@ function HockeyRosterSection({ team, playerNames, playerStats }: HockeyRosterSec
         playerName: playerNames.get(row.playerId) ?? row.playerId.slice(0, 8),
         position: row.position,
         jerseyNumber: row.jerseyNumber,
+        licenceActive: hockeyLicenceActive(row),
         nameSuffix:
           row.captainRole === 'Captain'
             ? ' (C)'
