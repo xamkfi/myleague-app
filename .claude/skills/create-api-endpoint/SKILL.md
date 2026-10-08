@@ -33,7 +33,7 @@ Reference implementations: `ClubsController`, `FloorballTeamController`, `Footba
 | Common | `Controllers/Common` | `/api/clubs`, `/api/news`, … |
 | Floorball | `Controllers/Floorball` (+ `Match/`) | `/api/floorballteam`, `/api/floorball-matches` |
 | Football | `Controllers/Football` (+ `Match/`) | `/api/footballteam`, `/api/football-matches` |
-| Hockey | `Controllers/Hockey` | `/api/hockeyteam`, `/api/hockeymatch` |
+| Hockey | `Controllers/Hockey` (+ `Match/`) | `/api/hockeyteam`, `/api/hockeymatch` |
 
 Keep the existing route style for that resource (some are `[controller]`, some are kebab-case literals). Do not "fix" historical names.
 

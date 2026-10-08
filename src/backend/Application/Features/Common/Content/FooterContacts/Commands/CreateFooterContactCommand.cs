@@ -1,5 +1,5 @@
 using Application.Common;
-using Application.DTOs.Common;
+using Application.Features.Common.Content.FooterContacts.DTOs;
 using Application.Features.Common.Content.FooterContacts.Mappings;
 using Domain.Entities.Common;
 using Domain.Enums.Common;

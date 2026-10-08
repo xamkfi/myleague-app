@@ -22,8 +22,8 @@ on:
           - both
 
   # Staging only: apply Bicep when infra lands on development, then deploy apps.
-  # Prod infra dispatch is an escape hatch from master; the happy path is
-  # Release Production (master merge + one prod environment approval).
+  # Prod infra dispatch is an escape hatch from master; prefer a manual
+  # Release Production run (master + one prod environment approval).
   push:
     branches: [development]
     paths:

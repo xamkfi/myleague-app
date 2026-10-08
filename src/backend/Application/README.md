@@ -16,13 +16,13 @@ Application/
 ├── Configuration/            Jwt, LoginCode, AzureCommunicationServices, Seed, Frontend,
 │                             Pagination, PeriodDuration
 ├── Constants/                FloorballNotificationEvents, FootballNotificationEvents (SignalR event names)
-├── DTOs/Common/              FooterContactDto, InfoPageContentDto, RulesSectionDto (older shared DTOs)
 ├── DependencyInjections/     AddApplication()
-├── Interfaces/
+├── Interfaces/               ports that Infrastructure implements
 │   ├── Auth/                 IEmailService, IJwtTokenService
 │   └── Common/               IImageStorageService, INotificationSenderService, IMatchNotification,
 │                             IPersonNameProvider, ISiteSettingsProvider
-├── Services/Common/          IPaginationService, IClubAdminAccessService (+ implementations)
+├── Services/Common/          services Application implements itself: IPaginationService,
+│                             IClubAdminAccessService (+ implementations)
 └── Features/
     ├── Auth/                 Commands, DTOs, Handlers, Validators (no queries)
     ├── Common/
@@ -32,7 +32,7 @@ Application/
     │   ├── CrossCutting/     MatchTimer, Search
     │   ├── SiteSettings/
     │   ├── Statistics/       AllTimePlayerStatistics (shared all-time sorting and paging)
-    │   └── Shared/DTOs/      AddressDto, ContactInfoDto, MatchPersonDto, ...
+    │   └── Shared/DTOs/      DTOs used by more than one area: AddressDto, ContactInfoDto, MatchPersonDto, ...
     ├── Floorball/            Competitions, Matches, Players, Referees, Seasons, Statistics,
     │                         TeamManagers, Teams, Tournaments
     ├── Football/             same slices as Floorball

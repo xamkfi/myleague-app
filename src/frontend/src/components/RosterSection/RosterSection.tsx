@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { PlayerLink } from '../SportLinks';
 import type { SportKind } from '../../utils/sportRoutes';
 import { LicenceLegend, LicenceStatusDot } from '../LicenceStatus/LicenceStatus';
-import '../../pages/FloorballTeamPage/components/RosterSection.scss';
+import '../../pages/floorball/FloorballTeamPage/components/RosterSection.scss';
 
 export interface RosterPlayerRow {
   playerId: string;

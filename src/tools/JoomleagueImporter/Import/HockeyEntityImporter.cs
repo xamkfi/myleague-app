@@ -420,6 +420,16 @@ public class HockeyEntityImporter
         {
             HockeySeasonDto? mapped = existing.FirstOrDefault(s => s.Id == mappedSeasonId)
                 ?? await _api.GetSeasonByIdAsync(mappedSeasonId);
+            if (mapped is { IsCompleted: true })
+            {
+                // The API rejects every change to a completed competition, so there is nothing to ensure.
+                Console.WriteLine(
+                    $"  Season already imported and completed: '{mapped.Name}' ({mapped.Id}) [{mapped.TeamCategory}], skipping.");
+                if (!string.Equals(mapped.TeamCategory, teamCategory.ToString(), StringComparison.OrdinalIgnoreCase))
+                    _log.LogWarning("SeasonCategory",
+                        $"Season '{mapped.Name}' is {mapped.TeamCategory} but the dump says {teamCategory}; a completed season cannot be changed.");
+                return mapped;
+            }
             if (mapped != null)
             {
                 mapped = await EnsureSeasonCategoryAsync(mapped, teamCategory);

@@ -20,7 +20,7 @@ on:
         type: string
 
   # Auto-deploy to staging after Frontend CI succeeds on the development branch.
-  # Prod app deploys: prefer Release Production (master + one Approve).
+  # Prod app deploys: prefer a manual Release Production run (master + one Approve).
   # This workflow still accepts a prod dispatch from master only.
   workflow_run:
     workflows: ["Frontend CI"]

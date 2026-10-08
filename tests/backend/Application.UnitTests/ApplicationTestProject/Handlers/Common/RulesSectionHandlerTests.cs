@@ -1,5 +1,5 @@
 using Application.Common;
-using Application.DTOs.Common;
+using Application.Features.Common.Content.RulesSection.DTOs;
 using Application.Features.Common.Content.RulesSection.Commands;
 using Application.Features.Common.Content.RulesSection.Queries;
 using Domain.Enums.Common;

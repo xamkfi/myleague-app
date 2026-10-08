@@ -73,6 +73,8 @@ internal static partial class ImportSeriesResolver
             return ("Cup", 2, true);
         if (PlacementPattern().IsMatch(normalized))
             return ("Tasonmittaus", 4, false);
+        if (PuumaliigaPattern().IsMatch(normalized))
+            return ("Puumaliiga", 1, false);
         if (VeteransPattern().IsMatch(normalized))
             return ("+40", 3, false);
         if (WinterPattern().IsMatch(normalized))
@@ -97,6 +99,9 @@ internal static partial class ImportSeriesResolver
 
     [GeneratedRegex(@"tasonmittaus", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
     private static partial Regex PlacementPattern();
+
+    [GeneratedRegex(@"puuma\s*liiga", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
+    private static partial Regex PuumaliigaPattern();
 
     [GeneratedRegex(@"\+40|yli\s*40", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
     private static partial Regex VeteransPattern();

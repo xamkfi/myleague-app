@@ -17,7 +17,7 @@ import {
   type FootballPlayoffBracketDto,
 } from '../../../../../types/football/tournamentTypes';
 import { type FootballTeam, TeamCategory, type FootballMatchDto } from '../../../../../types/football/footballTypes';
-import TournamentBracket from '../../../../../pages/FootballTournamentPage/components/FootballTournamentBracket';
+import TournamentBracket from '../../../../football/FootballTournamentPage/components/FootballTournamentBracket';
 import FootballAssignTeamsDialog from '../../Components/FootballAssignTeamsDialog';
 import TournamentLifecycleBar, { type LifecycleAction, type LifecycleMoreAction } from './components/TournamentLifecycleBar';
 import TournamentLifecycleConfirmModal from './components/TournamentLifecycleConfirmModal';

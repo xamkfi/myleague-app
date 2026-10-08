@@ -8,6 +8,7 @@ param location string = resourceGroup().location
 @allowed([
   'F1'
   'B1'
+  'B2'
 ])
 param skuName string = 'B1'
 
@@ -21,7 +22,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   kind: 'linux'
   sku: {
     name: skuName
-    tier: skuName == 'F1' ? 'Free' : (skuName == 'B1' ? 'Basic' : 'Standard')
+    tier: skuName == 'F1' ? 'Free' : 'Basic'
   }
   properties: {
     reserved: true // Required for Linux

@@ -4,10 +4,12 @@
 // Deploys automatic problem detection with email alerts to the admin:
 // - Action Group (email receiver)
 // - Metric alerts: App Service health/errors/latency, plan CPU/memory,
-//   PostgreSQL CPU/storage/failed connections, App Insights exceptions
+//   PostgreSQL CPU/CPU credits/memory/storage/failed connections,
+//   App Insights exceptions
 // - Availability web test (optional, recommended for prod only)
 // - Smart Detection (Failure Anomalies) routed to the action group
-// - Monthly cost budget with email notifications at 80% / 100%
+// - Monthly cost budget with email notifications at 80% / 100% actual
+//   and 100% forecasted
 // ============================================================================
 
 @description('Resource name prefix, e.g. myleague-prod')
@@ -40,7 +42,7 @@ param apiHostname string
 @description('Deploy an external availability (uptime) test against /health/ready. Recommended for prod only to keep costs down.')
 param enableAvailabilityTest bool = false
 
-@description('Monthly cost budget for this resource group in USD. Email notifications at 80% and 100%.')
+@description('Monthly cost budget for this resource group in USD. Email notifications at 80% and 100% actual and 100% forecasted.')
 param monthlyBudgetAmount int = 35
 
 @description('Start date of the cost budget, e.g. 2026-09-01T00:00:00Z. Must be the first day of a month and must stay unchanged after the budget is created; Azure rejects updates to this value.')
@@ -286,6 +288,75 @@ resource postgresCpuAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   }
 }
 
+// Burstable servers run at full speed only while they have CPU credits left.
+// When the credits run out the server is throttled to its baseline, and
+// cpu_percent only shows it after queries have already slowed down.
+resource postgresCpuCreditsAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
+  name: '${namePrefix}-alert-postgres-cpu-credits'
+  location: 'global'
+  tags: tags
+  properties: {
+    description: 'PostgreSQL is running out of CPU credits and will be throttled to baseline - consider Standard_B2s.'
+    severity: 2
+    enabled: true
+    scopes: [postgresServerId]
+    evaluationFrequency: 'PT15M'
+    windowSize: 'PT30M'
+    criteria: {
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allOf: [
+        {
+          criterionType: 'StaticThresholdCriterion'
+          name: 'cpu_credits_remaining'
+          metricNamespace: 'Microsoft.DBforPostgreSQL/flexibleServers'
+          metricName: 'cpu_credits_remaining'
+          operator: 'LessThan'
+          threshold: 30
+          timeAggregation: 'Average'
+        }
+      ]
+    }
+    actions: [
+      {
+        actionGroupId: actionGroup.id
+      }
+    ]
+  }
+}
+
+resource postgresMemoryAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
+  name: '${namePrefix}-alert-postgres-memory'
+  location: 'global'
+  tags: tags
+  properties: {
+    description: 'PostgreSQL memory is above 90% sustained - risk of slow queries or out-of-memory restarts.'
+    severity: 3
+    enabled: true
+    scopes: [postgresServerId]
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT15M'
+    criteria: {
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allOf: [
+        {
+          criterionType: 'StaticThresholdCriterion'
+          name: 'memory_percent'
+          metricNamespace: 'Microsoft.DBforPostgreSQL/flexibleServers'
+          metricName: 'memory_percent'
+          operator: 'GreaterThan'
+          threshold: 90
+          timeAggregation: 'Average'
+        }
+      ]
+    }
+    actions: [
+      {
+        actionGroupId: actionGroup.id
+      }
+    ]
+  }
+}
+
 // Storage filling up is the most common cause of a hard Postgres outage:
 // the server goes read-only when the disk is full. Alert early at 80%.
 resource postgresStorageAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
@@ -510,6 +581,14 @@ resource budget 'Microsoft.Consumption/budgets@2023-11-01' = {
         operator: 'GreaterThan'
         threshold: 100
         thresholdType: 'Actual'
+        contactEmails: [alertEmail]
+      }
+      // Warns before month end when the current trend will exceed the budget
+      forecasted100Percent: {
+        enabled: true
+        operator: 'GreaterThan'
+        threshold: 100
+        thresholdType: 'Forecasted'
         contactEmails: [alertEmail]
       }
     }

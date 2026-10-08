@@ -1,4 +1,4 @@
-using Application.DTOs.Common;
+using Application.Features.Common.Content.InfoPageContent.DTOs;
 
 namespace Application.Features.Common.Content.InfoPageContent.Mappings;
 

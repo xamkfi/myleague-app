@@ -95,11 +95,11 @@ Every option accepts `--name=value` or `--name value`.
 | `LoginEmail` | `test@myleague.local` | Email for the Development login. Empty means the default, and the prompt shows it. |
 | `DumpFilePath` | none | SQL dump path |
 | `Sport` | `floorball` | Default sport |
-| `ProjectNameFilter` | `salibandy\|sähly` | Floorball project name regex (case-insensitive). The shipped config adds `sahly`. |
+| `ProjectNameFilter` | `salibandy\|sähly\|sahly\|puuma` | Floorball project name regex (case-insensitive). `puuma` selects PUUMALIIGA, the women's floorball league, which JoomLeague stores as hockey. |
 | `ProjectNameExcludeFilter` | none | Floorball exclude regex. The shipped config uses `manager`. |
 | `Football:ProjectNameFilter` | `jalkapallo\|football\|futis` | Football include regex |
 | `Football:ProjectNameExcludeFilter` | `manager` | Football exclude regex |
-| `Hockey:ProjectNameFilter` | `jääkiekko\|jaakiekko\|hockey` | Hockey include regex |
+| `Hockey:ProjectNameFilter` | `jääkiekko\|jääkiekon\|jaakiekko\|jaakiekon\|hockey` | Hockey include regex. `jääkiekon` selects the JÄÄKIEKON PMT projects. |
 | `Hockey:ProjectNameExcludeFilter` | `manager\|jääpallo\|jaapallo\|kaukalo\|nhl` | Hockey exclude regex |
 | `ProjectIdFilter` | none | Comma-separated project ids |
 | `DryRun` | `false` | Same as `--dry-run` |
@@ -172,10 +172,12 @@ Rules:
 - **Writes to the target.** A run creates real clubs, persons, teams, seasons, and matches. Do a `--dry-run` first, and import into a local or staging API before production.
 - **Name matching.** Clubs, teams, and seasons with the same name as an existing record are reused. Persons are reused on first name plus last name, without birth date, so two different people with the same name become one person. If an old project name matches a season that another project already created, the new season is named `<name> [JL<projectId>]`.
 - **Referee.** Matches get the first existing referee (hockey: official) in the target. If there is none, an import referee is created.
+- **Re-runs skip completed seasons.** The API rejects every change to a completed competition, so a season that is already in the id map and completed in the target is left alone: no team, roster, match, or category updates. Matches still missing from such a season cannot be added. A category mismatch is only logged.
 - **Repairs.** `--repair-all` and `--repair-matches` re-send events for matches already in the id map. They need the same id map as the original run.
 - **Retries.** Event imports are retried up to twice on unique-constraint races. Live per-event calls are retried up to five times.
 - **Exit code.** It is `1` when the dump is missing or the run fails fatally. Otherwise it is `0`, even if some matches failed. Check the summary line, the log file, and `compare-{sport}.json`.
 - **Hockey.** Importing hockey data does not turn on a public hockey UI.
+- **Sport and category come from the project name.** The importer ignores JoomLeague's `sports_type_id`, which is wrong for some projects (PUUMALIIGA is floorball but stored as hockey). A project or team name with `naiset`, `naisten`, `ladies`, `women`, or `puuma…` gets the Women category. PUUMALIIGA seasons go to the `Salibandy Puumaliiga` division.
 
 ## Tests
 

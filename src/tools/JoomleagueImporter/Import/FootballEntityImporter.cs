@@ -359,6 +359,16 @@ public class FootballEntityImporter
         if (_idMap.TryGetSeason(project.Id, out Guid mappedSeasonId))
         {
             FootballSeasonDto? mapped = existing.FirstOrDefault(s => s.Id == mappedSeasonId);
+            if (mapped is { IsCompleted: true })
+            {
+                // The API rejects every change to a completed competition, so there is nothing to ensure.
+                Console.WriteLine(
+                    $"  Season already imported and completed: '{mapped.Name}' ({mapped.Id}) [{mapped.TeamCategory}], skipping.");
+                if (mapped.TeamCategory != teamCategory)
+                    _log.LogWarning("SeasonCategory",
+                        $"Season '{mapped.Name}' is {mapped.TeamCategory} but the dump says {teamCategory}; a completed season cannot be changed.");
+                return mapped;
+            }
             if (mapped != null)
             {
                 mapped = await EnsureSeasonCategoryAsync(mapped, teamCategory);
