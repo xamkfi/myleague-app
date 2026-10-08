@@ -72,6 +72,22 @@ public class FootballMatchLifecycleController : BaseApiController
     }
 
     /// <summary>
+    /// Puts a match that was started by mistake back to Scheduled. Allowed only while the match
+    /// is in progress with a 0-0 score and no recorded events.
+    /// </summary>
+    [HttpPut("revert-to-scheduled")]
+    [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<FootballMatchDto>>> RevertToScheduled(
+        Guid matchId,
+        CancellationToken cancellationToken)
+    {
+        Result<FootballMatchDto> result = await _mediator.Send(new RevertFootballMatchToScheduledCommand(matchId), cancellationToken);
+        return HandleResult(result, "Reverted football match to not started", "Failed to revert football match");
+    }
+
+    /// <summary>
     /// Postpone
     /// </summary>
     [HttpPost("postpone")]

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import FootballEventPeriodSelect from './FootballEventPeriodSelect';
 import './SubstitutionRecordingForm.scss';
 import type { FootballMatchDto, FootballTeam } from '../../../../../types/football/footballTypes';
 import type { FootballPlayerDto } from '../../../../../api/football/footballPlayerService';
@@ -17,6 +18,11 @@ interface SubstitutionRecordingFormProps {
   getBenchPlayersForTeam: (teamId: string) => FootballPlayerDto[];
   onRecordSubstitution: () => Promise<void>;
   onClose: () => void;
+  /** Played periods the event can be put in. */
+  periods: readonly number[];
+  shootoutPeriodNumber: number;
+  onTimeChange: (timeMinutes: number, timeSeconds: number) => void;
+  onPeriodChange: (periodNumber: number) => void;
 }
 
 const DESCRIPTION_MAX_LENGTH: number = 280;
@@ -39,6 +45,10 @@ const SubstitutionRecordingForm = ({
   getBenchPlayersForTeam,
   onRecordSubstitution,
   onClose,
+  periods,
+  shootoutPeriodNumber,
+  onTimeChange,
+  onPeriodChange,
 }: SubstitutionRecordingFormProps) => {
   const firstFieldRef = useRef<HTMLSelectElement | null>(null);
 
@@ -155,6 +165,15 @@ const SubstitutionRecordingForm = ({
                 </select>
               </div>
 
+              <FootballEventPeriodSelect
+                id="sub-period"
+                periodNumber={substitutionForm.periodNumber}
+                periods={periods}
+                shootoutPeriodNumber={shootoutPeriodNumber}
+                rules={currentMatch.matchRules}
+                onChange={onPeriodChange}
+              />
+
               <div className="field field--time">
                 <label htmlFor="sub-time-minutes">Time</label>
                 <div className="time-input-group">
@@ -163,12 +182,7 @@ const SubstitutionRecordingForm = ({
                     type="number"
                     className="time-input time-input-minutes"
                     value={substitutionForm.timeMinutes}
-                    onChange={(e) =>
-                      setSubstitutionForm((prev) => ({
-                        ...prev,
-                        timeMinutes: clampInt(e.target.value, 0, 99),
-                      }))
-                    }
+                    onChange={(e) => onTimeChange(clampInt(e.target.value, 0, 99), substitutionForm.timeSeconds)}
                     min={0}
                     max={99}
                     placeholder="MM"
@@ -182,12 +196,7 @@ const SubstitutionRecordingForm = ({
                     type="number"
                     className="time-input time-input-seconds"
                     value={substitutionForm.timeSeconds}
-                    onChange={(e) =>
-                      setSubstitutionForm((prev) => ({
-                        ...prev,
-                        timeSeconds: clampInt(e.target.value, 0, 59),
-                      }))
-                    }
+                    onChange={(e) => onTimeChange(substitutionForm.timeMinutes, clampInt(e.target.value, 0, 59))}
                     min={0}
                     max={59}
                     placeholder="SS"

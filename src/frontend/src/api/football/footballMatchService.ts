@@ -464,6 +464,32 @@ export const footballMatchService = {
   },
 
   /**
+   * Put a match that was started by mistake back to not started. The backend only allows this
+   * while the match is in progress with a 0-0 score and no recorded events.
+   */
+  revertToScheduled: async (id: string): Promise<ApiResponse<FootballMatchDto>> => {
+    const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${id}/revert-to-scheduled`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const apiResponse: ApiResponse<FootballMatchDto> = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(apiResponse, 'Failed to revert Football match');
+      throw new Error(errorMessage);
+    }
+
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to revert Football match');
+    }
+
+    return apiResponse;
+  },
+
+  /**
    * Change match venue
    */
   changeVenue: async (id: string, venue: string): Promise<ApiResponse<FootballMatchDto>> => {

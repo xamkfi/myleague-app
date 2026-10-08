@@ -96,6 +96,24 @@ namespace WebAPI.Controllers.Floorball.Match
         }
 
         /// <summary>
+        /// Puts a match that was started by mistake back to Scheduled. Allowed only while the match
+        /// is in progress with a 0-0 score and no recorded events.
+        /// </summary>
+        [HttpPut("revert-to-scheduled")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RevertToScheduled(
+            Guid matchId,
+            CancellationToken cancellationToken)
+        {
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new RevertFloorballMatchToScheduledCommand(matchId), cancellationToken);
+
+            return HandleResult(result, "Reverted floorball match to not started", "Failed to revert floorball match");
+        }
+
+        /// <summary>
         /// Postpones a floorball match
         /// </summary>
         [HttpPost("postpone")]

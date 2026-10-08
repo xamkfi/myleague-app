@@ -7,6 +7,7 @@ namespace Application.Constants
         public const string MatchStarted = "FloorballMatchStarted";
         public const string MatchCompleted = "FloorballMatchCompleted";
         public const string MatchReopened = "FloorballMatchReopened";
+        public const string MatchRevertedToScheduled = "FloorballMatchRevertedToScheduled";
         public const string MatchAddedToCompetition = "FloorballMatchAddedToCompetition";
 
         // In-match events

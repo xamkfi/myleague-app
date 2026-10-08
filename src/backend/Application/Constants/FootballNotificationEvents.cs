@@ -6,6 +6,7 @@ public static class FootballNotificationEvents
     public const string MatchStarted = "FootballMatchStarted";
     public const string MatchCompleted = "FootballMatchCompleted";
     public const string MatchReopened = "FootballMatchReopened";
+    public const string MatchRevertedToScheduled = "FootballMatchRevertedToScheduled";
     public const string MatchAddedToCompetition = "FootballMatchAddedToCompetition";
 
     public const string GoalScored = "FootballGoalScored";

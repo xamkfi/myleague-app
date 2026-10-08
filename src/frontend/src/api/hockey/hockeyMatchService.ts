@@ -197,6 +197,12 @@ export const hockeyMatchService = {
       ...jsonBody({ status }),
     }),
 
+  revertToScheduled: (matchId: string): Promise<HockeyMatchDto> =>
+    hockeyRequest<HockeyMatchDto>(`/HockeyMatch/${matchId}/revert-to-scheduled`, 'Failed to revert match to not started', {
+      method: 'POST',
+      ...jsonBody({}),
+    }),
+
   setPeriod: (matchId: string, periodNumber: number): Promise<HockeyMatchDto> =>
     hockeyRequest<HockeyMatchDto>(`/HockeyMatch/${matchId}/period`, 'Failed to set period', {
       method: 'PATCH',

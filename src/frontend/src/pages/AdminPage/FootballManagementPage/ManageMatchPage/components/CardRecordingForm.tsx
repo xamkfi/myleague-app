@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import FootballEventPeriodSelect from './FootballEventPeriodSelect';
 import './CardRecordingForm.scss';
 import { FootballCardType, type FootballMatchDto, type FootballTeam } from '../../../../../types/football/footballTypes';
 import type { FootballPlayerDto } from '../../../../../api/football/footballPlayerService';
@@ -16,6 +17,11 @@ interface CardRecordingFormProps {
   getPlayersForTeam: (teamId: string) => FootballPlayerDto[];
   onRecordCard: () => Promise<void>;
   onClose: () => void;
+  /** Played periods the event can be put in. */
+  periods: readonly number[];
+  shootoutPeriodNumber: number;
+  onTimeChange: (timeMinutes: number, timeSeconds: number) => void;
+  onPeriodChange: (periodNumber: number) => void;
 }
 
 const CARD_TYPE_OPTIONS: ReadonlyArray<{ value: FootballCardType; label: string }> = [
@@ -43,6 +49,10 @@ const CardRecordingForm = ({
   getPlayersForTeam,
   onRecordCard,
   onClose,
+  periods,
+  shootoutPeriodNumber,
+  onTimeChange,
+  onPeriodChange,
 }: CardRecordingFormProps) => {
   const firstFieldRef = useRef<HTMLSelectElement | null>(null);
 
@@ -155,6 +165,15 @@ const CardRecordingForm = ({
                 </select>
               </div>
 
+              <FootballEventPeriodSelect
+                id="card-period"
+                periodNumber={cardForm.periodNumber}
+                periods={periods}
+                shootoutPeriodNumber={shootoutPeriodNumber}
+                rules={currentMatch.matchRules}
+                onChange={onPeriodChange}
+              />
+
               <div className="field field--time">
                 <label htmlFor="card-time-minutes">Time</label>
                 <div className="time-input-group">
@@ -163,9 +182,7 @@ const CardRecordingForm = ({
                     type="number"
                     className="time-input time-input-minutes"
                     value={cardForm.timeMinutes}
-                    onChange={(e) =>
-                      setCardForm((prev) => ({ ...prev, timeMinutes: clampInt(e.target.value, 0, 99) }))
-                    }
+                    onChange={(e) => onTimeChange(clampInt(e.target.value, 0, 99), cardForm.timeSeconds)}
                     min={0}
                     max={99}
                     placeholder="MM"
@@ -179,9 +196,7 @@ const CardRecordingForm = ({
                     type="number"
                     className="time-input time-input-seconds"
                     value={cardForm.timeSeconds}
-                    onChange={(e) =>
-                      setCardForm((prev) => ({ ...prev, timeSeconds: clampInt(e.target.value, 0, 59) }))
-                    }
+                    onChange={(e) => onTimeChange(cardForm.timeMinutes, clampInt(e.target.value, 0, 59))}
                     min={0}
                     max={59}
                     placeholder="SS"

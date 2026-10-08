@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import {
   footballMatchEventService,
   type RecordGoalEventRequest,
@@ -7,10 +7,19 @@ import {
 } from '../../../../../api/football/footballMatchEventService';
 import { FootballGoalType, type FootballMatchDto } from '../../../../../types/football/footballTypes';
 import type { GoalForm, CardForm, SubstitutionForm, LocalClock } from '../components/types';
+import {
+  extraTimeStartPeriod,
+  footballPeriodAtTime,
+  penaltyShootoutPeriod,
+  resolveMatchRules,
+} from '../utils/lineupValidation';
 
 interface UseFormStateProps {
   currentMatch: FootballMatchDto;
+  /** Live clock; its period is the default period of a newly opened form. */
   clock: LocalClock;
+  /** Periods that have been played; extra time and the shootout appear here only once started. */
+  startedPeriods: ReadonlySet<number>;
   currentTimerElapsedTime: number;
   getCurrentElapsedSeconds: (() => number) | null;
   loadMatchEvents: () => Promise<void>;
@@ -24,6 +33,7 @@ const EMPTY_GOAL_FORM: GoalForm = {
   assisterId: '',
   timeMinutes: 0,
   timeSeconds: 0,
+  periodNumber: 1,
   goalType: FootballGoalType.Regular,
 };
 
@@ -34,6 +44,7 @@ const EMPTY_CARD_FORM: CardForm = {
   description: '',
   timeMinutes: 0,
   timeSeconds: 0,
+  periodNumber: 1,
 };
 
 const EMPTY_SUBSTITUTION_FORM: SubstitutionForm = {
@@ -43,11 +54,13 @@ const EMPTY_SUBSTITUTION_FORM: SubstitutionForm = {
   description: '',
   timeMinutes: 0,
   timeSeconds: 0,
+  periodNumber: 1,
 };
 
 export const useFormState = ({
   currentMatch,
   clock,
+  startedPeriods,
   currentTimerElapsedTime,
   getCurrentElapsedSeconds,
   loadMatchEvents,
@@ -78,23 +91,66 @@ export const useFormState = ({
     };
   }, [getCurrentElapsedSeconds, currentTimerElapsedTime]);
 
+  const rules = useMemo(() => resolveMatchRules(currentMatch.matchRules), [currentMatch.matchRules]);
+  const firstExtraTimePeriod: number = extraTimeStartPeriod(rules);
+  const shootoutPeriod: number = penaltyShootoutPeriod(rules);
+
+  /** Halves are always selectable; extra time and the shootout once they were played. */
+  const recordablePeriods: number[] = useMemo(() => {
+    const periods: number[] = Array.from({ length: rules.numberOfHalves }, (_, index) => index + 1);
+    for (const period of startedPeriods) {
+      if (period > rules.numberOfHalves && period <= shootoutPeriod) periods.push(period);
+    }
+    if (!periods.includes(clock.period) && clock.period >= 1 && clock.period <= shootoutPeriod) {
+      periods.push(clock.period);
+    }
+    return [...new Set(periods)].sort((a, b) => a - b);
+  }, [rules.numberOfHalves, startedPeriods, shootoutPeriod, clock.period]);
+
+  /** Editing the time moves the event to the period that time falls in (45:00 is the second half). */
+  const periodForTime = useCallback(
+    (timeMinutes: number, timeSeconds: number): number =>
+      footballPeriodAtTime(timeMinutes * 60 + timeSeconds, rules, recordablePeriods.includes(firstExtraTimePeriod)),
+    [rules, recordablePeriods, firstExtraTimePeriod],
+  );
+
+  const changeGoalTime = useCallback((timeMinutes: number, timeSeconds: number) => {
+    setGoalForm((prev) => ({ ...prev, timeMinutes, timeSeconds, periodNumber: periodForTime(timeMinutes, timeSeconds) }));
+  }, [periodForTime]);
+  const changeCardTime = useCallback((timeMinutes: number, timeSeconds: number) => {
+    setCardForm((prev) => ({ ...prev, timeMinutes, timeSeconds, periodNumber: periodForTime(timeMinutes, timeSeconds) }));
+  }, [periodForTime]);
+  const changeSubstitutionTime = useCallback((timeMinutes: number, timeSeconds: number) => {
+    setSubstitutionForm((prev) => ({ ...prev, timeMinutes, timeSeconds, periodNumber: periodForTime(timeMinutes, timeSeconds) }));
+  }, [periodForTime]);
+
+  const changeGoalPeriod = useCallback((periodNumber: number) => {
+    setGoalForm((prev) => ({ ...prev, periodNumber }));
+  }, []);
+  const changeCardPeriod = useCallback((periodNumber: number) => {
+    setCardForm((prev) => ({ ...prev, periodNumber }));
+  }, []);
+  const changeSubstitutionPeriod = useCallback((periodNumber: number) => {
+    setSubstitutionForm((prev) => ({ ...prev, periodNumber }));
+  }, []);
+
   const openGoalFormForTeam = useCallback((teamId: string) => {
     const clockTime = elapsedClock();
-    setGoalForm((prev) => ({ ...prev, teamId, ...clockTime }));
+    setGoalForm((prev) => ({ ...prev, teamId, ...clockTime, periodNumber: clock.period }));
     setShowGoalForm(true);
-  }, [elapsedClock]);
+  }, [elapsedClock, clock.period]);
 
   const openCardFormForTeam = useCallback((teamId: string) => {
     const clockTime = elapsedClock();
-    setCardForm((prev) => ({ ...prev, teamId, ...clockTime }));
+    setCardForm((prev) => ({ ...prev, teamId, ...clockTime, periodNumber: clock.period }));
     setShowCardForm(true);
-  }, [elapsedClock]);
+  }, [elapsedClock, clock.period]);
 
   const openSubstitutionFormForTeam = useCallback((teamId: string) => {
     const clockTime = elapsedClock();
-    setSubstitutionForm((prev) => ({ ...prev, teamId, ...clockTime }));
+    setSubstitutionForm((prev) => ({ ...prev, teamId, ...clockTime, periodNumber: clock.period }));
     setShowSubstitutionForm(true);
-  }, [elapsedClock]);
+  }, [elapsedClock, clock.period]);
 
   const recordGoal = useCallback(async () => {
     if (!goalForm.teamId || !goalForm.playerId) {
@@ -121,7 +177,7 @@ export const useFormState = ({
         teamId: goalForm.teamId,
         playerId: goalForm.playerId,
         assisterId: isOwnGoal ? undefined : (goalForm.assisterId || undefined),
-        periodNumber: clock.period,
+        periodNumber: goalForm.periodNumber,
         timeInSeconds,
         goalType: goalForm.goalType ?? FootballGoalType.Regular,
       };
@@ -138,7 +194,7 @@ export const useFormState = ({
     } finally {
       setLoading(false);
     }
-  }, [goalForm, currentMatch, clock.period, loadMatchEvents, loadCurrentMatchStatus, setError]);
+  }, [goalForm, currentMatch, loadMatchEvents, loadCurrentMatchStatus, setError]);
 
   const recordCard = useCallback(async () => {
     if (!cardForm.teamId || !cardForm.playerId || cardForm.cardType === null) {
@@ -163,7 +219,7 @@ export const useFormState = ({
         teamId: cardForm.teamId,
         playerId: cardForm.playerId,
         cardType: cardForm.cardType,
-        periodNumber: clock.period,
+        periodNumber: cardForm.periodNumber,
         timeInSeconds,
         description: cardForm.description,
       };
@@ -180,7 +236,7 @@ export const useFormState = ({
     } finally {
       setLoading(false);
     }
-  }, [cardForm, currentMatch, clock.period, loadMatchEvents, loadCurrentMatchStatus, setError]);
+  }, [cardForm, currentMatch, loadMatchEvents, loadCurrentMatchStatus, setError]);
 
   const recordSubstitution = useCallback(async () => {
     if (!substitutionForm.teamId || !substitutionForm.playerOffId || !substitutionForm.playerOnId) {
@@ -205,7 +261,7 @@ export const useFormState = ({
         teamId: substitutionForm.teamId,
         playerOffId: substitutionForm.playerOffId,
         playerOnId: substitutionForm.playerOnId,
-        periodNumber: clock.period,
+        periodNumber: substitutionForm.periodNumber,
         timeInSeconds,
         description: substitutionForm.description,
       };
@@ -222,7 +278,7 @@ export const useFormState = ({
     } finally {
       setLoading(false);
     }
-  }, [substitutionForm, currentMatch, clock.period, loadMatchEvents, loadCurrentMatchStatus, setError]);
+  }, [substitutionForm, currentMatch, loadMatchEvents, loadCurrentMatchStatus, setError]);
 
   return {
     showGoalForm,
@@ -240,6 +296,14 @@ export const useFormState = ({
     setCardForm,
     substitutionForm,
     setSubstitutionForm,
+    recordablePeriods,
+    shootoutPeriod,
+    changeGoalTime,
+    changeCardTime,
+    changeSubstitutionTime,
+    changeGoalPeriod,
+    changeCardPeriod,
+    changeSubstitutionPeriod,
     loading,
     recordGoal,
     recordCard,

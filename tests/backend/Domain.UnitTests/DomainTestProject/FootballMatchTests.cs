@@ -400,4 +400,29 @@ public class FootballMatchTests
 
         act.Should().Throw<InvalidOperationException>();
     }
+
+    [Fact]
+    public void RevertToScheduled_StartedMatchWithoutEvents_ReturnsToScheduled()
+    {
+        ReadyMatch ready = CreateReadyMatch();
+        ready.Match.Start();
+
+        ready.Match.RevertToScheduled();
+
+        ready.Match.Status.Should().Be(FootballMatchStatus.Scheduled);
+        ready.Match.PeriodScores.Should().HaveCount(2).And.OnlyContain(ps => !ps.IsCompleted);
+    }
+
+    [Fact]
+    public void RevertToScheduled_AfterGoal_Throws()
+    {
+        ReadyMatch ready = CreateReadyMatch();
+        ready.Match.Start();
+        ready.Match.RecordGoal(ready.Home, ready.HomePlayers[1], assistingPlayer: null, periodNumber: 1, timeInSeconds: 60);
+
+        Action act = () => ready.Match.RevertToScheduled();
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*0-0*");
+        ready.Match.Status.Should().Be(FootballMatchStatus.InProgress);
+    }
 }

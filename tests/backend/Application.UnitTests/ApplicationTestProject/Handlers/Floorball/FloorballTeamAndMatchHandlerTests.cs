@@ -178,4 +178,59 @@ public class FloorballTeamAndMatchHandlerTests
             n => n.SendNotificationAsync(It.IsAny<string>(), It.IsAny<object>()),
             Times.Once);
     }
+
+    [Fact]
+    public async Task RevertFloorballMatchToScheduled_WhenMissing_ReturnsNotFound()
+    {
+        Mock<IFloorballMatchRepository> matchRepo = new();
+        Mock<IFloorballUnitOfWork> uow = new();
+        Mock<IMatchTimerService> timer = new();
+        RevertFloorballMatchToScheduledHandler handler = new(
+            matchRepo.Object,
+            uow.Object,
+            timer.Object,
+            Mock.Of<INotificationSenderService>(),
+            Mock.Of<ILogger<RevertFloorballMatchToScheduledHandler>>());
+
+        Guid id = Guid.NewGuid();
+        matchRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((FloorballMatch?)null);
+
+        Result<FloorballMatchDto> result = await handler.Handle(
+            new RevertFloorballMatchToScheduledCommand(id),
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Contain("FloorballMatch");
+        timer.Verify(t => t.DestroyTimerAsync(It.IsAny<Guid>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RevertFloorballMatchToScheduled_WhenNotStarted_FailsWithoutTouchingTimer()
+    {
+        Mock<IFloorballMatchRepository> matchRepo = new();
+        Mock<IFloorballUnitOfWork> uow = new();
+        Mock<IMatchTimerService> timer = new();
+        RevertFloorballMatchToScheduledHandler handler = new(
+            matchRepo.Object,
+            uow.Object,
+            timer.Object,
+            Mock.Of<INotificationSenderService>(),
+            Mock.Of<ILogger<RevertFloorballMatchToScheduledHandler>>());
+
+        FloorballSeason season = new(
+            "Season",
+            new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2027, 5, 31, 0, 0, 0, DateTimeKind.Utc));
+        FloorballMatch match = new(season, null, null, new DateTime(2027, 1, 15, 18, 0, 0, DateTimeKind.Utc), "Arena");
+        matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        Result<FloorballMatchDto> result = await handler.Handle(
+            new RevertFloorballMatchToScheduledCommand(match.Id),
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Contain("in progress");
+        uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        timer.Verify(t => t.DestroyTimerAsync(It.IsAny<Guid>()), Times.Never);
+    }
 }

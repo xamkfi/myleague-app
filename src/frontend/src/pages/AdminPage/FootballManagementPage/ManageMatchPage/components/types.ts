@@ -111,6 +111,8 @@ export interface GoalForm {
   assisterId: string;
   timeMinutes: number;
   timeSeconds: number;
+  /** Period the event is recorded in; follows the entered time unless chosen by hand. */
+  periodNumber: number;
   goalType: FootballGoalType | null;
 }
 
@@ -121,6 +123,8 @@ export interface CardForm {
   description: string;
   timeMinutes: number;
   timeSeconds: number;
+  /** Period the event is recorded in; follows the entered time unless chosen by hand. */
+  periodNumber: number;
 }
 
 export interface SubstitutionForm {
@@ -130,6 +134,8 @@ export interface SubstitutionForm {
   description: string;
   timeMinutes: number;
   timeSeconds: number;
+  /** Period the event is recorded in; follows the entered time unless chosen by hand. */
+  periodNumber: number;
 }
 
 export interface LiveMatchContextProps {
