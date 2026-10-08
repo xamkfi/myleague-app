@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace MyLeague.Infrastructure.Persistence.Seeding;
 
 /// <summary>
-/// Seeds default MAHL info page content entries
+/// Seeds default MAHL and children (Lapset) info page content entries
 /// </summary>
 public static class InfoPageContentSeeder
 {
@@ -36,6 +36,18 @@ public static class InfoPageContentSeeder
             "mahl-responsibility",
             "Vastuullisuus",
             "<p>MAHL sitoutuu turvalliseen, yhdenvertaiseen ja päihteettömään harrastusympäristöön. Kaikkia osallistujia koskevat samat säännöt ja kunnioittava käytös.</p><p>Häirintään, syrjintään tai sääntörikkomuksiin voi puuttua ottamalla yhteyttä seuran työntekijään. Yleiset ja lajikohtaiset säännöt löytyvät Säännöt-sivulta.</p>"),
+        (
+            "children-camps",
+            "Leiritoiminta",
+            "<p>Tältä sivulta löydät tiedot MAHL:n lapsille suunnatusta leiritoiminnasta.</p>"),
+        (
+            "children-sport-blocks",
+            "Lajikorttelitoiminta",
+            "<p>Tältä sivulta löydät tiedot MAHL:n lapsille suunnatusta lajikorttelitoiminnasta.</p>"),
+        (
+            "children-clubs",
+            "Kerhotoiminta",
+            "<p>Tältä sivulta löydät tiedot MAHL:n lapsille suunnatusta kerhotoiminnasta.</p>"),
     ];
 
     /// <summary>

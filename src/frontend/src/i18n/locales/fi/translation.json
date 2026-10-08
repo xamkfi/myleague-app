@@ -234,6 +234,7 @@
     "eventCalendar": "Tapahtumakalenteri",
     "rules": "Säännöt",
     "mahl": "MAHL",
+    "children": "Lapset",
     "ageGroups": "Ikäryhmät",
     "register": "Ilmoittaudu",
     "tournaments": "Turnaukset",
@@ -367,6 +368,11 @@
     "en": "Englanti",
     "fi": "Suomi",
     "switchLanguage": "Vaihda kieli"
+  },
+  "childrenNav": {
+    "camps": "Leiritoiminta",
+    "sportBlocks": "Lajikorttelitoiminta",
+    "clubs": "Kerhotoiminta"
   },
   "infoPages": {
     "loadFailed": "Sivun lataus epäonnistui.",
@@ -553,6 +559,7 @@
       "rules": "Säännöt",
       "manageRules": "Hallitse sääntöjä",
       "manageInfoPages": "Hallitse infosivuja",
+      "manageChildrenPages": "Hallitse Lapset-sivuja",
       "manageFooterContacts": "Hallitse alatunnistetta",
       "manageSettings": "Hallitse sivuston asetuksia",
       "manageDataSubjectRights": "Tarkastele, oikaise, siirrä, rajoita tai poista henkilötietoja"
@@ -640,6 +647,12 @@
       "title": "Sivuston sisällöt",
       "titleShort": "Sisällöt",
       "rules": "Säännöt",
+      "childrenPages": {
+        "nav": "Lapset-sivut",
+        "pageTitle": "Lapset-sivut",
+        "subtitle": "Hallitse Lapset-osion infosivuja.",
+        "description": "Valitse sivu listasta tai pudotusvalikosta ja muokkaa sisältöä RichText-editorilla. Kuvat lisätään suoraan sisältöön."
+      },
       "infoPages": {
         "nav": "MAHL-infosivut",
         "pageTitle": "MAHL-infosivut",

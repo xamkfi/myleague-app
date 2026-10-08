@@ -14,6 +14,7 @@ const ADMIN_LIST_ROOTS = new Set([
   '/admin/settings',
   '/admin/site-content',
   '/admin/site-content/info-pages',
+  '/admin/site-content/children-pages',
   '/admin/site-content/rules',
   '/admin/site-content/footer-contacts',
   '/admin/floorball',

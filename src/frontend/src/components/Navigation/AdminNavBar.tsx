@@ -527,6 +527,11 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                       {t('admin.siteContent.infoPages.nav', 'MAHL-infosivut')}
                     </Link>
                   </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/children-pages') ? 'active' : ''}`}>
+                    <Link to="/admin/site-content/children-pages">
+                      {t('admin.siteContent.childrenPages.nav', 'Lapset-sivut')}
+                    </Link>
+                  </li>
                   <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/rules') ? 'active' : ''}`}>
                     <Link to="/admin/site-content/rules">
                       {t('admin.siteContent.rules', 'Säännöt')}

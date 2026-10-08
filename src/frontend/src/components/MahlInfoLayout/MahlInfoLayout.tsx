@@ -1,12 +1,18 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { MAHL_INFO_PAGES } from "../../constants/mahlInfoPages";
+import {
+    CHILDREN_INFO_PAGES,
+    MAHL_INFO_PAGES,
+} from "../../constants/mahlInfoPages";
 import "./MahlInfoLayout.scss";
+
+export type MahlInfoNavGroup = "mahl" | "children";
 
 interface MahlInfoLayoutProps {
     children: React.ReactNode;
     pageTitle?: string;
     intro?: string;
+    navGroup?: MahlInfoNavGroup;
 }
 
 const mahlNavLinks = [
@@ -22,13 +28,22 @@ const mahlNavLinks = [
     },
 ];
 
+const childrenNavLinks = CHILDREN_INFO_PAGES.map((page) => ({
+    labelKey: page.labelKey,
+    defaultLabel: page.defaultLabel,
+    path: page.path,
+}));
+
 export default function MahlInfoLayout({
     children,
     pageTitle,
     intro,
+    navGroup = "mahl",
 }: MahlInfoLayoutProps) {
     const { t } = useTranslation();
     const location = useLocation();
+    const navLinks =
+        navGroup === "children" ? childrenNavLinks : mahlNavLinks;
 
     return (
         <main className="mahl-info-layout">
@@ -48,7 +63,7 @@ export default function MahlInfoLayout({
                                 "MAHL navigaatio",
                             )}
                         >
-                            {mahlNavLinks.map((link) => {
+                            {navLinks.map((link) => {
                                 const isActive =
                                     location.pathname === link.path;
 

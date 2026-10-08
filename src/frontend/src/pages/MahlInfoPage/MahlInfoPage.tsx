@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import PageTemplate from "../../components/PageTemplate/PageTemplate";
 import MahlInfoLayout from "../../components/MahlInfoLayout/MahlInfoLayout";
-import { getMahlInfoPageBySlug } from "../../constants/mahlInfoPages";
+import {
+    getMahlInfoPageBySlug,
+    isChildrenInfoPage,
+} from "../../constants/mahlInfoPages";
 import { infoPageContentService } from "../../services/infoPageContentService";
 import "./MahlInfoPage.scss";
 
@@ -13,6 +16,7 @@ interface MahlInfoPageProps {
 export default function MahlInfoPage({ slug }: MahlInfoPageProps) {
     const { t } = useTranslation();
     const pageDefinition = getMahlInfoPageBySlug(slug);
+    const isChildrenPage = isChildrenInfoPage(slug);
 
     const [title, setTitle] = useState<string>("");
     const [contentHtml, setContentHtml] = useState<string>("");
@@ -69,7 +73,14 @@ export default function MahlInfoPage({ slug }: MahlInfoPageProps) {
 
     return (
         <PageTemplate title={title || defaultTitle} fullBleed>
-            <MahlInfoLayout pageTitle={t("nav.mahl", "MAHL")}>
+            <MahlInfoLayout
+                pageTitle={
+                    isChildrenPage
+                        ? t("nav.children", "Lapset")
+                        : t("nav.mahl", "MAHL")
+                }
+                navGroup={isChildrenPage ? "children" : "mahl"}
+            >
                 <section className="mahl-info-page">
                     {isLoading && (
                         <p className="mahl-info-page__status">

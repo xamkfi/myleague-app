@@ -249,7 +249,17 @@ export const routes: RouteObject[] = [
         element: (
           <ProtectedRoute>
             <SuspenseWrapper>
-              <InfoPagesManagementPage />
+              <InfoPagesManagementPage key="mahl" variant="mahl" />
+            </SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: '/admin/site-content/children-pages',
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper>
+              <InfoPagesManagementPage key="children" variant="children" />
             </SuspenseWrapper>
           </ProtectedRoute>
         )
@@ -350,6 +360,18 @@ export const routes: RouteObject[] = [
   {
     path: '/mahl/vastuullisuus',
     element: <SuspenseWrapper><MahlInfoPage slug="mahl-responsibility" /></SuspenseWrapper>
+  },
+  {
+    path: '/mahl/lapset/leiritoiminta',
+    element: <SuspenseWrapper><MahlInfoPage slug="children-camps" /></SuspenseWrapper>
+  },
+  {
+    path: '/mahl/lapset/lajikorttelitoiminta',
+    element: <SuspenseWrapper><MahlInfoPage slug="children-sport-blocks" /></SuspenseWrapper>
+  },
+  {
+    path: '/mahl/lapset/kerhotoiminta',
+    element: <SuspenseWrapper><MahlInfoPage slug="children-clubs" /></SuspenseWrapper>
   },
   {
     path: '/ikaryhmat',
