@@ -11,6 +11,7 @@ interface UseMatchControlsProps {
   onGoLive?: (matchId: string, updatedMatch?: FootballMatchDto) => void;
   onCompleteLive?: (matchId: string, updatedMatch?: FootballMatchDto) => void;
   onReopen?: (matchId: string, updatedMatch?: FootballMatchDto) => void;
+  onRevertToScheduled?: (updatedMatch: FootballMatchDto) => void;
 }
 
 export const useMatchControls = ({
@@ -21,6 +22,7 @@ export const useMatchControls = ({
   onGoLive,
   onCompleteLive,
   onReopen,
+  onRevertToScheduled,
 }: UseMatchControlsProps) => {
 
   /**
@@ -121,9 +123,34 @@ export const useMatchControls = ({
     }
   }, [currentMatch.id, setCurrentMatch, setError, setLoading, onReopen]);
 
+  /**
+   * Puts a match that was started by mistake back to not started. The backend also removes
+   * the match timer, and only allows this at 0-0 with no recorded events.
+   * Resolves to true when the match was reverted.
+   */
+  const handleRevertToScheduled = useCallback(async (): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await footballMatchService.revertToScheduled(currentMatch.id);
+      if (!response.data) {
+        throw new Error('Failed to revert match to not started');
+      }
+      setCurrentMatch(response.data);
+      onRevertToScheduled?.(response.data);
+      return true;
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to revert match to not started');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [currentMatch.id, setCurrentMatch, setError, setLoading, onRevertToScheduled]);
+
   return {
     handleStartMatch,
     handleCompleteLive,
     handleReopenMatch,
+    handleRevertToScheduled,
   };
 }; 

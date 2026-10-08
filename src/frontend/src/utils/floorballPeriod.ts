@@ -79,6 +79,24 @@ export function floorballPeriodStartSeconds(
   return Math.max(0, (period - 1) * periodSeconds);
 }
 
+/**
+ * Period an event at `timeInSeconds` on the continuous match clock belongs to. With 2×15
+ * minute periods, 14:59 is period 1 and 15:00 is period 2. Time past regulation maps to
+ * overtime only when overtime was played; otherwise it stays in the last regular period.
+ * The shootout has no clock, so it is never derived from time.
+ */
+export function floorballPeriodAtTime(
+  timeInSeconds: number,
+  rules: FloorballMatchRules,
+  overtimePlayed: boolean,
+): number {
+  const { regularPeriods, overtimePeriod } = floorballPeriodNumbers(rules);
+  const periodSeconds: number = rules.periodDurationMinutes * 60;
+  if (periodSeconds <= 0) return 1;
+  if (overtimePlayed && timeInSeconds >= regularPeriods * periodSeconds) return overtimePeriod;
+  return Math.min(regularPeriods, Math.floor(Math.max(0, timeInSeconds) / periodSeconds) + 1);
+}
+
 export interface FloorballPeriodState {
   started: Set<number>;
   ended: Set<number>;

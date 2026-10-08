@@ -74,6 +74,8 @@ The competition divisions/levels in floorball.
 ### FloorballMatchStatus
 The status of a match: Scheduled, In Progress, Completed, Postponed, Cancelled.
 
+A match started by mistake can go back to Scheduled with `RevertToScheduled` while it is live, the score is 0-0 and nothing has been recorded (in hockey, period start/end markers do not count). Its period state and timer are cleared, so the next start begins from 00:00. Football and hockey matches follow the same rule.
+
 ### FloorballEventType
 Types of events that can occur during a match: Goal, Penalty, etc.
 

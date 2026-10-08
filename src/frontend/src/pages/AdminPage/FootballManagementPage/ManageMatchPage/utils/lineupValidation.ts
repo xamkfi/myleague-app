@@ -96,6 +96,29 @@ export function maxPeriodNumber(rules: FootballMatchRules): number {
   );
 }
 
+/**
+ * Period an event at `timeInSeconds` on the continuous match clock belongs to. With 2×45
+ * minute halves, 44:59 is the first half and 45:00 the second. Time past regulation maps to
+ * extra time only when extra time was played. The shootout has no clock, so it is never
+ * derived from time.
+ */
+export function footballPeriodAtTime(
+  timeInSeconds: number,
+  rules: FootballMatchRules,
+  extraTimePlayed: boolean,
+): number {
+  const halfSeconds: number = rules.halfDurationMinutes * 60;
+  if (halfSeconds <= 0) return 1;
+  const time: number = Math.max(0, timeInSeconds);
+  const regulationSeconds: number = rules.numberOfHalves * halfSeconds;
+  const extraHalfSeconds: number = rules.extraTimeHalfDurationMinutes * 60;
+  if (extraTimePlayed && rules.allowExtraTime && time >= regulationSeconds && extraHalfSeconds > 0) {
+    const extraIndex: number = Math.min(rules.extraTimeHalfCount, Math.floor((time - regulationSeconds) / extraHalfSeconds) + 1);
+    return rules.numberOfHalves + extraIndex;
+  }
+  return Math.min(rules.numberOfHalves, Math.floor(time / halfSeconds) + 1);
+}
+
 export function isExtraTimePeriod(period: number, rules: FootballMatchRules): boolean {
   if (!rules.allowExtraTime) {
     return false;

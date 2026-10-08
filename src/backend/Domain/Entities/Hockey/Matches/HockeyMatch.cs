@@ -300,6 +300,39 @@ public class HockeyMatch : BaseEntity
             CurrentPeriodNumber = 1;
     }
 
+    /// <summary>
+    /// Puts a match that was started by mistake back to Scheduled. Only allowed while the match is
+    /// live, the score is 0-0 and nothing but period start/end markers has been recorded.
+    /// Returns the removed period events so the caller can delete them from the store.
+    /// </summary>
+    public IReadOnlyList<HockeyMatchEvent> RevertToScheduled()
+    {
+        if (Status is not (HockeyMatchStatus.Warmup
+            or HockeyMatchStatus.InProgress
+            or HockeyMatchStatus.Intermission
+            or HockeyMatchStatus.Overtime
+            or HockeyMatchStatus.Shootout))
+        {
+            throw new InvalidOperationException($"Only a live match can be reverted to not started. Current status: {Status}.");
+        }
+        if (HomeScore != 0 || AwayScore != 0)
+            throw new InvalidOperationException("Only a match with a 0-0 score can be reverted to not started.");
+        if (_events.Any(e => e is not HockeyPeriodEvent))
+            throw new InvalidOperationException("A match with recorded events cannot be reverted to not started. Delete the events first.");
+
+        List<HockeyMatchEvent> removedEvents = _events.ToList();
+        _events.Clear();
+        _periodScores.Clear();
+        ActualStartTime = null;
+        ActualEndTime = null;
+        ResultType = null;
+        CurrentPeriodNumber = 0;
+        WentToOvertime = false;
+        WentToShootout = false;
+        Status = HockeyMatchStatus.Scheduled;
+        return removedEvents;
+    }
+
     public void MarkFinished(DateTime? actualEndTime = null, HockeyMatchResultType? resultType = null)
     {
         if (IsPlayoffBracketMatch && HomeScore == AwayScore)

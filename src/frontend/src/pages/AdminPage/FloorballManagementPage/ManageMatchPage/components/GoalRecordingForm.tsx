@@ -7,6 +7,7 @@ import type { GoalForm } from './types';
 import { FLOORBALL_GOAL_TYPE_OPTIONS } from '../../../../../utils/floorballGoalType';
 import { formatPlayerOptionLabel, sortPlayersForSelect } from './eventFormHelpers';
 import EventTimeInput from '../../../../../components/match/EventTimeInput';
+import FloorballEventPeriodSelect from './FloorballEventPeriodSelect';
 
 interface GoalRecordingFormProps {
   showGoalForm: boolean;
@@ -19,6 +20,12 @@ interface GoalRecordingFormProps {
   getPlayersForTeam: (teamId: string) => FloorballPlayerDto[];
   onRecordGoal: () => Promise<void>;
   onClose: () => void;
+  /** Played periods the event can be put in. */
+  periods: readonly number[];
+  overtimePeriodNumber: number;
+  shootoutPeriodNumber: number;
+  onTimeChange: (timeMinutes: number, timeSeconds: number) => void;
+  onPeriodChange: (periodNumber: number) => void;
 }
 
 const GoalRecordingForm = ({
@@ -32,6 +39,11 @@ const GoalRecordingForm = ({
   getPlayersForTeam,
   onRecordGoal,
   onClose,
+  periods,
+  overtimePeriodNumber,
+  shootoutPeriodNumber,
+  onTimeChange,
+  onPeriodChange,
 }: GoalRecordingFormProps) => {
   const { t } = useTranslation();
   const firstFieldRef = useRef<HTMLSelectElement | null>(null);
@@ -174,14 +186,21 @@ const GoalRecordingForm = ({
                 </select>
               </div>
 
+              <FloorballEventPeriodSelect
+                id="goal-period"
+                periodNumber={goalForm.periodNumber}
+                periods={periods}
+                overtimePeriodNumber={overtimePeriodNumber}
+                shootoutPeriodNumber={shootoutPeriodNumber}
+                onChange={onPeriodChange}
+              />
+
               <EventTimeInput
                 idPrefix="goal-time"
                 label={t('floorball.matches.manage.goalForm.time')}
                 minutes={goalForm.timeMinutes}
                 seconds={goalForm.timeSeconds}
-                onChange={(timeMinutes, timeSeconds) =>
-                  setGoalForm((prev) => ({ ...prev, timeMinutes, timeSeconds }))
-                }
+                onChange={onTimeChange}
               />
             </div>
 

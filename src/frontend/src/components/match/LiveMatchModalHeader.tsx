@@ -15,6 +15,9 @@ interface LiveMatchModalHeaderProps {
   onClose: () => void;
   onCompleteLive: () => void;
   onReopen: () => void;
+  /** Shows "Revert to not started" while live. Only for a 0-0 match with no recorded events. */
+  canRevertToScheduled?: boolean;
+  onRevertToScheduled?: () => void;
 }
 
 const LiveMatchModalHeader = ({
@@ -27,6 +30,8 @@ const LiveMatchModalHeader = ({
   onClose,
   onCompleteLive,
   onReopen,
+  canRevertToScheduled = false,
+  onRevertToScheduled,
 }: LiveMatchModalHeaderProps) => {
   const { t } = useTranslation();
   const homeName: string = homeTeam?.name || t('matchManage.scoreboard.home', 'Home');
@@ -82,6 +87,17 @@ const LiveMatchModalHeader = ({
           )}
           {isLive && (
             <>
+              {canRevertToScheduled && onRevertToScheduled && (
+                <button
+                  type="button"
+                  onClick={onRevertToScheduled}
+                  className="revert-match-button"
+                  title={t('matchManage.header.revertToScheduledTitle', 'Return the match to not started. Only possible at 0-0 with no recorded events.')}
+                >
+                  <i className="fas fa-undo" aria-hidden="true"></i>
+                  {t('matchManage.header.revertToScheduled', 'Revert to not started')}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onCompleteLive}

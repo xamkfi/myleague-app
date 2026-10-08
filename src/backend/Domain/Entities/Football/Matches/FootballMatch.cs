@@ -488,6 +488,29 @@ public class FootballMatch : BaseEntity
         Status = FootballMatchStatus.Scheduled;
     }
 
+    /// <summary>
+    /// Puts a match that was started by mistake back to Scheduled. Only allowed while the match is
+    /// in progress, the score is 0-0 and nothing has been recorded, so no statistics need undoing.
+    /// Extra time and shootout periods are removed and the halves are reopened.
+    /// </summary>
+    public void RevertToScheduled()
+    {
+        if (Status != FootballMatchStatus.InProgress)
+            throw new InvalidOperationException($"Only a match in progress can be reverted to not started. Current status: {Status}.");
+        if (HomeScore != 0 || AwayScore != 0)
+            throw new InvalidOperationException("Only a match with a 0-0 score can be reverted to not started.");
+        if (_events.Count > 0)
+            throw new InvalidOperationException("A match with recorded events cannot be reverted to not started. Delete the events first.");
+
+        _periodScores.RemoveAll(ps => ps.PeriodNumber > MatchRules.NumberOfHalves);
+        foreach (FootballPeriodScore periodScore in _periodScores)
+            periodScore.Reopen();
+
+        WentToExtraTime = false;
+        WentToPenaltyShootout = false;
+        Status = FootballMatchStatus.Scheduled;
+    }
+
     public void ReopenFromCompleted()
     {
         if (Status != FootballMatchStatus.Completed)

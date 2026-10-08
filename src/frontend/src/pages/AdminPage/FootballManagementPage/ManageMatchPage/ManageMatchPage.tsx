@@ -8,6 +8,7 @@ import type { FootballPlayerDto } from '../../../../api/football/footballPlayerS
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 
 import LiveMatchModalHeader from '../../../../components/match/LiveMatchModalHeader';
+import RevertToScheduledDialog from '../../../../components/match/RevertToScheduledDialog';
 import LiveMatchScoreboard from '../../../../components/match/LiveMatchScoreboard';
 import LiveMatchTimer from './components/LiveMatchTimer';
 import LiveMatchQuickActions from './components/LiveMatchQuickActions';
@@ -66,6 +67,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
 
   const [showEndMatchConfirmation, setShowEndMatchConfirmation] = useState(false);
   const [showReopenConfirmation, setShowReopenConfirmation] = useState(false);
+  const [showRevertConfirmation, setShowRevertConfirmation] = useState(false);
   const [groupsToDelete, setGroupsToDelete] = useState<EventGroup[] | null>(null);
   const [deleteEventLoading, setDeleteEventLoading] = useState(false);
   const [shouldStartTimer, setShouldStartTimer] = useState(false);
@@ -113,6 +115,12 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     onReopen: (_matchId: string, updatedMatch?: FootballMatchDto) => {
       if (updatedMatch) setMatch(updatedMatch);
     },
+    onRevertToScheduled: (updatedMatch: FootballMatchDto) => {
+      setMatch(updatedMatch);
+      // The backend removed the timer, so the desk starts again from 00:00 in the first half.
+      timerContext.setCurrentPeriod(1);
+      timerContext.setElapsedTimeSeconds(0);
+    },
   });
 
   const matchEvents = useMatchEvents({
@@ -142,6 +150,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   const forms = useFormState({
     currentMatch: matchData.currentMatch,
     clock: { period: timerContext.currentPeriod, minutes: 0, seconds: 0, isRunning: timerContext.isRunning },
+    startedPeriods: periodManagement.startedPeriods,
     currentTimerElapsedTime: timerContext.elapsedTimeSeconds,
     getCurrentElapsedSeconds: timerContext.callbacks.getCurrentElapsedSeconds,
     loadMatchEvents: matchEvents.loadMatchEvents,
@@ -205,6 +214,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     !isLineupDialogOpen &&
     !showEndMatchConfirmation &&
     !showReopenConfirmation &&
+    !showRevertConfirmation &&
     !groupsToDelete &&
     !periodManagement.showEndPeriodConfirmation;
 
@@ -707,9 +717,32 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         onClose={onClose}
         onCompleteLive={() => setShowEndMatchConfirmation(true)}
         onReopen={() => setShowReopenConfirmation(true)}
+        canRevertToScheduled={
+          matchData.currentMatch.status === 'InProgress'
+          && (matchData.currentMatch.homeScore ?? 0) === 0
+          && (matchData.currentMatch.awayScore ?? 0) === 0
+          && matchEvents.matchEvents.length === 0
+        }
+        onRevertToScheduled={() => setShowRevertConfirmation(true)}
       />
 
       <ErrorPopup message={matchData.error} />
+
+      <RevertToScheduledDialog
+        isOpen={showRevertConfirmation}
+        isLoading={matchData.loading}
+        onConfirm={() => {
+          void (async () => {
+            // Stop the clock first: the backend removes the timer when the match is reverted.
+            if (timerContext.isRunning && timerContext.callbacks.stop) {
+              await timerContext.callbacks.stop();
+            }
+            await matchControls.handleRevertToScheduled();
+            setShowRevertConfirmation(false);
+          })();
+        }}
+        onCancel={() => setShowRevertConfirmation(false)}
+      />
 
       <MatchConfirmationDialogs
         showEndPeriodConfirmation={periodManagement.showEndPeriodConfirmation}
@@ -850,6 +883,10 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             getOnFieldPlayersForTeam={getOnFieldPlayersForTeam}
             onRecordGoal={forms.recordGoal}
             onClose={() => forms.setShowGoalForm(false)}
+            periods={forms.recordablePeriods}
+            shootoutPeriodNumber={forms.shootoutPeriod}
+            onTimeChange={forms.changeGoalTime}
+            onPeriodChange={forms.changeGoalPeriod}
           />
 
           <CardRecordingForm
@@ -863,6 +900,10 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             getPlayersForTeam={getSquadPlayersForTeam}
             onRecordCard={forms.recordCard}
             onClose={() => forms.setShowCardForm(false)}
+            periods={forms.recordablePeriods}
+            shootoutPeriodNumber={forms.shootoutPeriod}
+            onTimeChange={forms.changeCardTime}
+            onPeriodChange={forms.changeCardPeriod}
           />
 
           <SubstitutionRecordingForm
@@ -877,6 +918,10 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             getBenchPlayersForTeam={getBenchPlayersForTeam}
             onRecordSubstitution={forms.recordSubstitution}
             onClose={() => forms.setShowSubstitutionForm(false)}
+            periods={forms.recordablePeriods}
+            shootoutPeriodNumber={forms.shootoutPeriod}
+            onTimeChange={forms.changeSubstitutionTime}
+            onPeriodChange={forms.changeSubstitutionPeriod}
           />
         </div>
 

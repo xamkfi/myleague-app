@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   floorballMatchEventService, 
@@ -7,16 +7,21 @@ import {
 } from '../../../../../api/floorball/floorballMatchEventService';
 import { FloorballGoalType, type FloorballMatchDto } from '../../../../../types/floorball/floorballTypes';
 import {
+  floorballPeriodAtTime,
   floorballPeriodEventFlags,
+  floorballPeriodNumbers,
   isFloorballOvertimePeriod,
   isFloorballShootoutPeriod,
+  resolveFloorballRules,
 } from '../../../../../utils/floorballPeriod';
 import type { GoalForm, PenaltyForm } from '../components/types';
 
 interface UseFormStateProps {
   currentMatch: FloorballMatchDto;
-  /** Period the desk is operating on; stamped onto recorded events. */
+  /** Period the desk is operating on; the default period of a newly opened form. */
   currentPeriod: number;
+  /** Periods that have been played; overtime and shootout appear here only once started. */
+  startedPeriods: ReadonlySet<number>;
   /** Live elapsed seconds of the match clock; used to prefill the time fields. */
   getCurrentElapsedSeconds: () => number;
   loadMatchEvents: () => Promise<void>;
@@ -27,6 +32,7 @@ interface UseFormStateProps {
 export const useFormState = ({
   currentMatch,
   currentPeriod,
+  startedPeriods,
   getCurrentElapsedSeconds,
   loadMatchEvents,
   loadCurrentMatchStatus,
@@ -44,6 +50,7 @@ export const useFormState = ({
     assisterId: '',
     timeMinutes: 0,
     timeSeconds: 0,
+    periodNumber: 1,
     goalType: null,
   });
   
@@ -64,6 +71,67 @@ export const useFormState = ({
   const penaltyThrottleRef = useRef<Record<string, number>>({});
   const throttleMs = 1000;
 
+  const rules = useMemo(() => resolveFloorballRules(currentMatch.matchRules), [currentMatch.matchRules]);
+  const { regularPeriods, overtimePeriod, shootoutPeriod } = floorballPeriodNumbers(rules);
+
+  /** Regular periods are always selectable; overtime and shootout once they were played. */
+  const recordablePeriods: number[] = useMemo(() => {
+    const periods: number[] = Array.from({ length: regularPeriods }, (_, index) => index + 1);
+    if (startedPeriods.has(overtimePeriod)) periods.push(overtimePeriod);
+    if (startedPeriods.has(shootoutPeriod)) periods.push(shootoutPeriod);
+    if (!periods.includes(currentPeriod) && currentPeriod >= 1 && currentPeriod <= shootoutPeriod) {
+      periods.push(currentPeriod);
+    }
+    return periods.sort((a, b) => a - b);
+  }, [regularPeriods, overtimePeriod, shootoutPeriod, startedPeriods, currentPeriod]);
+
+  const periodForTime = useCallback(
+    (timeInSeconds: number): number =>
+      floorballPeriodAtTime(timeInSeconds, rules, recordablePeriods.includes(overtimePeriod)),
+    [rules, recordablePeriods, overtimePeriod],
+  );
+
+  // Overtime goals are JA and shootout goals VL. The scorer can still override it in the form.
+  const goalTypeForPeriod = useCallback((period: number): FloorballGoalType | null => {
+    if (isFloorballShootoutPeriod(period, regularPeriods)) return FloorballGoalType.Shootout;
+    if (isFloorballOvertimePeriod(period, regularPeriods)) return FloorballGoalType.Overtime;
+    return null;
+  }, [regularPeriods]);
+
+  /** Keeps a chosen goal type, but follows the period when the type was period-derived. */
+  const withPeriod = useCallback((form: GoalForm, periodNumber: number): GoalForm => {
+    const periodDerivedType: boolean = form.goalType === null
+      || form.goalType === FloorballGoalType.Overtime
+      || form.goalType === FloorballGoalType.Shootout;
+    return {
+      ...form,
+      periodNumber,
+      goalType: periodDerivedType ? goalTypeForPeriod(periodNumber) : form.goalType,
+    };
+  }, [goalTypeForPeriod]);
+
+  /** Editing the time moves the event to the period that time falls in (15:00 is period 2). */
+  const changeGoalTime = useCallback((timeMinutes: number, timeSeconds: number) => {
+    setGoalForm(prev => withPeriod({ ...prev, timeMinutes, timeSeconds }, periodForTime(timeMinutes * 60 + timeSeconds)));
+  }, [withPeriod, periodForTime]);
+
+  const changeGoalPeriod = useCallback((periodNumber: number) => {
+    setGoalForm(prev => withPeriod(prev, periodNumber));
+  }, [withPeriod]);
+
+  const changePenaltyTime = useCallback((timeMinutes: number, timeSeconds: number) => {
+    setPenaltyForm(prev => ({
+      ...prev,
+      timeMinutes,
+      timeSeconds,
+      periodNumber: periodForTime(timeMinutes * 60 + timeSeconds),
+    }));
+  }, [periodForTime]);
+
+  const changePenaltyPeriod = useCallback((periodNumber: number) => {
+    setPenaltyForm(prev => ({ ...prev, periodNumber }));
+  }, []);
+
   /**
    * Opens the goal form for a specific team
    * @param teamId The ID of the team to open the form for
@@ -72,17 +140,16 @@ export const useFormState = ({
     const elapsedSeconds: number = getCurrentElapsedSeconds();
     const timeMinutes: number = Math.floor(elapsedSeconds / 60);
     const timeSeconds: number = elapsedSeconds % 60;
-    // Pre-select the goal type that matches the period: overtime goals are JA and
-    // shootout goals VL. The scorer can still override it in the form.
-    const regularPeriods: number = currentMatch.matchRules?.numberOfPeriods ?? 2;
-    const goalType: FloorballGoalType | null = isFloorballShootoutPeriod(currentPeriod, regularPeriods)
-      ? FloorballGoalType.Shootout
-      : isFloorballOvertimePeriod(currentPeriod, regularPeriods)
-        ? FloorballGoalType.Overtime
-        : null;
-    setGoalForm(prev => ({ ...prev, teamId, timeMinutes, timeSeconds, goalType }));
+    setGoalForm(prev => ({
+      ...prev,
+      teamId,
+      timeMinutes,
+      timeSeconds,
+      periodNumber: currentPeriod,
+      goalType: goalTypeForPeriod(currentPeriod),
+    }));
     setShowGoalForm(true);
-  }, [getCurrentElapsedSeconds, currentPeriod, currentMatch.matchRules?.numberOfPeriods]);
+  }, [getCurrentElapsedSeconds, currentPeriod, goalTypeForPeriod]);
 
   /**
    * Opens the penalty form for a specific team
@@ -92,9 +159,9 @@ export const useFormState = ({
     const elapsedSeconds: number = getCurrentElapsedSeconds();
     const timeMinutes: number = Math.floor(elapsedSeconds / 60);
     const timeSeconds: number = elapsedSeconds % 60;
-    setPenaltyForm(prev => ({ ...prev, teamId, timeMinutes, timeSeconds }));
+    setPenaltyForm(prev => ({ ...prev, teamId, timeMinutes, timeSeconds, periodNumber: currentPeriod }));
     setShowPenaltyForm(true);
-  }, [getCurrentElapsedSeconds]);
+  }, [getCurrentElapsedSeconds, currentPeriod]);
 
   /**
    * Records a goal event
@@ -119,13 +186,13 @@ export const useFormState = ({
       // Calculate time in seconds from the form time values (not the running clock)
       const timeInSeconds = goalForm.timeMinutes * 60 + goalForm.timeSeconds;
       
-      const periodFlags = floorballPeriodEventFlags(currentPeriod, currentMatch.matchRules?.numberOfPeriods ?? 2);
+      const periodFlags = floorballPeriodEventFlags(goalForm.periodNumber, regularPeriods);
       const goalData: RecordGoalEventRequest = {
         matchId: currentMatch.id,
         teamId: goalForm.teamId,
         playerId: goalForm.playerId,
         assisterId: goalForm.assisterId || undefined,
-        periodNumber: currentPeriod,
+        periodNumber: goalForm.periodNumber,
         timeInSeconds: timeInSeconds,
         wasInOvertime: periodFlags.wasInOvertime,
         wasInShootout: periodFlags.wasInShootout,
@@ -140,7 +207,7 @@ export const useFormState = ({
       await loadCurrentMatchStatus();
       
       // Reset form
-      setGoalForm({ teamId: '', playerId: '', assisterId: '', timeMinutes: 0, timeSeconds: 0, goalType: null });
+      setGoalForm({ teamId: '', playerId: '', assisterId: '', timeMinutes: 0, timeSeconds: 0, periodNumber: 1, goalType: null });
       setShowGoalForm(false);
       setError(null);
       
@@ -150,7 +217,7 @@ export const useFormState = ({
     } finally {
       setLoading(false);
     }
-  }, [goalForm, currentMatch, currentPeriod, loadMatchEvents, loadCurrentMatchStatus, setError, t]);
+  }, [goalForm, currentMatch, regularPeriods, loadMatchEvents, loadCurrentMatchStatus, setError, t]);
 
   /**
    * Records a penalty event
@@ -181,7 +248,7 @@ export const useFormState = ({
         playerId: penaltyForm.playerId || undefined,
         penaltyType: penaltyForm.penaltyType,
         durationMinutes: penaltyForm.minutes,
-        periodNumber: currentPeriod,
+        periodNumber: penaltyForm.periodNumber,
         timeInSeconds: timeInSeconds,
         description: penaltyForm.description,
       };
@@ -213,7 +280,7 @@ export const useFormState = ({
     } finally {
       setLoading(false);
     }
-  }, [penaltyForm, currentMatch, currentPeriod, loadMatchEvents, loadCurrentMatchStatus, setError, t]);
+  }, [penaltyForm, currentMatch, loadMatchEvents, loadCurrentMatchStatus, setError, t]);
 
   return {
     // Form visibility
@@ -230,6 +297,15 @@ export const useFormState = ({
     penaltyForm,
     setPenaltyForm,
     
+    // Period picker
+    recordablePeriods,
+    overtimePeriod,
+    shootoutPeriod,
+    changeGoalTime,
+    changeGoalPeriod,
+    changePenaltyTime,
+    changePenaltyPeriod,
+
     // Loading state
     loading,
     

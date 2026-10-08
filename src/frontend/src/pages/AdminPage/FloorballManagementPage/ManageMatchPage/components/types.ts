@@ -97,6 +97,8 @@ export interface GoalForm {
   assisterId: string;
   timeMinutes: number;
   timeSeconds: number;
+  /** Period the goal is recorded in; follows the entered time unless chosen by hand. */
+  periodNumber: number;
   /**
    * Optional goal type. `null` means no explicit type was chosen by the
    * recorder and the backend will treat it as a regular goal.

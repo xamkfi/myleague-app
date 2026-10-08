@@ -218,7 +218,15 @@
       "finishMatchTitle": "Stop live tracking and mark the match as finished",
       "reopenMatch": "Open match",
       "reopenMatchTitle": "Reopen this match for editing",
+      "revertToScheduled": "Revert to not started",
+      "revertToScheduledTitle": "Return the match to not started. Only possible at 0-0 with no recorded events.",
       "closeTitle": "Back to the match list"
+    },
+    "revertToScheduled": {
+      "title": "Revert match to not started?",
+      "message": "The match goes back to not started and its clock is reset. You can start it again later.",
+      "warning": "Only possible while the score is 0-0 and no events have been recorded.",
+      "confirm": "Revert to not started"
     },
     "confirmDelete": {
       "title": "Delete event",
@@ -1912,6 +1920,12 @@
         "confirm": "Yes, Reactivate Match"
       },
       "manage": {
+        "eventPeriod": {
+          "label": "Period",
+          "period": "Period {{number}}",
+          "overtime": "Overtime",
+          "shootout": "Shootout"
+        },
         "title": "Match management",
         "notFound": "Match not found.",
         "finished": "FINISHED",
@@ -2087,6 +2101,7 @@
           "startTimer": "Match started but the clock could not be started",
           "completeMatch": "Failed to complete match",
           "reopenMatch": "Failed to reopen match",
+          "revertToScheduled": "Failed to revert match to not started",
           "endPeriod": "Failed to end period",
           "startPeriod": "Failed to start period",
           "skipToShootout": "Failed to start penalty shootout",
@@ -2793,6 +2808,14 @@
       }
     },
     "matches": {
+      "manage": {
+        "eventPeriod": {
+          "label": "Period",
+          "half": "Half {{number}}",
+          "extraTime": "Extra time {{number}}",
+          "shootout": "Penalty shootout"
+        }
+      },
       "assignTeams": {
         "action": "Assign teams",
         "actionMissing": "Assign teams",

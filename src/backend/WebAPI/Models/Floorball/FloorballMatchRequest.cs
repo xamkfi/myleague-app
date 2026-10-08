@@ -237,7 +237,7 @@ public record RecordGoalRequest
     /// Gets the period number
     /// </summary>
     [Required(ErrorMessage = "Period number is required")]
-    [Range(1, 4, ErrorMessage = "Period number must be between 1 and 4")]
+    [Range(1, int.MaxValue, ErrorMessage = "Period number must be at least 1")]
     public int PeriodNumber { get; init; }
 
     /// <summary>

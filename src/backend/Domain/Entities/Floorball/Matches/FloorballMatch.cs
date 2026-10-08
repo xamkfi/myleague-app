@@ -793,6 +793,32 @@ public class FloorballMatch : BaseEntity
     }
 
     /// <summary>
+    /// Puts a match that was started by mistake back to Scheduled. Only allowed while the match is
+    /// in progress, the score is 0-0 and nothing has been recorded, so no statistics need undoing.
+    /// Overtime and shootout periods are removed and the regular periods are reopened.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in progress, has a score, or has events.</exception>
+    public void RevertToScheduled()
+    {
+        if (Status != FloorballMatchStatus.InProgress)
+            throw new InvalidOperationException($"Only a match in progress can be reverted to not started. Current status: {Status}.");
+        if (HomeScore != 0 || AwayScore != 0)
+            throw new InvalidOperationException("Only a match with a 0-0 score can be reverted to not started.");
+        if (_events.Count > 0)
+            throw new InvalidOperationException("A match with recorded events cannot be reverted to not started. Delete the events first.");
+
+        _periodScores.RemoveAll(ps => ps.PeriodNumber > MatchRules.NumberOfPeriods);
+        foreach (FloorballPeriodScore periodScore in _periodScores)
+        {
+            periodScore.Reopen();
+        }
+
+        WentToOvertime = false;
+        WentToShootout = false;
+        Status = FloorballMatchStatus.Scheduled;
+    }
+
+    /// <summary>
     /// Reopens a previously completed match back into the InProgress state so the operator can
     /// continue recording events or correct mistakes (e.g. when the match was finished by
     /// accident). The caller is responsible for reverting any per-match aggregates that were

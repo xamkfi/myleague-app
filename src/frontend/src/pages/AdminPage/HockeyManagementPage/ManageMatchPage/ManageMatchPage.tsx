@@ -45,6 +45,7 @@ import {
   useHockeyPeriodManagement,
 } from './hooks/useHockeyPeriodManagement';
 import LiveMatchModalHeader from '../../../../components/match/LiveMatchModalHeader';
+import RevertToScheduledDialog from '../../../../components/match/RevertToScheduledDialog';
 import LiveMatchScoreboard from '../../../../components/match/LiveMatchScoreboard';
 import LiveMatchTimer from './components/LiveMatchTimer';
 import LiveMatchQuickActions from './components/LiveMatchQuickActions';
@@ -119,6 +120,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   const [showFinishConfirm, setShowFinishConfirm] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<HockeyMatchEventDto[] | null>(null);
   const [showReopenConfirm, setShowReopenConfirm] = useState(false);
+  const [showRevertConfirm, setShowRevertConfirm] = useState(false);
   const [isLineupDialogOpen, setIsLineupDialogOpen] = useState(false);
   const [shouldStartTimer, setShouldStartTimer] = useState(false);
   const [showOfficialDraft, setShowOfficialDraft] = useState(false);
@@ -629,6 +631,29 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
         onClose={onClose}
         onCompleteLive={() => setShowFinishConfirm(true)}
         onReopen={() => setShowReopenConfirm(true)}
+        canRevertToScheduled={
+          isHockeyMatchLive(match.status)
+          && match.homeScore === 0
+          && match.awayScore === 0
+          && match.events.every((eventItem) => eventItem.eventType === 'Period')
+        }
+        onRevertToScheduled={() => setShowRevertConfirm(true)}
+      />
+      <RevertToScheduledDialog
+        isOpen={showRevertConfirm}
+        isLoading={busy}
+        onConfirm={() => {
+          // Stop the clock first: the backend removes the timer when the match is reverted.
+          stopClock();
+          void run(async () => {
+            const reverted = await hockeyMatchService.revertToScheduled(match.id);
+            restoreFromMatch(reverted);
+            timer.setElapsedTimeSeconds(0);
+            setShowRevertConfirm(false);
+            return reverted;
+          });
+        }}
+        onCancel={() => setShowRevertConfirm(false)}
       />
       <LiveMatchScoreboard
         sport="hockey"

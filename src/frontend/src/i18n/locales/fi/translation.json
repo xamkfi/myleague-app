@@ -79,7 +79,15 @@
       "finishMatchTitle": "Lopeta live-seuranta ja merkitse ottelu päättyneeksi",
       "reopenMatch": "Avaa ottelu",
       "reopenMatchTitle": "Avaa ottelu uudelleen muokattavaksi",
+      "revertToScheduled": "Palauta aloittamattomaksi",
+      "revertToScheduledTitle": "Palauta ottelu aloittamattomaksi. Mahdollista vain tilanteessa 0-0, kun tapahtumia ei ole kirjattu.",
       "closeTitle": "Takaisin ottelulistaan"
+    },
+    "revertToScheduled": {
+      "title": "Palautetaanko ottelu aloittamattomaksi?",
+      "message": "Ottelu palaa aloittamattomaksi ja kello nollataan. Voit aloittaa ottelun myöhemmin uudelleen.",
+      "warning": "Mahdollista vain, kun tilanne on 0-0 eikä tapahtumia ole kirjattu.",
+      "confirm": "Palauta aloittamattomaksi"
     },
     "confirmDelete": {
       "title": "Poista tapahtuma",
@@ -1920,6 +1928,12 @@
         "confirm": "Kyllä, aktivoi uudelleen"
       },
       "manage": {
+        "eventPeriod": {
+          "label": "Erä",
+          "period": "{{number}}. erä",
+          "overtime": "Jatkoaika",
+          "shootout": "Voittolaukauskilpailu"
+        },
         "title": "Ottelun hallinta",
         "notFound": "Ottelua ei löytynyt.",
         "finished": "PÄÄTTYNYT",
@@ -2095,6 +2109,7 @@
           "startTimer": "Ottelu aloitettiin, mutta kelloa ei saatu käyntiin",
           "completeMatch": "Ottelun päättäminen epäonnistui",
           "reopenMatch": "Ottelun avaaminen epäonnistui",
+          "revertToScheduled": "Ottelun palauttaminen aloittamattomaksi epäonnistui",
           "endPeriod": "Erän päättäminen epäonnistui",
           "startPeriod": "Erän aloittaminen epäonnistui",
           "skipToShootout": "Rankkareihin siirtyminen epäonnistui",
@@ -2802,6 +2817,14 @@
       }
     },
     "matches": {
+      "manage": {
+        "eventPeriod": {
+          "label": "Jakso",
+          "half": "{{number}}. puoliaika",
+          "extraTime": "Jatkoaika {{number}}",
+          "shootout": "Rangaistuspotkukilpailu"
+        }
+      },
       "assignTeams": {
         "action": "Aseta joukkueet",
         "actionMissing": "Aseta joukkueet",

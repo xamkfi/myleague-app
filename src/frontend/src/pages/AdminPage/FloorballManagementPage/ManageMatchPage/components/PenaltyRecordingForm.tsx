@@ -6,6 +6,7 @@ import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballP
 import type { PenaltyForm } from './types';
 import { formatPlayerOptionLabel, sortPlayersForSelect } from './eventFormHelpers';
 import EventTimeInput from '../../../../../components/match/EventTimeInput';
+import FloorballEventPeriodSelect from './FloorballEventPeriodSelect';
 
 interface PenaltyRecordingFormProps {
   showPenaltyForm: boolean;
@@ -18,6 +19,12 @@ interface PenaltyRecordingFormProps {
   getPlayersForTeam: (teamId: string) => FloorballPlayerDto[];
   onRecordPenalty: () => Promise<void>;
   onClose: () => void;
+  /** Played periods the event can be put in. */
+  periods: readonly number[];
+  overtimePeriodNumber: number;
+  shootoutPeriodNumber: number;
+  onTimeChange: (timeMinutes: number, timeSeconds: number) => void;
+  onPeriodChange: (periodNumber: number) => void;
 }
 
 /** Duration options; the label is resolved via i18n key `penaltyForm.duration{value}`. */
@@ -46,6 +53,11 @@ const PenaltyRecordingForm = ({
   getPlayersForTeam,
   onRecordPenalty,
   onClose,
+  periods,
+  overtimePeriodNumber,
+  shootoutPeriodNumber,
+  onTimeChange,
+  onPeriodChange,
 }: PenaltyRecordingFormProps) => {
   const { t } = useTranslation();
   const firstFieldRef = useRef<HTMLSelectElement | null>(null);
@@ -169,14 +181,21 @@ const PenaltyRecordingForm = ({
                 </select>
               </div>
 
+              <FloorballEventPeriodSelect
+                id="penalty-period"
+                periodNumber={penaltyForm.periodNumber}
+                periods={periods}
+                overtimePeriodNumber={overtimePeriodNumber}
+                shootoutPeriodNumber={shootoutPeriodNumber}
+                onChange={onPeriodChange}
+              />
+
               <EventTimeInput
                 idPrefix="penalty-time"
                 label={t('floorball.matches.manage.penaltyForm.time')}
                 minutes={penaltyForm.timeMinutes}
                 seconds={penaltyForm.timeSeconds}
-                onChange={(timeMinutes, timeSeconds) =>
-                  setPenaltyForm((prev) => ({ ...prev, timeMinutes, timeSeconds }))
-                }
+                onChange={onTimeChange}
               />
             </div>
 

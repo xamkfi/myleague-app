@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Features.Common.CrossCutting.MatchTimer.Services;
 using Application.Features.Hockey.Matches.Commands;
 using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Matches.Handlers;
@@ -1309,5 +1310,34 @@ public class HockeyMatchHandlerTests
                     && command.Scopes[0].Scope == HockeyStatisticsScope.Competition),
                 It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task RevertToScheduled_StartedMatch_DeletesPeriodMarkersAndTimer()
+    {
+        HockeyMatch match = CreateStandaloneMatch();
+        Club club = new("Tappara HC");
+        match.AssignMatchTeam(new HockeyTeam("Tappara", club, TeamCategory.Adult).Id, HockeyTeamSlot.Home);
+        match.AssignMatchTeam(new HockeyTeam("Ilves", club, TeamCategory.Adult).Id, HockeyTeamSlot.Away);
+        match.MarkStarted();
+        HockeyPeriodEvent periodStarted = new(match.Id, 1, TimeSpan.Zero, HockeyPeriodAction.PeriodStarted);
+        match.AddEvent(periodStarted);
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+
+        Mock<IMatchTimerService> timer = new();
+        RevertHockeyMatchToScheduledHandler handler = new(
+            _matchRepo.Object,
+            _unitOfWork.Object,
+            timer.Object,
+            Mock.Of<ILogger<RevertHockeyMatchToScheduledHandler>>());
+
+        Result<HockeyMatchDto> result = await handler.Handle(
+            new RevertHockeyMatchToScheduledCommand(match.Id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue(result.Error);
+        result.Data!.Status.Should().Be(HockeyMatchStatus.Scheduled.ToString());
+        _matchRepo.Verify(r => r.MarkEventAsDeleted(periodStarted), Times.Once);
+        timer.Verify(t => t.DestroyTimerAsync(match.Id), Times.Once);
     }
 }

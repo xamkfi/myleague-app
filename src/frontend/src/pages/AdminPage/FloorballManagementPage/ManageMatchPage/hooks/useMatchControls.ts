@@ -16,7 +16,7 @@ interface UseMatchControlsProps {
 }
 
 /**
- * Match lifecycle transitions (start / complete / reopen). Every action resolves to
+ * Match lifecycle transitions (start / complete / reopen / revert to not started). Every action resolves to
  * `true` on success and `false` after surfacing an error, so callers can chain follow-up
  * work (e.g. starting the clock) only when the transition really happened.
  */
@@ -84,9 +84,20 @@ export const useMatchControls = ({
       t('floorball.matches.manage.errors.reopenMatch', 'Failed to reopen match'),
     ), [runTransition, currentMatch.id, t]);
 
+  /**
+   * Puts a match that was started by mistake back to not started. The backend also removes
+   * the match timer, and only allows this at 0-0 with no recorded events.
+   */
+  const handleRevertToScheduled = useCallback((): Promise<boolean> =>
+    runTransition(
+      () => floorballMatchService.revertToScheduled(currentMatch.id),
+      t('floorball.matches.manage.errors.revertToScheduled', 'Failed to revert match to not started'),
+    ), [runTransition, currentMatch.id, t]);
+
   return {
     handleStartMatch,
     handleCompleteLive,
     handleReopenMatch,
+    handleRevertToScheduled,
   };
 };

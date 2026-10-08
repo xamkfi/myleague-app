@@ -332,4 +332,44 @@ public class FloorballDomainBehaviorTests
 
         act.Should().Throw<InvalidOperationException>();
     }
+
+    [Fact]
+    public void RevertToScheduled_StartedMatchWithoutEvents_ReturnsToScheduled()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        FloorballMatch match = ready.Match;
+        match.Start();
+        match.EndPeriod(1);
+
+        match.RevertToScheduled();
+
+        match.Status.Should().Be(FloorballMatchStatus.Scheduled);
+        match.PeriodScores.Should().OnlyContain(ps => !ps.IsCompleted);
+        match.Start();
+        match.Status.Should().Be(FloorballMatchStatus.InProgress);
+    }
+
+    [Fact]
+    public void RevertToScheduled_WithRecordedEvent_Throws()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        FloorballMatch match = ready.Match;
+        match.Start();
+        match.RecordSave(ready.Away, ready.AwayGoalie, periodNumber: 1, timeInSeconds: 30);
+
+        Action act = () => match.RevertToScheduled();
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*events*");
+        match.Status.Should().Be(FloorballMatchStatus.InProgress);
+    }
+
+    [Fact]
+    public void RevertToScheduled_WhenNotStarted_Throws()
+    {
+        FloorballMatch match = FloorballTestHelpers.CreateReadyMatch().Match;
+
+        Action act = () => match.RevertToScheduled();
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*in progress*");
+    }
 }
