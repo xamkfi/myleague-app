@@ -14,7 +14,8 @@ using Microsoft.Extensions.Logging;
 namespace Application.Features.Hockey.Matches.Handlers;
 
 /// <summary>
-/// Handles setting and confirming a match-side roster.
+/// Handles setting and confirming a match-side roster. A lineup corrected after the match
+/// has finished triggers a statistics recalculation so games played and goalie records follow it.
 /// </summary>
 public class ConfirmHockeyMatchRosterHandler
     : IRequestHandler<ConfirmHockeyMatchRosterCommand, Result<HockeyMatchDto>>
@@ -23,6 +24,7 @@ public class ConfirmHockeyMatchRosterHandler
     private readonly IHockeyTeamRepository _teamRepository;
     private readonly IHockeyCompetitionRepository _competitionRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
     private readonly ILogger<ConfirmHockeyMatchRosterHandler> _logger;
 
     public ConfirmHockeyMatchRosterHandler(
@@ -30,12 +32,14 @@ public class ConfirmHockeyMatchRosterHandler
         IHockeyTeamRepository teamRepository,
         IHockeyCompetitionRepository competitionRepository,
         IHockeyUnitOfWork unitOfWork,
+        IMediator mediator,
         ILogger<ConfirmHockeyMatchRosterHandler> logger)
     {
         _matchRepository = matchRepository;
         _teamRepository = teamRepository;
         _competitionRepository = competitionRepository;
         _unitOfWork = unitOfWork;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -110,7 +114,9 @@ public class ConfirmHockeyMatchRosterHandler
                 request.MatchTeamId,
                 request.MatchId);
 
-            return Result<HockeyMatchDto>.Success(HockeyMatchMapper.ToDto(match));
+            Result<HockeyMatchDto> result = Result<HockeyMatchDto>.Success(HockeyMatchMapper.ToDto(match));
+            await HockeyMatchHandlerSupport.RecalculateStatisticsIfFinishedAsync(_mediator, _logger, result, cancellationToken);
+            return result;
         }
         catch (InvalidOperationException ex)
         {

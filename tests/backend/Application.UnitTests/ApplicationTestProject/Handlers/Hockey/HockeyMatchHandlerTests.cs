@@ -31,6 +31,17 @@ public class HockeyMatchHandlerTests
     private readonly Mock<IHockeyTeamRepository> _teamRepo = new();
     private readonly Mock<IHockeyCompetitionRepository> _competitionRepo = new();
     private readonly Mock<IHockeyUnitOfWork> _unitOfWork = new();
+    private readonly Mock<IMediator> _mediator = new();
+
+    public HockeyMatchHandlerTests()
+    {
+        _mediator
+            .Setup(m => m.Send(It.IsAny<RecalculateHockeyMatchStatisticsCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+        _mediator
+            .Setup(m => m.Send(It.IsAny<RecalculateHockeyCompetitionScopesCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+    }
 
     private static HockeyMatch CreateStandaloneMatch() =>
         new(
@@ -96,6 +107,7 @@ public class HockeyMatchHandlerTests
             _teamRepo.Object,
             _competitionRepo.Object,
             _unitOfWork.Object,
+            _mediator.Object,
             Mock.Of<ILogger<ConfirmHockeyMatchRosterHandler>>());
 
     [Fact]
@@ -272,6 +284,45 @@ public class HockeyMatchHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Data!.MatchTeams.Should().ContainSingle(t => t.Id == matchTeam.Id && t.IsConfirmedRoster);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mediator.Verify(
+            m => m.Send(It.IsAny<RecalculateHockeyMatchStatisticsCommand>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ConfirmRoster_FinishedMatch_RecalculatesMatchAndCompetitionStatistics()
+    {
+        HockeySeason season = CreateTestSeason();
+        HockeyMatch match = CreateCompetitionMatch(season);
+        Club club = new("Tappara HC");
+        HockeyTeam team = new("Tappara", club, TeamCategory.Adult);
+        HockeyCompetitionTeam competitionTeam = season.AddTeam(team.Id);
+        HockeyTeamPlayer teamPlayer = team.AddPlayer(
+            new HockeyPlayer(Guid.NewGuid(), HockeyPosition.Center), HockeyPosition.Center, jerseyNumber: 12);
+
+        match.AssignMatchTeam(team.Id, HockeyTeamSlot.Home, competitionTeam);
+        HockeyMatchTeam matchTeam = match.HomeMatchTeam!;
+        match.MarkFinished();
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id)).ReturnsAsync(match);
+        _teamRepo.Setup(r => r.GetByIdAsync(team.Id)).ReturnsAsync(team);
+        _competitionRepo.Setup(r => r.GetByIdAsync(season.Id)).ReturnsAsync(season);
+
+        Result<HockeyMatchDto> result = await CreateConfirmRosterHandler().Handle(
+            new ConfirmHockeyMatchRosterCommand(match.Id, matchTeam.Id, new[] { teamPlayer.Id }),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue(result.Error);
+        _mediator.Verify(
+            m => m.Send(
+                It.Is<RecalculateHockeyMatchStatisticsCommand>(command => command.MatchId == match.Id),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        _mediator.Verify(
+            m => m.Send(
+                It.Is<RecalculateHockeyCompetitionScopesCommand>(command => command.CompetitionId == season.Id),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
@@ -676,6 +727,7 @@ public class HockeyMatchHandlerTests
         DeactivateHockeyMatchRosterPlayerHandler handler = new(
             _matchRepo.Object,
             _unitOfWork.Object,
+            _mediator.Object,
             Mock.Of<ILogger<DeactivateHockeyMatchRosterPlayerHandler>>());
 
         Result<HockeyMatchDto> result = await handler.Handle(

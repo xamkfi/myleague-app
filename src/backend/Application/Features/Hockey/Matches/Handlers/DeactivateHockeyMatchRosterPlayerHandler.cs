@@ -15,20 +15,24 @@ public class DeactivateHockeyMatchRosterPlayerHandler : IRequestHandler<Deactiva
 {
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
     private readonly ILogger<DeactivateHockeyMatchRosterPlayerHandler> _logger;
 
     public DeactivateHockeyMatchRosterPlayerHandler(
         IHockeyMatchRepository matchRepository,
         IHockeyUnitOfWork unitOfWork,
+        IMediator mediator,
         ILogger<DeactivateHockeyMatchRosterPlayerHandler> logger)
     {
         _matchRepository = matchRepository;
         _unitOfWork = unitOfWork;
+        _mediator = mediator;
         _logger = logger;
     }
 
-    public Task<Result<HockeyMatchDto>> Handle(DeactivateHockeyMatchRosterPlayerCommand request, CancellationToken cancellationToken) =>
-        HockeyMatchHandlerSupport.MutateAsync(
+    public async Task<Result<HockeyMatchDto>> Handle(DeactivateHockeyMatchRosterPlayerCommand request, CancellationToken cancellationToken)
+    {
+        Result<HockeyMatchDto> result = await HockeyMatchHandlerSupport.MutateAsync(
             _matchRepository,
             _unitOfWork,
             _logger,
@@ -45,4 +49,8 @@ public class DeactivateHockeyMatchRosterPlayerHandler : IRequestHandler<Deactiva
                 matchTeam.PlayerSelection.DeactivatePlayer(request.MatchActivePlayerId);
             },
             cancellationToken);
+
+        await HockeyMatchHandlerSupport.RecalculateStatisticsIfFinishedAsync(_mediator, _logger, result, cancellationToken);
+        return result;
+    }
 }

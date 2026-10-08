@@ -15,20 +15,24 @@ public class ClearHockeyMatchActiveGoalieHandler : IRequestHandler<ClearHockeyMa
 {
     private readonly IHockeyMatchRepository _matchRepository;
     private readonly IHockeyUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
     private readonly ILogger<ClearHockeyMatchActiveGoalieHandler> _logger;
 
     public ClearHockeyMatchActiveGoalieHandler(
         IHockeyMatchRepository matchRepository,
         IHockeyUnitOfWork unitOfWork,
+        IMediator mediator,
         ILogger<ClearHockeyMatchActiveGoalieHandler> logger)
     {
         _matchRepository = matchRepository;
         _unitOfWork = unitOfWork;
+        _mediator = mediator;
         _logger = logger;
     }
 
-    public Task<Result<HockeyMatchDto>> Handle(ClearHockeyMatchActiveGoalieCommand request, CancellationToken cancellationToken) =>
-        HockeyMatchHandlerSupport.MutateAsync(
+    public async Task<Result<HockeyMatchDto>> Handle(ClearHockeyMatchActiveGoalieCommand request, CancellationToken cancellationToken)
+    {
+        Result<HockeyMatchDto> result = await HockeyMatchHandlerSupport.MutateAsync(
             _matchRepository,
             _unitOfWork,
             _logger,
@@ -40,4 +44,8 @@ public class ClearHockeyMatchActiveGoalieHandler : IRequestHandler<ClearHockeyMa
                 matchTeam.ClearActiveGoalie();
             },
             cancellationToken);
+
+        await HockeyMatchHandlerSupport.RecalculateStatisticsIfFinishedAsync(_mediator, _logger, result, cancellationToken);
+        return result;
+    }
 }

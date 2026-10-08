@@ -81,6 +81,40 @@ public class HockeyLineupSyncTests
     }
 
     [Fact]
+    public void SyncPlayerSelection_FinishedMatch_TellsHowToEditLockedEvents()
+    {
+        HockeyTeam homeTeam = HockeyTestHelpers.CreateTeam("Wolves");
+        (HockeyMatch match, HockeyMatchTeam home, _) =
+            HockeyTestHelpers.CreateMatchWithSides(homeTeam, HockeyTestHelpers.CreateTeam("Bears"));
+        HockeyTeamPlayer scorer = HockeyTestHelpers.AddRosterPlayer(homeTeam, jerseyNumber: 19);
+        HockeyMatchActivePlayer scorerActive = HockeyTestHelpers.DressPlayer(home, scorer, 19);
+        match.AddEvent(new HockeyGoal(
+            match.Id, home.Id, scorerActive.Id, 1, TimeSpan.FromMinutes(5), HockeyGoalStrength.EvenStrength));
+        match.MarkFinished();
+
+        Action act = () => match.SyncPlayerSelection(home.Id, [], HockeyPlayerSelectionSource.Manual);
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*#19*Reopen the match*");
+    }
+
+    [Fact]
+    public void SyncPlayerSelection_FinishedMatch_AllowsRemovingPlayerWithoutEvents()
+    {
+        HockeyTeam homeTeam = HockeyTestHelpers.CreateTeam("Wolves");
+        (HockeyMatch match, HockeyMatchTeam home, _) =
+            HockeyTestHelpers.CreateMatchWithSides(homeTeam, HockeyTestHelpers.CreateTeam("Bears"));
+        HockeyTeamPlayer kept = HockeyTestHelpers.AddRosterPlayer(homeTeam, jerseyNumber: 10);
+        HockeyTeamPlayer removed = HockeyTestHelpers.AddRosterPlayer(homeTeam, jerseyNumber: 11);
+        HockeyTestHelpers.DressPlayer(home, kept, 10);
+        HockeyMatchActivePlayer removedActive = HockeyTestHelpers.DressPlayer(home, removed, 11);
+        match.MarkFinished();
+
+        match.SyncPlayerSelection(home.Id, [kept], HockeyPlayerSelectionSource.Manual);
+
+        removedActive.IsActive.Should().BeFalse();
+    }
+
+    [Fact]
     public void SyncPlayerSelection_ClearsActiveGoalie_WhenGoalieRemoved()
     {
         HockeyTeam homeTeam = HockeyTestHelpers.CreateTeam("Wolves");

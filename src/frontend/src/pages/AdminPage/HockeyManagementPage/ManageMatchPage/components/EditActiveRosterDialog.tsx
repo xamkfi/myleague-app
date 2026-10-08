@@ -483,7 +483,8 @@ const confirmTeamRoster = async (
   const confirmed = await hockeyMatchService.confirmRoster(matchId, matchTeamId, teamPlayerIds);
   const matchTeam = confirmed.matchTeams.find((item) => item.id === matchTeamId);
   const goalieActive = matchTeam?.activePlayers.find((player) => player.teamPlayerId === state.goalieId);
-  if (goalieActive) {
+  // Skip an unchanged goalie: on a finished match every save recalculates statistics.
+  if (goalieActive && matchTeam?.activeGoalieMatchPlayerId !== goalieActive.id) {
     return hockeyMatchService.setActiveGoalie(matchId, matchTeamId, goalieActive.id);
   }
   return confirmed;

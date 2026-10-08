@@ -1,11 +1,9 @@
 using Application.Common;
 using Application.Features.Hockey.Matches.Commands;
 using Application.Features.Hockey.Matches.DTOs;
-using Application.Features.Hockey.Statistics.Commands;
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches;
 using Domain.Enums.Hockey.Matches;
-using Domain.Enums.Hockey.Statistics;
 using Domain.Repositories.Hockey;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -56,49 +54,9 @@ public class MarkHockeyMatchFinishedHandler : IRequestHandler<MarkHockeyMatchFin
             cancellationToken);
 
         if (result.IsSuccess && result.Data is not null)
-            await RecalculateStatisticsAsync(result.Data, cancellationToken);
+            await HockeyMatchHandlerSupport.RecalculateStatisticsAsync(_mediator, _logger, result.Data, cancellationToken);
 
         return result;
-    }
-
-    private async Task RecalculateStatisticsAsync(HockeyMatchDto match, CancellationToken cancellationToken)
-    {
-        Result matchStats = await _mediator.Send(
-            new RecalculateHockeyMatchStatisticsCommand(match.Id),
-            cancellationToken);
-        if (!matchStats.IsSuccess)
-        {
-            _logger.LogWarning(
-                "Match statistics recalc failed after finish {MatchId}: {Error}",
-                match.Id,
-                matchStats.Error);
-        }
-
-        if (match.CompetitionId is not Guid competitionId)
-            return;
-
-        List<HockeyStatisticsScopeTarget> scopes = new()
-        {
-            new HockeyStatisticsScopeTarget(HockeyStatisticsScope.Competition)
-        };
-        if (match.CompetitionDivisionId is Guid divisionId)
-            scopes.Add(new HockeyStatisticsScopeTarget(HockeyStatisticsScope.Division, CompetitionDivisionId: divisionId));
-        if (match.TournamentGroupId is Guid groupId)
-            scopes.Add(new HockeyStatisticsScopeTarget(HockeyStatisticsScope.TournamentGroup, TournamentGroupId: groupId));
-        if (match.PlayoffSeriesId is Guid seriesId)
-            scopes.Add(new HockeyStatisticsScopeTarget(HockeyStatisticsScope.PlayoffSeries, PlayoffSeriesId: seriesId));
-
-        Result result = await _mediator.Send(
-            new RecalculateHockeyCompetitionScopesCommand(competitionId, scopes),
-            cancellationToken);
-        if (!result.IsSuccess)
-        {
-            _logger.LogWarning(
-                "Competition statistics recalc failed after finish for {CompetitionId} scopes {Scopes}: {Error}",
-                competitionId,
-                string.Join(", ", scopes.Select(s => s.Scope)),
-                result.Error);
-        }
     }
 
     private async Task AdvancePlayoffWinnerAsync(HockeyMatch completed, CancellationToken cancellationToken)
