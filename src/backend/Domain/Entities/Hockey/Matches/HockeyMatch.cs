@@ -611,12 +611,15 @@ public class HockeyMatch : BaseEntity
         return matchEvent;
     }
 
-    private void EnsureCanModifyEvents()
-    {
-        if (Status is HockeyMatchStatus.Finished
+    private bool CanModifyEvents =>
+        Status is not (HockeyMatchStatus.Finished
             or HockeyMatchStatus.Cancelled
             or HockeyMatchStatus.Postponed
-            or HockeyMatchStatus.Forfeit)
+            or HockeyMatchStatus.Forfeit);
+
+    private void EnsureCanModifyEvents()
+    {
+        if (!CanModifyEvents)
         {
             throw new InvalidOperationException(
                 $"Cannot modify match events when the match status is {Status}.");
@@ -677,8 +680,13 @@ public class HockeyMatch : BaseEntity
         foreach (HockeyMatchActivePlayer player in removed)
         {
             if (HasEventsForActivePlayer(player.Id))
+            {
+                string howToEditEvents = CanModifyEvents
+                    ? string.Empty
+                    : " Reopen the match to edit its events, then finish it again.";
                 throw new InvalidOperationException(
-                    $"Player #{player.JerseyNumber} has recorded events in this match. Edit or delete those events before removing the player from the lineup.");
+                    $"Player #{player.JerseyNumber} has recorded events in this match. Edit or delete those events before removing the player from the lineup.{howToEditEvents}");
+            }
 
             selection.DeactivatePlayer(player.Id);
             if (matchTeam.ActiveGoalieMatchPlayerId == player.Id)

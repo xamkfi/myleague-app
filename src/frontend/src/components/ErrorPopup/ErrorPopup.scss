@@ -14,7 +14,8 @@
    top: 90px;
    left: 50%;
    transform: translateX(-50%);
-   z-index: 1000;
+   // Above modal dialogs (up to 1200) so errors raised from a dialog stay visible.
+   z-index: 1300;
    opacity: 1;
    transform: translate(-50%, -8px);
    transition: opacity 160ms ease, transform 200ms ease;
