@@ -150,7 +150,8 @@ Run `npm install` once in the repository root to install the husky pre-commit ho
 - Branch from `development` and open pull requests into `development`.
 - Only `development` may merge into `master`. The `protect-master.yml` workflow fails any other pull request into `master`.
 - A merge into `development` deploys to staging automatically.
-- A merge into `master` starts the production releases (`release-production.yml` and `release-mahl-production.yml`). Each waits for one approval on its GitHub environment (`prod`, `mahl-prod`).
+- A merge into `master` starts the MAHL production release (`release-mahl-production.yml`), which waits for one approval on the `mahl-prod` GitHub environment.
+- XAMK prod (`release-production.yml`) is no longer released automatically. Run it manually from `master` when needed; it waits for approval on `prod`.
 
 Workflows, environments, OIDC setup, and costs are documented in [infra/README.md](infra/README.md).
 
