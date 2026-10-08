@@ -9,8 +9,8 @@ Local development does not use Azure. See [.claude/skills/run-local/SKILL.md](..
 | Environment | GitHub environment | Resource group | Prefix | Regions | Deployed from |
 |-------------|--------------------|----------------|--------|---------|---------------|
 | Staging | `staging` | `myleague-staging-rg` | `myleague-staging` | West Europe | `development`, automatically, no approval |
-| Prod | `prod` | `myleague-prod-rg` | `myleague-prod` | West Europe | `master`, after one approval |
-| MAHL prod | `mahl-prod` | `mahl-prod-rg` | `mahl-prod` | Sweden Central (backend), East US 2 (Static Web App) | `master`, after one approval |
+| Prod | `prod` | `myleague-prod-rg` | `myleague-prod` | West Europe | `master`, manual run only, after one approval |
+| MAHL prod | `mahl-prod` | `mahl-prod-rg` | `mahl-prod` | Sweden Central (backend), East US 2 (Static Web App) | `master`, automatically on merge, after one approval |
 
 MAHL prod is a separate production instance in its own Azure subscription. Its subscription rejects new resources in West Europe, so the backend runs in Sweden Central. Static Web Apps have no other European region, so the frontend is in East US 2. Static files are served from the global edge either way.
 
@@ -53,7 +53,7 @@ Names use `{prefix}` from the table above (`{baseName}-{environmentName}`).
 
 | Resource | Type | Name | Key settings |
 |----------|------|------|--------------|
-| App Service Plan | `Microsoft.Web/serverfarms` | `{prefix}-plan` | Linux, Basic B1, 1 instance |
+| App Service Plan | `Microsoft.Web/serverfarms` | `{prefix}-plan` | Linux, 1 instance. Basic B1 on staging, Basic B2 (2 cores, 3.5 GB) on prod and MAHL prod |
 | App Service (API) | `Microsoft.Web/sites` | `{prefix}-api` | .NET 10, Always On, HTTPS only, TLS 1.2, HTTP/2, FTPS off, health check `/health/ready`, run from package |
 | PostgreSQL Flexible Server | `Microsoft.DBforPostgreSQL/flexibleServers` | `{prefix}-postgres` | PostgreSQL 16, Burstable `Standard_B1ms`, 32 GB, database `myleague`, admin user `myleagueadmin`, no HA, no geo-redundant backup, firewall rule `AllowAzureServices` |
 | Storage account | `Microsoft.Storage/storageAccounts` | `myleaguestagingstorage`, `myleagueprodstorage`, `mahlprodstorage` | StorageV2, `Standard_LRS`, container `images` with public blob read, 7-day blob soft delete |
@@ -130,11 +130,13 @@ az webapp config appsettings list \
 | HTTP 5xx | `Http5xx` | > 10 in 5 min | 2 |
 | Server exceptions | App Insights `exceptions/server` | > 10 in 15 min | 2 |
 | PostgreSQL CPU | `cpu_percent` | avg > 90% over 15 min | 2 |
+| PostgreSQL CPU credits | `cpu_credits_remaining` (Burstable throttles to baseline at 0) | avg < 30 over 30 min | 2 |
 | PostgreSQL failed connections | `connections_failed` | > 10 in 15 min | 2 |
+| PostgreSQL memory | `memory_percent` | avg > 90% over 15 min | 3 |
 | Slow responses | `HttpResponseTime` | avg > 5 s over 15 min | 3 |
 | Plan CPU / memory | `CpuPercentage` / `MemoryPercentage` | avg > 85% over 15 min | 3 |
 | Failure anomalies | App Insights smart detection | automatic | 3 |
-| Cost budget | Resource group actual spend | 80% and 100% of `monthlyBudgetAmount` (35 USD) | notification |
+| Cost budget | Resource group spend | Actual 80% and 100%, forecasted 100% of `monthlyBudgetAmount` (35 USD staging, 50 USD prod and MAHL prod) | notification |
 
 `budgetStartDate` is `2026-09-01T00:00:00Z` in every backend parameter file. Azure rejects changes to the start date of an existing budget, so do not edit it.
 
@@ -150,7 +152,7 @@ Health endpoints on each API: `/health/live`, `/health/ready` (includes the data
 | [infra-deploy.yml](../.github/workflows/infra-deploy.yml) | PR touching `infra/**`; push of `infra/**` to `development`; manual | See below |
 | [deploy-backend.yml](../.github/workflows/deploy-backend.yml) | Backend CI succeeds on `development`; called by `infra-deploy.yml`; manual | Publishes and zip-deploys the API, waits for `/health/ready`, runs API smoke tests |
 | [deploy-frontend.yml](../.github/workflows/deploy-frontend.yml) | Frontend CI succeeds on `development`; called by `infra-deploy.yml`; manual | Builds the SPA with `VITE_API_URL`, uploads `dist/` to the Static Web App, runs SPA smoke tests |
-| [release-production.yml](../.github/workflows/release-production.yml) | Push to `master`; manual from `master` | After `prod` approval: provisions frontend then backend, deploys API and SPA, runs smoke tests |
+| [release-production.yml](../.github/workflows/release-production.yml) | Manual from `master` only | After `prod` approval: provisions frontend then backend, deploys API and SPA, runs smoke tests |
 | [release-mahl-production.yml](../.github/workflows/release-mahl-production.yml) | Push to `master`; manual from `master` | Same as above for MAHL prod, after `mahl-prod` approval |
 
 `infra-deploy.yml` in detail:
@@ -167,9 +169,10 @@ Health endpoints on each API: `/health/live`, `/health/ready` (includes the data
 1. Merge a feature branch into `development`. Staging is deployed with no approval.
 2. Check staging.
 3. Open a PR from `development` into `master` and merge it.
-4. `Release Production` and `Release MAHL Production` both start. In each run, open **Review deployments** and approve. They run in parallel and have separate approvals.
+4. `Release MAHL Production` starts. Open **Review deployments** and approve.
+5. XAMK prod is not released automatically. To update it, run `Release Production` manually on `master` and approve the `prod` deployment.
 
-To replay a production release without a new merge, run the release workflow manually on `master`.
+To replay a MAHL production release without a new merge, run its workflow manually on `master`.
 
 ### Smoke tests
 
@@ -263,7 +266,7 @@ A workflow cannot block a direct `git push` to `master`. Set a ruleset or branch
 
 1. Push to `development`, or run `infra-deploy.yml` for `staging` / `both`. Staging is provisioned and the apps are deployed.
 2. Check the staging UI and the smoke test results.
-3. Merge `development` into `master` and approve the `prod` and `mahl-prod` runs.
+3. Merge `development` into `master` and approve the `mahl-prod` run. For XAMK prod, run `release-production.yml` manually on `master` and approve it.
 4. Optional: commit the new Static Web App hostname to `allowedOrigins` and `frontendBaseUrl` in `backend.prod.bicepparam`. The release workflow already passes the live URL, so CORS works without this.
 
 ## Running it manually
@@ -316,7 +319,8 @@ Rough monthly estimate per environment at list prices. Check the Azure pricing c
 
 | Resource | SKU | Approx. per month |
 |----------|-----|-------------------|
-| App Service Plan | Basic B1 | ~13 USD |
+| App Service Plan | Basic B1 (staging) | ~13 USD |
+| App Service Plan | Basic B2 (prod, MAHL prod) | ~26 USD |
 | PostgreSQL Flexible Server | Burstable B1ms, 32 GB | ~12 USD |
 | Static Web App | Free | 0 |
 | Storage account | Standard_LRS | cents |

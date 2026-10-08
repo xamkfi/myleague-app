@@ -1,10 +1,9 @@
 name: Release Production
 
-# Happy path: merge development → master, then Approve the prod environment.
-# workflow_dispatch is for replay/hotfix and is also restricted to master.
+# XAMK prod is no longer released automatically: a merge to master releases
+# only MAHL prod (release-mahl-production.yml). Run this workflow manually from
+# master when XAMK prod needs an update; it still waits for prod approval.
 on:
-  push:
-    branches: [master]
   workflow_dispatch:
 
 concurrency:

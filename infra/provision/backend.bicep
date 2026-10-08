@@ -2,7 +2,7 @@
 // MyLeague Backend Infrastructure - Main Deployment
 // ============================================================================
 // This template deploys:
-// - App Service Plan (Basic B1 Linux)
+// - App Service Plan (Basic B1/B2 Linux)
 // - App Service for .NET 10 API
 // - PostgreSQL Flexible Server (Burstable B1ms)
 // - Storage Account for image uploads
@@ -41,6 +41,7 @@ param postgresAdminPassword string
 @allowed([
   'F1'
   'B1'
+  'B2'
 ])
 param appServicePlanSku string = 'B1'
 
@@ -78,7 +79,7 @@ param alertEmail string = ''
 @description('Deploy an external availability (uptime) test. Recommended for prod only.')
 param enableAvailabilityTest bool = false
 
-@description('Monthly cost budget for this resource group in USD (email notifications at 80% and 100%)')
+@description('Monthly cost budget for this resource group in USD (email notifications at 80% and 100% actual and 100% forecasted)')
 param monthlyBudgetAmount int = 35
 
 @description('Start date of the cost budget, e.g. 2026-09-01T00:00:00Z. Set once per environment to the month the budget was created; Azure rejects changes to it.')
