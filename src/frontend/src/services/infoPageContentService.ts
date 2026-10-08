@@ -1,6 +1,9 @@
 import { API_URL } from "../constants/config";
 import { authFetch } from "../api/utils/authFetch";
-import { MAHL_INFO_PAGES } from "../constants/mahlInfoPages";
+import {
+    MAHL_INFO_PAGES,
+    type MahlInfoPageDefinition,
+} from "../constants/mahlInfoPages";
 import type { ApiResponse } from "../types/common/apiResponseType";
 import type {
     InfoPageContentResponse,
@@ -82,12 +85,13 @@ export class InfoPageContentService {
 
     buildListItems(
         pagesFromApi: InfoPageContentResponse[],
+        definitions: MahlInfoPageDefinition[] = MAHL_INFO_PAGES,
     ): InfoPageListItem[] {
         const apiBySlug = new Map(
             pagesFromApi.map((page) => [page.pageSlug, page]),
         );
 
-        return MAHL_INFO_PAGES.map((definition) => {
+        return definitions.map((definition) => {
             const apiPage = apiBySlug.get(definition.slug);
 
             return {

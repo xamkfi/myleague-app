@@ -2,8 +2,8 @@
 
 React single-page app for MyLeague. It has three areas:
 
-- **Public site**: floorball, football, and ice hockey (`/sports/floorball`, `/sports/football`, `/sports/icehockey`), plus clubs, news, event calendar, rules, age groups, MAHL info pages, registration, and all-time statistics.
-- **Admin** (`/admin`, role `SystemAdmin`): clubs, divisions, persons, users, site settings, news, rules, info pages, footer contacts, data subject rights, and teams, players, officials, seasons, tournaments, and live match control for all three sports.
+- **Public site**: floorball, football, and ice hockey (`/sports/floorball`, `/sports/football`, `/sports/icehockey`), plus clubs, news, event calendar, rules, age groups, MAHL and Children (Lapset menu) info pages, registration, and all-time statistics.
+- **Admin** (`/admin`, role `SystemAdmin`): clubs, divisions, persons, users, site settings, news, rules, MAHL and Children info pages, footer contacts, data subject rights, and teams, players, officials, seasons, tournaments, and live match control for all three sports.
 - **Club admin** (`/club-admin`, roles `ClubAdmin` or `SystemAdmin`): club info, team rosters, and match-day rosters for any sport.
 
 The three sports are peers. When you add a feature to one, check the other two.

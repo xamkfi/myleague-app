@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../LanguageToggle/LanguageToggle';
 import './Navbar.scss';
 import SearchBar from '../SearchBar';
-import { MAHL_INFO_PAGES } from '../../constants/mahlInfoPages';
+import { CHILDREN_INFO_PAGES, MAHL_INFO_PAGES } from '../../constants/mahlInfoPages';
 import AudienceSwitcher from '../AudienceSwitcher/AudienceSwitcher';
 import SportIcon, { type SportIconSport } from '../SportIcon/SportIcon';
 import TrophyIcon from '../TrophyIcon/TrophyIcon';
@@ -46,6 +46,7 @@ function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const sportsDropdownRef = useRef<HTMLLIElement>(null);
   const mahlDropdownRef = useRef<HTMLLIElement>(null);
+  const childrenDropdownRef = useRef<HTMLLIElement>(null);
   const isMobile = useIsMobile();
 
   const toggleMobileMenu = () => {
@@ -68,8 +69,9 @@ function Navbar() {
 
       const isInsideSports = sportsDropdownRef.current?.contains(target);
       const isInsideMahl = mahlDropdownRef.current?.contains(target);
+      const isInsideChildren = childrenDropdownRef.current?.contains(target);
 
-      if (!isInsideSports && !isInsideMahl) {
+      if (!isInsideSports && !isInsideMahl && !isInsideChildren) {
         setActiveDropdown(null);
       }
     }
@@ -129,6 +131,26 @@ function Navbar() {
                 <li>
                   <Link to="/ikaryhmat" onClick={() => setActiveDropdown(null)}>{t('nav.ageGroups')}</Link>
                 </li>
+              </ul>
+            )}
+          </li>
+          <li
+            ref={childrenDropdownRef}
+            className={`navbar-item dropdown ${activeDropdown === 'children' ? 'active' : ''}`}
+          >
+            <div className="dropdown-trigger" onClick={() => handleDropdownClick('children')}>
+              <span className="dropdown-label">{t('nav.children')}</span>
+              <span className="dropdown-icon">▼</span>
+            </div>
+            {activeDropdown === 'children' && (
+              <ul className="dropdown-menu">
+                {CHILDREN_INFO_PAGES.map((page) => (
+                  <li key={page.path}>
+                    <Link to={page.path} onClick={() => setActiveDropdown(null)}>
+                      {t(page.labelKey, page.defaultLabel)}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             )}
           </li>
@@ -237,6 +259,18 @@ function Navbar() {
                 <li>
                   <Link to="/ikaryhmat" onClick={closeMobileMenu}>{t('nav.ageGroups')}</Link>
                 </li>
+              </ul>
+            </li>
+            <li className="mobile-navbar-item">
+              <span className="mobile-dropdown-label">{t('nav.children')}</span>
+              <ul className="mobile-sports-list">
+                {CHILDREN_INFO_PAGES.map((page) => (
+                  <li key={page.path}>
+                    <Link to={page.path} onClick={closeMobileMenu}>
+                      {t(page.labelKey, page.defaultLabel)}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </li>
             <li className="mobile-navbar-item">

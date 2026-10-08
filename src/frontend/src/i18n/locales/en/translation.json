@@ -61,6 +61,7 @@
     "eventCalendar": "Event calendar",
     "rules": "Rules",
     "mahl": "MAHL",
+    "children": "Children",
     "ageGroups": "Age Groups",
     "register": "Register",
     "tournaments": "Tournaments",
@@ -368,6 +369,11 @@
     "live": "LIVE",
     "final": "FINAL"
   },
+  "childrenNav": {
+    "camps": "Camps",
+    "sportBlocks": "Sport blocks",
+    "clubs": "After-school clubs"
+  },
   "infoPages": {
     "loadFailed": "Failed to load page.",
     "emptyContent": "Page content has not been published yet."
@@ -553,6 +559,7 @@
       "rules": "Rules",
       "manageRules": "Manage rules",
       "manageInfoPages": "Manage info pages",
+      "manageChildrenPages": "Manage children pages",
       "manageFooterContacts": "Manage footer content",
       "manageSettings": "Manage site settings",
       "manageDataSubjectRights": "Access, correct, export, restrict, or erase personal data"
@@ -640,6 +647,12 @@
       "title": "Site content",
       "titleShort": "Content",
       "rules": "Rules",
+      "childrenPages": {
+        "nav": "Children pages",
+        "pageTitle": "Children pages",
+        "subtitle": "Manage the Children section info pages.",
+        "description": "Choose a page from the list or dropdown and edit content with the RichText editor. Images are added directly in the content."
+      },
       "infoPages": {
         "nav": "MAHL info pages",
         "pageTitle": "MAHL info pages",

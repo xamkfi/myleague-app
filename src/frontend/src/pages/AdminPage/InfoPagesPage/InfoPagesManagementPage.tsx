@@ -3,6 +3,11 @@ import PageTemplate from "../../../components/PageTemplate/AdminPageTemplate";
 import Button from "../../../components/Button/Button";
 import { useTranslation } from "react-i18next";
 import { infoPageContentService } from "../../../services/infoPageContentService";
+import {
+    CHILDREN_INFO_PAGES,
+    MAHL_INFO_PAGES,
+    type MahlInfoPageDefinition,
+} from "../../../constants/mahlInfoPages";
 import type { InfoPageListItem } from "../../../types/admin/infoPageContentTypes";
 import InfoPageForm from "./components/InfoPageForm";
 import "./InfoPagesManagementPage.scss";
@@ -21,8 +26,50 @@ function formatUpdatedAt(
     }).format(new Date(value));
 }
 
-export default function InfoPagesManagementPage() {
+export type InfoPagesVariant = "mahl" | "children";
+
+interface InfoPagesVariantConfig {
+    definitions: MahlInfoPageDefinition[];
+    pageTitleKey: string;
+    pageTitleFallback: string;
+    subtitleKey: string;
+    subtitleFallback: string;
+    descriptionKey: string;
+    descriptionFallback: string;
+}
+
+const VARIANT_CONFIG: Record<InfoPagesVariant, InfoPagesVariantConfig> = {
+    mahl: {
+        definitions: MAHL_INFO_PAGES,
+        pageTitleKey: "admin.siteContent.infoPages.pageTitle",
+        pageTitleFallback: "MAHL-infosivut",
+        subtitleKey: "admin.siteContent.infoPages.subtitle",
+        subtitleFallback: "Hallitse MAHL-osion staattisia infosivuja.",
+        descriptionKey: "admin.siteContent.infoPages.description",
+        descriptionFallback:
+            "Valitse sivu listasta tai pudotusvalikosta ja muokkaa sisältöä RichText-editorilla. Kuvat ja sponsorilogot lisätään suoraan sisältöön.",
+    },
+    children: {
+        definitions: CHILDREN_INFO_PAGES,
+        pageTitleKey: "admin.siteContent.childrenPages.pageTitle",
+        pageTitleFallback: "Lapset-sivut",
+        subtitleKey: "admin.siteContent.childrenPages.subtitle",
+        subtitleFallback: "Hallitse Lapset-osion infosivuja.",
+        descriptionKey: "admin.siteContent.childrenPages.description",
+        descriptionFallback:
+            "Valitse sivu listasta tai pudotusvalikosta ja muokkaa sisältöä RichText-editorilla. Kuvat lisätään suoraan sisältöön.",
+    },
+};
+
+interface InfoPagesManagementPageProps {
+    variant?: InfoPagesVariant;
+}
+
+export default function InfoPagesManagementPage({
+    variant = "mahl",
+}: InfoPagesManagementPageProps) {
     const { t, i18n } = useTranslation();
+    const config = VARIANT_CONFIG[variant];
 
     const [pages, setPages] = useState<InfoPageListItem[]>([]);
     const [selectedSlug, setSelectedSlug] = useState<string>("");
@@ -40,7 +87,12 @@ export default function InfoPagesManagementPage() {
 
     const loadPages = async (): Promise<void> => {
         const apiPages = await infoPageContentService.getAllInfoPages();
-        setPages(infoPageContentService.buildListItems(apiPages));
+        setPages(
+            infoPageContentService.buildListItems(
+                apiPages,
+                config.definitions,
+            ),
+        );
     };
 
     useEffect(() => {
@@ -76,7 +128,7 @@ export default function InfoPagesManagementPage() {
         return () => {
             isMounted = false;
         };
-    }, [t]);
+    }, [t, variant]);
 
     useEffect(() => {
         if (!successMessage) {
@@ -158,10 +210,7 @@ export default function InfoPagesManagementPage() {
 
     return (
         <PageTemplate
-            title={t(
-                "admin.siteContent.infoPages.pageTitle",
-                "MAHL-infosivut",
-            )}
+            title={t(config.pageTitleKey, config.pageTitleFallback)}
         >
             <div className="info-pages-management-page">
                 <div className="info-pages-management-page__alerts-overlay">
@@ -184,14 +233,14 @@ export default function InfoPagesManagementPage() {
                             <div>
                                 <h2 className="info-pages-management-page__page-title">
                                     {t(
-                                        "admin.siteContent.infoPages.subtitle",
-                                        "Hallitse MAHL-osion staattisia infosivuja.",
+                                        config.subtitleKey,
+                                        config.subtitleFallback,
                                     )}
                                 </h2>
                                 <p className="info-pages-management-page__description">
                                     {t(
-                                        "admin.siteContent.infoPages.description",
-                                        "Valitse sivu listasta tai pudotusvalikosta ja muokkaa sisältöä RichText-editorilla. Kuvat ja sponsorilogot lisätään suoraan sisältöön.",
+                                        config.descriptionKey,
+                                        config.descriptionFallback,
                                     )}
                                 </p>
                             </div>
