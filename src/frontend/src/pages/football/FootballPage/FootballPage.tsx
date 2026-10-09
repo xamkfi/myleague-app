@@ -40,8 +40,10 @@ function FootballPage() {
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
-  const [contentBlocks, setContentBlocks] = useState<SeasonContentBlockDto[]>([]);
-  const [featuredSeasonId, setFeaturedSeasonId] = useState<string | null>(null);
+  const [contentBlocks, setContentBlocks] = useState<{
+    seasonId: string;
+    blocks: SeasonContentBlockDto[];
+  } | null>(null);
 
   const selectedYearMeta = useMemo(
     () => years.find((year) => year.year === selectedYear),
@@ -54,33 +56,35 @@ function FootballPage() {
   const isCurrentSeasonView =
     (selectedYearMeta?.hasActiveSeason ?? false) || selectedYear === currentYear;
 
+  // Intro blocks come from a season that is on screen, so they follow the audience
+  // filter and also show for a season that is not active or completed yet.
+  const featuredSeasonId =
+    (seasonsData.find((item) => item.season.isActive) ?? seasonsData[0])?.season.id ?? null;
+
   useEffect(() => {
-    if (!selectedYear) {
-      setContentBlocks([]);
-      setFeaturedSeasonId(null);
+    if (!featuredSeasonId) {
+      setContentBlocks(null);
       return;
     }
 
     let cancelled = false;
     footballSeasonService
-      .getFeaturedContentBlocks(selectedYear)
+      .getContentBlocks(featuredSeasonId)
       .then((result) => {
         if (!cancelled) {
-          setFeaturedSeasonId(result.seasonId);
-          setContentBlocks(result.blocks);
+          setContentBlocks({ seasonId: featuredSeasonId, blocks: result.blocks });
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setFeaturedSeasonId(null);
-          setContentBlocks([]);
+          setContentBlocks(null);
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [selectedYear]);
+  }, [featuredSeasonId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -327,9 +331,8 @@ function FootballPage() {
     </>
   );
 
-  const visibleContentBlocks = seasonsData.some((item) => item.season.id === featuredSeasonId)
-    ? contentBlocks
-    : [];
+  const visibleContentBlocks =
+    contentBlocks && contentBlocks.seasonId === featuredSeasonId ? contentBlocks.blocks : [];
 
   return (
     <SportLandingPage

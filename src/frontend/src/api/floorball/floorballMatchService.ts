@@ -488,6 +488,32 @@ export const floorballMatchService = {
   },
 
   /**
+   * Put a match that was started by mistake back to not started. The backend only allows this
+   * while the match is in progress with a 0-0 score and no recorded events.
+   */
+  revertToScheduled: async (id: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${id}/revert-to-scheduled`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = await parseErrorResponse(apiResponse, 'Failed to revert floorball match');
+      throw new Error(errorMessage);
+    }
+
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.errors?.join(', ') || 'Failed to revert floorball match');
+    }
+
+    return apiResponse;
+  },
+
+  /**
    * Change match venue
    */
   changeVenue: async (id: string, venue: string): Promise<ApiResponse<FloorballMatchDto>> => {

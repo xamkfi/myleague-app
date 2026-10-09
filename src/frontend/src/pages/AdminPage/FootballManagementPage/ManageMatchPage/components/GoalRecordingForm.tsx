@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import FootballEventPeriodSelect from './FootballEventPeriodSelect';
 import { FootballGoalType, type FootballMatchDto, type FootballTeam } from '../../../../../types/football/footballTypes';
 import './GoalRecordingForm.scss';
 import type { FootballPlayerDto } from '../../../../../api/football/footballPlayerService';
@@ -17,6 +18,11 @@ interface GoalRecordingFormProps {
   getOnFieldPlayersForTeam: (teamId: string) => FootballPlayerDto[];
   onRecordGoal: () => Promise<void>;
   onClose: () => void;
+  /** Played periods the event can be put in. */
+  periods: readonly number[];
+  shootoutPeriodNumber: number;
+  onTimeChange: (timeMinutes: number, timeSeconds: number) => void;
+  onPeriodChange: (periodNumber: number) => void;
 }
 
 const clampInt = (raw: string, min: number, max: number): number => {
@@ -36,6 +42,10 @@ const GoalRecordingForm = ({
   getOnFieldPlayersForTeam,
   onRecordGoal,
   onClose,
+  periods,
+  shootoutPeriodNumber,
+  onTimeChange,
+  onPeriodChange,
 }: GoalRecordingFormProps) => {
   const firstFieldRef = useRef<HTMLSelectElement | null>(null);
   const isOwnGoal: boolean = goalForm.goalType === FootballGoalType.OwnGoal;
@@ -186,6 +196,15 @@ const GoalRecordingForm = ({
                 </select>
               </div>
 
+              <FootballEventPeriodSelect
+                id="goal-period"
+                periodNumber={goalForm.periodNumber}
+                periods={periods}
+                shootoutPeriodNumber={shootoutPeriodNumber}
+                rules={currentMatch.matchRules}
+                onChange={onPeriodChange}
+              />
+
               <div className="field field--time">
                 <label htmlFor="goal-time-minutes">Time</label>
                 <div className="time-input-group">
@@ -194,9 +213,7 @@ const GoalRecordingForm = ({
                     type="number"
                     className="time-input time-input-minutes"
                     value={goalForm.timeMinutes}
-                    onChange={(e) =>
-                      setGoalForm((prev) => ({ ...prev, timeMinutes: clampInt(e.target.value, 0, 99) }))
-                    }
+                    onChange={(e) => onTimeChange(clampInt(e.target.value, 0, 99), goalForm.timeSeconds)}
                     min={0}
                     max={99}
                     placeholder="MM"
@@ -210,9 +227,7 @@ const GoalRecordingForm = ({
                     type="number"
                     className="time-input time-input-seconds"
                     value={goalForm.timeSeconds}
-                    onChange={(e) =>
-                      setGoalForm((prev) => ({ ...prev, timeSeconds: clampInt(e.target.value, 0, 59) }))
-                    }
+                    onChange={(e) => onTimeChange(goalForm.timeMinutes, clampInt(e.target.value, 0, 59))}
                     min={0}
                     max={59}
                     placeholder="SS"

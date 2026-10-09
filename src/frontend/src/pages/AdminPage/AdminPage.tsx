@@ -88,6 +88,14 @@ const siteContentCards: AdminHomeCard[] = [
     iconSrc: RulesIcon,
   },
   {
+    to: '/admin/site-content/children-pages',
+    titleKey: 'admin.siteContent.childrenPages.nav',
+    titleFallback: 'Children pages',
+    subtitleKey: 'admin.actions.manageChildrenPages',
+    subtitleFallback: 'Manage children pages',
+    iconSrc: RulesIcon,
+  },
+  {
     to: '/admin/site-content/rules',
     titleKey: 'admin.siteContent.rules',
     titleFallback: 'Rules',

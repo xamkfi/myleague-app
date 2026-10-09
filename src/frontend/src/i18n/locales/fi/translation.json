@@ -79,7 +79,15 @@
       "finishMatchTitle": "Lopeta live-seuranta ja merkitse ottelu päättyneeksi",
       "reopenMatch": "Avaa ottelu",
       "reopenMatchTitle": "Avaa ottelu uudelleen muokattavaksi",
+      "revertToScheduled": "Palauta aloittamattomaksi",
+      "revertToScheduledTitle": "Palauta ottelu aloittamattomaksi. Mahdollista vain tilanteessa 0-0, kun tapahtumia ei ole kirjattu.",
       "closeTitle": "Takaisin ottelulistaan"
+    },
+    "revertToScheduled": {
+      "title": "Palautetaanko ottelu aloittamattomaksi?",
+      "message": "Ottelu palaa aloittamattomaksi ja kello nollataan. Voit aloittaa ottelun myöhemmin uudelleen.",
+      "warning": "Mahdollista vain, kun tilanne on 0-0 eikä tapahtumia ole kirjattu.",
+      "confirm": "Palauta aloittamattomaksi"
     },
     "confirmDelete": {
       "title": "Poista tapahtuma",
@@ -234,6 +242,7 @@
     "eventCalendar": "Tapahtumakalenteri",
     "rules": "Säännöt",
     "mahl": "MAHL",
+    "children": "Lapset",
     "ageGroups": "Ikäryhmät",
     "register": "Ilmoittaudu",
     "tournaments": "Turnaukset",
@@ -367,6 +376,11 @@
     "en": "Englanti",
     "fi": "Suomi",
     "switchLanguage": "Vaihda kieli"
+  },
+  "childrenNav": {
+    "camps": "Leiritoiminta",
+    "sportBlocks": "Lajikorttelitoiminta",
+    "clubs": "Kerhotoiminta"
   },
   "infoPages": {
     "loadFailed": "Sivun lataus epäonnistui.",
@@ -553,6 +567,7 @@
       "rules": "Säännöt",
       "manageRules": "Hallitse sääntöjä",
       "manageInfoPages": "Hallitse infosivuja",
+      "manageChildrenPages": "Hallitse Lapset-sivuja",
       "manageFooterContacts": "Hallitse alatunnistetta",
       "manageSettings": "Hallitse sivuston asetuksia",
       "manageDataSubjectRights": "Tarkastele, oikaise, siirrä, rajoita tai poista henkilötietoja"
@@ -640,6 +655,12 @@
       "title": "Sivuston sisällöt",
       "titleShort": "Sisällöt",
       "rules": "Säännöt",
+      "childrenPages": {
+        "nav": "Lapset-sivut",
+        "pageTitle": "Lapset-sivut",
+        "subtitle": "Hallitse Lapset-osion infosivuja.",
+        "description": "Valitse sivu listasta tai pudotusvalikosta ja muokkaa sisältöä RichText-editorilla. Kuvat lisätään suoraan sisältöön."
+      },
       "infoPages": {
         "nav": "MAHL-infosivut",
         "pageTitle": "MAHL-infosivut",
@@ -1920,6 +1941,12 @@
         "confirm": "Kyllä, aktivoi uudelleen"
       },
       "manage": {
+        "eventPeriod": {
+          "label": "Erä",
+          "period": "{{number}}. erä",
+          "overtime": "Jatkoaika",
+          "shootout": "Voittolaukauskilpailu"
+        },
         "title": "Ottelun hallinta",
         "notFound": "Ottelua ei löytynyt.",
         "finished": "PÄÄTTYNYT",
@@ -2095,6 +2122,7 @@
           "startTimer": "Ottelu aloitettiin, mutta kelloa ei saatu käyntiin",
           "completeMatch": "Ottelun päättäminen epäonnistui",
           "reopenMatch": "Ottelun avaaminen epäonnistui",
+          "revertToScheduled": "Ottelun palauttaminen aloittamattomaksi epäonnistui",
           "endPeriod": "Erän päättäminen epäonnistui",
           "startPeriod": "Erän aloittaminen epäonnistui",
           "skipToShootout": "Rankkareihin siirtyminen epäonnistui",
@@ -2802,6 +2830,14 @@
       }
     },
     "matches": {
+      "manage": {
+        "eventPeriod": {
+          "label": "Jakso",
+          "half": "{{number}}. puoliaika",
+          "extraTime": "Jatkoaika {{number}}",
+          "shootout": "Rangaistuspotkukilpailu"
+        }
+      },
       "assignTeams": {
         "action": "Aseta joukkueet",
         "actionMissing": "Aseta joukkueet",

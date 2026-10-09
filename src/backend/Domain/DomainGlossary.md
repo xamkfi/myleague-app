@@ -74,6 +74,8 @@ The competition divisions/levels in floorball.
 ### FloorballMatchStatus
 The status of a match: Scheduled, In Progress, Completed, Postponed, Cancelled.
 
+A match started by mistake can go back to Scheduled with `RevertToScheduled` while it is live, the score is 0-0 and nothing has been recorded (in hockey, period start/end markers do not count). Its period state and timer are cleared, so the next start begins from 00:00. Football and hockey matches follow the same rule.
+
 ### FloorballEventType
 Types of events that can occur during a match: Goal, Penalty, etc.
 
@@ -121,7 +123,7 @@ A hockey game between two sides (`HockeyMatchTeam` home/away). Playoff bracket p
 
 Each `HockeyPeriodScore` row holds that period's goals, recounted from the `HockeyGoal` events whenever a goal is added, edited, or removed.
 
-The lineup is a `HockeyMatchPlayerSelection` of `HockeyMatchActivePlayer` rows. Events point at these rows, so `SyncPlayerSelection` edits the lineup in place: removed players are deactivated, returning players are reactivated, and a player who has events in the match cannot be removed. An admin can correct the lineup in any match status. Floorball and football lineups lock once the match is completed; reopening the match unlocks them.
+The lineup is a `HockeyMatchPlayerSelection` of `HockeyMatchActivePlayer` rows. Events point at these rows, so `SyncPlayerSelection` edits the lineup in place: removed players are deactivated, returning players are reactivated, and a player who has events in the match cannot be removed. An admin can correct the lineup in any match status, and a correction on a finished match recalculates its statistics. Events of a finished match are locked, so removing a player who has events means reopening the match, fixing the events, and finishing it again. Floorball and football lineups lock once the match is completed; reopening the match unlocks them.
 
 ### HockeyPenaltyOffence
 The offence on a hockey penalty, stored as its name. `IllegalCheck` covers an illegal hit that no more specific offence describes, and `Other` covers anything not listed.

@@ -12,6 +12,7 @@ import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import AssignTeamsDialog from '../../../../components/AssignTeamsDialog/AssignTeamsDialog';
 
 import LiveMatchModalHeader from '../../../../components/match/LiveMatchModalHeader';
+import RevertToScheduledDialog from '../../../../components/match/RevertToScheduledDialog';
 import LiveMatchScoreboard from '../../../../components/match/LiveMatchScoreboard';
 import LiveMatchTimer from './components/LiveMatchTimer';
 import LiveMatchQuickActions from './components/LiveMatchQuickActions';
@@ -85,6 +86,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   // Dialog state
   const [showEndMatchConfirmation, setShowEndMatchConfirmation] = useState<boolean>(false);
   const [showReopenConfirmation, setShowReopenConfirmation] = useState<boolean>(false);
+  const [showRevertConfirmation, setShowRevertConfirmation] = useState<boolean>(false);
   /** Match clock captured when the end-period confirmation was opened. */
   const [endPeriodTimeSnapshot, setEndPeriodTimeSnapshot] = useState<string>('');
   const [saveLoading, setSaveLoading] = useState<boolean>(false);
@@ -159,6 +161,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   const forms = useFormState({
     currentMatch,
     currentPeriod,
+    startedPeriods: periodManagement.startedPeriods,
     getCurrentElapsedSeconds: timer.getCurrentElapsedSeconds,
     loadMatchEvents,
     loadCurrentMatchStatus,
@@ -179,6 +182,11 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   const matchRules = periodManagement.matchRules;
   const isMatchInProgress: boolean = currentMatch.status === 'InProgress';
   const isMatchClosed: boolean = currentMatch.status === 'Completed' || currentMatch.status === 'Cancelled';
+  // Mirrors the backend rule: a started match can go back to not started only at 0-0 with no events.
+  const canRevertToScheduled: boolean = isMatchInProgress
+    && (currentMatch.homeScore ?? 0) === 0
+    && (currentMatch.awayScore ?? 0) === 0
+    && matchEvents.matchEvents.length === 0;
 
   // A shootout only makes sense when regulation ended level.
   const showSkipToShootout: boolean =
@@ -216,6 +224,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     && !bulkSaveTarget
     && !showEndMatchConfirmation
     && !showReopenConfirmation
+    && !showRevertConfirmation
     && !groupsToDelete
     && !periodManagement.showEndPeriodConfirmation;
 
@@ -515,6 +524,22 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     setShowReopenConfirmation(false);
   }, [matchControls]);
 
+  const handleRevertConfirm = useCallback(async (): Promise<void> => {
+    // Stop the clock first: the backend removes the timer when the match is reverted.
+    try {
+      await timer.stop();
+    } catch (error) {
+      console.warn('Failed to stop timer before reverting match:', error);
+    }
+    const reverted: boolean = await matchControls.handleRevertToScheduled();
+    setShowRevertConfirmation(false);
+    if (reverted) {
+      // The backend removed the timer; reload it so the desk shows 00:00 and period 1.
+      setCurrentPeriod(1);
+      await timer.loadStatus();
+    }
+  }, [matchControls, setCurrentPeriod, timer]);
+
   // ---------------------------------------------------------------------------
   // Event deletion
   // ---------------------------------------------------------------------------
@@ -658,9 +683,18 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
         onClose={onClose}
         onCompleteLive={() => setShowEndMatchConfirmation(true)}
         onReopen={() => setShowReopenConfirmation(true)}
+        canRevertToScheduled={canRevertToScheduled}
+        onRevertToScheduled={() => setShowRevertConfirmation(true)}
       />
 
       <ErrorPopup message={matchData.error} />
+
+      <RevertToScheduledDialog
+        isOpen={showRevertConfirmation}
+        isLoading={matchData.loading}
+        onConfirm={() => void handleRevertConfirm()}
+        onCancel={() => setShowRevertConfirmation(false)}
+      />
 
       <MatchConfirmationDialogs
         showEndPeriodConfirmation={periodManagement.showEndPeriodConfirmation}
@@ -790,6 +824,11 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             getPlayersForTeam={matchData.getPlayersForTeam}
             onRecordGoal={forms.recordGoal}
             onClose={() => forms.setShowGoalForm(false)}
+            periods={forms.recordablePeriods}
+            overtimePeriodNumber={forms.overtimePeriod}
+            shootoutPeriodNumber={forms.shootoutPeriod}
+            onTimeChange={forms.changeGoalTime}
+            onPeriodChange={forms.changeGoalPeriod}
           />
 
           <PenaltyRecordingForm
@@ -803,6 +842,11 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             getPlayersForTeam={matchData.getPlayersForTeam}
             onRecordPenalty={forms.recordPenalty}
             onClose={() => forms.setShowPenaltyForm(false)}
+            periods={forms.recordablePeriods}
+            overtimePeriodNumber={forms.overtimePeriod}
+            shootoutPeriodNumber={forms.shootoutPeriod}
+            onTimeChange={forms.changePenaltyTime}
+            onPeriodChange={forms.changePenaltyPeriod}
           />
         </div>
 

@@ -79,6 +79,23 @@ public class HockeyMatchLifecycleController : BaseApiController
     }
 
     /// <summary>
+    /// Puts a match that was started by mistake back to Scheduled. Allowed only while the match
+    /// is live with a 0-0 score and no events other than period markers.
+    /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [HttpPost("{matchId:guid}/revert-to-scheduled")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RevertToScheduled(
+        Guid matchId,
+        CancellationToken cancellationToken = default)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new RevertHockeyMatchToScheduledCommand(matchId), cancellationToken);
+        return HandleResult(result, "Hockey match reverted to not started", "Failed to revert hockey match");
+    }
+
+    /// <summary>
     /// Sets match result type.
     /// </summary>
     [Authorize(Roles = AuthRoles.AdminOnly)]

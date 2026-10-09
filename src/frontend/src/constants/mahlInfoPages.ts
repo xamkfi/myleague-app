@@ -37,14 +37,47 @@ export const MAHL_INFO_PAGES: MahlInfoPageDefinition[] = [
     },
 ];
 
+export const CHILDREN_INFO_PAGES: MahlInfoPageDefinition[] = [
+    {
+        slug: "children-camps",
+        path: "/mahl/lapset/leiritoiminta",
+        labelKey: "childrenNav.camps",
+        defaultLabel: "Leiritoiminta",
+        defaultTitle: "Leiritoiminta",
+    },
+    {
+        slug: "children-sport-blocks",
+        path: "/mahl/lapset/lajikorttelitoiminta",
+        labelKey: "childrenNav.sportBlocks",
+        defaultLabel: "Lajikorttelitoiminta",
+        defaultTitle: "Lajikorttelitoiminta",
+    },
+    {
+        slug: "children-clubs",
+        path: "/mahl/lapset/kerhotoiminta",
+        labelKey: "childrenNav.clubs",
+        defaultLabel: "Kerhotoiminta",
+        defaultTitle: "Kerhotoiminta",
+    },
+];
+
+const ALL_INFO_PAGES: MahlInfoPageDefinition[] = [
+    ...MAHL_INFO_PAGES,
+    ...CHILDREN_INFO_PAGES,
+];
+
 export function getMahlInfoPageBySlug(
     slug: string,
 ): MahlInfoPageDefinition | undefined {
-    return MAHL_INFO_PAGES.find((page) => page.slug === slug);
+    return ALL_INFO_PAGES.find((page) => page.slug === slug);
 }
 
 export function getMahlInfoPageByPath(
     path: string,
 ): MahlInfoPageDefinition | undefined {
-    return MAHL_INFO_PAGES.find((page) => page.path === path);
+    return ALL_INFO_PAGES.find((page) => page.path === path);
+}
+
+export function isChildrenInfoPage(slug: string): boolean {
+    return CHILDREN_INFO_PAGES.some((page) => page.slug === slug);
 }
