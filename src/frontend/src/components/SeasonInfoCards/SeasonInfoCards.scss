@@ -1,5 +1,9 @@
+@use '@variables' as *;
+
 .season-info-card {
   background: #fff;
+  // Set explicitly: league pages use white text on their dark hero, which the card body would inherit.
+  color: $color-text-primary;
   border-radius: 8px;
   padding: 24px;
   display: flex;
