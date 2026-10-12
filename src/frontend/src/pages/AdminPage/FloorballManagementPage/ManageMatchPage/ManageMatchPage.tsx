@@ -149,6 +149,16 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     loadCurrentMatchStatus,
   });
   const { loadMatchEvents } = matchEvents;
+  // Scorers, assisters and penalized players cannot be removed from the lineup.
+  const playersWithEvents: ReadonlySet<string> = useMemo(() => {
+    const ids = new Set<string>();
+    for (const eventItem of matchEvents.allEvents) {
+      if (eventItem.type === 'save') continue;
+      if (eventItem.playerId) ids.add(eventItem.playerId);
+      if (eventItem.assisterId) ids.add(eventItem.assisterId);
+    }
+    return ids;
+  }, [matchEvents.allEvents]);
 
   const periodManagement = usePeriodManagement({
     currentMatch,
@@ -784,6 +794,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             initialHomeGoalieId={homeGoalieId}
             initialAwayGoalieId={awayGoalieId}
             competitionId={currentMatch.competitionId}
+            lockedPlayerIds={playersWithEvents}
             onPlayerAdded={matchData.appendPlayer}
             onClose={() => setIsLineupDialogOpen(false)}
             onSaved={(updated) => {

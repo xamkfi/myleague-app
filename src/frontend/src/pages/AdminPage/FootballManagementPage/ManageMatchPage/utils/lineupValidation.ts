@@ -48,10 +48,14 @@ export function validateTeamLineup(
   if (onField.some((player) => player.isSentOff)) {
     return 'Sent-off players cannot be on the field.';
   }
-  if (onField.length !== rules.playersOnField) {
-    return `On-field count must equal ${rules.playersOnField} players.`;
+  // A sent-off player is not replaced, so each red card lowers the on-field count by one.
+  const sentOffCount = lineup.filter((player) => player.isSentOff).length;
+  const requiredOnField = Math.max(0, rules.playersOnField - sentOffCount);
+  if (onField.length !== requiredOnField) {
+    return `On-field count must equal ${requiredOnField} players.`;
   }
-  if (rules.requireGoalkeeper) {
+  // Like the backend, the goalkeeper rule applies to a full field only.
+  if (rules.requireGoalkeeper && onField.length === rules.playersOnField) {
     const goalkeeperCount = onField.filter(
       (player) => player.position === FootballPosition.Goalkeeper,
     ).length;

@@ -425,4 +425,43 @@ public class FootballMatchTests
         act.Should().Throw<InvalidOperationException>().WithMessage("*0-0*");
         ready.Match.Status.Should().Be(FootballMatchStatus.InProgress);
     }
+
+    private static List<FootballLineupSelection> LineupWithout(ReadyMatch ready, FootballPlayer? dropped)
+    {
+        List<FootballLineupSelection> selections = new();
+        for (int i = 0; i < ready.HomePlayers.Count; i++)
+        {
+            FootballPlayer player = ready.HomePlayers[i];
+            if (player == dropped) continue;
+            FootballPosition position = i == 0 ? FootballPosition.Goalkeeper : FootballPosition.Midfielder;
+            selections.Add(new FootballLineupSelection(player.Id, position, i < 3));
+        }
+        return selections;
+    }
+
+    [Fact]
+    public void SetLineup_InProgress_AllowsRemovingPlayerWithoutEvents()
+    {
+        ReadyMatch ready = CreateReadyMatch();
+        ready.Match.Start();
+        FootballPlayer benched = ready.HomePlayers[^1];
+
+        ready.Match.SetLineup(ready.Home.Id, LineupWithout(ready, benched));
+
+        ready.Match.Lineup.Should().NotContain(p => p.PlayerId == benched.Id);
+    }
+
+    [Fact]
+    public void SetLineup_RemovingScorer_Throws()
+    {
+        ReadyMatch ready = CreateReadyMatch();
+        ready.Match.Start();
+        FootballPlayer scorer = ready.HomePlayers[1];
+        ready.Match.RecordGoal(ready.Home, scorer, assistingPlayer: null, periodNumber: 1, timeInSeconds: 60);
+
+        Action act = () => ready.Match.SetLineup(ready.Home.Id, LineupWithout(ready, scorer));
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*recorded events*");
+        ready.Match.Lineup.Should().Contain(p => p.PlayerId == scorer.Id);
+    }
 }

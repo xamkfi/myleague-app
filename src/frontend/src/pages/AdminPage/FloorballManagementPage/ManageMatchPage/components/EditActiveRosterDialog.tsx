@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { floorballMatchService } from '../../../../../api/floorball/floorballMatchService';
@@ -30,6 +30,8 @@ interface EditActiveRosterDialogProps {
   initialHomeGoalieId: string;
   initialAwayGoalieId: string;
   competitionId?: string | null;
+  /** Players with recorded events in this match; the backend refuses to remove them. */
+  lockedPlayerIds: ReadonlySet<string>;
   onPlayerAdded: (teamId: string, player: FloorballPlayerDto) => void;
   onClose: () => void;
   onSaved: (updatedMatch: FloorballMatchDto) => void;
@@ -59,6 +61,7 @@ interface TeamColumnProps {
   onUseLoanGoalkeeper: () => void;
   onUseLoanPlayers: (count: number) => void;
   loanGoalkeeperBusy: boolean;
+  lockedPlayerIds: ReadonlySet<string>;
 }
 
 const sortPlayers = (a: FloorballPlayerDto, b: FloorballPlayerDto): number => {
@@ -90,6 +93,9 @@ interface RoleChipsRowProps {
   players: FloorballPlayerDto[];
   onRemove: (playerId: string) => void;
   removeAriaLabel: string;
+  /** Players with recorded events in this match; they cannot be removed. */
+  lockedPlayerIds: ReadonlySet<string>;
+  lockedLabel: string;
 }
 
 const RoleChipsRow = ({
@@ -98,6 +104,8 @@ const RoleChipsRow = ({
   players,
   onRemove,
   removeAriaLabel,
+  lockedPlayerIds,
+  lockedLabel,
 }: RoleChipsRowProps): ReactElement => (
   <div className="eard-role-row">
     <div className="eard-role-row__label">
@@ -120,8 +128,9 @@ const RoleChipsRow = ({
               type="button"
               className="eard-chip__remove"
               onClick={() => onRemove(p.id)}
-              aria-label={removeAriaLabel}
-              title={removeAriaLabel}
+              disabled={lockedPlayerIds.has(p.id)}
+              aria-label={lockedPlayerIds.has(p.id) ? lockedLabel : removeAriaLabel}
+              title={lockedPlayerIds.has(p.id) ? lockedLabel : removeAriaLabel}
             >
               <i className="fas fa-times" aria-hidden="true"></i>
             </button>
@@ -142,6 +151,7 @@ const TeamColumn = ({
   onUseLoanGoalkeeper,
   onUseLoanPlayers,
   loanGoalkeeperBusy,
+  lockedPlayerIds,
 }: TeamColumnProps): ReactElement => {
   const { t } = useTranslation();
   const [search, setSearch] = useState<string>('');
@@ -277,6 +287,8 @@ const TeamColumn = ({
             emptyLabel={t('floorball.matches.lineup.noDefenders', 'No defenders selected.')}
             players={defenders}
             onRemove={onRemovePlayer}
+            lockedPlayerIds={lockedPlayerIds}
+            lockedLabel={t('floorball.matches.lineup.hasEvents', 'Player has recorded events in this match')}
             removeAriaLabel={t('floorball.matches.lineup.removePlayer', 'Remove from lineup')}
           />
           <RoleChipsRow
@@ -284,6 +296,8 @@ const TeamColumn = ({
             emptyLabel={t('floorball.matches.lineup.noForwards', 'No forwards selected.')}
             players={forwards}
             onRemove={onRemovePlayer}
+            lockedPlayerIds={lockedPlayerIds}
+            lockedLabel={t('floorball.matches.lineup.hasEvents', 'Player has recorded events in this match')}
             removeAriaLabel={t('floorball.matches.lineup.removePlayer', 'Remove from lineup')}
           />
         </div>
@@ -419,6 +433,7 @@ const EditActiveRosterDialog = ({
   onClose,
   onSaved,
   onError,
+  lockedPlayerIds,
 }: EditActiveRosterDialogProps): ReactElement | null => {
   const { t } = useTranslation();
   const [homeState, setHomeState] = useState<TeamLineupState>({
@@ -433,11 +448,19 @@ const EditActiveRosterDialog = ({
   const [loanSide, setLoanSide] = useState<'home' | 'away' | null>(null);
   const [pendingLoan, setPendingLoan] = useState<PendingLoanAction | null>(null);
 
+  // Load the lineup only when the dialog opens, so a match refresh during live play does not
+  // wipe the admin's unsaved changes.
+  const wasOpenRef = useRef(false);
   useEffect(() => {
     if (!isOpen) {
+      wasOpenRef.current = false;
       setPendingLoan(null);
       return;
     }
+    if (wasOpenRef.current) {
+      return;
+    }
+    wasOpenRef.current = true;
     setHomeState({
       players: lineupToMap(initialHomeLineup),
       goalieId: initialHomeGoalieId,
@@ -688,6 +711,7 @@ const EditActiveRosterDialog = ({
             state={homeState}
             onAddPlayer={(id, role) => addPlayer('home', id, role)}
             onRemovePlayer={(id) => removePlayer('home', id)}
+            lockedPlayerIds={lockedPlayerIds}
             onSetGoalie={(id) => setGoalie('home', id)}
             onUseLoanGoalkeeper={() => setPendingLoan({ kind: 'goalkeeper', side: 'home' })}
             onUseLoanPlayers={(count) => setPendingLoan({ kind: 'players', side: 'home', count })}
@@ -699,6 +723,7 @@ const EditActiveRosterDialog = ({
             state={awayState}
             onAddPlayer={(id, role) => addPlayer('away', id, role)}
             onRemovePlayer={(id) => removePlayer('away', id)}
+            lockedPlayerIds={lockedPlayerIds}
             onSetGoalie={(id) => setGoalie('away', id)}
             onUseLoanGoalkeeper={() => setPendingLoan({ kind: 'goalkeeper', side: 'away' })}
             onUseLoanPlayers={(count) => setPendingLoan({ kind: 'players', side: 'away', count })}

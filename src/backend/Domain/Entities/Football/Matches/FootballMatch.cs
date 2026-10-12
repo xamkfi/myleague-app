@@ -621,6 +621,15 @@ public class FootballMatch : BaseEntity
             .Where(p => p.TeamId == teamId)
             .ToDictionary(p => p.PlayerId);
 
+        HashSet<Guid> keptPlayerIds = distinct.Select(s => s.PlayerId).ToHashSet();
+        Guid droppedWithEvents = existingByPlayer.Keys.FirstOrDefault(playerId =>
+            !keptPlayerIds.Contains(playerId) && HasEventsForPlayer(playerId));
+        if (droppedWithEvents != Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                $"Player {DescribeRosterPlayer(team, droppedWithEvents)} has recorded events in this match. Delete those events before removing the player from the lineup.");
+        }
+
         _lineup.RemoveAll(p => p.TeamId == teamId);
         foreach (FootballLineupSelection selection in distinct)
         {
@@ -717,6 +726,28 @@ public class FootballMatch : BaseEntity
     {
         if (periodNumber < 1 || periodNumber > MatchRules.MaxPeriodNumber)
             throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {MatchRules.MaxPeriodNumber}.");
+    }
+
+    /// <summary>
+    /// Whether a goal, assist, card or substitution in this match points at the player.
+    /// </summary>
+    private bool HasEventsForPlayer(Guid playerId) =>
+        _events.Any(e => e switch
+        {
+            FootballGoal goal => goal.ScoringPlayerId == playerId || goal.AssistingPlayerId == playerId,
+            FootballCard card => card.PlayerId == playerId,
+            FootballSubstitution substitution => substitution.PlayerOffId == playerId || substitution.PlayerOnId == playerId,
+            _ => false,
+        });
+
+    /// <summary>
+    /// "#12" when the roster entry for this competition has a jersey number, otherwise a neutral label.
+    /// </summary>
+    private string DescribeRosterPlayer(FootballTeam team, Guid playerId)
+    {
+        FootballTeamPlayer? entry = team.Roster.FirstOrDefault(r => r.PlayerId == playerId && r.CompetitionId == CompetitionId)
+            ?? team.Roster.FirstOrDefault(r => r.PlayerId == playerId);
+        return entry?.JerseyNumber is int jersey ? $"#{jersey}" : "in the lineup";
     }
 
     private void ValidatePlayerOnRoster(FootballTeam team, Guid playerId, string roleName)

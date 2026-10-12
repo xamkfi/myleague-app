@@ -372,4 +372,55 @@ public class FloorballDomainBehaviorTests
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*in progress*");
     }
+
+    private static List<ActivePlayerSelection> FieldLineup(FloorballTestHelpers.ReadyFloorballMatch ready, params FloorballPlayer[] except) =>
+        ready.HomePlayers
+            .Where(p => p.Id != ready.HomeGoalie.Id && !except.Contains(p))
+            .Select(p => new ActivePlayerSelection(p.Id, FloorballPosition.Forward))
+            .ToList();
+
+    [Fact]
+    public void SetActiveRoster_InProgress_AllowsRemovingPlayerWithoutEvents()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        FloorballMatch match = ready.Match;
+        match.SetActiveRoster(ready.Home.Id, FieldLineup(ready), ready.HomeGoalie.Id);
+        match.Start();
+        FloorballPlayer benched = ready.HomePlayers.Last(p => p.Id != ready.HomeGoalie.Id);
+
+        match.SetActiveRoster(ready.Home.Id, FieldLineup(ready, benched), ready.HomeGoalie.Id);
+
+        match.ActivePlayers.Should().NotContain(p => p.PlayerId == benched.Id);
+    }
+
+    [Fact]
+    public void SetActiveRoster_RemovingScorer_Throws()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        FloorballMatch match = ready.Match;
+        match.SetActiveRoster(ready.Home.Id, FieldLineup(ready), ready.HomeGoalie.Id);
+        match.Start();
+        FloorballPlayer scorer = ready.HomePlayers.First(p => p.Id != ready.HomeGoalie.Id);
+        match.RecordGoal(ready.Home, scorer, assistingPlayer: null, secondaryAssistingPlayer: null, periodNumber: 1, timeInSeconds: 60);
+
+        Action act = () => match.SetActiveRoster(ready.Home.Id, FieldLineup(ready, scorer), ready.HomeGoalie.Id);
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*recorded events*");
+        match.ActivePlayers.Should().Contain(p => p.PlayerId == scorer.Id);
+    }
+
+    [Fact]
+    public void SetActiveRoster_RemovingPenalizedPlayer_Throws()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        FloorballMatch match = ready.Match;
+        match.SetActiveRoster(ready.Home.Id, FieldLineup(ready), ready.HomeGoalie.Id);
+        match.Start();
+        FloorballPlayer penalized = ready.HomePlayers.First(p => p.Id != ready.HomeGoalie.Id);
+        match.RecordPenalty(ready.Home, penalized, FloorballPenaltyType.Minor, minutes: 2, periodNumber: 1, timeInSeconds: 90);
+
+        Action act = () => match.SetActiveRoster(ready.Home.Id, FieldLineup(ready, penalized), ready.HomeGoalie.Id);
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*recorded events*");
+    }
 }

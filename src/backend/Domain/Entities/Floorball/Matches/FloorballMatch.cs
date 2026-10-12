@@ -1013,6 +1013,17 @@ public class FloorballMatch : BaseEntity
         if (goalieId.HasValue && distinctSelections.Any(s => s.PlayerId == goalieId.Value))
             throw new ArgumentException("A player cannot be both an active field player and the active goalie.", nameof(selections));
 
+        HashSet<Guid> keptPlayerIds = distinctSelections.Select(s => s.PlayerId).ToHashSet();
+        if (goalieId.HasValue)
+            keptPlayerIds.Add(goalieId.Value);
+        FloorballMatchActivePlayer? droppedWithEvents = _activePlayers.FirstOrDefault(p =>
+            p.TeamId == teamId && !keptPlayerIds.Contains(p.PlayerId) && HasEventsForPlayer(p.PlayerId));
+        if (droppedWithEvents is not null)
+        {
+            throw new InvalidOperationException(
+                $"Player {DescribeRosterPlayer(team, droppedWithEvents.PlayerId)} has recorded events in this match. Delete those events before removing the player from the lineup.");
+        }
+
         _activePlayers.RemoveAll(p => p.TeamId == teamId);
         foreach (ActivePlayerSelection selection in distinctSelections)
         {
@@ -1153,6 +1164,29 @@ public class FloorballMatch : BaseEntity
     /// <summary>
     /// Validates that a player is on the given team's roster.
     /// </summary>
+    /// <summary>
+    /// Whether a goal, assist or penalty in this match points at the player.
+    /// </summary>
+    private bool HasEventsForPlayer(Guid playerId) =>
+        _events.Any(e => e switch
+        {
+            FloorballGoal goal => goal.ScoringPlayerId == playerId
+                || goal.AssistingPlayerId == playerId
+                || goal.SecondaryAssistingPlayerId == playerId,
+            FloorballPenalty penalty => penalty.PlayerId == playerId,
+            _ => false,
+        });
+
+    /// <summary>
+    /// "#12" when the roster entry for this competition has a jersey number, otherwise a neutral label.
+    /// </summary>
+    private string DescribeRosterPlayer(FloorballTeam team, Guid playerId)
+    {
+        FloorballTeamPlayer? entry = team.Roster.FirstOrDefault(r => r.PlayerId == playerId && r.CompetitionId == CompetitionId)
+            ?? team.Roster.FirstOrDefault(r => r.PlayerId == playerId);
+        return entry?.JerseyNumber is int jersey ? $"#{jersey}" : "in the lineup";
+    }
+
     private void ValidatePlayerOnRoster(FloorballTeam team, Guid playerId, string roleName)
     {
         if (!team.IsPlayerOnRoster(playerId, CompetitionId))
