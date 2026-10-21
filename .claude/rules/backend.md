@@ -58,3 +58,7 @@ Inherit `Controllers/Common/BaseApiController`. Map request → MediatR → `Han
 Result<ClubDto> result = await _mediator.Send(new GetClubByIdQuery(id));
 return HandleResult(result, "Club retrieved successfully", "Club not found");
 ```
+
+## Logging levels
+
+Application Insights bills every stored line per GB, and in production only Warning and above reach it. Log routine per-request flow ("getting X", "request started/completed") at Debug, not Information. Information is for state changes, seeding, and startup. Do not attach an exception object to a log line unless that line is the only place the exception is logged; `ExceptionHandlingMiddleware` already logs unhandled ones with the stack trace.

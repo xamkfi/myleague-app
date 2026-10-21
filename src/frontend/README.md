@@ -148,7 +148,7 @@ For a full vertical slice (backend and frontend), follow [.claude/skills/create-
 
 ## Build and deploy
 
-- `pnpm build` writes `dist/`. `public/staticwebapp.config.json` sets the SPA fallback to `index.html` and cache headers for Azure Static Web Apps.
+- `pnpm build` writes `dist/`. `public/staticwebapp.config.json` sets the SPA fallback to `index.html` and cache headers for Azure Static Web Apps. `public/robots.txt` asks crawlers to stay off player and admin pages and to wait 10 s between requests; it is served as a file because `*.txt` is excluded from the SPA fallback.
 - Azure Static Web Apps hosts the frontend. The workflows build with `VITE_API_URL` set for the target environment and upload `dist/`. See [infra/README.md](../../infra/README.md).
 - `Dockerfile` runs the Vite dev server on port 5173. It exists only for the CI container check and the Compose `frontend` service. It is not a production image, and there is no nginx config.
 

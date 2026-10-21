@@ -43,7 +43,7 @@ Middleware order:
 1. OpenAPI at `/swagger/v1/swagger.json` and Scalar at `/scalar/v1` (Development only)
 2. `UseForwardedHeaders`
 3. `ExceptionHandlingMiddleware`
-4. `UseSerilogRequestLogging`, `UseHttpsRedirection`
+4. `UseSerilogRequestLogging` (Debug for responses below 500, Error for 5xx or an exception), `UseHttpsRedirection`
 5. `UseCors("Development")` (Development only; Azure sets CORS on the App Service in Bicep)
 6. `UseStaticFiles`, `UseAuthentication`, `UseAuthorization`, `UseRateLimiter`, `UseOutputCache`
 7. `MapControllers`, `MapHub<DomainEventHub>("/api/hubs/domainevent")`, health endpoints
@@ -190,7 +190,8 @@ dotnet run --project src/backend/WebAPI/WebAPI.csproj --urls http://localhost:80
 
 - Serilog to the console and to `logs/myleague-api-<date>.log` (daily, 30 files kept).
 - Seq: `docker-compose.override.yml` adds the sink for the Compose `webapi` service through `Serilog__WriteTo__2__*` variables. An API started on the host logs to console and file only, unless you set the same variables with `serverUrl` `http://localhost:5341`.
-- Application Insights is registered only when `APPLICATIONINSIGHTS_CONNECTION_STRING` or `ApplicationInsights:ConnectionString` is set.
+- Application Insights is registered only when `APPLICATIONINSIGHTS_CONNECTION_STRING` or `ApplicationInsights:ConnectionString` is set. With it come two classes from `Telemetry/`: `HealthCheckTelemetryFilter` drops successful `/health*` requests, and `UserAgentTelemetryInitializer` stores the caller's User-Agent as the `UserAgent` property on request telemetry (App Insights masks client IPs, so this is how you tell a crawler apart from visitors).
+- Every row stored in the Log Analytics workspace is billed per GB. In `appsettings.Production.json` the ApplicationInsights sink is restricted to Warning and above; requests, dependencies, and exceptions are collected by the SDK itself. Log routine per-request flow at Debug and keep Information for state changes and startup. The console sink stays at Information for `az webapp log tail`.
 
 ## Rules and pitfalls
 

@@ -7,7 +7,10 @@ using MyLeague.Infrastructure.SignalR;
 using WebAPI.Middlewares;
 using WebAPI.DependencyInjections;
 using WebAPI.Services;
+using WebAPI.Telemetry;
+using Microsoft.ApplicationInsights.Extensibility;
 using Serilog;
+using Serilog.Events;
 using Scalar.AspNetCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
@@ -33,6 +36,10 @@ if (!string.IsNullOrWhiteSpace(appInsightsConnectionString))
     {
         options.ConnectionString = appInsightsConnectionString;
     });
+
+    // Successful /health probes are not worth storing; the User-Agent identifies crawlers.
+    builder.Services.AddApplicationInsightsTelemetryProcessor<HealthCheckTelemetryFilter>();
+    builder.Services.AddSingleton<ITelemetryInitializer, UserAgentTelemetryInitializer>();
 }
 
 // Configure Serilog. The ApplicationInsights sink reads TelemetryConfiguration from
@@ -206,8 +213,16 @@ app.UseForwardedHeaders();
 // Use custom middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// Use built-in middleware
-app.UseSerilogRequestLogging();
+// One line per HTTP request. Routine traffic (health probes, polling, crawlers) logs at
+// Debug so it stays out of Application Insights, which already records every request
+// in AppRequests. Server errors and exceptions keep the Error level.
+app.UseSerilogRequestLogging(options =>
+{
+    options.GetLevel = (httpContext, _, exception) =>
+        exception is not null || httpContext.Response.StatusCode >= StatusCodes.Status500InternalServerError
+            ? LogEventLevel.Error
+            : LogEventLevel.Debug;
+});
 app.UseHttpsRedirection();
 // Use code-level CORS only in development; Azure handles CORS in production
 if (app.Environment.IsDevelopment())

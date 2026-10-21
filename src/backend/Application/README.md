@@ -65,7 +65,7 @@ A slice uses whichever of `Commands/`, `Queries/`, `Handlers/`, `DTOs/`, `Mappin
 
 `ValidationBehavior` runs all validators for the request. On failure it returns `Result<T>.ValidationFailure(...)` (or `Result.ValidationFailure`) without calling the handler. It throws `ValidationException` only when the response type is not a `Result`.
 
-`LoggingBehavior` logs start, end, and duration, and warns when a request takes more than 1 s. At Debug level it also serializes the request and response. `appsettings.json` pins `Application.Behaviors.LoggingBehavior` to Information so payloads stay out of the logs.
+`LoggingBehavior` logs start, end, and duration at Debug, warns when a request takes more than 1 s, and logs an Error line (without the exception object, which `ExceptionHandlingMiddleware` logs once with the stack trace) when the handler throws. At Debug level it also serializes the request and response. `appsettings.json` pins `Application.Behaviors.LoggingBehavior` to Information so neither the per-request lines nor the payloads reach the logs; set the override to Debug locally when you want them.
 
 ## Example slice
 
