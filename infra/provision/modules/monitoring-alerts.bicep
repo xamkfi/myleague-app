@@ -6,7 +6,7 @@
 // - Metric alerts: App Service health/errors/latency, plan CPU/memory,
 //   PostgreSQL CPU/CPU credits/memory/storage/failed connections,
 //   App Insights exceptions
-// - Availability web test (optional, recommended for prod only)
+// - Availability web test every 15 min (optional, recommended for prod only)
 // - Smart Detection (Failure Anomalies) routed to the action group
 // - Monthly cost budget with email notifications at 80% / 100% actual
 //   and 100% forecasted
@@ -502,9 +502,11 @@ resource availabilityTest 'Microsoft.Insights/webtests@2022-06-15' = if (enableA
   properties: {
     SyntheticMonitorId: '${namePrefix}-availability'
     Name: '${namePrefix} health check'
-    Description: 'Pings /health/ready every 5 minutes from multiple European regions.'
+    // Standard web tests are billed per run. 3 locations every 15 minutes is
+    // 288 runs/day; every 5 minutes was 864 runs/day and about 14 EUR/month.
+    Description: 'Pings /health/ready every 15 minutes from multiple European regions.'
     Enabled: true
-    Frequency: 300
+    Frequency: 900
     Timeout: 30
     Kind: 'standard'
     RetryEnabled: true
@@ -539,7 +541,8 @@ resource availabilityAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = if (en
       appInsightsId
     ]
     evaluationFrequency: 'PT1M'
-    windowSize: 'PT5M'
+    // Must cover at least one test run (every 15 minutes) from every location.
+    windowSize: 'PT15M'
     criteria: {
       'odata.type': 'Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria'
       webTestId: availabilityTest.id

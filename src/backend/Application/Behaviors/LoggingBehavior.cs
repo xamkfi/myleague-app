@@ -6,7 +6,9 @@ using System.Text.Json;
 namespace Application.Behaviors;
 
 /// <summary>
-/// Pipeline behavior that provides comprehensive logging for all MediatR requests
+/// Pipeline behavior that logs the lifecycle of every MediatR request.
+/// Start and completion lines are Debug so routine traffic does not reach billed
+/// sinks such as Application Insights; slow requests warn and failures log an error.
 /// </summary>
 /// <typeparam name="TRequest">The request type</typeparam>
 /// <typeparam name="TResponse">The response type</typeparam>
@@ -45,7 +47,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
             ["ResponseType"] = typeof(TResponse).FullName ?? "UnknownResponseType"
         }))
         {
-            _logger.LogInformation("Starting request {RequestName} with ID {RequestId}", requestName, requestId);
+            _logger.LogDebug("Starting request {RequestName} with ID {RequestId}", requestName, requestId);
             
             // Log request details in debug mode
             if (_logger.IsEnabled(LogLevel.Debug))
@@ -73,7 +75,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
                 stopwatch.Stop();
 
                 // Log successful completion with performance metrics
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Completed request {RequestName} with ID {RequestId} in {ElapsedMs}ms", 
                     requestName, requestId, stopwatch.ElapsedMilliseconds);
 
@@ -109,10 +111,12 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
             {
                 stopwatch.Stop();
                 
-                // Log error with full context
-                _logger.LogError(ex, 
-                    "Request {RequestName} with ID {RequestId} failed after {ElapsedMs}ms. Error: {ErrorMessage}", 
-                    requestName, requestId, stopwatch.ElapsedMilliseconds, ex.Message);
+                // Record the failure without the exception object: ExceptionHandlingMiddleware
+                // logs it with the stack trace, and attaching it here would store a second
+                // copy in Application Insights for every failure.
+                _logger.LogError(
+                    "Request {RequestName} with ID {RequestId} failed after {ElapsedMs}ms with {ExceptionType}: {ErrorMessage}",
+                    requestName, requestId, stopwatch.ElapsedMilliseconds, ex.GetType().Name, ex.Message);
                 
                 throw;
             }

@@ -60,5 +60,6 @@ param monthlyBudgetAmount = 50
 // Must match the existing budget; Azure rejects changes to the start date
 param budgetStartDate = '2026-09-01T00:00:00Z'
 
-// Log Analytics daily ingestion cap (GB) - hard guard against runaway costs
-param appInsightsDailyCapGb = 1
+// Log Analytics daily ingestion cap (GB) - hard guard against runaway costs.
+// Normal volume is well under 100 MB/day; 0.2 GB limits a bad day to roughly 0.5 EUR.
+param appInsightsDailyCapGb = '0.2'

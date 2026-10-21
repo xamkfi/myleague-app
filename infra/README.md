@@ -59,7 +59,7 @@ Names use `{prefix}` from the table above (`{baseName}-{environmentName}`).
 | Storage account | `Microsoft.Storage/storageAccounts` | `myleaguestagingstorage`, `myleagueprodstorage`, `mahlprodstorage` | StorageV2, `Standard_LRS`, container `images` with public blob read, 7-day blob soft delete |
 | Communication Services | `Microsoft.Communication/communicationServices` | `{prefix}-comm` | Data location Europe, linked to the email domain |
 | Email service | `Microsoft.Communication/emailServices` | `{prefix}-email` | Azure-managed domain, sender `DoNotReply` (display name `MyLeague`) |
-| Log Analytics workspace | `Microsoft.OperationalInsights/workspaces` | `{prefix}-logs` | 30-day retention, 1 GB/day cap |
+| Log Analytics workspace | `Microsoft.OperationalInsights/workspaces` | `{prefix}-logs` | 30-day retention, 0.2 GB/day cap (`appInsightsDailyCapGb`, a decimal string) |
 | Application Insights | `Microsoft.Insights/components` | `{prefix}-ai` | Workspace-based |
 | Monitoring | action group, metric alerts, budget | `{prefix}-alerts-ag`, `{prefix}-alert-*`, `{prefix}-budget` | Only when `alertEmail` is set. See [Monitoring](#monitoring-and-alerts) |
 | Availability test | `Microsoft.Insights/webtests` | `{prefix}-availability` | Prod and MAHL prod only (`enableAvailabilityTest`) |
@@ -125,7 +125,7 @@ az webapp config appsettings list \
 | Alert | Signal | Threshold | Severity |
 |-------|--------|-----------|----------|
 | Health check failing | App Service `HealthCheckStatus` | avg < 100 over 5 min | 1 |
-| Site down (prod and MAHL prod) | Availability test on `/health/ready` every 5 min from Amsterdam, Dublin, and Paris | 2 or more locations failing | 1 |
+| Site down (prod and MAHL prod) | Availability test on `/health/ready` every 15 min from Amsterdam, Dublin, and Paris | 2 or more locations failing in 15 min | 1 |
 | PostgreSQL storage | `storage_percent` | avg > 80% over 30 min | 1 |
 | HTTP 5xx | `Http5xx` | > 10 in 5 min | 2 |
 | Server exceptions | App Insights `exceptions/server` | > 10 in 15 min | 2 |
@@ -325,8 +325,16 @@ Rough monthly estimate per environment at list prices. Check the Azure pricing c
 | Static Web App | Free | 0 |
 | Storage account | Standard_LRS | cents |
 | Communication Services email | Pay as you go | near 0 at this volume |
-| Log Analytics / App Insights | 1 GB/day cap | 0 to 2 USD |
-| Alerts and availability test | | 1 to 2 USD |
+| Log Analytics / App Insights | Pay-as-you-go ingestion, 0.2 GB/day cap | 1 to 5 USD |
+| Availability test | 3 locations every 15 min, billed per run | ~5 USD |
+| Metric alerts | | ~1 USD |
+
+In Cost analysis these show up as the meters `Analytics Logs Data Ingestion` (on `{prefix}-logs`) and `Standard Web Test Execution` (on `{prefix}-ai`). Ingestion is driven by what the API logs: the production Serilog sink only forwards Warning and above to Application Insights, and successful `/health*` requests are dropped (see the [WebAPI README](../src/backend/WebAPI/README.md#logging)). To see what is being stored, run in the workspace:
+
+```kusto
+Usage | where TimeGenerated > ago(7d) and IsBillable | summarize MB = round(sum(Quantity), 1) by DataType | order by MB desc
+AppRequests | where TimeGenerated > ago(1d) | summarize count() by tostring(Properties.UserAgent) | order by count_ desc
+```
 
 To save money on staging, stop the API and the database when nobody is testing. Azure starts a stopped Flexible Server again after 7 days.
 

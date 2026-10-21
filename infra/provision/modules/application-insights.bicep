@@ -12,8 +12,8 @@ param location string = resourceGroup().location
 @maxValue(730)
 param retentionInDays int = 30
 
-@description('Daily ingestion cap in GB for the Log Analytics workspace. Use -1 to disable the cap.')
-param dailyQuotaGb int = 1
+@description('Daily ingestion cap in GB for the Log Analytics workspace, as a decimal string such as \'0.2\' (Bicep has no decimal type). Use \'-1\' to disable the cap.')
+param dailyQuotaGb string = '0.2'
 
 @description('Tags to apply to both resources')
 param tags object = {}
@@ -28,7 +28,7 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
     }
     retentionInDays: retentionInDays
     workspaceCapping: {
-      dailyQuotaGb: dailyQuotaGb
+      dailyQuotaGb: json(dailyQuotaGb)
     }
     features: {
       enableLogAccessUsingOnlyResourcePermissions: true
