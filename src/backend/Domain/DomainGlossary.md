@@ -13,6 +13,9 @@ An organization that manages and sponsors floorball teams. A Club typically has 
 ### FooterContact
 An entry in the public site footer. `Section` is Contact, SeasonalSports, or OtherActivities. Contact rows may include details, email, and phone; the other sections are a title plus an optional link.
 
+### Advertisement
+An image ad on the public home page, optionally linked to an http(s) address. `Slot` (`AdSlot`) is LeftTop, LeftBottom, RightTop, RightBottom, or BottomCenter. An ad is shown only while `IsActive` is true and the current time is inside its optional `StartsAt`–`EndsAt` window (start inclusive, end exclusive). Several ads in one slot rotate in `SortOrder`.
+
 ### SiteSettings
 A singleton row of site-owned configuration. Authentication timings: access-token minutes, refresh-token days, login-code minutes and max attempts, and how many minutes before access-token expiry the session reminder appears. Also stores the yearly player-licence cutoff (month and day, default 1 May) and the last calendar year that cutoff was applied. Secrets stay in application configuration.
 
@@ -45,6 +48,9 @@ A Person with a referee role in floorball. Tracks referee-specific attributes li
 
 ### FloorballTeamManager
 A Person with a team management role. Handles administrative responsibilities for a floorball team.
+
+### User role
+A `User` has one `UserRole`. `SystemAdmin` has full access. `ClubAdmin` manages the clubs it is linked to through `ClubManager`, their teams, and match-day rosters. `MatchOfficial` (toimitsija) runs any match live in every sport: events, timer, periods, match rosters, and start, finish or reopen. It has no other admin access. A match official user is not the same as a referee or `HockeyOfficial` profile, or a match scorekeeper; those are `Person` assignments on a match and grant no access.
 
 ## Value Objects
 

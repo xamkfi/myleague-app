@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /hockeyplayer/
+Disallow: /player/
+Disallow: /floorballplayer/
+Disallow: /football/player/
+Disallow: /admin/
+Disallow: /club-admin/
+Crawl-delay: 10

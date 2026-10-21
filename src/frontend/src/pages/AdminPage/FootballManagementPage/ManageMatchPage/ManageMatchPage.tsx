@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback, useState, useRef, type ReactElement } from 'react';
+import { useEffect, useMemo, useCallback, useState, useRef, type ReactElement, type ReactNode } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { footballMatchService } from '../../../../api/football/footballMatchService';
@@ -6,6 +6,8 @@ import { timerService } from '../../../../api/common/timerService';
 import type { FootballLineupPlayer, FootballMatchDto } from '../../../../types/football/footballTypes';
 import type { FootballPlayerDto } from '../../../../api/football/footballPlayerService';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
+import OfficialPageTemplate from '../../../OfficialPage/components/OfficialPageTemplate';
+import type { ManageMatchMode } from '../../../../types/common/manageMatchMode';
 
 import LiveMatchModalHeader from '../../../../components/match/LiveMatchModalHeader';
 import RevertToScheduledDialog from '../../../../components/match/RevertToScheduledDialog';
@@ -54,9 +56,12 @@ interface ManageMatchPageContentProps {
   match: FootballMatchDto;
   setMatch: (match: FootballMatchDto) => void;
   onClose: () => void;
+  /** `official` hides officials and scorekeeper assignment, which stay admin-only. */
+  mode: ManageMatchMode;
 }
 
-const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageContentProps) => {
+const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchPageContentProps) => {
+  const isOfficialMode: boolean = mode === 'official';
   const timerContext = useMatchTimerContext();
   const { t } = useTranslation();
 
@@ -300,7 +305,9 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   useEffect(() => { nextPeriodToStartRef.current = nextPeriodToStart; }, [nextPeriodToStart]);
   useEffect(() => { timerCurrentPeriodRef.current = timerCurrentPeriod; }, [timerCurrentPeriod]);
 
+  // The referee list only feeds the admin-only officials selector.
   useEffect(() => {
+    if (isOfficialMode) return undefined;
     let isCancelled = false;
     const loadOfficials = async () => {
       if (!match.id) return;
@@ -325,7 +332,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     };
     loadOfficials();
     return () => { isCancelled = true; };
-  }, [match.id]);
+  }, [match.id, isOfficialMode]);
 
   useEffect(() => {
     const initializePeriodState = async () => {
@@ -854,23 +861,27 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             onError={matchData.setError}
           />
 
-          <OfficialsSelectorSection
-            selectedOfficials={selectedOfficials}
-            options={officialOptions}
-            saving={officialsSaving}
-            onAddRow={() => setSelectedOfficials((prev) => [...prev, ''])}
-            onSelect={handleOfficialSelect}
-            onRemove={handleOfficialRemove}
-            disabled={matchData.currentMatch.status === 'Completed' || matchData.currentMatch.status === 'Cancelled'}
-          />
+          {!isOfficialMode && (
+            <>
+              <OfficialsSelectorSection
+                selectedOfficials={selectedOfficials}
+                options={officialOptions}
+                saving={officialsSaving}
+                onAddRow={() => setSelectedOfficials((prev) => [...prev, ''])}
+                onSelect={handleOfficialSelect}
+                onRemove={handleOfficialRemove}
+                disabled={matchData.currentMatch.status === 'Completed' || matchData.currentMatch.status === 'Cancelled'}
+              />
 
-          <ScorekeepersSection
-            scorekeepers={matchData.currentMatch.scorekeepers ?? []}
-            saving={scorekeepersSaving}
-            onAdd={(personId) => handleScorekeeperChange(personId, 'add')}
-            onRemove={(personId) => handleScorekeeperChange(personId, 'remove')}
-            disabled={matchData.currentMatch.status === 'Completed' || matchData.currentMatch.status === 'Cancelled'}
-          />
+              <ScorekeepersSection
+                scorekeepers={matchData.currentMatch.scorekeepers ?? []}
+                saving={scorekeepersSaving}
+                onAdd={(personId) => handleScorekeeperChange(personId, 'add')}
+                onRemove={(personId) => handleScorekeeperChange(personId, 'remove')}
+                disabled={matchData.currentMatch.status === 'Completed' || matchData.currentMatch.status === 'Cancelled'}
+              />
+            </>
+          )}
 
           <GoalRecordingForm
             showGoalForm={forms.showGoalForm}
@@ -965,23 +976,32 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
   );
 };
 
-const ManageMatchPageWithContext = ({ match, setMatch, onClose }: ManageMatchPageContentProps) => {
+const ManageMatchPageWithContext = ({ match, setMatch, onClose, mode }: ManageMatchPageContentProps) => {
   return (
     <MatchTimerProvider initialPeriod={1} matchId={match.id}>
-      <ManageMatchPageContent match={match} setMatch={setMatch} onClose={onClose} />
+      <ManageMatchPageContent match={match} setMatch={setMatch} onClose={onClose} mode={mode} />
     </MatchTimerProvider>
   );
 };
 
-const DEFAULT_RETURN_PATH = '/admin/football/matches';
+const DEFAULT_RETURN_PATHS: Record<ManageMatchMode, string> = {
+  admin: '/admin/football/matches',
+  official: '/official',
+};
 
-const sanitizeReturnTo = (raw: string | null): string => {
-  if (!raw) return DEFAULT_RETURN_PATH;
-  if (!raw.startsWith('/') || raw.startsWith('//')) return DEFAULT_RETURN_PATH;
+const sanitizeReturnTo = (raw: string | null, fallback: string): string => {
+  if (!raw) return fallback;
+  if (!raw.startsWith('/') || raw.startsWith('//')) return fallback;
   return raw;
 };
 
-const ManageMatchPage = (): ReactElement => {
+interface ManageMatchPageProps {
+  /** Which area opened the desk. Defaults to the admin view. */
+  mode?: ManageMatchMode;
+}
+
+const ManageMatchPage = ({ mode = 'admin' }: ManageMatchPageProps): ReactElement => {
+  const isOfficialMode: boolean = mode === 'official';
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -992,8 +1012,8 @@ const ManageMatchPage = (): ReactElement => {
   const [showAssignTeams, setShowAssignTeams] = useState<boolean>(false);
 
   const returnTo: string = useMemo(
-    () => sanitizeReturnTo(searchParams.get('returnTo')),
-    [searchParams],
+    () => sanitizeReturnTo(searchParams.get('returnTo'), DEFAULT_RETURN_PATHS[mode]),
+    [searchParams, mode],
   );
 
   const handleClose = useCallback((): void => {
@@ -1031,12 +1051,19 @@ const ManageMatchPage = (): ReactElement => {
     fetchMatch();
   }, [matchId]);
 
+  // The admin view keeps its bare loading and error states; the official view always shows its header.
+  const wrapOfficial = (content: ReactElement): ReactElement => (
+    isOfficialMode
+      ? <OfficialPageTemplate documentTitle={t('official.manageTitle', 'Match management')} wide>{content}</OfficialPageTemplate>
+      : content
+  );
+
   if (loading) {
-    return <div>Loading...</div>;
+    return wrapOfficial(<div>{isOfficialMode ? t('common.loading', 'Loading...') : 'Loading...'}</div>);
   }
 
   if (error) {
-    return (
+    return wrapOfficial(
       <div className="manage-match-page">
         <ErrorPopup message={error} />
       </div>
@@ -1044,21 +1071,26 @@ const ManageMatchPage = (): ReactElement => {
   }
 
   if (!match) {
-    return <div>Match not found.</div>;
+    return wrapOfficial(<div>{isOfficialMode ? t('official.matchNotFound', 'Match not found.') : 'Match not found.'}</div>);
   }
 
   const isMatchFinished = match.status === 'Completed';
   const isTeamsAssignable: boolean = match.status === 'Scheduled' || match.status === 'Postponed';
   const isMissingTeams: boolean = !match.homeTeamId || !match.awayTeamId;
 
-  return (
-    <PageTemplate title="Manage match page">
+  const renderShell = (content: ReactNode): ReactElement => (
+    isOfficialMode
+      ? <OfficialPageTemplate documentTitle={t('official.manageTitle', 'Match management')} wide>{content}</OfficialPageTemplate>
+      : <PageTemplate title="Manage match page">{content}</PageTemplate>
+  );
+
+  return renderShell(
       <div className="manage-match-page">
         <div className="page-header">
           <div className="page-header__top">
             <h1 className="page-title-compact font-title">MATCH MANAGEMENT</h1>
             <div className="page-header__actions">
-              {isTeamsAssignable && (
+              {!isOfficialMode && isTeamsAssignable && (
                 <button
                   type="button"
                   className="edit-match-button"
@@ -1073,7 +1105,7 @@ const ManageMatchPage = (): ReactElement => {
                   </span>
                 </button>
               )}
-              {!isMatchFinished && (
+              {!isOfficialMode && !isMatchFinished && (
                 <button
                   type="button"
                   className="edit-match-button"
@@ -1087,7 +1119,7 @@ const ManageMatchPage = (): ReactElement => {
               )}
             </div>
           </div>
-          {isMissingTeams && isTeamsAssignable && (
+          {!isOfficialMode && isMissingTeams && isTeamsAssignable && (
             <div className="page-header__missing-teams" role="status">
               <i className="fas fa-info-circle" aria-hidden="true"></i>
               {t(
@@ -1106,21 +1138,23 @@ const ManageMatchPage = (): ReactElement => {
                 'Otteluun ei ole vielä asetettu molempia joukkueita, joten ottelun hallintanäkymää ei voi vielä avata.',
               )}
             </p>
-            <button
-              type="button"
-              className="manage-match-page__placeholder-action"
-              onClick={() => setShowAssignTeams(true)}
-            >
-              <i className="fas fa-user-plus" aria-hidden="true"></i>
-              {t('football.matches.assignTeams.action', 'Aseta joukkueet')}
-            </button>
+            {!isOfficialMode && (
+              <button
+                type="button"
+                className="manage-match-page__placeholder-action"
+                onClick={() => setShowAssignTeams(true)}
+              >
+                <i className="fas fa-user-plus" aria-hidden="true"></i>
+                {t('football.matches.assignTeams.action', 'Aseta joukkueet')}
+              </button>
+            )}
           </div>
         ) : (
-          <ManageMatchPageWithContext match={match} setMatch={setMatch} onClose={handleClose} />
+          <ManageMatchPageWithContext match={match} setMatch={setMatch} onClose={handleClose} mode={mode} />
         )}
 
         <FootballAssignTeamsDialog
-          isOpen={showAssignTeams}
+          isOpen={!isOfficialMode && showAssignTeams}
           match={match}
           onClose={() => setShowAssignTeams(false)}
           onSaved={(updated) => {
@@ -1129,7 +1163,6 @@ const ManageMatchPage = (): ReactElement => {
           }}
         />
       </div>
-    </PageTemplate>
   );
 };
 

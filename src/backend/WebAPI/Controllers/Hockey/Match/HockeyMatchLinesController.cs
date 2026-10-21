@@ -34,7 +34,7 @@ public class HockeyMatchLinesController : BaseApiController
     /// <summary>
     /// Adds a match line to one side.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/lines")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddLine(
@@ -55,7 +55,7 @@ public class HockeyMatchLinesController : BaseApiController
     /// <summary>
     /// Removes a match line.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpDelete("{matchId:guid}/lines/{matchLineId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemoveLine(
@@ -72,7 +72,7 @@ public class HockeyMatchLinesController : BaseApiController
     /// <summary>
     /// Adds a player to a match line.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/players")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddLinePlayer(
@@ -94,7 +94,7 @@ public class HockeyMatchLinesController : BaseApiController
     /// <summary>
     /// Removes a player from a match line.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpDelete("{matchId:guid}/lines/{matchLineId:guid}/players/{matchActivePlayerId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemoveLinePlayer(
@@ -115,7 +115,7 @@ public class HockeyMatchLinesController : BaseApiController
     /// <summary>
     /// Updates a match line name.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPut("{matchId:guid}/lines/{matchLineId:guid}/name")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UpdateLineName(
@@ -135,7 +135,7 @@ public class HockeyMatchLinesController : BaseApiController
     /// <summary>
     /// Updates match line notes.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPut("{matchId:guid}/lines/{matchLineId:guid}/notes")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UpdateLineNotes(
@@ -155,7 +155,7 @@ public class HockeyMatchLinesController : BaseApiController
     /// <summary>
     /// Locks a match line.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/lock")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> LockLine(
@@ -172,7 +172,7 @@ public class HockeyMatchLinesController : BaseApiController
     /// <summary>
     /// Unlocks a match line.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/unlock")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> UnlockLine(
@@ -189,7 +189,7 @@ public class HockeyMatchLinesController : BaseApiController
     /// <summary>
     /// Deactivates a match line.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/lines/{matchLineId:guid}/deactivate")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DeactivateLine(

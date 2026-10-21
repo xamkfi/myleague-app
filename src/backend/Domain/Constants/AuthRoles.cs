@@ -18,6 +18,11 @@ public static class AuthRoles
     public const string SystemAdmin = "SystemAdmin";
 
     /// <summary>
+    /// Match official role name (runs any match live, no other admin access)
+    /// </summary>
+    public const string MatchOfficial = "MatchOfficial";
+
+    /// <summary>
     /// Roles allowed on endpoints restricted to site administrators
     /// </summary>
     public const string AdminOnly = SystemAdmin;
@@ -26,4 +31,10 @@ public static class AuthRoles
     /// Comma-separated list for endpoints available to club admins and site administrators
     /// </summary>
     public const string ClubAdminOrAdmin = ClubAdmin + "," + SystemAdmin;
+
+    /// <summary>
+    /// Comma-separated list for live match operations (events, timer, periods, match rosters and
+    /// lineups, start/finish/reopen) available to match officials and site administrators
+    /// </summary>
+    public const string MatchOperators = MatchOfficial + "," + SystemAdmin;
 }

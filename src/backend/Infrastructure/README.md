@@ -95,7 +95,7 @@ Hosted services: `PlayerLicenceResetBackgroundService` runs `ResetExpiredPlayerL
 
 | Seeder | What it creates |
 |--------|-----------------|
-| `DatabaseSeeder` | Development: `test@myleague.local` (SystemAdmin) and `clubadmin@myleague.local` (ClubAdmin, linked to Tampere Titans if that club exists). Any environment: a SystemAdmin for `Seed:AdminEmail` if set |
+| `DatabaseSeeder` | Development: `test@myleague.local` (SystemAdmin), `clubadmin@myleague.local` (ClubAdmin, linked to Tampere Titans if that club exists) and `official@myleague.local` (MatchOfficial). Any environment: a SystemAdmin for `Seed:AdminEmail` if set |
 | `InfoPageContentSeeder`, `FooterContactSeeder`, `RulesSectionSeeder`, `NewsArticleSeeder` | Default site content |
 
 Sport data (clubs, teams, seasons, matches) comes from the HTTP seeder in `src/tools/Seeder`, not from here.

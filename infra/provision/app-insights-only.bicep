@@ -32,8 +32,8 @@ param baseName string = 'myleague'
 @maxValue(730)
 param retentionInDays int = 30
 
-@description('Daily ingestion cap in GB for the Log Analytics workspace. Use -1 to disable the cap.')
-param dailyQuotaGb int = 1
+@description('Daily ingestion cap in GB for the Log Analytics workspace, as a decimal string such as \'0.2\'. Use \'-1\' to disable the cap.')
+param dailyQuotaGb string = '0.2'
 
 var resourcePrefix = '${baseName}-${environmentName}'
 var appInsightsName = '${resourcePrefix}-ai'

@@ -57,11 +57,13 @@ const UsersTable = ({
 
   const getRoleBadgeClass = (role: string) => {
     if (role === 'SystemAdmin') return 'admin-badge--system';
+    if (role === 'MatchOfficial') return 'admin-badge--official';
     return 'admin-badge--club';
   };
 
   const getRoleLabel = (role: string) => {
     if (role === 'SystemAdmin') return t('admin.users.roles.systemAdmin', 'System Admin');
+    if (role === 'MatchOfficial') return t('admin.users.roles.matchOfficial', 'Match official');
     return t('admin.users.roles.clubAdmin', 'Club Admin');
   };
 

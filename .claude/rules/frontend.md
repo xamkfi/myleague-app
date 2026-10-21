@@ -27,7 +27,7 @@ React 18 + TypeScript + Vite. Write function components with **explicit props ty
 
 The UI ships in Finnish and English. The language comes from localStorage, then the browser, and falls back to `en` (`src/i18n/i18n.ts`). Add every key to both `src/i18n/locales/fi/translation.json` and `src/i18n/locales/en/translation.json`. Use `useTranslation()`. JSX must not contain user-facing English or Finnish literals.
 
-Register screens in `src/router/routes.tsx` with `lazyWithRetry(() => import('...'))`. Wrap admin and club-admin routes in `ProtectedRoute`.
+Register screens in `src/router/routes.tsx` with `lazyWithRetry(() => import('...'))`. Wrap admin, club-admin, and match-official routes in `ProtectedRoute`. A role's home area comes from `getRoleHome` in `src/utils/roleHome.ts`. The match-official desk reuses each sport's admin `ManageMatchPage` with `mode="official"`; anything that calls an admin-only endpoint or leaves the match (edit match, team assignment, officials, scorekeepers) must be hidden in that mode, in all three sports.
 
 ## UI
 

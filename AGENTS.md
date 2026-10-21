@@ -43,7 +43,7 @@ tests/tools                 importer unit tests
 - Return `Result<T>` / `PagedResult<T>`. The payload is `.Data`, not `.Value`. Do not throw for expected failures. Use `Result<T>.NotFound(...)` for missing entities, which maps to 404.
 - Catch explicit exception types only. Rethrow `OperationCanceledException`. No `catch (Exception)` and no bare `catch`.
 - Four DbContexts, one database. Cross-context links are Guid FKs with ignored navigations. Seasons and tournaments are TPH on `*Competition` (`CompetitionType`). Matches and stats key on `competitionId`.
-- Writes require `[Authorize(Roles = AuthRoles.AdminOnly)]` or `AuthRoles.ClubAdminOrAdmin`. Public GETs stay anonymous and must not expose private person data.
+- Writes require `[Authorize(Roles = AuthRoles.AdminOnly)]`, `AuthRoles.ClubAdminOrAdmin`, or, for live match operations only, `AuthRoles.MatchOperators`. Public GETs stay anonymous and must not expose private person data.
 - The three sports are peers with public, admin, and club-admin UI. Keep them in step.
 - C#: explicit types, no `var` in new code (`.editorconfig`). TypeScript: no `React.FC`, no `any`. User-facing strings go through i18next in both `fi` and `en`. Call the API with `authFetch`.
 - Never set `LoginCode:AutoFillLoginCode` (or `LoginCode__AutoFillLoginCode`) to true outside local development.

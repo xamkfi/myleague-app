@@ -14,12 +14,13 @@ namespace MyLeague.Infrastructure.Services.Seeding;
 
 /// <summary>
 /// Seeds the database with default users at application startup.
-/// In development: always creates a test user if one does not exist.
+/// In development: always creates a test system admin, a club admin and a match official if they do not exist.
 /// In any environment: creates an admin user if Seed:AdminEmail is configured and the user does not exist.
 /// </summary>
 public class DatabaseSeeder
 {
     private const string DevTestEmail = "test@myleague.local";
+    private const string DevMatchOfficialEmail = "official@myleague.local";
 
     /// <summary>
     /// Seeds default users into the database
@@ -40,6 +41,8 @@ public class DatabaseSeeder
         {
             await SeedUserAsync(dbContext, logger, DevTestEmail, "Test", "User", PersonRole.Admin);
             await SeedClubAdminAsync(dbContext, logger);
+            await SeedUserAsync(dbContext, logger, DevMatchOfficialEmail, "Match", "Official", PersonRole.User,
+                UserRole.MatchOfficial);
         }
 
         // In any environment, seed admin user if configured
@@ -62,12 +65,13 @@ public class DatabaseSeeder
         string email,
         string firstName,
         string lastName,
-        PersonRole role)
+        PersonRole role,
+        UserRole userRole = UserRole.SystemAdmin)
     {
         bool userExists = await dbContext.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower());
         if (userExists)
         {
-            logger.LogInformation("Seed user '{Email}' already exists, skipping.", email);
+            logger.LogInformation("Seed user with role {Role} already exists, skipping.", userRole);
             return;
         }
 
@@ -77,7 +81,7 @@ public class DatabaseSeeder
             role: role,
             contactInfo: new ContactInfo(email));
 
-        User user = new(email, person.Id, UserRole.SystemAdmin);
+        User user = new(email, person.Id, userRole);
         user.IsActive = true;
         user.IsEmailVerified = true;
 
@@ -86,8 +90,8 @@ public class DatabaseSeeder
         await dbContext.SaveChangesAsync();
 
         logger.LogInformation(
-            "Seeded user '{Email}' with role {Role} (PersonId: {PersonId}, UserId: {UserId}).",
-            email, role, person.Id, user.Id);
+            "Seeded user with role {Role} (PersonId: {PersonId}, UserId: {UserId}).",
+            userRole, person.Id, user.Id);
     }
 
     private const string DevClubAdminEmail = "clubadmin@myleague.local";
@@ -118,8 +122,8 @@ public class DatabaseSeeder
             await dbContext.SaveChangesAsync();
             personId = person.Id;
             logger.LogInformation(
-                "Seeded club admin '{Email}' (PersonId: {PersonId}, UserId: {UserId}).",
-                DevClubAdminEmail, person.Id, user.Id);
+                "Seeded dev club admin (PersonId: {PersonId}, UserId: {UserId}).",
+                person.Id, user.Id);
         }
         else
         {
@@ -130,9 +134,8 @@ public class DatabaseSeeder
         if (club is null)
         {
             logger.LogInformation(
-                "Club '{ClubName}' is not seeded yet; club admin '{Email}' has no manager link.",
-                DevClubAdminClubName,
-                DevClubAdminEmail);
+                "Club '{ClubName}' is not seeded yet; the dev club admin has no manager link.",
+                DevClubAdminClubName);
             return;
         }
 
@@ -146,8 +149,7 @@ public class DatabaseSeeder
         dbContext.ClubManagers.Add(new ClubManager(personId, club.Id));
         await dbContext.SaveChangesAsync();
         logger.LogInformation(
-            "Linked club admin '{Email}' to club '{ClubName}'.",
-            DevClubAdminEmail,
+            "Linked the dev club admin to club '{ClubName}'.",
             DevClubAdminClubName);
     }
 }

@@ -16,7 +16,7 @@ namespace WebAPI.Controllers.Football;
 /// Controller for managing football match events
 /// </summary>
 [Route("api/football-matches/{matchId:guid}/events")]
-[Authorize(Roles = AuthRoles.AdminOnly)]
+[Authorize(Roles = AuthRoles.MatchOperators)]
 public class FootballMatchEventsController : BaseApiController
 {
     private readonly IMediator _mediator;
@@ -226,6 +226,7 @@ public class FootballMatchEventsController : BaseApiController
     /// in one request. Skips the live double-click rate limiter. Failed individual
     /// events are listed in <c>eventErrors</c>; successful events are still saved.
     /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("import")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchEventsImportDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

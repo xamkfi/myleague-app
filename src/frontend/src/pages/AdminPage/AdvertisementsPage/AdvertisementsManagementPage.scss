@@ -1,0 +1,125 @@
+.ads-admin-page {
+  &__description {
+    margin: 0 0 1.25rem;
+    max-width: 760px;
+    color: #475467;
+  }
+
+  &__alert {
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+
+    &--success {
+      background: #ecfdf3;
+      color: #027a48;
+    }
+
+    &--error {
+      background: #fef3f2;
+      color: #b42318;
+    }
+  }
+
+  &__slot {
+    margin-bottom: 2rem;
+  }
+
+  &__slot-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+
+    h2 {
+      margin: 0;
+      font-size: 1.125rem;
+    }
+  }
+
+  &__empty {
+    margin: 0;
+    color: #667085;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid #eaecf0;
+    border-radius: 16px;
+    background: #fff;
+  }
+
+  &__thumb {
+    width: 100%;
+    max-height: 160px;
+    object-fit: contain;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+
+  &__info {
+    min-width: 0;
+
+    h3 {
+      margin: 0 0 0.35rem;
+      overflow-wrap: anywhere;
+    }
+
+    p {
+      margin: 0.15rem 0;
+      color: #475467;
+      font-size: 0.875rem;
+    }
+  }
+
+  &__url {
+    word-break: break-all;
+  }
+
+  &__status {
+    display: inline-block;
+    margin-bottom: 0.35rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    &--active {
+      background: #ecfdf3;
+      color: #027a48;
+    }
+
+    &--scheduled {
+      background: #eff8ff;
+      color: #175cd3;
+    }
+
+    &--inactive,
+    &--expired {
+      background: #f2f4f7;
+      color: #475467;
+    }
+  }
+
+  &__card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+  }
+}

@@ -12,9 +12,9 @@ Conventions: [backend rules](../../../.claude/rules/backend.md#webapi). New or c
 WebAPI/
 ├── Controllers/
 │   ├── Auth/                AuthController
-│   ├── Common/              BaseApiController, ApiErrorHttpMapper, ClubAdmin, Clubs, DataSubjectRights,
-│   │                        Divisions, FooterContact, InfoPageContent, MatchTimer, News, Persons,
-│   │                        RulesSection, Search, SiteSettings, Users
+│   ├── Common/              BaseApiController, ApiErrorHttpMapper, Advertisements, ClubAdmin, Clubs,
+│   │                        DataSubjectRights, Divisions, FooterContact, InfoPageContent, MatchTimer,
+│   │                        News, Persons, RulesSection, Search, SiteSettings, Users
 │   ├── Floorball/           Player, Referee, Season, Statistics, Team, TeamManager, Tournament
 │   │   └── Match/           Matches, Events, Lifecycle, Officials, Roster, Scorekeepers
 │   ├── Football/            same as Floorball
@@ -43,7 +43,7 @@ Middleware order:
 1. OpenAPI at `/swagger/v1/swagger.json` and Scalar at `/scalar/v1` (Development only)
 2. `UseForwardedHeaders`
 3. `ExceptionHandlingMiddleware`
-4. `UseSerilogRequestLogging`, `UseHttpsRedirection`
+4. `UseSerilogRequestLogging` (Debug for responses below 500, Error for 5xx or an exception), `UseHttpsRedirection`
 5. `UseCors("Development")` (Development only; Azure sets CORS on the App Service in Bicep)
 6. `UseStaticFiles`, `UseAuthentication`, `UseAuthorization`, `UseRateLimiter`, `UseOutputCache`
 7. `MapControllers`, `MapHub<DomainEventHub>("/api/hubs/domainevent")`, health endpoints
@@ -121,7 +121,7 @@ Unhandled exceptions (`ExceptionHandlingMiddleware`):
 
 - JWT bearer. Issuer, audience, and key come from the `Jwt` section. Startup fails if `Jwt:SecretKey` is shorter than 32 bytes, or if it is empty outside Development. An empty key in Development falls back to a built-in key.
 - SignalR sends the token as `?access_token=` on paths under `/api/hubs`.
-- There is no fallback authorization policy. An action without `[Authorize]` is public. Writes use `[Authorize(Roles = AuthRoles.AdminOnly)]` or `[Authorize(Roles = AuthRoles.ClubAdminOrAdmin)]`.
+- There is no fallback authorization policy. An action without `[Authorize]` is public. Writes use `[Authorize(Roles = AuthRoles.AdminOnly)]` or `[Authorize(Roles = AuthRoles.ClubAdminOrAdmin)]`. Live match operations (match events, the match timer and its SignalR methods, periods, match rosters and lineups, start/finish/reopen/revert) use `[Authorize(Roles = AuthRoles.MatchOperators)]` so a `MatchOfficial` can run any match. Hockey `PATCH status` is open to match officials only for `InProgress` (reopen); other statuses return 403. Outside the match controllers, the match-day `loan-goalkeeper` and `loan-players` team actions and hockey `POST statistics/matches/{matchId}/recalculate` also use `MatchOperators`.
 - Sign-in flow: `POST /api/auth/login` `{ "email" }` → `POST /api/auth/verify` `{ "email", "code" }` → `{ accessToken, refreshToken, expiresAt }`. Then `POST /api/auth/refresh`, `POST /api/auth/logout`, `GET /api/auth/me`.
 - With `LoginCode:AutoFillLoginCode` on (Development only), `/api/auth/login` returns the code in `data.autoFillCode`. Never enable it on a public environment.
 
@@ -184,13 +184,14 @@ Follow the [run-local skill](../../../.claude/skills/run-local/SKILL.md): Postgr
 dotnet run --project src/backend/WebAPI/WebAPI.csproj --urls http://localhost:8080
 ```
 
-`launchSettings.json` uses `https://localhost:65532` and `http://localhost:65533`; the local setup above does not use those ports. At startup the API applies migrations for all four contexts. In Development it seeds the sign-in users `test@myleague.local` (SystemAdmin) and `clubadmin@myleague.local` (ClubAdmin). It also seeds `Seed:AdminEmail` when set; `docker-compose.override.yml` sets it to `test@myleague.fi`. Sport data comes from `src/tools/Seeder`.
+`launchSettings.json` uses `https://localhost:65532` and `http://localhost:65533`; the local setup above does not use those ports. At startup the API applies migrations for all four contexts. In Development it seeds the sign-in users `test@myleague.local` (SystemAdmin), `clubadmin@myleague.local` (ClubAdmin) and `official@myleague.local` (MatchOfficial). It also seeds `Seed:AdminEmail` when set; `docker-compose.override.yml` sets it to `test@myleague.fi`. Sport data comes from `src/tools/Seeder`.
 
 ## Logging
 
 - Serilog to the console and to `logs/myleague-api-<date>.log` (daily, 30 files kept).
 - Seq: `docker-compose.override.yml` adds the sink for the Compose `webapi` service through `Serilog__WriteTo__2__*` variables. An API started on the host logs to console and file only, unless you set the same variables with `serverUrl` `http://localhost:5341`.
-- Application Insights is registered only when `APPLICATIONINSIGHTS_CONNECTION_STRING` or `ApplicationInsights:ConnectionString` is set.
+- Application Insights is registered only when `APPLICATIONINSIGHTS_CONNECTION_STRING` or `ApplicationInsights:ConnectionString` is set. With it come two classes from `Telemetry/`: `HealthCheckTelemetryFilter` drops successful `/health*` requests, and `UserAgentTelemetryInitializer` stores the caller's User-Agent as the `UserAgent` property on request telemetry (App Insights masks client IPs, so this is how you tell a crawler apart from visitors).
+- Every row stored in the Log Analytics workspace is billed per GB. In `appsettings.Production.json` the ApplicationInsights sink is restricted to Warning and above; requests, dependencies, and exceptions are collected by the SDK itself. Log routine per-request flow at Debug and keep Information for state changes and startup. The console sink stays at Information for `az webapp log tail`.
 
 ## Rules and pitfalls
 

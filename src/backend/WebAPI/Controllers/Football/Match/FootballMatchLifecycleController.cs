@@ -15,7 +15,7 @@ namespace WebAPI.Controllers.Football.Match;
 /// Controller for football match lifecycle operations
 /// </summary>
 [Route("api/football-matches/{matchId:guid}")]
-[Authorize(Roles = AuthRoles.AdminOnly)]
+[Authorize(Roles = AuthRoles.MatchOperators)]
 public class FootballMatchLifecycleController : BaseApiController
 {
     private readonly IMediator _mediator;
@@ -90,6 +90,7 @@ public class FootballMatchLifecycleController : BaseApiController
     /// <summary>
     /// Postpone
     /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("postpone")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> Postpone(
@@ -103,6 +104,7 @@ public class FootballMatchLifecycleController : BaseApiController
     /// <summary>
     /// Cancel
     /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("cancel")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> Cancel(
@@ -116,6 +118,7 @@ public class FootballMatchLifecycleController : BaseApiController
     /// <summary>
     /// Reactivate
     /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPost("reactivate")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> Reactivate(
@@ -129,6 +132,7 @@ public class FootballMatchLifecycleController : BaseApiController
     /// <summary>
     /// Assign teams
     /// </summary>
+    [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpPut("teams")]
     [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<FootballMatchDto>>> AssignTeams(

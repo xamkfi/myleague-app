@@ -41,21 +41,21 @@ namespace MyLeague.Infrastructure.SignalR
             await _notifier.UnsubscribeFromMatchAsync(Context.ConnectionId, matchId);
         }
 
-        [Authorize(Roles = AuthRoles.AdminOnly)]
+        [Authorize(Roles = AuthRoles.MatchOperators)]
         public async Task StartTimerAsync(Guid matchId, int? periodNumber = null)
         {
             _logger.LogInformation("Timer start requested for match {MatchId} by {User}", matchId, Context.UserIdentifier);
             await _timerService.StartTimerAsync(matchId, periodNumber);
         }
 
-        [Authorize(Roles = AuthRoles.AdminOnly)]
+        [Authorize(Roles = AuthRoles.MatchOperators)]
         public async Task StopTimerAsync(Guid matchId)
         {
             _logger.LogInformation("Timer stop requested for match {MatchId} by {User}", matchId, Context.UserIdentifier);
             await _timerService.StopTimerAsync(matchId);
         }
 
-        [Authorize(Roles = AuthRoles.AdminOnly)]
+        [Authorize(Roles = AuthRoles.MatchOperators)]
         public async Task ResetTimerAsync(Guid matchId)
         {
             _logger.LogInformation("Timer reset requested for match {MatchId} by {User}", matchId, Context.UserIdentifier);

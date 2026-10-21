@@ -3,6 +3,7 @@ import { FloorballMatchStatus } from '../../../../types/floorball/floorballTypes
 import { MatchInfoCard, type MatchTabType } from '../../../../components/match';
 import MatchEvents from './MatchEvents';
 import MatchLineups from './MatchLineups';
+import MatchPlayerStats from './MatchPlayerStats';
 import MatchStats from './MatchStats';
 import MatchStandings from './MatchStandings';
 import { useTranslation } from 'react-i18next';
@@ -42,6 +43,12 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
               {hasStarted && (
                 <div className="summary-stats-section">
                   <MatchStats match={match} />
+                </div>
+              )}
+
+              {hasEvents && (
+                <div className="summary-player-stats-section">
+                  <MatchPlayerStats match={match} homeRoster={rosters.home} awayRoster={rosters.away} />
                 </div>
               )}
 

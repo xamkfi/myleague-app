@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StatAbbr from '../../../components/StatAbbr/StatAbbr';
+import { MatchPlayerStatsTable, MatchTeamStatsCard, type MatchPlayerStatRow } from '../../../components/match';
 import StatRow from '../../floorball/FloorballMatchPage/components/StatRow';
 import { getTeamInitials } from '../../floorball/FloorballMatchPage/components/matchUtils';
 import type { HockeyMatchStatisticsDto } from '../../../types/hockey/hockeyTypes';
@@ -38,11 +39,13 @@ function HockeyMatchStats({
   const awayFo = away?.faceoffWins ?? 0;
   const homePim = home?.penaltyMinutes ?? 0;
   const awayPim = away?.penaltyMinutes ?? 0;
-  const players = [...stats.players].sort((a, b) => b.points - a.points || b.goals - a.goals);
-  const goalies = stats.goalies;
+  const sides: { side: 'home' | 'away'; teamId: string | null; teamName: string }[] = [
+    { side: 'home', teamId: homeTeamId, teamName: homeName },
+    { side: 'away', teamId: awayTeamId, teamName: awayName },
+  ];
 
   return (
-    <div className="summary-content">
+    <>
       <div className="match-stats">
         <div className="stats-header">
           <div className="team-identity home">
@@ -94,73 +97,68 @@ function HockeyMatchStats({
           />
         </div>
       </div>
-      {players.length > 0 && (
-        <div className="standing-container">
-          <table className="standing-table">
-            <thead>
-              <tr className="header-row">
-                <th className="stats-col">#</th>
-                <th className="team-col">{t('hockeyPage.player', 'Player')}</th>
-                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colG', 'G')} title={t('hockeyPage.colGTitle', 'Goals')} /></th>
-                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colA', 'A')} title={t('hockeyPage.colATitle', 'Assists')} /></th>
-                <th className="points-col"><StatAbbr abbr={t('hockeyPage.colP', 'P')} title={t('hockeyPage.colPTitle', 'Points')} /></th>
-                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colPim', 'PIM')} title={t('hockeyPage.colPimTitle', 'Penalty minutes')} /></th>
-                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colFo', 'FO%')} title={t('hockeyPage.colFoTitle', 'Faceoff win percentage')} /></th>
-              </tr>
-            </thead>
-            <tbody>
-              {players.map((row) => (
-                <tr key={`${row.playerId}-${row.teamId}`}>
-                  <td className="stats-col">{jerseyByPlayerId.get(row.playerId) ?? '—'}</td>
-                  <td className="team-col">
-                    <Link to={getPlayerPath('hockey', row.playerId)}>
-                      {playerNames.get(row.playerId) ?? row.playerId.slice(0, 8)}
-                    </Link>
-                  </td>
-                  <td className="stats-col">{row.goals}</td>
-                  <td className="stats-col">{row.assists}</td>
-                  <td className="points-col">{row.points}</td>
-                  <td className="stats-col">{row.penaltyMinutes}</td>
-                  <td className="stats-col">{formatHockeyFaceoffPercentage(row.faceoffWins ?? 0, row.faceoffAttempts ?? 0)}</td>
+      {sides.map(({ side, teamId, teamName }) => {
+        const teamPlayers: MatchPlayerStatRow[] = stats.players
+          .filter((row) => row.teamId === teamId)
+          .map((row) => ({
+            playerId: row.playerId,
+            name: playerNames.get(row.playerId) ?? row.playerId.slice(0, 8),
+            jerseyNumber: jerseyByPlayerId.get(row.playerId),
+            goals: row.goals,
+            assists: row.assists,
+            points: row.points,
+            penaltyMinutes: row.penaltyMinutes,
+            faceoffPercentage: formatHockeyFaceoffPercentage(row.faceoffWins ?? 0, row.faceoffAttempts ?? 0),
+          }));
+        if (teamPlayers.length === 0) return null;
+        return (
+          <MatchPlayerStatsTable
+            key={`players-${side}`}
+            teamName={teamName}
+            side={side}
+            sport="hockey"
+            rows={teamPlayers}
+            showFaceoffs
+          />
+        );
+      })}
+      {sides.map(({ side, teamId, teamName }) => {
+        const teamGoalies = stats.goalies.filter((row) => row.teamId === teamId);
+        if (teamGoalies.length === 0) return null;
+        return (
+          <MatchTeamStatsCard key={`goalies-${side}`} teamName={teamName} side={side}>
+            <table className="standing-table">
+              <thead>
+                <tr className="header-row">
+                  <th className="stats-col">#</th>
+                  <th className="team-col">{t('hockeyPage.goalie', 'Goalie')}</th>
+                  <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colSa', 'SA')} title={t('hockeyPage.colSaTitle', 'Shots against')} /></th>
+                  <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colSv', 'SV')} title={t('hockeyPage.colSvTitle', 'Saves')} /></th>
+                  <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colSvPct', 'SV%')} title={t('hockeyPage.colSvPctTitle', 'Save percentage')} /></th>
+                  <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colGa', 'GA')} title={t('hockeyPage.colGaTitle', 'Goals against')} /></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {goalies.length > 0 && (
-        <div className="standing-container">
-          <table className="standing-table">
-            <thead>
-              <tr className="header-row">
-                <th className="stats-col">#</th>
-                <th className="team-col">{t('hockeyPage.goalie', 'Goalie')}</th>
-                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colSa', 'SA')} title={t('hockeyPage.colSaTitle', 'Shots against')} /></th>
-                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colSv', 'SV')} title={t('hockeyPage.colSvTitle', 'Saves')} /></th>
-                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colSvPct', 'SV%')} title={t('hockeyPage.colSvPctTitle', 'Save percentage')} /></th>
-                <th className="stats-col"><StatAbbr abbr={t('hockeyPage.colGa', 'GA')} title={t('hockeyPage.colGaTitle', 'Goals against')} /></th>
-              </tr>
-            </thead>
-            <tbody>
-              {goalies.map((row) => (
-                <tr key={`${row.playerId}-${row.teamId}`}>
-                  <td className="stats-col">{jerseyByPlayerId.get(row.playerId) ?? '—'}</td>
-                  <td className="team-col">
-                    <Link to={getPlayerPath('hockey', row.playerId)}>
-                      {playerNames.get(row.playerId) ?? row.playerId.slice(0, 8)}
-                    </Link>
-                  </td>
-                  <td className="stats-col">{row.shotsAgainst}</td>
-                  <td className="stats-col">{row.saves}</td>
-                  <td className="stats-col">{row.savePercentage.toFixed(1)}</td>
-                  <td className="stats-col">{row.goalsAgainst}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+              </thead>
+              <tbody>
+                {teamGoalies.map((row) => (
+                  <tr key={row.playerId}>
+                    <td className="stats-col">{jerseyByPlayerId.get(row.playerId) ?? '—'}</td>
+                    <td className="team-col">
+                      <Link to={getPlayerPath('hockey', row.playerId)}>
+                        {playerNames.get(row.playerId) ?? row.playerId.slice(0, 8)}
+                      </Link>
+                    </td>
+                    <td className="stats-col">{row.shotsAgainst}</td>
+                    <td className="stats-col">{row.saves}</td>
+                    <td className="stats-col">{row.savePercentage.toFixed(1)}</td>
+                    <td className="stats-col">{row.goalsAgainst}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </MatchTeamStatsCard>
+        );
+      })}
+    </>
   );
 }
 

@@ -15,7 +15,7 @@ namespace WebAPI.Controllers.Football.Match;
 /// Controller for managing football match lineups
 /// </summary>
 [Route("api/football-matches/{matchId:guid}/teams/{teamId:guid}")]
-[Authorize(Roles = AuthRoles.AdminOnly)]
+[Authorize(Roles = AuthRoles.MatchOperators)]
 public class FootballMatchLineupController : BaseApiController
 {
     private readonly IMediator _mediator;

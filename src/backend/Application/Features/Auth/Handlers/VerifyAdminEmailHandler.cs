@@ -1,6 +1,7 @@
 using Application.Common;
 using Application.Configuration;
 using Application.Features.Auth.Commands;
+using Application.Features.Common.Organization.Users.Mappings;
 using Application.Interfaces.Auth;
 using Domain.Entities.Common;
 using Domain.Repositories.Common;
@@ -60,7 +61,7 @@ public class VerifyAdminEmailHandler : IRequestHandler<VerifyAdminEmailCommand, 
 
         _logger.LogInformation("Email verified for user: {UserId} ({Email})", user.Id, user.Email);
 
-        string loginUrl = $"{_frontendConfig.BaseUrl}/admin/login";
+        string loginUrl = $"{_frontendConfig.BaseUrl}{UserVerificationPaths.LoginForRole(user.Role)}";
         await _emailService.SendAdminVerificationSuccessAsync(
             user.Email,
             firstName,

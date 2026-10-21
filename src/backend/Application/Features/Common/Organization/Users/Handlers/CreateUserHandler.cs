@@ -107,11 +107,9 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
                 await CreateClubManagerLinksAsync(request.PersonId, request.ClubAssignments, cancellationToken);
             }
 
-            // Send invitation email with verification link. Club admins verify through their
-            // own area so they land on the club admin login afterwards.
-            string verifyPath = request.Role == UserRole.ClubAdmin
-                ? "/club-admin/verify-email"
-                : "/admin/verify-email";
+            // Send invitation email with verification link. Club admins and match officials verify
+            // through their own area so they land on that area's login afterwards.
+            string verifyPath = UserVerificationPaths.ForRole(request.Role);
             string verificationUrl = $"{_frontendConfig.BaseUrl}{verifyPath}?token={Uri.EscapeDataString(token)}";
             await _emailService.SendAdminInvitationAsync(
                 createdUser.Email,

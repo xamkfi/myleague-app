@@ -440,6 +440,9 @@ const UserFormModal = ({
                 <option value="ClubAdmin">
                   {t('admin.users.roles.clubAdmin', 'Club Admin')}
                 </option>
+                <option value="MatchOfficial">
+                  {t('admin.users.roles.matchOfficial', 'Match official')}
+                </option>
                 <option value="SystemAdmin">
                   {t('admin.users.roles.systemAdmin', 'System Admin')}
                 </option>

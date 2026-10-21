@@ -48,6 +48,9 @@ const RulesManagementPage = lazyWithRetry(
 const FooterContactsManagementPage = lazyWithRetry(
   () => import('../pages/AdminPage/FooterContactsPage/FooterContactsManagementPage')
 );
+const AdvertisementsManagementPage = lazyWithRetry(
+  () => import('../pages/AdminPage/AdvertisementsPage/AdvertisementsManagementPage')
+);
 const SettingsPage = lazyWithRetry(() => import('../pages/AdminPage/SettingsPage/SettingsPage'));
 const DataSubjectRightsPage = lazyWithRetry(() => import('../pages/AdminPage/DataSubjectRightsPage/DataSubjectRightsPage'));
 const PersonForm = lazyWithRetry(() =>
@@ -115,6 +118,9 @@ const ClubAdminPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdm
 const ClubAdminClubInfoPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminClubInfoPage/ClubAdminClubInfoPage'));
 const ClubAdminRosterPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminRosterPage/ClubAdminRosterPage'));
 const ClubAdminMatchRosterPage = lazyWithRetry(() => import('../pages/ClubAdminPage/ClubAdminMatchRosterPage/ClubAdminMatchRosterPage'));
+
+// Match official pages
+const OfficialMatchesPage = lazyWithRetry(() => import('../pages/OfficialPage/OfficialMatchesPage'));
 
 // Public football pages
 const FootballPage = lazyWithRetry(() => import('../pages/football/FootballPage/FootballPage'));
@@ -220,6 +226,54 @@ export const routes: RouteObject[] = [
       }
     ]
   },
+  // Match official login (public)
+  {
+    path: '/official/login',
+    element: <SuspenseWrapper><LoginPage variant="official" /></SuspenseWrapper>
+  },
+  // Match official email verification (public – linked from invitation email)
+  {
+    path: '/official/verify-email',
+    element: <SuspenseWrapper><VerifyEmailPage variant="official" /></SuspenseWrapper>
+  },
+  // Protected match official routes (site admins may also access them)
+  {
+    path: '/official',
+    children: [
+      {
+        index: true,
+        element: (
+          <ProtectedRoute allowedRoles={['MatchOfficial', 'SystemAdmin']} loginPath="/official/login">
+            <SuspenseWrapper><OfficialMatchesPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'floorball/matches/:matchId',
+        element: (
+          <ProtectedRoute allowedRoles={['MatchOfficial', 'SystemAdmin']} loginPath="/official/login">
+            <SuspenseWrapper><ManageMatchPage mode="official" /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'football/matches/:matchId',
+        element: (
+          <ProtectedRoute allowedRoles={['MatchOfficial', 'SystemAdmin']} loginPath="/official/login">
+            <SuspenseWrapper><FootballManageMatchPage mode="official" /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'hockey/matches/:matchId',
+        element: (
+          <ProtectedRoute allowedRoles={['MatchOfficial', 'SystemAdmin']} loginPath="/official/login">
+            <SuspenseWrapper><ManageHockeyMatchPage mode="official" /></SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      }
+    ]
+  },
   // Protected admin routes
   {
     path: '/admin/clubs',
@@ -280,6 +334,16 @@ export const routes: RouteObject[] = [
           <ProtectedRoute>
             <SuspenseWrapper>
               <FooterContactsManagementPage />
+            </SuspenseWrapper>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: '/admin/site-content/ads',
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper>
+              <AdvertisementsManagementPage />
             </SuspenseWrapper>
           </ProtectedRoute>
         )

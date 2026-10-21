@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback, useState, useRef, type ReactElement } from 'react';
+import { useEffect, useMemo, useCallback, useState, useRef, type ReactElement, type ReactNode } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { floorballMatchEventService, type RecordSaveEventRequest } from '../../../../api/floorball/floorballMatchEventService';
@@ -8,6 +8,8 @@ import type { FloorballMatchDto } from '../../../../types/floorball/floorballTyp
 import { floorballPeriodEventFlags, floorballPeriodStartSeconds } from '../../../../utils/floorballPeriod';
 import { formatEventTimeMmSs } from '../../../../utils/matchEventFormat';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
+import OfficialPageTemplate from '../../../OfficialPage/components/OfficialPageTemplate';
+import type { ManageMatchMode } from '../../../../types/common/manageMatchMode';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import AssignTeamsDialog from '../../../../components/AssignTeamsDialog/AssignTeamsDialog';
 
@@ -61,6 +63,8 @@ interface ManageMatchPageContentProps {
    * dropping the user on the global match list.
    */
   onClose: () => void;
+  /** `official` hides officials and scorekeeper assignment, which stay admin-only. */
+  mode: ManageMatchMode;
 }
 
 /** Minimum gap between two quick-save keypresses for the same goalie. */
@@ -70,7 +74,8 @@ const SAVE_THROTTLE_MS: number = 250;
  * Live desk for one match. Owns page-level UI state (dialogs, side swap, officials) and wires
  * the feature hooks together; the timer itself lives in {@link MatchTimerProvider}.
  */
-const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageContentProps) => {
+const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchPageContentProps) => {
+  const isOfficialMode: boolean = mode === 'official';
   const { t } = useTranslation();
   const { currentPeriod, setCurrentPeriod, currentPeriodStartSeconds, setPeriodStartTime, timer } = useMatchTimerContext();
   const lastSaveRef = useRef<Record<string, number>>({});
@@ -238,8 +243,9 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     && !groupsToDelete
     && !periodManagement.showEndPeriodConfirmation;
 
-  // Load officials once per match
+  // Load officials once per match. The referee list only feeds the admin-only selector.
   useEffect(() => {
+    if (isOfficialMode) return undefined;
     let isCancelled: boolean = false;
     const loadOfficials = async (): Promise<void> => {
       try {
@@ -260,7 +266,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
     };
     void loadOfficials();
     return () => { isCancelled = true; };
-  }, [match.id]);
+  }, [match.id, isOfficialMode]);
 
   // Load initial data
   useEffect(() => {
@@ -806,23 +812,27 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
             onError={setError}
           />
 
-          <OfficialsSelectorSection
-            selectedOfficials={selectedOfficials}
-            options={officialOptions}
-            saving={officialsSaving}
-            onAddRow={() => setSelectedOfficials(prev => [...prev, ''])}
-            onSelect={handleOfficialSelect}
-            onRemove={handleOfficialRemove}
-            disabled={isMatchClosed}
-          />
+          {!isOfficialMode && (
+            <>
+              <OfficialsSelectorSection
+                selectedOfficials={selectedOfficials}
+                options={officialOptions}
+                saving={officialsSaving}
+                onAddRow={() => setSelectedOfficials(prev => [...prev, ''])}
+                onSelect={handleOfficialSelect}
+                onRemove={handleOfficialRemove}
+                disabled={isMatchClosed}
+              />
 
-          <ScorekeepersSection
-            scorekeepers={currentMatch.scorekeepers ?? []}
-            saving={scorekeepersSaving}
-            onAdd={handleScorekeeperAdd}
-            onRemove={handleScorekeeperRemove}
-            disabled={isMatchClosed}
-          />
+              <ScorekeepersSection
+                scorekeepers={currentMatch.scorekeepers ?? []}
+                saving={scorekeepersSaving}
+                onAdd={handleScorekeeperAdd}
+                onRemove={handleScorekeeperRemove}
+                disabled={isMatchClosed}
+              />
+            </>
+          )}
 
           <GoalRecordingForm
             showGoalForm={forms.showGoalForm}
@@ -904,9 +914,9 @@ const ManageMatchPageContent = ({ match, setMatch, onClose }: ManageMatchPageCon
  * Wrapper component that provides the timer context. `matchId` lets the provider persist
  * per-period start times for the duration of the match (continuous-clock behaviour).
  */
-const ManageMatchPageWithContext = ({ match, setMatch, onClose }: ManageMatchPageContentProps) => (
+const ManageMatchPageWithContext = ({ match, setMatch, onClose, mode }: ManageMatchPageContentProps) => (
   <MatchTimerProvider initialPeriod={1} matchId={match.id}>
-    <ManageMatchPageContent match={match} setMatch={setMatch} onClose={onClose} />
+    <ManageMatchPageContent match={match} setMatch={setMatch} onClose={onClose} mode={mode} />
   </MatchTimerProvider>
 );
 
@@ -914,22 +924,31 @@ const ManageMatchPageWithContext = ({ match, setMatch, onClose }: ManageMatchPag
  * Default landing page used when the user opens the match management view directly (no
  * originating view to return to).
  */
-const DEFAULT_RETURN_PATH: string = '/admin/floorball/matches';
+const DEFAULT_RETURN_PATHS: Record<ManageMatchMode, string> = {
+  admin: '/admin/floorball/matches',
+  official: '/official',
+};
 
 /**
  * Whitelists the `returnTo` query parameter to internal absolute paths only. This prevents
  * an open-redirect via a crafted URL and also guards against protocol-relative paths.
  */
-const sanitizeReturnTo = (raw: string | null): string => {
-  if (!raw) return DEFAULT_RETURN_PATH;
-  if (!raw.startsWith('/') || raw.startsWith('//')) return DEFAULT_RETURN_PATH;
+const sanitizeReturnTo = (raw: string | null, fallback: string): string => {
+  if (!raw) return fallback;
+  if (!raw.startsWith('/') || raw.startsWith('//')) return fallback;
   return raw;
 };
+
+interface ManageMatchPageProps {
+  /** Which area opened the desk. Defaults to the admin view. */
+  mode?: ManageMatchMode;
+}
 
 /**
  * Main page component with data loading
  */
-const ManageMatchPage = (): ReactElement => {
+const ManageMatchPage = ({ mode = 'admin' }: ManageMatchPageProps): ReactElement => {
+  const isOfficialMode: boolean = mode === 'official';
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -939,7 +958,10 @@ const ManageMatchPage = (): ReactElement => {
   const [error, setError] = useState<string | null>(null);
   const [showAssignTeams, setShowAssignTeams] = useState<boolean>(false);
 
-  const returnTo: string = useMemo(() => sanitizeReturnTo(searchParams.get('returnTo')), [searchParams]);
+  const returnTo: string = useMemo(
+    () => sanitizeReturnTo(searchParams.get('returnTo'), DEFAULT_RETURN_PATHS[mode]),
+    [searchParams, mode],
+  );
 
   const handleClose = useCallback((): void => {
     navigate(returnTo);
@@ -979,31 +1001,37 @@ const ManageMatchPage = (): ReactElement => {
 
   const pageTitle: string = t('floorball.matches.manage.title', 'Match management');
 
+  const renderShell = (content: ReactNode): ReactElement => (
+    isOfficialMode
+      ? <OfficialPageTemplate documentTitle={pageTitle} wide>{content}</OfficialPageTemplate>
+      : <PageTemplate title={pageTitle}>{content}</PageTemplate>
+  );
+
   if (loading) {
     return (
-      <PageTemplate title={pageTitle}>
+      renderShell(
         <div className="manage-match-page manage-match-page--loading">{t('common.loading', 'Loading...')}</div>
-      </PageTemplate>
+      )
     );
   }
 
   if (error) {
     return (
-      <PageTemplate title={pageTitle}>
+      renderShell(
         <div className="manage-match-page">
           <ErrorPopup message={error} />
         </div>
-      </PageTemplate>
+      )
     );
   }
 
   if (!match) {
     return (
-      <PageTemplate title={pageTitle}>
+      renderShell(
         <div className="manage-match-page manage-match-page--loading">
           {t('floorball.matches.manage.notFound', 'Match not found.')}
         </div>
-      </PageTemplate>
+      )
     );
   }
 
@@ -1012,14 +1040,14 @@ const ManageMatchPage = (): ReactElement => {
   const isMissingTeams: boolean = !match.homeTeamId || !match.awayTeamId;
 
   return (
-    <PageTemplate title={pageTitle}>
+    renderShell(
       <div className="manage-match-page">
         <div className="page-header">
           <div className="page-header__top">
             <h1 className="page-title-compact font-title">{pageTitle}</h1>
             <div className="page-header__actions">
               {/* "Assign teams" is only meaningful while the match is still Scheduled/Postponed. */}
-              {isTeamsAssignable && (
+              {!isOfficialMode && isTeamsAssignable && (
                 <button
                   type="button"
                   className="edit-match-button"
@@ -1035,7 +1063,7 @@ const ManageMatchPage = (): ReactElement => {
                 </button>
               )}
               {/* Hidden once the match is Finished: the sanctioned recovery path is "Reopen match". */}
-              {!isMatchFinished && (
+              {!isOfficialMode && !isMatchFinished && (
                 <button
                   type="button"
                   className="edit-match-button"
@@ -1049,7 +1077,7 @@ const ManageMatchPage = (): ReactElement => {
               )}
             </div>
           </div>
-          {isMissingTeams && isTeamsAssignable && (
+          {!isOfficialMode && isMissingTeams && isTeamsAssignable && (
             <div className="page-header__missing-teams" role="status">
               <i className="fas fa-info-circle" aria-hidden="true"></i>
               {t(
@@ -1069,21 +1097,23 @@ const ManageMatchPage = (): ReactElement => {
                 'Both teams have not been assigned to this match yet, so the live management view cannot be opened.'
               )}
             </p>
-            <button
-              type="button"
-              className="manage-match-page__placeholder-action"
-              onClick={() => setShowAssignTeams(true)}
-            >
-              <i className="fas fa-user-plus" aria-hidden="true"></i>
-              {t('floorball.matches.assignTeams.action', 'Assign teams')}
-            </button>
+            {!isOfficialMode && (
+              <button
+                type="button"
+                className="manage-match-page__placeholder-action"
+                onClick={() => setShowAssignTeams(true)}
+              >
+                <i className="fas fa-user-plus" aria-hidden="true"></i>
+                {t('floorball.matches.assignTeams.action', 'Assign teams')}
+              </button>
+            )}
           </div>
         ) : (
-          <ManageMatchPageWithContext match={match} setMatch={setMatch} onClose={handleClose} />
+          <ManageMatchPageWithContext match={match} setMatch={setMatch} onClose={handleClose} mode={mode} />
         )}
 
         <AssignTeamsDialog
-          isOpen={showAssignTeams}
+          isOpen={!isOfficialMode && showAssignTeams}
           match={match}
           onClose={() => setShowAssignTeams(false)}
           onSaved={(updated) => {
@@ -1092,7 +1122,7 @@ const ManageMatchPage = (): ReactElement => {
           }}
         />
       </div>
-    </PageTemplate>
+    )
   );
 };
 

@@ -52,9 +52,13 @@ Entities inherit `BaseEntity` (`Id`, `CreatedAt`, `UpdatedAt`). Use private sett
 
 ## WebAPI
 
-Inherit `Controllers/Common/BaseApiController`. Map request → MediatR → `HandleResult` / `HandlePaginatedResult` / `HandleListResult` / `HandleVoidResult` (failures go through `ToErrorResponse`). Wrap payloads in `ApiResponse<T>` / `PaginatedApiResponse<T>`. Mutations use `[Authorize(Roles = AuthRoles.AdminOnly)]` or `AuthRoles.ClubAdminOrAdmin`. Put XML comments on actions (OpenAPI). Log with structured properties, and pass user strings through `SanitizeForLog`.
+Inherit `Controllers/Common/BaseApiController`. Map request → MediatR → `HandleResult` / `HandlePaginatedResult` / `HandleListResult` / `HandleVoidResult` (failures go through `ToErrorResponse`). Wrap payloads in `ApiResponse<T>` / `PaginatedApiResponse<T>`. Mutations use `[Authorize(Roles = AuthRoles.AdminOnly)]` or `AuthRoles.ClubAdminOrAdmin`. Live match operations a match official needs use `AuthRoles.MatchOperators`. Class- and method-level `[Authorize]` attributes must all pass, so an admin-only action in a `MatchOperators` controller adds its own `AdminOnly`. Put XML comments on actions (OpenAPI). Log with structured properties, and pass user strings through `SanitizeForLog`.
 
 ```csharp
 Result<ClubDto> result = await _mediator.Send(new GetClubByIdQuery(id));
 return HandleResult(result, "Club retrieved successfully", "Club not found");
 ```
+
+## Logging levels
+
+Application Insights bills every stored line per GB, and in production only Warning and above reach it. Log routine per-request flow ("getting X", "request started/completed") at Debug, not Information. Information is for state changes, seeding, and startup. Do not attach an exception object to a log line unless that line is the only place the exception is logged; `ExceptionHandlingMiddleware` already logs unhandled ones with the stack trace.

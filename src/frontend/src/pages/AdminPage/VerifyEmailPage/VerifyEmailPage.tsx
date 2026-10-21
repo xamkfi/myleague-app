@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authService } from '../../../api/auth/authService';
 import './VerifyEmailPage.scss';
 
@@ -7,11 +8,13 @@ type VerificationState = 'loading' | 'success' | 'error';
 
 interface VerifyEmailPageProps {
   /** Which area this verification belongs to. Controls labels and the login link. */
-  variant?: 'admin' | 'clubAdmin';
+  variant?: 'admin' | 'clubAdmin' | 'official';
 }
 
 function VerifyEmailPage({ variant = 'admin' }: VerifyEmailPageProps) {
+  const { t } = useTranslation();
   const isClubAdmin = variant === 'clubAdmin';
+  const isOfficial = variant === 'official';
   const [searchParams] = useSearchParams();
   const [state, setState] = useState<VerificationState>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -47,7 +50,9 @@ function VerifyEmailPage({ variant = 'admin' }: VerifyEmailPageProps) {
       <div className="verify-email-center">
         <div className="verify-email-top">
           <h1 className="verify-email-brand">MAHL</h1>
-          <p className="verify-email-brand-sub">{isClubAdmin ? 'Club admin invitation' : 'Admin invitation'}</p>
+          <p className="verify-email-brand-sub">{isOfficial
+            ? t('official.verify.invitation', 'Match official invitation')
+            : isClubAdmin ? 'Club admin invitation' : 'Admin invitation'}</p>
         </div>
 
         <div className="verify-email-card">
@@ -63,7 +68,9 @@ function VerifyEmailPage({ variant = 'admin' }: VerifyEmailPageProps) {
               <span className="verify-email-icon" role="img" aria-label="Success">✅</span>
               <h2 className="verify-email-title">Email verified!</h2>
               <p className="verify-email-message">
-                {isClubAdmin
+                {isOfficial
+                  ? t('official.verify.accountActive', 'Your account is now active. Here is how to log in to the match official area:')
+                  : isClubAdmin
                   ? 'Your account is now active. Here is how to log in to the club admin area:'
                   : 'Your account is now active. Here is how to log in to the admin panel:'}
               </p>
@@ -74,14 +81,21 @@ function VerifyEmailPage({ variant = 'admin' }: VerifyEmailPageProps) {
                   <li>Click the button below to go to the login page.</li>
                   <li>Enter the email address where you received this invitation.</li>
                   <li>You will receive a <strong>6-digit login code</strong> by email.</li>
-                  <li>{isClubAdmin
+                  <li>{isOfficial
+                    ? t('official.verify.enterCode', 'Enter the code on the login page to access the match official area.')
+                    : isClubAdmin
                     ? 'Enter the code on the login page to access the club admin area.'
                     : 'Enter the code on the login page to access the admin panel.'}</li>
                 </ol>
               </div>
 
-              <Link to={isClubAdmin ? '/club-admin/login' : '/admin/login'} className="verify-email-button">
-                {isClubAdmin ? 'Go to club admin login' : 'Go to admin login'}
+              <Link
+                to={isOfficial ? '/official/login' : isClubAdmin ? '/club-admin/login' : '/admin/login'}
+                className="verify-email-button"
+              >
+                {isOfficial
+                  ? t('official.verify.goToLogin', 'Go to match official login')
+                  : isClubAdmin ? 'Go to club admin login' : 'Go to admin login'}
               </Link>
             </>
           )}

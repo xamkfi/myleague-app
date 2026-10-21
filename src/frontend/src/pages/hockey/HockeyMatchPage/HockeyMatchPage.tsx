@@ -179,7 +179,6 @@ function HockeyMatchPage() {
       onTabChange={setActiveTab}
       tableVariant="season"
       showTableTab={false}
-      showStatsTab
     >
       {match && activeTab === 'summary' && (
         <div className="tab-content">
@@ -189,6 +188,19 @@ function HockeyMatchPage() {
               referees={match.refereeDetails}
               scorekeepers={match.scorekeepers}
             />
+            {stats && (
+              <div className="summary-stats-section">
+                <HockeyMatchStats
+                  stats={stats}
+                  homeName={homeName}
+                  awayName={awayName}
+                  homeTeamId={match.homeTeamId}
+                  awayTeamId={match.awayTeamId}
+                  playerNames={careerPlayerNames}
+                  jerseyByPlayerId={buildHockeyJerseyByCareerPlayerId(match, teams)}
+                />
+              </div>
+            )}
             <HockeyMatchEvents
               match={match}
               teams={teams}
@@ -197,23 +209,6 @@ function HockeyMatchPage() {
               playerNames={playerNames}
             />
           </div>
-        </div>
-      )}
-      {match && activeTab === 'stats' && (
-        <div className="tab-content">
-          {!stats ? (
-            <p>{t('hockeyPage.noStats', 'No statistics yet')}</p>
-          ) : (
-            <HockeyMatchStats
-              stats={stats}
-              homeName={homeName}
-              awayName={awayName}
-              homeTeamId={match.homeTeamId}
-              awayTeamId={match.awayTeamId}
-              playerNames={careerPlayerNames}
-              jerseyByPlayerId={buildHockeyJerseyByCareerPlayerId(match, teams)}
-            />
-          )}
         </div>
       )}
       {match && activeTab === 'lineups' && (

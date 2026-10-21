@@ -13,7 +13,7 @@ namespace WebAPI.Controllers.Common
     /// <summary>
     /// Controller for managing match timers with RESTful routes
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [Route("api/matches/{matchId:guid}/timer")]
     public class MatchTimerController : BaseApiController
     {

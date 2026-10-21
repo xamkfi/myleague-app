@@ -55,7 +55,7 @@ The UI always runs on the host with Vite. Do not start the Compose `frontend` or
 
 Leave `src/frontend/.env.development` at `VITE_API_URL=http://localhost:8080/api`. Do not switch it to the launchSettings ports (`65532` / `65533`).
 
-Seeded dev logins: `test@myleague.local` (site admin) and `clubadmin@myleague.local` (club admin).
+Seeded dev logins: `test@myleague.local` (site admin), `clubadmin@myleague.local` (club admin) and `official@myleague.local` (match official, signs in at `/official/login`).
 
 ## Port 5432 already taken
 

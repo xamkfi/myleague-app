@@ -39,7 +39,7 @@ Read the diff first (`git diff` / PR files). Then walk the layers that actually 
 ## WebAPI
 
 - Inherits `BaseApiController` and uses Handle* helpers
-- Mutations authorized with `AuthRoles.AdminOnly` or `ClubAdminOrAdmin`. A plain `[Authorize]` on a write is a finding
+- Mutations authorized with `AuthRoles.AdminOnly`, `ClubAdminOrAdmin`, or `MatchOperators` (live match operations only). A plain `[Authorize]` on a write is a finding
 - Anonymous GETs do not leak private person data (see `IncludePrivateData` on `BaseApiController`)
 - Paged lists use `PaginatedApiResponse` + page/pageSize bounds
 - XML comments + `ProducesResponseType`

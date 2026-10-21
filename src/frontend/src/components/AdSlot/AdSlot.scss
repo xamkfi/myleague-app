@@ -1,0 +1,35 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.ad-slot {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'xs');
+  width: 100%;
+
+  &__label {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #667085;
+  }
+
+  &__link {
+    display: block;
+    line-height: 0;
+    border-radius: map.get($border-radius, 'lg');
+    overflow: hidden;
+
+    &:focus-visible {
+      outline: 2px solid #1570ef;
+      outline-offset: 2px;
+    }
+  }
+
+  &__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: map.get($border-radius, 'lg');
+  }
+}

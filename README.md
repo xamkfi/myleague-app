@@ -15,7 +15,7 @@ The backend is .NET 10 with Clean Architecture and CQRS (MediatR) on PostgreSQL.
 - **Statistics:** standings, top scorers, team and player season stats, and all-time stats per sport.
 - **Content:** news with a hero carousel and tags, editable rules and info pages, MAHL pages, age groups, an event calendar, and search.
 - **Club admin:** club-scoped rosters and match-day tools.
-- **Auth:** passwordless email login code, then a JWT access token with refresh-token rotation. Roles are `SystemAdmin` and `ClubAdmin`.
+- **Auth:** passwordless email login code, then a JWT access token with refresh-token rotation. Roles are `SystemAdmin`, `ClubAdmin` and `MatchOfficial`.
 - **Privacy:** anonymous reads do not expose private person data. Admins can handle data-subject requests (access, export, erasure).
 - **Languages:** Finnish (default) and English through i18next.
 - **Observability:** Serilog to console and files, Seq locally, Application Insights in Azure.
@@ -121,6 +121,7 @@ Development creates two users on startup:
 |-------|------|
 | `test@myleague.local` | Site admin (`SystemAdmin`) |
 | `clubadmin@myleague.local` | Club admin |
+| `official@myleague.local` | Match official (`MatchOfficial`) |
 
 Enter the email at `/admin/login` or `/club-admin/login`. In Development no email is sent. The login code is written to the API log (`LOGIN CODE for ...`), and `LoginCode:AutoFillLoginCode=true` in `appsettings.Development.json` returns it to the UI so it fills in. Never enable `AutoFillLoginCode` on a public environment.
 
@@ -163,7 +164,7 @@ Scalar UI: `/scalar/v1`. OpenAPI JSON: `/swagger/v1/swagger.json`. Both exist on
 |------|-------------|
 | Auth | `/api/auth/login`, `/verify`, `/refresh`, `/logout`, `/verify-admin-email`, `/me` |
 | Organization | `/api/clubs`, `/api/divisions`, `/api/persons`, `/api/users`, `/api/club-admin` |
-| Content | `/api/news`, `/api/search`, `/api/rulessection`, `/api/infopagecontent`, `/api/footercontact` |
+| Content | `/api/news`, `/api/search`, `/api/rulessection`, `/api/infopagecontent`, `/api/footercontact`, `/api/advertisements` |
 | Admin | `/api/site-settings` (includes `POST /player-licence-reset`), `/api/data-subject-rights` |
 | Match timer | `/api/matches/{matchId}/timer` |
 | Real-time | `/api/hubs/domainevent` (SignalR; JWT in the `access_token` query parameter) |

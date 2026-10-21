@@ -111,6 +111,14 @@ const siteContentCards: AdminHomeCard[] = [
     subtitleFallback: 'Manage footer content',
     iconSrc: LeaguesIcon,
   },
+  {
+    to: '/admin/site-content/ads',
+    titleKey: 'admin.siteContent.ads.nav',
+    titleFallback: 'Advertisements',
+    subtitleKey: 'admin.actions.manageAds',
+    subtitleFallback: 'Manage home page ads',
+    iconSrc: NewsIcon,
+  },
 ];
 
 const administrationCards: AdminHomeCard[] = [

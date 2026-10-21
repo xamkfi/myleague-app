@@ -420,7 +420,7 @@ namespace WebAPI.Controllers.Football
         /// <param name="competitionId">Competition roster to attach the goalkeeper to</param>
         /// <returns>The loan goalkeeper</returns>
         [HttpPost("{teamId:guid}/loan-goalkeeper")]
-        [Authorize(Roles = AuthRoles.AdminOnly)]
+        [Authorize(Roles = AuthRoles.MatchOperators)]
         [ProducesResponseType(typeof(ApiResponse<FootballLoanGoalkeeperDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -443,7 +443,7 @@ namespace WebAPI.Controllers.Football
         /// <param name="competitionId">Competition roster to attach the players to</param>
         /// <returns>The first <paramref name="count"/> loan players</returns>
         [HttpPost("{teamId:guid}/loan-players")]
-        [Authorize(Roles = AuthRoles.AdminOnly)]
+        [Authorize(Roles = AuthRoles.MatchOperators)]
         [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<FootballLoanPlayerDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

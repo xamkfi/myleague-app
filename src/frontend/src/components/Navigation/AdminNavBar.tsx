@@ -542,6 +542,11 @@ function AdminNavBar({ collapsed, onToggleCollapse }: AdminNavBarProps) {
                       {t('admin.siteContent.footerContacts.nav', 'Alatunnisteen sisältö')}
                     </Link>
                   </li>
+                  <li className={`admin-navbar-submenu-item ${isActive('/admin/site-content/ads') ? 'active' : ''}`}>
+                    <Link to="/admin/site-content/ads">
+                      {t('admin.siteContent.ads.nav', 'Mainokset')}
+                    </Link>
+                  </li>
                 </ul>
               )}
             </li>

@@ -1,4 +1,4 @@
-export type UserRole = 'ClubAdmin' | 'SystemAdmin';
+export type UserRole = 'ClubAdmin' | 'SystemAdmin' | 'MatchOfficial';
 
 export interface SystemUserPerson {
   id: string;

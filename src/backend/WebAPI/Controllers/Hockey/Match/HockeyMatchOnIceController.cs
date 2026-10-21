@@ -34,7 +34,7 @@ public class HockeyMatchOnIceController : BaseApiController
     /// <summary>
     /// Enables on-ice tracking for a match side.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/on-ice/enable")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> EnableOnIce(
@@ -50,7 +50,7 @@ public class HockeyMatchOnIceController : BaseApiController
     /// <summary>
     /// Disables on-ice tracking for a match side.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/on-ice/disable")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DisableOnIce(
@@ -66,7 +66,7 @@ public class HockeyMatchOnIceController : BaseApiController
     /// <summary>
     /// Puts a player on the ice.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/on-ice/players")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddPlayerToIce(
@@ -91,7 +91,7 @@ public class HockeyMatchOnIceController : BaseApiController
     /// <summary>
     /// Removes a player from the ice.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpDelete("{matchId:guid}/on-ice/players/{matchActivePlayerId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RemovePlayerFromIce(
@@ -116,7 +116,7 @@ public class HockeyMatchOnIceController : BaseApiController
     /// <summary>
     /// Clears all players from the ice.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/on-ice/clear")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> ClearIce(
@@ -136,7 +136,7 @@ public class HockeyMatchOnIceController : BaseApiController
     /// <summary>
     /// Applies a match line onto the ice.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/on-ice/apply-line/{matchLineId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> ApplyLineToIce(

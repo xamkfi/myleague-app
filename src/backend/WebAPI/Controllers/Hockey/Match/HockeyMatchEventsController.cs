@@ -34,7 +34,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Records a goal.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/events/goals")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordGoal(
@@ -61,7 +61,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Deletes a goal event (live-ops undo).
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpDelete("{matchId:guid}/events/goals/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -75,7 +75,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Corrects a goal event (live-ops modify).
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPut("{matchId:guid}/events/goals/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -105,7 +105,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Records a penalty.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/events/penalties")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordPenalty(
@@ -173,7 +173,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Deletes a penalty event (live-ops undo).
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpDelete("{matchId:guid}/events/penalties/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -187,7 +187,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Corrects a penalty event (live-ops modify).
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPut("{matchId:guid}/events/penalties/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -217,7 +217,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Records a shot. Set <c>count</c> above 1 to record that many saves at once.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/events/shots")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordShot(
@@ -243,7 +243,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Deletes a shot event (live-ops undo).
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpDelete("{matchId:guid}/events/shots/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -257,7 +257,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Corrects a shot event (live-ops modify).
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPut("{matchId:guid}/events/shots/{eventId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -285,7 +285,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Records a video review.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/events/video-reviews")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordVideoReview(
@@ -311,7 +311,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Records a period start/end event.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/events/periods")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordPeriodEvent(
@@ -331,7 +331,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Records a faceoff.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/events/faceoffs")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordFaceoff(
@@ -356,7 +356,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Records a stoppage.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/events/stoppages")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordStoppage(
@@ -381,7 +381,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Records a timeout.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/events/timeouts")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordTimeout(
@@ -401,7 +401,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Records a goalie change.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/events/goalie-changes")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordGoalieChange(
@@ -424,7 +424,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Records a shootout attempt.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/events/shootout-attempts")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordShootoutAttempt(
@@ -448,7 +448,7 @@ public class HockeyMatchEventsController : BaseApiController
     /// <summary>
     /// Records a failed coach-challenge penalty linked to a video review.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/events/failed-coach-challenge-penalties")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordFailedCoachChallengePenalty(

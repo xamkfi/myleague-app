@@ -1,9 +1,9 @@
 using Application.Common;
 using Application.Configuration;
 using Application.Features.Common.Organization.Users.Commands;
+using Application.Features.Common.Organization.Users.Mappings;
 using Application.Interfaces.Auth;
 using Domain.Entities.Common;
-using Domain.Enums.Common;
 using Domain.Repositories.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -63,9 +63,7 @@ public class ResendAdminInvitationHandler : IRequestHandler<ResendAdminInvitatio
             await _userRepository.UpdateAsync(user);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            string verifyPath = user.Role == UserRole.ClubAdmin
-                ? "/club-admin/verify-email"
-                : "/admin/verify-email";
+            string verifyPath = UserVerificationPaths.ForRole(user.Role);
             string verificationUrl = $"{_frontendConfig.BaseUrl}{verifyPath}?token={Uri.EscapeDataString(token)}";
             await _emailService.SendAdminInvitationAsync(
                 user.Email,

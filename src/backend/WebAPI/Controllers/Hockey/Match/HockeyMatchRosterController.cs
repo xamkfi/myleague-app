@@ -34,7 +34,7 @@ public class HockeyMatchRosterController : BaseApiController
     /// <summary>
     /// Sets and confirms the roster for one match side.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/roster/confirm")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> ConfirmRoster(
@@ -55,7 +55,7 @@ public class HockeyMatchRosterController : BaseApiController
     /// <summary>
     /// Deactivates a dressed roster player.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/roster/deactivate-player")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DeactivateRosterPlayer(
@@ -73,7 +73,7 @@ public class HockeyMatchRosterController : BaseApiController
     /// <summary>
     /// Sets the active goalie for a match side.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPut("{matchId:guid}/active-goalie")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetActiveGoalie(
@@ -91,7 +91,7 @@ public class HockeyMatchRosterController : BaseApiController
     /// <summary>
     /// Clears the active goalie for a match side.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpDelete("{matchId:guid}/active-goalie")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> ClearActiveGoalie(

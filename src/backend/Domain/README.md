@@ -14,8 +14,8 @@ Domain/
 ├── Constants/         AuthRoles, loan player / loan goalkeeper names and jersey numbers
 ├── Entities/
 │   ├── BaseEntity.cs
-│   ├── Common/        Club, ClubManager, Division, FooterContact, InfoPageContent, NewsArticle,
-│   │                  Person, RefreshToken, RulesSection, SiteSettings, TimerState, User
+│   ├── Common/        Advertisement, Club, ClubManager, Division, FooterContact, InfoPageContent,
+│   │                  NewsArticle, Person, RefreshToken, RulesSection, SiteSettings, TimerState, User
 │   ├── Floorball/     Competitions/  Matches/ (+ Events/)  Officials/  Statistics/  Teams/
 │   ├── Football/      Competitions/  Matches/  Officials/  Statistics/  Teams/
 │   └── Hockey/        Competitions/  Matches/ (+ Events/)  Officials/  Statistics/  Teams/
@@ -36,7 +36,7 @@ Namespaces follow folders, for example `Domain.Entities.Hockey.Teams`. Sport typ
 |------|----------|-------|
 | `BaseEntity` | `Entities/BaseEntity.cs` | `Id` (Guid, set in the constructor), `CreatedAt`, `UpdatedAt?`, `SetUpdatedAt` |
 | `PagedResult<T>`, `PagedResult.Create`, `PagedResult.Empty` | `Common/PagedResult.cs` | Record with `Items`, `TotalCount`, `Page`, `PageSize`, `TotalPages` |
-| `AuthRoles` | `Constants/AuthRoles.cs` | `SystemAdmin`, `ClubAdmin`, `AdminOnly`, `ClubAdminOrAdmin` |
+| `AuthRoles` | `Constants/AuthRoles.cs` | `SystemAdmin`, `ClubAdmin`, `MatchOfficial`, `AdminOnly`, `ClubAdminOrAdmin`, `MatchOperators` |
 | `FloorballCompetition` / `FootballCompetition` / `HockeyCompetition` | `Entities/<Sport>/Competitions/` | Base of `<Sport>Season` and `<Sport>Tournament`, stored as TPH |
 | `SiteSettings` | `Entities/Common/SiteSettings.cs` | Single row: token and login-code timings, yearly player-licence cutoff |
 | `IUnitOfWork`, `IFloorballUnitOfWork`, `IFootballUnitOfWork`, `IHockeyUnitOfWork` | `Repositories/<Area>/` | One per DbContext |

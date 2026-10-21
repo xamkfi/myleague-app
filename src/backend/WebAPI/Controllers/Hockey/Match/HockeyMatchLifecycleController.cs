@@ -4,6 +4,7 @@ using Application.Features.Hockey.Matches.DTOs;
 using Application.Features.Hockey.Matches.Queries;
 using Domain.Common;
 using Domain.Constants;
+using Domain.Enums.Hockey.Matches;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,7 @@ public class HockeyMatchLifecycleController : BaseApiController
     /// <summary>
     /// Marks a hockey match as started.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/start")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> Start(
@@ -50,7 +51,7 @@ public class HockeyMatchLifecycleController : BaseApiController
     /// <summary>
     /// Marks a hockey match as finished.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/finish")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> Finish(
@@ -64,16 +65,24 @@ public class HockeyMatchLifecycleController : BaseApiController
     }
 
     /// <summary>
-    /// Sets match status.
+    /// Sets match status. Match officials may only set <see cref="HockeyMatchStatus.InProgress"/>
+    /// (reopen a finished match); every other status change is for system admins.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPatch("{matchId:guid}/status")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetStatus(
         Guid matchId,
         [FromBody] SetHockeyMatchStatusRequest request,
         CancellationToken cancellationToken = default)
     {
+        if (!User.IsInRole(AuthRoles.SystemAdmin) && request.Status != HockeyMatchStatus.InProgress)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse.ErrorResponse("Match officials can only reopen a match."));
+        }
+
         Result<HockeyMatchDto> result = await _mediator.Send(new SetHockeyMatchStatusCommand(matchId, request.Status), cancellationToken);
         return HandleResult(result, "Hockey match status updated successfully", "Failed to update status");
     }
@@ -82,7 +91,7 @@ public class HockeyMatchLifecycleController : BaseApiController
     /// Puts a match that was started by mistake back to Scheduled. Allowed only while the match
     /// is live with a 0-0 score and no events other than period markers.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/revert-to-scheduled")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -98,7 +107,7 @@ public class HockeyMatchLifecycleController : BaseApiController
     /// <summary>
     /// Sets match result type.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPatch("{matchId:guid}/result")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetResultType(
@@ -114,7 +123,7 @@ public class HockeyMatchLifecycleController : BaseApiController
     /// <summary>
     /// Sets the current period number.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPatch("{matchId:guid}/period")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetCurrentPeriod(
@@ -130,7 +139,7 @@ public class HockeyMatchLifecycleController : BaseApiController
     /// <summary>
     /// Sets whether the match went to overtime.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPatch("{matchId:guid}/went-to-overtime")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetWentToOvertime(
@@ -146,7 +155,7 @@ public class HockeyMatchLifecycleController : BaseApiController
     /// <summary>
     /// Sets whether the match went to shootout.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPatch("{matchId:guid}/went-to-shootout")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetWentToShootout(
@@ -162,7 +171,7 @@ public class HockeyMatchLifecycleController : BaseApiController
     /// <summary>
     /// Corrects goals for one match side.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPut("{matchId:guid}/team-goals")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetTeamGoals(
@@ -178,7 +187,7 @@ public class HockeyMatchLifecycleController : BaseApiController
     /// <summary>
     /// Creates a period score row.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{matchId:guid}/period-scores")]
     [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> AddPeriodScore(

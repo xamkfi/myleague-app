@@ -16,3 +16,6 @@ export type {
   MatchScoreHeaderProps,
   MatchScoreHeaderTeam,
 } from './matchPageTypes';
+export { default as MatchTeamStatsCard } from './MatchTeamStatsCard';
+export { default as MatchPlayerStatsTable } from './MatchPlayerStatsTable';
+export type { MatchPlayerStatRow } from './MatchPlayerStatsTable';

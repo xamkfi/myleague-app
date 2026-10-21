@@ -1,10 +1,11 @@
 # Frontend
 
-React single-page app for MyLeague. It has three areas:
+React single-page app for MyLeague. It has four areas:
 
 - **Public site**: floorball, football, and ice hockey (`/sports/floorball`, `/sports/football`, `/sports/icehockey`), plus clubs, news, event calendar, rules, age groups, MAHL and Children (Lapset menu) info pages, registration, and all-time statistics.
-- **Admin** (`/admin`, role `SystemAdmin`): clubs, divisions, persons, users, site settings, news, rules, MAHL and Children info pages, footer contacts, data subject rights, and teams, players, officials, seasons, tournaments, and live match control for all three sports.
+- **Admin** (`/admin`, role `SystemAdmin`): clubs, divisions, persons, users, site settings, news, rules, MAHL and Children info pages, footer contacts, home page ads, data subject rights, and teams, players, officials, seasons, tournaments, and live match control for all three sports.
 - **Club admin** (`/club-admin`, roles `ClubAdmin` or `SystemAdmin`): club info, team rosters, and match-day rosters for any sport.
+- **Match official** (`/official`, roles `MatchOfficial` or `SystemAdmin`): a day's matches for each sport, and the live match desk. The desk is the sport's admin `ManageMatchPage` rendered with `mode="official"`, which swaps in `OfficialPageTemplate` and hides match editing, team assignment, and the officials and scorekeepers sections.
 
 The three sports are peers. When you add a feature to one, check the other two.
 
@@ -93,11 +94,11 @@ src/
 ├── constants/             config.ts (API_URL), sports, notification constants
 ├── context/               AuthContext.tsx, AudienceContext.tsx
 ├── functions/             ResizeImage.tsx
-├── hooks/                 useMatchData, useMatchTimer, useIntervalWhen, in-progress match providers ...
+├── hooks/                 useMatchData, useMatchTimer, useIntervalWhen, useMediaQuery, in-progress match providers ...
 ├── i18n/                  i18n.ts, locales/fi/translation.json, locales/en/translation.json
 ├── pages/                 route-level screens
 │   ├── floorball/ football/ hockey/   public sport pages (league, match, team, tournament, player)
-│   ├── AdminPage/ ClubAdminPage/      admin areas; sport admin lives in AdminPage/<Sport>ManagementPage/
+│   ├── AdminPage/ ClubAdminPage/ OfficialPage/   admin areas; sport admin lives in AdminPage/<Sport>ManagementPage/
 │   └── ...                            cross-sport pages (HomePage, PlayerPage, ClubsPage, NewsPage, ...)
 ├── router/                routes.tsx, SuspenseWrapper.tsx
 ├── services/              signalRService.ts and content helpers
@@ -115,7 +116,7 @@ Import aliases (from `vite.config.ts`): `@variables` → `src/styles/variables.s
 1. Create `src/pages/<Name>Page/<Name>Page.tsx` and a `<Name>Page.scss` next to it. A public page for one sport goes under `src/pages/{floorball,football,hockey}/`. Put page-only components in a `components/` folder beside it.
 2. Write a function component with an explicit props type. Do not use `React.FC` or `any`.
 3. Add an API module under `src/api/<area>/` that calls `authFetch`, and add types under `src/types/`.
-4. Register the route in `src/router/routes.tsx` with `lazyWithRetry(() => import('...'))` inside `SuspenseWrapper`. Wrap admin routes in `<ProtectedRoute>` (defaults to `SystemAdmin`). For club-admin routes, pass `allowedRoles={['ClubAdmin', 'SystemAdmin']}` and `loginPath="/club-admin/login"`.
+4. Register the route in `src/router/routes.tsx` with `lazyWithRetry(() => import('...'))` inside `SuspenseWrapper`. Wrap admin routes in `<ProtectedRoute>` (defaults to `SystemAdmin`). For club-admin routes, pass `allowedRoles={['ClubAdmin', 'SystemAdmin']}` and `loginPath="/club-admin/login"`. For match-official routes, pass `allowedRoles={['MatchOfficial', 'SystemAdmin']}` and `loginPath="/official/login"`. A signed-in user who lacks the role is sent to their own area by `getRoleHome` (`src/utils/roleHome.ts`); add new roles there.
 5. Add every user-facing string to both locale files.
 6. Run `pnpm lint` and `pnpm build`.
 
@@ -147,7 +148,7 @@ For a full vertical slice (backend and frontend), follow [.claude/skills/create-
 
 ## Build and deploy
 
-- `pnpm build` writes `dist/`. `public/staticwebapp.config.json` sets the SPA fallback to `index.html` and cache headers for Azure Static Web Apps.
+- `pnpm build` writes `dist/`. `public/staticwebapp.config.json` sets the SPA fallback to `index.html` and cache headers for Azure Static Web Apps. `public/robots.txt` asks crawlers to stay off player and admin pages and to wait 10 s between requests; it is served as a file because `*.txt` is excluded from the SPA fallback.
 - Azure Static Web Apps hosts the frontend. The workflows build with `VITE_API_URL` set for the target environment and upload `dist/`. See [infra/README.md](../../infra/README.md).
 - `Dockerfile` runs the Vite dev server on port 5173. It exists only for the CI container check and the Compose `frontend` service. It is not a production image, and there is no nginx config.
 

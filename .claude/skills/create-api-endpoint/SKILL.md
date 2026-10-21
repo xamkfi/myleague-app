@@ -73,6 +73,7 @@ Records in `WebAPI/Models/{Auth|Common|Floorball|Football|Hockey}/`. DataAnnotat
 
 - Public reads: no `[Authorize]` (clubs, news, public match/season GETs)
 - Site admin writes: `[Authorize(Roles = AuthRoles.AdminOnly)]`
+- Live match writes a match official runs on site (events, timer, periods, match rosters, start/finish/reopen): `[Authorize(Roles = AuthRoles.MatchOperators)]`. Scheduling, officials, scorekeepers, postpone/cancel and imports stay `AdminOnly`. `MatchOfficialAuthorizationTests` pins this split, so add a new match action there
 - Club-scoped writes: `[Authorize(Roles = AuthRoles.ClubAdminOrAdmin)]` plus `IClubAdminAccessService` (`Application/Services/Common`) when the sibling uses it. Club-admin endpoints live under `/api/club-admin/...`
 - All three sports' write endpoints use `AuthRoles.AdminOnly`. Never fall back to a plain `[Authorize]`
 

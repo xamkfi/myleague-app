@@ -90,8 +90,8 @@ param budgetStartDate string
 @maxValue(35)
 param postgresBackupRetentionDays int = 7
 
-@description('Daily ingestion cap in GB for the Log Analytics workspace backing Application Insights')
-param appInsightsDailyCapGb int = 1
+@description('Daily ingestion cap in GB for the Log Analytics workspace backing Application Insights, as a decimal string such as \'0.2\'')
+param appInsightsDailyCapGb string = '0.2'
 
 // ============================================================================
 // Variables

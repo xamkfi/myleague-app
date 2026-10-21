@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import type { AuthUserRole } from '../../types/auth/authTypes';
+import { getRoleHome } from '../../utils/roleHome';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -43,8 +44,7 @@ function ProtectedRoute({
 
   if (user && !allowedRoles.includes(user.role)) {
     // Authenticated but not allowed here: send the user to their own home area.
-    const home = user.role === 'ClubAdmin' ? '/club-admin' : '/admin';
-    return <Navigate to={home} replace />;
+    return <Navigate to={getRoleHome(user.role)} replace />;
   }
 
   return <>{children}</>;

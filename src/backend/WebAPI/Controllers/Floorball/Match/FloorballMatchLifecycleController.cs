@@ -18,7 +18,7 @@ namespace WebAPI.Controllers.Floorball.Match
     /// <c>{matchId}</c>.
     /// </summary>
     [Route("api/floorball-matches/{matchId:guid}")]
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     public class FloorballMatchLifecycleController : BaseApiController
     {
         private readonly IMediator _mediator;
@@ -116,6 +116,7 @@ namespace WebAPI.Controllers.Floorball.Match
         /// <summary>
         /// Postpones a floorball match
         /// </summary>
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [HttpPost("postpone")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -135,6 +136,7 @@ namespace WebAPI.Controllers.Floorball.Match
         /// <summary>
         /// Cancels a floorball match
         /// </summary>
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [HttpPost("cancel")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -154,6 +156,7 @@ namespace WebAPI.Controllers.Floorball.Match
         /// <summary>
         /// Reactivates a cancelled floorball match back to Scheduled status
         /// </summary>
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [HttpPost("reactivate")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -179,6 +182,7 @@ namespace WebAPI.Controllers.Floorball.Match
         /// the next bracket slot (provided that next match hasn't started yet). The endpoint
         /// rejects any attempt to change teams on a match that is already InProgress or Completed.
         /// </remarks>
+        [Authorize(Roles = AuthRoles.AdminOnly)]
         [HttpPut("teams")]
         [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

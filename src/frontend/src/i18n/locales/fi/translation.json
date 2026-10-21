@@ -305,6 +305,9 @@
     "buttonText": "TUTUSTU KESÄN TAPAHTUMIIN"
   },
   "homePage": {
+    "ads": {
+      "label": "Mainos"
+    },
     "newsSection": {
       "title": "Ajankohtaista",
       "readMore": "Lue lisää",
@@ -569,6 +572,7 @@
       "manageInfoPages": "Hallitse infosivuja",
       "manageChildrenPages": "Hallitse Lapset-sivuja",
       "manageFooterContacts": "Hallitse alatunnistetta",
+      "manageAds": "Hallitse etusivun mainoksia",
       "manageSettings": "Hallitse sivuston asetuksia",
       "manageDataSubjectRights": "Tarkastele, oikaise, siirrä, rajoita tai poista henkilötietoja"
     },
@@ -652,6 +656,56 @@
       "loadFailed": "Henkilötietojen lataus epäonnistui."
     },
     "siteContent": {
+      "ads": {
+        "nav": "Mainokset",
+        "pageTitle": "Mainokset",
+        "description": "Etusivun mainospaikat. Leveällä näytöllä reunapaikat näkyvät sisällön vasemmalla ja oikealla puolella; kapeammilla näytöillä ja mobiilissa kaikki mainokset näkyvät uutisten alla. Jos paikassa on useampi mainos, ne vuorottelevat järjestyksen mukaan.",
+        "add": "Lisää mainos",
+        "addTitle": "Uusi mainos",
+        "editTitle": "Muokkaa mainosta",
+        "emptySlot": "Ei mainoksia tässä paikassa.",
+        "loadFailed": "Mainosten lataus epäonnistui.",
+        "saveFailed": "Tallennus epäonnistui.",
+        "deleteFailed": "Poisto epäonnistui.",
+        "uploadFailed": "Kuvan lataus epäonnistui.",
+        "createSuccess": "Mainos lisätty.",
+        "updateSuccess": "Mainos päivitetty.",
+        "deleteSuccess": "Mainos poistettu.",
+        "confirmDeleteTitle": "Poista mainos",
+        "confirmDelete": "Poistetaanko mainos \"{{name}}\"?",
+        "schedule": "Näkyvyys: {{start}} – {{end}}",
+        "scheduleAlways": "Näkyvyys: aina voimassa",
+        "sortOrderValue": "Järjestys: {{order}}",
+        "uploadImage": "Lataa kuva",
+        "replaceImage": "Vaihda kuva",
+        "sizeHintSide": "Reunapaikka on 180 px leveä. Suositus: pystykuva esim. 360 × 600 px, jotta kuva on terävä.",
+        "sizeHintBottom": "Uutisten alla oleva paikka on uutispalstan levyinen. Suositus: vaakabanneri esim. 1600 × 400 px.",
+        "scheduleInvalid": "Päättymisajan pitää olla alkamisajan jälkeen.",
+        "fields": {
+          "name": "Nimi",
+          "slot": "Paikka",
+          "image": "Kuva",
+          "altText": "Kuvan vaihtoehtoinen teksti",
+          "linkUrl": "Linkki (avautuu uuteen välilehteen)",
+          "startsAt": "Näkyy alkaen",
+          "endsAt": "Näkyy asti",
+          "sortOrder": "Järjestys paikan sisällä",
+          "isActive": "Aktiivinen"
+        },
+        "slots": {
+          "LeftTop": "Vasen ylä",
+          "LeftBottom": "Vasen ala",
+          "RightTop": "Oikea ylä",
+          "RightBottom": "Oikea ala",
+          "BottomCenter": "Uutisten alla"
+        },
+        "status": {
+          "active": "Näkyvissä",
+          "inactive": "Pois päältä",
+          "scheduled": "Ajastettu",
+          "expired": "Päättynyt"
+        }
+      },
       "title": "Sivuston sisällöt",
       "titleShort": "Sisällöt",
       "rules": "Säännöt",
@@ -753,7 +807,8 @@
       },
       "roles": {
         "systemAdmin": "Järjestelmänvalvoja",
-        "clubAdmin": "Seuran ylläpitäjä"
+        "clubAdmin": "Seuran ylläpitäjä",
+        "matchOfficial": "Toimitsija"
       },
       "confirmDelete": {
         "title": "Poista käyttäjä",
@@ -4279,6 +4334,43 @@
     "viewTeam": "Näytä joukkue",
     "showEarlierSeasons": "Aiemmat kaudet ({{count}})",
     "hideEarlierSeasons": "Piilota aiemmat kaudet"
+  },
+  "official": {
+    "view": "Toimitsija",
+    "logout": "Kirjaudu ulos",
+    "loginTitle": "Toimitsija - Kirjautuminen",
+    "manageTitle": "Ottelun hallinta",
+    "matchNotFound": "Ottelua ei löytynyt.",
+    "verify": {
+      "invitation": "Toimitsijakutsu",
+      "accountActive": "Tilisi on nyt aktiivinen. Näin kirjaudut toimitsijanäkymään:",
+      "enterCode": "Syötä koodi kirjautumissivulla päästäksesi toimitsijanäkymään.",
+      "goToLogin": "Siirry toimitsijan kirjautumiseen"
+    },
+    "matches": {
+      "title": "Ottelut",
+      "sportTabs": "Laji",
+      "sports": {
+        "floorball": "Salibandy",
+        "football": "Jalkapallo",
+        "hockey": "Jääkiekko"
+      },
+      "date": "Päivämäärä",
+      "previousDay": "Edellinen päivä",
+      "nextDay": "Seuraava päivä",
+      "today": "Tänään",
+      "refresh": "Päivitä",
+      "loading": "Ladataan otteluita...",
+      "loadError": "Otteluiden lataus epäonnistui.",
+      "empty": "Tälle päivälle ei ole otteluita.",
+      "tbd": "Avoin",
+      "manage": "Hallinnoi",
+      "status": {
+        "scheduled": "Tulossa",
+        "live": "Käynnissä",
+        "completed": "Päättynyt"
+      }
+    }
   },
   "clubAdmin": {
     "view": "Seuran ylläpito",

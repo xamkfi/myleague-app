@@ -124,6 +124,9 @@
     "buttonText": "EXPLORE SUMMER EVENTS"
   },
   "homePage": {
+    "ads": {
+      "label": "Advertisement"
+    },
     "newsSection": {
       "title": "Latest News",
       "readMore": "Read more",
@@ -569,6 +572,7 @@
       "manageInfoPages": "Manage info pages",
       "manageChildrenPages": "Manage children pages",
       "manageFooterContacts": "Manage footer content",
+      "manageAds": "Manage home page ads",
       "manageSettings": "Manage site settings",
       "manageDataSubjectRights": "Access, correct, export, restrict, or erase personal data"
     },
@@ -652,6 +656,56 @@
       "loadFailed": "Failed to load data-subject data."
     },
     "siteContent": {
+      "ads": {
+        "nav": "Advertisements",
+        "pageTitle": "Advertisements",
+        "description": "Ad slots on the home page. On wide screens the side slots appear to the left and right of the content; on narrower screens and mobile all ads appear below the news. If a slot has several ads, they rotate in sort order.",
+        "add": "Add ad",
+        "addTitle": "New advertisement",
+        "editTitle": "Edit advertisement",
+        "emptySlot": "No ads in this slot.",
+        "loadFailed": "Failed to load advertisements.",
+        "saveFailed": "Saving failed.",
+        "deleteFailed": "Deleting failed.",
+        "uploadFailed": "Image upload failed.",
+        "createSuccess": "Advertisement added.",
+        "updateSuccess": "Advertisement updated.",
+        "deleteSuccess": "Advertisement deleted.",
+        "confirmDeleteTitle": "Delete advertisement",
+        "confirmDelete": "Delete the advertisement \"{{name}}\"?",
+        "schedule": "Visible: {{start}} – {{end}}",
+        "scheduleAlways": "Visible: no time limit",
+        "sortOrderValue": "Order: {{order}}",
+        "uploadImage": "Upload image",
+        "replaceImage": "Replace image",
+        "sizeHintSide": "Side slots are 180 px wide. Recommended: a portrait image such as 360 × 600 px so it stays sharp.",
+        "sizeHintBottom": "The slot below the news is as wide as the news column. Recommended: a landscape banner such as 1600 × 400 px.",
+        "scheduleInvalid": "The end time must be after the start time.",
+        "fields": {
+          "name": "Name",
+          "slot": "Slot",
+          "image": "Image",
+          "altText": "Image alt text",
+          "linkUrl": "Link (opens in a new tab)",
+          "startsAt": "Visible from",
+          "endsAt": "Visible until",
+          "sortOrder": "Order within the slot",
+          "isActive": "Active"
+        },
+        "slots": {
+          "LeftTop": "Left top",
+          "LeftBottom": "Left bottom",
+          "RightTop": "Right top",
+          "RightBottom": "Right bottom",
+          "BottomCenter": "Below the news"
+        },
+        "status": {
+          "active": "Showing",
+          "inactive": "Off",
+          "scheduled": "Scheduled",
+          "expired": "Ended"
+        }
+      },
       "title": "Site content",
       "titleShort": "Content",
       "rules": "Rules",
@@ -753,7 +807,8 @@
       },
       "roles": {
         "systemAdmin": "System Admin",
-        "clubAdmin": "Club Admin"
+        "clubAdmin": "Club Admin",
+        "matchOfficial": "Match official"
       },
       "confirmDelete": {
         "title": "Delete user",
@@ -4290,6 +4345,43 @@
     "viewTeam": "View team",
     "showEarlierSeasons": "Earlier seasons ({{count}})",
     "hideEarlierSeasons": "Hide earlier seasons"
+  },
+  "official": {
+    "view": "Match official",
+    "logout": "Log out",
+    "loginTitle": "Match official login",
+    "manageTitle": "Match management",
+    "matchNotFound": "Match not found.",
+    "verify": {
+      "invitation": "Match official invitation",
+      "accountActive": "Your account is now active. Here is how to log in to the match official area:",
+      "enterCode": "Enter the code on the login page to access the match official area.",
+      "goToLogin": "Go to match official login"
+    },
+    "matches": {
+      "title": "Matches",
+      "sportTabs": "Sport",
+      "sports": {
+        "floorball": "Floorball",
+        "football": "Football",
+        "hockey": "Ice hockey"
+      },
+      "date": "Date",
+      "previousDay": "Previous day",
+      "nextDay": "Next day",
+      "today": "Today",
+      "refresh": "Refresh",
+      "loading": "Loading matches...",
+      "loadError": "Failed to load matches.",
+      "empty": "No matches on this day.",
+      "tbd": "TBD",
+      "manage": "Manage",
+      "status": {
+        "scheduled": "Scheduled",
+        "live": "Live",
+        "completed": "Completed"
+      }
+    }
   },
   "clubAdmin": {
     "view": "Club admin",

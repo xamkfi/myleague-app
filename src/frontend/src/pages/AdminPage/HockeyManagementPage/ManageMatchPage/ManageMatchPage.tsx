@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
+import OfficialPageTemplate from '../../../OfficialPage/components/OfficialPageTemplate';
+import type { ManageMatchMode } from '../../../../types/common/manageMatchMode';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import ConfirmationDialog from '../../../../components/ConfirmationDialog/ConfirmationDialog';
 import { MatchTimerProvider, useMatchTimerContext } from '../../../../components/MatchTimer';
@@ -86,9 +88,12 @@ interface ManageHockeyMatchContentProps {
   match: HockeyMatchDto;
   setMatch: (match: HockeyMatchDto) => void;
   onClose: () => void;
+  /** `official` hides officials and scorekeeper assignment, which stay admin-only. */
+  mode: ManageMatchMode;
 }
 
-function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatchContentProps) {
+function ManageHockeyMatchContent({ match, setMatch, onClose, mode }: ManageHockeyMatchContentProps) {
+  const isOfficialMode: boolean = mode === 'official';
   const { t } = useTranslation();
   const timer = useMatchTimerContext();
   const [teams, setTeams] = useState<HockeyTeamDto[]>([]);
@@ -167,9 +172,10 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   }, []);
 
   const reloadLookups = useCallback(async (): Promise<void> => {
+    // The officials list only feeds the admin-only officials selector.
     const [teamList, officialList] = await Promise.all([
       hockeyTeamService.getAll(),
-      hockeyOfficialService.getAll(true),
+      isOfficialMode ? Promise.resolve([]) : hockeyOfficialService.getAll(true),
     ]);
     setTeams(teamList);
     setTeamNames(await loadTeamNameMap(teamList));
@@ -182,7 +188,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
       teamList.filter((team) => matchTeamIds.has(team.id)),
     );
     setPlayerNames(rosterNames.byTeamPlayerId);
-  }, []);
+  }, [isOfficialMode]);
 
   useEffect(() => {
     void reloadLookups().catch((err: unknown) => setError(
@@ -738,45 +744,49 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
             onDeleteEvent={(eventItem) => setPendingDelete([eventItem])}
             onDeleteEvents={(eventItems) => setPendingDelete(eventItems)}
           />
-          <OfficialsSelectorSection
-            selectedOfficials={
-              selectedOfficialIds.length === 0
-                ? ['']
-                : showOfficialDraft
-                  ? [...selectedOfficialIds, '']
-                  : selectedOfficialIds
-            }
-            options={officialOptions}
-            saving={busy}
-            disabled={finished || match.status === 'Cancelled'}
-            onAddRow={() => setShowOfficialDraft(true)}
-            onSelect={(_index, officialId) => {
-              if (!officialId || selectedOfficialIds.includes(officialId)) {
-                return;
-              }
-              const profile = officials.find((item) => item.id === officialId);
-              setShowOfficialDraft(false);
-              void run(() => hockeyMatchService.addOfficial(match.id, officialId, (profile?.officialRole ?? 'Referee') as HockeyOfficialRole, profile?.officialRole === 'Referee'));
-            }}
-            onRemove={(_index, officialId) => {
-              if (officialId) {
-                void run(() => hockeyMatchService.removeOfficial(match.id, officialId));
-              } else {
-                setShowOfficialDraft(false);
-              }
-            }}
-          />
-          <ScorekeepersSection
-            scorekeepers={match.scorekeepers ?? []}
-            saving={busy}
-            disabled={finished || match.status === 'Cancelled'}
-            onAdd={async (personId) => {
-              await run(() => hockeyMatchService.addScorekeeper(match.id, personId));
-            }}
-            onRemove={async (personId) => {
-              await run(() => hockeyMatchService.removeScorekeeper(match.id, personId));
-            }}
-          />
+          {!isOfficialMode && (
+            <>
+              <OfficialsSelectorSection
+                selectedOfficials={
+                  selectedOfficialIds.length === 0
+                    ? ['']
+                    : showOfficialDraft
+                      ? [...selectedOfficialIds, '']
+                      : selectedOfficialIds
+                }
+                options={officialOptions}
+                saving={busy}
+                disabled={finished || match.status === 'Cancelled'}
+                onAddRow={() => setShowOfficialDraft(true)}
+                onSelect={(_index, officialId) => {
+                  if (!officialId || selectedOfficialIds.includes(officialId)) {
+                    return;
+                  }
+                  const profile = officials.find((item) => item.id === officialId);
+                  setShowOfficialDraft(false);
+                  void run(() => hockeyMatchService.addOfficial(match.id, officialId, (profile?.officialRole ?? 'Referee') as HockeyOfficialRole, profile?.officialRole === 'Referee'));
+                }}
+                onRemove={(_index, officialId) => {
+                  if (officialId) {
+                    void run(() => hockeyMatchService.removeOfficial(match.id, officialId));
+                  } else {
+                    setShowOfficialDraft(false);
+                  }
+                }}
+              />
+              <ScorekeepersSection
+                scorekeepers={match.scorekeepers ?? []}
+                saving={busy}
+                disabled={finished || match.status === 'Cancelled'}
+                onAdd={async (personId) => {
+                  await run(() => hockeyMatchService.addScorekeeper(match.id, personId));
+                }}
+                onRemove={async (personId) => {
+                  await run(() => hockeyMatchService.removeScorekeeper(match.id, personId));
+                }}
+              />
+            </>
+          )}
         </div>
       </div>
 
@@ -1018,7 +1028,13 @@ function ManageHockeyMatchContent({ match, setMatch, onClose }: ManageHockeyMatc
   );
 }
 
-function ManageHockeyMatchPage() {
+interface ManageHockeyMatchPageProps {
+  /** Which area opened the desk. Defaults to the admin view. */
+  mode?: ManageMatchMode;
+}
+
+function ManageHockeyMatchPage({ mode = 'admin' }: ManageHockeyMatchPageProps) {
+  const isOfficialMode: boolean = mode === 'official';
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { matchId } = useParams<{ matchId: string }>();
@@ -1031,7 +1047,7 @@ function ManageHockeyMatchPage() {
   const [error, setError] = useState<string | null>(null);
   const [assigning, setAssigning] = useState(false);
 
-  const returnTo = searchParams.get('returnTo') || '/admin/hockey/matches';
+  const returnTo = searchParams.get('returnTo') || (isOfficialMode ? '/official' : '/admin/hockey/matches');
 
   useEffect(() => {
     if (!matchId) {
@@ -1042,12 +1058,15 @@ function ManageHockeyMatchPage() {
     const fetchMatch = async (): Promise<void> => {
       try {
         const loaded = await hockeyMatchService.getById(matchId);
-        const kind = hockeyCompetitionKind(String(loaded.matchType));
-        const enrolled = loaded.competitionId
-          ? await loadHockeyEnrolledTeams(loaded.competitionId, kind)
-          : (await hockeyTeamService.getAll()).map((team) => ({ id: team.id, name: team.name }));
         setMatch(loaded);
-        setTeams(enrolled);
+        // Team options only feed the admin-only team assignment.
+        if (!isOfficialMode) {
+          const kind = hockeyCompetitionKind(String(loaded.matchType));
+          const enrolled = loaded.competitionId
+            ? await loadHockeyEnrolledTeams(loaded.competitionId, kind)
+            : (await hockeyTeamService.getAll()).map((team) => ({ id: team.id, name: team.name }));
+          setTeams(enrolled);
+        }
         setHomeTeamId(loaded.homeTeamId ?? '');
         setAwayTeamId(loaded.awayTeamId ?? '');
       } catch (err) {
@@ -1057,14 +1076,21 @@ function ManageHockeyMatchPage() {
       }
     };
     void fetchMatch();
-  }, [matchId, t]);
+  }, [matchId, t, isOfficialMode]);
+
+  // The admin view keeps its bare loading and error states; the official view always shows its header.
+  const wrapOfficial = (content: ReactElement): ReactElement => (
+    isOfficialMode
+      ? <OfficialPageTemplate documentTitle={t('hockey.matches.manage.title', 'Match management')} wide>{content}</OfficialPageTemplate>
+      : content
+  );
 
   if (loading) {
-    return <div>{t('common.loading', 'Loading...')}</div>;
+    return wrapOfficial(<div>{t('common.loading', 'Loading...')}</div>);
   }
 
   if (error && !match) {
-    return (
+    return wrapOfficial(
       <div className="manage-match-page">
         <ErrorPopup message={error} />
       </div>
@@ -1072,20 +1098,25 @@ function ManageHockeyMatchPage() {
   }
 
   if (!match) {
-    return <div>{t('hockey.matches.manage.notFound', 'Match not found.')}</div>;
+    return wrapOfficial(<div>{t('hockey.matches.manage.notFound', 'Match not found.')}</div>);
   }
 
   const isTeamsAssignable = match.status === 'Scheduled' || match.status === 'Postponed';
   const isMissingTeams = !match.homeTeamId || !match.awayTeamId;
 
-  return (
-    <PageTemplate title="Manage match page">
+  const renderShell = (content: ReactNode): ReactElement => (
+    isOfficialMode
+      ? <OfficialPageTemplate documentTitle={t('hockey.matches.manage.title', 'Match management')} wide>{content}</OfficialPageTemplate>
+      : <PageTemplate title="Manage match page">{content}</PageTemplate>
+  );
+
+  return renderShell(
       <div className="manage-match-page">
         <div className="page-header">
           <div className="page-header__top">
             <h1 className="page-title-compact font-title">{t('hockey.matches.manage.title', 'Match management')}</h1>
             <div className="page-header__actions">
-              {isTeamsAssignable && (
+              {!isOfficialMode && isTeamsAssignable && (
                 <button
                   type="button"
                   className="edit-match-button"
@@ -1099,7 +1130,7 @@ function ManageHockeyMatchPage() {
                   </span>
                 </button>
               )}
-              {!isHockeyMatchFinished(match.status) && (
+              {!isOfficialMode && !isHockeyMatchFinished(match.status) && (
                 <button
                   type="button"
                   className="edit-match-button"
@@ -1111,7 +1142,7 @@ function ManageHockeyMatchPage() {
               )}
             </div>
           </div>
-          {isMissingTeams && isTeamsAssignable && (
+          {!isOfficialMode && isMissingTeams && isTeamsAssignable && (
             <div className="page-header__missing-teams" role="status">
               <i className="fas fa-info-circle" aria-hidden="true"></i>
               {t('hockey.matches.assignTeams.missingBanner', 'This match does not have both teams yet. Assign teams before starting.')}
@@ -1122,44 +1153,47 @@ function ManageHockeyMatchPage() {
           <div className="manage-match-page__placeholder">
             <i className="fas fa-users-slash" aria-hidden="true"></i>
             <p>{t('hockey.matches.assignTeams.placeholderBody', 'Both teams must be assigned before the live desk can open.')}</p>
-            <div className="form-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-              <select value={homeTeamId} onChange={(event) => setHomeTeamId(event.target.value)}>
-                <option value="">{t('hockey.matches.homeTeamPlaceholder', 'Select home team')}</option>
-                {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
-              </select>
-              <select value={awayTeamId} onChange={(event) => setAwayTeamId(event.target.value)}>
-                <option value="">{t('hockey.matches.awayTeamPlaceholder', 'Select away team')}</option>
-                {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
-              </select>
-            </div>
-            <button
-              type="button"
-              className="manage-match-page__placeholder-action"
-              disabled={!homeTeamId || !awayTeamId || homeTeamId === awayTeamId || assigning}
-              onClick={() => {
-                void (async () => {
-                  setAssigning(true);
-                  try {
-                    setMatch(await hockeyMatchService.assignTeams(match.id, homeTeamId, awayTeamId));
-                  } catch (err) {
-                    setError(err instanceof Error ? err.message : t('hockey.matches.manage.errors.assignTeams', 'Failed to assign teams'));
-                  } finally {
-                    setAssigning(false);
-                  }
-                })();
-              }}
-            >
-              <i className="fas fa-user-plus" aria-hidden="true"></i>
-              {t('hockey.matches.assignTeams.action', 'Assign teams')}
-            </button>
+            {!isOfficialMode && (
+              <>
+                <div className="form-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <select value={homeTeamId} onChange={(event) => setHomeTeamId(event.target.value)}>
+                    <option value="">{t('hockey.matches.homeTeamPlaceholder', 'Select home team')}</option>
+                    {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
+                  </select>
+                  <select value={awayTeamId} onChange={(event) => setAwayTeamId(event.target.value)}>
+                    <option value="">{t('hockey.matches.awayTeamPlaceholder', 'Select away team')}</option>
+                    {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  className="manage-match-page__placeholder-action"
+                  disabled={!homeTeamId || !awayTeamId || homeTeamId === awayTeamId || assigning}
+                  onClick={() => {
+                    void (async () => {
+                      setAssigning(true);
+                      try {
+                        setMatch(await hockeyMatchService.assignTeams(match.id, homeTeamId, awayTeamId));
+                      } catch (err) {
+                        setError(err instanceof Error ? err.message : t('hockey.matches.manage.errors.assignTeams', 'Failed to assign teams'));
+                      } finally {
+                        setAssigning(false);
+                      }
+                    })();
+                  }}
+                >
+                  <i className="fas fa-user-plus" aria-hidden="true"></i>
+                  {t('hockey.matches.assignTeams.action', 'Assign teams')}
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <MatchTimerProvider matchId={match.id} initialPeriod={match.currentPeriodNumber || 1}>
-            <ManageHockeyMatchContent match={match} setMatch={setMatch} onClose={() => navigate(returnTo)} />
+            <ManageHockeyMatchContent match={match} setMatch={setMatch} onClose={() => navigate(returnTo)} mode={mode} />
           </MatchTimerProvider>
         )}
       </div>
-    </PageTemplate>
   );
 }
 

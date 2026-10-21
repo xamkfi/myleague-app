@@ -40,7 +40,7 @@ public class HockeyStatisticsController : BaseApiController
     /// <summary>
     /// Recalculates match-level statistics.
     /// </summary>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("matches/{matchId:guid}/recalculate")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

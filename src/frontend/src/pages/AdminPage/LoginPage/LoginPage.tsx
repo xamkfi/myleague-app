@@ -10,14 +10,14 @@ type LoginStep = 'email' | 'code';
 
 interface LoginPageProps {
   /** Which area this login belongs to. Controls the redirect target and labels. */
-  variant?: 'admin' | 'clubAdmin';
+  variant?: 'admin' | 'clubAdmin' | 'official';
 }
 
 function LoginPage({ variant = 'admin' }: LoginPageProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
-  const isClubAdmin = variant === 'clubAdmin';
+  const homePath: string = variant === 'clubAdmin' ? '/club-admin' : variant === 'official' ? '/official' : '/admin';
 
   const [step, setStep] = useState<LoginStep>('email');
   const [email, setEmail] = useState('');
@@ -76,7 +76,7 @@ function LoginPage({ variant = 'admin' }: LoginPageProps) {
     try {
       const tokens = await authService.verifyLoginCode(email.trim(), code.trim());
       await login(tokens);
-      navigate(isClubAdmin ? '/club-admin' : '/admin', { replace: true });
+      navigate(homePath, { replace: true });
     } catch (err: unknown) {
       setError(parseApiError(err));
     } finally {
@@ -100,18 +100,22 @@ function LoginPage({ variant = 'admin' }: LoginPageProps) {
             <LanguageToggle />
           </div>
           <p className="login-brand-sub">
-            {isClubAdmin
+            {variant === 'clubAdmin'
               ? t('clubAdmin.view', 'Club admin view')
-              : t('admin.view', 'Admin view')}
+              : variant === 'official'
+                ? t('official.view', 'Match official')
+                : t('admin.view', 'Admin view')}
           </p>
         </div>
 
         <div className="login-card">
           <div className="login-header">
             <h2 className="login-title">
-              {isClubAdmin
+              {variant === 'clubAdmin'
                 ? t('auth.clubAdminLoginTitle', 'Club Admin Login')
-                : t('auth.loginTitle', 'Admin Login')}
+                : variant === 'official'
+                  ? t('official.loginTitle', 'Match official login')
+                  : t('auth.loginTitle', 'Admin Login')}
             </h2>
             <p className="login-subtitle">
               {step === 'email'

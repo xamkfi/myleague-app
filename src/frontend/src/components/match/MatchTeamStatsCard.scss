@@ -1,0 +1,48 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+.match-team-stats {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 1rem;
+    background-color: $color-banner-bg;
+    color: $color-banner-text;
+  }
+
+  // Same home (blue) / away (green) colour coding as the team stat bars above.
+  &__crest {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid $color-neutral-light-grey;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    background-color: $color-white;
+
+    &--home {
+      border-color: $color-blue-secondary;
+      color: $color-blue-deep;
+    }
+
+    &--away {
+      border-color: $color-green-muted;
+      color: $color-green-muted;
+    }
+  }
+
+  &__name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

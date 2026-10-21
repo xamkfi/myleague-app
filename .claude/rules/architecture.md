@@ -25,7 +25,7 @@ Four EF Core contexts share one PostgreSQL database (`DefaultConnection`): `Comm
 
 ## Real-time and auth
 
-Live match updates go through the SignalR hub `/api/hubs/domainevent` (JWT via `access_token`). Hockey live pages poll REST every 3–5 s instead. Sign-in is a passwordless email code, then JWT with refresh-token rotation. Roles are `SystemAdmin` and `ClubAdmin` (`Domain.Constants.AuthRoles`). Club-admin APIs live under `/api/club-admin/...`.
+Live match updates go through the SignalR hub `/api/hubs/domainevent` (JWT via `access_token`). Hockey live pages poll REST every 3–5 s instead. Sign-in is a passwordless email code, then JWT with refresh-token rotation. Roles are `SystemAdmin`, `ClubAdmin` and `MatchOfficial` (`Domain.Constants.AuthRoles`). Club-admin APIs live under `/api/club-admin/...`. A match official can run any match live (events, timer, periods, match rosters, start/finish/reopen) through the regular match endpoints marked `AuthRoles.MatchOperators`, and has no other admin access.
 
 Match timer state is in memory. Do not assume more than one API instance unless a Redis or Azure SignalR backplane is added.
 

@@ -356,7 +356,7 @@ public class HockeyTeamController : BaseApiController
     /// <param name="competitionId">Competition roster to attach the goalkeeper to</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The loan goalkeeper</returns>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{teamId:guid}/loan-goalkeeper")]
     [ProducesResponseType(typeof(ApiResponse<HockeyLoanGoalkeeperDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -379,7 +379,7 @@ public class HockeyTeamController : BaseApiController
     /// <param name="competitionId">Competition roster to attach the players to</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The first <paramref name="count"/> loan players</returns>
-    [Authorize(Roles = AuthRoles.AdminOnly)]
+    [Authorize(Roles = AuthRoles.MatchOperators)]
     [HttpPost("{teamId:guid}/loan-players")]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<HockeyLoanPlayerDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

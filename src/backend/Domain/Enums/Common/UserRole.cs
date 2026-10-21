@@ -14,5 +14,11 @@ public enum UserRole
     /// <summary>
     /// System administrator - full access to all features
     /// </summary>
-    SystemAdmin = 1
+    SystemAdmin = 1,
+
+    /// <summary>
+    /// Match official - runs any match live: records events, controls the timer and periods,
+    /// sets match rosters and lineups, and starts, finishes or reopens the match. No other admin access
+    /// </summary>
+    MatchOfficial = 2
 }
