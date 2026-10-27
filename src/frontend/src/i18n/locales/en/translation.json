@@ -4384,6 +4384,8 @@
       "date": "Date",
       "previousDay": "Previous day",
       "nextDay": "Next day",
+      "nextMatchDay": "Next match day",
+      "noUpcoming": "No upcoming matches after this day.",
       "today": "Today",
       "refresh": "Refresh",
       "loading": "Loading matches...",

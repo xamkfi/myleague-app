@@ -4373,6 +4373,8 @@
       "date": "Päivämäärä",
       "previousDay": "Edellinen päivä",
       "nextDay": "Seuraava päivä",
+      "nextMatchDay": "Seuraava ottelupäivä",
+      "noUpcoming": "Tämän päivän jälkeen ei ole tulevia otteluita.",
       "today": "Tänään",
       "refresh": "Päivitä",
       "loading": "Ladataan otteluita...",
