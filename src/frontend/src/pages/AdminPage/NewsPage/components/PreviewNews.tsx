@@ -4,7 +4,8 @@ import '../styles/PreviewNews.scss';
 import '../../../SingleNewsPage/SingleNewsPage.scss';
 import defaultNewsImage from '../../../../assets/defaultImage.jpg';
 import NewsTaxonomyBar from '../../../SingleNewsPage/NewsTaxonomyBar';
-import NewsArticleHtml, { useHydratedNewsHtml } from '../../../SingleNewsPage/NewsArticleHtml';
+import NewsArticleHtml from '../../../SingleNewsPage/NewsArticleHtml';
+import { useHydratedNewsHtml } from '../../../SingleNewsPage/useHydratedNewsHtml';
 
 interface PreviewNewsProps {
   value: string;

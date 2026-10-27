@@ -1,5 +1,4 @@
 import DOMPurify from 'dompurify';
-import { bindTeamLogoFallbacks } from './matchResultRender';
 
 /**
  * Returns a sanitized, inert HTML tree. Never written into the live document.
@@ -40,5 +39,4 @@ export function extractRichTextImageUrls(html: string): string[] {
 export function replaceChildrenWithSanitizedHtml(target: Element, html: string): void {
   const root = parseSanitizedHtmlRoot(html);
   target.replaceChildren(...Array.from(root.childNodes));
-  bindTeamLogoFallbacks(target);
 }

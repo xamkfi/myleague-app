@@ -678,8 +678,8 @@
         "sortOrderValue": "Order: {{order}}",
         "uploadImage": "Upload image",
         "replaceImage": "Replace image",
-        "sizeHintSide": "Side slots are 180 px wide. Recommended: a portrait image such as 360 × 600 px so it stays sharp.",
-        "sizeHintBottom": "The slot below the news is as wide as the news column. Recommended: a landscape banner such as 1600 × 400 px.",
+        "sizeHintSide": "Side slots are 300 px wide. Recommended: a portrait image such as 600 × 1200 px so it stays sharp. Ads in the same slot are shown stacked.",
+        "sizeHintBottom": "The slot below the news is as wide as the news column. Recommended: a landscape banner such as 1600 × 400 px. Ads in the same slot are shown stacked.",
         "scheduleInvalid": "The end time must be after the start time.",
         "fields": {
           "name": "Name",
@@ -1127,7 +1127,17 @@
         "no_matches_available": "No matches available",
         "loading_matches": "Loading matches...",
         "try_again": "Try again",
-        "error": "Error"
+        "error": "Error",
+        "sport": "Sport",
+        "competition": "Season or tournament",
+        "all_competitions": "All seasons and tournaments",
+        "seasons": "Seasons",
+        "tournaments": "Tournaments",
+        "sports": {
+          "floorball": "Floorball",
+          "football": "Football",
+          "hockey": "Ice hockey"
+        }
       }
     }
   },
@@ -2279,6 +2289,8 @@
     "matchesPlayed": "Matches played",
     "goals": "Goals",
     "assists": "Assists",
+    "savePercentage": "SV%",
+    "goalsAgainstAverage": "GAA",
     "yellowCards": "Yellow cards",
     "redCards": "Red cards",
     "positions": {
@@ -2293,6 +2305,8 @@
       "matchesPlayed": "Matches played",
       "goals": "Goals",
       "assists": "Assists",
+      "savePercentage": "Save percentage",
+      "goalsAgainstAverage": "Goals against average",
       "yellowCards": "Yellow cards",
       "redCards": "Red cards"
     }

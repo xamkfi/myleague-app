@@ -282,6 +282,31 @@ export const floorballStatisticsService = {
   },
 
   /**
+   * Get all goalie statistics for a specific team in a season or tournament
+   */
+  getTeamGoalieStatistics: async (competitionId: string, teamId: string): Promise<FloorballGoalieSeasonStatisticsDto[]> => {
+    try {
+      const response = await fetch(`${API_URL}/floorball/statistics/team-goalies/${competitionId}/${teamId}`);
+
+      if (!response.ok) {
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch team goalie statistics');
+        throw new Error(errorMessage);
+      }
+
+      const apiResponse: ApiResponse<FloorballGoalieSeasonStatisticsDto[]> = await response.json();
+
+      if (!apiResponse.success) {
+        throw new Error(await parseErrorResponse(apiResponse, 'Failed to fetch team goalie statistics'));
+      }
+
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching team goalie statistics:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Get player statistics for a specific season
    */
   getPlayerStatistics: async (competitionId: string, playerId: string): Promise<FloorballPlayerSeasonStatisticsDto> => {

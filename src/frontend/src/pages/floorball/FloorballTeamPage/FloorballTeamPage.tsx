@@ -9,7 +9,13 @@ import { teamMarkLabel } from '../../../utils/teamMarkLabel';
 import { isGuid } from '../../../utils/sportRoutes';
 import './FloorballTeamPage.scss';
 import { floorballMatchService } from '../../../api/floorball/floorballMatchService';
-import { floorballStatisticsService, type FloorballTeamSeasonStatisticsDto, type FloorballSeasonStatisticsSummaryDto, type FloorballPlayerSeasonStatisticsDto } from '../../../api/floorball/floorballStatistics';
+import {
+  floorballStatisticsService,
+  type FloorballGoalieSeasonStatisticsDto,
+  type FloorballTeamSeasonStatisticsDto,
+  type FloorballSeasonStatisticsSummaryDto,
+  type FloorballPlayerSeasonStatisticsDto,
+} from '../../../api/floorball/floorballStatistics';
 import { floorballSeasonService, type FloorballSeasonDto } from '../../../api/floorball/floorballSeasonService';
 import CompetitionHero from '../../../components/CompetitionHero/CompetitionHero';
 import ResultsSection from './components/ResultsSection';
@@ -74,6 +80,7 @@ function FloorballTeamPage() {
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [matchesError, setMatchesError] = useState<string | null>(null);
   const [playerStatistics, setPlayerStatistics] = useState<FloorballPlayerSeasonStatisticsDto[] | null>(null);
+  const [goalieStatistics, setGoalieStatistics] = useState<FloorballGoalieSeasonStatisticsDto[] | null>(null);
   const [statisticsLoading, setStatisticsLoading] = useState(false);
   const [statisticsError, setStatisticsError] = useState<string | null>(null);
   const [seasonSummaryLoading, setSeasonSummaryLoading] = useState(false);
@@ -125,6 +132,7 @@ function FloorballTeamPage() {
           setSummaryMatches(null);
           setTeamStatistics(null);
           setPlayerStatistics(null);
+          setGoalieStatistics(null);
           setSeasonSummary(null);
           setFetchedTabs(new Set());
           setTeam(
@@ -231,19 +239,29 @@ function FloorballTeamPage() {
         const fetchTeamStats = tabId === 'stats' && !teamStatistics;
         const fetchPlayerStats = !playerStatistics;
 
+        // Goalie rows add save percentage and GAA to the roster; a failure there must not hide the roster.
+        const fetchGoalieStats = (): Promise<FloorballGoalieSeasonStatisticsDto[]> =>
+          floorballStatisticsService.getTeamGoalieStatistics(currentSeason.id, team.id).catch(() => []);
+
         if (fetchTeamStats && fetchPlayerStats) {
-          const [teamStats, playerStats] = await Promise.all([
+          const [teamStats, playerStats, goalieStats] = await Promise.all([
             floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id),
             floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id),
+            fetchGoalieStats(),
           ]);
           setTeamStatistics(teamStats);
           setPlayerStatistics(playerStats);
+          setGoalieStatistics(goalieStats);
         } else if (fetchTeamStats) {
           const teamStats = await floorballStatisticsService.getTeamStatistics(currentSeason.id, team.id);
           setTeamStatistics(teamStats);
         } else if (fetchPlayerStats) {
-          const playerStats = await floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id);
+          const [playerStats, goalieStats] = await Promise.all([
+            floorballStatisticsService.getTeamPlayerStatistics(currentSeason.id, team.id),
+            fetchGoalieStats(),
+          ]);
           setPlayerStatistics(playerStats);
+          setGoalieStatistics(goalieStats);
         }
       } else if (tabId === 'standings') {
         setSeasonSummaryLoading(true);
@@ -259,6 +277,7 @@ function FloorballTeamPage() {
       if ((tabId === 'stats' || tabId === 'roster') && isNotFoundError(error)) {
         setTeamStatistics(null);
         setPlayerStatistics([]);
+        setGoalieStatistics([]);
       } else if (tabId === 'stats' || tabId === 'roster') {
         setStatisticsError('Failed to load team statistics');
       } else if (tabId === 'standings') {
@@ -365,6 +384,7 @@ function FloorballTeamPage() {
             <RosterSection
               team={team}
               playerStatistics={playerStatistics}
+              goalieStatistics={goalieStatistics}
             />
           </div>
         );

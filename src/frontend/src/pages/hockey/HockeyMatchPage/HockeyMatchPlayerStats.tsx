@@ -2,14 +2,12 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StatAbbr from '../../../components/StatAbbr/StatAbbr';
 import { MatchPlayerStatsTable, MatchTeamStatsCard, type MatchPlayerStatRow } from '../../../components/match';
-import StatRow from '../../floorball/FloorballMatchPage/components/StatRow';
-import { getTeamInitials } from '../../floorball/FloorballMatchPage/components/matchUtils';
 import type { HockeyMatchStatisticsDto } from '../../../types/hockey/hockeyTypes';
 import { formatHockeyFaceoffPercentage } from '../../../utils/hockeyLookups';
 import { getPlayerPath } from '../../../utils/sportRoutes';
 import '../../floorball/FloorballMatchPage/components/MatchStats.scss';
 
-interface HockeyMatchStatsProps {
+interface HockeyMatchPlayerStatsProps {
   stats: HockeyMatchStatisticsDto;
   homeName: string;
   awayName: string;
@@ -19,7 +17,11 @@ interface HockeyMatchStatsProps {
   jerseyByPlayerId: Map<string, number>;
 }
 
-function HockeyMatchStats({
+/**
+ * Per-team skater points and goalie lines for one hockey match. Like the floorball
+ * match page, only skaters who recorded a point or a penalty are listed.
+ */
+function HockeyMatchPlayerStats({
   stats,
   homeName,
   awayName,
@@ -27,18 +29,8 @@ function HockeyMatchStats({
   awayTeamId,
   playerNames,
   jerseyByPlayerId,
-}: HockeyMatchStatsProps) {
+}: HockeyMatchPlayerStatsProps) {
   const { t } = useTranslation();
-  const home = stats.teams.find((row) => row.teamId === homeTeamId);
-  const away = stats.teams.find((row) => row.teamId === awayTeamId);
-  const homeGoals = home?.goalsFor ?? 0;
-  const awayGoals = away?.goalsFor ?? 0;
-  const homeSog = home?.shotsOnGoal ?? 0;
-  const awaySog = away?.shotsOnGoal ?? 0;
-  const homeFo = home?.faceoffWins ?? 0;
-  const awayFo = away?.faceoffWins ?? 0;
-  const homePim = home?.penaltyMinutes ?? 0;
-  const awayPim = away?.penaltyMinutes ?? 0;
   const sides: { side: 'home' | 'away'; teamId: string | null; teamName: string }[] = [
     { side: 'home', teamId: homeTeamId, teamName: homeName },
     { side: 'away', teamId: awayTeamId, teamName: awayName },
@@ -46,60 +38,9 @@ function HockeyMatchStats({
 
   return (
     <>
-      <div className="match-stats">
-        <div className="stats-header">
-          <div className="team-identity home">
-            <div className="team-crest home-team" title={homeName}>
-              <span className="team-initials">{getTeamInitials(homeName)}</span>
-            </div>
-            <span className="team-name">{homeName}</span>
-          </div>
-          <div className="header-label">{t('matchPage.stats.title')}</div>
-          <div className="team-identity away">
-            <span className="team-name">{awayName}</span>
-            <div className="team-crest away-team" title={awayName}>
-              <span className="team-initials">{getTeamInitials(awayName)}</span>
-            </div>
-          </div>
-        </div>
-        <div className="stats-content">
-          <StatRow
-            label={t('hockeyPage.goals', 'Goals')}
-            home={homeGoals}
-            away={awayGoals}
-            homeValue={homeGoals}
-            awayValue={awayGoals}
-            total={homeGoals + awayGoals}
-          />
-          <StatRow
-            label={t('hockeyPage.shotsOnGoal', 'Shots on goal')}
-            home={homeSog}
-            away={awaySog}
-            homeValue={homeSog}
-            awayValue={awaySog}
-            total={homeSog + awaySog}
-          />
-          <StatRow
-            label={t('hockeyPage.faceoffs', 'Face-offs')}
-            home={homeFo}
-            away={awayFo}
-            homeValue={homeFo}
-            awayValue={awayFo}
-            total={homeFo + awayFo}
-          />
-          <StatRow
-            label={t('hockeyPage.penaltyMinutes', 'PIM')}
-            home={homePim}
-            away={awayPim}
-            homeValue={homePim}
-            awayValue={awayPim}
-            total={homePim + awayPim}
-          />
-        </div>
-      </div>
       {sides.map(({ side, teamId, teamName }) => {
         const teamPlayers: MatchPlayerStatRow[] = stats.players
-          .filter((row) => row.teamId === teamId)
+          .filter((row) => row.teamId === teamId && (row.points > 0 || row.penaltyMinutes > 0))
           .map((row) => ({
             playerId: row.playerId,
             name: playerNames.get(row.playerId) ?? row.playerId.slice(0, 8),
@@ -162,4 +103,4 @@ function HockeyMatchStats({
   );
 }
 
-export default HockeyMatchStats;
+export default HockeyMatchPlayerStats;

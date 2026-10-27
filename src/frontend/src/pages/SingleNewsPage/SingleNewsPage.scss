@@ -345,7 +345,7 @@
     }
 
     // Enhanced styling for images in content
-    img {
+    img:not(.mr-team-logo) {
       max-width: 100%;
       height: auto;
       border-radius: 8px;

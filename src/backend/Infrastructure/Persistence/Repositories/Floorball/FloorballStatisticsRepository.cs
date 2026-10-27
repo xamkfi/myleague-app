@@ -340,6 +340,20 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
+    public async Task<List<FloorballGoalieSeasonStatistics>> GetGoalieStatisticsByTeamAndCompetitionAsync(Guid teamId, Guid competitionId, CancellationToken cancellationToken = default)
+    {
+        return await _context.FloorballGoalieSeasonStatistics
+            .Include(x => x.Player)
+            .Include(x => x.Team)
+            .Include(x => x.Competition)
+            .Where(s => s.TeamId == teamId && s.CompetitionId == competitionId)
+            .OrderByDescending(s => s.GamesPlayed)
+            .ThenByDescending(s => s.SavePercentage)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<List<FloorballGoalieSeasonStatistics>> GetTopGoaliesAsync(Guid competitionId, int topN, int minimumGames, CancellationToken cancellationToken = default)
     {
         return await _context.FloorballGoalieSeasonStatistics

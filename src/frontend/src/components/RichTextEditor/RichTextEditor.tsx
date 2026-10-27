@@ -5,7 +5,8 @@ import 'react-quill/dist/quill.snow.css';
 
 import { handleImageUploadService } from '../../api/news/handleImageUploadService';
 import MatchSelectionHeader from '../../pages/AdminPage/NewsPage/components/MatchSelectionHeader';
-import type { FloorballMatch } from '../../api/news/GetMatchesService';
+import type { NewsMatchOption } from '../../api/news/newsMatchService';
+import type { SportKind } from '../../utils/sportRoutes';
 import {
   ensureMatchResultBlotRegistered,
   type MatchResultValue,
@@ -44,6 +45,8 @@ export interface RichTextEditorProps {
   onUploadingChange?: (uploading: boolean) => void;
   /** Show the "Lisää otteluita / Add matches" button above the editor. */
   showMatchInsert?: boolean;
+  /** Sport the match picker opens with (see `showMatchInsert`). */
+  matchSport?: SportKind;
   /** Stable id for the editor host element (useful for labels). */
   id?: string;
   /** Placeholder shown in the editor when empty. */
@@ -91,6 +94,7 @@ const RichTextEditor = ({
   onChange,
   onUploadingChange,
   showMatchInsert = false,
+  matchSport,
   id,
   placeholder,
   variant = 'default',
@@ -280,13 +284,14 @@ const RichTextEditor = ({
     [openImageUploader]
   );
 
-  const handleInsertMatches = useCallback((matches: FloorballMatch[]) => {
+  const handleInsertMatches = useCallback((matches: NewsMatchOption[]) => {
     const editor = quillRef.current?.getEditor();
     if (!editor || matches.length === 0) return;
 
     const matchesData: MatchResultValue[] = matches.map((match) => ({
-      homeTeam: match.homeTeamName,
-      awayTeam: match.awayTeamName,
+      sport: match.sport,
+      homeTeam: match.homeTeamName ?? '',
+      awayTeam: match.awayTeamName ?? '',
       homeScore: match.homeScore,
       awayScore: match.awayScore,
       date: match.scheduledDateTime,
@@ -312,7 +317,7 @@ const RichTextEditor = ({
     >
       {showMatchInsert && !readOnly && (
         <div className="rich-text-editor__toolbar-row">
-          <MatchSelectionHeader onInsertMatches={handleInsertMatches} />
+          <MatchSelectionHeader onInsertMatches={handleInsertMatches} defaultSport={matchSport} />
           <p className="rich-text-editor__match-hint">{t('admin.editor.dragMatchHint')}</p>
         </div>
       )}
