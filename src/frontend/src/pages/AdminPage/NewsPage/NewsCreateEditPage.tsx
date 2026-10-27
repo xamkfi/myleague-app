@@ -15,7 +15,23 @@ import { handleImageDeleteService } from '../../../api/news/handleImageDeleteSer
 import { singleNewsService } from '../../../api/news/singleNewsService';
 import { useAdminReturnTo } from '../../../hooks/useAdminReturnTo';
 import { unwrapApiErrorMessage } from '../../../api/utils/ParseErrorResponse';
+import { SportsCategory } from '../../../types/common/sports';
+import type { SportKind } from '../../../utils/sportRoutes';
 import './NewsCreateEditPage.scss';
+
+/** Opens the match picker on the sport the article is filed under. */
+function matchSportFor(sportCategory: string): SportKind | undefined {
+  switch (sportCategory) {
+    case SportsCategory.Floorball:
+      return 'floorball';
+    case SportsCategory.Football:
+      return 'football';
+    case SportsCategory.Icehockey:
+      return 'hockey';
+    default:
+      return undefined;
+  }
+}
 
 const emptyNewsData = (): NewsInputsData => ({
   title: '',
@@ -302,6 +318,7 @@ export default function NewsCreateEditPage() {
                 onChange={setValue}
                 onUploadingChange={setIsUploadingContent}
                 showMatchInsert
+                matchSport={matchSportFor(newsData.sportCategory)}
               />
             </div>
           </section>

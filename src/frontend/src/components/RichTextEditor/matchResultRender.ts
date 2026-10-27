@@ -1,4 +1,5 @@
 import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
+import { getMatchPath, type SportKind } from '../../utils/sportRoutes';
 
 export interface MatchResultValue {
   homeTeam: string;
@@ -7,6 +8,8 @@ export interface MatchResultValue {
   awayScore: string | number;
   date: string;
   link: string;
+  /** Missing on embeds saved before football and hockey were supported; those are floorball. */
+  sport?: SportKind;
   status?: string;
   homeTeamImage?: string;
   awayTeamImage?: string;
@@ -94,7 +97,7 @@ export const renderMatchRow = (match: MatchResultValue): string => {
     : '';
 
   return (
-    `<a href="/match/${escapeHtml(match.link)}" class="match-result-row" target="_blank" rel="noopener noreferrer">` +
+    `<a href="${escapeHtml(getMatchPath(match.sport ?? 'floorball', match.link))}" class="match-result-row" target="_blank" rel="noopener noreferrer">` +
     `<span class="mr-date"><span class="mr-date-day">${escapeHtml(formatDate(match.date))}</span><span class="mr-date-time">${escapeHtml(formatTime(match.date))}</span></span>` +
     `<span class="mr-teams">` +
     `<span class="mr-team-line${homeWon ? ' mr-winner' : ''}">${renderTeamLogo(match.homeTeamImage)}<span class="mr-team-name">${escapeHtml(match.homeTeam)}</span></span>` +

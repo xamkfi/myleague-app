@@ -17,8 +17,8 @@ import { useAudience } from '../../context/AudienceContext';
 import { useTranslation } from 'react-i18next';
 import './HomePage.scss';
 
-// Room for the 1200px content column, two 180px ad rails with gaps, and a scrollbar.
-const SIDE_RAILS_QUERY = '(min-width: 1640px)';
+// Room for the 1200px content column, two 300px ad rails with gaps, and a scrollbar.
+const SIDE_RAILS_QUERY = '(min-width: 1860px)';
 
 function groupAdsBySlot(ads: PublicAdvertisement[]): Record<AdSlotName, PublicAdvertisement[]> {
   return Object.fromEntries(

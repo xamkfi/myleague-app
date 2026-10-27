@@ -12,7 +12,12 @@ import { hockeyStatisticsService } from '../../../api/hockey/hockeyStatisticsSer
 import { hockeySeasonService } from '../../../api/hockey/hockeySeasonService';
 import { hockeyTournamentService } from '../../../api/hockey/hockeyTournamentService';
 import { clubService } from '../../../api/common/clubService';
-import type { HockeyMatchDto, HockeyPlayerCompetitionStatisticsDto, HockeyTeamDto } from '../../../types/hockey/hockeyTypes';
+import type {
+  HockeyGoalieCompetitionStatisticsDto,
+  HockeyMatchDto,
+  HockeyPlayerCompetitionStatisticsDto,
+  HockeyTeamDto,
+} from '../../../types/hockey/hockeyTypes';
 import { shouldRefreshHockeyMatches } from '../../../types/hockey/hockeyTypes';
 import { findTeamBySlug, slugify } from '../../../utils/slugUtils';
 import { teamMarkLabel } from '../../../utils/teamMarkLabel';
@@ -42,6 +47,7 @@ function HockeyTeamPage() {
   const [teamLogos, setTeamLogos] = useState<Map<string, string | null>>(new Map());
   const [playerNames, setPlayerNames] = useState<Map<string, string>>(new Map());
   const [playerStats, setPlayerStats] = useState<HockeyPlayerCompetitionStatisticsDto[]>([]);
+  const [goalieStats, setGoalieStats] = useState<HockeyGoalieCompetitionStatisticsDto[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<HockeyTeamTab>('roster');
 
@@ -79,11 +85,18 @@ function HockeyTeamPage() {
       const names = await loadHockeyRosterNameMaps([scoped]);
       setPlayerNames(names.byPlayerId);
       const competitionIds = seasonId ? [seasonId] : [];
-      const statsLists = await Promise.all(
-        competitionIds.map((competitionId) =>
-          hockeyStatisticsService.getPlayers(competitionId).catch(() => []),
+      const [statsLists, goalieLists] = await Promise.all([
+        Promise.all(
+          competitionIds.map((competitionId) =>
+            hockeyStatisticsService.getPlayers(competitionId).catch(() => []),
+          ),
         ),
-      );
+        Promise.all(
+          competitionIds.map((competitionId) =>
+            hockeyStatisticsService.getGoalies(competitionId).catch(() => []),
+          ),
+        ),
+      ]);
       const byPlayer = new Map<string, HockeyPlayerCompetitionStatisticsDto>();
       for (const list of statsLists) {
         for (const row of list) {
@@ -93,6 +106,16 @@ function HockeyTeamPage() {
         }
       }
       setPlayerStats([...byPlayer.values()]);
+      // Goalies are skipped in the skater table, so their games come from the goalie statistics.
+      const byGoalie = new Map<string, HockeyGoalieCompetitionStatisticsDto>();
+      for (const list of goalieLists) {
+        for (const row of list) {
+          if (row.teamId === selected.id) {
+            byGoalie.set(row.playerId, row);
+          }
+        }
+      }
+      setGoalieStats([...byGoalie.values()]);
       const clubs = await clubService.getAll().catch(() => []);
       const club = clubs.find((item) => item.id === selected.clubId);
       setClubName(club?.name ?? '');
@@ -207,7 +230,12 @@ function HockeyTeamPage() {
           aria-labelledby={`tab-${activeTab}`}
         >
           {activeTab === 'roster' && (
-            <HockeyRosterSection team={team} playerNames={playerNames} playerStats={playerStats} />
+            <HockeyRosterSection
+              team={team}
+              playerNames={playerNames}
+              playerStats={playerStats}
+              goalieStats={goalieStats}
+            />
           )}
           {activeTab === 'results' && (
             <div className="results-section">

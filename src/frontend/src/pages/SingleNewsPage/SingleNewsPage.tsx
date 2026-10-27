@@ -11,7 +11,8 @@ import { useAudience } from '../../context/AudienceContext';
 import { singleNewsService } from '../../api/news/singleNewsService';
 import defaultNewsImage from '../../assets/defaultImage.jpg';
 import NewsTaxonomyBar from './NewsTaxonomyBar';
-import NewsArticleHtml, { useHydratedNewsHtml } from './NewsArticleHtml';
+import NewsArticleHtml from './NewsArticleHtml';
+import { useHydratedNewsHtml } from './useHydratedNewsHtml';
 import NewsCard from '../NewsPage/components/NewsCard';
 
 type SingleNewsPageProps = {

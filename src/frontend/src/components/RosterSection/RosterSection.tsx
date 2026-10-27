@@ -22,6 +22,9 @@ export interface RosterStatRow {
   gamesPlayed: number;
   goals: number;
   assists: number;
+  /** Goalie-only columns; shown instead of goals and assists for goalie positions. */
+  savePercentage?: number;
+  goalsAgainstAverage?: number;
 }
 
 interface RosterSectionProps {
@@ -29,7 +32,13 @@ interface RosterSectionProps {
   players: RosterPlayerRow[];
   playerStatistics?: RosterStatRow[] | null;
   positionOrder: string[];
+  /** Positions whose group shows save percentage and goals against average instead of goals and assists. */
+  goaliePositions?: string[];
   positionLabel?: (position: string) => string;
+}
+
+function formatDecimal(value: number | undefined): string {
+  return value === undefined ? '—' : value.toFixed(2);
 }
 
 export default function RosterSection({
@@ -37,6 +46,7 @@ export default function RosterSection({
   players,
   playerStatistics,
   positionOrder,
+  goaliePositions = [],
   positionLabel,
 }: RosterSectionProps) {
   const { t } = useTranslation();
@@ -50,63 +60,84 @@ export default function RosterSection({
   return (
     <div className="roster-section">
       {showLicence && <LicenceLegend />}
-      {playerPositions.map((pos) => (
-        <div className="roster-container" key={pos}>
-          <div className="roster-position-header">
-            {positionLabel?.(pos) ?? t(`roster.positions.${pos}`, pos)}
-          </div>
-          <div className="roster-position-container">
-            <div className="table-wrapper">
-              <div className="table stats-header">
-                <div className="roster-jersey" title={t('roster.tooltips.jerseyNumber')}>{t('roster.jerseyNumber')}</div>
-                <div className="roster-player-name">{t('roster.name')}</div>
-                <div className="roster-games-played" title={t('roster.tooltips.matchesPlayed')}>{t('roster.matchesPlayed')}</div>
-                <div className="roster-goals" title={t('roster.tooltips.goals')}>{t('roster.goals')}</div>
-                <div className="roster-assists" title={t('roster.tooltips.assists')}>{t('roster.assists')}</div>
+      {playerPositions.map((pos) => {
+        const isGoalieGroup: boolean = goaliePositions.includes(pos);
+        return (
+          <div className="roster-container" key={pos}>
+            <div className="roster-position-header">
+              {positionLabel?.(pos) ?? t(`roster.positions.${pos}`, pos)}
+            </div>
+            <div className="roster-position-container">
+              <div className="table-wrapper">
+                <div className="table stats-header">
+                  <div className="roster-jersey" title={t('roster.tooltips.jerseyNumber')}>{t('roster.jerseyNumber')}</div>
+                  <div className="roster-player-name">{t('roster.name')}</div>
+                  <div className="roster-games-played" title={t('roster.tooltips.matchesPlayed')}>{t('roster.matchesPlayed')}</div>
+                  {isGoalieGroup ? (
+                    <>
+                      <div className="roster-goals" title={t('roster.tooltips.savePercentage')}>{t('roster.savePercentage')}</div>
+                      <div className="roster-assists" title={t('roster.tooltips.goalsAgainstAverage')}>{t('roster.goalsAgainstAverage')}</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="roster-goals" title={t('roster.tooltips.goals')}>{t('roster.goals')}</div>
+                      <div className="roster-assists" title={t('roster.tooltips.assists')}>{t('roster.assists')}</div>
+                    </>
+                  )}
+                </div>
+                {players
+                  .filter((player) => player.position === pos)
+                  .map((player) => {
+                    const isCreator = player.playerName === 'Tuomas Reijonen';
+                    const seasonStats = statsLookup.get(player.playerId);
+                    return (
+                      <div
+                        className={`table roster-player${isCreator ? ' roster-player--creator' : ''}`}
+                        key={player.playerId}
+                      >
+                        <div className="roster-jersey row licence-anchor">
+                          {player.jerseyNumber ?? '—'}
+                          {player.licenceActive !== undefined && <LicenceStatusDot active={player.licenceActive} />}
+                        </div>
+                        <div className="roster-player-name">
+                          <PlayerLink sport={sport} playerId={player.playerId}>
+                            {isCreator ? (
+                              <>
+                                <span className="creator-badge" title="System Creator">💪</span>
+                                {` ${player.playerName} `}
+                                <span className="creator-badge" title="System Creator">💪</span>
+                              </>
+                            ) : (
+                              `${player.playerName}${player.nameSuffix ?? ''}`
+                            )}
+                          </PlayerLink>
+                        </div>
+                        <div className="roster-games-played">
+                          {seasonStats?.gamesPlayed ?? player.gamesPlayed ?? '—'}
+                        </div>
+                        {isGoalieGroup ? (
+                          <>
+                            <div className="roster-goals">{formatDecimal(seasonStats?.savePercentage)}</div>
+                            <div className="roster-assists">{formatDecimal(seasonStats?.goalsAgainstAverage)}</div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="roster-goals">
+                              {seasonStats?.goals ?? player.goals ?? '—'}
+                            </div>
+                            <div className="roster-assists">
+                              {seasonStats?.assists ?? player.assists ?? '—'}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
               </div>
-              {players
-                .filter((player) => player.position === pos)
-                .map((player) => {
-                  const isCreator = player.playerName === 'Tuomas Reijonen';
-                  const seasonStats = statsLookup.get(player.playerId);
-                  return (
-                    <div
-                      className={`table roster-player${isCreator ? ' roster-player--creator' : ''}`}
-                      key={player.playerId}
-                    >
-                      <div className="roster-jersey row licence-anchor">
-                        {player.jerseyNumber ?? '—'}
-                        {player.licenceActive !== undefined && <LicenceStatusDot active={player.licenceActive} />}
-                      </div>
-                      <div className="roster-player-name">
-                        <PlayerLink sport={sport} playerId={player.playerId}>
-                          {isCreator ? (
-                            <>
-                              <span className="creator-badge" title="System Creator">💪</span>
-                              {` ${player.playerName} `}
-                              <span className="creator-badge" title="System Creator">💪</span>
-                            </>
-                          ) : (
-                            `${player.playerName}${player.nameSuffix ?? ''}`
-                          )}
-                        </PlayerLink>
-                      </div>
-                      <div className="roster-games-played">
-                        {seasonStats?.gamesPlayed ?? player.gamesPlayed ?? '—'}
-                      </div>
-                      <div className="roster-goals">
-                        {seasonStats?.goals ?? player.goals ?? '—'}
-                      </div>
-                      <div className="roster-assists">
-                        {seasonStats?.assists ?? player.assists ?? '—'}
-                      </div>
-                    </div>
-                  );
-                })}
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -177,6 +177,15 @@ public interface IFloorballStatisticsRepository
     Task<IEnumerable<FloorballGoalieSeasonStatistics>> GetGoalieStatisticsByCompetitionAsync(Guid competitionId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets all goalie statistics for a specific team in a specific competition
+    /// </summary>
+    /// <param name="teamId">The team ID</param>
+    /// <param name="competitionId">The competition ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Goalie season statistics for the team, most games played first</returns>
+    Task<List<FloorballGoalieSeasonStatistics>> GetGoalieStatisticsByTeamAndCompetitionAsync(Guid teamId, Guid competitionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets top goalies for a specific competition based on save percentage
     /// </summary>
     /// <param name="competitionId">The competition ID</param>

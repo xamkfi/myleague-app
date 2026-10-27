@@ -124,6 +124,25 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
+        /// Gets all goalie statistics for a specific team in a season or tournament
+        /// </summary>
+        /// <param name="competitionId">The season or tournament ID</param>
+        /// <param name="teamId">The team ID</param>
+        /// <returns>List of goalie season statistics for the team</returns>
+        [HttpGet("team-goalies/{competitionId:guid}/{teamId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<List<FloorballGoalieSeasonStatisticsDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ApiResponse<List<FloorballGoalieSeasonStatisticsDto>>>> GetTeamGoalieStatistics(Guid competitionId, Guid teamId)
+        {
+            _logger.LogDebug("Getting goalie statistics for Team: {TeamId} in Competition: {CompetitionId}", teamId, competitionId);
+
+            GetFloorballTeamGoalieStatisticsQuery query = new GetFloorballTeamGoalieStatisticsQuery(competitionId, teamId);
+            Result<List<FloorballGoalieSeasonStatisticsDto>> result = await _mediator.Send(query);
+
+            return HandleResult(result, "Team goalie statistics retrieved successfully", "Failed to retrieve team goalie statistics");
+        }
+
+        /// <summary>
         /// Gets player statistics for a specific season
         /// </summary>
         /// <param name="competitionId">The season ID</param>

@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import HockeyMatchEvents from './HockeyMatchEvents';
-import HockeyMatchStats from './HockeyMatchStats';
+import HockeyMatchPlayerStats from './HockeyMatchPlayerStats';
+import HockeyMatchTeamStats from './HockeyMatchTeamStats';
 import HockeyMatchLineups from './HockeyMatchLineups';
 import { hockeyMatchService } from '../../../api/hockey/hockeyMatchService';
 import { hockeyStatisticsService } from '../../../api/hockey/hockeyStatisticsService';
@@ -190,14 +191,12 @@ function HockeyMatchPage() {
             />
             {stats && (
               <div className="summary-stats-section">
-                <HockeyMatchStats
+                <HockeyMatchTeamStats
                   stats={stats}
                   homeName={homeName}
                   awayName={awayName}
                   homeTeamId={match.homeTeamId}
                   awayTeamId={match.awayTeamId}
-                  playerNames={careerPlayerNames}
-                  jerseyByPlayerId={buildHockeyJerseyByCareerPlayerId(match, teams)}
                 />
               </div>
             )}
@@ -208,6 +207,19 @@ function HockeyMatchPage() {
               awayName={awayName}
               playerNames={playerNames}
             />
+            {stats && (
+              <div className="summary-player-stats-section">
+                <HockeyMatchPlayerStats
+                  stats={stats}
+                  homeName={homeName}
+                  awayName={awayName}
+                  homeTeamId={match.homeTeamId}
+                  awayTeamId={match.awayTeamId}
+                  playerNames={careerPlayerNames}
+                  jerseyByPlayerId={buildHockeyJerseyByCareerPlayerId(match, teams)}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

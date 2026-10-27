@@ -47,14 +47,14 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
               )}
 
               {hasEvents && (
-                <div className="summary-player-stats-section">
-                  <MatchPlayerStats match={match} homeRoster={rosters.home} awayRoster={rosters.away} />
+                <div className="summary-events-section">
+                  <MatchEvents match={match} homeRoster={rosters.home} awayRoster={rosters.away} />
                 </div>
               )}
 
               {hasEvents && (
-                <div className="summary-events-section">
-                  <MatchEvents match={match} homeRoster={rosters.home} awayRoster={rosters.away} />
+                <div className="summary-player-stats-section">
+                  <MatchPlayerStats match={match} homeRoster={rosters.home} awayRoster={rosters.away} />
                 </div>
               )}
             </div>
