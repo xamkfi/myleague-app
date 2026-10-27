@@ -12,22 +12,24 @@ import '../styles/MatchBrowser.scss';
 
 interface MatchBrowserProps {
   onInsertMatches: (matches: NewsMatchOption[]) => void;
-  /** Sport the picker opens with; falls back to floorball. */
+  /** Sport the picker opens with (the article's sport category). Without it the user picks the sport first. */
   defaultSport?: SportKind;
 }
 
 const SPORTS: SportKind[] = ['floorball', 'football', 'hockey'];
-const CATEGORIES: NewsMatchCategory[] = ['all', 'scheduled', 'results', 'cancelled'];
+const CATEGORIES: NewsMatchCategory[] = ['results', 'scheduled', 'all', 'cancelled'];
+/** Recently finished matches are what a news article usually links to, so the picker opens on them. */
+const DEFAULT_CATEGORY: NewsMatchCategory = 'results';
 const ALL_COMPETITIONS = '';
 
 function selectionKey(match: Pick<NewsMatchOption, 'sport' | 'id'>): string {
   return `${match.sport}:${match.id}`;
 }
 
-export default function MatchBrowser({ onInsertMatches, defaultSport = 'floorball' }: MatchBrowserProps) {
+export default function MatchBrowser({ onInsertMatches, defaultSport }: MatchBrowserProps) {
   const { t } = useTranslation();
   const [showBrowser, setShowBrowser] = useState(false);
-  const [sport, setSport] = useState<SportKind>(defaultSport);
+  const [sport, setSport] = useState<SportKind | null>(defaultSport ?? null);
   const [competitions, setCompetitions] = useState<NewsCompetitionOption[]>([]);
   const [competitionsLoading, setCompetitionsLoading] = useState(false);
   const [competitionId, setCompetitionId] = useState<string>(ALL_COMPETITIONS);
@@ -36,15 +38,22 @@ export default function MatchBrowser({ onInsertMatches, defaultSport = 'floorbal
   const [matches, setMatches] = useState<NewsMatchOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<NewsMatchCategory>('all');
+  const [selectedCategory, setSelectedCategory] = useState<NewsMatchCategory>(DEFAULT_CATEGORY);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  // Load the seasons and tournaments of the chosen sport and preselect the newest one.
+  // Follow the article's sport category when it changes while the picker is closed.
   useEffect(() => {
-    if (!showBrowser) {
+    if (!showBrowser && defaultSport) {
+      setSport(defaultSport);
+    }
+  }, [defaultSport, showBrowser]);
+
+  // Load the seasons and tournaments of the chosen sport for the optional competition filter.
+  useEffect(() => {
+    if (!showBrowser || !sport) {
       return undefined;
     }
 
@@ -53,11 +62,9 @@ export default function MatchBrowser({ onInsertMatches, defaultSport = 'floorbal
     newsMatchService
       .getCompetitions(sport)
       .then((options) => {
-        if (cancelled) {
-          return;
+        if (!cancelled) {
+          setCompetitions(options);
         }
-        setCompetitions(options);
-        setCompetitionId(options[0]?.id ?? ALL_COMPETITIONS);
       })
       .catch((err: unknown) => {
         if (cancelled) {
@@ -65,7 +72,6 @@ export default function MatchBrowser({ onInsertMatches, defaultSport = 'floorbal
         }
         console.error('Error fetching competitions:', err);
         setCompetitions([]);
-        setCompetitionId(ALL_COMPETITIONS);
       })
       .finally(() => {
         if (!cancelled) {
@@ -79,6 +85,9 @@ export default function MatchBrowser({ onInsertMatches, defaultSport = 'floorbal
   }, [showBrowser, sport]);
 
   const fetchMatches = useCallback(async () => {
+    if (!sport) {
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -99,12 +108,12 @@ export default function MatchBrowser({ onInsertMatches, defaultSport = 'floorbal
     }
   }, [sport, competitionId, selectedCategory, currentPage, pageSize]);
 
-  // Fetch matches once the competitions are known and whenever a filter or page changes.
+  // Fetch matches as soon as a sport is chosen and whenever a filter or page changes.
   useEffect(() => {
-    if (showBrowser && !competitionsLoading) {
+    if (showBrowser) {
       void fetchMatches();
     }
-  }, [showBrowser, competitionsLoading, fetchMatches]);
+  }, [showBrowser, fetchMatches]);
 
   const handleMatchSelect = (match: NewsMatchOption) => {
     setSelectedMatches((prev) => {
@@ -135,7 +144,7 @@ export default function MatchBrowser({ onInsertMatches, defaultSport = 'floorbal
     setSport(nextSport);
     setCompetitions([]);
     setCompetitionId(ALL_COMPETITIONS);
-    setSelectedCategory('all');
+    setSelectedCategory(DEFAULT_CATEGORY);
     setSearchTerm('');
     setCurrentPage(1);
   };
@@ -201,7 +210,8 @@ export default function MatchBrowser({ onInsertMatches, defaultSport = 'floorbal
           setShowBrowser(true);
           setCurrentPage(1);
           setSearchTerm('');
-          setSelectedCategory('all');
+          setCompetitionId(ALL_COMPETITIONS);
+          setSelectedCategory(DEFAULT_CATEGORY);
         }}
       >
         {t('admin.news.matches.add_matches_selected')}
@@ -248,123 +258,133 @@ export default function MatchBrowser({ onInsertMatches, defaultSport = 'floorbal
                 </div>
               </div>
 
-              {/* Step 2: season or tournament */}
-              <div className="match-browser__filter">
-                <label className="match-browser__filter-label" htmlFor="match-browser-competition">
-                  {t('admin.news.matches.competition', 'Season or tournament')}
-                </label>
-                <select
-                  id="match-browser-competition"
-                  className="match-browser__select"
-                  value={competitionId}
-                  disabled={competitionsLoading}
-                  onChange={(e) => handleCompetitionChange(e.target.value)}
-                >
-                  <option value={ALL_COMPETITIONS}>{t('admin.news.matches.all_competitions', 'All seasons and tournaments')}</option>
-                  {seasons.length > 0 && (
-                    <optgroup label={t('admin.news.matches.seasons', 'Seasons')}>
-                      {seasons.map((season) => (
-                        <option key={season.id} value={season.id}>{season.name}</option>
-                      ))}
-                    </optgroup>
-                  )}
-                  {tournaments.length > 0 && (
-                    <optgroup label={t('admin.news.matches.tournaments', 'Tournaments')}>
-                      {tournaments.map((tournament) => (
-                        <option key={tournament.id} value={tournament.id}>{tournament.name}</option>
-                      ))}
-                    </optgroup>
-                  )}
-                </select>
-              </div>
-
-              {/* Step 3: status filter, newest matches first */}
-              <div className="match-browser__categories">
-                {CATEGORIES.map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    className={`match-browser__category-btn ${selectedCategory === category ? 'match-browser__category-btn--active' : ''}`}
-                    onClick={() => handleCategoryChange(category)}
-                  >
-                    {categoryLabel(category)}
-                  </button>
-                ))}
-              </div>
-
-              {/* Search bar */}
-              <div className="match-browser__search">
-                <div className="match-browser__search-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  placeholder={t('admin.news.matches.search_matches', 'Search matches...')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="match-browser__search-input"
-                />
-              </div>
-
-              {/* Matches list */}
-              {!loading && !competitionsLoading && !error && (
-                <div className="match-browser__list-section">
-                  <h3 className="match-browser__list-title">{categoryLabel(selectedCategory)}</h3>
-                  <div className="match-browser__list">
-                    {filteredMatches.length === 0 ? (
-                      <div className="match-browser__empty">
-                        <p>{t('admin.news.matches.no_matches_available', 'No matches available')}</p>
-                      </div>
-                    ) : (
-                      filteredMatches.map((match) => (
-                        <div key={selectionKey(match)} className="match-browser__item">
-                          <div className="match-browser__item-content">
-                            <div className="match-browser__item-date">
-                              {new Date(match.scheduledDateTime).toLocaleDateString('fi-FI')} {new Date(match.scheduledDateTime).toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                            <div className="match-browser__item-sport">
-                              {sportLabel(match.sport)}
-                            </div>
-                            <div className="match-browser__item-teams">
-                              {match.homeTeamName ?? 'TBD'} {match.homeScore} - {match.awayScore} {match.awayTeamName ?? 'TBD'}
-                            </div>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={selectedMatches.some((item) => selectionKey(item) === selectionKey(match))}
-                            onChange={() => handleMatchSelect(match)}
-                            className="match-browser__item-checkbox"
-                          />
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Pagination */}
-                  {totalCount > 0 && (
-                    <div className="match-browser__pagination">
-                      <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        totalCount={totalCount}
-                        pageSize={pageSize}
-                        onPageChange={handlePageChange}
-                        onPageSizeChange={handlePageSizeChange}
-                        pageSizeOptions={[5, 10, 25, 50]}
-                      />
-                    </div>
-                  )}
+              {!sport && (
+                <div className="match-browser__empty">
+                  <p>{t('admin.news.matches.choose_sport_first', 'Choose a sport to list its matches.')}</p>
                 </div>
               )}
 
-              {/* Loading state */}
-              {(loading || competitionsLoading) && (
-                <div className="match-browser__loading">
-                  <p>{t('admin.news.matches.loading_matches', 'Loading matches...')}</p>
+              {sport && (
+                <>
+                {/* Step 2: optional season or tournament filter */}
+                <div className="match-browser__filter">
+                  <label className="match-browser__filter-label" htmlFor="match-browser-competition">
+                    {t('admin.news.matches.competition', 'Season or tournament')}
+                  </label>
+                  <select
+                    id="match-browser-competition"
+                    className="match-browser__select"
+                    value={competitionId}
+                    disabled={competitionsLoading}
+                    onChange={(e) => handleCompetitionChange(e.target.value)}
+                  >
+                    <option value={ALL_COMPETITIONS}>{t('admin.news.matches.all_competitions', 'All seasons and tournaments')}</option>
+                    {seasons.length > 0 && (
+                      <optgroup label={t('admin.news.matches.seasons', 'Seasons')}>
+                        {seasons.map((season) => (
+                          <option key={season.id} value={season.id}>{season.name}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {tournaments.length > 0 && (
+                      <optgroup label={t('admin.news.matches.tournaments', 'Tournaments')}>
+                        {tournaments.map((tournament) => (
+                          <option key={tournament.id} value={tournament.id}>{tournament.name}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </select>
                 </div>
+  
+                {/* Step 3: status filter, newest matches first */}
+                <div className="match-browser__categories">
+                  {CATEGORIES.map((category) => (
+                    <button
+                      key={category}
+                      type="button"
+                      className={`match-browser__category-btn ${selectedCategory === category ? 'match-browser__category-btn--active' : ''}`}
+                      onClick={() => handleCategoryChange(category)}
+                    >
+                      {categoryLabel(category)}
+                    </button>
+                  ))}
+                </div>
+  
+                {/* Search bar */}
+                <div className="match-browser__search">
+                  <div className="match-browser__search-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="11" cy="11" r="8"/>
+                      <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder={t('admin.news.matches.search_matches', 'Search matches...')}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="match-browser__search-input"
+                  />
+                </div>
+  
+                {/* Matches list */}
+                {!loading && !error && (
+                  <div className="match-browser__list-section">
+                    <h3 className="match-browser__list-title">{categoryLabel(selectedCategory)}</h3>
+                    <div className="match-browser__list">
+                      {filteredMatches.length === 0 ? (
+                        <div className="match-browser__empty">
+                          <p>{t('admin.news.matches.no_matches_available', 'No matches available')}</p>
+                        </div>
+                      ) : (
+                        filteredMatches.map((match) => (
+                          <div key={selectionKey(match)} className="match-browser__item">
+                            <div className="match-browser__item-content">
+                              <div className="match-browser__item-date">
+                                {new Date(match.scheduledDateTime).toLocaleDateString('fi-FI')} {new Date(match.scheduledDateTime).toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                              <div className="match-browser__item-sport">
+                                {sportLabel(match.sport)}
+                              </div>
+                              <div className="match-browser__item-teams">
+                                {match.homeTeamName ?? 'TBD'} {match.homeScore} - {match.awayScore} {match.awayTeamName ?? 'TBD'}
+                              </div>
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={selectedMatches.some((item) => selectionKey(item) === selectionKey(match))}
+                              onChange={() => handleMatchSelect(match)}
+                              className="match-browser__item-checkbox"
+                            />
+                          </div>
+                        ))
+                      )}
+                    </div>
+  
+                    {/* Pagination */}
+                    {totalCount > 0 && (
+                      <div className="match-browser__pagination">
+                        <Pagination
+                          currentPage={currentPage}
+                          totalPages={totalPages}
+                          totalCount={totalCount}
+                          pageSize={pageSize}
+                          onPageChange={handlePageChange}
+                          onPageSizeChange={handlePageSizeChange}
+                          pageSizeOptions={[5, 10, 25, 50]}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+  
+                {/* Loading state */}
+                {loading && (
+                  <div className="match-browser__loading">
+                    <p>{t('admin.news.matches.loading_matches', 'Loading matches...')}</p>
+                  </div>
+                )}
+                </>
               )}
 
               {/* Selected matches chips */}

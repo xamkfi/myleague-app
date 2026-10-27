@@ -1131,6 +1131,7 @@
         "sport": "Laji",
         "competition": "Kausi tai turnaus",
         "all_competitions": "Kaikki kaudet ja turnaukset",
+        "choose_sport_first": "Valitse ensin laji, niin sen ottelut listataan tähän.",
         "seasons": "Kaudet",
         "tournaments": "Turnaukset",
         "sports": {

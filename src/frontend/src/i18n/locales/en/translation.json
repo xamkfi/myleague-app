@@ -1131,6 +1131,7 @@
         "sport": "Sport",
         "competition": "Season or tournament",
         "all_competitions": "All seasons and tournaments",
+        "choose_sport_first": "Choose a sport to list its matches.",
         "seasons": "Seasons",
         "tournaments": "Tournaments",
         "sports": {
