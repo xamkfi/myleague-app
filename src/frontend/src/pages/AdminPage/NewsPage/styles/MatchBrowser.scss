@@ -1,492 +1,631 @@
-// Match Browser Modal
-.match-browser-modal {
+@use 'sass:map';
+@use '@variables' as *;
+
+$picker-mobile: 640px;
+
+// "Add matches" button above the editor
+.match-picker-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: map.get($spacing, 'xs');
+  min-height: 40px;
+  padding: 0 map.get($spacing, 'base');
+  background: $color-blue-deep;
+  color: $color-white;
+  border: none;
+  border-radius: map.get($border-radius, 'xl');
+  font-family: inherit;
+  font-size: map.get($font-sizes, 'sm');
+  font-weight: map.get($font-weights, 'semibold');
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    background: $color-blue-darkest;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-blue-secondary;
+    outline-offset: 2px;
+  }
+}
+
+.match-picker {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
+  inset: 0;
+  z-index: 1100;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: map.get($spacing, 'base');
 
   &__backdrop {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    background: rgba(12, 24, 48, 0.55);
   }
 
-  &__content {
+  &__dialog {
     position: relative;
-    width: 100%;
-    max-width: 800px;
-    max-height: 90vh;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    overflow: hidden;
     display: flex;
     flex-direction: column;
+    width: min(760px, 100%);
+    height: min(860px, calc(100vh - 2rem));
+    background: $color-white;
+    border-radius: map.get($border-radius, 'lg-plus');
+    box-shadow: 0 24px 48px rgba(12, 24, 48, 0.25);
+    overflow: hidden;
+
+    &:focus {
+      outline: none;
+    }
   }
 
   &__header {
     display: flex;
+    align-items: flex-start;
     justify-content: space-between;
-    align-items: center;
-    padding: 24px 32px;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
-
-    h2 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 700;
-      color: #111827;
-    }
+    gap: map.get($spacing, 'base');
+    padding: map.get($spacing, 'md') map.get($spacing, 'md') map.get($spacing, 'sm');
   }
 
-  &__close-btn {
-    background: none;
+  &__title {
+    margin: 0;
+    font-family: $font-family-display;
+    font-size: map.get($font-sizes, 'lg');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-blue-deep;
+  }
+
+  &__subtitle {
+    margin: map.get($spacing, 'xxs') 0 0;
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+  }
+
+  &__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: transparent;
     border: none;
-    font-size: 24px;
+    border-radius: map.get($border-radius, 'full');
+    color: $color-blue-deep;
     cursor: pointer;
-    color: #6b7280;
-    padding: 4px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
 
     &:hover {
-      background: #e5e7eb;
-      color: #374151;
+      background: $color-neutral-light-grey;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-blue-secondary;
+      outline-offset: 2px;
     }
   }
 
-  &__body {
-    padding: 32px;
-    flex: 1;
-    overflow-y: auto;
+  &__filters {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-  }
-}
-
-// Match Browser Component
-.match-browser {
-  &__trigger-btn {
-    background: #3b82f6;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background: #2563eb;
-    }
+    gap: map.get($spacing, 'sm');
+    padding: 0 map.get($spacing, 'md') map.get($spacing, 'base');
+    border-bottom: 1px solid $color-neutral-light-grey;
   }
 
-  &__categories {
+  &__filter-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: map.get($spacing, 'sm');
+  }
+
+  &__field {
     display: flex;
-    gap: 8px;
-    margin-bottom: 0;
+    flex-direction: column;
+    gap: map.get($spacing, 'xxs');
+    min-width: 0;
   }
 
-  &__category-btn {
-    flex: 1;
-    padding: 12px 16px;
-    border: 1px solid #d1d5db;
-    background: white;
-    color: #374151;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
+  &__field-label {
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-deep;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
 
-    &:hover {
-      background: #f9fafb;
-      border-color: #9ca3af;
+  &__select,
+  &__search {
+    min-height: 42px;
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'lg');
+    background: $color-white;
+    color: $color-text-primary;
+    font-family: inherit;
+    font-size: map.get($font-sizes, 'sm');
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:focus,
+    &:focus-within {
+      outline: none;
+      border-color: $color-blue-secondary;
+      box-shadow: 0 0 0 3px rgba($color-blue-secondary, 0.2);
     }
+  }
 
-    &--active {
-      background: #3b82f6;
-      border-color: #3b82f6;
-      color: white;
+  &__select {
+    width: 100%;
+    padding: 0 map.get($spacing, 'sm');
 
-      &:hover {
-        background: #2563eb;
-        border-color: #2563eb;
-      }
+    &:disabled {
+      opacity: 0.6;
     }
   }
 
   &__search {
-    position: relative;
-    margin-bottom: 0;
-
-    &-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #9ca3af;
-    }
-
-    &-input {
-      width: 100%;
-      padding: 12px 12px 12px 40px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: all 0.2s ease;
-
-      &:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-      }
-
-      &::placeholder {
-        color: #9ca3af;
-      }
-    }
-  }
-
-  &__list-section {
-    flex: 1;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    padding: 0 map.get($spacing, 'sm');
+    color: $color-text-muted;
   }
 
-  &__list-title {
-    margin: 0 0 16px 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: #111827;
+  &__search-input {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+    border: none;
+    background: transparent;
+    color: $color-text-primary;
+    font-family: inherit;
+    font-size: map.get($font-sizes, 'sm');
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    background: $color-neutral-light-grey;
   }
 
   &__list {
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    overflow: hidden;
-    max-height: 400px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__skeleton {
+    height: 60px;
+    border-radius: map.get($border-radius, 'lg');
+    background: linear-gradient(90deg, $color-white 0%, rgba($color-white, 0.55) 50%, $color-white 100%);
+    background-size: 200% 100%;
+    animation: match-picker-shimmer 1.2s ease-in-out infinite;
+  }
+
+  &__state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: map.get($spacing, 'sm');
+    min-height: 100%;
+    padding: map.get($spacing, 'lg') map.get($spacing, 'base');
+    text-align: center;
+    color: $color-text-muted;
+  }
+
+  &__state-icons {
+    display: flex;
+    gap: map.get($spacing, 'base');
+    opacity: 0.7;
+  }
+
+  &__state-title {
+    margin: 0;
+    font-size: map.get($font-sizes, 'base');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-deep;
+  }
+
+  &__state-hint {
+    margin: 0;
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  &__pagination {
+    margin-top: map.get($spacing, 'sm');
+  }
+
+  &__footer {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'sm');
+    padding: map.get($spacing, 'sm') map.get($spacing, 'md');
+    border-top: 1px solid $color-neutral-light-grey;
+    background: $color-white;
+  }
+
+  &__chips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xs');
+    max-height: 5.5rem;
     overflow-y: auto;
   }
 
-  &__item {
-    display: flex;
+  &__chip {
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    border-bottom: 1px solid #f3f4f6;
-    transition: background-color 0.2s ease;
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    &:hover {
-      background: #f9fafb;
-    }
-
-    &-content {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    &-date {
-      min-width: 120px;
-      font-size: 14px;
-      color: #6b7280;
-      font-weight: 500;
-    }
-
-    &-sport {
-      padding: 4px 8px;
-      background: #f3f4f6;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #374151;
-      text-transform: capitalize;
-    }
-
-    &-teams {
-      flex: 1;
-      font-weight: 600;
-      color: #111827;
-    }
-
-    &-checkbox {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-      accent-color: #3b82f6;
-    }
+    gap: map.get($spacing, 'xxs');
+    max-width: 100%;
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xxs') map.get($spacing, 'xxs') map.get($spacing, 'sm');
+    background: $color-blue-secondary-almost;
+    border: 1px solid $color-blue-secondary-pale;
+    border-radius: map.get($border-radius, 'xl');
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'medium');
   }
 
-  &__selected {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    margin-bottom: 0;
-
-    &-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      flex: 1;
-    }
-
-    &-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: #3b82f6;
-      color: white;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    &-chip-remove {
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-      font-size: 16px;
-      padding: 0;
-      width: 16px;
-      height: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: background-color 0.2s ease;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-      }
-    }
+  &__chip-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  &__clear-all {
-    background: none;
-    border: none;
-    color: #6b7280;
-    cursor: pointer;
-    font-size: 14px;
-    text-decoration: underline;
+  &__chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
     padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: map.get($border-radius, 'full');
+    color: inherit;
+    cursor: pointer;
 
-    &:hover {
-      color: #374151;
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: $color-blue-secondary-pale;
+      outline: none;
     }
   }
 
   &__actions {
     display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    margin-top: auto;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'sm');
   }
 
-  &__cancel-btn {
+  &__selection {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'sm');
+  }
+
+  &__count {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-deep;
+  }
+
+  &__clear {
+    padding: 0;
     background: none;
-    border: 1px solid #d1d5db;
-    color: #374151;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background: #f9fafb;
-      border-color: #9ca3af;
-    }
-  }
-
-  &__add-btn {
-    background: #3b82f6;
     border: none;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
+    color: $color-blue-secondary-muted;
+    font-family: inherit;
+    font-size: map.get($font-sizes, 'sm');
+    text-decoration: underline;
     cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover:not(:disabled) {
-      background: #2563eb;
-    }
-
-    &:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
-    }
   }
 
-  &__error {
-    padding: 16px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 8px;
-    color: #dc2626;
-    margin-bottom: 16px;
-
-    p {
-      margin: 0 0 8px 0;
-    }
-
-    button {
-      background: #dc2626;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-
-      &:hover {
-        background: #b91c1c;
-      }
-    }
+  &__buttons {
+    display: flex;
+    gap: map.get($spacing, 'xs');
   }
 
-  &__loading {
-    text-align: center;
-    padding: 32px;
-    color: #6b7280;
+  @media (max-width: $picker-mobile) {
+    padding: 0;
 
-    p {
-      margin: 0;
-    }
-  }
-
-  &__empty {
-    text-align: center;
-    padding: 32px;
-    color: #6b7280;
-
-    p {
-      margin: 0;
-    }
-  }
-}
-
-// Responsive design
-@media (max-width: 768px) {
-  .match-browser-modal {
-    padding: 16px;
-
-    &__content {
-      max-height: 95vh;
+    &__dialog {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
     }
 
     &__header {
-      padding: 20px 24px;
-
-      h2 {
-        font-size: 20px;
-      }
+      padding: map.get($spacing, 'base') map.get($spacing, 'base') map.get($spacing, 'xs');
     }
 
-    &__body {
-      padding: 24px;
-      gap: 20px;
-    }
-  }
-
-  .match-browser {
-    &__categories {
-      flex-wrap: wrap;
+    &__title {
+      font-size: map.get($font-sizes, 'md');
     }
 
-    &__category-btn {
-      flex: 1 1 calc(50% - 4px);
-      font-size: 13px;
-      padding: 10px 12px;
+    &__subtitle {
+      display: none;
     }
 
-    &__item {
-      padding: 12px;
-
-      &-content {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-
-      &-date {
-        min-width: auto;
-        font-size: 13px;
-      }
-
-      &-teams {
-        font-size: 14px;
-      }
+    &__filters,
+    &__body,
+    &__footer {
+      padding-left: map.get($spacing, 'base');
+      padding-right: map.get($spacing, 'base');
     }
 
-    &__selected {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
+    &__filter-row {
+      grid-template-columns: minmax(0, 1fr);
+    }
 
-      &-chips {
-        width: 100%;
+    &__status {
+      display: flex;
+      width: 100%;
+
+      .segmented-control__option {
+        flex: 1 1 0;
+        padding: 0 map.get($spacing, 'xxs');
       }
     }
 
     &__actions {
       flex-direction: column;
+      align-items: stretch;
     }
-  }
-} 
-// Sport and competition filters above the status buttons
-.match-browser__filter {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 
-  &-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #374151;
+    &__selection {
+      justify-content: space-between;
+    }
+
+    &__buttons .btn {
+      flex: 1;
+      justify-content: center;
+    }
+
+    &__chips {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      max-height: none;
+    }
+
+    &__chip {
+      flex-shrink: 0;
+      max-width: 75%;
+    }
   }
 }
 
-.match-browser__select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
-  background: white;
-  color: #111827;
+.match-picker-row {
+  display: grid;
+  grid-template-columns: auto 6.5rem minmax(0, 1fr) auto;
+  grid-template-areas: 'check when teams meta';
+  align-items: center;
+  gap: map.get($spacing, 'sm');
+  padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+  background: $color-white;
+  border: 1px solid transparent;
+  border-radius: map.get($border-radius, 'lg');
+  box-shadow: 0 1px 2px rgba(12, 24, 48, 0.06);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  &:hover {
+    border-color: $color-blue-secondary-pale;
   }
 
-  &:disabled {
-    background: #f3f4f6;
-    color: #9ca3af;
+  &:focus-within {
+    border-color: $color-blue-secondary;
+  }
+
+  &--selected {
+    background: $color-blue-secondary-almost;
+    border-color: $color-blue-secondary;
+  }
+
+  &__check {
+    grid-area: check;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: $color-blue-secondary;
+    cursor: pointer;
+  }
+
+  &__when {
+    grid-area: when;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__day {
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-deep;
+  }
+
+  &__time {
+    font-size: map.get($font-sizes, 'sm-xs');
+    color: $color-text-muted;
+  }
+
+  &__teams {
+    grid-area: teams;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: map.get($spacing, 'sm');
+    min-width: 0;
+  }
+
+  &__team {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    min-width: 0;
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-text-primary;
+
+    &--home {
+      justify-content: flex-end;
+      text-align: right;
+    }
+  }
+
+  &__team-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__logo {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+
+    &--empty {
+      border-radius: map.get($border-radius, 'full');
+      background: $color-neutral-medium-grey;
+    }
+  }
+
+  &__score {
+    min-width: 3.25rem;
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+    border-radius: map.get($border-radius, 'sm');
+    background: $color-blue-deep;
+    color: $color-white;
+    font-weight: map.get($font-weights, 'bold');
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+
+    &--pending {
+      background: $color-neutral-light-grey;
+      color: $color-text-muted;
+    }
+  }
+
+  &__meta {
+    grid-area: meta;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: map.get($spacing, 'xxs');
+    min-width: 0;
+    max-width: 10rem;
+  }
+
+  &__status {
+    padding: 2px map.get($spacing, 'xs');
+    border-radius: map.get($border-radius, 'xl');
+    font-size: map.get($font-sizes, 'xs');
+    font-weight: map.get($font-weights, 'bold');
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+
+    &--completed {
+      background: $color-neutral-light-grey;
+      color: $color-blue-deep;
+    }
+
+    &--scheduled {
+      background: $color-blue-secondary-almost;
+      color: $color-blue-secondary-muted;
+    }
+
+    &--in_progress {
+      background: $color-red-almost;
+      color: $color-red-primary;
+    }
+
+    &--cancelled,
+    &--postponed {
+      background: $color-yellow-almost;
+      color: #8a6100;
+    }
+  }
+
+  &__competition {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: map.get($font-sizes, 'sm-xs');
+    color: $color-text-muted;
+  }
+
+  @media (max-width: $picker-mobile) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'check when meta'
+      'check teams teams';
+    row-gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'sm');
+
+    &__when {
+      flex-direction: row;
+      gap: map.get($spacing, 'xs');
+    }
+
+    &__meta {
+      flex-direction: row;
+      align-items: center;
+      max-width: none;
+    }
+
+    &__competition {
+      display: none;
+    }
+
+    &__teams {
+      gap: map.get($spacing, 'xs');
+      font-size: map.get($font-sizes, 'sm');
+    }
+
+    &__logo {
+      width: 20px;
+      height: 20px;
+    }
+
+    &__score {
+      min-width: 2.75rem;
+    }
+  }
+}
+
+@keyframes match-picker-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
   }
 }

@@ -1,3 +1,4 @@
+import i18n from '../../i18n/i18n';
 import { resolveLogoUrl } from '../../utils/resolveLogoUrl';
 import { getMatchPath, type SportKind } from '../../utils/sportRoutes';
 
@@ -20,12 +21,25 @@ export interface MatchResultBlotValue {
   title?: string;
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  completed: 'PÄÄTTYNYT',
-  in_progress: 'KÄYNNISSÄ',
-  cancelled: 'PERUTTU',
-  postponed: 'SIIRRETTY',
-};
+const KNOWN_STATUSES: ReadonlySet<string> = new Set([
+  'scheduled',
+  'in_progress',
+  'completed',
+  'cancelled',
+  'postponed',
+]);
+
+/**
+ * Status badge text in the reader's language. Stored embeds are rendered again on display
+ * (see `hydrateMatchResultHtml`), so the badge follows the reader, not the author.
+ */
+function statusLabel(statusKey: string): string {
+  return KNOWN_STATUSES.has(statusKey) ? i18n.t(`newsPage.matchStatus.${statusKey}`) : '';
+}
+
+function displayLocale(): string {
+  return i18n.language || 'fi';
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -40,10 +54,10 @@ export function usableTeamLogo(url: string | null | undefined): string | undefin
 }
 
 const formatDate = (iso: string): string =>
-  new Date(iso).toLocaleDateString('fi-FI', { day: 'numeric', month: 'numeric' });
+  new Date(iso).toLocaleDateString(displayLocale(), { day: 'numeric', month: 'numeric' });
 
 const formatTime = (iso: string): string =>
-  new Date(iso).toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' });
+  new Date(iso).toLocaleTimeString(displayLocale(), { hour: '2-digit', minute: '2-digit' });
 
 const logoPlaceholderHtml = '<span class="mr-team-logo-placeholder" aria-hidden="true"></span>';
 
@@ -91,9 +105,9 @@ export const renderMatchRow = (match: MatchResultValue): string => {
   const homeScoreHtml = escapeHtml(String(homeScore));
   const awayScoreHtml = escapeHtml(String(awayScore));
   const statusKey = match.status?.toLowerCase() ?? '';
-  const statusLabel = STATUS_LABELS[statusKey] ?? '';
-  const statusHtml = statusLabel
-    ? `<span class="mr-status"><span class="mr-status-badge mr-status-badge--${escapeHtml(statusKey)}">${statusLabel}</span></span>`
+  const label = statusLabel(statusKey);
+  const statusHtml = label
+    ? `<span class="mr-status"><span class="mr-status-badge mr-status-badge--${escapeHtml(statusKey)}">${escapeHtml(label)}</span></span>`
     : '';
 
   return (

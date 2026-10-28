@@ -1,11 +1,17 @@
 @use 'sass:map';
 @use '@variables' as *;
 
+$sidebar-width: 340px;
+$single-column: 1100px;
+$mobile: map.get($breakpoints, 'tablet');
+
 .news-editor {
   display: flex;
   flex-direction: column;
-  gap: map.get($spacing, 'lg');
-  max-width: 56rem;
+  gap: map.get($spacing, 'md');
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 
   &--loading {
     min-height: 16rem;
@@ -13,51 +19,68 @@
     justify-content: center;
   }
 
-  &__toolbar {
+  // Title row with the actions. Sticks to the top while the article is edited.
+  &__topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: map.get($spacing, 'base');
-    padding-bottom: map.get($spacing, 'base');
-    border-bottom: 1px solid $color-border;
+    padding: map.get($spacing, 'sm') 0;
+    background: $color-white;
+    border-bottom: 1px solid $color-neutral-light-grey;
   }
 
   &__intro {
-    flex: 1 1 16rem;
-    min-width: 16rem;
+    flex: 1 1 18rem;
+    min-width: 0;
   }
 
   &__eyebrow {
-    margin: 0 0 0.25rem;
-    font-size: map.get($font-sizes, 'sm');
-    font-weight: map.get($font-weights, 'medium');
-    color: $color-blue-darkest;
+    margin: 0;
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'semibold');
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $color-blue-secondary-muted;
   }
 
   &__title {
     margin: 0;
+    font-family: $font-family-display;
     font-size: map.get($font-sizes, 'lg');
-    font-weight: map.get($font-weights, 'semibold');
-    color: $color-text-primary;
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-blue-deep;
   }
 
   &__hint {
-    margin: 0.35rem 0 0;
-    font-size: map.get($font-sizes, 'sm');
+    margin: map.get($spacing, 'xxs') 0 0;
+    font-size: map.get($font-sizes, 'sm-xs');
     color: $color-text-muted;
   }
 
   &__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: map.get($spacing, 'sm');
+    gap: map.get($spacing, 'xs');
   }
 
-  &__form {
-    display: flex;
-    flex-direction: column;
-    gap: map.get($spacing, 'lg');
+  // Main column on the left, settings on the right. One column on narrow screens,
+  // with the picture and classification moved above the content.
+  &__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) $sidebar-width;
+    grid-template-areas:
+      'title image'
+      'content classification'
+      'content details'
+      'content .';
+    grid-template-rows: auto auto auto 1fr;
+    align-items: start;
+    gap: map.get($spacing, 'base') map.get($spacing, 'md');
 
     &[hidden] {
       display: none !important;
@@ -68,10 +91,38 @@
     display: flex;
     flex-direction: column;
     gap: map.get($spacing, 'base');
-    padding: map.get($spacing, 'lg');
+    min-width: 0;
+    padding: map.get($spacing, 'md');
     background: $color-white;
-    border: 1px solid $color-border;
-    border-radius: map.get($border-radius, 'lg');
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'lg-plus');
+    box-shadow: 0 1px 3px rgba(12, 24, 48, 0.05);
+
+    &--title {
+      grid-area: title;
+    }
+
+    &--content {
+      grid-area: content;
+    }
+
+    &--image {
+      grid-area: image;
+    }
+
+    &--classification {
+      grid-area: classification;
+    }
+
+    &--details {
+      grid-area: details;
+    }
+
+    &--image,
+    &--classification,
+    &--details {
+      padding: map.get($spacing, 'base');
+    }
   }
 
   &__section-heading {
@@ -85,42 +136,101 @@
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    font-size: map.get($font-sizes, 'lg');
-    font-weight: map.get($font-weights, 'semibold');
-    color: $color-text-primary;
+    gap: map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'md');
+    font-weight: map.get($font-weights, 'bold');
+    color: $color-blue-deep;
+
+    &--small {
+      font-size: map.get($font-sizes, 'sm-xs');
+      font-weight: map.get($font-weights, 'bold');
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: $color-blue-secondary-muted;
+    }
   }
 
   &__required {
-    color: #dc2626;
+    color: $color-red-primary;
   }
 
   &__content-error {
     margin: 0;
-    color: #dc2626;
     font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-red-primary;
   }
 
   &__richtext {
-    border: 1px solid $color-border;
-    border-radius: map.get($border-radius, 'sm');
-    overflow: hidden;
+    border-radius: map.get($border-radius, 'lg');
 
-    &--error {
-      border-color: #fca5a5;
+    &--error .ql-toolbar,
+    &--error .ql-container {
+      border-color: $color-red-primary;
     }
   }
 
   &__preview {
     display: flex;
     flex-direction: column;
-    gap: map.get($spacing, 'base');
+    gap: map.get($spacing, 'sm');
   }
 
   &__preview-note {
     margin: 0;
     font-size: map.get($font-sizes, 'sm');
     color: $color-text-muted;
+  }
+}
+
+@media (max-width: $single-column) {
+  .news-editor__layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'title'
+      'image'
+      'classification'
+      'content'
+      'details';
+    grid-template-rows: none;
+  }
+}
+
+@media (max-width: $mobile) {
+  .news-editor {
+    // Room for the action bar that is fixed to the bottom of the screen.
+    padding-bottom: 5rem;
+
+    &__topbar {
+      position: static;
+      padding-top: 0;
+    }
+
+    &__hint {
+      display: none;
+    }
+
+    &__actions {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 30;
+      flex-wrap: nowrap;
+      padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+      background: $color-white;
+      border-top: 1px solid $color-neutral-medium-grey;
+      box-shadow: 0 -4px 16px rgba(12, 24, 48, 0.08);
+
+      .btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    &__card {
+      padding: map.get($spacing, 'base');
+    }
   }
 }
 
@@ -134,33 +244,12 @@
   background-color: $color-green-almost;
   color: $color-green-muted;
   border: 1px solid $color-green-pale;
-  border-radius: map.get($border-radius, 'sm');
+  border-radius: map.get($border-radius, 'lg');
   box-shadow: $box-shadow-drop-1;
 
   p {
     margin: 0;
     font-weight: map.get($font-weights, 'medium');
     font-size: map.get($font-sizes, 'sm');
-  }
-}
-
-@media (max-width: 768px) {
-  .news-editor {
-    &__toolbar {
-      flex-direction: column;
-    }
-
-    &__actions {
-      width: 100%;
-
-      .btn {
-        flex: 1;
-        justify-content: center;
-      }
-    }
-
-    &__card {
-      padding: map.get($spacing, 'base');
-    }
   }
 }

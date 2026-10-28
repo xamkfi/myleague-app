@@ -165,7 +165,10 @@ export function enableMatchResultDrag(
 
   const applyLabels = (): void => {
     matchBoxes(quill).forEach((box) => {
-      box.setAttribute('title', dragLabel);
+      // Skip unchanged boxes so the label pass does not cause needless DOM mutations for Quill.
+      if (box.getAttribute('title') !== dragLabel) {
+        box.setAttribute('title', dragLabel);
+      }
     });
   };
 
@@ -223,6 +226,8 @@ export function enableMatchResultDrag(
   root.addEventListener('dragover', onDragOver);
   root.addEventListener('drop', onDrop);
   root.addEventListener('dragend', onDragEnd);
+  // New boxes (inserted from the picker or pasted) get the drag hint right away.
+  quill.on('text-change', applyLabels);
 
   return () => {
     root.removeEventListener('pointerdown', onPointerDown);
@@ -230,6 +235,7 @@ export function enableMatchResultDrag(
     root.removeEventListener('dragover', onDragOver);
     root.removeEventListener('drop', onDrop);
     root.removeEventListener('dragend', onDragEnd);
+    quill.off('text-change', applyLabels);
     root.classList.remove('has-match-drop');
   };
 }
