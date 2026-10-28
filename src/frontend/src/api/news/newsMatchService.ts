@@ -33,6 +33,7 @@ export interface NewsMatchOption {
   status: NewsMatchStatus;
   homeScore: number;
   awayScore: number;
+  competitionName: string | null;
 }
 
 /** A league season or tournament the picker can narrow matches to. */
@@ -51,6 +52,8 @@ export interface NewsMatchQuery {
   category: NewsMatchCategory;
   page: number;
   pageSize: number;
+  /** Team name to search for. Matched on the server for floorball and football. */
+  searchQuery?: string;
 }
 
 export interface NewsMatchPage {
@@ -170,6 +173,7 @@ function fromFloorball(match: FloorballMatchDto): NewsMatchOption {
     status: floorballStatus(match.status),
     homeScore: match.homeScore,
     awayScore: match.awayScore,
+    competitionName: match.competitionName || null,
   };
 }
 
@@ -185,6 +189,7 @@ function fromFootball(match: FootballMatchDto): NewsMatchOption {
     status: footballStatus(match.status),
     homeScore: match.homeScore,
     awayScore: match.awayScore,
+    competitionName: match.competitionName || null,
   };
 }
 
@@ -200,17 +205,28 @@ function fromHockey(match: HockeyMatchListDto, logos: Map<string, string | null>
     status: hockeyStatus(match.status),
     homeScore: match.homeScore,
     awayScore: match.awayScore,
+    competitionName: match.competitionName,
   };
 }
 
-/** Hockey match lists carry no logos, so look them up from the team list once per call. */
-async function loadHockeyTeamLogos(): Promise<Map<string, string | null>> {
-  try {
-    const teams = await hockeyTeamService.getAll();
-    return new Map(teams.map((team) => [team.id, team.logoUrl]));
-  } catch {
-    return new Map();
+let hockeyTeamLogos: Promise<Map<string, string | null>> | null = null;
+
+/** Hockey match lists carry no logos, so look them up from the team list once per page load. */
+function loadHockeyTeamLogos(): Promise<Map<string, string | null>> {
+  if (!hockeyTeamLogos) {
+    hockeyTeamLogos = hockeyTeamService
+      .getAll()
+      .then((teams) => new Map(teams.map((team) => [team.id, team.logoUrl])))
+      .catch(() => {
+        hockeyTeamLogos = null;
+        return new Map<string, string | null>();
+      });
   }
+  return hockeyTeamLogos;
+}
+
+function matchesTeamName(match: HockeyMatchListDto, search: string): boolean {
+  return [match.homeTeamName, match.awayTeamName].some((name) => name?.toLowerCase().includes(search) ?? false);
 }
 
 /** Sport-agnostic match lookups for the match embed of the news editor. */
@@ -256,6 +272,7 @@ export const newsMatchService = {
   /** One page of matches for the picker. */
   getMatches: async (sport: SportKind, query: NewsMatchQuery): Promise<NewsMatchPage> => {
     const sortOrder = sortOrderFor(query.category);
+    const searchQuery: string | undefined = query.searchQuery?.trim() || undefined;
 
     if (sport === 'floorball') {
       const response = await floorballMatchService.getAll({
@@ -263,6 +280,7 @@ export const newsMatchService = {
         pageSize: query.pageSize,
         competitionId: query.competitionId,
         status: floorballStatusFilter(query.category),
+        searchQuery,
         sortOrder,
       });
       return {
@@ -278,12 +296,34 @@ export const newsMatchService = {
         pageSize: query.pageSize,
         competitionId: query.competitionId,
         status: footballStatusFilter(query.category),
+        searchQuery,
         sortOrder,
       });
       return {
         items: response.data.map(fromFootball),
         totalCount: response.pagination.totalCount,
         totalPages: response.pagination.totalPages,
+      };
+    }
+
+    // The public hockey list has no text search and the admin list only searches venues,
+    // so a search loads the filtered matches and pages through the name matches here.
+    if (searchQuery) {
+      const search: string = searchQuery.toLowerCase();
+      const [all, logos] = await Promise.all([
+        hockeyMatchService.getAllListPages({
+          competitionId: query.competitionId,
+          statuses: hockeyStatusFilter(query.category),
+          sortOrder,
+        }),
+        loadHockeyTeamLogos(),
+      ]);
+      const matching: HockeyMatchListDto[] = all.filter((match) => matchesTeamName(match, search));
+      const start: number = (query.page - 1) * query.pageSize;
+      return {
+        items: matching.slice(start, start + query.pageSize).map((match) => fromHockey(match, logos)),
+        totalCount: matching.length,
+        totalPages: Math.ceil(matching.length / query.pageSize),
       };
     }
 

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { type NewsInputsData } from './NewsInputs';
+import type { NewsFormData } from './newsForm';
 import '../styles/PreviewNews.scss';
 import '../../../SingleNewsPage/SingleNewsPage.scss';
 import defaultNewsImage from '../../../../assets/defaultImage.jpg';
@@ -9,11 +9,11 @@ import { useHydratedNewsHtml } from '../../../SingleNewsPage/useHydratedNewsHtml
 
 interface PreviewNewsProps {
   value: string;
-  newsData?: NewsInputsData;
+  newsData?: NewsFormData;
 }
 
 export default function PreviewNews({ value, newsData }: PreviewNewsProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { displayHtml, relatedTeams } = useHydratedNewsHtml(value);
 
   return (
@@ -52,7 +52,7 @@ export default function PreviewNews({ value, newsData }: PreviewNewsProps) {
                 <svg className="single-news-page__meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span>{new Date().toLocaleDateString()}</span>
+                <span>{new Date().toLocaleDateString(i18n.language)}</span>
               </div>
             </div>
           </div>

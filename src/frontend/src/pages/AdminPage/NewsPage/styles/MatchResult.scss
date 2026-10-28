@@ -23,6 +23,168 @@
   gap: 0;
 }
 
+// ── Scoreboard row (current markup from renderMatchRow) ─────────────────
+// Status and date on a small line, then home – result – away on one line.
+
+.match-result-table-container:has(.mr-row) {
+  max-width: 640px;
+  padding: map.get($spacing, 'sm') map.get($spacing, 'base');
+  background: $color-white;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: $color-blue-secondary-pale;
+    box-shadow: 0 2px 8px rgba(12, 29, 62, 0.06);
+  }
+}
+
+a.match-result-row.mr-row {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'xxs');
+  padding: 0;
+  border: none;
+  color: $color-blue-deep;
+  font-size: map.get($font-sizes, 'base');
+  font-weight: map.get($font-weights, 'regular');
+  text-decoration: none;
+
+  & + & {
+    margin-top: map.get($spacing, 'sm');
+    padding-top: map.get($spacing, 'sm');
+    border-top: 1px solid $color-neutral-light-grey;
+  }
+
+  &:hover .mr-team-name {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.mr-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: map.get($spacing, 'xs');
+  min-width: 0;
+}
+
+.mr-when {
+  font-size: map.get($font-sizes, 'sm-xs');
+  font-weight: map.get($font-weights, 'medium');
+  color: $color-neutral-dark-grey;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mr-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: map.get($spacing, 'sm');
+}
+
+.mr-team {
+  display: flex;
+  align-items: center;
+  gap: map.get($spacing, 'xs');
+  min-width: 0;
+  font-weight: map.get($font-weights, 'semibold');
+  color: $color-blue-deep;
+
+  &--home {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  &--winner {
+    font-weight: map.get($font-weights, 'bold');
+  }
+
+  &--loser {
+    color: $color-neutral-dark-grey;
+    font-weight: map.get($font-weights, 'medium');
+  }
+
+  .mr-team-name {
+    color: inherit;
+    font-weight: inherit;
+  }
+}
+
+.mr-result {
+  min-width: 4rem;
+  padding: map.get($spacing, 'xxs') map.get($spacing, 'xs');
+  border-radius: map.get($border-radius, 'lg');
+  background: $color-blue-deep;
+  color: $color-white;
+  font-size: map.get($font-sizes, 'md');
+  font-weight: map.get($font-weights, 'bold');
+  line-height: 1.2;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  &--live {
+    background: $color-red-primary;
+  }
+
+  &--time {
+    background: $color-blue-secondary-almost;
+    color: $color-blue-secondary-muted;
+    font-size: map.get($font-sizes, 'base');
+  }
+
+  &--none {
+    background: $color-neutral-light-grey;
+    color: $color-neutral-dark-grey;
+  }
+}
+
+.mr-result-sep {
+  margin: 0 0.3em;
+  opacity: 0.7;
+}
+
+.mr-row .mr-team-logo,
+.mr-row .mr-team-logo-placeholder {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+}
+
+.mr-row .mr-team-logo-placeholder {
+  background: $color-neutral-light-grey;
+}
+
+@media (max-width: 520px) {
+  .match-result-table-container:has(.mr-row) {
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+  }
+
+  .mr-board {
+    gap: map.get($spacing, 'xs');
+  }
+
+  .mr-team {
+    gap: map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'sm');
+  }
+
+  .mr-result {
+    min-width: 3.25rem;
+    font-size: map.get($font-sizes, 'base');
+  }
+
+  .mr-row .mr-team-logo,
+  .mr-row .mr-team-logo-placeholder {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+// ── Older row markup (shown until a stored article is hydrated) ─────────
+
 // ── New compact row (anchor-based, grid layout) ─────────────────────────
 
 a.match-result-row {

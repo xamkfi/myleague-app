@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { SportsCategory } from '../../../../types/common/sports';
 
 export const NewsCategory = {

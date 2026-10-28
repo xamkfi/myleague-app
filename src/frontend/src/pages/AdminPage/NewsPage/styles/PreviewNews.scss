@@ -1,27 +1,24 @@
-// Import SingleNewsPage styles to ensure exact match
-@import '../../../SingleNewsPage/SingleNewsPage.scss';
+@use 'sass:map';
+@use '@variables' as *;
 
-// Override container styling for preview context
-.single-news-page {
+// The preview reuses the public article markup (SingleNewsPage.scss, imported by the component).
+// Everything here is scoped to the preview so the public page keeps its own look.
+
+.news-editor__preview .single-news-page-container {
   width: 100%;
+  max-width: none;
   margin: 0;
-  padding: 2rem;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
 
-  // Remove margin-top from container in preview context
-  &__container {
-    margin-top: 0;
-  }
+.single-news-page.single-news-page--preview {
+  padding: map.get($spacing, 'lg');
+  background-color: $color-white;
+  border: 1px solid $color-neutral-medium-grey;
+  border-radius: map.get($border-radius, 'lg-plus');
+  box-shadow: 0 1px 3px rgba(12, 24, 48, 0.05);
 
-  // Mobile responsiveness for preview
-  @media (max-width: 768px) {
-    padding: 1.5rem;
-    border-radius: 8px;
-  }
-
-  @media (max-width: 480px) {
-    padding: 1rem;
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    padding: map.get($spacing, 'base');
+    border-radius: map.get($border-radius, 'lg');
   }
 }
