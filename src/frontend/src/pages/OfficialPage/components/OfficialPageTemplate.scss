@@ -5,6 +5,12 @@
 }
 
 .official-header {
+  @media (max-width: 480px) {
+    .official-header__user {
+      display: none;
+    }
+  }
+
   background: #1c2233;
   color: #fff;
 

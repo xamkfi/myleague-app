@@ -1,7 +1,7 @@
 @use 'sass:map';
 @use '@variables' as *;
 
-$ad-rail-width: 180px;
+$ad-rail-width: 300px;
 
 // Override PageTemplate padding for HomePage only
 .home-page-wrapper .page-body {
@@ -139,15 +139,15 @@ $ad-rail-width: 180px;
   }
 
   // Ad side rails sit outside the 1200px content column. HomePage.tsx renders them only
-  // on viewports at least 1640px wide (SIDE_RAILS_QUERY); below that the side ads join .home-ads-stack.
+  // on viewports at least 1860px wide (SIDE_RAILS_QUERY); below that the side ads join .home-ads-stack.
   .home-ads-rail {
     position: absolute;
     top: map.get($spacing, 'lg');
-    bottom: map.get($spacing, 'xl');
+    min-height: calc(100% - #{map.get($spacing, 'lg')} - #{map.get($spacing, 'xl')});
     width: $ad-rail-width;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: map.get($spacing, 'md');
 
     &--left {
@@ -161,7 +161,7 @@ $ad-rail-width: 180px;
 
   .home-ads-stack {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: map.get($spacing, 'md');
     align-items: start;
     margin-top: map.get($spacing, 'lg');

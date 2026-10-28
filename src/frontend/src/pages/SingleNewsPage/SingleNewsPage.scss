@@ -243,6 +243,22 @@
       overflow-wrap: normal;
     }
 
+    // The scoreboard centres the result and right-aligns the home team.
+    .match-result-table-container .mr-result,
+    .match-result-table-container .mr-meta {
+      text-align: center;
+    }
+
+    .match-result-table-container .mr-team--home {
+      text-align: right;
+    }
+
+    .match-result-table-container .mr-team-name,
+    .match-result-table-container .mr-when,
+    .match-result-table-container .mr-result {
+      white-space: nowrap;
+    }
+
     // Enhanced styling for HTML content
     h1, h2, h3, h4, h5, h6 {
       color: #1f2937;
@@ -345,7 +361,7 @@
     }
 
     // Enhanced styling for images in content
-    img {
+    img:not(.mr-team-logo) {
       max-width: 100%;
       height: auto;
       border-radius: 8px;

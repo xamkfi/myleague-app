@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
@@ -7,8 +7,21 @@ import Button from '../../../components/Button/Button';
 import ConfirmationDialog from '../../../components/ConfirmationDialog/ConfirmationDialog';
 import ErrorPopup from '../../../components/ErrorPopup/ErrorPopup';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
-import NewsInputs, { type NewsInputsData } from './components/NewsInputs';
+import NewsTitleFields from './components/NewsTitleFields';
+import NewsImageField from './components/NewsImageField';
+import NewsClassificationFields from './components/NewsClassificationFields';
+import NewsDetailsFields from './components/NewsDetailsFields';
 import PreviewNews from './components/PreviewNews';
+import {
+  AUTHOR_MAX_LENGTH,
+  SUMMARY_MAX_LENGTH,
+  TITLE_MAX_LENGTH,
+  TITLE_MIN_LENGTH,
+  emptyNewsForm,
+  sportKindForCategory,
+  type NewsFormData,
+  type NewsFormErrors,
+} from './components/newsForm';
 import { CreateNewsService } from '../../../api/news/CreateNewsService';
 import { UpdateNewsService } from '../../../api/news/UpdateNewsService';
 import { handleImageDeleteService } from '../../../api/news/handleImageDeleteService';
@@ -16,25 +29,19 @@ import { singleNewsService } from '../../../api/news/singleNewsService';
 import { useAdminReturnTo } from '../../../hooks/useAdminReturnTo';
 import { unwrapApiErrorMessage } from '../../../api/utils/ParseErrorResponse';
 import './NewsCreateEditPage.scss';
-
-const emptyNewsData = (): NewsInputsData => ({
-  title: '',
-  mainPicture: '',
-  summary: '',
-  author: '',
-  category: '',
-  sportCategory: '',
-  teamCategory: '',
-  tags: [],
-  contentHtml: '',
-});
+import './styles/NewsFields.scss';
 
 const collectStoredImageUrls = (html: string, mainPicture: string): string[] => {
-  const urls = extractRichTextImageUrls(html);
+  const urls: string[] = extractRichTextImageUrls(html);
   if (mainPicture.trim()) {
     urls.push(mainPicture.trim());
   }
   return Array.from(new Set(urls));
+};
+
+const toNullIfEmpty = (input: string | undefined | null): string | null => {
+  const trimmed: string = input?.trim() ?? '';
+  return trimmed === '' ? null : trimmed;
 };
 
 export default function NewsCreateEditPage() {
@@ -52,21 +59,35 @@ export default function NewsCreateEditPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [newsData, setNewsData] = useState<NewsInputsData>(emptyNewsData);
-  const [errors, setErrors] = useState<Partial<Record<keyof NewsInputsData, string>>>({});
+  const [newsData, setNewsData] = useState<NewsFormData>(emptyNewsForm);
+  const [errors, setErrors] = useState<NewsFormErrors>({});
   const [contentError, setContentError] = useState('');
+  /** Images the saved article referenced when it was loaded. */
   const originalImageUrlsRef = useRef<string[]>([]);
+  /** Images uploaded in this session, whether or not they are still used. */
+  const uploadedImageUrlsRef = useRef<Set<string>>(new Set());
   const leaveTimeoutRef = useRef<number | null>(null);
 
+  const updateField = useCallback(<K extends keyof NewsFormData>(field: K, fieldValue: NewsFormData[K]): void => {
+    setNewsData((previous) => ({ ...previous, [field]: fieldValue }));
+  }, []);
+
+  const rememberUpload = useCallback((url: string): void => {
+    uploadedImageUrlsRef.current.add(url);
+  }, []);
+
+  /** Deletes stored images the saved article no longer uses, including uploads that were removed again. */
   const deleteOrphanedImages = (keptHtml: string, keptMainPicture: string): void => {
     const kept = new Set(collectStoredImageUrls(keptHtml, keptMainPicture));
-    originalImageUrlsRef.current
-      .filter((url) => !kept.has(url))
-      .forEach((url) => {
-        handleImageDeleteService(url).catch((deleteError: unknown) => {
-          console.error('Failed to delete orphaned image:', deleteError);
-        });
+    const candidates = new Set([...originalImageUrlsRef.current, ...uploadedImageUrlsRef.current]);
+    candidates.forEach((url) => {
+      if (kept.has(url)) {
+        return;
+      }
+      handleImageDeleteService(url).catch((deleteError: unknown) => {
+        console.error('Failed to delete orphaned image:', deleteError);
       });
+    });
   };
 
   useEffect(() => {
@@ -96,7 +117,6 @@ export default function NewsCreateEditPage() {
           sportCategory: article.sportCategory || '',
           teamCategory: article.teamCategory || '',
           tags: article.tags || [],
-          contentHtml: article.contentHtml || '',
         });
         setValue(article.contentHtml || '');
         originalImageUrlsRef.current = collectStoredImageUrls(
@@ -105,7 +125,7 @@ export default function NewsCreateEditPage() {
         );
       } catch (loadError: unknown) {
         console.error('Failed to fetch news article:', loadError);
-        setError(t('admin.news.errors.loadFailed', 'Failed to load news article for editing'));
+        setError(t('admin.news.errors.loadFailed'));
       } finally {
         setIsLoadingArticle(false);
       }
@@ -115,29 +135,26 @@ export default function NewsCreateEditPage() {
   }, [id, isEditMode, t]);
 
   const validateInputs = (): boolean => {
-    const newErrors: Partial<Record<keyof NewsInputsData, string>> = {};
-    let newContentError = '';
+    const newErrors: NewsFormErrors = {};
+    const title: string = newsData.title.trim();
 
-    if (!newsData.title.trim()) {
+    if (!title) {
       newErrors.title = t('admin.news.errors.title_required');
-    } else if (newsData.title.trim().length < 5) {
+    } else if (title.length < TITLE_MIN_LENGTH) {
       newErrors.title = t('admin.news.errors.title_too_short');
-    } else if (newsData.title.trim().length > 200) {
+    } else if (title.length > TITLE_MAX_LENGTH) {
       newErrors.title = t('admin.news.errors.title_too_long');
     }
 
-    if (!value.trim()) {
-      newContentError = t('admin.news.errors.content_required');
-    }
-
-    if (newsData.author && newsData.author.trim().length > 50) {
+    if (newsData.author.trim().length > AUTHOR_MAX_LENGTH) {
       newErrors.author = t('admin.news.errors.author_too_long');
     }
 
-    if (newsData.summary && newsData.summary.trim().length > 200) {
+    if (newsData.summary.trim().length > SUMMARY_MAX_LENGTH) {
       newErrors.summary = t('admin.news.errors.summary_too_long');
     }
 
+    const newContentError: string = value.trim() ? '' : t('admin.news.errors.content_required');
     setErrors(newErrors);
     setContentError(newContentError);
 
@@ -145,10 +162,12 @@ export default function NewsCreateEditPage() {
   };
 
   const scrollToFirstError = (): void => {
-    const firstErrorElement = document.querySelector('.news-inputs__error, .news-editor__content-error');
-    if (firstErrorElement) {
-      firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    // Wait for the error messages to render before looking for them.
+    window.requestAnimationFrame(() => {
+      document
+        .querySelector('.news-field__error, .news-editor__content-error')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
   };
 
   const handlePublishClick = (): void => {
@@ -161,23 +180,16 @@ export default function NewsCreateEditPage() {
     scrollToFirstError();
   };
 
-  const toNullIfEmpty = (input: string | undefined | null): string | null => {
-    if (!input || input.trim() === '') {
-      return null;
-    }
-    return input.trim();
-  };
-
-  const convertToNewsData = () => ({
+  const buildPayload = () => ({
     title: newsData.title.trim(),
-    mainImage: newsData.mainPicture || null,
     contentHtml: value.trim(),
-    summary: newsData.summary?.trim() || null,
-    author: newsData.author?.trim() || null,
-    category: newsData.category || null,
-    sportCategory: newsData.sportCategory || null,
-    teamCategory: newsData.teamCategory || null,
-    tags: newsData.tags.filter((tag) => tag.trim() !== ''),
+    mainImage: toNullIfEmpty(newsData.mainPicture),
+    summary: toNullIfEmpty(newsData.summary),
+    author: toNullIfEmpty(newsData.author),
+    category: toNullIfEmpty(newsData.category),
+    sportCategory: toNullIfEmpty(newsData.sportCategory),
+    teamCategory: toNullIfEmpty(newsData.teamCategory),
+    tags: newsData.tags.map((tag) => tag.trim()).filter((tag) => tag !== ''),
   });
 
   const leaveAfterSuccess = (message: string): void => {
@@ -188,35 +200,27 @@ export default function NewsCreateEditPage() {
   };
 
   const handleConfirmPublish = async (): Promise<void> => {
+    const payload = buildPayload();
     try {
       setIsSaving(true);
       setError(null);
 
       if (isEditMode && id) {
-        const trimmedMainPicture = toNullIfEmpty(newsData.mainPicture);
         await UpdateNewsService(id, {
-          title: newsData.title.trim(),
-          contentHtml: value.trim(),
-          mainImage: trimmedMainPicture,
-          summary: toNullIfEmpty(newsData.summary),
-          imageUrls: trimmedMainPicture ? [trimmedMainPicture] : null,
-          author: toNullIfEmpty(newsData.author),
-          category: toNullIfEmpty(newsData.category),
-          sportCategory: toNullIfEmpty(newsData.sportCategory),
-          teamCategory: toNullIfEmpty(newsData.teamCategory),
-          tags: newsData.tags.filter((tag) => tag.trim() !== ''),
+          ...payload,
+          imageUrls: payload.mainImage ? [payload.mainImage] : null,
         });
-        deleteOrphanedImages(value.trim(), trimmedMainPicture ?? '');
-        setConfirmOpen(false);
-        leaveAfterSuccess(t('admin.news.success.update_success'));
-        return;
+      } else {
+        await CreateNewsService(payload);
       }
 
-      await CreateNewsService(convertToNewsData());
+      deleteOrphanedImages(payload.contentHtml, payload.mainImage ?? '');
       setConfirmOpen(false);
-      leaveAfterSuccess(t('admin.news.success.publish_success'));
+      leaveAfterSuccess(
+        isEditMode ? t('admin.news.success.update_success') : t('admin.news.success.publish_success'),
+      );
     } catch (saveError: unknown) {
-      const fallback = isEditMode
+      const fallback: string = isEditMode
         ? t('admin.news.errors.update_error')
         : t('admin.news.errors.publish_error');
       setError(unwrapApiErrorMessage(saveError, fallback));
@@ -225,8 +229,8 @@ export default function NewsCreateEditPage() {
     }
   };
 
-  const pageTitle = isEditMode ? t('admin.news.edit') : t('admin.news.create');
-  const busy = isSaving || isUploadingContent;
+  const pageTitle: string = isEditMode ? t('admin.news.edit') : t('admin.news.create');
+  const busy: boolean = isSaving || isUploadingContent;
 
   if (isLoadingArticle) {
     return (
@@ -249,7 +253,7 @@ export default function NewsCreateEditPage() {
 
         <ErrorPopup message={error} />
 
-        <header className="news-editor__toolbar">
+        <header className="news-editor__topbar">
           <div className="news-editor__intro">
             <p className="news-editor__eyebrow">
               {isEditMode ? t('admin.news.edit_mode') : t('admin.news.create_mode')}
@@ -277,33 +281,77 @@ export default function NewsCreateEditPage() {
           </div>
         </header>
 
-        <div hidden={preview} className="news-editor__form">
-          <section className="news-editor__card">
-            <h2 className="news-editor__section-title">{t('admin.news.article_details')}</h2>
-            <NewsInputs data={newsData} onChange={setNewsData} errors={errors} />
+        <div hidden={preview} className="news-editor__layout">
+          <section className="news-editor__card news-editor__card--title">
+            <NewsTitleFields
+              title={newsData.title}
+              summary={newsData.summary}
+              errors={errors}
+              onTitleChange={(fieldValue) => updateField('title', fieldValue)}
+              onSummaryChange={(fieldValue) => updateField('summary', fieldValue)}
+            />
           </section>
 
-          <section className="news-editor__card">
+          <section className="news-editor__card news-editor__card--content" aria-labelledby="news-content-heading">
             <div className="news-editor__section-heading">
-              <h2 className="news-editor__section-title">
-                {t('admin.news.content')}
+              <h2 id="news-content-heading" className="news-editor__section-title">
+                {t('admin.news.section_content')}
                 <span className="news-editor__required" aria-hidden="true">*</span>
               </h2>
-              {isUploadingContent && (
-                <LoadingSpinner size="sm" text={t('admin.news.uploading')} />
-              )}
+              {isUploadingContent && <LoadingSpinner size="sm" text={t('admin.news.uploading')} />}
             </div>
-            {contentError && (
-              <p className="news-editor__content-error">{contentError}</p>
-            )}
-            <div className={`news-editor__richtext ${contentError ? 'news-editor__richtext--error' : ''}`}>
+            {contentError && <p className="news-editor__content-error">{contentError}</p>}
+            <div className={`news-editor__richtext${contentError ? ' news-editor__richtext--error' : ''}`}>
               <RichTextEditor
                 value={value}
                 onChange={setValue}
                 onUploadingChange={setIsUploadingContent}
+                onImageUploaded={rememberUpload}
                 showMatchInsert
+                matchSport={sportKindForCategory(newsData.sportCategory)}
               />
             </div>
+          </section>
+
+          <section className="news-editor__card news-editor__card--image" aria-labelledby="news-image-heading">
+            <h2 id="news-image-heading" className="news-editor__section-title news-editor__section-title--small">
+              {t('admin.news.main_picture')}
+            </h2>
+            <NewsImageField
+              value={newsData.mainPicture}
+              onChange={(url) => updateField('mainPicture', url)}
+              onUploaded={rememberUpload}
+            />
+          </section>
+
+          <section
+            className="news-editor__card news-editor__card--classification"
+            aria-labelledby="news-classification-heading"
+          >
+            <h2 id="news-classification-heading" className="news-editor__section-title news-editor__section-title--small">
+              {t('admin.news.section_classification')}
+            </h2>
+            <NewsClassificationFields
+              sportCategory={newsData.sportCategory}
+              category={newsData.category}
+              teamCategory={newsData.teamCategory}
+              onSportCategoryChange={(fieldValue) => updateField('sportCategory', fieldValue)}
+              onCategoryChange={(fieldValue) => updateField('category', fieldValue)}
+              onTeamCategoryChange={(fieldValue) => updateField('teamCategory', fieldValue)}
+            />
+          </section>
+
+          <section className="news-editor__card news-editor__card--details" aria-labelledby="news-details-heading">
+            <h2 id="news-details-heading" className="news-editor__section-title news-editor__section-title--small">
+              {t('admin.news.section_details')}
+            </h2>
+            <NewsDetailsFields
+              tags={newsData.tags}
+              author={newsData.author}
+              errors={errors}
+              onTagsChange={(tags) => updateField('tags', tags)}
+              onAuthorChange={(fieldValue) => updateField('author', fieldValue)}
+            />
           </section>
         </div>
 

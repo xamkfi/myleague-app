@@ -1,0 +1,313 @@
+@use 'sass:map';
+@use '@variables' as *;
+
+// Shared field styles of the news editor (title, image, classification, tags, author).
+
+.news-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'base');
+}
+
+.news-field {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'xs');
+  min-width: 0;
+
+  &__label-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: map.get($spacing, 'sm');
+  }
+
+  &__label {
+    display: inline-flex;
+    gap: map.get($spacing, 'xxs');
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    color: $color-blue-deep;
+  }
+
+  &__required {
+    color: $color-red-primary;
+  }
+
+  &__input {
+    width: 100%;
+    min-height: 44px;
+    padding: map.get($spacing, 'xs') map.get($spacing, 'sm');
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'lg');
+    background: $color-white;
+    color: $color-text-primary;
+    font-family: inherit;
+    font-size: map.get($font-sizes, 'base');
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &::placeholder {
+      color: $color-text-muted;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $color-blue-secondary;
+      box-shadow: 0 0 0 3px rgba($color-blue-secondary, 0.2);
+    }
+
+    &--title {
+      min-height: 52px;
+      font-family: $font-family-display;
+      font-size: map.get($font-sizes, 'md');
+      font-weight: map.get($font-weights, 'semibold');
+    }
+
+    &--invalid {
+      border-color: $color-red-primary;
+
+      &:focus {
+        border-color: $color-red-primary;
+        box-shadow: 0 0 0 3px rgba($color-red-primary, 0.2);
+      }
+    }
+  }
+
+  &__textarea {
+    min-height: 6rem;
+    line-height: 1.5;
+    resize: vertical;
+  }
+
+  &__select {
+    cursor: pointer;
+  }
+
+  &__counter {
+    font-size: map.get($font-sizes, 'sm-xs');
+    color: $color-text-muted;
+    font-variant-numeric: tabular-nums;
+
+    &--over {
+      color: $color-red-primary;
+      font-weight: map.get($font-weights, 'semibold');
+    }
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: map.get($font-sizes, 'sm-xs');
+    color: $color-text-muted;
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+    margin: 0;
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-red-primary;
+
+    svg {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: map.get($spacing, 'xxs');
+    min-height: 40px;
+    padding: 0 map.get($spacing, 'base');
+    border: 1px solid $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'xl');
+    background: $color-white;
+    color: $color-blue-deep;
+    font-family: inherit;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'semibold');
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: $color-neutral-light-grey;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-blue-secondary;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    &--danger {
+      color: $color-red-primary;
+
+      &:hover:not(:disabled) {
+        background: $color-red-almost;
+        border-color: $color-red-pale;
+      }
+    }
+  }
+}
+
+// Main picture
+.news-image-field {
+  &__input {
+    display: none;
+  }
+
+  &__dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: map.get($spacing, 'xs');
+    padding: map.get($spacing, 'md') map.get($spacing, 'base');
+    border: 2px dashed $color-neutral-medium-grey;
+    border-radius: map.get($border-radius, 'lg');
+    background: $color-neutral-light-grey;
+    text-align: center;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+
+    &--active {
+      border-color: $color-blue-secondary;
+      background: $color-blue-secondary-almost;
+    }
+
+    &--uploading {
+      opacity: 0.7;
+    }
+  }
+
+  &__icon {
+    display: inline-flex;
+    color: $color-blue-secondary-muted;
+  }
+
+  &__prompt {
+    margin: 0;
+    font-size: map.get($font-sizes, 'sm');
+    font-weight: map.get($font-weights, 'medium');
+    color: $color-blue-deep;
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: map.get($font-sizes, 'sm-xs');
+    color: $color-text-muted;
+  }
+
+  &__preview {
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__image,
+  &__broken {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: map.get($border-radius, 'lg');
+    background: $color-neutral-light-grey;
+  }
+
+  &__image {
+    display: block;
+    object-fit: cover;
+  }
+
+  &__broken {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: map.get($spacing, 'base');
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  &__actions {
+    display: flex;
+    gap: map.get($spacing, 'xs');
+
+    .news-field__button {
+      flex: 1;
+    }
+  }
+}
+
+// Tags
+.news-tags {
+  &__input-row {
+    display: flex;
+    gap: map.get($spacing, 'xs');
+
+    .news-field__input {
+      flex: 1;
+    }
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: map.get($spacing, 'xs');
+  }
+
+  &__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: map.get($spacing, 'xxs');
+    max-width: 100%;
+    padding: map.get($spacing, 'xxs') map.get($spacing, 'xxs') map.get($spacing, 'xxs') map.get($spacing, 'sm');
+    border-radius: map.get($border-radius, 'xl');
+    background: $color-blue-secondary-almost;
+    color: $color-blue-deep;
+    font-size: map.get($font-sizes, 'sm-xs');
+    font-weight: map.get($font-weights, 'medium');
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: map.get($border-radius, 'full');
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: $color-blue-secondary-pale;
+      outline: none;
+    }
+  }
+}

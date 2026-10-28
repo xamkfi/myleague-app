@@ -678,8 +678,8 @@
         "sortOrderValue": "Järjestys: {{order}}",
         "uploadImage": "Lataa kuva",
         "replaceImage": "Vaihda kuva",
-        "sizeHintSide": "Reunapaikka on 180 px leveä. Suositus: pystykuva esim. 360 × 600 px, jotta kuva on terävä.",
-        "sizeHintBottom": "Uutisten alla oleva paikka on uutispalstan levyinen. Suositus: vaakabanneri esim. 1600 × 400 px.",
+        "sizeHintSide": "Reunapaikka on 300 px leveä. Suositus: pystykuva esim. 600 × 1200 px, jotta kuva on terävä. Saman paikan mainokset näytetään allekkain.",
+        "sizeHintBottom": "Uutisten alla oleva paikka on uutispalstan levyinen. Suositus: vaakabanneri esim. 1600 × 400 px. Saman paikan mainokset näytetään allekkain.",
         "scheduleInvalid": "Päättymisajan pitää olla alkamisajan jälkeen.",
         "fields": {
           "name": "Nimi",
@@ -1025,14 +1025,7 @@
       "add_tag_placeholder": "Kirjoita tägi ja paina Enter...",
       "no_tags": "Tägejä ei ole vielä lisätty. Tägit auttavat luokittelemaan artikkelisi.",
       "content": "Artikkelin Sisältö",
-      "article_details": "Artikkelin Tiedot",
-      "characters": "merkkiä",
-      "summary_too_long": "Yhteenvedon tulisi olla alle 200 merkkiä",
       "uploading": "Ladataan...",
-      "click_to_upload": "Klikkaa ladataksesi",
-      "or_drag_drop": "tai vedä ja pudota",
-      "up_to": "enintään",
-      "image_uploaded": "Kuva ladattu onnistuneesti",
       "replace": "Korvaa",
       "remove_image": "Poista kuva",
       "publish": "Julkaise",
@@ -1048,6 +1041,27 @@
       "preview_description": "Näin artikkelisi näyttää lukijoille",
       "edit_description": "Muokkaa olemassa olevaa uutisartikkelia",
       "create_description": "Luo uusi uutisartikkeli",
+      "totalCount_one": "{{count}} uutinen",
+      "totalCount_other": "{{count}} uutista",
+      "noResults": "Hakua vastaavia uutisia ei löytynyt",
+      "noResultsHint": "Kokeile toista hakusanaa tai tyhjennä suodattimet.",
+      "noDataHint": "Luo ensimmäinen uutinen, niin se näkyy tässä.",
+      "confirmDeleteTitle": "Poista uutinen",
+      "confirmArchiveTitle": "Arkistoi uutinen",
+      "confirmRestoreTitle": "Palauta uutinen",
+      "confirmBulkDelete": "Haluatko varmasti poistaa {{count}} valittua uutista? Poistoa ei voi perua.",
+      "confirmBulkArchive": "Arkistoidaanko {{count}} valittua uutista? Ne poistuvat julkiselta sivustolta.",
+      "confirmBulkUnarchive": "Palautetaanko {{count}} valittua uutista julkiselle sivustolle?",
+      "section_content": "Sisältö",
+      "section_classification": "Luokittelu",
+      "section_details": "Lisätiedot",
+      "no_sport": "Ei lajia",
+      "choose_image": "Valitse kuva",
+      "drag_image_here": "Vedä kuva tähän tai valitse tiedosto",
+      "drop_image": "Pudota kuva tähän",
+      "image_hint": "PNG, JPG tai GIF, enintään 5 MB",
+      "image_broken": "Kuvaa ei voitu näyttää. Vaihda tai poista se.",
+      "remove_tag": "Poista tägi {{tag}}",
       "required_hint": "Otsikko ja artikkelin sisältö ovat pakollisia. Esikatselu säilyttää luonnoksen tällä sivulla.",
       "confirmPublishTitle": "Julkaise artikkeli",
       "confirmUpdateTitle": "Päivitä artikkeli",
@@ -1060,6 +1074,11 @@
       "confirm_publish": "Oletko varma, että haluat julkaista tämän uutisartikkelin?",
       "confirm_update": "Oletko varma, että haluat päivittää tämän uutisartikkelin?",
       "table": {
+        "article": "Uutinen",
+        "classification": "Luokittelu",
+        "status": "Tila",
+        "select": "Valitse {{title}}",
+        "selectAll": "Valitse kaikki",
         "title": "Otsikko",
         "author": "Tekijä",
         "category": "Kategoria",
@@ -1076,6 +1095,10 @@
         "toggleArchive": "Klikkaa vaihtaaksesi arkistointitilaa"
       },
       "filter": {
+        "status": "Tila",
+        "statusAll": "Kaikki",
+        "statusPublished": "Vain julkaistut",
+        "clear": "Tyhjennä suodattimet",
         "category": "Kategoria",
         "allCategories": "Kaikki kategoriat",
         "sport": "Laji",
@@ -1084,10 +1107,15 @@
         "searchPlaceholder": "Hae uutisartikkeleita..."
       },
       "status": {
+        "publishedLabel": "Julkaistu",
+        "archivedLabel": "Arkistoitu",
         "archived": "Kyllä",
         "notArchived": "Ei"
       },
       "success": {
+        "bulk_delete": "{{count}} uutista poistettu",
+        "bulk_archive": "{{count}} uutista arkistoitu",
+        "bulk_restore": "{{count}} uutista palautettu",
         "archived": "Uutisartikkeli arkistoitu onnistuneesti",
         "unarchived": "Uutisartikkeli palautettu arkistosta onnistuneesti",
         "deleted": "Uutisartikkeli poistettu onnistuneesti",
@@ -1112,9 +1140,7 @@
         "upload_failed": "Kuvan lataus epäonnistui. Yritä uudelleen."
       },
       "matches": {
-        "add_matches": "Lisää Otteluita",
-        "add_matches_selected": "Lisää Otteluita",
-        "browse_matches": "Selaa Otteluita",
+        "add_matches": "Lisää otteluita",
         "search_matches": "Etsi otteluita...",
         "all_matches": "Kaikki ottelut",
         "upcoming_matches": "Tulevat ottelut",
@@ -1127,7 +1153,29 @@
         "no_matches_available": "Ei otteluita saatavilla",
         "loading_matches": "Ladataan otteluita...",
         "try_again": "Yritä uudelleen",
-        "error": "Virhe"
+        "error": "Virhe",
+        "sport": "Laji",
+        "competition": "Kausi tai turnaus",
+        "all_competitions": "Kaikki kaudet ja turnaukset",
+        "choose_sport_first": "Valitse ensin laji, niin sen ottelut listataan tähän.",
+        "subtitle": "Valitse laji ja ottelut, jotka lisätään artikkeliin.",
+        "close": "Sulje",
+        "status": "Tila",
+        "search_label": "Hae joukkueen nimellä",
+        "selected_count_one": "{{count}} ottelu valittu",
+        "selected_count_other": "{{count}} ottelua valittu",
+        "add_selected_count": "Lisää valitut ({{count}})",
+        "load_error": "Otteluiden lataus epäonnistui.",
+        "empty_hint": "Kokeile toista kautta, tilaa tai hakusanaa.",
+        "tbd": "Avoin",
+        "remove_selected": "Poista {{match}} valinnoista",
+        "seasons": "Kaudet",
+        "tournaments": "Turnaukset",
+        "sports": {
+          "floorball": "Salibandy",
+          "football": "Jalkapallo",
+          "hockey": "Jääkiekko"
+        }
       }
     }
   },
@@ -2471,6 +2519,13 @@
     }
   },
   "newsPage": {
+    "matchStatus": {
+      "scheduled": "Tulossa",
+      "in_progress": "Käynnissä",
+      "completed": "Päättynyt",
+      "cancelled": "Peruttu",
+      "postponed": "Siirretty"
+    },
     "allNews": "KAIKKI UUTISET",
     "backToNews": "Takaisin uutisiin",
     "loading": "Ladataan...",
@@ -2606,6 +2661,8 @@
     "matchesPlayed": "Pelatut ottelut",
     "goals": "Maalit",
     "assists": "Syötöt",
+    "savePercentage": "Torjunta-%",
+    "goalsAgainstAverage": "PMO",
     "yellowCards": "Keltaiset kortit",
     "redCards": "Punaiset kortit",
     "positions": {
@@ -2620,6 +2677,8 @@
       "matchesPlayed": "Pelatut ottelut",
       "goals": "Maalit",
       "assists": "Syötöt",
+      "savePercentage": "Torjuntaprosentti",
+      "goalsAgainstAverage": "Päästetyt maalit per ottelu",
       "yellowCards": "Keltaiset kortit",
       "redCards": "Punaiset kortit"
     }
@@ -4358,6 +4417,8 @@
       "date": "Päivämäärä",
       "previousDay": "Edellinen päivä",
       "nextDay": "Seuraava päivä",
+      "nextMatchDay": "Seuraava ottelupäivä",
+      "noUpcoming": "Tämän päivän jälkeen ei ole tulevia otteluita.",
       "today": "Tänään",
       "refresh": "Päivitä",
       "loading": "Ladataan otteluita...",

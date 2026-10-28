@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 import 'react-quill/dist/quill.snow.css';
 
 import { handleImageUploadService } from '../../api/news/handleImageUploadService';
-import MatchSelectionHeader from '../../pages/AdminPage/NewsPage/components/MatchSelectionHeader';
-import type { FloorballMatch } from '../../api/news/GetMatchesService';
+import MatchBrowser from '../../pages/AdminPage/NewsPage/components/MatchBrowser';
+import type { NewsMatchOption } from '../../api/news/newsMatchService';
+import type { SportKind } from '../../utils/sportRoutes';
 import {
   ensureMatchResultBlotRegistered,
   type MatchResultValue,
@@ -42,8 +43,12 @@ export interface RichTextEditorProps {
   onChange: (value: string, source?: QuillChangeSource) => void;
   /** Optional callback fired while an image is being uploaded. */
   onUploadingChange?: (uploading: boolean) => void;
+  /** Called with the URL of every image uploaded through the toolbar, e.g. to clean up unused uploads. */
+  onImageUploaded?: (url: string) => void;
   /** Show the "Lisää otteluita / Add matches" button above the editor. */
   showMatchInsert?: boolean;
+  /** Sport the match picker opens with (see `showMatchInsert`). */
+  matchSport?: SportKind;
   /** Stable id for the editor host element (useful for labels). */
   id?: string;
   /** Placeholder shown in the editor when empty. */
@@ -55,8 +60,6 @@ export interface RichTextEditorProps {
   /** Extra className applied to the outer wrapper. */
   className?: string;
 }
-
-const extractImageUrls = extractRichTextImageUrls;
 
 const extractMatchResults = (html: string): MatchResultValue[] => {
   if (!html) return [];
@@ -90,7 +93,9 @@ const RichTextEditor = ({
   value,
   onChange,
   onUploadingChange,
+  onImageUploaded,
   showMatchInsert = false,
+  matchSport,
   id,
   placeholder,
   variant = 'default',
@@ -201,9 +206,9 @@ const RichTextEditor = ({
         return;
       }
 
-      const previousImages = extractImageUrls(lastUserHtmlRef.current);
+      const previousImages = extractRichTextImageUrls(lastUserHtmlRef.current);
       const previousMatches = extractMatchResults(lastUserHtmlRef.current);
-      const currentImages = extractImageUrls(content);
+      const currentImages = extractRichTextImageUrls(content);
       const currentMatches = extractMatchResults(content);
 
       const deletedImages = previousImages.filter((url) => !currentImages.includes(url));
@@ -244,6 +249,7 @@ const RichTextEditor = ({
       try {
         onUploadingChange?.(true);
         const imageUrl = await handleImageUploadService(file);
+        onImageUploaded?.(imageUrl);
         const editor = quillRef.current?.getEditor();
         if (editor) {
           const range = editor.getSelection(true);
@@ -259,7 +265,7 @@ const RichTextEditor = ({
       }
     };
     input.click();
-  }, [onUploadingChange, t]);
+  }, [onImageUploaded, onUploadingChange, t]);
 
   const modules = useMemo(
     () => ({
@@ -280,13 +286,14 @@ const RichTextEditor = ({
     [openImageUploader]
   );
 
-  const handleInsertMatches = useCallback((matches: FloorballMatch[]) => {
+  const handleInsertMatches = useCallback((matches: NewsMatchOption[]) => {
     const editor = quillRef.current?.getEditor();
     if (!editor || matches.length === 0) return;
 
     const matchesData: MatchResultValue[] = matches.map((match) => ({
-      homeTeam: match.homeTeamName,
-      awayTeam: match.awayTeamName,
+      sport: match.sport,
+      homeTeam: match.homeTeamName ?? '',
+      awayTeam: match.awayTeamName ?? '',
       homeScore: match.homeScore,
       awayScore: match.awayScore,
       date: match.scheduledDateTime,
@@ -312,7 +319,7 @@ const RichTextEditor = ({
     >
       {showMatchInsert && !readOnly && (
         <div className="rich-text-editor__toolbar-row">
-          <MatchSelectionHeader onInsertMatches={handleInsertMatches} />
+          <MatchBrowser onInsertMatches={handleInsertMatches} defaultSport={matchSport} />
           <p className="rich-text-editor__match-hint">{t('admin.editor.dragMatchHint')}</p>
         </div>
       )}

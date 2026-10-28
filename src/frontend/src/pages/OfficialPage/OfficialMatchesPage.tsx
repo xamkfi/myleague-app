@@ -80,6 +80,38 @@ function localDayRange(isoDate: string): { start: Date; end: Date } {
   return { start, end };
 }
 
+/** The local calendar day of an ISO timestamp, formatted for `<input type="date">`. */
+function localIsoDateOf(dateTime: string): string | null {
+  const value: Date = new Date(dateTime);
+  if (Number.isNaN(value.getTime())) return null;
+  const month: string = String(value.getMonth() + 1).padStart(2, '0');
+  const day: string = String(value.getDate()).padStart(2, '0');
+  return `${value.getFullYear()}-${month}-${day}`;
+}
+
+/** Day of the first scheduled match of the sport after the given day, or null when none is left. */
+async function findNextMatchDay(sport: SportKind, afterIsoDate: string): Promise<string | null> {
+  const startDate: string = localDayRange(shiftIsoDate(afterIsoDate, 1)).start.toISOString();
+  let scheduledAt: string | undefined;
+  if (sport === 'floorball') {
+    const response = await floorballMatchService.getAll({
+      startDate, status: FloorballMatchStatus.Scheduled, sortOrder: 'asc', page: 1, pageSize: 1,
+    });
+    scheduledAt = response.data?.[0]?.scheduledDateTime;
+  } else if (sport === 'football') {
+    const response = await footballMatchService.getAll({
+      startDate, status: FootballMatchStatus.Scheduled, sortOrder: 'asc', page: 1, pageSize: 1,
+    });
+    scheduledAt = response.data?.[0]?.scheduledDateTime;
+  } else {
+    const response = await hockeyMatchService.getList({
+      startDate, statuses: ['Scheduled'], sortOrder: 'asc', page: 1, pageSize: 1,
+    });
+    scheduledAt = response.data?.[0]?.scheduledStartTime;
+  }
+  return scheduledAt ? localIsoDateOf(scheduledAt) : null;
+}
+
 function isWithin(dateTime: string, start: Date, end: Date): boolean {
   const time: number = new Date(dateTime).getTime();
   return !Number.isNaN(time) && time >= start.getTime() && time <= end.getTime();
@@ -195,6 +227,25 @@ async function loadMatches(sport: SportKind, isoDate: string): Promise<OfficialM
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 }
 
+function ChevronIcon({ direction }: { direction: 'left' | 'right' }) {
+  return (
+    <svg
+      className="official-matches__chevron"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {direction === 'left' ? <path d="m15 6-6 6 6 6" /> : <path d="m9 6 6 6-6 6" />}
+    </svg>
+  );
+}
+
 /** Landing page for match officials: one day's matches per sport with a link to the live desk. */
 function OfficialMatchesPage() {
   const { t, i18n } = useTranslation();
@@ -204,6 +255,12 @@ function OfficialMatchesPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState<number>(0);
+  const [jumping, setJumping] = useState<boolean>(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    setNotice(null);
+  }, [sport, date]);
 
   useEffect(() => {
     let cancelled: boolean = false;
@@ -232,6 +289,24 @@ function OfficialMatchesPage() {
     storeSport(next);
   }, []);
 
+  const jumpToNextMatchDay = useCallback(async (): Promise<void> => {
+    setJumping(true);
+    setNotice(null);
+    try {
+      const nextDay: string | null = await findNextMatchDay(sport, date);
+      if (nextDay) {
+        setDate(nextDay);
+      } else {
+        setNotice(t('official.matches.noUpcoming', 'No upcoming matches after this day.'));
+      }
+    } catch (err: unknown) {
+      console.error('Failed to find the next match day:', err);
+      setNotice(t('official.matches.loadError', 'Failed to load matches.'));
+    } finally {
+      setJumping(false);
+    }
+  }, [sport, date, t]);
+
   const tabs: UnderlineTab[] = SPORTS.map((item) => ({
     id: item,
     label: t(`official.matches.sports.${item}`),
@@ -259,49 +334,66 @@ function OfficialMatchesPage() {
         />
 
         <div className="official-matches__toolbar">
-          <button
-            type="button"
-            className="official-matches__day-button"
-            onClick={() => setDate((prev) => shiftIsoDate(prev, -1))}
-            aria-label={t('official.matches.previousDay', 'Previous day')}
-          >
-            <i className="fas fa-chevron-left" aria-hidden="true"></i>
-          </button>
-          <label className="official-matches__date">
-            <span className="official-matches__date-label">{t('official.matches.date', 'Date')}</span>
-            <input
-              type="date"
-              className="official-matches__date-input"
-              value={date}
-              onChange={(event) => { if (event.target.value) setDate(event.target.value); }}
-            />
-          </label>
-          <button
-            type="button"
-            className="official-matches__day-button"
-            onClick={() => setDate((prev) => shiftIsoDate(prev, 1))}
-            aria-label={t('official.matches.nextDay', 'Next day')}
-          >
-            <i className="fas fa-chevron-right" aria-hidden="true"></i>
-          </button>
-          {!isToday && (
+          <div className="official-matches__day-nav">
+            <button
+              type="button"
+              className="official-matches__day-button"
+              onClick={() => setDate((prev) => shiftIsoDate(prev, -1))}
+              aria-label={t('official.matches.previousDay', 'Previous day')}
+            >
+              <ChevronIcon direction="left" />
+            </button>
+            <label className="official-matches__date">
+              <span className="official-matches__date-label">{t('official.matches.date', 'Date')}</span>
+              <input
+                type="date"
+                className="official-matches__date-input"
+                value={date}
+                onChange={(event) => { if (event.target.value) setDate(event.target.value); }}
+              />
+            </label>
+            <button
+              type="button"
+              className="official-matches__day-button"
+              onClick={() => setDate((prev) => shiftIsoDate(prev, 1))}
+              aria-label={t('official.matches.nextDay', 'Next day')}
+            >
+              <ChevronIcon direction="right" />
+            </button>
+          </div>
+          <div className="official-matches__quick-actions">
+            {!isToday && (
+              <button
+                type="button"
+                className="official-matches__today-button"
+                onClick={() => setDate(todayLocalIsoDate())}
+              >
+                {t('official.matches.today', 'Today')}
+              </button>
+            )}
+            <button
+              type="button"
+              className="official-matches__today-button official-matches__today-button--primary"
+              onClick={() => { void jumpToNextMatchDay(); }}
+              disabled={jumping}
+            >
+              {t('official.matches.nextMatchDay', 'Next match day')}
+              <ChevronIcon direction="right" />
+            </button>
             <button
               type="button"
               className="official-matches__today-button"
-              onClick={() => setDate(todayLocalIsoDate())}
+              onClick={() => setReloadToken((prev) => prev + 1)}
+              disabled={loading}
             >
-              {t('official.matches.today', 'Today')}
+              {t('official.matches.refresh', 'Refresh')}
             </button>
-          )}
-          <button
-            type="button"
-            className="official-matches__today-button"
-            onClick={() => setReloadToken((prev) => prev + 1)}
-            disabled={loading}
-          >
-            {t('official.matches.refresh', 'Refresh')}
-          </button>
+          </div>
         </div>
+
+        {notice && (
+          <div className="official-matches__notice" role="status">{notice}</div>
+        )}
 
         <div id={`tabpanel-${sport}`} role="tabpanel" aria-labelledby={`tab-${sport}`}>
           {loading ? (
@@ -327,11 +419,7 @@ function OfficialMatchesPage() {
                     </div>
                     <div className="official-match__meta">
                       {match.competitionName && <span>{match.competitionName}</span>}
-                      {match.venue && (
-                        <span>
-                          <i className="fas fa-map-marker-alt" aria-hidden="true"></i> {match.venue}
-                        </span>
-                      )}
+                      {match.venue && <span>{match.venue}</span>}
                     </div>
                   </div>
                   <span className={`official-match__status official-match__status--${match.state}`}>

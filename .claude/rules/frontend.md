@@ -31,6 +31,6 @@ Register screens in `src/router/routes.tsx` with `lazyWithRetry(() => import('..
 
 ## UI
 
-Reuse `PageTemplate`, `LoadingSpinner`, and the existing admin tables and modals. Styling is SCSS-first: each component has its own `.scss` with BEM-ish class names. Tailwind 4 is installed through the Vite plugin (there is no `tailwind.config`), but it is barely used, so do not mix utility classes into SCSS components.
+Reuse `PageTemplate`, `LoadingSpinner`, and the existing admin tables and modals. A new modal dialog gets Escape, focus trap, focus return and scroll lock from `useDialogBehavior` (`src/hooks/useDialogBehavior.ts`) plus `role="dialog"` and `aria-modal`. Pick-one button groups, such as a sport choice with `SportIcon`, use `SegmentedControl` (`src/components/SegmentedControl`). Styling is SCSS-first: each component has its own `.scss` with BEM-ish class names. Tailwind 4 is installed through the Vite plugin (there is no `tailwind.config`), but it is barely used, so do not mix utility classes into SCSS components.
 
 Use `pnpm` only. Ignore the stray `package-lock.json`. Before finishing, run `pnpm lint` and `pnpm build`; `build` also runs `tsc`. There is no frontend test runner.

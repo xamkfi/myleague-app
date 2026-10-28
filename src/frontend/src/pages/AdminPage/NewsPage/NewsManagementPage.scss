@@ -1,64 +1,42 @@
-.news-management-page {
+@use 'sass:map';
+@use '@variables' as *;
+
+.news-admin {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, 'base');
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
 
-  .page-header {
+  &__header {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e9ecef;
-
-    h1 {
-      margin: 0;
-      color: #212529;
-      font-size: 2rem;
-      font-weight: 600;
-    }
-
+    justify-content: space-between;
+    gap: map.get($spacing, 'base');
   }
 
-  .news-content {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+  &__title {
+    margin: 0;
+    font-size: map.get($font-sizes, 'lg');
+    color: $color-blue-deep;
   }
-}
 
-// Pagination container styles
-.pagination-container {
-  padding: 1.5rem;
-  border-top: 1px solid #e9ecef;
-  background-color: #f8f9fa;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  &__count {
+    margin: map.get($spacing, 'xxs') 0 0;
+    font-size: map.get($font-sizes, 'sm');
+    color: $color-text-muted;
+  }
 
-// Responsive design
-@media (max-width: 768px) {
-  .news-management-page {
-
-    .page-header {
-      flex-direction: column;
-      gap: 1rem;
+  @media (max-width: map.get($breakpoints, 'tablet')) {
+    &__header {
       align-items: stretch;
-
-      h1 {
-        font-size: 1.5rem;
-        text-align: center;
-      }
+      flex-direction: column;
 
       .btn {
-        width: 100%;
         justify-content: center;
       }
     }
   }
-  
-  .pagination-container {
-    padding: 1rem;
-  }
-} 
+}

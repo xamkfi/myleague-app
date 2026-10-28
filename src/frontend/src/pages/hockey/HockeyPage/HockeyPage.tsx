@@ -232,6 +232,7 @@ function HockeyPage() {
                 teamName: teamNames.get(row.teamId) ?? row.teamId.slice(0, 8),
                 teamLogo: teamLogos.get(row.teamId),
                 teamShortName: teamMarks.get(row.teamId),
+                gamesPlayed: row.gamesPlayed,
                 goalDifference: row.goalDifference,
                 points: row.points,
               }));
@@ -354,6 +355,7 @@ function HockeyPage() {
     seasonYears: t('hockeyPage.seasonYears'),
     standingsTitle: t('hockeyPage.standingsTitle'),
     teamShort: t('hockeyPage.teamShort'),
+    gamesShort: t('hockeyPage.gamesShort'),
     gdShort: t('hockeyPage.gdShort'),
     ptsShort: t('hockeyPage.ptsShort'),
     noStandings: t('hockeyPage.noStandings'),

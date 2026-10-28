@@ -6,14 +6,29 @@
   &__toolbar {
     display: flex;
     align-items: flex-end;
+    justify-content: space-between;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
+  }
+
+  &__day-nav {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  &__quick-actions {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   &__date {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
   }
 
   &__date-label {
@@ -25,20 +40,29 @@
   &__date-input {
     border: 1px solid #d1d0d6;
     border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 0.95rem;
+    padding: 0 10px;
+    min-height: 44px;
+    font-size: 1rem;
     background: #fff;
     color: #1c2233;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   &__day-button,
   &__today-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
     border: 1px solid #d1d0d6;
     border-radius: 8px;
     background: #fff;
     color: #1c2233;
-    padding: 8px 12px;
-    font-size: 0.9rem;
+    padding: 0 14px;
+    font-size: 0.95rem;
+    font-weight: 500;
     cursor: pointer;
     transition: background 0.15s ease;
 
@@ -50,6 +74,35 @@
       opacity: 0.6;
       cursor: not-allowed;
     }
+  }
+
+  &__day-button {
+    min-width: 44px;
+    padding: 0;
+  }
+
+  &__today-button--primary {
+    background: #1c2233;
+    border-color: #1c2233;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: #2d3650;
+    }
+  }
+
+  &__chevron {
+    display: block;
+    flex-shrink: 0;
+  }
+
+  &__notice {
+    padding: 12px 16px;
+    background: #e8effb;
+    border: 1px solid #c3d4f3;
+    border-radius: 8px;
+    color: #2258b4;
+    font-size: 0.92rem;
   }
 
   &__state {
@@ -76,6 +129,31 @@
     flex-direction: column;
     gap: 10px;
   }
+
+  @media (max-width: 640px) {
+    gap: 14px;
+
+    &__toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    &__day-nav {
+      width: 100%;
+    }
+
+    &__date {
+      flex: 1 1 auto;
+    }
+
+    &__quick-actions {
+      width: 100%;
+
+      .official-matches__today-button {
+        flex: 1 1 auto;
+      }
+    }
+  }
 }
 
 .official-match {
@@ -101,6 +179,7 @@
     font-size: 1.05rem;
     font-weight: 700;
     color: #1c2233;
+    font-variant-numeric: tabular-nums;
   }
 
   &__main {
@@ -117,6 +196,10 @@
     gap: 10px;
     font-weight: 600;
     color: #1c2233;
+  }
+
+  &__team {
+    overflow-wrap: anywhere;
   }
 
   &__score {
@@ -156,10 +239,13 @@
   }
 
   &__manage {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
     border-radius: 8px;
-    padding: 9px 16px;
-    font-size: 0.9rem;
+    padding: 0 18px;
+    font-size: 0.95rem;
     font-weight: 600;
     text-decoration: none;
     background: #1c2233;
@@ -174,13 +260,16 @@
 
   @media (max-width: 640px) {
     grid-template-columns: 52px minmax(0, 1fr);
+    gap: 10px 12px;
+    padding: 12px 14px;
 
     &__status {
       justify-self: start;
     }
 
     &__manage {
-      justify-self: end;
+      grid-column: 1 / -1;
+      width: 100%;
     }
   }
 }

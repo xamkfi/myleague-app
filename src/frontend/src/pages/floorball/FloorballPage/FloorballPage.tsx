@@ -284,6 +284,7 @@ function FloorballPage() {
     seasonYears: t('floorballPage.seasonYears'),
     standingsTitle: t('floorballPage.standingsTitle'),
     teamShort: t('floorballPage.teamShort'),
+    gamesShort: t('floorballPage.gamesShort'),
     gdShort: t('floorballPage.gdShort'),
     ptsShort: t('floorballPage.ptsShort'),
     noStandings: t('floorballPage.noStandings'),

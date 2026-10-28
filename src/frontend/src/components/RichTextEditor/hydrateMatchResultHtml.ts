@@ -1,4 +1,4 @@
-import { floorballMatchService } from '../../api/floorball/floorballMatchService';
+import { newsMatchService, type NewsMatchLogos } from '../../api/news/newsMatchService';
 import { parseSanitizedHtmlRoot, replaceChildrenWithSanitizedHtml } from './parseSanitizedHtml';
 import {
   renderMatchResultListHtml,
@@ -23,14 +23,19 @@ function parseBlotValue(raw: string | null | undefined): MatchResultBlotValue | 
   }
 }
 
-async function hydrateMatchLogos(matches: MatchResultValue[]): Promise<MatchResultValue[]> {
-  const idsToFetch = [...new Set(
-    matches
-      .filter((match) => match.link && (!usableTeamLogo(match.homeTeamImage) || !usableTeamLogo(match.awayTeamImage)))
-      .map((match) => match.link)
-  )];
+function logoCacheKey(match: MatchResultValue): string {
+  return `${match.sport ?? 'floorball'}:${match.link}`;
+}
 
-  if (idsToFetch.length === 0) {
+async function hydrateMatchLogos(matches: MatchResultValue[]): Promise<MatchResultValue[]> {
+  const toFetch = new Map<string, MatchResultValue>();
+  for (const match of matches) {
+    if (match.link && (!usableTeamLogo(match.homeTeamImage) || !usableTeamLogo(match.awayTeamImage))) {
+      toFetch.set(logoCacheKey(match), match);
+    }
+  }
+
+  if (toFetch.size === 0) {
     return matches.map((match) => ({
       ...match,
       homeTeamImage: usableTeamLogo(match.homeTeamImage),
@@ -38,29 +43,24 @@ async function hydrateMatchLogos(matches: MatchResultValue[]): Promise<MatchResu
     }));
   }
 
-  const logosByMatchId = new Map<string, { home?: string; away?: string }>();
-  await Promise.all(idsToFetch.map(async (id) => {
+  const logosByKey = new Map<string, NewsMatchLogos>();
+  await Promise.all([...toFetch].map(async ([key, match]) => {
     try {
-      const response = await floorballMatchService.getById(id);
-      const match = response.data;
-      if (!match) {
-        return;
+      const logos = await newsMatchService.getMatchLogos(match.sport ?? 'floorball', match.link);
+      if (logos) {
+        logosByKey.set(key, logos);
       }
-      logosByMatchId.set(id, {
-        home: usableTeamLogo(match.homeTeamLogo),
-        away: usableTeamLogo(match.awayTeamLogo),
-      });
     } catch {
       // Keep the stored snapshot if the live match cannot be loaded.
     }
   }));
 
   return matches.map((match) => {
-    const live = logosByMatchId.get(match.link);
+    const live = logosByKey.get(logoCacheKey(match));
     return {
       ...match,
-      homeTeamImage: usableTeamLogo(match.homeTeamImage) ?? live?.home,
-      awayTeamImage: usableTeamLogo(match.awayTeamImage) ?? live?.away,
+      homeTeamImage: usableTeamLogo(match.homeTeamImage) ?? usableTeamLogo(live?.home),
+      awayTeamImage: usableTeamLogo(match.awayTeamImage) ?? usableTeamLogo(live?.away),
     };
   });
 }

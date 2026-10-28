@@ -57,6 +57,7 @@ export interface SportLandingLabels {
   seasonYears: string;
   standingsTitle: string;
   teamShort: string;
+  gamesShort: string;
   gdShort: string;
   ptsShort: string;
   noStandings: string;
@@ -146,6 +147,7 @@ export default function SportLandingPage({
       labels={{
         standingsTitle: labels.standingsTitle,
         teamShort: labels.teamShort,
+        gamesShort: labels.gamesShort,
         gdShort: labels.gdShort,
         ptsShort: labels.ptsShort,
         noStandings: labels.noStandings,
