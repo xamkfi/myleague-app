@@ -1,94 +1,73 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createAdminFromState } from '../../../utils/adminReturnTo';
-import NewsList from './components/NewsList';
+import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
 import Button from '../../../components/Button/Button';
 import AddIcon from '../../../assets/basicIcons/add.svg';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
+import NewsFilter from './components/NewsFilter';
+import NewsList from './components/NewsList';
+import { EMPTY_NEWS_FILTERS, type NewsFilters } from './Utils/newsAdminFilters';
 import './NewsManagementPage.scss';
-import PageTemplate from '../../../components/PageTemplate/AdminPageTemplate';
-import NewsFilter, { type NewsFilters } from './components/NewsFilter';
 
-const NewsManagementPage = () => {
+const SEARCH_DEBOUNCE_MS = 400;
+
+/** Admin list of news articles: search, filters, bulk actions and a link to the editor. */
+export default function NewsManagementPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const [filters, setFilters] = useState<NewsFilters>(EMPTY_NEWS_FILTERS);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
+  const debouncedSearch: string = useDebouncedValue(filters.searchTerm, SEARCH_DEBOUNCE_MS);
 
-  const [filters, setFilters] = useState<NewsFilters>({
-    category: '',
-    sportCategory: '',
-    searchTerm: '',
-    includeArchived: true,
-    teamCategories: [],
-  });
+  // Only the search text is debounced; the other filters apply at once.
+  const appliedFilters: NewsFilters = useMemo(
+    () => ({ ...filters, searchTerm: debouncedSearch.trim() }),
+    [filters, debouncedSearch],
+  );
 
-  // Only debounce searchTerm
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(filters.searchTerm);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setDebouncedSearchTerm(filters.searchTerm);
-    }, 500); // 500 ms delay for search only
-
-    return () => clearTimeout(timeout);
-  }, [filters.searchTerm]);
-    
-    const handleFiltersChange = (updatedFilters: Partial<NewsFilters>) => {
-      setFilters(prevFilters => ({
-        ...prevFilters,
-        ...updatedFilters,
-      }));
-    };
-
-  const combinedFilters: NewsFilters = useMemo(() => ({
-    category: filters.category,
-    sportCategory: filters.sportCategory,
-    includeArchived: filters.includeArchived,
-    searchTerm: debouncedSearchTerm,
-    teamCategories: filters.teamCategories,
-  }), [filters.category, filters.sportCategory, filters.includeArchived, debouncedSearchTerm, filters.teamCategories]);
-
-  const handleClearFilters = () => {
-    const resetFilters: NewsFilters = {
-      category: '',
-      sportCategory: '',
-      searchTerm: '',
-      includeArchived: true,
-      teamCategories: [],
-    };
-    setFilters(resetFilters);
-    setDebouncedSearchTerm('');
+  const handleFiltersChange = (updated: Partial<NewsFilters>): void => {
+    setFilters((previous) => ({ ...previous, ...updated }));
   };
 
-  const handleCreateNew = () => {
+  const handleClearFilters = (): void => {
+    setFilters(EMPTY_NEWS_FILTERS);
+  };
+
+  const handleCreateNew = (): void => {
     navigate('/admin/news/create', { state: createAdminFromState(location.pathname, location.search) });
   };
 
+  const handleTotalChange = useCallback((total: number): void => {
+    setTotalCount(total);
+  }, []);
+
   return (
-    <PageTemplate title={t('admin.news.pageTitle', 'News Management')}>
-    <div className="news-management-page">
-      <div className="page-header">
-        <h1>{t('admin.news.pageTitle', 'News Management')}</h1>
-        <Button
-          iconLeft={AddIcon}
-          rounded="pill"
-          onClick={handleCreateNew}
-        >
-          {t('admin.news.createNew', 'Create New')}
-        </Button>
+    <PageTemplate title={t('admin.news.pageTitle')}>
+      <div className="news-admin">
+        <header className="news-admin__header">
+          <div>
+            <h1 className="news-admin__title font-title">{t('admin.news.pageTitle')}</h1>
+            {totalCount !== null && (
+              <p className="news-admin__count">{t('admin.news.totalCount', { count: totalCount })}</p>
+            )}
+          </div>
+          <Button iconLeft={AddIcon} rounded="pill" onClick={handleCreateNew}>
+            {t('admin.news.createNew')}
+          </Button>
+        </header>
+
+        <NewsFilter filters={filters} onFiltersChange={handleFiltersChange} onClearFilters={handleClearFilters} />
+
+        <NewsList
+          filters={appliedFilters}
+          onClearFilters={handleClearFilters}
+          onCreate={handleCreateNew}
+          onTotalChange={handleTotalChange}
+        />
       </div>
-      
-      <NewsFilter
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-        onClearFilters={handleClearFilters}
-      />
-      <div className="news-content">
-        <NewsList filters={combinedFilters} />
-      </div>
-    </div>
     </PageTemplate>
   );
-};
-
-export default NewsManagementPage;
+}

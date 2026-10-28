@@ -54,7 +54,7 @@ export function usableTeamLogo(url: string | null | undefined): string | undefin
 }
 
 const formatDate = (iso: string): string =>
-  new Date(iso).toLocaleDateString(displayLocale(), { day: 'numeric', month: 'numeric' });
+  new Date(iso).toLocaleDateString(displayLocale(), { weekday: 'short', day: 'numeric', month: 'numeric' });
 
 const formatTime = (iso: string): string =>
   new Date(iso).toLocaleTimeString(displayLocale(), { hour: '2-digit', minute: '2-digit' });
@@ -94,31 +94,47 @@ const renderTeamLogo = (src: string | undefined): string => {
   return `<img src="${escapeHtml(logo)}" alt="" class="mr-team-logo" />`;
 };
 
+/**
+ * One match as a compact scoreboard: a small line with the status and the date on top,
+ * then home team, result and away team on one line. A scheduled match shows its start
+ * time where the result would be.
+ */
 export const renderMatchRow = (match: MatchResultValue): string => {
-  const isCompleted = match.status?.toLowerCase() === 'completed';
-  const isLive = match.status?.toLowerCase() === 'in_progress';
-  const homeScore = isCompleted || isLive ? match.homeScore : '-';
-  const awayScore = isCompleted || isLive ? match.awayScore : '-';
+  const statusKey = match.status?.toLowerCase() ?? '';
+  const isCompleted = statusKey === 'completed';
+  const isLive = statusKey === 'in_progress';
+  const isScheduled = statusKey === 'scheduled' || statusKey === '';
+  const hasScore = isCompleted || isLive;
   const homeWon = isCompleted && Number(match.homeScore) > Number(match.awayScore);
   const awayWon = isCompleted && Number(match.awayScore) > Number(match.homeScore);
+  const decided = homeWon || awayWon;
 
-  const homeScoreHtml = escapeHtml(String(homeScore));
-  const awayScoreHtml = escapeHtml(String(awayScore));
-  const statusKey = match.status?.toLowerCase() ?? '';
-  const label = statusLabel(statusKey);
+  const label = statusLabel(statusKey || 'scheduled');
   const statusHtml = label
-    ? `<span class="mr-status"><span class="mr-status-badge mr-status-badge--${escapeHtml(statusKey)}">${escapeHtml(label)}</span></span>`
+    ? `<span class="mr-status-badge mr-status-badge--${escapeHtml(statusKey || 'scheduled')}">${escapeHtml(label)}</span>`
     : '';
+  const whenText = isScheduled ? formatDate(match.date) : `${formatDate(match.date)} ${formatTime(match.date)}`;
+
+  let resultHtml: string;
+  if (hasScore) {
+    resultHtml = `<span class="mr-result${isLive ? ' mr-result--live' : ''}">${escapeHtml(String(match.homeScore))}<span class="mr-result-sep">–</span>${escapeHtml(String(match.awayScore))}</span>`;
+  } else if (isScheduled) {
+    resultHtml = `<span class="mr-result mr-result--time">${escapeHtml(formatTime(match.date))}</span>`;
+  } else {
+    resultHtml = '<span class="mr-result mr-result--none">–</span>';
+  }
+
+  const teamClass = (won: boolean): string =>
+    `mr-team${won ? ' mr-team--winner' : decided ? ' mr-team--loser' : ''}`;
 
   return (
-    `<a href="${escapeHtml(getMatchPath(match.sport ?? 'floorball', match.link))}" class="match-result-row" target="_blank" rel="noopener noreferrer">` +
-    `<span class="mr-date"><span class="mr-date-day">${escapeHtml(formatDate(match.date))}</span><span class="mr-date-time">${escapeHtml(formatTime(match.date))}</span></span>` +
-    `<span class="mr-teams">` +
-    `<span class="mr-team-line${homeWon ? ' mr-winner' : ''}">${renderTeamLogo(match.homeTeamImage)}<span class="mr-team-name">${escapeHtml(match.homeTeam)}</span></span>` +
-    `<span class="mr-team-line${awayWon ? ' mr-winner' : ''}">${renderTeamLogo(match.awayTeamImage)}<span class="mr-team-name">${escapeHtml(match.awayTeam)}</span></span>` +
+    `<a href="${escapeHtml(getMatchPath(match.sport ?? 'floorball', match.link))}" class="match-result-row mr-row mr-row--${escapeHtml(statusKey || 'scheduled')}" target="_blank" rel="noopener noreferrer">` +
+    `<span class="mr-meta">${statusHtml}<span class="mr-when">${escapeHtml(whenText)}</span></span>` +
+    `<span class="mr-board">` +
+    `<span class="${teamClass(homeWon)} mr-team--home"><span class="mr-team-name">${escapeHtml(match.homeTeam)}</span>${renderTeamLogo(match.homeTeamImage)}</span>` +
+    resultHtml +
+    `<span class="${teamClass(awayWon)} mr-team--away">${renderTeamLogo(match.awayTeamImage)}<span class="mr-team-name">${escapeHtml(match.awayTeam)}</span></span>` +
     `</span>` +
-    `<span class="mr-scores"><span class="mr-score${homeWon ? ' mr-score--winner' : ''}">${homeScoreHtml}</span><span class="mr-score${awayWon ? ' mr-score--winner' : ''}">${awayScoreHtml}</span></span>` +
-    statusHtml +
     `</a>`
   );
 };

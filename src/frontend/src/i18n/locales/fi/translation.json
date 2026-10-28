@@ -1041,6 +1041,17 @@
       "preview_description": "Näin artikkelisi näyttää lukijoille",
       "edit_description": "Muokkaa olemassa olevaa uutisartikkelia",
       "create_description": "Luo uusi uutisartikkeli",
+      "totalCount_one": "{{count}} uutinen",
+      "totalCount_other": "{{count}} uutista",
+      "noResults": "Hakua vastaavia uutisia ei löytynyt",
+      "noResultsHint": "Kokeile toista hakusanaa tai tyhjennä suodattimet.",
+      "noDataHint": "Luo ensimmäinen uutinen, niin se näkyy tässä.",
+      "confirmDeleteTitle": "Poista uutinen",
+      "confirmArchiveTitle": "Arkistoi uutinen",
+      "confirmRestoreTitle": "Palauta uutinen",
+      "confirmBulkDelete": "Haluatko varmasti poistaa {{count}} valittua uutista? Poistoa ei voi perua.",
+      "confirmBulkArchive": "Arkistoidaanko {{count}} valittua uutista? Ne poistuvat julkiselta sivustolta.",
+      "confirmBulkUnarchive": "Palautetaanko {{count}} valittua uutista julkiselle sivustolle?",
       "section_content": "Sisältö",
       "section_classification": "Luokittelu",
       "section_details": "Lisätiedot",
@@ -1063,6 +1074,11 @@
       "confirm_publish": "Oletko varma, että haluat julkaista tämän uutisartikkelin?",
       "confirm_update": "Oletko varma, että haluat päivittää tämän uutisartikkelin?",
       "table": {
+        "article": "Uutinen",
+        "classification": "Luokittelu",
+        "status": "Tila",
+        "select": "Valitse {{title}}",
+        "selectAll": "Valitse kaikki",
         "title": "Otsikko",
         "author": "Tekijä",
         "category": "Kategoria",
@@ -1079,6 +1095,10 @@
         "toggleArchive": "Klikkaa vaihtaaksesi arkistointitilaa"
       },
       "filter": {
+        "status": "Tila",
+        "statusAll": "Kaikki",
+        "statusPublished": "Vain julkaistut",
+        "clear": "Tyhjennä suodattimet",
         "category": "Kategoria",
         "allCategories": "Kaikki kategoriat",
         "sport": "Laji",
@@ -1087,10 +1107,15 @@
         "searchPlaceholder": "Hae uutisartikkeleita..."
       },
       "status": {
+        "publishedLabel": "Julkaistu",
+        "archivedLabel": "Arkistoitu",
         "archived": "Kyllä",
         "notArchived": "Ei"
       },
       "success": {
+        "bulk_delete": "{{count}} uutista poistettu",
+        "bulk_archive": "{{count}} uutista arkistoitu",
+        "bulk_restore": "{{count}} uutista palautettu",
         "archived": "Uutisartikkeli arkistoitu onnistuneesti",
         "unarchived": "Uutisartikkeli palautettu arkistosta onnistuneesti",
         "deleted": "Uutisartikkeli poistettu onnistuneesti",

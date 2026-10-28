@@ -1041,6 +1041,17 @@
       "preview_description": "This is how your article will appear to readers",
       "edit_description": "Edit existing news article",
       "create_description": "Create a new news article",
+      "totalCount_one": "{{count}} article",
+      "totalCount_other": "{{count}} articles",
+      "noResults": "No articles match the filters",
+      "noResultsHint": "Try another search term or clear the filters.",
+      "noDataHint": "Create the first article and it shows up here.",
+      "confirmDeleteTitle": "Delete article",
+      "confirmArchiveTitle": "Archive article",
+      "confirmRestoreTitle": "Restore article",
+      "confirmBulkDelete": "Delete the {{count}} selected articles? This cannot be undone.",
+      "confirmBulkArchive": "Archive the {{count}} selected articles? They are removed from the public site.",
+      "confirmBulkUnarchive": "Restore the {{count}} selected articles to the public site?",
       "section_content": "Content",
       "section_classification": "Classification",
       "section_details": "Details",
@@ -1063,6 +1074,11 @@
       "confirm_publish": "Are you sure you want to publish this news article?",
       "confirm_update": "Are you sure you want to update this news article?",
       "table": {
+        "article": "Article",
+        "classification": "Classification",
+        "status": "Status",
+        "select": "Select {{title}}",
+        "selectAll": "Select all",
         "title": "Title",
         "author": "Author",
         "category": "Category",
@@ -1079,6 +1095,10 @@
         "toggleArchive": "Click to toggle archive status"
       },
       "filter": {
+        "status": "Status",
+        "statusAll": "All",
+        "statusPublished": "Published only",
+        "clear": "Clear filters",
         "category": "Category",
         "allCategories": "All categories",
         "sport": "Sport",
@@ -1087,10 +1107,15 @@
         "searchPlaceholder": "Search news articles..."
       },
       "status": {
+        "publishedLabel": "Published",
+        "archivedLabel": "Archived",
         "archived": "Yes",
         "notArchived": "No"
       },
       "success": {
+        "bulk_delete": "{{count}} articles deleted",
+        "bulk_archive": "{{count}} articles archived",
+        "bulk_restore": "{{count}} articles restored",
         "archived": "News article archived successfully",
         "unarchived": "News article unarchived successfully",
         "deleted": "News article deleted successfully",

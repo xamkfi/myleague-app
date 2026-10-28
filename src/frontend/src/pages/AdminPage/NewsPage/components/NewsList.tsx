@@ -1,101 +1,151 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createAdminFromState } from '../../../../utils/adminReturnTo';
 import { newsCategoryLabel, newsSportLabel } from '../Utils/newsTaxonomyLabels';
-import type { NewsArticleDto, PaginatedNewsResponse } from '../../../../api/news/newsService'; 
-import { newsService, archiveNewsService, restoreNewsService, deleteNewsService } from '../../../../api/news/newsService';
+import { hasActiveNewsFilters, type NewsFilters } from '../Utils/newsAdminFilters';
+import {
+  archiveNewsService,
+  deleteNewsService,
+  newsService,
+  restoreNewsService,
+  type NewsArticleDto,
+} from '../../../../api/news/newsService';
+import Button from '../../../../components/Button/Button';
 import Pagination from '../../../../components/Pagination';
 import ActionsDropdown from '../../../../components/ActionsDropdown/ActionsDropdown';
 import BulkActionsBar from '../../../../components/BulkActionsBar/BulkActionsBar';
+import ConfirmationDialog from '../../../../components/ConfirmationDialog/ConfirmationDialog';
+import SportIcon from '../../../../components/SportIcon/SportIcon';
 import TeamCategoryBadge from '../../../../components/TeamCategoryBadge/TeamCategoryBadge';
 import '../../../../styles/AdminTable.scss';
-import "../styles/NewsList.scss";
+import '../styles/NewsList.scss';
 
-interface NewsListProps {
-  filters?: {
-    category: string;
-    sportCategory: string;
-    searchTerm: string;
-    includeArchived: boolean;
-    teamCategories?: string[];
-  };
+type NewsAction = 'delete' | 'archive' | 'restore';
+
+interface PendingAction {
+  kind: NewsAction;
+  ids: string[];
 }
 
-const NewsList = ({ filters }: NewsListProps) => {
-  const { t } = useTranslation();
+interface NewsListProps {
+  filters: NewsFilters;
+  onClearFilters: () => void;
+  onCreate: () => void;
+  /** Reports the number of articles that match the filters. */
+  onTotalChange: (total: number) => void;
+}
+
+const SKELETON_ROWS = 5;
+const SUCCESS_TOAST_MS = 3500;
+
+const runNewsAction = (kind: NewsAction, id: string): Promise<unknown> => {
+  switch (kind) {
+    case 'delete':
+      return deleteNewsService(id);
+    case 'archive':
+      return archiveNewsService(id);
+    default:
+      return restoreNewsService(id);
+  }
+};
+
+/** Admin table of news articles with selection, bulk actions and paging. */
+export default function NewsList({ filters, onClearFilters, onCreate, onTotalChange }: NewsListProps) {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [newsArticles, setNewsArticles] = useState<NewsArticleDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [deletingArticle, setDeletingArticle] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const filtersKey: string = JSON.stringify(filters);
+  // Paging belongs to one set of filters: new filters start from page 1 without an extra fetch.
+  const [paging, setPaging] = useState<{ key: string; page: number }>({ key: filtersKey, page: 1 });
+  const page: number = paging.key === filtersKey ? paging.page : 1;
   const [pageSize, setPageSize] = useState(10);
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const [articles, setArticles] = useState<NewsArticleDto[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [pending, setPending] = useState<PendingAction | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
+  const toastTimerRef = useRef<number | null>(null);
 
-  const fetchNewsArticles = useCallback(async (page: number = 1, size: number = 10) => {
-    try {
-      setLoading(true);
-      const response = await newsService({
-        category: filters?.category ?? '',
-        sportCategory: filters?.sportCategory ?? '',
-        searchTerm: filters?.searchTerm ?? '',
-        includeArchived: filters?.includeArchived ?? true,
-        teamCategories: filters?.teamCategories,
-        page,
-        pageSize: size
+  const setPage = (nextPage: number): void => setPaging({ key: filtersKey, page: nextPage });
+
+  useEffect(() => {
+    let cancelled = false;
+    const current: NewsFilters = JSON.parse(filtersKey) as NewsFilters;
+    setLoading(true);
+    setLoadFailed(false);
+    newsService({
+      category: current.category,
+      sportCategory: current.sportCategory,
+      searchTerm: current.searchTerm,
+      includeArchived: current.includeArchived,
+      teamCategories: current.teamCategories,
+      page,
+      pageSize,
+    })
+      .then((response) => {
+        if (cancelled) {
+          return;
+        }
+        if (Array.isArray(response)) {
+          setArticles(response);
+          setTotalCount(response.length);
+          setTotalPages(1);
+        } else {
+          setArticles(response.data);
+          setTotalCount(response.pagination.totalCount);
+          setTotalPages(response.pagination.totalPages);
+        }
+        setSelectedIds(new Set());
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          console.error('Failed to fetch news articles:', err);
+          setArticles([]);
+          setLoadFailed(true);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
-      
-      // Handle the paginated response structure
-      if (response && typeof response === 'object' && 'pagination' in response) {
-        // New paginated response format with pagination object
-        const paginatedResponse = response as PaginatedNewsResponse;
-        setNewsArticles(paginatedResponse.data);
-        setTotalCount(paginatedResponse.pagination.totalCount);
-        setTotalPages(paginatedResponse.pagination.totalPages);
-        setCurrentPage(paginatedResponse.pagination.currentPage);
-        setPageSize(paginatedResponse.pagination.pageSize);
-      } else {
-        // Fallback for old format
-        const oldResponse = response as NewsArticleDto[];
-        setNewsArticles(oldResponse);
-        setTotalCount(oldResponse.length);
-        setTotalPages(Math.ceil(oldResponse.length / pageSize));
+    return () => {
+      cancelled = true;
+    };
+  }, [filtersKey, page, pageSize, reloadToken]);
+
+  useEffect(() => {
+    onTotalChange(totalCount);
+  }, [onTotalChange, totalCount]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current !== null) {
+        window.clearTimeout(toastTimerRef.current);
       }
-      setError(null);
-    } catch (error) {
-      console.error('Failed to fetch news articles:', error);
-      setError(t('admin.news.errors.fetchFailed', 'Failed to fetch news articles'));
-    } finally {
-      setLoading(false);
+    };
+  }, []);
+
+  const showSuccess = (message: string): void => {
+    setSuccessMessage(message);
+    if (toastTimerRef.current !== null) {
+      window.clearTimeout(toastTimerRef.current);
     }
-  }, [filters, pageSize, t]);
+    toastTimerRef.current = window.setTimeout(() => setSuccessMessage(null), SUCCESS_TOAST_MS);
+  };
 
-  useEffect(() => {
-    fetchNewsArticles(currentPage, pageSize);
-  }, [currentPage, pageSize, fetchNewsArticles]);
-
-  // Reset to first page when filters change (only if filters are provided)
-  useEffect(() => {
-    if (filters) {
-      setCurrentPage(1);
-    }
-  }, [filters]);
-
-  // Clear selection when articles change
-  useEffect(() => {
-    setSelectedIds(new Set());
-  }, [newsArticles]);
-
-  // ── Selection handlers ──
-  const handleToggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
+  const toggleSelect = (id: string): void => {
+    setSelectedIds((previous) => {
+      const next = new Set(previous);
       if (next.has(id)) {
         next.delete(id);
       } else {
@@ -105,260 +155,332 @@ const NewsList = ({ filters }: NewsListProps) => {
     });
   };
 
-  const handleSelectAll = () => {
-    setSelectedIds(new Set(newsArticles.map((a) => a.id)));
-  };
+  const selectAll = (): void => setSelectedIds(new Set(articles.map((article) => article.id)));
+  const clearSelection = (): void => setSelectedIds(new Set());
 
-  const handleClearSelection = () => {
-    setSelectedIds(new Set());
-  };
-
-  // ── Bulk action handlers ──
-  const handleBulkArchive = async () => {
-    const ids = Array.from(selectedIds);
-    if (ids.length === 0) return;
-    if (!window.confirm(t('admin.news.confirmBulkArchive', 'Are you sure you want to archive the selected articles?'))) return;
-
-    try {
-      await Promise.all(ids.map((id) => archiveNewsService(id)));
-      setSelectedIds(new Set());
-      fetchNewsArticles(currentPage, pageSize);
-    } catch (err) {
-      console.error('Bulk archive failed:', err);
-      setError(t('admin.news.errors.bulkArchiveFailed', 'Failed to archive selected articles'));
-    }
-  };
-
-  const handleBulkUnarchive = async () => {
-    const ids = Array.from(selectedIds);
-    if (ids.length === 0) return;
-    if (!window.confirm(t('admin.news.confirmBulkUnarchive', 'Are you sure you want to unarchive the selected articles?'))) return;
-
-    try {
-      await Promise.all(ids.map((id) => restoreNewsService(id)));
-      setSelectedIds(new Set());
-      fetchNewsArticles(currentPage, pageSize);
-    } catch (err) {
-      console.error('Bulk unarchive failed:', err);
-      setError(t('admin.news.errors.bulkUnarchiveFailed', 'Failed to unarchive selected articles'));
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    const ids = Array.from(selectedIds);
-    if (ids.length === 0) return;
-    if (!window.confirm(t('admin.news.confirmBulkDelete', 'Are you sure you want to delete the selected articles?'))) return;
-
-    try {
-      await Promise.all(ids.map((id) => deleteNewsService(id)));
-      setSelectedIds(new Set());
-      fetchNewsArticles(currentPage, pageSize);
-    } catch (err) {
-      console.error('Bulk delete failed:', err);
-      setError(t('admin.news.errors.bulkDeleteFailed', 'Failed to delete selected articles'));
-    }
-  };
-
-  const handleEdit = (id: string) => {
+  const editArticle = (id: string): void => {
     navigate(`/admin/news/edit/${id}`, { state: createAdminFromState(location.pathname, location.search) });
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm(t('admin.news.confirmDelete', 'Are you sure you want to delete this news article?'))) {
-      setDeletingArticle(id);
-      try {
-        await deleteNewsService(id);
-        
-        // Remove the article from current page
-        const updatedArticles = newsArticles.filter(article => article.id !== id);
-        setNewsArticles(updatedArticles);
-        
-        // If this was the last item on the page and not the first page, go to previous page
-        if (updatedArticles.length === 0 && currentPage > 1) {
-          setCurrentPage(currentPage - 1);
-        } else {
-          // Refresh the current page to get updated data
-          fetchNewsArticles(currentPage, pageSize);
-        }
-        
-        setError(null);
-        console.log(t('admin.news.success.deleted', 'News article deleted successfully'));
-      } catch (error) {
-        console.error('Failed to delete news article:', error);
-        setError(t('admin.news.errors.deleteFailed', 'Failed to delete news article'));
-      } finally {
-        setDeletingArticle(null);
-      }
+  const viewArticle = (id: string): void => {
+    window.open(`/uutiset/${id}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const successText = (kind: NewsAction, count: number): string => {
+    if (count > 1) {
+      return t(`admin.news.success.bulk_${kind}`, { count });
+    }
+    switch (kind) {
+      case 'delete':
+        return t('admin.news.success.deleted');
+      case 'archive':
+        return t('admin.news.success.archived');
+      default:
+        return t('admin.news.success.unarchived');
     }
   };
 
-  const handleToggleArchive = async (id: string, currentStatus: boolean) => {
-    const confirmMessage = currentStatus 
-      ? t('admin.news.confirmUnarchive', 'Are you sure you want to unarchive this news article?')
-      : t('admin.news.confirmArchive', 'Are you sure you want to archive this news article?');
-    if (window.confirm(confirmMessage)) {
-      try {
-        if (currentStatus) {
-          await restoreNewsService(id);
-        } else {
-          await archiveNewsService(id);
-        }
-        
-        // Refresh the current page to get updated data
-        fetchNewsArticles(currentPage, pageSize);
-        
-        setError(null);
-        
-        const successMessage = !currentStatus
-          ? t('admin.news.success.archived', 'News article archived successfully')
-          : t('admin.news.success.unarchived', 'News article unarchived successfully');
-        console.log(successMessage);
-      } catch (error) {
-        console.error('Failed to update archive status:', error);
-        setError(t('admin.news.errors.updateArchiveFailed', 'Failed to update archive status'));
+  const confirmPending = async (): Promise<void> => {
+    if (!pending) {
+      return;
+    }
+    const { kind, ids } = pending;
+    setActionBusy(true);
+    setActionError(null);
+    const results = await Promise.allSettled(ids.map((id) => runNewsAction(kind, id)));
+    const failed: number = results.filter((result) => result.status === 'rejected').length;
+    results.forEach((result) => {
+      if (result.status === 'rejected') {
+        console.error(`News ${kind} failed:`, result.reason);
       }
+    });
+    setActionBusy(false);
+    setPending(null);
+
+    if (failed > 0) {
+      setActionError(
+        kind === 'delete'
+          ? t('admin.news.errors.deleteFailed')
+          : t('admin.news.errors.updateArchiveFailed'),
+      );
+    } else {
+      showSuccess(successText(kind, ids.length));
+    }
+
+    // Deleting the whole last page moves back one page; everything else reloads in place.
+    if (kind === 'delete' && failed === 0 && ids.length >= articles.length && page > 1) {
+      setPage(page - 1);
+    } else {
+      setReloadToken((value) => value + 1);
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+  const confirmTexts = (action: PendingAction): { title: string; message: string; confirm: string } => {
+    const bulk: boolean = action.ids.length > 1;
+    const count: number = action.ids.length;
+    switch (action.kind) {
+      case 'delete':
+        return {
+          title: t('admin.news.confirmDeleteTitle'),
+          message: bulk ? t('admin.news.confirmBulkDelete', { count }) : t('admin.news.confirmDelete'),
+          confirm: t('admin.news.actions.delete'),
+        };
+      case 'archive':
+        return {
+          title: t('admin.news.confirmArchiveTitle'),
+          message: bulk ? t('admin.news.confirmBulkArchive', { count }) : t('admin.news.confirmArchive'),
+          confirm: t('admin.news.actions.archive'),
+        };
+      default:
+        return {
+          title: t('admin.news.confirmRestoreTitle'),
+          message: bulk ? t('admin.news.confirmBulkUnarchive', { count }) : t('admin.news.confirmUnarchive'),
+          confirm: t('admin.news.actions.unarchive'),
+        };
+    }
   };
 
-  if (loading) {
-    return <div className="admin-table__empty">{t('admin.news.loading', 'Loading news articles...')}</div>;
-  }
+  const formatDate = (iso: string): string => {
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime())
+      ? '–'
+      : date.toLocaleDateString(i18n.language, { day: 'numeric', month: 'numeric', year: 'numeric' });
+  };
 
-  if (error) {
-    return <div className="admin-table__empty" style={{ color: '#b91c1c' }}>{error}</div>;
-  }
+  const stopRowClick = (event: MouseEvent): void => event.stopPropagation();
 
-  const allSelected = newsArticles.length > 0 && newsArticles.every((a) => selectedIds.has(a.id));
+  const allSelected: boolean = articles.length > 0 && articles.every((article) => selectedIds.has(article.id));
+  const selectedArticles: NewsArticleDto[] = articles.filter((article) => selectedIds.has(article.id));
+  const filtersActive: boolean = hasActiveNewsFilters(filters);
+  const pendingTexts = pending ? confirmTexts(pending) : null;
+
+  const renderRows = () => {
+    if (loading) {
+      return Array.from({ length: SKELETON_ROWS }, (_, index) => (
+        <tr key={`skeleton-${index}`} className="news-table__skeleton-row" aria-hidden="true">
+          <td className="admin-table__checkbox-col" />
+          <td colSpan={5}>
+            <span className="news-table__skeleton" />
+          </td>
+          <td />
+        </tr>
+      ));
+    }
+
+    return articles.map((article) => {
+      const selected: boolean = selectedIds.has(article.id);
+      return (
+        <tr
+          key={article.id}
+          className={`admin-table__row--clickable${selected ? ' admin-table__row--selected' : ''}`}
+          onClick={() => editArticle(article.id)}
+        >
+          <td className="admin-table__checkbox-col" onClick={stopRowClick}>
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={() => toggleSelect(article.id)}
+              aria-label={t('admin.news.table.select', { title: article.title })}
+            />
+          </td>
+          <td className="news-table__article">
+            {article.mainImage ? (
+              <img className="news-table__thumb" src={article.mainImage} alt="" loading="lazy" />
+            ) : (
+              <span className="news-table__thumb news-table__thumb--empty" aria-hidden="true" />
+            )}
+            <span className="news-table__text">
+              <span className="news-table__title">{article.title}</span>
+              {article.summary && <span className="news-table__summary">{article.summary}</span>}
+            </span>
+          </td>
+          <td className="news-table__classification">
+            <span className="news-table__tags">
+              {article.sportCategory && (
+                <span className="news-table__sport">
+                  <SportIcon sport={article.sportCategory} size="sm" decorative />
+                  {newsSportLabel(t, article.sportCategory)}
+                </span>
+              )}
+              {article.category && (
+                <span className="admin-tag admin-tag--blue">{newsCategoryLabel(t, article.category)}</span>
+              )}
+              <TeamCategoryBadge category={article.teamCategory} />
+            </span>
+          </td>
+          <td className="news-table__author">{article.author || '–'}</td>
+          <td className="news-table__date">{formatDate(article.createdAt)}</td>
+          <td className="news-table__status">
+            <span className={`news-status news-status--${article.isArchived ? 'archived' : 'published'}`}>
+              <span className="news-status__dot" aria-hidden="true" />
+              {article.isArchived ? t('admin.news.status.archivedLabel') : t('admin.news.status.publishedLabel')}
+            </span>
+          </td>
+          <td className="admin-table__actions-col" onClick={stopRowClick}>
+            <ActionsDropdown
+              ariaLabel={t('admin.news.actions.menu')}
+              actions={[
+                { label: t('admin.news.actions.edit'), onClick: () => editArticle(article.id) },
+                ...(article.isArchived
+                  ? []
+                  : [{ label: t('common.viewPublic'), onClick: () => viewArticle(article.id) }]),
+                {
+                  label: article.isArchived ? t('admin.news.actions.unarchive') : t('admin.news.actions.archive'),
+                  onClick: () => setPending({ kind: article.isArchived ? 'restore' : 'archive', ids: [article.id] }),
+                  variant: 'status',
+                },
+                {
+                  label: t('admin.news.actions.delete'),
+                  onClick: () => setPending({ kind: 'delete', ids: [article.id] }),
+                  variant: 'danger',
+                },
+              ]}
+            />
+          </td>
+        </tr>
+      );
+    });
+  };
 
   return (
     <div className="news-list">
-      {/* Add Filtering here */}
+      {successMessage && (
+        <div className="news-list__toast" role="status">
+          {successMessage}
+        </div>
+      )}
+
+      {actionError && (
+        <div className="news-list__alert" role="alert">
+          <span>{actionError}</span>
+          <button
+            type="button"
+            className="news-list__alert-close"
+            onClick={() => setActionError(null)}
+            aria-label={t('common.close')}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <BulkActionsBar
         selectedCount={selectedIds.size}
-        totalCount={newsArticles.length}
-        onSelectAll={handleSelectAll}
-        onClearSelection={handleClearSelection}
+        totalCount={articles.length}
+        onSelectAll={selectAll}
+        onClearSelection={clearSelection}
         actions={[
-          { label: t('admin.news.actions.archive', 'Archive'), onClick: handleBulkArchive, variant: 'status' },
-          { label: t('admin.news.actions.unarchive', 'Unarchive'), onClick: handleBulkUnarchive, variant: 'status' },
-          { label: t('admin.news.actions.delete', 'Delete'), onClick: handleBulkDelete, variant: 'danger' },
+          {
+            label: t('admin.news.actions.archive'),
+            onClick: () =>
+              setPending({
+                kind: 'archive',
+                ids: selectedArticles.filter((article) => !article.isArchived).map((article) => article.id),
+              }),
+            variant: 'status',
+            disabled: selectedArticles.every((article) => article.isArchived),
+          },
+          {
+            label: t('admin.news.actions.unarchive'),
+            onClick: () =>
+              setPending({
+                kind: 'restore',
+                ids: selectedArticles.filter((article) => article.isArchived).map((article) => article.id),
+              }),
+            variant: 'status',
+            disabled: selectedArticles.every((article) => !article.isArchived),
+          },
+          {
+            label: t('admin.news.actions.delete'),
+            onClick: () => setPending({ kind: 'delete', ids: Array.from(selectedIds) }),
+            variant: 'danger',
+          },
         ]}
       />
 
-      <div className="admin-table__wrapper">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th className="admin-table__checkbox-col">
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={() => (allSelected ? handleClearSelection() : handleSelectAll())}
-                />
-              </th>
-              <th>{t('admin.news.table.title', 'Title')}</th>
-              <th>{t('admin.news.table.author', 'Author')}</th>
-              <th>{t('admin.news.table.category', 'Category')}</th>
-              <th>{t('admin.news.table.createdAt', 'Created')}</th>
-              <th>{t('admin.news.table.archived', 'Archived')}</th>
-              <th className="admin-table__actions-col">{t('admin.news.table.actions', 'Actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {newsArticles.map(article => (
-              <tr
-                key={article.id}
-                className={selectedIds.has(article.id) ? 'admin-table__row--selected' : ''}
-              >
-                <td className="admin-table__checkbox-col">
+      {loadFailed ? (
+        <div className="news-list__state" role="alert">
+          <p className="news-list__state-title">{t('admin.news.errors.fetchFailed')}</p>
+          <Button variant="secondary" size="sm" onClick={() => setReloadToken((value) => value + 1)}>
+            {t('common.retry')}
+          </Button>
+        </div>
+      ) : !loading && articles.length === 0 ? (
+        <div className="news-list__state">
+          <p className="news-list__state-title">
+            {filtersActive ? t('admin.news.noResults') : t('admin.news.noData')}
+          </p>
+          <p className="news-list__state-hint">
+            {filtersActive ? t('admin.news.noResultsHint') : t('admin.news.noDataHint')}
+          </p>
+          {filtersActive ? (
+            <Button variant="secondary" size="sm" onClick={onClearFilters}>
+              {t('admin.news.filter.clear')}
+            </Button>
+          ) : (
+            <Button size="sm" rounded="pill" onClick={onCreate}>
+              {t('admin.news.createNew')}
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="admin-table__wrapper news-table__wrapper">
+          <table className="admin-table news-table" aria-busy={loading}>
+            <thead>
+              <tr>
+                <th className="admin-table__checkbox-col">
                   <input
                     type="checkbox"
-                    checked={selectedIds.has(article.id)}
-                    onChange={() => handleToggleSelect(article.id)}
+                    checked={allSelected}
+                    disabled={loading || articles.length === 0}
+                    onChange={() => (allSelected ? clearSelection() : selectAll())}
+                    aria-label={t('admin.news.table.selectAll')}
                   />
-                </td>
-                <td>
-                  <div className="admin-table__name">{article.title}</div>
-                </td>
-                <td>{article.author || '-'}</td>
-                <td>
-                  <div className="categories">
-                    <TeamCategoryBadge category={article.teamCategory} />
-                    {article.category && (
-                      <span className="admin-tag admin-tag--blue">{newsCategoryLabel(t, article.category)}</span>
-                    )}
-                    {article.sportCategory && (
-                      <span className="admin-tag admin-tag--purple">{newsSportLabel(t, article.sportCategory)}</span>
-                    )}
-                  </div>
-                </td>
-                <td>{formatDate(article.createdAt)}</td>
-                <td>
-                  <button
-                    className={`admin-table__toggle-btn ${article.isArchived ? 'admin-table__toggle-btn--off' : 'admin-table__toggle-btn--on'}`}
-                    onClick={() => handleToggleArchive(article.id, article.isArchived)}
-                    title={t('admin.news.actions.toggleArchive', 'Click to toggle archive status')}
-                  >
-                    <span>{article.isArchived ? '📁' : '📄'}</span>
-                    <span>
-                      {article.isArchived 
-                        ? t('admin.news.status.archived', 'Yes')
-                        : t('admin.news.status.notArchived', 'No')}
-                    </span>
-                  </button>
-                </td>
-                <td className="admin-table__actions-col">
-                  <ActionsDropdown
-                    ariaLabel={t('admin.news.actions.menu', 'News actions menu')}
-                    actions={[
-                      { label: t('admin.news.actions.edit', 'Edit'), onClick: () => handleEdit(article.id) },
-                      {
-                        label: article.isArchived
-                          ? t('admin.news.actions.unarchive', 'Unarchive')
-                          : t('admin.news.actions.archive', 'Archive'),
-                        onClick: () => handleToggleArchive(article.id, article.isArchived),
-                        variant: 'status',
-                      },
-                      {
-                        label: t('admin.news.actions.delete', 'Delete'),
-                        onClick: () => handleDelete(article.id),
-                        variant: 'danger',
-                        disabled: deletingArticle === article.id,
-                      },
-                    ]}
-                  />
-                </td>
+                </th>
+                <th>{t('admin.news.table.article')}</th>
+                <th>{t('admin.news.table.classification')}</th>
+                <th>{t('admin.news.table.author')}</th>
+                <th>{t('admin.news.table.createdAt')}</th>
+                <th>{t('admin.news.table.status')}</th>
+                <th className="admin-table__actions-col">
+                  <span className="admin-table__visually-hidden">{t('admin.news.table.actions')}</span>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      
-      {newsArticles.length === 0 && (
-        <div className="admin-table__empty">
-          {t('admin.news.noData', 'No news articles found')}
+            </thead>
+            <tbody>{renderRows()}</tbody>
+          </table>
         </div>
       )}
-      
-      {totalCount > 0 && (
-        <div className="pagination-container">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalCount={totalCount}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={setPageSize}
-          />
-        </div>
+
+      {!loadFailed && totalCount > 0 && (
+        <Pagination
+          className="news-list__pagination"
+          currentPage={page}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+          pageSizeOptions={[10, 25, 50]}
+        />
       )}
+
+      <ConfirmationDialog
+        isOpen={pending !== null}
+        icon={pending?.kind === 'delete' ? '🗑️' : '📁'}
+        title={pendingTexts?.title ?? ''}
+        message={pendingTexts?.message ?? ''}
+        confirmText={pendingTexts?.confirm ?? ''}
+        cancelText={t('common.cancel')}
+        isLoading={actionBusy}
+        onConfirm={() => {
+          void confirmPending();
+        }}
+        onCancel={() => setPending(null)}
+      />
     </div>
   );
-};
-
-export default NewsList;
+}
