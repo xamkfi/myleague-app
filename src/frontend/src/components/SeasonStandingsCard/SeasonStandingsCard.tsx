@@ -9,6 +9,7 @@ export interface SeasonStandingsRow {
   teamName: string;
   teamLogo?: string | null;
   teamShortName?: string | null;
+  gamesPlayed: number;
   goalDifference: number;
   points: number;
 }
@@ -16,6 +17,7 @@ export interface SeasonStandingsRow {
 export interface SeasonStandingsCardLabels {
   standingsTitle: string;
   teamShort: string;
+  gamesShort: string;
   gdShort: string;
   ptsShort: string;
   noStandings: string;
@@ -91,6 +93,7 @@ export default function SeasonStandingsCard({
           <div className="fb-standings-table__head">
             <span className="fb-standings-table__rank">#</span>
             <span className="fb-standings-table__team">{labels.teamShort}</span>
+            <span className="fb-standings-table__num">{labels.gamesShort}</span>
             <span className="fb-standings-table__num">{labels.gdShort}</span>
             <span className="fb-standings-table__num fb-standings-table__num--pts">
               {labels.ptsShort}
@@ -118,6 +121,7 @@ export default function SeasonStandingsCard({
                   className="fb-standings-table__team-name"
                 />
               </span>
+              <span className="fb-standings-table__num">{team.gamesPlayed}</span>
               <span className="fb-standings-table__num">{team.goalDifference}</span>
               <span className="fb-standings-table__num fb-standings-table__num--pts">
                 {team.points}

@@ -284,6 +284,7 @@ function FootballPage() {
     seasonYears: t('footballPage.seasonYears'),
     standingsTitle: t('footballPage.standingsTitle'),
     teamShort: t('footballPage.teamShort'),
+    gamesShort: t('footballPage.gamesShort'),
     gdShort: t('footballPage.gdShort'),
     ptsShort: t('footballPage.ptsShort'),
     noStandings: t('footballPage.noStandings'),
