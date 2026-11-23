@@ -1,4 +1,4 @@
-import type { ParsedRosterPlayer, ParsedRosterWorkbook } from './rosterExcelParser';
+import type { ParsedRosterPlayer, ParsedRosterWorkbook } from './rosterAssignments';
 
 export const ROSTER_IMPORT_SCHEMA = 'myleague-roster-import/v1';
 

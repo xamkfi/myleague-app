@@ -6,30 +6,40 @@ import type {
   SeasonImportSummary,
 } from '../../types/common/seasonImportTypes';
 import { FootballPosition } from '../../types/football/footballTypes';
-import type { RosterAssignment, RosterTeamOption } from '../common/rosterExcelParser';
+import {
+  toRosterCompetitionOptions,
+  toRosterTeamOptions,
+  type RosterAssignment,
+  type RosterCompetitionOption,
+  type RosterTeamOption,
+} from '../common/rosterAssignments';
 import { importRosterAssignments, revertRosterRecords, snapshotFromRosterRows } from '../common/rosterImportRunner';
 import { footballPlayerService } from './footballPlayerService';
 import { footballSeasonService } from './footballSeasonService';
 import { footballTeamService } from './footballTeamService';
+import { footballTournamentService } from './footballTournamentService';
 
 const FOOTBALL_POSITIONS = new Set<string>(Object.values(FootballPosition));
 
-export async function loadFootballRosterSeasons(): Promise<RosterTeamOption[]> {
-  const response = await footballSeasonService.getAll(true);
-  return (response.data ?? [])
-    .map((season) => ({ id: season.id, name: season.name }))
-    .sort((left, right) => left.name.localeCompare(right.name, 'fi'));
+export async function loadFootballRosterCompetitions(): Promise<RosterCompetitionOption[]> {
+  const [seasons, tournaments] = await Promise.all([
+    footballSeasonService.getAll(true),
+    footballTournamentService.getAll(undefined, true),
+  ]);
+  return toRosterCompetitionOptions(seasons.data ?? [], tournaments.data ?? []);
 }
 
-export async function loadFootballRosterSeasonTeams(seasonId: string): Promise<RosterTeamOption[]> {
-  const response = await footballSeasonService.getById(seasonId, true);
-  const unique = new Map<string, string>();
-  for (const team of response.data.teams ?? []) {
-    if (team.id && team.name) unique.set(team.id, team.name);
+export async function loadFootballRosterTeams(competition: RosterCompetitionOption): Promise<RosterTeamOption[]> {
+  if (competition.kind === 'tournament') {
+    const tournament = await footballTournamentService.getById(competition.id, true);
+    return toRosterTeamOptions(
+      (tournament.data.groups ?? [])
+        .flatMap((group) => group.teams ?? [])
+        .map((team) => ({ id: team.teamId, name: team.teamName })),
+    );
   }
-  return [...unique.entries()]
-    .map(([id, name]) => ({ id, name }))
-    .sort((left, right) => left.name.localeCompare(right.name, 'fi'));
+  const season = await footballSeasonService.getById(competition.id, true);
+  return toRosterTeamOptions(season.data.teams ?? []);
 }
 
 export async function importFootballRosters(

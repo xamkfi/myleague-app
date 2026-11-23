@@ -45,9 +45,9 @@ export const SeasonsPageHeader = ({
           type="button"
           className="import-season-button"
           onClick={onImportRoster}
-          title={t('common.rosterImport.buttonTooltip', 'Import a team roster from an Excel file into a season.')}
+          title={t('common.rosterImport.buttonTooltip')}
         >
-          <i className="fas fa-file-excel"></i>
+          <i className="fas fa-users"></i>
           {' '}
           {t('common.rosterImport.button', 'Import roster')}
         </button>
