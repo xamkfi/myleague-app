@@ -492,14 +492,8 @@ public class FootballMatch : BaseEntity
             throw new InvalidOperationException("Extra time is not allowed by the match rules.");
 
         WentToExtraTime = true;
-        Guid homeId = HomeTeamId ?? Guid.Empty;
-        Guid awayId = AwayTeamId ?? Guid.Empty;
         for (int i = 0; i < MatchRules.ExtraTimeHalfCount; i++)
-        {
-            int period = MatchRules.ExtraTimeStartPeriodNumber + i;
-            if (_periodScores.All(ps => ps.PeriodNumber != period))
-                _periodScores.Add(new FootballPeriodScore(Id, period, homeId, awayId));
-        }
+            EnsurePeriodScore(MatchRules.ExtraTimeStartPeriodNumber + i);
     }
 
     public void RecordPenaltyShootout()
@@ -508,15 +502,23 @@ public class FootballMatch : BaseEntity
             throw new InvalidOperationException("Penalty shootout is not allowed by the match rules.");
 
         WentToPenaltyShootout = true;
-        int shootoutPeriod = MatchRules.PenaltyShootoutPeriodNumber;
-        if (_periodScores.All(ps => ps.PeriodNumber != shootoutPeriod))
-        {
-            _periodScores.Add(new FootballPeriodScore(
-                Id,
-                shootoutPeriod,
-                HomeTeamId ?? Guid.Empty,
-                AwayTeamId ?? Guid.Empty));
-        }
+        EnsurePeriodScore(MatchRules.PenaltyShootoutPeriodNumber);
+    }
+
+    /// <summary>
+    /// Adds the score row of an extra period. The row starts from the goals already recorded in the
+    /// period, because events can be recorded before the period itself is marked as played.
+    /// </summary>
+    private void EnsurePeriodScore(int periodNumber)
+    {
+        if (_periodScores.Any(ps => ps.PeriodNumber == periodNumber))
+            return;
+
+        FootballPeriodScore periodScore = new FootballPeriodScore(
+            Id, periodNumber, HomeTeamId ?? Guid.Empty, AwayTeamId ?? Guid.Empty);
+        periodScore.UpdateHomeScore(GoalEvents.Count(g => g.PeriodNumber == periodNumber && g.TeamId == HomeTeamId));
+        periodScore.UpdateAwayScore(GoalEvents.Count(g => g.PeriodNumber == periodNumber && g.TeamId == AwayTeamId));
+        _periodScores.Add(periodScore);
     }
 
     /// <summary>

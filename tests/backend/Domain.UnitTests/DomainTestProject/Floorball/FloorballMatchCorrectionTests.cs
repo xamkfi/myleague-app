@@ -184,6 +184,24 @@ public class FloorballMatchCorrectionTests
     }
 
     [Fact]
+    public void SetDecidedIn_GoalRecordedBeforeOvertimeWasMarked_CountsItInThePeriodAndCanMoveOn()
+    {
+        FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();
+        FloorballMatch match = ready.Match;
+        match.Start();
+        FloorballGoal winner = RecordGoal(
+            ready, ready.Home, timeInSeconds: 1900, periodNumber: match.OvertimePeriodNumber);
+
+        match.SetDecidedIn(MatchDecision.Overtime);
+        match.PeriodScores.Single(ps => ps.PeriodNumber == match.OvertimePeriodNumber).HomeScore.Should().Be(1);
+
+        match.SetDecidedIn(MatchDecision.Shootout);
+        winner.PeriodNumber.Should().Be(match.ShootoutPeriodNumber);
+        match.PeriodScores.Single(ps => ps.PeriodNumber == match.OvertimePeriodNumber).HomeScore.Should().Be(0);
+        match.HomeScore.Should().Be(1);
+    }
+
+    [Fact]
     public void SetDecidedIn_LevelScore_OnlySetsFlag()
     {
         FloorballTestHelpers.ReadyFloorballMatch ready = FloorballTestHelpers.CreateReadyMatch();

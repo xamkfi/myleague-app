@@ -864,13 +864,7 @@ public class FloorballMatch : BaseEntity
 
         WentToOvertime = true;
 
-        int overtimePeriod = OvertimePeriodNumber;
-        // Reaching overtime implies the match is already InProgress, which means Start() succeeded
-        // and both team IDs are populated. The null-forgiving operator is therefore safe here.
-        if (_periodScores.All(ps => ps.PeriodNumber != overtimePeriod))
-        {
-            _periodScores.Add(new FloorballPeriodScore(Id, overtimePeriod, HomeTeamId ?? Guid.Empty, AwayTeamId ?? Guid.Empty));
-        }
+        EnsurePeriodScore(OvertimePeriodNumber);
     }
 
     /// <summary>
@@ -883,11 +877,24 @@ public class FloorballMatch : BaseEntity
 
         WentToShootout = true;
 
-        int shootoutPeriod = ShootoutPeriodNumber;
-        if (_periodScores.All(ps => ps.PeriodNumber != shootoutPeriod))
-        {
-            _periodScores.Add(new FloorballPeriodScore(Id, shootoutPeriod, HomeTeamId ?? Guid.Empty, AwayTeamId ?? Guid.Empty));
-        }
+        EnsurePeriodScore(ShootoutPeriodNumber);
+    }
+
+    /// <summary>
+    /// Adds the score row of an extra period. The row starts from the goals already recorded in the
+    /// period, because events can be recorded before the period itself is marked as played.
+    /// </summary>
+    private void EnsurePeriodScore(int periodNumber)
+    {
+        if (_periodScores.Any(ps => ps.PeriodNumber == periodNumber))
+            return;
+
+        FloorballPeriodScore periodScore = new FloorballPeriodScore(
+            Id, periodNumber, HomeTeamId ?? Guid.Empty, AwayTeamId ?? Guid.Empty);
+        periodScore.UpdateScore(
+            GoalEvents.Count(g => g.PeriodNumber == periodNumber && g.TeamId == HomeTeamId),
+            GoalEvents.Count(g => g.PeriodNumber == periodNumber && g.TeamId == AwayTeamId));
+        _periodScores.Add(periodScore);
     }
 
     /// <summary>
