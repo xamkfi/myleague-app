@@ -8,6 +8,7 @@ using Domain.Enums.Hockey.Matches;
 using Domain.Enums.Hockey.Statistics;
 using Domain.Repositories.Hockey;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using MyLeague.Infrastructure.Persistence.Contexts;
 
 namespace MyLeague.Infrastructure.Persistence.Repositories.Hockey;
@@ -76,7 +77,23 @@ public class HockeyMatchRepository : IHockeyMatchRepository
     public async Task<bool> DeleteMatchAsync(Guid matchId, CancellationToken cancellationToken = default) =>
         await DeleteAllByIdsAsync([matchId], cancellationToken) > 0;
 
-    private async Task<int> DeleteAllByIdsAsync(List<Guid> matchIds, CancellationToken cancellationToken)
+    private Task<int> DeleteAllByIdsAsync(List<Guid> matchIds, CancellationToken cancellationToken)
+    {
+        // The bulk deletes run as separate statements. The transaction keeps a match whole if one of them
+        // fails, and retry on failure requires it to run inside the execution strategy.
+        IExecutionStrategy strategy = _dbContext.Database.CreateExecutionStrategy();
+        return strategy.ExecuteAsync(
+            async token =>
+            {
+                await using IDbContextTransaction transaction = await _dbContext.Database.BeginTransactionAsync(token);
+                int deleted = await DeleteMatchRowsAsync(matchIds, token);
+                await transaction.CommitAsync(token);
+                return deleted;
+            },
+            cancellationToken);
+    }
+
+    private async Task<int> DeleteMatchRowsAsync(List<Guid> matchIds, CancellationToken cancellationToken)
     {
         // Match statistics restrict the match row. Drop them before the matches.
         await _dbContext.HockeyGoaliePeriodStatistics
@@ -103,7 +120,14 @@ public class HockeyMatchRepository : IHockeyMatchRepository
                 setters => setters.SetProperty(match => match.NextMatchId, _ => (Guid?)null),
                 cancellationToken);
 
-        // Events restrict the match team and the active player. Remove them before those parents.
+        await _dbContext.HockeyStatisticsCache
+            .Where(cache => cache.MatchId != null && matchIds.Contains(cache.MatchId.Value))
+            .ExecuteDeleteAsync(cancellationToken);
+
+        // Period scores and events restrict the match team, and events the active player. Remove them before those parents.
+        await _dbContext.HockeyPeriodScores
+            .Where(score => matchIds.Contains(score.MatchId))
+            .ExecuteDeleteAsync(cancellationToken);
         await _dbContext.HockeyMatchEvents
             .Where(matchEvent => matchIds.Contains(matchEvent.MatchId))
             .ExecuteDeleteAsync(cancellationToken);
@@ -173,9 +197,6 @@ public class HockeyMatchRepository : IHockeyMatchRepository
 
         await _dbContext.HockeyMatchOfficials
             .Where(official => matchIds.Contains(official.MatchId))
-            .ExecuteDeleteAsync(cancellationToken);
-        await _dbContext.HockeyPeriodScores
-            .Where(score => matchIds.Contains(score.MatchId))
             .ExecuteDeleteAsync(cancellationToken);
 
         return await _dbContext.HockeyMatches

@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Application.Common;
 using Application.Features.Common.CrossCutting.MatchTimer.Services;
 using Application.Features.Hockey.Matches.Commands;
@@ -7,7 +8,6 @@ using Domain.Entities.Hockey.Matches;
 using Domain.Enums.Hockey.Matches;
 using Domain.Repositories.Hockey;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Hockey.Matches.Handlers;
@@ -67,7 +67,7 @@ public class DeleteHockeyMatchHandler : IRequestHandler<DeleteHockeyMatchCommand
         {
             throw;
         }
-        catch (DbUpdateException ex)
+        catch (DbException ex)
         {
             _logger.LogError(ex, "Database rejected deleting hockey match {MatchId}", request.MatchId);
             return Result.Failure("Saving the match deletion conflicted with existing data.");
