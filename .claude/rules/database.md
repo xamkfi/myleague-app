@@ -20,6 +20,7 @@ Never put a migration at the root of `Migrations/`. Two old CommonDb migrations 
 
 - `HasKey`, max lengths, conversions (`Uri` → string; enums → string where existing configs do)
 - TPH: `HasDiscriminator<string>("CompetitionType").HasValue<FloorballSeason>("Season").HasValue<FloorballTournament>("Tournament")`
+- TPH siblings can share a column: give the property the same `HasColumnName` on each type (`GoalieId` on `FloorballGoal` and `FloorballSave`)
 - Owned value objects: `OwnsOne` with explicit column names (`MatchRules_NumberOfPeriods`)
 - Nested owned types (for example `HockeyCompetitionRules`): to change one part, replace only that part. A new parent that reuses the tracked child instances makes EF write NULLs into the children's columns, and PostgreSQL rejects the save. See `HockeyCompetition.UpdateStandingRules`
 - A list stored through a value conversion and edited in place (`Clear()` / `AddRange`) needs a `ValueComparer`, or EF will not see the change

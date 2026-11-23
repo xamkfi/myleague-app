@@ -86,7 +86,19 @@ A match started by mistake can go back to Scheduled with `RevertToScheduled` whi
 Types of events that can occur during a match: Goal, Penalty, etc.
 
 ### FloorballPenaltyType
-Types of penalties that can be assigned during a floorball match.
+Types of penalties that can be assigned during a floorball match. The penalty length is stored in minutes: a double minor (2+2) is one four-minute penalty. Older matches also contain five-minute penalties.
+
+### MatchDecision
+The phase of play that decided a match: `Regulation`, `Overtime` or `Shootout`. Floorball and football set it with `SetDecidedIn`, which only works on a match in progress. The call sets the overtime and shootout flags and moves the deciding goal to the matching period, so the match must be level without its last goal. A match with events in overtime periods cannot go back to `Regulation`. Hockey stores the same fact as `ResultType`.
+
+### Missed penalty
+A penalty shot or penalty kick that did not go in: `FloorballMissedPenalty`, `FootballMissedPenalty` and `HockeyMissedPenaltyShot`. It records the shooter, the period and the time. It does not change the score, the shots or the saves.
+
+### Delayed penalty goal
+A goal scored while a penalty against the other team was waiting to be called (`WasDelayedPenalty` on `FloorballGoal` and `HockeyGoal`). It can be combined with power play, short-handed and empty-net marks.
+
+### Goalie statistics
+`FloorballGoal.GoalieId` is the goalie who conceded the goal. Own goals, empty-net goals and shootout goals have none. Goals against average is goals against divided by games played, in floorball and hockey. A match counts as played for every goalie who was in goal. Floorball shots are counted from the goals and saves of the match, not stored as running totals. `MoveGoalieEvents` moves saves and conceded goals from one goalie to another when the wrong goalie was marked.
 
 ## Domain Events
 
@@ -129,10 +141,10 @@ A hockey game between two sides (`HockeyMatchTeam` home/away). Playoff bracket p
 
 Each `HockeyPeriodScore` row holds that period's goals, recounted from the `HockeyGoal` events whenever a goal is added, edited, or removed.
 
-The lineup is a `HockeyMatchPlayerSelection` of `HockeyMatchActivePlayer` rows. Events point at these rows, so `SyncPlayerSelection` edits the lineup in place: removed players are deactivated, returning players are reactivated, and a player who has events in the match cannot be removed. An admin can correct the lineup in any match status, and a correction on a finished match recalculates its statistics. Events of a finished match are locked, so removing a player who has events means reopening the match, fixing the events, and finishing it again. Floorball and football lineups can be edited before and during the match, and the same rule applies: a player who is referenced by a goal, assist, penalty, card or substitution cannot be removed. They lock once the match is completed, because games played are counted from the lineup at completion; reopening the match unlocks them.
+The lineup is a `HockeyMatchPlayerSelection` of `HockeyMatchActivePlayer` rows. Events point at these rows, so `SyncPlayerSelection` edits the lineup in place: removed players are deactivated, returning players are reactivated, and a player who has events in the match cannot be removed. An admin can correct the lineup in any match status, and a correction on a finished match recalculates its statistics. Events of a finished match are locked, so removing a player who has events means reopening the match, fixing the events, and finishing it again. Floorball and football lineups can be edited before and during the match, and the same rule applies: a player who is referenced by a goal, assist, penalty, missed penalty, card or substitution cannot be removed. They lock once the match is completed, because games played are counted from the lineup at completion; reopening the match unlocks them.
 
 ### HockeyPenaltyOffence
-The offence on a hockey penalty, stored as its name. `IllegalCheck` covers an illegal hit that no more specific offence describes, and `Other` covers anything not listed.
+The offence on a hockey penalty, stored as its name. `IllegalCheck` covers an illegal hit that no more specific offence describes, and `Other` covers anything not listed. The match desk offers a shorter list of offences; the rest are kept for matches that already use them.
 
 ### HockeyPlayoffSeries
 Best-of series within a hockey competition. Completing enough finished match wins marks the series winner via `HockeyCompetition.CompletePlayoffSeries`.
@@ -146,10 +158,10 @@ Official profile linked to a `Person`. Assigned to matches as `HockeyMatchOffici
 ## Football
 
 ### FootballMatch
-A hobby football game between two teams. Tracks scores, halves, cards, substitutions, extra time and penalty shootouts. Match rules (half length, players on field, substitution limit) are snapshotted from the competition.
+A hobby football game between two teams. Tracks scores, halves, cards, substitutions, extra time and penalty shootouts. Match rules (half length, goalkeeper requirement, extra time) are snapshotted from the competition. A lineup lists the players who take part; its size is not limited and it is not split into starters and substitutes. A match can start when both lineups have a player and, if the rules require it, a goalkeeper. A goalkeeper has a clean sheet in a completed match where the opponent scored no goals outside the penalty shootout.
 
 ### FootballMatchRules
-Configurable match timing and roster rules: number of halves, half duration, players on field (5–11), unlimited or limited substitutions, extra time and penalty shootout flags.
+Configurable match timing and roster rules: number of halves, half duration, players on field (5–11, informative only), unlimited or limited substitutions, extra time and penalty shootout flags.
 
 ### FootballStandingRules
 Point allocation for league tables. Default is 3 points for a regulation win, 1 for a draw, and 0 for a regulation loss. Extra time and penalty shootouts default to the same 3 and 0, and a season can set different overtime win and loss points.

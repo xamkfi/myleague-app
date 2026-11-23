@@ -28,7 +28,7 @@ Domain/
 └── DomainGlossary.md
 ```
 
-Namespaces follow folders, for example `Domain.Entities.Hockey.Teams`. Sport types carry the sport prefix (`FloorballTeam`, `FootballMatch`, `HockeyMatchStatus`). Football match events (`FootballGoal`, `FootballCard`, `FootballSubstitution`) sit directly in `Entities/Football/Matches/`; the other two sports use a `Matches/Events/` subfolder.
+Namespaces follow folders, for example `Domain.Entities.Hockey.Teams`. Sport types carry the sport prefix (`FloorballTeam`, `FootballMatch`, `HockeyMatchStatus`). Football match events (`FootballGoal`, `FootballCard`, `FootballSubstitution`, `FootballMissedPenalty`) sit directly in `Entities/Football/Matches/`; the other two sports use a `Matches/Events/` subfolder.
 
 ## Key types
 
@@ -48,9 +48,9 @@ Matches, standings, and statistics take a `competitionId`, so the same code serv
 
 | Sport | Shape |
 |-------|-------|
-| Floorball | Periods, goals, penalties, saves, referees, scorekeepers, active roster, seasons and tournaments with playoffs |
-| Football | Configurable rules (`FootballMatchRules`: 1–4 halves of 1–60 min, 5–11 players on field, substitutions, extra time); goals, cards, substitutions, lineups; `FootballStandingRules` defaults 3–1–0 |
-| Ice hockey | Lines, on-ice changes, faceoffs, shots, penalties, goalie changes, shootouts, video review, coach challenges, playoff series, staff |
+| Floorball | Periods, goals, penalties, saves, missed penalties, referees, scorekeepers, active roster, seasons and tournaments with playoffs |
+| Football | Configurable rules (`FootballMatchRules`: 1–4 halves of 1–60 min, 5–11 players on field, substitutions, extra time); goals, cards, missed penalties, substitutions, lineups; `FootballStandingRules` defaults 3–1–0 |
+| Ice hockey | Lines, on-ice changes, faceoffs, shots, penalties, missed penalty shots, goalie changes, shootouts, video review, coach challenges, playoff series, staff |
 
 ## Adding to the domain
 
