@@ -71,23 +71,7 @@ public class DeletePenaltyHandler : IRequestHandler<DeleteFloorballPenaltyComman
             // Delete the penalty event and get the deleted penalty
             FloorballPenalty deletedPenalty = match.DeletePenaltyEvent(request.PenaltyEventId);
 
-            // Decrement player statistics
-            if (deletedPenalty.PlayerId.HasValue)
-            {
-                FloorballPlayer? player = await _playerRepository.GetByIdAsync(deletedPenalty.PlayerId.Value);
-                if (player != null)
-                {
-                    // Remove penalty minutes from the player's team player record
-                    // This would require finding the correct FloorballTeamPlayer entity
-                    // For now, we'll focus on season statistics
-                }
-            }
-
-            // Decrement season statistics for penalty minutes
-            if (deletedPenalty.PlayerId.HasValue)
-            {
-                await RemovePlayerSeasonPenaltyStatistics(deletedPenalty.PlayerId.Value, deletedPenalty.TeamId, match.CompetitionId, deletedPenalty.DurationInMinutes, cancellationToken);
-            }
+            await FloorballMatchStatisticsSupport.UndoPenaltyAsync(_statisticsRepository, match, deletedPenalty, cancellationToken);
 
             // Decrement match team statistics for penalty minutes
             await RemoveMatchTeamPenaltyStatistics(match.Id, deletedPenalty.TeamId, deletedPenalty.DurationInMinutes, cancellationToken);
@@ -101,19 +85,6 @@ public class DeletePenaltyHandler : IRequestHandler<DeleteFloorballPenaltyComman
         {
             _logger.LogError(ex, "Error occurred while deleting penalty {PenaltyId} from match {MatchId}", request.PenaltyEventId, request.MatchId);
             return Result<FloorballMatchDto>.Failure("An error occurred while deleting the penalty.");
-        }
-    }
-
-    /// <summary>
-    /// Removes player season statistics for penalty minutes
-    /// </summary>
-    private async Task RemovePlayerSeasonPenaltyStatistics(Guid playerId, Guid teamId, Guid seasonId, int penaltyMinutes, CancellationToken cancellationToken)
-    {
-        FloorballPlayerSeasonStatistics? playerStats = await _statisticsRepository.GetPlayerSeasonStatisticsAsync(playerId, teamId, seasonId, cancellationToken);
-        if (playerStats != null)
-        {
-            playerStats.RemovePenaltyMinutes(penaltyMinutes);
-            await _statisticsRepository.SavePlayerSeasonStatisticsAsync(playerStats, cancellationToken);
         }
     }
 

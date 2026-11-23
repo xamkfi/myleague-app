@@ -70,21 +70,11 @@ public class HockeyMatchRepository : IHockeyMatchRepository
     }
 
     /// <summary>
-    /// Deletes one match that is still scheduled. Started and finished matches are left in place.
+    /// Deletes one match with its events, lineups and match statistics. Competition statistics are not
+    /// adjusted here; recalculate them afterwards.
     /// </summary>
-    public async Task<bool> DeleteIfScheduledAsync(Guid matchId, CancellationToken cancellationToken = default)
-    {
-        bool scheduled = await _dbContext.HockeyMatches
-            .AsNoTracking()
-            .AnyAsync(
-                match => match.Id == matchId && match.Status == HockeyMatchStatus.Scheduled,
-                cancellationToken);
-        if (!scheduled)
-            return false;
-
-        int deleted = await DeleteAllByIdsAsync([matchId], cancellationToken);
-        return deleted > 0;
-    }
+    public async Task<bool> DeleteMatchAsync(Guid matchId, CancellationToken cancellationToken = default) =>
+        await DeleteAllByIdsAsync([matchId], cancellationToken) > 0;
 
     private async Task<int> DeleteAllByIdsAsync(List<Guid> matchIds, CancellationToken cancellationToken)
     {

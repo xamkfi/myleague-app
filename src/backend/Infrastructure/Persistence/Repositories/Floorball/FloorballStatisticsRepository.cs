@@ -429,6 +429,15 @@ public class FloorballStatisticsRepository : IFloorballStatisticsRepository
     }
 
     /// <inheritdoc />
+    public async Task RemoveMatchTeamStatisticsAsync(Guid matchId, CancellationToken cancellationToken = default)
+    {
+        List<FloorballMatchTeamStatistics> rows = await _context.FloorballMatchTeamStatistics
+            .Where(s => s.MatchId == matchId)
+            .ToListAsync(cancellationToken);
+        _context.FloorballMatchTeamStatistics.RemoveRange(rows);
+    }
+
+    /// <inheritdoc />
     public async Task SaveMatchTeamStatisticsAsync(FloorballMatchTeamStatistics statistics, CancellationToken cancellationToken = default)
     {
         FloorballMatchTeamStatistics? existing = await GetMatchTeamStatisticsAsync(statistics.MatchId, statistics.TeamId, cancellationToken);

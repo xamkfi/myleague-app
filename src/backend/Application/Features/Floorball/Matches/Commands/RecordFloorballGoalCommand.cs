@@ -36,5 +36,6 @@ namespace Application.Features.Floorball.Matches.Commands
         int PeriodNumber,
         int TimeInSeconds,
         string? Description,
-        int? GoalType = null) : IRequest<Result<FloorballMatchDto>>;
+        int? GoalType = null,
+        bool WasDelayedPenalty = false) : IRequest<Result<FloorballMatchDto>>;
 }

@@ -134,14 +134,14 @@ public class FootballMatchTests
     }
 
     [Fact]
-    public void Start_Throws_WhenLineupIsIncomplete()
+    public void Start_Throws_WhenLineupIsEmpty()
     {
         ReadyMatch ready = CreateReadyMatch(assignLineups: false);
 
         Action act = () => ready.Match.Start();
 
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*on the field*");
+            .WithMessage("*no players in the lineup*");
     }
 
     [Fact]

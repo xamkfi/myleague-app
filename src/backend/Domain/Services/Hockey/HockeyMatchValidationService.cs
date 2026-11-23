@@ -191,6 +191,9 @@ public static class HockeyMatchValidationService
                 yield return attempt.ShooterActivePlayerId;
                 yield return attempt.GoalieActivePlayerId;
                 break;
+            case HockeyMissedPenaltyShot { MatchActivePlayerId: Guid missedShooter }:
+                yield return missedShooter;
+                break;
         }
     }
 
@@ -219,6 +222,9 @@ public static class HockeyMatchValidationService
                 break;
             case HockeyShootoutAttempt attempt when attempt.MatchTeamId is Guid soTeam:
                 yield return soTeam;
+                break;
+            case HockeyMissedPenaltyShot { MatchTeamId: Guid missedTeam }:
+                yield return missedTeam;
                 break;
         }
     }

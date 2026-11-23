@@ -60,4 +60,9 @@ public class FloorballSave : FloorballMatchEvent
         WasInOvertime = wasInOvertime;
         WasInShootout = wasInShootout;
     }
+
+    /// <summary>
+    /// Credits the save to another goalie.
+    /// </summary>
+    internal void CreditToGoalie(Guid goalieId) => GoalieId = goalieId;
 }

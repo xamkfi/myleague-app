@@ -92,7 +92,8 @@ public static class FloorballMatchMapper
                 GetPlayerName(g.ScoringPlayerId, playerPersonLookup),
                 GetPlayerName(g.AssistingPlayerId, playerPersonLookup),
                 GetPlayerName(g.SecondaryAssistingPlayerId, playerPersonLookup),
-                g.GoalType))
+                g.GoalType,
+                g.WasDelayedPenalty))
             .ToList();
 
         // Map penalty events with player names
@@ -122,6 +123,16 @@ public static class FloorballMatchMapper
                 WasInShootout = s.WasInShootout,
                 GoalieName = GetPlayerName(s.GoalieId, playerPersonLookup)
             })
+            .ToList();
+
+        List<FloorballMissedPenaltyEventDto> missedPenaltyEvents = match.MissedPenaltyEvents
+            .Select(m => new FloorballMissedPenaltyEventDto(
+                m.Id,
+                m.TeamId,
+                m.ShooterPlayerId,
+                m.PeriodNumber,
+                m.TimeInSeconds,
+                GetPlayerName(m.ShooterPlayerId, playerPersonLookup)))
             .ToList();
 
         // Resolve logos with club fallback. The team navigation may be null for placeholder
@@ -177,7 +188,8 @@ public static class FloorballMatchMapper
             match.TournamentStage?.ToString(),
             competitionType,
             MapRefereeDetails(match, staffPersonLookup),
-            MapScorekeepers(match, staffPersonLookup));
+            MapScorekeepers(match, staffPersonLookup),
+            missedPenaltyEvents);
     }
 
     /// <summary>

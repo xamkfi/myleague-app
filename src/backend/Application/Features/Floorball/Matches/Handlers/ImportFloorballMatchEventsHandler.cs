@@ -118,6 +118,7 @@ public class ImportFloorballMatchEventsHandler
                 }
             }
 
+            await stats.SyncMatchShotsAsync(match, cancellationToken);
             await stats.FlushAsync(cancellationToken);
             await _matchRepository.UpdateAsync(match);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -235,16 +236,11 @@ public class ImportFloorballMatchEventsHandler
 
         Guid opposingTeamId = opposingTeamIdOrNull.Value;
         await stats.ApplyTeamGoalAsync(opposingTeamId, match.CompetitionId, isGoalFor: false, cancellationToken);
-        await stats.ApplyMatchShotsAsync(match.Id, item.TeamId, cancellationToken);
 
-        if (!isOwnGoal)
+        if (goal.GoalieId.HasValue)
         {
-            Guid? activeGoalieId = match.GetActiveGoalieId(opposingTeamId);
-            if (activeGoalieId.HasValue)
-            {
-                await stats.ApplyGoalieGoalAgainstAsync(
-                    activeGoalieId.Value, opposingTeamId, match.CompetitionId, cancellationToken);
-            }
+            await stats.ApplyGoalieGoalAgainstAsync(
+                goal.GoalieId.Value, opposingTeamId, match.CompetitionId, cancellationToken);
         }
     }
 
@@ -390,10 +386,14 @@ public class ImportFloorballMatchEventsHandler
             }
         }
 
-        public async Task ApplyMatchShotsAsync(Guid matchId, Guid teamId, CancellationToken cancellationToken)
+        public async Task SyncMatchShotsAsync(FloorballMatch match, CancellationToken cancellationToken)
         {
-            FloorballMatchTeamStatistics stats = await GetOrCreateMatchTeamAsync(matchId, teamId, cancellationToken);
-            stats.UpdateShotStatistics(1, 1);
+            foreach (Guid teamId in new[] { match.HomeTeamId, match.AwayTeamId }.OfType<Guid>())
+            {
+                FloorballMatchTeamStatistics stats = await GetOrCreateMatchTeamAsync(match.Id, teamId, cancellationToken);
+                FloorballTeamShots shots = match.CalculateTeamShots(teamId);
+                stats.SetShotStatistics(shots.OnGoal, shots.Total);
+            }
         }
 
         public async Task ApplyMatchPenaltyAsync(

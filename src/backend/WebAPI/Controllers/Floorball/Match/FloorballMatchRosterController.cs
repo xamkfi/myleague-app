@@ -96,6 +96,7 @@ namespace WebAPI.Controllers.Floorball
                     Position = p.Position,
                 }).ToList() ?? new List<FloorballActivePlayerInput>(),
                 GoalieId = request.GoalieId,
+                MoveGoalieEvents = request.MoveGoalieEvents,
             };
 
             Result<FloorballMatchDto> result = await _mediator.Send(command, cancellationToken);

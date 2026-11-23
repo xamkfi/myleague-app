@@ -94,6 +94,16 @@ public class HockeyGoalieMatchStatistics : BaseEntity
         ApplyDecisionCounters(decision);
     }
 
+    /// <summary>
+    /// Marks a dressed goalie who was never in goal, so the match does not count as a game played.
+    /// </summary>
+    public void MarkDidNotPlay()
+    {
+        GamesPlayed = 0;
+        NoDecisions = 0;
+        RecalculateDerived();
+    }
+
     public void SetWasStarter(bool wasStarter)
     {
         WasStarter = wasStarter;
@@ -170,6 +180,6 @@ public class HockeyGoalieMatchStatistics : BaseEntity
     private void RecalculateDerived()
     {
         SavePercentage = HockeyStatisticsMath.Percentage(Saves, ShotsAgainst);
-        GoalsAgainstAverage = HockeyStatisticsMath.GoalsAgainstAverage(GoalsAgainst, MinutesPlayed);
+        GoalsAgainstAverage = HockeyStatisticsMath.GoalsAgainstAverage(GoalsAgainst, GamesPlayed);
     }
 }

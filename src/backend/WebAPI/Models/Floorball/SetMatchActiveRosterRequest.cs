@@ -20,6 +20,12 @@ public class SetMatchActiveRosterRequest
     /// field players; when <c>null</c> the goalie remains unchanged.
     /// </summary>
     public Guid? GoalieId { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, the team's recorded saves and conceded goals move to <see cref="GoalieId"/>.
+    /// Use it when they were recorded on the wrong goalie.
+    /// </summary>
+    public bool MoveGoalieEvents { get; set; }
 }
 
 /// <summary>

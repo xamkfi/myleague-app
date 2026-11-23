@@ -48,6 +48,7 @@ public class GetFootballMatchByIdHandler : IRequestHandler<GetFootballMatchByIdQ
             IEnumerable<Guid> playerIds = match.GoalEvents
                 .SelectMany(g => new[] { g.ScoringPlayerId, g.AssistingPlayerId })
                 .Concat(match.CardEvents.Select(c => (Guid?)c.PlayerId))
+                .Concat(match.Events.OfType<FootballMissedPenalty>().Select(m => (Guid?)m.ShooterPlayerId))
                 .Concat(match.SubstitutionEvents.SelectMany(s => new Guid?[] { s.PlayerOffId, s.PlayerOnId }))
                 .Concat(match.Lineup.Select(p => (Guid?)p.PlayerId))
                 .OfType<Guid>()

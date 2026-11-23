@@ -147,6 +147,36 @@ namespace WebAPI.Models.Floorball
 
 
     /// <summary>
+    /// Request model for recording a missed penalty shot. The match comes from the URL.
+    /// </summary>
+    public class RecordFloorballMissedPenaltyRequest
+    {
+        /// <summary>
+        /// ID of the shooting team
+        /// </summary>
+        [Required(ErrorMessage = "Team ID is required")]
+        public Guid TeamId { get; set; }
+
+        /// <summary>
+        /// ID of the player who took the shot
+        /// </summary>
+        [Required(ErrorMessage = "Player ID is required")]
+        public Guid PlayerId { get; set; }
+
+        /// <summary>
+        /// Period number, overtime and shootout included
+        /// </summary>
+        [Range(1, int.MaxValue, ErrorMessage = "Period number must be 1 or greater")]
+        public int PeriodNumber { get; set; }
+
+        /// <summary>
+        /// Time in seconds on the continuous match clock
+        /// </summary>
+        [Range(0, int.MaxValue, ErrorMessage = "Time must be non-negative")]
+        public int TimeInSeconds { get; set; }
+    }
+
+    /// <summary>
     /// Request model for match ID only operations
     /// </summary>
     public class MatchIdRequest

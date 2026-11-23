@@ -109,8 +109,8 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             // Update GamesPlayed for all players who participated in this match
             await UpdatePlayerGamesPlayed(match, cancellationToken);
 
-            // Update GamesPlayed for active goalies on their goalie season statistics
-            await UpdateGoalieGamesPlayed(match, cancellationToken);
+            // Update GamesPlayed and results for the goalies who were in goal
+            await FloorballMatchStatisticsSupport.ApplyGoalieCompletionAsync(_statisticsRepository, match, cancellationToken);
 
             // If this is a playoff match, advance the winner to the next match's correct slot.
             // For the final, also mark the tournament Completed and record the champion.
@@ -272,6 +272,10 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
                 case FloorballSave save:
                     participants.Add((save.GoalieId, save.TeamId));
                     break;
+
+                case FloorballMissedPenalty missedPenalty:
+                    participants.Add((missedPenalty.ShooterPlayerId, missedPenalty.TeamId));
+                    break;
             }
         }
 
@@ -283,50 +287,6 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             participants.Add((match.AwayActiveGoalieId.Value, match.AwayTeamId.Value));
 
         return participants;
-    }
-
-    /// <summary>
-    /// Updates goalie-specific season statistics (GamesPlayed, wins/losses) for active goalies
-    /// </summary>
-    private async Task UpdateGoalieGamesPlayed(FloorballMatch match, CancellationToken cancellationToken)
-    {
-        FloorballGameResult homeResult;
-        FloorballGameResult awayResult;
-
-        if (match.HomeScore > match.AwayScore)
-        {
-            homeResult = FloorballGameResult.Win;
-            awayResult = FloorballGameResult.Loss;
-        }
-        else if (match.HomeScore < match.AwayScore)
-        {
-            homeResult = FloorballGameResult.Loss;
-            awayResult = FloorballGameResult.Win;
-        }
-        else
-        {
-            homeResult = FloorballGameResult.Tie;
-            awayResult = FloorballGameResult.Tie;
-        }
-
-        int matchDurationMinutes = match.MatchRules.PeriodDurationMinutes * match.MatchRules.NumberOfPeriods;
-
-        bool homeGoalieShutout = match.AwayScore == 0;
-        bool awayGoalieShutout = match.HomeScore == 0;
-
-        if (match.HomeActiveGoalieId.HasValue && match.HomeTeamId.HasValue)
-        {
-            await UpdateSingleGoalieGamePlayed(
-                match.HomeActiveGoalieId.Value, match.HomeTeamId.Value, match.CompetitionId,
-                homeResult, matchDurationMinutes, homeGoalieShutout, cancellationToken);
-        }
-
-        if (match.AwayActiveGoalieId.HasValue && match.AwayTeamId.HasValue)
-        {
-            await UpdateSingleGoalieGamePlayed(
-                match.AwayActiveGoalieId.Value, match.AwayTeamId.Value, match.CompetitionId,
-                awayResult, matchDurationMinutes, awayGoalieShutout, cancellationToken);
-        }
     }
 
     /// <summary>
@@ -422,21 +382,4 @@ public class CompleteFloorballMatchHandler : IRequestHandler<CompleteFloorballMa
             }
         }
     }
-
-    private async Task UpdateSingleGoalieGamePlayed(
-        Guid goalieId, Guid teamId, Guid seasonId,
-        FloorballGameResult result, int minutesPlayed, bool wasShutout,
-        CancellationToken cancellationToken)
-    {
-        FloorballGoalieSeasonStatistics? goalieStats =
-            await _statisticsRepository.GetGoalieSeasonStatisticsAsync(goalieId, teamId, seasonId, cancellationToken);
-
-        if (goalieStats == null)
-        {
-            goalieStats = new FloorballGoalieSeasonStatistics(goalieId, teamId, seasonId);
-        }
-
-        goalieStats.RecordGamePlayed(wasStarter: true, result, minutesPlayed, wasShutout);
-        await _statisticsRepository.SaveGoalieSeasonStatisticsAsync(goalieStats, cancellationToken);
-    }
-} 
+}

@@ -1,4 +1,5 @@
 using Domain.Enums;
+using Domain.Enums.Common;
 using Domain.Enums.Floorball;
 using Domain.ValueObjects.Floorball;
 using System.Collections.Generic;
@@ -112,6 +113,12 @@ public class FloorballMatch : BaseEntity
     /// </summary>
     public IReadOnlyCollection<FloorballSave> SaveEvents =>
         _events.OfType<FloorballSave>().ToList().AsReadOnly();
+
+    /// <summary>
+    /// Gets all missed penalty shot events
+    /// </summary>
+    public IReadOnlyCollection<FloorballMissedPenalty> MissedPenaltyEvents =>
+        _events.OfType<FloorballMissedPenalty>().ToList().AsReadOnly();
 
     /// <summary>
     /// Gets the ID of the current active goalie for the home team
@@ -455,6 +462,7 @@ public class FloorballMatch : BaseEntity
     /// <param name="timeInSeconds">The time in seconds when the goal was scored</param>
     /// <param name="description">The description of the goal</param>
     /// <param name="goalType">The type of goal</param>
+    /// <param name="wasDelayedPenalty">Whether the goal was scored during a delayed penalty</param>
     /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
     public FloorballGoal RecordGoal(
         FloorballTeam scoringTeam, 
@@ -464,7 +472,8 @@ public class FloorballMatch : BaseEntity
         int periodNumber,
         int timeInSeconds,
         string? description = null,
-        int? goalType = null)
+        int? goalType = null,
+        bool wasDelayedPenalty = false)
     {
         EnsureInProgress("record a goal");
 
@@ -492,6 +501,8 @@ public class FloorballMatch : BaseEntity
             ? (FloorballGoalType)goalType.Value
             : null;
 
+        Guid? goalieId = ResolveChargedGoalieId(scoringTeam.Id, periodNumber, mappedGoalType);
+
         FloorballGoal goalEvent = new FloorballGoal(
             matchId: Id,
             scoringTeam.Id,
@@ -501,7 +512,9 @@ public class FloorballMatch : BaseEntity
             periodNumber,
             timeInSeconds,
             mappedGoalType,
-            description);
+            description,
+            goalieId,
+            wasDelayedPenalty);
 
         _events.Add(goalEvent);
         AdjustScore(scoringTeam.Id, periodNumber, increment: true);
@@ -599,6 +612,146 @@ public class FloorballMatch : BaseEntity
         _events.Add(saveEvent);
 
         return saveEvent;
+    }
+
+    /// <summary>
+    /// Records a missed penalty shot, in play or in the shootout. The score is not affected.
+    /// </summary>
+    /// <param name="team">The shooting team</param>
+    /// <param name="shooter">The player who took the shot</param>
+    /// <param name="periodNumber">The period number</param>
+    /// <param name="timeInSeconds">The time in seconds</param>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
+    public FloorballMissedPenalty RecordMissedPenalty(
+        FloorballTeam team,
+        FloorballPlayer shooter,
+        int periodNumber,
+        int timeInSeconds)
+    {
+        EnsureInProgress("record a missed penalty");
+
+        ArgumentNullException.ThrowIfNull(team);
+        ArgumentNullException.ThrowIfNull(shooter);
+
+        if (periodNumber < 1 || periodNumber > ShootoutPeriodNumber)
+            throw new ArgumentOutOfRangeException(nameof(periodNumber), $"Period number must be between 1 and {ShootoutPeriodNumber}.");
+        if (timeInSeconds < 0)
+            throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be non-negative.");
+        if (team.Id != HomeTeamId && team.Id != AwayTeamId)
+            throw new ArgumentException("Team is not participating in this match.", nameof(team));
+
+        ValidatePlayerOnRoster(team, shooter.Id, "Shooter");
+
+        FloorballMissedPenalty missedPenalty = new FloorballMissedPenalty(
+            Id,
+            team.Id,
+            shooter.Id,
+            periodNumber,
+            timeInSeconds);
+        _events.Add(missedPenalty);
+
+        return missedPenalty;
+    }
+
+    /// <summary>
+    /// Deletes a missed penalty event from the match
+    /// </summary>
+    /// <param name="missedPenaltyEventId">The ID of the event to delete</param>
+    /// <returns>The deleted event</returns>
+    /// <exception cref="ArgumentException">Thrown when the event is not found</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
+    public FloorballMissedPenalty DeleteMissedPenaltyEvent(Guid missedPenaltyEventId)
+    {
+        EnsureInProgress("delete a missed penalty");
+
+        FloorballMissedPenalty? missedPenalty = _events.OfType<FloorballMissedPenalty>()
+            .FirstOrDefault(e => e.Id == missedPenaltyEventId);
+        if (missedPenalty == null)
+            throw new ArgumentException($"Missed penalty event with ID {missedPenaltyEventId} not found in this match.", nameof(missedPenaltyEventId));
+
+        _events.Remove(missedPenalty);
+
+        return missedPenalty;
+    }
+
+    /// <summary>
+    /// Counts a team's shots from the recorded events: its goals (own goals excluded) are the shots
+    /// on goal, and the saves of the opposing goalies complete the total.
+    /// </summary>
+    /// <param name="teamId">The shooting team (must be home or away)</param>
+    public FloorballTeamShots CalculateTeamShots(Guid teamId)
+    {
+        int goals = GoalEvents.Count(g => g.TeamId == teamId && g.GoalType != FloorballGoalType.OwnGoal);
+        int savedShots = SaveEvents.Count(s => s.TeamId != teamId);
+
+        return new FloorballTeamShots(goals, goals + savedShots);
+    }
+
+    /// <summary>
+    /// Gets every goalie who was in goal for a team: the active goalie and anyone with a save or
+    /// a conceded goal in this match.
+    /// </summary>
+    /// <param name="teamId">The defending team (must be home or away)</param>
+    public IReadOnlyCollection<Guid> GetGoaliesInGoal(Guid teamId)
+    {
+        HashSet<Guid> goalies = SaveEvents
+            .Where(s => s.TeamId == teamId)
+            .Select(s => s.GoalieId)
+            .ToHashSet();
+
+        foreach (FloorballGoal goal in GoalEvents.Where(g => g.TeamId != teamId && g.GoalieId.HasValue))
+        {
+            goalies.Add(goal.GoalieId!.Value);
+        }
+
+        Guid? activeGoalieId = GetActiveGoalieId(teamId);
+        if (activeGoalieId.HasValue)
+            goalies.Add(activeGoalieId.Value);
+
+        return goalies;
+    }
+
+    /// <summary>
+    /// Moves every save and conceded goal of a team to one goalie, for when the events were
+    /// recorded on the wrong goalie.
+    /// </summary>
+    /// <param name="teamId">The defending team (must be home or away)</param>
+    /// <param name="goalieId">The goalie who gets the events</param>
+    /// <returns>What was taken from each previous goalie</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the match is not in progress</exception>
+    public IReadOnlyCollection<FloorballGoalieEventTransfer> MoveGoalieEvents(Guid teamId, Guid goalieId)
+    {
+        EnsureInProgress("move goalie events");
+        if (teamId != HomeTeamId && teamId != AwayTeamId)
+            throw new ArgumentException("Team is not participating in this match.", nameof(teamId));
+
+        List<FloorballSave> saves = SaveEvents
+            .Where(s => s.TeamId == teamId && s.GoalieId != goalieId)
+            .ToList();
+        List<FloorballGoal> goals = GoalEvents
+            .Where(g => g.TeamId != teamId && g.GoalieId.HasValue && g.GoalieId != goalieId)
+            .ToList();
+
+        List<FloorballGoalieEventTransfer> transfers = saves.Select(s => s.GoalieId)
+            .Concat(goals.Select(g => g.GoalieId!.Value))
+            .Distinct()
+            .Select(previousId => new FloorballGoalieEventTransfer(
+                previousId,
+                saves.Count(s => s.GoalieId == previousId),
+                goals.Count(g => g.GoalieId == previousId)))
+            .ToList();
+
+        foreach (FloorballSave save in saves)
+        {
+            save.CreditToGoalie(goalieId);
+        }
+
+        foreach (FloorballGoal goal in goals)
+        {
+            goal.ChargeToGoalie(goalieId);
+        }
+
+        return transfers;
     }
 
     /// <summary>
@@ -735,6 +888,102 @@ public class FloorballMatch : BaseEntity
         {
             _periodScores.Add(new FloorballPeriodScore(Id, shootoutPeriod, HomeTeamId ?? Guid.Empty, AwayTeamId ?? Guid.Empty));
         }
+    }
+
+    /// <summary>
+    /// Corrects the phase of play that decided the match, so the standings award the right points.
+    /// For example, a goal recorded as the winner in the last regular period can be moved to the
+    /// shootout afterwards. When the score is not level and the target period has no goals yet, the
+    /// deciding goal is moved there: the goal already typed as overtime/shootout, otherwise the last
+    /// goal of the match.
+    /// </summary>
+    /// <param name="decision">How the match was decided</param>
+    /// <returns>The moved goal and the goalie it was charged to before, or null when nothing moved</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the match state does not allow the decision</exception>
+    public FloorballMovedGoal? SetDecidedIn(MatchDecision decision)
+    {
+        EnsureInProgress("change how the match was decided");
+
+        int regularPeriods = MatchRules.NumberOfPeriods;
+        FloorballMovedGoal? moved = null;
+
+        switch (decision)
+        {
+            case MatchDecision.Regulation:
+                EnsureNoEventsAfterPeriod(regularPeriods);
+                _periodScores.RemoveAll(ps => ps.PeriodNumber > regularPeriods);
+                WentToOvertime = false;
+                WentToShootout = false;
+                break;
+
+            case MatchDecision.Overtime:
+                RecordOvertime();
+                moved = MoveDecidingGoal(OvertimePeriodNumber, FloorballGoalType.Overtime);
+                EnsureNoEventsAfterPeriod(OvertimePeriodNumber);
+                _periodScores.RemoveAll(ps => ps.PeriodNumber == ShootoutPeriodNumber);
+                WentToShootout = false;
+                break;
+
+            case MatchDecision.Shootout:
+                RecordShootout();
+                moved = MoveDecidingGoal(ShootoutPeriodNumber, FloorballGoalType.Shootout);
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(decision), decision, "Unknown match decision.");
+        }
+
+        return moved;
+    }
+
+    private void EnsureNoEventsAfterPeriod(int periodNumber)
+    {
+        if (_events.Any(e => e.PeriodNumber > periodNumber))
+            throw new InvalidOperationException("Delete the events of the later periods before changing how the match was decided.");
+    }
+
+    private FloorballMovedGoal? MoveDecidingGoal(int periodNumber, FloorballGoalType goalType)
+    {
+        if (HomeScore == AwayScore || GoalEvents.Any(g => g.PeriodNumber == periodNumber))
+            return null;
+
+        Guid? winnerId = HomeScore > AwayScore ? HomeTeamId : AwayTeamId;
+        List<FloorballGoal> goals = GoalEvents
+            .OrderByDescending(g => g.PeriodNumber)
+            .ThenByDescending(g => g.TimeInSeconds)
+            .ThenByDescending(g => g.CreatedAt)
+            .ToList();
+        FloorballGoal? deciding = goals.FirstOrDefault(g => g.TeamId == winnerId
+                && g.GoalType is FloorballGoalType.Overtime or FloorballGoalType.Shootout)
+            ?? goals.FirstOrDefault();
+
+        if (Math.Abs(HomeScore - AwayScore) != 1 || deciding == null || deciding.TeamId != winnerId)
+            throw new InvalidOperationException("The score must be level without the deciding goal. Correct the goals first.");
+
+        Guid? previousGoalieId = deciding.GoalieId;
+        AdjustScore(deciding.TeamId, deciding.PeriodNumber, increment: false);
+        deciding.MoveToPeriod(periodNumber, goalType);
+        AdjustScore(deciding.TeamId, periodNumber, increment: true);
+        deciding.ChargeToGoalie(goalType == FloorballGoalType.Shootout
+            ? null
+            : previousGoalieId ?? ResolveChargedGoalieId(deciding.TeamId, periodNumber, goalType));
+
+        return new FloorballMovedGoal(deciding, previousGoalieId);
+    }
+
+    /// <summary>
+    /// Resolves the goalie who is charged with a goal. Own goals, empty-net goals and shootout
+    /// goals are not charged to anyone.
+    /// </summary>
+    private Guid? ResolveChargedGoalieId(Guid scoringTeamId, int periodNumber, FloorballGoalType? goalType)
+    {
+        if (periodNumber == ShootoutPeriodNumber
+            || goalType is FloorballGoalType.OwnGoal or FloorballGoalType.EmptyNet or FloorballGoalType.Shootout)
+        {
+            return null;
+        }
+
+        return scoringTeamId == HomeTeamId ? AwayActiveGoalieId : HomeActiveGoalieId;
     }
 
     /// <summary>
@@ -1165,7 +1414,7 @@ public class FloorballMatch : BaseEntity
     /// Validates that a player is on the given team's roster.
     /// </summary>
     /// <summary>
-    /// Whether a goal, assist or penalty in this match points at the player.
+    /// Whether a goal, assist, penalty or missed penalty in this match points at the player.
     /// </summary>
     private bool HasEventsForPlayer(Guid playerId) =>
         _events.Any(e => e switch
@@ -1174,6 +1423,7 @@ public class FloorballMatch : BaseEntity
                 || goal.AssistingPlayerId == playerId
                 || goal.SecondaryAssistingPlayerId == playerId,
             FloorballPenalty penalty => penalty.PlayerId == playerId,
+            FloorballMissedPenalty missedPenalty => missedPenalty.ShooterPlayerId == playerId,
             _ => false,
         });
 

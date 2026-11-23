@@ -1542,11 +1542,21 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.Property<int?>("GoalType")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("GoalieId")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("uuid")
+                        .HasColumnName("GoalieId");
+
                     b.Property<Guid?>("ScoringPlayerId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("SecondaryAssistingPlayerId")
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("WasDelayedPenalty")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.HasIndex("AssistingPlayerId")
                         .HasDatabaseName("IX_FloorballMatchEvent_AssistingPlayerId");
@@ -1570,6 +1580,25 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                         });
 
                     b.HasDiscriminator().HasValue("Goal");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Floorball.Matches.Events.FloorballMissedPenalty", b =>
+                {
+                    b.HasBaseType("Domain.Entities.Floorball.Matches.Events.FloorballMatchEvent");
+
+                    b.Property<Guid>("ShooterPlayerId")
+                        .HasColumnType("uuid");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_FloorballMatchEvent_PeriodNumber", "\"PeriodNumber\" > 0");
+
+                            t.HasCheckConstraint("CK_FloorballMatchEvent_TimeInSeconds", "\"TimeInSeconds\" >= 0");
+
+                            t.HasCheckConstraint("CK_FloorballPenalty_DurationInMinutes", "\"DurationInMinutes\" IS NULL OR \"DurationInMinutes\" > 0");
+                        });
+
+                    b.HasDiscriminator().HasValue("MissedPenalty");
                 });
 
             modelBuilder.Entity("Domain.Entities.Floorball.Matches.Events.FloorballPenalty", b =>
@@ -1611,7 +1640,9 @@ namespace MyLeague.Infrastructure.Migrations.FloorBallDb
                     b.HasBaseType("Domain.Entities.Floorball.Matches.Events.FloorballMatchEvent");
 
                     b.Property<Guid>("GoalieId")
-                        .HasColumnType("uuid");
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("uuid")
+                        .HasColumnName("GoalieId");
 
                     b.Property<bool>("WasInOvertime")
                         .HasColumnType("boolean");

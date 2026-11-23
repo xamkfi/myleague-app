@@ -60,8 +60,7 @@ public class ReopenFootballMatchHandler : IRequestHandler<ReopenFootballMatchCom
 
             _logger.LogInformation("Reopening football match: {MatchId}", request.Id);
 
-            await UndoTeamSeasonStatistics(match, cancellationToken);
-            await UndoPlayerGamesPlayed(match, cancellationToken);
+            await FootballMatchStatisticsSupport.UndoCompletionAsync(_statisticsRepository, match, cancellationToken);
 
             match.ReopenFromCompleted();
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -79,109 +78,6 @@ public class ReopenFootballMatchHandler : IRequestHandler<ReopenFootballMatchCom
         {
             _logger.LogWarning(ex, "Cannot reopen match {MatchId}: {Message}", request.Id, ex.Message);
             return Result<FootballMatchDto>.Failure(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while reopening football match: {MatchId}", request.Id);
-            return Result<FootballMatchDto>.Failure("An error occurred while reopening the match.");
-        }
-    }
-
-    private async Task UndoTeamSeasonStatistics(FootballMatch match, CancellationToken cancellationToken)
-    {
-        if (match.HomeTeamId.HasValue)
-        {
-            await UndoSingleTeamSeasonStatistics(
-                match.HomeTeamId.Value,
-                match,
-                match.HomeScore,
-                match.AwayScore,
-                isHomeGame: true,
-                cancellationToken);
-        }
-
-        if (match.AwayTeamId.HasValue)
-        {
-            await UndoSingleTeamSeasonStatistics(
-                match.AwayTeamId.Value,
-                match,
-                match.AwayScore,
-                match.HomeScore,
-                isHomeGame: false,
-                cancellationToken);
-        }
-    }
-
-    private async Task UndoSingleTeamSeasonStatistics(
-        Guid teamId,
-        FootballMatch match,
-        int teamScore,
-        int opponentScore,
-        bool isHomeGame,
-        CancellationToken cancellationToken)
-    {
-        FootballTeamSeasonStatistics? teamStats =
-            await _statisticsRepository.GetTeamSeasonStatisticsAsync(teamId, match.CompetitionId, cancellationToken);
-        if (teamStats == null)
-        {
-            _logger.LogWarning(
-                "No team season statistics found to undo for team {TeamId} / competition {CompetitionId}.",
-                teamId,
-                match.CompetitionId);
-            return;
-        }
-
-        FootballGameResult gameResult = teamScore > opponentScore
-            ? FootballGameResult.Win
-            : teamScore < opponentScore
-                ? FootballGameResult.Loss
-                : FootballGameResult.Draw;
-
-        int yellowCards = match.CardEvents.Count(c =>
-            c.TeamId == teamId && c.CardType == FootballCardType.Yellow);
-        int redCards = match.CardEvents.Count(c =>
-            c.TeamId == teamId && c.ResultsInSendingOff);
-
-        FootballStandingRules standingRules = match.Competition?.StandingRules ?? FootballStandingRules.Default();
-        bool decidedAfterRegulation = match.WentToExtraTime || match.WentToPenaltyShootout;
-        teamStats.RevertAfterMatch(
-            gameResult,
-            isHomeGame,
-            teamScore,
-            opponentScore,
-            standingRules,
-            yellowCards,
-            redCards,
-            decidedAfterRegulation);
-
-        await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
-    }
-
-    private async Task UndoPlayerGamesPlayed(FootballMatch match, CancellationToken cancellationToken)
-    {
-        HashSet<(Guid PlayerId, Guid TeamId)> participants = CompleteFootballMatchHandler.CollectMatchParticipants(match);
-
-        _logger.LogInformation(
-            "[ReopenMatch] Decrementing GamesPlayed for {Count} players. MatchId={MatchId}",
-            participants.Count,
-            match.Id);
-
-        foreach ((Guid playerId, Guid teamId) in participants)
-        {
-            FootballPlayerSeasonStatistics? playerStats =
-                await _statisticsRepository.GetPlayerSeasonStatisticsAsync(
-                    playerId,
-                    teamId,
-                    match.CompetitionId,
-                    cancellationToken);
-
-            if (playerStats == null)
-            {
-                continue;
-            }
-
-            playerStats.RemoveGamePlayed();
-            await _statisticsRepository.SavePlayerSeasonStatisticsAsync(playerStats, cancellationToken);
         }
     }
 }

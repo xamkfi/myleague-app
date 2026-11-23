@@ -224,7 +224,8 @@ public class FootballMatchesController : BaseApiController
     }
 
     /// <summary>
-    /// Delete match
+    /// Permanently deletes a football match in any state. The statistics it produced are reverted. A
+    /// playoff match can only be deleted before it starts.
     /// </summary>
     [HttpDelete("{matchId:guid}")]
     [Authorize(Roles = AuthRoles.AdminOnly)]

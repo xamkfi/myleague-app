@@ -135,6 +135,19 @@ internal static class HockeyMatchHandlerSupport
                 matchStats.Error);
         }
 
+        await RecalculateCompetitionStatisticsAsync(mediator, logger, match, cancellationToken);
+    }
+
+    /// <summary>
+    /// Recalculates every competition scope the match counts or counted towards.
+    /// Failures are logged and do not fail the command that triggered the recalculation.
+    /// </summary>
+    public static async Task RecalculateCompetitionStatisticsAsync(
+        IMediator mediator,
+        ILogger logger,
+        HockeyMatchDto match,
+        CancellationToken cancellationToken)
+    {
         if (match.CompetitionId is not Guid competitionId)
             return;
 

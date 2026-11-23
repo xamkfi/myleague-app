@@ -26,6 +26,14 @@ public class FootballCardConfiguration : IEntityTypeConfiguration<FootballCard>
     }
 }
 
+public class FootballMissedPenaltyConfiguration : IEntityTypeConfiguration<FootballMissedPenalty>
+{
+    public void Configure(EntityTypeBuilder<FootballMissedPenalty> builder)
+    {
+        builder.Property(m => m.ShooterPlayerId).IsRequired();
+    }
+}
+
 public class FootballSubstitutionConfiguration : IEntityTypeConfiguration<FootballSubstitution>
 {
     public void Configure(EntityTypeBuilder<FootballSubstitution> builder)

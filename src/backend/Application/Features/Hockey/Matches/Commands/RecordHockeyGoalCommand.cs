@@ -19,4 +19,6 @@ public record RecordHockeyGoalCommand(
     Guid? SecondaryAssistActivePlayerId = null,
     Guid? GoalieActivePlayerId = null,
     bool WasEmptyNet = false,
-    string? Description = null) : IRequest<Result<HockeyMatchDto>>;
+    string? Description = null,
+    bool WasDelayedPenalty = false,
+    bool WasPenaltyShotGoal = false) : IRequest<Result<HockeyMatchDto>>;

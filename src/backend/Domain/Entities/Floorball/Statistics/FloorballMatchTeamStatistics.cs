@@ -241,17 +241,17 @@ public class FloorballMatchTeamStatistics : BaseEntity
     }
 
     /// <summary>
-    /// Removes shot statistics
+    /// Replaces the shot totals with the numbers counted from the match events
     /// </summary>
-    /// <param name="shotsOnGoal">Shots on goal to remove</param>
-    /// <param name="shotsTotal">Total shots to remove</param>
-    public void RemoveShotStatistics(int shotsOnGoal, int shotsTotal)
+    /// <param name="shotsOnGoal">Shots on goal</param>
+    /// <param name="shotsTotal">Total shots</param>
+    public void SetShotStatistics(int shotsOnGoal, int shotsTotal)
     {
         if (shotsOnGoal < 0 || shotsTotal < 0 || shotsOnGoal > shotsTotal)
-            throw new ArgumentException("Invalid shot statistics to remove.");
+            throw new ArgumentException("Invalid shot statistics.");
 
-        ShotsOnGoal = Math.Max(0, ShotsOnGoal - shotsOnGoal);
-        ShotsTotal = Math.Max(0, ShotsTotal - shotsTotal);
+        ShotsOnGoal = shotsOnGoal;
+        ShotsTotal = shotsTotal;
         UpdateShotPercentage();
     }
 

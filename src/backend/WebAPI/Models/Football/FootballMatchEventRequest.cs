@@ -41,6 +41,36 @@ public abstract class FootballMatchEventBaseRequest
 }
 
 /// <summary>
+/// Request model for recording a missed penalty kick. The match comes from the URL.
+/// </summary>
+public class RecordFootballMissedPenaltyRequest
+{
+    /// <summary>
+    /// Team of the shooter
+    /// </summary>
+    [Required(ErrorMessage = "Team ID is required")]
+    public Guid TeamId { get; set; }
+
+    /// <summary>
+    /// Player who took the kick
+    /// </summary>
+    [Required(ErrorMessage = "Player ID is required")]
+    public Guid PlayerId { get; set; }
+
+    /// <summary>
+    /// Period number, extra time and shootout included
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Period number must be 1 or greater")]
+    public int PeriodNumber { get; set; }
+
+    /// <summary>
+    /// Time in seconds on the match clock
+    /// </summary>
+    [Range(0, int.MaxValue, ErrorMessage = "Time must be non-negative")]
+    public int TimeInSeconds { get; set; }
+}
+
+/// <summary>
 /// Request model for recording a card event
 /// </summary>
 public class RecordCardEventRequest : FootballMatchEventBaseRequest

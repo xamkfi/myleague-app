@@ -137,7 +137,7 @@ public class RecordGoalHandler : IRequestHandler<RecordFloorballGoalCommand, Res
             FloorballGoal goal = match.RecordGoal(scoringTeam, scoringPlayer,
                 assistingPlayer, secondAssistingPlayer,
                 request.PeriodNumber, request.TimeInSeconds,
-                request.Description, request.GoalType);
+                request.Description, request.GoalType, request.WasDelayedPenalty);
 
             bool isOwnGoal = goal.GoalType == FloorballGoalType.OwnGoal
                 || request.GoalType == (int)FloorballGoalType.OwnGoal;
@@ -166,13 +166,14 @@ public class RecordGoalHandler : IRequestHandler<RecordFloorballGoalCommand, Res
             Guid opposingTeamId = (request.ScoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId)!.Value;
             await UpdateTeamSeasonGoalStatistics(opposingTeamId, match.CompetitionId, false, cancellationToken);
 
-            // Update match team statistics
-            await UpdateMatchTeamStatistics(match.Id, request.ScoringTeamId, cancellationToken);
+            await FloorballMatchStatisticsSupport.SyncMatchShotsAsync(_statisticsRepository, match, cancellationToken);
 
-            // Own goals are not shots on the opposing goalie
-            if (!isOwnGoal)
+            // The domain leaves the goalie empty for goals no goalie is charged with (own goal,
+            // empty net, shootout).
+            if (goal.GoalieId.HasValue)
             {
-                await UpdateGoalieSeasonStatistics(match, request.ScoringTeamId, cancellationToken);
+                await FloorballMatchStatisticsSupport.AdjustGoalieAsync(
+                    _statisticsRepository, goal.GoalieId.Value, opposingTeamId, match.CompetitionId, saves: 0, goalsAgainst: 1, cancellationToken);
             }
 
             // Mark the goal event as added and ensure the match is tracked as modified
@@ -203,12 +204,6 @@ public class RecordGoalHandler : IRequestHandler<RecordFloorballGoalCommand, Res
         {
             _logger.LogWarning(ex, "Invalid RecordGoal for {MatchId}", request.MatchId);
             return Result<FloorballMatchDto>.Failure(ex.Message, ex.Flatten());
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while recording goal in match {MatchId}", request.MatchId);
-            string detail = ex.InnerException?.Message ?? ex.Message;
-            return Result<FloorballMatchDto>.Failure(detail, ex.Flatten());
         }
     }
 
@@ -253,49 +248,4 @@ public class RecordGoalHandler : IRequestHandler<RecordFloorballGoalCommand, Res
         await _statisticsRepository.SaveTeamSeasonStatisticsAsync(teamStats, cancellationToken);
     }
 
-    /// <summary>
-    /// Updates match team statistics for shots and goals
-    /// </summary>
-    private async Task UpdateMatchTeamStatistics(Guid matchId, Guid teamId, CancellationToken cancellationToken)
-    {
-        FloorballMatchTeamStatistics? matchStats = await _statisticsRepository.GetMatchTeamStatisticsAsync(matchId, teamId, cancellationToken);
-        if (matchStats == null)
-        {
-            matchStats = new FloorballMatchTeamStatistics(matchId, teamId);
-        }
-
-        // Goal counts as both a shot and a shot on goal
-        matchStats.UpdateShotStatistics(1, 1);
-
-        await _statisticsRepository.SaveMatchTeamStatisticsAsync(matchStats, cancellationToken);
-    }
-
-    /// <summary>
-    /// Updates goalie season statistics when a goal is scored (shots against and goals allowed)
-    /// </summary>
-    private async Task UpdateGoalieSeasonStatistics(FloorballMatch match, Guid scoringTeamId, CancellationToken cancellationToken)
-    {
-        // Find the opposing team (the one that allowed the goal). A started match has both teams set.
-        Guid opposingTeamId = (scoringTeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId)!.Value;
-
-        // Note: When a goal is scored, only the scoring team gets a shot increment
-        // The opposing team's goalie stats are updated below, but not their team shot stats
-
-        // Update the specific goalie's statistics if we know who was active
-        Guid? activeGoalieId = match.GetActiveGoalieId(opposingTeamId);
-        if (activeGoalieId.HasValue)
-        {
-            FloorballGoalieSeasonStatistics? goalieStats = await _statisticsRepository.GetGoalieSeasonStatisticsAsync(
-                activeGoalieId.Value, opposingTeamId, match.CompetitionId, cancellationToken);
-
-            if (goalieStats == null)
-            {
-                goalieStats = new FloorballGoalieSeasonStatistics(activeGoalieId.Value, opposingTeamId, match.CompetitionId);
-            }
-
-            // Goal allowed: 1 shot against, 1 goal allowed, 0 saves
-            goalieStats.RecordSaves(0, 1, 1);
-            await _statisticsRepository.SaveGoalieSeasonStatisticsAsync(goalieStats, cancellationToken);
-        }
-    }
-} 
+}

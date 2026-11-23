@@ -18,6 +18,7 @@ namespace Application.Features.Floorball.Matches.DTOs
     /// <param name="AssisterName">The name of the player who assisted (optional)</param>
     /// <param name="SecondaryAssisterName">The name of the player who provided secondary assist (optional)</param>
     /// <param name="GoalType">The type of goal (regular, power play, short-handed, etc.)</param>
+    /// <param name="WasDelayedPenalty">Whether the goal was scored during a delayed penalty</param>
     public record FloorballGoalEventDto(
         Guid Id,
         Guid TeamId,
@@ -31,7 +32,8 @@ namespace Application.Features.Floorball.Matches.DTOs
         string PlayerName,
         string? AssisterName,
         string? SecondaryAssisterName,
-        FloorballGoalType? GoalType = null);
+        FloorballGoalType? GoalType = null,
+        bool WasDelayedPenalty = false);
 
     /// <summary>
     /// Data Transfer Object for a penalty in a floorball match
@@ -53,5 +55,22 @@ namespace Application.Features.Floorball.Matches.DTOs
         int PeriodNumber,
         int TimeInSeconds,
         string Description,
+        string? PlayerName);
+
+    /// <summary>
+    /// Data Transfer Object for a missed penalty shot in a floorball match
+    /// </summary>
+    /// <param name="Id">The ID of the event</param>
+    /// <param name="TeamId">The ID of the shooting team</param>
+    /// <param name="PlayerId">The ID of the player who took the shot</param>
+    /// <param name="PeriodNumber">The period number</param>
+    /// <param name="TimeInSeconds">The time in seconds</param>
+    /// <param name="PlayerName">The name of the player who took the shot</param>
+    public record FloorballMissedPenaltyEventDto(
+        Guid Id,
+        Guid TeamId,
+        Guid PlayerId,
+        int PeriodNumber,
+        int TimeInSeconds,
         string? PlayerName);
 } 

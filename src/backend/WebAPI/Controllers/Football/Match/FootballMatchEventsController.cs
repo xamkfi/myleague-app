@@ -168,6 +168,51 @@ public class FootballMatchEventsController : BaseApiController
     }
 
     /// <summary>
+    /// Records a missed penalty kick, in play or in the shootout. The score is not affected.
+    /// </summary>
+    [HttpPost("missed-penalty")]
+    [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<ApiResponse<FootballMatchDto>>> RecordMissedPenalty(
+        Guid matchId,
+        [FromBody] RecordFootballMissedPenaltyRequest request,
+        CancellationToken cancellationToken)
+    {
+        string rateKey = $"{matchId}:missed-penalty:{request.TeamId}:{request.PlayerId}";
+        if (_rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.PenaltyWindow))
+        {
+            return StatusCode(
+                StatusCodes.Status429TooManyRequests,
+                ApiResponse<FootballMatchDto>.ErrorResponse("Too many missed penalty events; please wait a moment."));
+        }
+
+        Result<FootballMatchDto> result = await _mediator.Send(
+            new RecordFootballMissedPenaltyCommand(
+                matchId, request.TeamId, request.PlayerId, request.PeriodNumber, request.TimeInSeconds),
+            cancellationToken);
+        return HandleResult(result, "Missed penalty recorded successfully", "Failed to record missed penalty");
+    }
+
+    /// <summary>
+    /// Deletes a missed penalty kick from a football match
+    /// </summary>
+    [HttpDelete("missed-penalty/{missedPenaltyEventId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<FootballMatchDto>>> DeleteMissedPenalty(
+        Guid matchId,
+        Guid missedPenaltyEventId,
+        CancellationToken cancellationToken)
+    {
+        Result<FootballMatchDto> result = await _mediator.Send(
+            new DeleteFootballMissedPenaltyCommand(matchId, missedPenaltyEventId), cancellationToken);
+        return HandleResult(result, "Missed penalty deleted successfully", "Failed to delete missed penalty");
+    }
+
+    /// <summary>
     /// Record extra time
     /// </summary>
     [HttpPost("extra-time")]

@@ -278,10 +278,9 @@ namespace WebAPI.Controllers.Floorball
         }
 
         /// <summary>
-        /// Permanently deletes a floorball match. Only allowed for matches still in the
-        /// <see cref="Domain.Enums.Floorball.FloorballMatchStatus.Scheduled"/> state — matches
-        /// that have started, finished, or been cancelled cannot be deleted because they
-        /// carry recorded events and statistics. Used by the tournament JSON import revert flow.
+        /// Permanently deletes a floorball match in any state. The statistics it produced (standings,
+        /// player and goalie totals) are reverted. A playoff match can only be deleted before it
+        /// starts, because bracket advancement is not rolled back.
         /// </summary>
         [HttpDelete("{matchId:guid}")]
         [Authorize(Roles = AuthRoles.AdminOnly)]

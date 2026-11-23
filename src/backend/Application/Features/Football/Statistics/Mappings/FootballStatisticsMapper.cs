@@ -3,6 +3,7 @@ using Application.Features.Football.Players.DTOs;
 using Application.Features.Football.Statistics.DTOs;
 using Application.Features.Football.Teams.DTOs;
 using Domain.Entities.Common;
+using Domain.Entities.Football.Matches;
 using Domain.Entities.Football.Statistics;
 using Domain.Entities.Football.Teams;
 using Domain.Enums.Football;
@@ -159,19 +160,21 @@ public static class FootballStatisticsMapper
     /// <summary>
     /// Converts FootballMatchTeamStatistics entity to DTO
     /// </summary>
-    public static FootballMatchTeamStatisticsDto ToDto(FootballMatchTeamStatistics entity, string? teamName = null)
+    /// <summary>
+    /// Counts one team's match statistics from the match events and score.
+    /// </summary>
+    public static FootballMatchTeamStatisticsDto ToMatchTeamStatisticsDto(FootballMatch match, Guid teamId)
     {
+        bool isHome = teamId == match.HomeTeamId;
         return new FootballMatchTeamStatisticsDto
         {
-            Id = entity.Id,
-            MatchId = entity.MatchId,
-            TeamId = entity.TeamId,
-            TeamName = teamName ?? entity.Team?.Name ?? string.Empty,
-            Goals = entity.Goals,
-            YellowCards = entity.YellowCards,
-            RedCards = entity.RedCards,
-            Substitutions = entity.Substitutions,
-            CleanSheet = entity.CleanSheet
+            MatchId = match.Id,
+            TeamId = teamId,
+            TeamName = (isHome ? match.HomeTeam?.Name : match.AwayTeam?.Name) ?? string.Empty,
+            Goals = isHome ? match.HomeScore : match.AwayScore,
+            YellowCards = match.CardEvents.Count(c => c.TeamId == teamId && c.CardType == FootballCardType.Yellow),
+            RedCards = match.CardEvents.Count(c => c.TeamId == teamId && c.ResultsInSendingOff),
+            CleanSheet = match.HasCleanSheet(teamId)
         };
     }
 

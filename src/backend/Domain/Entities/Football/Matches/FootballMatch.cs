@@ -1,5 +1,6 @@
 using Domain.Entities.Football.Competitions;
 using Domain.Entities.Football.Teams;
+using Domain.Enums.Common;
 using Domain.Enums.Football;
 using Domain.ValueObjects.Football;
 
@@ -360,6 +361,63 @@ public class FootballMatch : BaseEntity
         return substitution;
     }
 
+    /// <summary>
+    /// Records a missed penalty kick, in play or in the shootout. The score is not affected.
+    /// </summary>
+    public FootballMissedPenalty RecordMissedPenalty(
+        FootballTeam team,
+        FootballPlayer shooter,
+        int periodNumber,
+        int timeInSeconds)
+    {
+        EnsureInProgress("record a missed penalty");
+        ArgumentNullException.ThrowIfNull(team);
+        ArgumentNullException.ThrowIfNull(shooter);
+        EnsureValidPeriod(periodNumber);
+
+        if (timeInSeconds < 0)
+            throw new ArgumentOutOfRangeException(nameof(timeInSeconds), "Time must be non-negative.");
+        if (team.Id != HomeTeamId && team.Id != AwayTeamId)
+            throw new ArgumentException("Team is not participating in this match.", nameof(team));
+
+        ValidatePlayerOnRoster(team, shooter.Id, "Shooter");
+
+        FootballMissedPenalty missedPenalty = new(Id, team.Id, shooter.Id, periodNumber, timeInSeconds);
+        _events.Add(missedPenalty);
+        return missedPenalty;
+    }
+
+    /// <summary>
+    /// Deletes a missed penalty kick from the match.
+    /// </summary>
+    public FootballMissedPenalty DeleteMissedPenaltyEvent(Guid missedPenaltyEventId)
+    {
+        EnsureInProgress("delete a missed penalty");
+
+        FootballMissedPenalty? missedPenalty = _events.OfType<FootballMissedPenalty>()
+            .FirstOrDefault(e => e.Id == missedPenaltyEventId);
+        if (missedPenalty == null)
+            throw new ArgumentException($"Missed penalty event with ID {missedPenaltyEventId} not found in this match.", nameof(missedPenaltyEventId));
+
+        _events.Remove(missedPenalty);
+        return missedPenalty;
+    }
+
+    /// <summary>
+    /// Whether a team conceded no goals. Penalty shootout goals do not count.
+    /// </summary>
+    public bool HasCleanSheet(Guid teamId)
+    {
+        bool isHome = teamId == HomeTeamId;
+        FootballPeriodScore? shootout = _periodScores
+            .FirstOrDefault(ps => MatchRules.IsPenaltyShootoutPeriod(ps.PeriodNumber));
+        int conceded = isHome
+            ? AwayScore - (shootout?.AwayScore ?? 0)
+            : HomeScore - (shootout?.HomeScore ?? 0);
+
+        return conceded <= 0;
+    }
+
     public void AddOfficial(FootballReferee referee)
     {
         ArgumentNullException.ThrowIfNull(referee);
@@ -459,6 +517,74 @@ public class FootballMatch : BaseEntity
                 HomeTeamId ?? Guid.Empty,
                 AwayTeamId ?? Guid.Empty));
         }
+    }
+
+    /// <summary>
+    /// Corrects the phase of play that decided the match, so the standings award the right points.
+    /// When the score is not level and the target phase has no goals yet, the deciding goal is moved
+    /// there: the goal already typed as extra time/shootout, otherwise the last goal of the match.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the match state does not allow the decision</exception>
+    public void SetDecidedIn(MatchDecision decision)
+    {
+        EnsureInProgress("change how the match was decided");
+
+        switch (decision)
+        {
+            case MatchDecision.Regulation:
+                EnsureNoEventsAfterPeriod(MatchRules.NumberOfHalves);
+                _periodScores.RemoveAll(ps => ps.PeriodNumber > MatchRules.NumberOfHalves);
+                WentToExtraTime = false;
+                WentToPenaltyShootout = false;
+                break;
+
+            case MatchDecision.Overtime:
+                RecordExtraTime();
+                MoveDecidingGoal(MatchRules.ExtraTimeStartPeriodNumber, MatchRules.IsExtraTimePeriod, FootballGoalType.ExtraTime);
+                EnsureNoEventsAfterPeriod(MatchRules.PenaltyShootoutPeriodNumber - 1);
+                _periodScores.RemoveAll(ps => ps.PeriodNumber >= MatchRules.PenaltyShootoutPeriodNumber);
+                WentToPenaltyShootout = false;
+                break;
+
+            case MatchDecision.Shootout:
+                RecordPenaltyShootout();
+                MoveDecidingGoal(MatchRules.PenaltyShootoutPeriodNumber, MatchRules.IsPenaltyShootoutPeriod, FootballGoalType.PenaltyShootout);
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(decision), decision, "Unknown match decision.");
+        }
+    }
+
+    private void EnsureNoEventsAfterPeriod(int periodNumber)
+    {
+        if (_events.Any(e => e.PeriodNumber > periodNumber))
+            throw new InvalidOperationException("Delete the events of the later periods before changing how the match was decided.");
+    }
+
+    private void MoveDecidingGoal(int periodNumber, Func<int, bool> isTargetPeriod, FootballGoalType goalType)
+    {
+        List<FootballGoal> goals = _events.OfType<FootballGoal>()
+            .OrderByDescending(g => g.PeriodNumber)
+            .ThenByDescending(g => g.TimeInSeconds)
+            .ThenByDescending(g => g.CreatedAt)
+            .ToList();
+        if (HomeScore == AwayScore || goals.Any(g => isTargetPeriod(g.PeriodNumber)))
+            return;
+
+        Guid? winnerId = HomeScore > AwayScore ? HomeTeamId : AwayTeamId;
+        FootballGoal? deciding = goals.FirstOrDefault(g => g.TeamId == winnerId
+                && g.GoalType is FootballGoalType.ExtraTime or FootballGoalType.PenaltyShootout)
+            ?? goals.FirstOrDefault();
+
+        if (Math.Abs(HomeScore - AwayScore) != 1 || deciding == null || deciding.TeamId != winnerId)
+            throw new InvalidOperationException("The score must be level without the deciding goal. Correct the goals first.");
+
+        // An own goal keeps its type: the scorer plays for the other team.
+        FootballGoalType movedType = deciding.IsOwnGoal ? FootballGoalType.OwnGoal : goalType;
+        AdjustScore(deciding.TeamId, deciding.PeriodNumber, increment: false);
+        deciding.MoveToPeriod(periodNumber, movedType);
+        AdjustScore(deciding.TeamId, periodNumber, increment: true);
     }
 
     public void Complete()
@@ -606,17 +732,6 @@ public class FootballMatch : BaseEntity
         foreach (FootballLineupSelection selection in distinct)
             ValidatePlayerOnRoster(team, selection.PlayerId, "Lineup player");
 
-        int onFieldCount = distinct.Count(s => s.IsOnField);
-        if (onFieldCount > MatchRules.PlayersOnField)
-            throw new ArgumentException($"A team cannot have more than {MatchRules.PlayersOnField} players on the field.");
-
-        if (MatchRules.RequireGoalkeeper)
-        {
-            int goalkeepersOnField = distinct.Count(s => s.IsOnField && s.Position == FootballPosition.Goalkeeper);
-            if (onFieldCount == MatchRules.PlayersOnField && goalkeepersOnField != 1)
-                throw new ArgumentException("Starting lineup must include exactly one goalkeeper.");
-        }
-
         Dictionary<Guid, FootballMatchLineupPlayer> existingByPlayer = _lineup
             .Where(p => p.TeamId == teamId)
             .ToDictionary(p => p.PlayerId);
@@ -729,7 +844,7 @@ public class FootballMatch : BaseEntity
     }
 
     /// <summary>
-    /// Whether a goal, assist, card or substitution in this match points at the player.
+    /// Whether a goal, assist, card, substitution or missed penalty in this match points at the player.
     /// </summary>
     private bool HasEventsForPlayer(Guid playerId) =>
         _events.Any(e => e switch
@@ -737,6 +852,7 @@ public class FootballMatch : BaseEntity
             FootballGoal goal => goal.ScoringPlayerId == playerId || goal.AssistingPlayerId == playerId,
             FootballCard card => card.PlayerId == playerId,
             FootballSubstitution substitution => substitution.PlayerOffId == playerId || substitution.PlayerOnId == playerId,
+            FootballMissedPenalty missedPenalty => missedPenalty.ShooterPlayerId == playerId,
             _ => false,
         });
 
@@ -784,12 +900,12 @@ public class FootballMatch : BaseEntity
 
     private void EnsureLineupReady(Guid teamId, string side)
     {
-        List<FootballMatchLineupPlayer> onField = _lineup.Where(p => p.TeamId == teamId && p.IsOnField).ToList();
-        if (onField.Count != MatchRules.PlayersOnField)
-            throw new InvalidOperationException($"Cannot start: {side} team must have {MatchRules.PlayersOnField} players on the field.");
+        List<FootballMatchLineupPlayer> lineup = _lineup.Where(p => p.TeamId == teamId).ToList();
+        if (lineup.Count == 0)
+            throw new InvalidOperationException($"Cannot start: {side} team has no players in the lineup.");
 
-        if (MatchRules.RequireGoalkeeper && onField.Count(p => p.Position == FootballPosition.Goalkeeper) != 1)
-            throw new InvalidOperationException($"Cannot start: {side} team must have exactly one goalkeeper on the field.");
+        if (MatchRules.RequireGoalkeeper && lineup.All(p => p.Position != FootballPosition.Goalkeeper))
+            throw new InvalidOperationException($"Cannot start: {side} team must have a goalkeeper in the lineup.");
     }
 
     private bool HasUnconvertedYellow(Guid teamId, Guid playerId)
