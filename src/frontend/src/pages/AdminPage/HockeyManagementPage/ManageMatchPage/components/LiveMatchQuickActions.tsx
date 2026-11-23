@@ -14,6 +14,7 @@ interface LiveMatchQuickActionsProps {
   onShowGoalForm: (teamId: string) => void;
   onShowPenaltyForm: (teamId: string) => void;
   onShowShotForm: (teamId: string) => void;
+  onShowMissedPenaltyForm: (teamId: string) => void;
   /** Opens the bulk dialog for saves made by the goalie of `teamId`. */
   onShowBulkSaveForm?: (teamId: string) => void;
   onShowFaceoffForm: () => void;
@@ -31,6 +32,7 @@ function LiveMatchQuickActions({
   onShowGoalForm,
   onShowPenaltyForm,
   onShowShotForm,
+  onShowMissedPenaltyForm,
   onShowBulkSaveForm,
   onShowFaceoffForm,
   onRecordOffside,
@@ -119,6 +121,15 @@ function LiveMatchQuickActions({
       >
         <span className="btn-label">{t('hockey.matches.penalty', 'Record Penalty')}</span>
         <span className="btn-icon" aria-hidden="true">🟧</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => teamId && onShowMissedPenaltyForm(teamId)}
+        className="action-btn faceoff-btn"
+        disabled={loading || !canRecord || !teamId}
+      >
+        <span className="btn-label">{t('matchManage.missedPenalty.quickAction', 'Missed penalty')}</span>
+        <span className="btn-icon" aria-hidden="true">❌</span>
       </button>
     </div>
   );

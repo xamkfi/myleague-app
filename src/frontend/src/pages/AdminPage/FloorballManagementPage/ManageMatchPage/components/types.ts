@@ -61,7 +61,7 @@ export interface EventGroup {
   events: ProcessedEvent[];
 }
 
-export type ProcessedEventType = 'goal' | 'penalty' | 'save';
+export type ProcessedEventType = 'goal' | 'penalty' | 'save' | 'missedPenalty';
 
 export interface ProcessedEvent {
   id: string;
@@ -89,6 +89,7 @@ export interface ProcessedEvent {
    * enum as a string via `JsonStringEnumConverter`.
    */
   goalType?: FloorballGoalType | number | string | null;
+  wasDelayedPenalty?: boolean;
 }
 
 export interface GoalForm {
@@ -104,6 +105,7 @@ export interface GoalForm {
    * recorder and the backend will treat it as a regular goal.
    */
   goalType: FloorballGoalType | null;
+  wasDelayedPenalty: boolean;
 }
 
 export interface PenaltyForm {

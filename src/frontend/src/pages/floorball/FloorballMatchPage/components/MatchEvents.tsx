@@ -7,6 +7,7 @@ import type {
 import { formatEventTimeMmSs, formatMatchEventTime } from '../../../../utils/matchEventFormat';
 import { getFloorballPeriodKind, type FloorballPeriodKind } from '../../../../utils/floorballPeriod';
 import { getFloorballGoalTypeInfo } from '../../../../utils/floorballGoalType';
+import { formatFloorballPenaltyMinutes } from '../../../../utils/floorballPenalty';
 import { getPlayerPath } from '../../../../utils/sportRoutes';
 import MatchEventTimeline, {
   type TimelineEvent,
@@ -77,7 +78,13 @@ export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEven
           toPlayer(goal.assisterName, goal.assisterId),
           toPlayer(goal.secondaryAssisterName, goal.secondaryAssisterId),
         ].filter((assist): assist is TimelinePlayer => assist !== undefined),
-        goalBadge: goalTypeInfo ? { abbreviation: goalTypeInfo.abbreviation, label: goalTypeInfo.label } : null,
+        goalBadges: [
+          ...(goalTypeInfo ? [{
+            abbreviation: goalTypeInfo.abbreviation,
+            label: t(`floorball.matches.manage.goalTypes.${goalTypeInfo.name}`, goalTypeInfo.label),
+          }] : []),
+          ...(goal.wasDelayedPenalty ? [{ abbreviation: 'SR', label: t('matchPage.events.delayedPenalty') }] : []),
+        ],
       };
     }),
     ...match.penaltyEvents.map((penalty): TimelineEvent => ({
@@ -87,8 +94,18 @@ export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEven
       timeInSeconds: penalty.timeInSeconds,
       side: sideOf(penalty.teamId),
       player: toPlayer(penalty.playerName, penalty.playerId) ?? { name: penalty.playerName || t('matchPage.events.unknownPlayer') },
-      penaltyLabel: penalty.penaltyType ? penalty.penaltyType.toLowerCase() : undefined,
+      penaltyLabel: penalty.minutes > 0
+        ? t('matchPage.events.penaltyMinutes', { minutes: formatFloorballPenaltyMinutes(penalty.minutes) })
+        : undefined,
       description: penalty.description,
+    })),
+    ...(match.missedPenaltyEvents ?? []).map((missed): TimelineEvent => ({
+      key: `missed-penalty-${missed.id}`,
+      kind: 'missedPenalty',
+      periodNumber: missed.periodNumber,
+      timeInSeconds: missed.timeInSeconds,
+      side: sideOf(missed.teamId),
+      player: toPlayer(missed.playerName, missed.playerId),
     })),
   ];
 

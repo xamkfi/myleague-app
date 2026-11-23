@@ -15,11 +15,13 @@ import type {
   PaginatedApiResponse,
   RecordHockeyFaceoffRequest,
   RecordHockeyGoalRequest,
+  RecordHockeyMissedPenaltyShotRequest,
   RecordHockeyPenaltyRequest,
   RecordHockeyPeriodEventRequest,
   RecordHockeyShotRequest,
   RecordHockeyStoppageRequest,
 } from '../../types/hockey/hockeyTypes';
+import type { MatchDecision } from '../../types/common/matchDecision';
 import { hockeyPagedRequest, hockeyRequest, jsonBody, loadAllPaged, toQueryString } from './hockeyApi';
 
 export const hockeyMatchService = {
@@ -221,6 +223,33 @@ export const hockeyMatchService = {
       'Failed to delete goal',
       { method: 'DELETE' },
     ),
+
+  recordMissedPenaltyShot: (matchId: string, data: RecordHockeyMissedPenaltyShotRequest): Promise<HockeyMatchDto> =>
+    hockeyRequest<HockeyMatchDto>(
+      `/HockeyMatch/${matchId}/events/missed-penalty-shots`,
+      'Failed to record missed penalty shot',
+      { method: 'POST', ...jsonBody(data) },
+    ),
+
+  deleteMissedPenaltyShot: (matchId: string, eventId: string): Promise<HockeyMatchDto> =>
+    hockeyRequest<HockeyMatchDto>(
+      `/HockeyMatch/${matchId}/events/missed-penalty-shots/${eventId}`,
+      'Failed to delete missed penalty shot',
+      { method: 'DELETE' },
+    ),
+
+  /** Corrects the phase of play that decided a match in progress. */
+  setDecidedIn: (matchId: string, decision: MatchDecision): Promise<HockeyMatchDto> =>
+    hockeyRequest<HockeyMatchDto>(
+      `/HockeyMatch/${matchId}/decided-in`,
+      'Failed to change how the match was decided',
+      { method: 'PUT', ...jsonBody({ decision }) },
+    ),
+
+  /** Deletes a match in any state. The server recalculates the competition statistics. */
+  delete: async (matchId: string): Promise<void> => {
+    await hockeyRequest<unknown>(`/HockeyMatch/${matchId}`, 'Failed to delete hockey match', { method: 'DELETE' });
+  },
 
   recordPenalty: (matchId: string, data: RecordHockeyPenaltyRequest): Promise<HockeyMatchDto> =>
     hockeyRequest<HockeyMatchDto>(

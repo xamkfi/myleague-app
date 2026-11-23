@@ -13,6 +13,8 @@ interface MatchTableProps {
   onStartMatch: (match: FloorballMatchDto) => void;
   onCancelMatch: (match: FloorballMatchDto) => void;
   onReactivateMatch: (match: FloorballMatchDto) => void;
+  /** Adds a delete action when set. Deleting reverts the match statistics. */
+  onDeleteMatch?: (match: FloorballMatchDto) => void;
   hideActions?: boolean;
 }
 
@@ -25,6 +27,7 @@ const MatchTable = ({
   onStartMatch,
   onCancelMatch,
   onReactivateMatch,
+  onDeleteMatch,
   hideActions = false,
 }: MatchTableProps) => {
   const { t } = useTranslation();
@@ -103,6 +106,14 @@ const MatchTable = ({
       actions.push({
         label: t('floorball.matches.actions.cancel', 'Cancel Match'),
         onClick: () => onCancelMatch(match),
+        variant: 'danger',
+      });
+    }
+
+    if (onDeleteMatch) {
+      actions.push({
+        label: t('matchManage.deleteMatch.action', 'Delete match'),
+        onClick: () => onDeleteMatch(match),
         variant: 'danger',
       });
     }

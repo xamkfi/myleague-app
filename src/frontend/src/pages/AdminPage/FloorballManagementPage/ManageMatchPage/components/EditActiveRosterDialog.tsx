@@ -32,6 +32,8 @@ interface EditActiveRosterDialogProps {
   competitionId?: string | null;
   /** Players with recorded events in this match; the backend refuses to remove them. */
   lockedPlayerIds: ReadonlySet<string>;
+  /** Goalies with saves or conceded goals in this match. */
+  goaliesWithEvents: ReadonlySet<string>;
   onPlayerAdded: (teamId: string, player: FloorballPlayerDto) => void;
   onClose: () => void;
   onSaved: (updatedMatch: FloorballMatchDto) => void;
@@ -49,6 +51,8 @@ interface TeamLineupState {
   /** Map of playerId -> per-match role. */
   players: Map<string, FieldRole>;
   goalieId: string;
+  /** Moves the saves and conceded goals recorded so far to the chosen goalie. */
+  moveGoalieEvents: boolean;
 }
 
 interface TeamColumnProps {
@@ -58,6 +62,9 @@ interface TeamColumnProps {
   onAddPlayer: (playerId: string, role: FieldRole) => void;
   onRemovePlayer: (playerId: string) => void;
   onSetGoalie: (goalieId: string) => void;
+  /** Set when the goalie was changed and the previous one already has events. */
+  canMoveGoalieEvents: boolean;
+  onSetMoveGoalieEvents: (move: boolean) => void;
   onUseLoanGoalkeeper: () => void;
   onUseLoanPlayers: (count: number) => void;
   loanGoalkeeperBusy: boolean;
@@ -148,6 +155,8 @@ const TeamColumn = ({
   onAddPlayer,
   onRemovePlayer,
   onSetGoalie,
+  canMoveGoalieEvents,
+  onSetMoveGoalieEvents,
   onUseLoanGoalkeeper,
   onUseLoanPlayers,
   loanGoalkeeperBusy,
@@ -235,6 +244,19 @@ const TeamColumn = ({
           </span>
         )}
       </label>
+      {canMoveGoalieEvents && (
+        <>
+          <label className="eard-field__checkbox">
+            <input
+              type="checkbox"
+              checked={state.moveGoalieEvents}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => onSetMoveGoalieEvents(event.target.checked)}
+            />
+            {t('floorball.matches.lineup.moveGoalieEvents')}
+          </label>
+          <p className="eard-field__hint">{t('floorball.matches.lineup.moveGoalieEventsHint')}</p>
+        </>
+      )}
       <p className="eard-field__hint">
         {t('floorball.matches.lineup.loanGoalkeeperHint', 'Creates a loan goalkeeper for the team and sets them as the goalkeeper. If one already exists, that same player is selected.')}
       </p>
@@ -434,15 +456,18 @@ const EditActiveRosterDialog = ({
   onSaved,
   onError,
   lockedPlayerIds,
+  goaliesWithEvents,
 }: EditActiveRosterDialogProps): ReactElement | null => {
   const { t } = useTranslation();
   const [homeState, setHomeState] = useState<TeamLineupState>({
     players: lineupToMap(initialHomeLineup),
     goalieId: initialHomeGoalieId,
+    moveGoalieEvents: false,
   });
   const [awayState, setAwayState] = useState<TeamLineupState>({
     players: lineupToMap(initialAwayLineup),
     goalieId: initialAwayGoalieId,
+    moveGoalieEvents: false,
   });
   const [saving, setSaving] = useState<boolean>(false);
   const [loanSide, setLoanSide] = useState<'home' | 'away' | null>(null);
@@ -464,10 +489,12 @@ const EditActiveRosterDialog = ({
     setHomeState({
       players: lineupToMap(initialHomeLineup),
       goalieId: initialHomeGoalieId,
+      moveGoalieEvents: false,
     });
     setAwayState({
       players: lineupToMap(initialAwayLineup),
       goalieId: initialAwayGoalieId,
+      moveGoalieEvents: false,
     });
   }, [
     isOpen,
@@ -521,7 +548,7 @@ const EditActiveRosterDialog = ({
         // Goalie cannot also be in the field player list.
         const next: Map<string, FieldRole> = new Map(prev.players);
         if (goalieId) next.delete(goalieId);
-        return { players: next, goalieId };
+        return { players: next, goalieId, moveGoalieEvents: false };
       });
     },
     [updateTeamState]
@@ -618,6 +645,15 @@ const EditActiveRosterDialog = ({
 
   const canSave: boolean = Boolean(homeState.goalieId) && Boolean(awayState.goalieId) && !saving && loanSide === null;
 
+  const canMoveEvents = useCallback(
+    (initialGoalieId: string, state: TeamLineupState): boolean =>
+      Boolean(initialGoalieId)
+      && Boolean(state.goalieId)
+      && state.goalieId !== initialGoalieId
+      && goaliesWithEvents.has(initialGoalieId),
+    [goaliesWithEvents],
+  );
+
   const handleSave = useCallback(async (): Promise<void> => {
     if (!canSave) return;
     try {
@@ -630,6 +666,7 @@ const EditActiveRosterDialog = ({
           position,
         })),
         goalieId: homeState.goalieId || null,
+        moveGoalieEvents: canMoveEvents(initialHomeGoalieId, homeState) && homeState.moveGoalieEvents,
       };
       const awayPayload = {
         players: Array.from(awayState.players.entries()).map(([playerId, position]) => ({
@@ -637,6 +674,7 @@ const EditActiveRosterDialog = ({
           position,
         })),
         goalieId: awayState.goalieId || null,
+        moveGoalieEvents: canMoveEvents(initialAwayGoalieId, awayState) && awayState.moveGoalieEvents,
       };
 
       // Save sequentially. Each backend handler builds its response DTO from its own
@@ -658,7 +696,10 @@ const EditActiveRosterDialog = ({
     } finally {
       setSaving(false);
     }
-  }, [canSave, homeState, awayState, matchId, homeTeamId, awayTeamId, onClose, onSaved, onError]);
+  }, [
+    canSave, homeState, awayState, matchId, homeTeamId, awayTeamId,
+    initialHomeGoalieId, initialAwayGoalieId, canMoveEvents, onClose, onSaved, onError,
+  ]);
 
   const pendingTeamName: string = pendingLoan?.side === 'home'
     ? homeTeamName
@@ -713,6 +754,8 @@ const EditActiveRosterDialog = ({
             onRemovePlayer={(id) => removePlayer('home', id)}
             lockedPlayerIds={lockedPlayerIds}
             onSetGoalie={(id) => setGoalie('home', id)}
+            canMoveGoalieEvents={canMoveEvents(initialHomeGoalieId, homeState)}
+            onSetMoveGoalieEvents={(move) => updateTeamState('home', (prev) => ({ ...prev, moveGoalieEvents: move }))}
             onUseLoanGoalkeeper={() => setPendingLoan({ kind: 'goalkeeper', side: 'home' })}
             onUseLoanPlayers={(count) => setPendingLoan({ kind: 'players', side: 'home', count })}
             loanGoalkeeperBusy={loanSide !== null}
@@ -725,6 +768,8 @@ const EditActiveRosterDialog = ({
             onRemovePlayer={(id) => removePlayer('away', id)}
             lockedPlayerIds={lockedPlayerIds}
             onSetGoalie={(id) => setGoalie('away', id)}
+            canMoveGoalieEvents={canMoveEvents(initialAwayGoalieId, awayState)}
+            onSetMoveGoalieEvents={(move) => updateTeamState('away', (prev) => ({ ...prev, moveGoalieEvents: move }))}
             onUseLoanGoalkeeper={() => setPendingLoan({ kind: 'goalkeeper', side: 'away' })}
             onUseLoanPlayers={(count) => setPendingLoan({ kind: 'players', side: 'away', count })}
             loanGoalkeeperBusy={loanSide !== null}

@@ -127,6 +127,7 @@
     &.goal { border-left-color: $color-green-primary; }
     &.penalty { border-left-color: $color-yellow-primary; }
     &.save { border-left-color: $color-blue-secondary; }
+    &.missedPenalty { border-left-color: $color-neutral-dark-grey; }
 
     .event-delete {
       flex: 0 0 auto;

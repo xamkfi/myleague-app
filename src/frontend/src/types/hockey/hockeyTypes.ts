@@ -167,9 +167,6 @@ export const HOCKEY_GOAL_STRENGTHS = [
   'PowerPlayTwoMan',
   'ShortHandedOneMan',
   'ShortHandedTwoMan',
-  'PenaltyShot',
-  'EmptyNet',
-  'OwnGoal',
 ] as const;
 export type HockeyGoalStrength = (typeof HOCKEY_GOAL_STRENGTHS)[number];
 
@@ -209,8 +206,26 @@ export const HOCKEY_PENALTY_OFFENCES = [
   'TooManyPlayers',
   'UnsportsmanlikeConduct',
   'Other',
+  'HoldingTheStick',
+  'SlapShot',
 ] as const;
 export type HockeyPenaltyOffence = (typeof HOCKEY_PENALTY_OFFENCES)[number];
+
+/** Offences offered when recording a penalty. The rest only display on older penalties. */
+export const HOCKEY_SELECTABLE_PENALTY_OFFENCES: readonly HockeyPenaltyOffence[] = [
+  'Tripping',
+  'Hooking',
+  'Holding',
+  'HoldingTheStick',
+  'Interference',
+  'Slashing',
+  'HighSticking',
+  'Roughing',
+  'DelayOfGame',
+  'TooManyPlayers',
+  'SlapShot',
+  'IllegalCheck',
+];
 
 export const HOCKEY_SHOT_RESULTS = [
   'Saved',
@@ -643,6 +658,9 @@ export interface HockeyMatchEventDto {
   penaltyOffence?: string | null;
   penaltySeverity?: string | null;
   penaltyMinutes?: number | null;
+  wasEmptyNet?: boolean;
+  wasDelayedPenalty?: boolean;
+  wasPenaltyShotGoal?: boolean;
 }
 
 export interface HockeyMatchOfficialDto {
@@ -749,7 +767,16 @@ export interface RecordHockeyGoalRequest {
   secondaryAssistActivePlayerId?: string;
   goalieActivePlayerId?: string;
   wasEmptyNet?: boolean;
+  wasDelayedPenalty?: boolean;
+  wasPenaltyShotGoal?: boolean;
   description?: string;
+}
+
+export interface RecordHockeyMissedPenaltyShotRequest {
+  matchTeamId: string;
+  shooterActivePlayerId: string;
+  periodNumber: number;
+  timeInSeconds: number;
 }
 
 export interface RecordHockeyPenaltyRequest {

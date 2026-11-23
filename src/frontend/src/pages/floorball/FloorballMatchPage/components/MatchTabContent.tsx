@@ -19,7 +19,8 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
   const hasStarted: boolean =
     match.status === FloorballMatchStatus.InProgress ||
     match.status === FloorballMatchStatus.Completed;
-  const hasEvents: boolean = match.goalEvents.length > 0 || match.penaltyEvents.length > 0;
+  const hasEvents: boolean = match.goalEvents.length > 0 || match.penaltyEvents.length > 0
+    || (match.missedPenaltyEvents?.length ?? 0) > 0;
   const rosters: MatchRosters = useMatchRosters(
     match,
     activeTab === 'lineups' || (activeTab === 'summary' && hasEvents)

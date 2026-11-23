@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  HOCKEY_PENALTY_OFFENCES,
+  HOCKEY_SELECTABLE_PENALTY_OFFENCES,
   HOCKEY_PENALTY_SEVERITIES,
   type HockeyPenaltyOffence,
   type HockeyPenaltySeverity,
@@ -126,7 +126,7 @@ function PenaltyRecordingForm({
               <div className="field">
                 <label htmlFor="penalty-offence">{t('hockey.matches.offence', 'Offence')}</label>
                 <select id="penalty-offence" className="select-field" value={penaltyOffence} onChange={(event) => onOffenceChange(event.target.value as HockeyPenaltyOffence)}>
-                  {HOCKEY_PENALTY_OFFENCES.map((item) => (
+                  {HOCKEY_SELECTABLE_PENALTY_OFFENCES.map((item) => (
                     <option key={item} value={item}>{t(`hockey.matches.penaltyOffences.${item}`, item)}</option>
                   ))}
                 </select>

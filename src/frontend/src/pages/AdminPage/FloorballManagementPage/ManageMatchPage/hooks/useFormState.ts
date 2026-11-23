@@ -52,6 +52,7 @@ export const useFormState = ({
     timeSeconds: 0,
     periodNumber: 1,
     goalType: null,
+    wasDelayedPenalty: false,
   });
   
   const [penaltyForm, setPenaltyForm] = useState<PenaltyForm>({
@@ -110,10 +111,22 @@ export const useFormState = ({
     };
   }, [goalTypeForPeriod]);
 
-  /** Editing the time moves the event to the period that time falls in (15:00 is period 2). */
+  /**
+   * Period for an edited time (15:00 is period 2). The shootout has no clock, so an event that is
+   * in the shootout stays there whatever the time is.
+   */
+  const periodAfterTimeEdit = useCallback(
+    (formPeriod: number, timeInSeconds: number): number =>
+      formPeriod === shootoutPeriod ? formPeriod : periodForTime(timeInSeconds),
+    [shootoutPeriod, periodForTime],
+  );
+
   const changeGoalTime = useCallback((timeMinutes: number, timeSeconds: number) => {
-    setGoalForm(prev => withPeriod({ ...prev, timeMinutes, timeSeconds }, periodForTime(timeMinutes * 60 + timeSeconds)));
-  }, [withPeriod, periodForTime]);
+    setGoalForm(prev => withPeriod(
+      { ...prev, timeMinutes, timeSeconds },
+      periodAfterTimeEdit(prev.periodNumber, timeMinutes * 60 + timeSeconds),
+    ));
+  }, [withPeriod, periodAfterTimeEdit]);
 
   const changeGoalPeriod = useCallback((periodNumber: number) => {
     setGoalForm(prev => withPeriod(prev, periodNumber));
@@ -124,9 +137,9 @@ export const useFormState = ({
       ...prev,
       timeMinutes,
       timeSeconds,
-      periodNumber: periodForTime(timeMinutes * 60 + timeSeconds),
+      periodNumber: periodAfterTimeEdit(prev.periodNumber, timeMinutes * 60 + timeSeconds),
     }));
-  }, [periodForTime]);
+  }, [periodAfterTimeEdit]);
 
   const changePenaltyPeriod = useCallback((periodNumber: number) => {
     setPenaltyForm(prev => ({ ...prev, periodNumber }));
@@ -147,6 +160,7 @@ export const useFormState = ({
       timeSeconds,
       periodNumber: currentPeriod,
       goalType: goalTypeForPeriod(currentPeriod),
+      wasDelayedPenalty: false,
     }));
     setShowGoalForm(true);
   }, [getCurrentElapsedSeconds, currentPeriod, goalTypeForPeriod]);
@@ -197,6 +211,7 @@ export const useFormState = ({
         wasInOvertime: periodFlags.wasInOvertime,
         wasInShootout: periodFlags.wasInShootout,
         goalType: goalForm.goalType ?? undefined,
+        wasDelayedPenalty: goalForm.wasDelayedPenalty,
       };
       
       await floorballMatchEventService.recordGoal(goalData);
@@ -207,7 +222,7 @@ export const useFormState = ({
       await loadCurrentMatchStatus();
       
       // Reset form
-      setGoalForm({ teamId: '', playerId: '', assisterId: '', timeMinutes: 0, timeSeconds: 0, periodNumber: 1, goalType: null });
+      setGoalForm({ teamId: '', playerId: '', assisterId: '', timeMinutes: 0, timeSeconds: 0, periodNumber: 1, goalType: null, wasDelayedPenalty: false });
       setShowGoalForm(false);
       setError(null);
       

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HockeyMatchEventDto } from '../../../../../types/hockey/hockeyTypes';
 import { HOCKEY_SHOT_RESULTS } from '../../../../../types/hockey/hockeyTypes';
+import { hockeyGoalTags } from '../../../../../utils/hockeyEventDisplay';
 import { formatHockeyClock } from '../../../../../utils/hockeyLookups';
 import './LiveMatchEventsHistory.scss';
 
@@ -22,10 +23,11 @@ interface HistoryRow {
 }
 
 const SHOT_RESULT_SET: ReadonlySet<string> = new Set(HOCKEY_SHOT_RESULTS);
+const REMOVABLE_EVENT_TYPES: ReadonlySet<string> = new Set(['goal', 'penalty', 'shot', 'missedpenaltyshot']);
 const PERIOD_PREVIEW_COUNT = 5;
 
 function isSave(event: HockeyMatchEventDto): boolean {
-  return event.eventType.toLowerCase().includes('shot') && event.description === 'Saved';
+  return event.eventType.toLowerCase() === 'shot' && event.description === 'Saved';
 }
 
 /** Collapses consecutive saves with the same team and clock (bulk-recorded) into one row. */
@@ -54,13 +56,17 @@ function eventLabel(
   t: (key: string, fallback: string) => string,
 ): { label: string; icon: string } {
   const type = eventType.toLowerCase();
-  if (type.includes('goal')) {
+  // Exact names: "GoalieChange" and "MissedPenaltyShot" contain other event names.
+  if (type === 'goal') {
     return { label: t('hockey.matches.eventGoal', 'Goal'), icon: '🥅' };
   }
-  if (type.includes('penalty')) {
+  if (type === 'penalty') {
     return { label: t('hockey.matches.eventPenalty', 'Penalty'), icon: '🟧' };
   }
-  if (type.includes('shot')) {
+  if (type === 'missedpenaltyshot') {
+    return { label: t('matchPage.events.missedPenalty', 'Missed penalty'), icon: '❌' };
+  }
+  if (type === 'shot') {
     if (description === 'Saved') {
       return { label: t('hockey.matches.eventSave', 'Save'), icon: '🛡️' };
     }
@@ -89,7 +95,8 @@ function formatGoalDetail(event: HockeyMatchEventDto, activePlayerLabels: Map<st
   if (!scorer) {
     return '';
   }
-  return assists.length > 0 ? `${scorer} (${assists.join(', ')})` : scorer;
+  const tags: string = hockeyGoalTags(event).map((tag) => ` (${tag.abbreviation})`).join('');
+  return `${assists.length > 0 ? `${scorer} (${assists.join(', ')})` : scorer}${tags}`;
 }
 
 function formatPenaltyDetail(
@@ -123,12 +130,15 @@ function formatEventDetail(
   if (type === 'penalty') {
     return formatPenaltyDetail(event, activePlayerLabels, t);
   }
+  if (type === 'missedpenaltyshot') {
+    return event.matchActivePlayerId ? activePlayerLabels.get(event.matchActivePlayerId) ?? '' : '';
+  }
   const description = event.description;
   if (!description) {
     return '';
   }
 
-  if (type.includes('shot')) {
+  if (type === 'shot') {
     if (description === 'Saved' || !SHOT_RESULT_SET.has(description)) {
       return '';
     }
@@ -306,7 +316,7 @@ function LiveMatchEventsHistory({
                 {visible.map((row) => {
                   const { event } = row;
                   const type = event.eventType.toLowerCase();
-                  const canRemove = canDelete && (type.includes('goal') || type.includes('penalty') || type.includes('shot'));
+                  const canRemove = canDelete && REMOVABLE_EVENT_TYPES.has(type);
                   // A save is stored on the shooting team; show the team whose goalie made it.
                   const displayTeamId: string | null | undefined = isSave(event)
                     ? [...teamNamesByMatchTeamId.keys()].find((id) => id !== event.matchTeamId)

@@ -2,9 +2,15 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HOCKEY_GOAL_STRENGTHS, type HockeyGoalStrength } from '../../../../../types/hockey/hockeyTypes';
 import './GoalRecordingForm.scss';
-import { formatPlayerOptionLabel, sortPlayersForSelect, type HockeyFormPlayer } from './eventFormHelpers';
+import { formatPlayerOptionLabel, sortPlayersForSelect, type HockeyFormPlayer, type HockeyGoalFlags } from './eventFormHelpers';
 import EventPeriodSelect from './EventPeriodSelect';
 import EventTimeInput from '../../../../../components/match/EventTimeInput';
+
+const GOAL_FLAG_LABELS: ReadonlyArray<{ flag: keyof HockeyGoalFlags; labelKey: string }> = [
+  { flag: 'wasPenaltyShotGoal', labelKey: 'hockey.matches.goalFlags.penaltyShot' },
+  { flag: 'wasEmptyNet', labelKey: 'hockey.matches.goalFlags.emptyNet' },
+  { flag: 'wasDelayedPenalty', labelKey: 'matchManage.delayedPenalty' },
+];
 
 interface GoalRecordingFormProps {
   showGoalForm: boolean;
@@ -14,11 +20,13 @@ interface GoalRecordingFormProps {
   assistId: string;
   secondaryAssistId: string;
   goalStrength: HockeyGoalStrength;
+  goalFlags: HockeyGoalFlags;
   loading: boolean;
   onPlayerChange: (playerId: string) => void;
   onAssistChange: (assistId: string) => void;
   onSecondaryAssistChange: (assistId: string) => void;
   onStrengthChange: (strength: HockeyGoalStrength) => void;
+  onFlagsChange: (flags: HockeyGoalFlags) => void;
   periodNumber: number;
   periods: readonly number[];
   overtimePeriodNumber: number;
@@ -39,11 +47,13 @@ function GoalRecordingForm({
   assistId,
   secondaryAssistId,
   goalStrength,
+  goalFlags,
   loading,
   onPlayerChange,
   onAssistChange,
   onSecondaryAssistChange,
   onStrengthChange,
+  onFlagsChange,
   periodNumber,
   periods,
   overtimePeriodNumber,
@@ -187,6 +197,16 @@ function GoalRecordingForm({
                 onChange={onTimeChange}
               />
             </div>
+            {GOAL_FLAG_LABELS.map(({ flag, labelKey }) => (
+              <label key={flag} className="event-form__checkbox">
+                <input
+                  type="checkbox"
+                  checked={goalFlags[flag]}
+                  onChange={(event) => onFlagsChange({ ...goalFlags, [flag]: event.target.checked })}
+                />
+                {t(labelKey)}
+              </label>
+            ))}
             <div className="form-actions">
               <button onClick={onClose} className="cancel-btn" type="button" disabled={loading}>{t('common.cancel', 'Cancel')}</button>
               <button onClick={() => void onRecordGoal()} disabled={!canSubmit} className="submit-btn" type="button">

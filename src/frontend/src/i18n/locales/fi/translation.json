@@ -81,7 +81,9 @@
       "reopenMatchTitle": "Avaa ottelu uudelleen muokattavaksi",
       "revertToScheduled": "Palauta aloittamattomaksi",
       "revertToScheduledTitle": "Palauta ottelu aloittamattomaksi. Mahdollista vain tilanteessa 0-0, kun tapahtumia ei ole kirjattu.",
-      "closeTitle": "Takaisin ottelulistaan"
+      "closeTitle": "Takaisin ottelulistaan",
+      "changeDecision": "Ratkaisutapa",
+      "changeDecisionTitle": "Muuta, ratkesiko ottelu varsinaisella ajalla, jatkoajalla vai rankkareilla"
     },
     "revertToScheduled": {
       "title": "Palautetaanko ottelu aloittamattomaksi?",
@@ -96,6 +98,38 @@
       "messageMany": "Poistetaanko {{count}} valittua ottelutapahtumaa?",
       "warning": "Tätä toimintoa ei voi perua.",
       "confirm": "Poista"
+    },
+    "decision": {
+      "title": "Ottelun ratkaisutapa",
+      "hint": "Sarjapisteet lasketaan ratkaisutavan mukaan. Jos tulos ei ole tasan, ratkaisumaali siirretään valittuun vaiheeseen.",
+      "regulation": "Varsinainen aika",
+      "overtime": "Jatkoaika",
+      "shootout": "Rankkarit",
+      "errors": {
+        "notLevel": "Tuloksen pitää olla tasan ilman ratkaisumaalia. Korjaa maalit ensin.",
+        "laterEvents": "Poista ensin myöhempien vaiheiden tapahtumat.",
+        "notInRules": "Ottelun säännöt eivät salli tätä ratkaisutapaa.",
+        "failed": "Ratkaisutavan muuttaminen epäonnistui."
+      }
+    },
+    "missedPenalty": {
+      "title": "Kirjaa epäonnistunut rankkari",
+      "quickAction": "Epäonnistunut rankkari",
+      "shooter": "Ampuja",
+      "selectShooter": "Valitse pelaaja",
+      "time": "Aika",
+      "submit": "Kirjaa",
+      "failed": "Rankkarin kirjaaminen epäonnistui"
+    },
+    "delayedPenalty": "Maali siirretyn rangaistuksen aikana (SR)",
+    "deleteMatch": {
+      "action": "Poista ottelu",
+      "title": "Poistetaanko ottelu?",
+      "message": "Ottelu {{match}} poistetaan pysyvästi kaikkine tapahtumineen.",
+      "warning": "Ottelun tulos ja tilastot poistuvat sarjataulukosta ja pelaajatilastoista. Toimintoa ei voi perua.",
+      "confirm": "Poista ottelu",
+      "failed": "Ottelun poistaminen epäonnistui",
+      "playoffStarted": "Aloitettua pudotuspeliä ei voi poistaa."
     }
   },
   "matchScorekeepers": {
@@ -215,7 +249,10 @@
       "shootoutShort": "VM",
       "timeout": "Aikalisä",
       "noEvents": "Ei ottelutapahtumia",
-      "unknownPlayer": "Tuntematon pelaaja"
+      "unknownPlayer": "Tuntematon pelaaja",
+      "missedPenalty": "Epäonnistunut rankkari",
+      "delayedPenalty": "Siirretty rangaistus",
+      "penaltyMinutes": "{{minutes}} min"
     },
     "timer": {
       "start": "Käynnistä kello",
@@ -2126,7 +2163,8 @@
           "type": {
             "goal": "Maali",
             "penalty": "Rangaistus",
-            "save": "Torjunta"
+            "save": "Torjunta",
+            "missedPenalty": "Epäonnistunut rankkari"
           }
         },
         "confirmEndPeriod": {
@@ -2206,7 +2244,6 @@
           "duration": "Kesto",
           "selectDuration": "Valitse kesto",
           "duration2": "2 minuuttia (pieni)",
-          "duration5": "5 minuuttia (iso)",
           "duration10": "10 minuuttia (käytösrangaistus)",
           "duration20": "20 minuuttia (pelirangaistus)",
           "time": "Aika",
@@ -2215,7 +2252,8 @@
           "missingJersey": "Valitulla pelaajalla ei ole pelinumeroa. Lisää pelinumero ennen rangaistuksen kirjaamista.",
           "missingJerseyShort": "Pelinumero puuttuu",
           "recording": "Kirjataan…",
-          "submit": "Kirjaa rangaistus"
+          "submit": "Kirjaa rangaistus",
+          "duration4": "2+2 minuuttia (iso)"
         },
         "errors": {
           "connection": "Palvelimeen ei saatu yhteyttä. Tarkista verkkoyhteys ja yritä uudelleen.",
@@ -2306,7 +2344,9 @@
           "Defender": "Puolustaja",
           "Forward": "Hyökkääjä"
         },
-        "saveLineup": "Tallenna kentällinen"
+        "saveLineup": "Tallenna kentällinen",
+        "moveGoalieEvents": "Siirrä tämän ottelun torjunnat ja päästetyt maalit uudelle maalivahdille",
+        "moveGoalieEventsHint": "Valitse, jos ne kirjattiin väärälle maalivahdille. Jätä valitsematta, jos maalivahti vaihtui kesken ottelun."
       },
       "assignTeams": {
         "action": "Aseta joukkueet",
@@ -3931,35 +3971,34 @@
         "PowerPlayOneMan": "Ylivoima (1)",
         "PowerPlayTwoMan": "Ylivoima (2)",
         "ShortHandedOneMan": "Alivoima (1)",
-        "ShortHandedTwoMan": "Alivoima (2)",
-        "PenaltyShot": "Rangaistuslaukaus",
-        "EmptyNet": "Tyhjä maali",
-        "OwnGoal": "Oma maali"
+        "ShortHandedTwoMan": "Alivoima (2)"
       },
       "penaltyOffences": {
         "Tripping": "Kampitus",
         "Hooking": "Koukkaaminen",
         "Holding": "Kiinnipitäminen",
         "Interference": "Estäminen",
-        "Slashing": "Mailalla lyöminen",
-        "HighSticking": "Korkea maila",
+        "Slashing": "Huitominen",
+        "HighSticking": "Korkeamaila",
         "CrossChecking": "Poikittaismaila",
         "Boarding": "Laitataklaus",
         "Charging": "Ryntääminen",
-        "IllegalCheck": "Väärä taklaus",
+        "IllegalCheck": "Taklaus",
         "CheckingFromBehind": "Taklaus takaa",
         "CheckingToHeadOrNeck": "Taklaus päähän tai niskaan",
         "Elbowing": "Kyynärpää",
         "Kneeing": "Polvitaklaus",
         "Spearing": "Keihästäminen",
         "ButtEnding": "Päittäminen",
-        "Roughing": "Kovakouraisuus",
+        "Roughing": "Väkivaltaisuus",
         "Fighting": "Tappelu",
         "GoalieInterference": "Maalivahdin estäminen",
         "DelayOfGame": "Pelin viivyttäminen",
-        "TooManyPlayers": "Liikaa pelaajia",
+        "TooManyPlayers": "Liikaa pelaajia jäällä",
         "UnsportsmanlikeConduct": "Epäurheilijamainen käytös",
-        "Other": "Muu"
+        "Other": "Muu",
+        "HoldingTheStick": "Vastustajan mailasta kiinnipitäminen",
+        "SlapShot": "Lyöntilaukaus"
       },
       "penaltySeverities": {
         "Minor": "Pieni",
@@ -3970,6 +4009,10 @@
         "MatchPenalty": "Ottelurangaistus (match)",
         "PenaltyShot": "Rangaistuslaukaus",
         "BenchMinor": "Penkkirangaistus"
+      },
+      "goalFlags": {
+        "penaltyShot": "Rangaistuslaukaus (RL)",
+        "emptyNet": "Tyhjä maali (TM)"
       }
     }
   },

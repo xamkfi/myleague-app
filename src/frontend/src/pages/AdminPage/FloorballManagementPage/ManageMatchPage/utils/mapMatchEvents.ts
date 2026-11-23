@@ -94,6 +94,28 @@ function mapGoal(event: FloorballDomainEventDto, ctx: FloorballEventMappingConte
     wasInOvertime: pickBoolean(data, 'IsOvertime', 'isOvertime'),
     wasInShootout: pickBoolean(data, 'IsShootout', 'isShootout'),
     goalType: typeof goalType === 'number' || typeof goalType === 'string' ? goalType : null,
+    wasDelayedPenalty: pickBoolean(data, 'WasDelayedPenalty', 'wasDelayedPenalty'),
+  };
+}
+
+function mapMissedPenalty(event: FloorballDomainEventDto, ctx: FloorballEventMappingContext): ProcessedEvent {
+  const data: EventData = event.data;
+  const teamId: string = pickString(data, 'TeamId', 'teamId') ?? '';
+  const playerId: string = pickString(data, 'PlayerId', 'playerId') ?? '';
+  const periodNumber: number = pickNumber(data, 'PeriodNumber', 'periodNumber') ?? 1;
+  const timeInSeconds: number = resolveTimeInSeconds(data);
+
+  return {
+    id: `missed-penalty-${teamId}-${playerId}-${periodNumber}-${timeInSeconds}`,
+    type: 'missedPenalty',
+    eventId: pickString(data, 'EventId', 'eventId') ?? '',
+    teamId,
+    ...teamNames(ctx, teamId),
+    playerId,
+    playerName: ctx.getPlayerNameById(playerId),
+    periodNumber,
+    timeInSeconds,
+    timestamp: new Date(event.occurredOn),
   };
 }
 
@@ -166,6 +188,9 @@ export function mapFloorballDomainEvents(
         break;
       case 'FloorballSaveEvent':
         mapped.push(mapSave(event, ctx));
+        break;
+      case 'FloorballMissedPenaltyEvent':
+        mapped.push(mapMissedPenalty(event, ctx));
         break;
       default:
         break;

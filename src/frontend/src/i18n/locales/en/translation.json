@@ -224,7 +224,9 @@
       "reopenMatchTitle": "Reopen this match for editing",
       "revertToScheduled": "Revert to not started",
       "revertToScheduledTitle": "Return the match to not started. Only possible at 0-0 with no recorded events.",
-      "closeTitle": "Back to the match list"
+      "closeTitle": "Back to the match list",
+      "changeDecision": "Decided in",
+      "changeDecisionTitle": "Change whether the match was decided in regulation, overtime or a shootout"
     },
     "revertToScheduled": {
       "title": "Revert match to not started?",
@@ -239,6 +241,38 @@
       "messageMany": "Delete {{count}} selected match events?",
       "warning": "This action cannot be undone.",
       "confirm": "Delete"
+    },
+    "decision": {
+      "title": "How the match was decided",
+      "hint": "Standings points follow this choice. If the score is not level, the deciding goal is moved to the chosen phase.",
+      "regulation": "Regulation",
+      "overtime": "Overtime",
+      "shootout": "Shootout",
+      "errors": {
+        "notLevel": "The score must be level without the deciding goal. Correct the goals first.",
+        "laterEvents": "Delete the events of the later phases first.",
+        "notInRules": "The match rules do not allow this.",
+        "failed": "Failed to change how the match was decided."
+      }
+    },
+    "missedPenalty": {
+      "title": "Record a missed penalty",
+      "quickAction": "Missed penalty",
+      "shooter": "Shooter",
+      "selectShooter": "Select player",
+      "time": "Time",
+      "submit": "Record",
+      "failed": "Failed to record the missed penalty"
+    },
+    "delayedPenalty": "Scored during a delayed penalty (SR)",
+    "deleteMatch": {
+      "action": "Delete match",
+      "title": "Delete the match?",
+      "message": "{{match}} is deleted permanently with all its events.",
+      "warning": "The result and statistics are removed from the standings and player statistics. This cannot be undone.",
+      "confirm": "Delete match",
+      "failed": "Failed to delete the match",
+      "playoffStarted": "A playoff match that has been started cannot be deleted."
     }
   },
   "matchScorekeepers": {
@@ -358,7 +392,10 @@
       "shootoutShort": "SO",
       "timeout": "Timeout",
       "noEvents": "No match events yet",
-      "unknownPlayer": "Unknown player"
+      "unknownPlayer": "Unknown player",
+      "missedPenalty": "Missed penalty",
+      "delayedPenalty": "Delayed penalty",
+      "penaltyMinutes": "{{minutes}} min"
     },
     "timer": {
       "start": "Start Timer",
@@ -2118,7 +2155,8 @@
           "type": {
             "goal": "Goal",
             "penalty": "Penalty",
-            "save": "Save"
+            "save": "Save",
+            "missedPenalty": "Missed penalty"
           }
         },
         "confirmEndPeriod": {
@@ -2198,7 +2236,6 @@
           "duration": "Duration",
           "selectDuration": "Select duration",
           "duration2": "2 minutes (minor)",
-          "duration5": "5 minutes (major)",
           "duration10": "10 minutes (misconduct)",
           "duration20": "20 minutes (game misconduct)",
           "time": "Time",
@@ -2207,7 +2244,8 @@
           "missingJersey": "Selected player has no jersey number. Assign a jersey before recording the penalty.",
           "missingJerseyShort": "Missing jersey",
           "recording": "Recording…",
-          "submit": "Record penalty"
+          "submit": "Record penalty",
+          "duration4": "2+2 minutes (double minor)"
         },
         "errors": {
           "connection": "Could not reach the server. Check your connection and try again.",
@@ -2298,7 +2336,9 @@
           "Defender": "Defender",
           "Forward": "Forward"
         },
-        "saveLineup": "Save lineup"
+        "saveLineup": "Save lineup",
+        "moveGoalieEvents": "Move this match's saves and conceded goals to the new goalkeeper",
+        "moveGoalieEventsHint": "Choose this if they were recorded on the wrong goalkeeper. Leave it off if the goalkeeper was changed during the match."
       },
       "assignTeams": {
         "action": "Assign teams",
@@ -3924,10 +3964,7 @@
         "PowerPlayOneMan": "Power play (1)",
         "PowerPlayTwoMan": "Power play (2)",
         "ShortHandedOneMan": "Shorthanded (1)",
-        "ShortHandedTwoMan": "Shorthanded (2)",
-        "PenaltyShot": "Penalty shot",
-        "EmptyNet": "Empty net",
-        "OwnGoal": "Own goal"
+        "ShortHandedTwoMan": "Shorthanded (2)"
       },
       "penaltyOffences": {
         "Tripping": "Tripping",
@@ -3939,7 +3976,7 @@
         "CrossChecking": "Cross-checking",
         "Boarding": "Boarding",
         "Charging": "Charging",
-        "IllegalCheck": "Illegal check",
+        "IllegalCheck": "Body checking",
         "CheckingFromBehind": "Checking from behind",
         "CheckingToHeadOrNeck": "Checking to the head or neck",
         "Elbowing": "Elbowing",
@@ -3950,9 +3987,11 @@
         "Fighting": "Fighting",
         "GoalieInterference": "Goaltender interference",
         "DelayOfGame": "Delay of game",
-        "TooManyPlayers": "Too many players",
+        "TooManyPlayers": "Too many players on the ice",
         "UnsportsmanlikeConduct": "Unsportsmanlike conduct",
-        "Other": "Other"
+        "Other": "Other",
+        "HoldingTheStick": "Holding the stick",
+        "SlapShot": "Slap shot"
       },
       "penaltySeverities": {
         "Minor": "Minor",
@@ -3963,6 +4002,10 @@
         "MatchPenalty": "Match penalty",
         "PenaltyShot": "Penalty shot",
         "BenchMinor": "Bench minor"
+      },
+      "goalFlags": {
+        "penaltyShot": "Penalty shot (RL)",
+        "emptyNet": "Empty net (TM)"
       }
     }
   },
