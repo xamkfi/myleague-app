@@ -19,8 +19,8 @@ const EMPTY_ROSTERS: MatchRosters = { home: [], away: [] };
  * Nothing is fetched until `enabled` is true or when either team is still a placeholder.
  */
 export function useMatchRosters(match: FootballMatchDto, enabled: boolean): MatchRosters {
-  const { homeTeamId, awayTeamId } = match;
-  const key: string | null = homeTeamId && awayTeamId ? `${homeTeamId}|${awayTeamId}` : null;
+  const { homeTeamId, awayTeamId, competitionId } = match;
+  const key: string | null = homeTeamId && awayTeamId ? `${homeTeamId}|${awayTeamId}|${competitionId}` : null;
   const [loaded, setLoaded] = useState<LoadedRosters | null>(null);
   const loadedKey: string | null = loaded?.key ?? null;
 
@@ -29,8 +29,8 @@ export function useMatchRosters(match: FootballMatchDto, enabled: boolean): Matc
 
     let cancelled: boolean = false;
     Promise.all([
-      footballTeamService.getById(homeTeamId),
-      footballTeamService.getById(awayTeamId),
+      footballTeamService.getById(homeTeamId, competitionId),
+      footballTeamService.getById(awayTeamId, competitionId),
     ])
       .then(([homeResponse, awayResponse]) => {
         if (cancelled) return;
@@ -46,7 +46,7 @@ export function useMatchRosters(match: FootballMatchDto, enabled: boolean): Matc
     return () => {
       cancelled = true;
     };
-  }, [enabled, key, loadedKey, homeTeamId, awayTeamId]);
+  }, [enabled, key, loadedKey, homeTeamId, awayTeamId, competitionId]);
 
   return loaded && loaded.key === key ? loaded.rosters : EMPTY_ROSTERS;
 }

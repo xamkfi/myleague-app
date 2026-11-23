@@ -77,7 +77,7 @@ export interface EventGroup {
 
 export interface ProcessedEvent {
   id: string;
-  type: 'goal' | 'card' | 'substitution';
+  type: 'goal' | 'card' | 'substitution' | 'missedPenalty';
   eventId?: string;
   teamId: string;
   teamName: string;
@@ -127,17 +127,6 @@ export interface CardForm {
   periodNumber: number;
 }
 
-export interface SubstitutionForm {
-  teamId: string;
-  playerOffId: string;
-  playerOnId: string;
-  description: string;
-  timeMinutes: number;
-  timeSeconds: number;
-  /** Period the event is recorded in; follows the entered time unless chosen by hand. */
-  periodNumber: number;
-}
-
 export interface LiveMatchContextProps {
   currentMatch: FootballMatchDto;
   homeTeam: FootballTeam | null;
@@ -162,19 +151,14 @@ export interface LiveMatchContextProps {
   handleCompleteLive: () => Promise<void>;
   recordGoal: () => Promise<void>;
   recordCard: () => Promise<void>;
-  recordSubstitution: () => Promise<void>;
   goalForm: GoalForm;
   setGoalForm: React.Dispatch<React.SetStateAction<GoalForm>>;
   cardForm: CardForm;
   setCardForm: React.Dispatch<React.SetStateAction<CardForm>>;
-  substitutionForm: SubstitutionForm;
-  setSubstitutionForm: React.Dispatch<React.SetStateAction<SubstitutionForm>>;
   showGoalForm: boolean;
   setShowGoalForm: (show: boolean) => void;
   showCardForm: boolean;
   setShowCardForm: (show: boolean) => void;
-  showSubstitutionForm: boolean;
-  setShowSubstitutionForm: (show: boolean) => void;
   getPlayersForTeam: (teamId: string) => FootballPlayerDto[];
   getPlayerNameById: (playerId: string | undefined | null) => string;
   formatTime: (minutes: number, seconds: number) => string;

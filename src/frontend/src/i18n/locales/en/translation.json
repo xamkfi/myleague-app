@@ -2386,8 +2386,11 @@
       "savePercentage": "Save percentage",
       "goalsAgainstAverage": "Goals against average",
       "yellowCards": "Yellow cards",
-      "redCards": "Red cards"
-    }
+      "redCards": "Red cards",
+      "cleanSheets": "Matches without conceding a goal"
+    },
+    "position": "Position",
+    "cleanSheets": "Clean sheets"
   },
   "seasonContent": {
     "title": "Introduction blocks",
@@ -2577,7 +2580,8 @@
       "previous": "Previous",
       "next": "Next",
       "pageOf": "Page {{current}} of {{total}}"
-    }
+    },
+    "team": "Team"
   },
   "newsPage": {
     "matchStatus": {
@@ -2982,6 +2986,116 @@
           "half": "Half {{number}}",
           "extraTime": "Extra time {{number}}",
           "shootout": "Penalty shootout"
+        },
+        "title": "Match management",
+        "startMatch": "Start match",
+        "matchCompleted": "Match completed",
+        "startDisabled": {
+          "teams": "Assign both teams before starting",
+          "lineup": "Set the lineup of both teams to start",
+          "officials": "Assign officials to start"
+        },
+        "periodStatus": {
+          "completed": "played",
+          "started": "live",
+          "upcoming": "upcoming"
+        },
+        "periodControl": {
+          "ending": "Ending...",
+          "starting": "Starting...",
+          "end": "End {{period}}",
+          "start": "Start {{period}}",
+          "startExtraTime": "Start extra time"
+        },
+        "quickActions": {
+          "title": "Record event",
+          "recordGoal": "Goal",
+          "recordCard": "Card"
+        },
+        "goalForm": {
+          "title": "Record goal for {{team}}",
+          "scoringPlayer": "Scoring player",
+          "ownGoalScorer": "Own-goal scorer (opponent)",
+          "selectPlayer": "Select player",
+          "assistingPlayer": "Assisting player",
+          "optional": "(optional)",
+          "noAssist": "No assist",
+          "goalType": "Goal type",
+          "time": "Time",
+          "missingJersey": "Selected player has no jersey number. Assign a jersey before recording the goal.",
+          "missingJerseyShort": "Missing jersey",
+          "recording": "Recording…",
+          "submit": "Record goal"
+        },
+        "cardForm": {
+          "title": "Record card for {{team}}",
+          "receivingPlayer": "Receiving player",
+          "cardType": "Card",
+          "selectCard": "Select card",
+          "description": "Description",
+          "descriptionPlaceholder": "E.g. unsporting behaviour, dissent, serious foul play…",
+          "missingJersey": "Selected player has no jersey number. Assign a jersey before recording the card.",
+          "submit": "Record card"
+        },
+        "cardTypes": {
+          "Yellow": "Yellow card",
+          "SecondYellow": "Second yellow",
+          "DirectRed": "Red card"
+        },
+        "goalTypes": {
+          "Regular": "Regular goal",
+          "PenaltyKick": "Penalty kick",
+          "OwnGoal": "Own goal",
+          "ExtraTime": "Extra time",
+          "PenaltyShootout": "Penalty shootout"
+        },
+        "events": {
+          "type": {
+            "goal": "Goal",
+            "card": "Card",
+            "substitution": "Substitution",
+            "missedPenalty": "Missed penalty"
+          }
+        },
+        "errors": {
+          "selectTeamAndPlayer": "Select a team and a player",
+          "selectCard": "Select a team, a player and a card",
+          "throttle": "Wait a moment before recording another event.",
+          "recordGoal": "Failed to record goal",
+          "recordCard": "Failed to record card",
+          "deleteEvent": "Failed to delete event",
+          "missingEventId": "Cannot delete: missing event id",
+          "noEventsSelected": "Cannot delete: no events selected",
+          "startExtraTime": "Failed to start extra time",
+          "startShootout": "Failed to start penalty shootout"
+        },
+        "confirmEndHalf": {
+          "title": "End the half?",
+          "message": "Are you sure you want to end half {{number}} at {{time}}?",
+          "confirm": "End half"
+        },
+        "confirmExtraTime": {
+          "title": "Start extra time?",
+          "message": "Are you sure you want to start extra time?",
+          "warning": "Extra time is played according to the match rules."
+        },
+        "confirmShootout": {
+          "title": "Start the penalty shootout?",
+          "message": "Are you sure you want to start the penalty shootout?",
+          "warning": "The penalty shootout is not timed.",
+          "confirm": "Start penalty shootout"
+        },
+        "confirmEndMatch": {
+          "title": "End the match?",
+          "message": "Are you sure you want to end this match?",
+          "messageShootout": "Are you sure you want to end this match? The penalty shootout ends with it.",
+          "warning": "The result is confirmed. You can reopen the match later if needed."
+        },
+        "confirmReopen": {
+          "title": "Reopen match for editing",
+          "message": "The match goes back to in progress so you can edit events or continue play.",
+          "warning": "The match is taken out of the standings and statistics until you finish it again.",
+          "confirm": "Yes, reopen match"
         }
       },
       "assignTeams": {
@@ -3016,7 +3130,32 @@
         "loanPlayersConfirmTitle": "Add loan players",
         "loanPlayersConfirmMessage": "Add {{count}} loan players for {{team}}? Existing loan players are used first.",
         "loanPlayersConfirm": "Yes, add loan players",
-        "loanPlayersFailed": "Failed to add loan players"
+        "loanPlayersFailed": "Failed to add loan players",
+        "activeLineup": "Lineup",
+        "editLineup": "Edit lineup",
+        "editLineupTitle": "Edit lineup",
+        "saveLineup": "Save lineup",
+        "saveFailed": "Failed to save the lineup",
+        "homeTeam": "Home team",
+        "awayTeam": "Away team",
+        "playerCount": "{{count}} players",
+        "playerCount_one": "{{count}} player",
+        "playerCount_other": "{{count}} players",
+        "inLineup": "In lineup",
+        "selectPlayer": "{{name}} in the lineup",
+        "selectAll": "Select all",
+        "clearAll": "Clear",
+        "player": "Player",
+        "position": "Position",
+        "searchPlayers": "Search players by name...",
+        "noTeamPlayers": "Team has no players.",
+        "noAvailablePlayers": "No players match the search.",
+        "noPlayers": "The lineup has not been set yet.",
+        "goalkeeperShort": "GK",
+        "sentOff": "Sent off",
+        "needPlayers": "Choose the players who are in the match.",
+        "needGoalkeeper": "Choose at least one goalkeeper for the lineup.",
+        "hasEvents": "Player has recorded events in this match and cannot be removed"
       },
       "actions": {
         "open": "Open Match",
@@ -3027,6 +3166,24 @@
         "reactivate": "Reactivate Match",
         "edit": "Edit match details",
         "menu": "Match actions menu"
+      }
+    },
+    "match": {
+      "sentOff": "sent off",
+      "stats": {
+        "goals": "Goals",
+        "yellowCards": "Yellow cards",
+        "redCards": "Red cards",
+        "cleanSheet": "Clean sheet",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "events": {
+        "cardShort": {
+          "Yellow": "Y",
+          "SecondYellow": "2Y",
+          "DirectRed": "R"
+        }
       }
     }
   },
@@ -4517,11 +4674,10 @@
     "clearGoalie": "Clear",
     "hockeyRosterHint": "Select the dressed players for this match. A goalie is required.",
     "floorballRosterHint": "Select the field players for this match and set their role. The goalie is selected separately above.",
-    "footballRosterHint": "Select the players for this match, set their position, and mark the starting lineup.",
+    "footballRosterHint": "Select the players for this match and set their position.",
     "inRoster": "In roster",
     "playerName": "Player",
     "matchPosition": "Match position",
-    "starting": "Starting",
     "emptyRoster": "This team has no players on its roster yet.",
     "searchNoResults": "No players match the current search.",
     "selectedPlayers": "Selected players",

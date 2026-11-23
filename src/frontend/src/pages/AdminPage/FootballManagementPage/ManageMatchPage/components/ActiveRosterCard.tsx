@@ -7,12 +7,7 @@ import {
   type FootballLineupPlayer,
   type FootballMatchRules,
 } from '../../../../../types/football/footballTypes';
-import {
-  getBenchPlayers,
-  getOnFieldPlayers,
-  getSentOffPlayers,
-  resolveMatchRules,
-} from '../utils/lineupValidation';
+import { findLineupProblem, getSentOffPlayers, resolveMatchRules, type LineupProblem } from '../utils/lineupValidation';
 import './ActiveRosterCard.scss';
 
 interface ActiveRosterCardProps {
@@ -31,8 +26,7 @@ interface RosterPanelProps {
   teamName: string;
   players: FootballPlayerDto[];
   lineup: FootballLineupPlayer[];
-  playersOnFieldRequired: number;
-  requireGoalkeeper: boolean;
+  rules: FootballMatchRules;
 }
 
 interface ChipPlayer {
@@ -40,7 +34,6 @@ interface ChipPlayer {
   jersey: number | undefined;
   fullName: string;
   position: FootballPosition;
-  isSentOff: boolean;
 }
 
 const sortByJerseyThenName = (a: ChipPlayer, b: ChipPlayer): number => {
@@ -57,6 +50,7 @@ interface ChipsListProps {
 }
 
 const ChipsList = ({ players, emptyLabel, sentOff = false }: ChipsListProps): ReactElement => {
+  const { t } = useTranslation();
   if (players.length === 0) {
     return <div className="arc-panel__empty">{emptyLabel}</div>;
   }
@@ -68,7 +62,7 @@ const ChipsList = ({ players, emptyLabel, sentOff = false }: ChipsListProps): Re
           {p.jersey !== undefined && <span className="arc-chip__jersey">#{p.jersey}</span>}
           <span className="arc-chip__name">{p.fullName}</span>
           {p.position === FootballPosition.Goalkeeper && (
-            <span className="arc-chip__role">GK</span>
+            <span className="arc-chip__role">{t('football.matches.lineup.goalkeeperShort', 'GK')}</span>
           )}
         </li>
       ))}
@@ -87,28 +81,14 @@ const toChip = (
     jersey: player.jerseyNumber,
     fullName: `${player.person.firstName} ${player.person.lastName}`,
     position: entry.position,
-    isSentOff: entry.isSentOff,
   };
 };
 
-const RosterPanel = ({
-  teamName,
-  players,
-  lineup,
-  playersOnFieldRequired,
-  requireGoalkeeper,
-}: RosterPanelProps): ReactElement => {
+const RosterPanel = ({ teamName, players, lineup, rules }: RosterPanelProps): ReactElement => {
   const { t } = useTranslation();
 
-  const playerLookup: Map<string, FootballPlayerDto> = useMemo(() => {
-    const map = new Map<string, FootballPlayerDto>();
-    for (const player of players) {
-      map.set(player.id, player);
-    }
-    return map;
-  }, [players]);
-
-  const { onField, bench, sentOff } = useMemo(() => {
+  const { inMatch, sentOff } = useMemo(() => {
+    const playerLookup = new Map(players.map((player) => [player.id, player] as const));
     const mapChips = (entries: FootballLineupPlayer[]): ChipPlayer[] =>
       entries
         .map((entry) => toChip(entry, playerLookup))
@@ -116,49 +96,26 @@ const RosterPanel = ({
         .sort(sortByJerseyThenName);
 
     return {
-      onField: mapChips(getOnFieldPlayers(lineup)),
-      bench: mapChips(getBenchPlayers(lineup)),
+      inMatch: mapChips(lineup.filter((entry) => !entry.isSentOff)),
       sentOff: mapChips(getSentOffPlayers(lineup)),
     };
-  }, [lineup, playerLookup]);
+  }, [lineup, players]);
 
-  const goalkeeperOnField: number = onField.filter(
-    (p) => p.position === FootballPosition.Goalkeeper,
-  ).length;
-  const onFieldValid: boolean = onField.length === playersOnFieldRequired;
-  const goalkeeperValid: boolean = !requireGoalkeeper || goalkeeperOnField === 1;
+  const problem: LineupProblem | null = findLineupProblem(lineup, rules);
 
   return (
     <div className="arc-panel">
       <div className="arc-panel__header">
         <span className="arc-panel__team-name">{teamName}</span>
-        <span className={`arc-panel__count${onFieldValid ? '' : ' arc-panel__count--invalid'}`}>
-          {t('football.matches.lineup.onFieldCount', '{{current}} / {{required}} on field', {
-            current: onField.length,
-            required: playersOnFieldRequired,
-          })}
+        <span className="arc-panel__count">
+          {t('football.matches.lineup.playerCount', '{{count}} players', { count: lineup.length })}
         </span>
       </div>
 
       <div className="arc-panel__role-group">
-        <div className="arc-panel__role-label">
-          <span>{t('football.matches.lineup.onField', 'On field')}</span>
-          <span className="arc-panel__role-count">{onField.length}</span>
-        </div>
         <ChipsList
-          players={onField}
-          emptyLabel={t('football.matches.lineup.noOnField', 'No players on the field.')}
-        />
-      </div>
-
-      <div className="arc-panel__role-group">
-        <div className="arc-panel__role-label">
-          <span>{t('football.matches.lineup.bench', 'Bench')}</span>
-          <span className="arc-panel__role-count">{bench.length}</span>
-        </div>
-        <ChipsList
-          players={bench}
-          emptyLabel={t('football.matches.lineup.noBench', 'No players on the bench.')}
+          players={inMatch}
+          emptyLabel={t('football.matches.lineup.noPlayers', 'The lineup has not been set yet.')}
         />
       </div>
 
@@ -168,22 +125,15 @@ const RosterPanel = ({
             <span>{t('football.matches.lineup.sentOff', 'Sent off')}</span>
             <span className="arc-panel__role-count">{sentOff.length}</span>
           </div>
-          <ChipsList
-            players={sentOff}
-            emptyLabel=""
-            sentOff
-          />
+          <ChipsList players={sentOff} emptyLabel="" sentOff />
         </div>
       )}
 
-      {requireGoalkeeper && !goalkeeperValid && (
+      {problem === 'needGoalkeeper' && (
         <div className="arc-panel__goalie arc-panel__goalie--missing">
           <div className="arc-panel__goalie-missing-text">
             <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>
-            {t(
-              'football.matches.lineup.needGoalkeeper',
-              'Exactly one goalkeeper must be on the field',
-            )}
+            {t('football.matches.lineup.needGoalkeeper', 'Choose at least one goalkeeper')}
           </div>
         </div>
       )}
@@ -228,15 +178,13 @@ const ActiveRosterCard = ({
           teamName={leftTeamName ?? t('football.matches.lineup.homeTeam', 'Home team')}
           players={leftPlayers}
           lineup={leftLineup}
-          playersOnFieldRequired={rules.playersOnField}
-          requireGoalkeeper={rules.requireGoalkeeper}
+          rules={rules}
         />
         <RosterPanel
           teamName={rightTeamName ?? t('football.matches.lineup.awayTeam', 'Away team')}
           players={rightPlayers}
           lineup={rightLineup}
-          playersOnFieldRequired={rules.playersOnField}
-          requireGoalkeeper={rules.requireGoalkeeper}
+          rules={rules}
         />
       </div>
     </section>

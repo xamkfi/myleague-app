@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import FootballEventPeriodSelect from './FootballEventPeriodSelect';
 import { FootballGoalType, type FootballMatchDto, type FootballTeam } from '../../../../../types/football/footballTypes';
 import './GoalRecordingForm.scss';
@@ -6,6 +7,7 @@ import type { FootballPlayerDto } from '../../../../../api/football/footballPlay
 import type { GoalForm } from './types';
 import { FOOTBALL_GOAL_TYPE_OPTIONS } from '../../../../../utils/footballGoalType';
 import { formatPlayerOptionLabel, sortPlayersForSelect } from './eventFormHelpers';
+import { isExtraTimePeriod, resolveMatchRules } from '../utils/lineupValidation';
 
 interface GoalRecordingFormProps {
   showGoalForm: boolean;
@@ -15,7 +17,8 @@ interface GoalRecordingFormProps {
   homeTeam: FootballTeam | null;
   awayTeam: FootballTeam | null;
   loading: boolean;
-  getOnFieldPlayersForTeam: (teamId: string) => FootballPlayerDto[];
+  /** Everyone in the match lineup. */
+  getLineupPlayersForTeam: (teamId: string) => FootballPlayerDto[];
   onRecordGoal: () => Promise<void>;
   onClose: () => void;
   /** Played periods the event can be put in. */
@@ -39,7 +42,7 @@ const GoalRecordingForm = ({
   homeTeam,
   awayTeam,
   loading,
-  getOnFieldPlayersForTeam,
+  getLineupPlayersForTeam,
   onRecordGoal,
   onClose,
   periods,
@@ -47,6 +50,7 @@ const GoalRecordingForm = ({
   onTimeChange,
   onPeriodChange,
 }: GoalRecordingFormProps) => {
+  const { t } = useTranslation();
   const firstFieldRef = useRef<HTMLSelectElement | null>(null);
   const isOwnGoal: boolean = goalForm.goalType === FootballGoalType.OwnGoal;
 
@@ -58,13 +62,13 @@ const GoalRecordingForm = ({
 
   const scorerPlayers: FootballPlayerDto[] = useMemo(() => {
     const sourceTeamId = isOwnGoal ? opponentTeamId : scoringTeamId;
-    return sourceTeamId ? sortPlayersForSelect(getOnFieldPlayersForTeam(sourceTeamId)) : [];
-  }, [isOwnGoal, opponentTeamId, scoringTeamId, getOnFieldPlayersForTeam]);
+    return sourceTeamId ? sortPlayersForSelect(getLineupPlayersForTeam(sourceTeamId)) : [];
+  }, [isOwnGoal, opponentTeamId, scoringTeamId, getLineupPlayersForTeam]);
 
   const assisterPlayers: FootballPlayerDto[] = useMemo(() => {
     if (isOwnGoal || !scoringTeamId) return [];
-    return sortPlayersForSelect(getOnFieldPlayersForTeam(scoringTeamId));
-  }, [isOwnGoal, scoringTeamId, getOnFieldPlayersForTeam]);
+    return sortPlayersForSelect(getLineupPlayersForTeam(scoringTeamId));
+  }, [isOwnGoal, scoringTeamId, getLineupPlayersForTeam]);
 
   const selectedPlayer: FootballPlayerDto | undefined = scorerPlayers.find((p) => p.id === goalForm.playerId);
   const missingJersey: boolean = !!(goalForm.playerId && selectedPlayer?.jerseyNumber === undefined);
@@ -77,6 +81,16 @@ const GoalRecordingForm = ({
     goalForm.goalType === null || goalForm.goalType === undefined
       ? String(FootballGoalType.Regular)
       : String(goalForm.goalType);
+
+  // Extra-time and shootout goals belong to their own periods. Standings points follow the period
+  // that was started, not the goal type, so the types are only offered there.
+  const isGoalTypeAvailable = (goalType: FootballGoalType): boolean => {
+    if (goalType === FootballGoalType.ExtraTime) {
+      return isExtraTimePeriod(goalForm.periodNumber, resolveMatchRules(currentMatch.matchRules));
+    }
+    if (goalType === FootballGoalType.PenaltyShootout) return goalForm.periodNumber === shootoutPeriodNumber;
+    return true;
+  };
 
   useEffect(() => {
     if (showGoalForm) {
@@ -115,13 +129,13 @@ const GoalRecordingForm = ({
         aria-labelledby="goal-record-modal-title"
       >
         <div className="goal-record-modal__header">
-          <h3 id="goal-record-modal-title">Record goal for {selectedTeamName ?? 'team'}</h3>
+          <h3 id="goal-record-modal-title">{t('football.matches.manage.goalForm.title', { team: selectedTeamName ?? '' })}</h3>
           <button
             className="goal-record-modal__close"
             onClick={onClose}
             disabled={loading}
             type="button"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             ×
           </button>
@@ -132,7 +146,9 @@ const GoalRecordingForm = ({
             <div className="form-grid">
               <div className="field">
                 <label htmlFor="scoring-player">
-                  {isOwnGoal ? 'Own-goal scorer (opponent)' : 'Scoring player'}
+                  {isOwnGoal
+                    ? t('football.matches.manage.goalForm.ownGoalScorer')
+                    : t('football.matches.manage.goalForm.scoringPlayer')}
                 </label>
                 <select
                   id="scoring-player"
@@ -141,7 +157,7 @@ const GoalRecordingForm = ({
                   value={goalForm.playerId}
                   onChange={(e) => setGoalForm((prev) => ({ ...prev, playerId: e.target.value }))}
                 >
-                  <option value="">Select player</option>
+                  <option value="">{t('football.matches.manage.goalForm.selectPlayer')}</option>
                   {scorerPlayers.map((player) => (
                     <option key={player.id} value={player.id}>
                       {formatPlayerOptionLabel(player)}
@@ -152,7 +168,8 @@ const GoalRecordingForm = ({
 
               <div className="field">
                 <label htmlFor="assisting-player">
-                  Assisting player <span className="field-hint">(optional)</span>
+                  {t('football.matches.manage.goalForm.assistingPlayer')}{' '}
+                  <span className="field-hint">{t('football.matches.manage.goalForm.optional')}</span>
                 </label>
                 <select
                   id="assisting-player"
@@ -161,7 +178,7 @@ const GoalRecordingForm = ({
                   disabled={isOwnGoal}
                   onChange={(e) => setGoalForm((prev) => ({ ...prev, assisterId: e.target.value }))}
                 >
-                  <option value="">No assist</option>
+                  <option value="">{t('football.matches.manage.goalForm.noAssist')}</option>
                   {assisterPlayers
                     .filter((player) => player.id !== goalForm.playerId)
                     .map((player) => (
@@ -173,7 +190,7 @@ const GoalRecordingForm = ({
               </div>
 
               <div className="field">
-                <label htmlFor="goal-type">Goal type</label>
+                <label htmlFor="goal-type">{t('football.matches.manage.goalForm.goalType')}</label>
                 <select
                   id="goal-type"
                   className="select-field"
@@ -188,9 +205,9 @@ const GoalRecordingForm = ({
                     }));
                   }}
                 >
-                  {FOOTBALL_GOAL_TYPE_OPTIONS.map((option) => (
+                  {FOOTBALL_GOAL_TYPE_OPTIONS.filter((option) => isGoalTypeAvailable(option.value)).map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label}
+                      {t(`football.matches.manage.goalTypes.${option.name}`, option.label)}
                     </option>
                   ))}
                 </select>
@@ -206,7 +223,7 @@ const GoalRecordingForm = ({
               />
 
               <div className="field field--time">
-                <label htmlFor="goal-time-minutes">Time</label>
+                <label htmlFor="goal-time-minutes">{t('football.matches.manage.goalForm.time')}</label>
                 <div className="time-input-group">
                   <input
                     id="goal-time-minutes"
@@ -217,7 +234,7 @@ const GoalRecordingForm = ({
                     min={0}
                     max={99}
                     placeholder="MM"
-                    aria-label="Minutes"
+                    aria-label={t('floorball.matches.manage.timeMinutesAria')}
                   />
                   <span className="time-separator" aria-hidden="true">
                     :
@@ -231,7 +248,7 @@ const GoalRecordingForm = ({
                     min={0}
                     max={59}
                     placeholder="SS"
-                    aria-label="Seconds"
+                    aria-label={t('floorball.matches.manage.timeSecondsAria')}
                   />
                 </div>
               </div>
@@ -239,13 +256,13 @@ const GoalRecordingForm = ({
 
             {missingJersey && (
               <div className="field-error" role="alert">
-                Selected player has no jersey number. Assign a jersey before recording the goal.
+                {t('football.matches.manage.goalForm.missingJersey')}
               </div>
             )}
 
             <div className="form-actions">
               <button onClick={onClose} className="cancel-btn" type="button" disabled={loading}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={onRecordGoal}
@@ -253,7 +270,11 @@ const GoalRecordingForm = ({
                 className="submit-btn"
                 type="button"
               >
-                {loading ? 'Recording…' : missingJersey ? 'Missing jersey' : 'Record Goal'}
+                {loading
+                  ? t('football.matches.manage.goalForm.recording')
+                  : missingJersey
+                    ? t('football.matches.manage.goalForm.missingJerseyShort')
+                    : t('football.matches.manage.goalForm.submit')}
               </button>
             </div>
           </div>

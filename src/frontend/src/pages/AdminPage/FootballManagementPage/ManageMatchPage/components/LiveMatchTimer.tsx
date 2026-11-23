@@ -158,7 +158,7 @@ const LiveMatchTimer = ({
         <div className="period-row">
           {periodsToShow.map((p) => (
             <div key={p} className={`period-chip ${getChipStatus(p)} ${p > numberOfHalves ? 'period-chip--extra' : ''}`}>
-              {`${getPeriodLabel(p, rules)}: ${getChipStatus(p)}`}
+              {`${getPeriodLabel(p, rules, t)}: ${t(`football.matches.manage.periodStatus.${getChipStatus(p)}`)}`}
             </div>
           ))}
         </div>
@@ -171,7 +171,9 @@ const LiveMatchTimer = ({
                 onClick={onRecordExtraTime}
                 disabled={extraTimeLoading || loading}
               >
-                {extraTimeLoading ? 'Starting extra time…' : 'Start extra time'}
+                {extraTimeLoading
+                  ? t('football.matches.manage.periodControl.starting')
+                  : t('football.matches.manage.periodControl.startExtraTime')}
               </button>
             )}
             {showPenaltyShootoutButton && onRecordPenaltyShootout && (
@@ -195,17 +197,19 @@ const LiveMatchTimer = ({
                 onClick={onStartMatch}
                 disabled={loading || isStartMatchDisabled}
                 className="start-match-btn"
-                title={isStartMatchDisabled ? (startDisabledReason ?? 'Set lineup to start') : undefined}
+                title={isStartMatchDisabled
+                  ? (startDisabledReason ?? t('football.matches.manage.startDisabled.lineup'))
+                  : undefined}
               >
                 {isStartMatchDisabled
-                  ? (startDisabledReason ?? 'Set lineup to start')
-                  : 'Start Match'}
+                  ? (startDisabledReason ?? t('football.matches.manage.startDisabled.lineup'))
+                  : t('football.matches.manage.startMatch')}
               </button>
             </div>
           ) : currentMatch.status === 'Completed' ? (
             <div className="start-match-container">
               <div className="match-completed-message">
-                🏁 Match Completed
+                🏁 {t('football.matches.manage.matchCompleted')}
               </div>
             </div>
           ) : (

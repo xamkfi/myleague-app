@@ -2,11 +2,13 @@ import { useEffect, useMemo, useCallback, useState, useRef, type ReactElement, t
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { footballMatchService } from '../../../../api/football/footballMatchService';
+import { footballMatchEventService } from '../../../../api/football/footballMatchEventService';
 import { timerService } from '../../../../api/common/timerService';
 import type { FootballLineupPlayer, FootballMatchDto } from '../../../../types/football/footballTypes';
 import type { FootballPlayerDto } from '../../../../api/football/footballPlayerService';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import OfficialPageTemplate from '../../../OfficialPage/components/OfficialPageTemplate';
+import { matchDecisionOf, type MatchDecision } from '../../../../types/common/matchDecision';
 import type { ManageMatchMode } from '../../../../types/common/manageMatchMode';
 
 import LiveMatchModalHeader from '../../../../components/match/LiveMatchModalHeader';
@@ -16,13 +18,15 @@ import LiveMatchTimer from './components/LiveMatchTimer';
 import LiveMatchQuickActions from './components/LiveMatchQuickActions';
 import GoalRecordingForm from './components/GoalRecordingForm';
 import CardRecordingForm from './components/CardRecordingForm';
-import SubstitutionRecordingForm from './components/SubstitutionRecordingForm';
 import LiveMatchEventsHistory from './components/LiveMatchEventsHistory';
 import ActiveRosterCard from './components/ActiveRosterCard';
 import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from '../../../../components/match/OfficialsSelectorSection';
 import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
+import MatchDecisionDialog from '../../../../components/match/MatchDecisionDialog';
+import MissedPenaltyDialog, { type MissedPenaltyPayload } from '../../../../components/match/MissedPenaltyDialog';
+import { formatPlayerOptionLabel, sortPlayersForSelect } from './components/eventFormHelpers';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import FootballAssignTeamsDialog from '../Components/FootballAssignTeamsDialog';
 import type { EventGroup, ProcessedEvent } from './components/types';
@@ -41,9 +45,8 @@ import {
 
 import {
   areBothLineupsReady,
-  getBenchPlayers,
-  getOnFieldPlayers,
   getPeriodDurationSeconds,
+  getPeriodLabel,
   getTheoreticalPeriodStartSeconds,
   isPenaltyShootoutPeriod,
   nextOpenFootballPeriod,
@@ -76,6 +79,8 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
   const [groupsToDelete, setGroupsToDelete] = useState<EventGroup[] | null>(null);
   const [deleteEventLoading, setDeleteEventLoading] = useState(false);
   const [shouldStartTimer, setShouldStartTimer] = useState(false);
+  const [missedPenaltyTeamId, setMissedPenaltyTeamId] = useState<string | null>(null);
+  const [showDecisionDialog, setShowDecisionDialog] = useState(false);
   const [extraTimeLoading, setExtraTimeLoading] = useState(false);
   const [penaltyShootoutLoading, setPenaltyShootoutLoading] = useState(false);
 
@@ -215,8 +220,9 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
     isPeriodActive &&
     !forms.showGoalForm &&
     !forms.showCardForm &&
-    !forms.showSubstitutionForm &&
     !isLineupDialogOpen &&
+    !missedPenaltyTeamId &&
+    !showDecisionDialog &&
     !showEndMatchConfirmation &&
     !showReopenConfirmation &&
     !showRevertConfirmation &&
@@ -233,11 +239,11 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
     officialsBlocking;
 
   const startDisabledReason: string | undefined = !matchData.currentMatch.homeTeamId || !matchData.currentMatch.awayTeamId
-    ? 'Assign both teams before starting'
+    ? t('football.matches.manage.startDisabled.teams')
     : !lineupReady
-      ? 'Set lineup for both teams to start'
+      ? t('football.matches.manage.startDisabled.lineup')
       : officialsBlocking
-        ? 'Assign officials to start'
+        ? t('football.matches.manage.startDisabled.officials')
         : undefined;
 
   const regulationEndedForExtraTime: boolean =
@@ -259,32 +265,34 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
 
   const playersFromLineup = useCallback((
     teamId: string,
-    selector: (lineup: FootballLineupPlayer[]) => FootballLineupPlayer[],
+    isIncluded: (entry: FootballLineupPlayer) => boolean,
   ): FootballPlayerDto[] => {
     const lineup = teamId === homeTeamId ? homeLineup : awayLineup;
-    const roster = matchData.getPlayersForTeam(teamId);
-    const selectedIds = new Set(selector(lineup).map((entry) => entry.playerId));
-    return roster.filter((player) => selectedIds.has(player.id));
+    const includedIds = new Set(lineup.filter(isIncluded).map((entry) => entry.playerId));
+    return matchData.getPlayersForTeam(teamId).filter((player) => includedIds.has(player.id));
   }, [homeTeamId, homeLineup, awayLineup, matchData]);
 
-  const getOnFieldPlayersForTeam = useCallback(
-    (teamId: string) => playersFromLineup(teamId, getOnFieldPlayers),
+  /** Everyone in the lineup, also players sent off later: goals can be recorded afterwards. */
+  const getLineupPlayersForTeam = useCallback(
+    (teamId: string) => playersFromLineup(teamId, () => true),
     [playersFromLineup],
   );
 
-  const getBenchPlayersForTeam = useCallback(
-    (teamId: string) => playersFromLineup(teamId, getBenchPlayers),
+  const getPlayersNotSentOff = useCallback(
+    (teamId: string) => playersFromLineup(teamId, (entry) => !entry.isSentOff),
     [playersFromLineup],
   );
 
-  const getSquadPlayersForTeam = useCallback((teamId: string): FootballPlayerDto[] => {
-    const lineup = teamId === homeTeamId ? homeLineup : awayLineup;
-    const roster = matchData.getPlayersForTeam(teamId);
-    const squadIds = new Set(
-      lineup.filter((entry) => !entry.isSentOff).map((entry) => entry.playerId),
-    );
-    return roster.filter((player) => squadIds.has(player.id));
-  }, [homeTeamId, homeLineup, awayLineup, matchData]);
+  // Players with recorded events cannot be removed from the lineup.
+  const playersWithEvents: ReadonlySet<string> = useMemo(() => {
+    const ids = new Set<string>();
+    for (const eventItem of matchEvents.allEvents) {
+      for (const id of [eventItem.playerId, eventItem.assisterId, eventItem.playerOffId, eventItem.playerOnId]) {
+        if (id) ids.add(id);
+      }
+    }
+    return ids;
+  }, [matchEvents.allEvents]);
 
   const areNumberSetsEqual = useCallback((a: Set<number>, b: Set<number>) => {
     if (a === b) return true;
@@ -567,11 +575,11 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
       matchData.setError(null);
       await periodManagement.recordOvertime();
     } catch (error) {
-      matchData.setError(error instanceof Error ? error.message : 'Failed to start extra time');
+      matchData.setError(error instanceof Error ? error.message : t('football.matches.manage.errors.startExtraTime'));
     } finally {
       setExtraTimeLoading(false);
     }
-  }, [periodManagement, matchData]);
+  }, [periodManagement, matchData, t]);
 
   const handleRecordPenaltyShootout = useCallback(async () => {
     try {
@@ -582,11 +590,11 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
       }
       await periodManagement.recordShootout();
     } catch (error) {
-      matchData.setError(error instanceof Error ? error.message : 'Failed to start penalty shootout');
+      matchData.setError(error instanceof Error ? error.message : t('football.matches.manage.errors.startShootout'));
     } finally {
       setPenaltyShootoutLoading(false);
     }
-  }, [periodManagement, matchData, timerContext.callbacks]);
+  }, [periodManagement, matchData, timerContext.callbacks, t]);
 
   const handleDeleteEvent = useCallback(async () => {
     if (!groupsToDelete || groupsToDelete.length === 0) {
@@ -596,7 +604,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
     const allEvents: ProcessedEvent[] = groupsToDelete.flatMap((group) => group.events);
     const eventsToDelete: ProcessedEvent[] = allEvents.filter((e) => !!e.eventId);
     if (eventsToDelete.length !== allEvents.length || eventsToDelete.length === 0) {
-      matchData.setError('Cannot delete: missing event id');
+      matchData.setError(t('football.matches.manage.errors.missingEventId'));
       setGroupsToDelete(null);
       return;
     }
@@ -614,19 +622,33 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
           await footballMatchService.deleteCard(match.id, eventId);
         } else if (evt.type === 'substitution') {
           await footballMatchService.deleteSubstitution(match.id, eventId);
+        } else if (evt.type === 'missedPenalty') {
+          await footballMatchEventService.deleteMissedPenalty(match.id, eventId);
         }
       }
-
+    } catch (err) {
+      matchData.setError(err instanceof Error ? err.message : t('football.matches.manage.errors.deleteEvent'));
+    } finally {
+      // Also after a failure: the events deleted before it are gone from the backend.
       await matchData.loadCurrentMatchStatus();
       await matchEvents.loadMatchEvents();
       setGroupsToDelete(null);
-    } catch (err) {
-      matchData.setError(err instanceof Error ? err.message : 'Failed to delete event');
-      setGroupsToDelete(null);
-    } finally {
       setDeleteEventLoading(false);
     }
-  }, [groupsToDelete, match.id, matchData, matchEvents]);
+  }, [groupsToDelete, match.id, matchData, matchEvents, t]);
+
+  const handleRecordMissedPenalty = useCallback(async (payload: MissedPenaltyPayload): Promise<void> => {
+    if (!missedPenaltyTeamId) return;
+    await footballMatchEventService.recordMissedPenalty(match.id, { teamId: missedPenaltyTeamId, ...payload });
+    await matchEvents.loadMatchEvents();
+  }, [missedPenaltyTeamId, match.id, matchEvents]);
+
+  const handleChangeDecision = useCallback(async (decision: MatchDecision): Promise<void> => {
+    const response = await footballMatchService.setDecidedIn(match.id, decision);
+    matchData.setCurrentMatch(response.data);
+    setMatch(response.data);
+    await matchEvents.loadMatchEvents();
+  }, [match.id, matchData, matchEvents, setMatch]);
 
   const handleOfficialSelect = useCallback(async (index: number, refereeId: string) => {
     if (!match.id || !refereeId) return;
@@ -731,6 +753,9 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
           && matchEvents.matchEvents.length === 0
         }
         onRevertToScheduled={() => setShowRevertConfirmation(true)}
+        onChangeDecision={matchRules.allowExtraTime || matchRules.allowPenaltyShootout
+          ? () => setShowDecisionDialog(true)
+          : undefined}
       />
 
       <ErrorPopup message={matchData.error} />
@@ -824,7 +849,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
             rightTeamName={rightSideTeamData?.name}
             onShowGoalForm={forms.openGoalFormForTeam}
             onShowCardForm={forms.openCardFormForTeam}
-            onShowSubstitutionForm={forms.openSubstitutionFormForTeam}
+            onShowMissedPenaltyForm={setMissedPenaltyTeamId}
           />
 
           <ActiveRosterCard
@@ -852,6 +877,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
             initialAwayLineup={awayLineup}
             matchRules={matchRules}
             competitionId={matchData.currentMatch.competitionId}
+            lockedPlayerIds={playersWithEvents}
             onPlayerAdded={matchData.appendPlayer}
             onClose={() => setIsLineupDialogOpen(false)}
             onSaved={(updated) => {
@@ -891,7 +917,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
             homeTeam={matchData.homeTeam}
             awayTeam={matchData.awayTeam}
             loading={forms.loading}
-            getOnFieldPlayersForTeam={getOnFieldPlayersForTeam}
+            getLineupPlayersForTeam={getLineupPlayersForTeam}
             onRecordGoal={forms.recordGoal}
             onClose={() => forms.setShowGoalForm(false)}
             periods={forms.recordablePeriods}
@@ -908,31 +934,13 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
             homeTeam={matchData.homeTeam}
             awayTeam={matchData.awayTeam}
             loading={forms.loading}
-            getPlayersForTeam={getSquadPlayersForTeam}
+            getPlayersForTeam={getPlayersNotSentOff}
             onRecordCard={forms.recordCard}
             onClose={() => forms.setShowCardForm(false)}
             periods={forms.recordablePeriods}
             shootoutPeriodNumber={forms.shootoutPeriod}
             onTimeChange={forms.changeCardTime}
             onPeriodChange={forms.changeCardPeriod}
-          />
-
-          <SubstitutionRecordingForm
-            showSubstitutionForm={forms.showSubstitutionForm}
-            substitutionForm={forms.substitutionForm}
-            setSubstitutionForm={forms.setSubstitutionForm}
-            currentMatch={matchData.currentMatch}
-            homeTeam={matchData.homeTeam}
-            awayTeam={matchData.awayTeam}
-            loading={forms.loading}
-            getOnFieldPlayersForTeam={getOnFieldPlayersForTeam}
-            getBenchPlayersForTeam={getBenchPlayersForTeam}
-            onRecordSubstitution={forms.recordSubstitution}
-            onClose={() => forms.setShowSubstitutionForm(false)}
-            periods={forms.recordablePeriods}
-            shootoutPeriodNumber={forms.shootoutPeriod}
-            onTimeChange={forms.changeSubstitutionTime}
-            onPeriodChange={forms.changeSubstitutionPeriod}
           />
         </div>
 
@@ -949,21 +957,21 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
             allEvents={matchEvents.allEvents}
             onDeleteEvent={(group) => {
               if (group.events.length === 0 || !group.representative.eventId) {
-                matchData.setError('Cannot delete: missing event id');
+                matchData.setError(t('football.matches.manage.errors.missingEventId'));
                 return;
               }
               setGroupsToDelete([group]);
             }}
             onBulkDelete={(groups) => {
               if (groups.length === 0) {
-                matchData.setError('Cannot delete: no events selected');
+                matchData.setError(t('football.matches.manage.errors.noEventsSelected'));
                 return;
               }
               const malformed: boolean = groups.some(
                 (g) => g.events.length === 0 || g.events.some((e) => !e.eventId),
               );
               if (malformed) {
-                matchData.setError('Cannot delete: missing event id');
+                matchData.setError(t('football.matches.manage.errors.missingEventId'));
                 return;
               }
               setGroupsToDelete(groups);
@@ -972,6 +980,39 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
           />
         </div>
       </div>
+
+      {missedPenaltyTeamId && (
+        <MissedPenaltyDialog
+          teamName={(missedPenaltyTeamId === homeTeamId ? matchData.homeTeam?.name : matchData.awayTeam?.name) ?? ''}
+          shooters={sortPlayersForSelect(getLineupPlayersForTeam(missedPenaltyTeamId))
+            .map((player) => ({ id: player.id, label: formatPlayerOptionLabel(player) }))}
+          periods={forms.recordablePeriods}
+          overtimePeriodNumber={-1}
+          shootoutPeriodNumber={forms.shootoutPeriod}
+          periodLabels={{
+            field: t('football.matches.manage.eventPeriod.label'),
+            period: (number: number) => getPeriodLabel(number, matchRules, t),
+            overtime: '',
+            shootout: t('football.matches.manage.eventPeriod.shootout'),
+          }}
+          initialPeriod={timerContext.currentPeriod}
+          initialTimeInSeconds={timerContext.callbacks.getCurrentElapsedSeconds
+            ? timerContext.callbacks.getCurrentElapsedSeconds()
+            : timerContext.elapsedTimeSeconds}
+          onSubmit={handleRecordMissedPenalty}
+          onClose={() => setMissedPenaltyTeamId(null)}
+        />
+      )}
+
+      {showDecisionDialog && (
+        <MatchDecisionDialog
+          current={matchDecisionOf(matchData.currentMatch.wentToExtraTime, matchData.currentMatch.wentToPenaltyShootout)}
+          allowOvertime={matchRules.allowExtraTime}
+          allowShootout={matchRules.allowPenaltyShootout}
+          onSubmit={handleChangeDecision}
+          onClose={() => setShowDecisionDialog(false)}
+        />
+      )}
     </>
   );
 };
@@ -1081,14 +1122,14 @@ const ManageMatchPage = ({ mode = 'admin' }: ManageMatchPageProps): ReactElement
   const renderShell = (content: ReactNode): ReactElement => (
     isOfficialMode
       ? <OfficialPageTemplate documentTitle={t('official.manageTitle', 'Match management')} wide>{content}</OfficialPageTemplate>
-      : <PageTemplate title="Manage match page">{content}</PageTemplate>
+      : <PageTemplate title={t('football.matches.manage.title')}>{content}</PageTemplate>
   );
 
   return renderShell(
       <div className="manage-match-page">
         <div className="page-header">
           <div className="page-header__top">
-            <h1 className="page-title-compact font-title">MATCH MANAGEMENT</h1>
+            <h1 className="page-title-compact font-title">{t('football.matches.manage.title')}</h1>
             <div className="page-header__actions">
               {!isOfficialMode && isTeamsAssignable && (
                 <button

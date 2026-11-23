@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import ConfirmationDialog from '../../../../../components/ConfirmationDialog/ConfirmationDialog';
 import type { EventGroup } from './types';
-import { formatMatchEventTime } from '../../../../../utils/matchEventFormat';
 
 interface MatchConfirmationDialogsProps {
   // End Period
@@ -78,29 +77,19 @@ export const MatchConfirmationDialogs = ({
 }: MatchConfirmationDialogsProps) => {
   const { t } = useTranslation();
 
-  // Pre-compute counts and a single representative once per render so the JSX below stays
-  // readable and avoids repeated `.flatMap` calls. `representativeGroup` is intentionally
-  // the first group: the dialog only surfaces full per-event detail in the single-group
-  // case, and the multi-group case uses an aggregate count summary instead.
-  const groupCount: number = groupsToDelete?.length ?? 0;
   const totalEventCount: number = groupsToDelete
     ? groupsToDelete.reduce((sum: number, g: EventGroup) => sum + g.events.length, 0)
     : 0;
-  const isBulkMultiGroup: boolean = groupCount > 1;
-  // Bulk-save cluster collapsed into a single group still counts as a "single delete"
-  // from the dialog's perspective — the original copy already explains "all N saves".
-  const isSingleGroup: boolean = groupCount === 1;
-  const singleGroup: EventGroup | undefined = isSingleGroup ? groupsToDelete?.[0] : undefined;
   return (
     <>
       {/* End Period Confirmation */}
       <ConfirmationDialog
         isOpen={showEndPeriodConfirmation}
         icon="⚠️"
-        title="Confirm End Half"
-        message={`Are you sure you want to end half ${currentPeriod} at ${currentTimeFormatted}?`}
-        warningMessage="This action cannot be undone."
-        confirmText="End Half"
+        title={t('football.matches.manage.confirmEndHalf.title')}
+        message={t('football.matches.manage.confirmEndHalf.message', { number: currentPeriod, time: currentTimeFormatted })}
+        warningMessage={t('matchManage.confirmDelete.warning')}
+        confirmText={t('football.matches.manage.confirmEndHalf.confirm')}
         isLoading={periodLoading[currentPeriod]}
         onConfirm={onEndPeriodConfirm}
         onCancel={onEndPeriodCancel}
@@ -110,10 +99,10 @@ export const MatchConfirmationDialogs = ({
       <ConfirmationDialog
         isOpen={showOvertimeConfirmation}
         icon="⏰"
-        title="Start Extra Time"
-        message="Are you sure you want to start extra time for this match?"
-        warningMessage="This will begin extra time halves according to the match rules."
-        confirmText="Start Extra Time"
+        title={t('football.matches.manage.confirmExtraTime.title')}
+        message={t('football.matches.manage.confirmExtraTime.message')}
+        warningMessage={t('football.matches.manage.confirmExtraTime.warning')}
+        confirmText={t('football.matches.manage.periodControl.startExtraTime')}
         isLoading={matchLoading}
         onConfirm={onOvertimeConfirm}
         onCancel={onOvertimeCancel}
@@ -123,10 +112,10 @@ export const MatchConfirmationDialogs = ({
       <ConfirmationDialog
         isOpen={showShootoutConfirmation}
         icon="🎯"
-        title="Start Penalty Shootout"
-        message="Are you sure you want to start a penalty shootout for this match?"
-        warningMessage="Penalty shootout does not use time keeping. Goals will be recorded without time."
-        confirmText="Start Penalty Shootout"
+        title={t('football.matches.manage.confirmShootout.title')}
+        message={t('football.matches.manage.confirmShootout.message')}
+        warningMessage={t('football.matches.manage.confirmShootout.warning')}
+        confirmText={t('football.matches.manage.confirmShootout.confirm')}
         isLoading={matchLoading}
         onConfirm={onShootoutConfirm}
         onCancel={onShootoutCancel}
@@ -136,10 +125,12 @@ export const MatchConfirmationDialogs = ({
       <ConfirmationDialog
         isOpen={showEndMatchConfirmation}
         icon="🏁"
-        title="Confirm End Match"
-        message={`Are you sure you want to complete this match?${isShootout ? ' This will end the penalty shootout.' : ''}`}
-        warningMessage="This will finalize the match results. This action cannot be undone."
-        confirmText="Complete Match"
+        title={t('football.matches.manage.confirmEndMatch.title')}
+        message={isShootout
+          ? t('football.matches.manage.confirmEndMatch.messageShootout')
+          : t('football.matches.manage.confirmEndMatch.message')}
+        warningMessage={t('football.matches.manage.confirmEndMatch.warning')}
+        confirmText={t('matchManage.header.finishMatch')}
         isLoading={matchLoading}
         onConfirm={onEndMatchConfirm}
         onCancel={onEndMatchCancel}
@@ -164,38 +155,18 @@ export const MatchConfirmationDialogs = ({
         onCancel={onReopenCancel}
       />
 
-      {/* Delete Event Confirmation. Three cases share this dialog:                              */}
-      {/* 1. Single-row delete            → "Delete goal for ABC at 02:14?"                       */}
-      {/* 2. Bulk-save cluster (1 group)  → "Delete all 5 saves for ABC (Doe) at 02:14?"          */}
-      {/* 3. Multi-select bulk delete (N) → "Delete 12 selected match events?" + summary list    */}
+      {/* Delete Event Confirmation */}
       <ConfirmationDialog
         isOpen={!!groupsToDelete && groupsToDelete.length > 0}
         icon="🗑️"
-        title={
-          isBulkMultiGroup
-            ? `Delete ${totalEventCount} match events`
-            : singleGroup && singleGroup.events.length > 1
-              ? `Delete ${singleGroup.events.length} ${singleGroup.representative.type}s`
-              : 'Delete Event'
-        }
-        message={
-          isBulkMultiGroup
-            ? `Delete ${totalEventCount} selected match event${totalEventCount === 1 ? '' : 's'}` +
-              ` (${groupCount} rows)?`
-            : singleGroup
-              ? singleGroup.events.length > 1
-                ? `Delete all ${singleGroup.events.length} ${singleGroup.representative.type}s for ${singleGroup.representative.teamName}${singleGroup.representative.playerName ? ` (${singleGroup.representative.playerName})` : ''} at ${formatMatchEventTime(singleGroup.representative.periodNumber, singleGroup.representative.timeInSeconds)}?`
-                : `Delete ${singleGroup.representative.type} for ${singleGroup.representative.teamName} at ${formatMatchEventTime(singleGroup.representative.periodNumber, singleGroup.representative.timeInSeconds)}?`
-              : ''
-        }
-        warningMessage="This action cannot be undone."
-        confirmText={
-          isBulkMultiGroup
-            ? `Delete ${totalEventCount}`
-            : singleGroup && singleGroup.events.length > 1
-              ? `Delete ${singleGroup.events.length}`
-              : 'Delete'
-        }
+        title={totalEventCount > 1
+          ? t('matchManage.confirmDelete.titleMany', { count: totalEventCount })
+          : t('matchManage.confirmDelete.title')}
+        message={totalEventCount > 1
+          ? t('matchManage.confirmDelete.messageMany', { count: totalEventCount })
+          : t('matchManage.confirmDelete.message')}
+        warningMessage={t('matchManage.confirmDelete.warning')}
+        confirmText={t('matchManage.confirmDelete.confirm')}
         isLoading={deleteEventLoading}
         onConfirm={onDeleteEventConfirm}
         onCancel={onDeleteEventCancel}

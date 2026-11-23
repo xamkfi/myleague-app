@@ -21,7 +21,8 @@ export default function MatchTabContent({ activeTab, match }: MatchTabContentPro
   const hasEvents: boolean =
     match.goalEvents.length > 0 ||
     match.cardEvents.length > 0 ||
-    (match.substitutionEvents?.length ?? 0) > 0;
+    (match.substitutionEvents?.length ?? 0) > 0 ||
+    (match.missedPenaltyEvents?.length ?? 0) > 0;
   const rosters: MatchRosters = useMatchRosters(
     match,
     activeTab === 'lineups' || (activeTab === 'summary' && hasEvents)

@@ -38,14 +38,11 @@ export interface RecordCardEventRequest {
   description?: string;
 }
 
-export interface RecordSubstitutionEventRequest {
-  matchId: string;
+export interface RecordMissedPenaltyRequest {
   teamId: string;
-  playerOffId: string;
-  playerOnId: string;
+  playerId: string;
   periodNumber: number;
   timeInSeconds: number;
-  description?: string;
 }
 
 const handleApiResponse = async <T>(response: Response, defaultMessage = 'API request failed'): Promise<ApiResponse<T>> => {
@@ -126,9 +123,22 @@ export const footballMatchEventService = {
       }
     }));
 
+    const missedPenaltyEvents: FootballDomainEventDto[] = (match?.missedPenaltyEvents ?? []).map((m) => ({
+      eventType: 'FootballMissedPenaltyEvent',
+      occurredOn,
+      data: {
+        matchId,
+        eventId: m.id,
+        teamId: m.teamId,
+        playerId: m.playerId,
+        periodNumber: m.periodNumber,
+        timeInSeconds: m.timeInSeconds
+      }
+    }));
+
     return {
       success: true,
-      data: [...goalEvents, ...cardEvents, ...substitutionEvents],
+      data: [...goalEvents, ...cardEvents, ...substitutionEvents, ...missedPenaltyEvents],
       message: 'Match events synthesized from match DTO',
       errors: []
     };
@@ -173,20 +183,19 @@ export const footballMatchEventService = {
     return handleApiResponse<FootballMatchDto>(response);
   },
 
-  recordSubstitution: async (data: RecordSubstitutionEventRequest): Promise<ApiResponse<FootballMatchDto>> => {
-    const payload = {
-      teamId: data.teamId,
-      playerOffId: data.playerOffId,
-      playerOnId: data.playerOnId,
-      periodNumber: data.periodNumber,
-      timeInSeconds: data.timeInSeconds,
-      description: data.description ?? ''
-    };
-
-    const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${data.matchId}/events/substitution`, {
+  recordMissedPenalty: async (matchId: string, data: RecordMissedPenaltyRequest): Promise<ApiResponse<FootballMatchDto>> => {
+    const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/events/missed-penalty`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(data)
+    });
+
+    return handleApiResponse<FootballMatchDto>(response);
+  },
+
+  deleteMissedPenalty: async (matchId: string, eventId: string): Promise<ApiResponse<FootballMatchDto>> => {
+    const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/events/missed-penalty/${eventId}`, {
+      method: 'DELETE'
     });
 
     return handleApiResponse<FootballMatchDto>(response);

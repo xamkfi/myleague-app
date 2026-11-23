@@ -1,9 +1,11 @@
 import { useMemo, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type {
   FootballMatchDto,
   FootballGoalEventDto,
   FootballCardEventDto,
+  FootballMissedPenaltyEventDto,
   FootballSubstitutionEventDto,
   FootballTeamPlayer,
 } from '../../../../types/football/footballTypes';
@@ -12,12 +14,13 @@ import { getPeriodName, getTeamInitials } from './matchUtils';
 import { formatMatchEventTime } from '../../../../utils/matchEventFormat';
 import { getFootballGoalTypeInfo } from '../../../../utils/footballGoalType';
 import { getPlayerPath } from '../../../../utils/sportRoutes';
+import '../../../../components/match/matchEventKinds.scss';
 
 type MatchEventItem = {
-  type: 'goal' | 'card' | 'substitution';
+  type: 'goal' | 'card' | 'substitution' | 'missedPenalty';
   time: number;
   periodNumber: number;
-  event: FootballGoalEventDto | FootballCardEventDto | FootballSubstitutionEventDto;
+  event: FootballGoalEventDto | FootballCardEventDto | FootballSubstitutionEventDto | FootballMissedPenaltyEventDto;
 };
 
 interface MatchEventsProps {
@@ -26,16 +29,24 @@ interface MatchEventsProps {
   awayRoster: FootballTeamPlayer[];
 }
 
-function cardLabel(cardType: FootballCardType | string): string {
+type CardTypeName = 'Yellow' | 'SecondYellow' | 'DirectRed';
+
+const CARD_CLASS: Record<CardTypeName, string> = {
+  Yellow: 'yellow-card',
+  SecondYellow: 'second-yellow-card',
+  DirectRed: 'red-card',
+};
+
+function cardTypeName(cardType: FootballCardType | string): CardTypeName {
   const value = String(cardType);
-  if (value === 'Yellow' || value === String(FootballCardType.Yellow)) return 'YC';
-  if (value === 'SecondYellow' || value === String(FootballCardType.SecondYellow)) return '2YC';
-  if (value === 'DirectRed' || value === String(FootballCardType.DirectRed)) return 'RC';
-  return 'C';
+  if (value === 'SecondYellow' || value === String(FootballCardType.SecondYellow)) return 'SecondYellow';
+  if (value === 'DirectRed' || value === String(FootballCardType.DirectRed)) return 'DirectRed';
+  return 'Yellow';
 }
 
 export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEventsProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const jerseyByPlayerId: Map<string, number> = useMemo(() => {
     const map: Map<string, number> = new Map<string, number>();
@@ -71,6 +82,12 @@ export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEven
       time: sub.timeInSeconds,
       periodNumber: sub.periodNumber,
       event: sub,
+    })),
+    ...(match.missedPenaltyEvents ?? []).map((missed): MatchEventItem => ({
+      type: 'missedPenalty',
+      time: missed.timeInSeconds,
+      periodNumber: missed.periodNumber,
+      event: missed,
     })),
   ];
 
@@ -170,7 +187,7 @@ export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEven
 
   const renderPlayerName = (name: string | undefined, playerId: string | undefined) => {
     if (!name || name === 'Unknown Player') {
-      return <span className="event-player-name">{name || 'Unknown Player'}</span>;
+      return <span className="event-player-name">{t('matchPage.events.unknownPlayer')}</span>;
     }
     const jerseyNumber: number | undefined = playerId ? jerseyByPlayerId.get(playerId) : undefined;
     return (
@@ -179,7 +196,7 @@ export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEven
         onClick={(e) => handlePlayerClick(playerId, e)}
       >
         {typeof jerseyNumber === 'number' && (
-          <span className="event-player-number" aria-label={`Number ${jerseyNumber}`}>
+          <span className="event-player-number" aria-label={`#${jerseyNumber}`}>
             #{jerseyNumber}
           </span>
         )}
@@ -206,14 +223,14 @@ export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEven
     const goalTypeInfo = getFootballGoalTypeInfo(event.goalType);
     return (
       <div className={`event-row ${home ? 'home-event' : 'away-event'} goal`}>
-        <span className="event-time" title={`Period ${event.periodNumber}`}>
+        <span className="event-time" title={getPeriodName(event.periodNumber, match, t)}>
           {formatMatchEventTime(event.periodNumber, event.timeInSeconds)}
         </span>
-        <span className="event-type-badge goal" aria-label="Goal" title="Goal">
+        <span className="event-type-badge goal" aria-label={t('matchPage.events.goal')} title={t('matchPage.events.goal')}>
           <span className="badge-letter" aria-hidden>G</span>
         </span>
         {goalTypeInfo && goalTypeInfo.abbreviation && (
-          <span className="goal-type-badge" title={goalTypeInfo.label} aria-label={goalTypeInfo.label}>
+          <span className="goal-type-badge" title={t(`football.matches.manage.goalTypes.${goalTypeInfo.name}`, goalTypeInfo.label)} aria-label={t(`football.matches.manage.goalTypes.${goalTypeInfo.name}`, goalTypeInfo.label)}>
             ({goalTypeInfo.abbreviation})
           </span>
         )}
@@ -234,21 +251,23 @@ export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEven
 
   const renderCardRow = (event: FootballCardEventDto) => {
     const home = isHomeTeam(event.teamId);
-    const label = cardLabel(event.cardType);
+    const cardName: CardTypeName = cardTypeName(event.cardType);
+    const cardClass: string = CARD_CLASS[cardName];
+    const label: string = t(`football.matches.manage.cardTypes.${cardName}`);
     const description = (event.description ?? '').trim();
     return (
-      <div className={`event-row ${home ? 'home-event' : 'away-event'} penalty`}>
-        <span className="event-time" title={`Period ${event.periodNumber}`}>
+      <div className={`event-row ${home ? 'home-event' : 'away-event'} ${cardClass}`}>
+        <span className="event-time" title={getPeriodName(event.periodNumber, match, t)}>
           {formatMatchEventTime(event.periodNumber, event.timeInSeconds)}
         </span>
-        <span className="event-type-badge penalty" aria-label="Card" title={label}>
-          <span className="badge-letter" aria-hidden>{label}</span>
+        <span className={`event-type-badge ${cardClass}`} aria-label={label} title={label}>
+          <span className="badge-letter" aria-hidden>{t(`football.match.events.cardShort.${cardName}`)}</span>
         </span>
         {renderTeamBadge(event.teamId)}
         <span className="event-details penalty-details">
           <span className="penalty-line">
             {renderPlayerName(event.playerName, event.playerId)}
-            <span className="penalty-type"> ({label})</span>
+            <span className="penalty-type"> ({label.toLowerCase()})</span>
           </span>
           {description && (
             <span className="penalty-description" title={description}>
@@ -263,18 +282,41 @@ export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEven
   const renderSubstitutionRow = (event: FootballSubstitutionEventDto) => {
     const home = isHomeTeam(event.teamId);
     return (
-      <div className={`event-row ${home ? 'home-event' : 'away-event'} penalty`}>
-        <span className="event-time" title={`Period ${event.periodNumber}`}>
+      <div className={`event-row ${home ? 'home-event' : 'away-event'} substitution`}>
+        <span className="event-time" title={getPeriodName(event.periodNumber, match, t)}>
           {formatMatchEventTime(event.periodNumber, event.timeInSeconds)}
         </span>
-        <span className="event-type-badge penalty" aria-label="Substitution" title="Substitution">
-          <span className="badge-letter" aria-hidden>SUB</span>
+        <span
+          className="event-type-badge substitution"
+          aria-label={t('football.matches.manage.events.type.substitution')}
+          title={t('football.matches.manage.events.type.substitution')}
+        >
+          <i className="fas fa-exchange-alt" aria-hidden="true"></i>
         </span>
         {renderTeamBadge(event.teamId)}
         <span className="event-details">
           {renderPlayerName(event.playerOnName, event.playerOnId)}
           {' ← '}
           {renderPlayerName(event.playerOffName, event.playerOffId)}
+        </span>
+      </div>
+    );
+  };
+
+  const renderMissedPenaltyRow = (event: FootballMissedPenaltyEventDto) => {
+    const label: string = t('matchPage.events.missedPenalty');
+    return (
+      <div className={`event-row ${isHomeTeam(event.teamId) ? 'home-event' : 'away-event'} missed-penalty`}>
+        <span className="event-time" title={getPeriodName(event.periodNumber, match, t)}>
+          {formatMatchEventTime(event.periodNumber, event.timeInSeconds)}
+        </span>
+        <span className="event-type-badge missed-penalty" aria-label={label} title={label}>
+          <i className="fas fa-times" aria-hidden="true"></i>
+        </span>
+        {renderTeamBadge(event.teamId)}
+        <span className="event-details">
+          {renderPlayerName(event.playerName, event.playerId)}
+          <span className="penalty-type"> ({label.toLowerCase()})</span>
         </span>
       </div>
     );
@@ -292,7 +334,7 @@ export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEven
         .map((period) => (
           <div key={period} className="period-section">
             <div className="period-header">
-              <span className="period-name">{getPeriodName(period)}</span>
+              <span className="period-name">{getPeriodName(period, match, t)}</span>
             </div>
             <div className="period-events">
               {eventsByPeriod[period].map((eventItem, index) => (
@@ -301,6 +343,8 @@ export default function MatchEvents({ match, homeRoster, awayRoster }: MatchEven
                   {eventItem.type === 'card' && renderCardRow(eventItem.event as FootballCardEventDto)}
                   {eventItem.type === 'substitution' &&
                     renderSubstitutionRow(eventItem.event as FootballSubstitutionEventDto)}
+                  {eventItem.type === 'missedPenalty' &&
+                    renderMissedPenaltyRow(eventItem.event as FootballMissedPenaltyEventDto)}
                 </div>
               ))}
             </div>

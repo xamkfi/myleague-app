@@ -9,6 +9,7 @@
 } from '../../types/football/footballTypes';
 import type { FootballPosition } from '../../types/football/footballTypes';
 import type { MatchStatusCountsDto, MatchStatusCountsRequest } from '../../types/common/matchStatusCounts';
+import type { MatchDecision } from '../../types/common/matchDecision';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
@@ -298,9 +299,8 @@ export const footballMatchService = {
   },
 
   /**
-   * Permanently delete a Football match. Only allowed for matches still in the
-   * Scheduled state (server enforces this). Used by the tournament JSON import
-   * revert flow to remove freshly created matches.
+   * Permanently delete a Football match in any state. The server reverts the statistics it
+   * produced and refuses a playoff match that has been started.
    */
   delete: async (id: string): Promise<ApiResponse<void>> => {
     try {
@@ -427,6 +427,22 @@ export const footballMatchService = {
       console.error('Error in footballMatchService.complete:', error);
       throw error;
     }
+  },
+
+  /**
+   * Corrects the phase of play that decided a match in progress
+   */
+  setDecidedIn: async (id: string, decision: MatchDecision): Promise<ApiResponse<FootballMatchDto>> => {
+    const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${id}/decided-in`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ decision }),
+    });
+    const apiResponse: ApiResponse<FootballMatchDto> = await response.json();
+    if (!response.ok || !apiResponse.success) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to change how the match was decided'));
+    }
+    return apiResponse;
   },
 
   /**
