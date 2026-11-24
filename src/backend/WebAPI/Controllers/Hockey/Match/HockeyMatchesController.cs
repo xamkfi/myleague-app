@@ -253,7 +253,8 @@ public class HockeyMatchesController : BaseApiController
     }
 
     /// <summary>
-    /// Deletes a match that is still scheduled. Started and finished matches are left in place.
+    /// Permanently deletes a match in any state and recalculates the competition statistics it counted
+    /// towards. A playoff match can only be deleted before it starts.
     /// </summary>
     [Authorize(Roles = AuthRoles.AdminOnly)]
     [HttpDelete("{matchId:guid}")]

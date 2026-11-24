@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import OfficialPageTemplate from '../../../OfficialPage/components/OfficialPageTemplate';
+import { matchDecisionOf, type MatchDecision } from '../../../../types/common/matchDecision';
 import type { ManageMatchMode } from '../../../../types/common/manageMatchMode';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import ConfirmationDialog from '../../../../components/ConfirmationDialog/ConfirmationDialog';
@@ -60,8 +61,17 @@ import ActiveRosterCard from './components/ActiveRosterCard';
 import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from '../../../../components/match/OfficialsSelectorSection';
 import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
+import MatchDecisionDialog from '../../../../components/match/MatchDecisionDialog';
+import MissedPenaltyDialog, { type MissedPenaltyPayload } from '../../../../components/match/MissedPenaltyDialog';
 import BulkSaveDialog, { type BulkSavePayload } from '../../../../components/match/BulkSaveDialog';
-import { hockeyRecordablePeriods, toFormPlayers } from './components/eventFormHelpers';
+import {
+  formatPlayerOptionLabel,
+  hockeyRecordablePeriods,
+  NO_GOAL_FLAGS,
+  sortPlayersForSelect,
+  toFormPlayers,
+  type HockeyGoalFlags,
+} from './components/eventFormHelpers';
 import './ManageMatchPage.scss';
 
 type EventFormKind = 'goal' | 'penalty' | 'shot' | 'faceoff' | null;
@@ -110,6 +120,9 @@ function ManageHockeyMatchContent({ match, setMatch, onClose, mode }: ManageHock
   const [assistId, setAssistId] = useState('');
   const [secondaryAssistId, setSecondaryAssistId] = useState('');
   const [goalStrength, setGoalStrength] = useState<HockeyGoalStrength>('EvenStrength');
+  const [goalFlags, setGoalFlags] = useState<HockeyGoalFlags>(NO_GOAL_FLAGS);
+  const [missedPenaltySideId, setMissedPenaltySideId] = useState<string | null>(null);
+  const [showDecisionDialog, setShowDecisionDialog] = useState(false);
   const [eventPeriodNumber, setEventPeriodNumber] = useState(1);
   const [eventTimeMinutes, setEventTimeMinutes] = useState(0);
   const [eventTimeSeconds, setEventTimeSeconds] = useState(0);
@@ -422,6 +435,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose, mode }: ManageHock
     }
     setAssistId('');
     setSecondaryAssistId('');
+    setGoalFlags(NO_GOAL_FLAGS);
     setEventForm(kind);
   };
 
@@ -459,7 +473,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose, mode }: ManageHock
     const periodNumber = eventPeriodNumber >= 1 ? eventPeriodNumber : timer.currentPeriod;
     const timeInSeconds = eventTimeMinutes * 60 + eventTimeSeconds;
     if (eventForm === 'goal' && playerId) {
-      const defendingGoalieId = hockeyOpposingGoalieId(match, selectedTeamId);
+      const defendingGoalieId = goalFlags.wasEmptyNet ? '' : hockeyOpposingGoalieId(match, selectedTeamId);
       await run(() => hockeyMatchService.recordGoal(match.id, {
         scoringMatchTeamId: selectedTeamId,
         scorerActivePlayerId: playerId,
@@ -469,7 +483,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose, mode }: ManageHock
         primaryAssistActivePlayerId: assistId || undefined,
         secondaryAssistActivePlayerId: secondaryAssistId || undefined,
         goalieActivePlayerId: defendingGoalieId || undefined,
-        wasEmptyNet: !defendingGoalieId,
+        ...goalFlags,
       }));
     } else if (eventForm === 'penalty') {
       await run(() => hockeyMatchService.recordPenalty(match.id, {
@@ -591,14 +605,35 @@ function ManageHockeyMatchContent({ match, setMatch, onClose, mode }: ManageHock
 
   const deleteEvent = async (eventId: string, eventType: string): Promise<void> => {
     const type = eventType.toLowerCase();
-    if (type.includes('goal')) {
+    if (type === 'goal') {
       await run(() => hockeyMatchService.deleteGoal(match.id, eventId));
-    } else if (type.includes('penalty')) {
+    } else if (type === 'penalty') {
       await run(() => hockeyMatchService.deletePenalty(match.id, eventId));
-    } else if (type.includes('shot')) {
+    } else if (type === 'missedpenaltyshot') {
+      await run(() => hockeyMatchService.deleteMissedPenaltyShot(match.id, eventId));
+    } else if (type === 'shot') {
       await run(() => hockeyMatchService.deleteShot(match.id, eventId));
     }
   };
+
+  const missedPenaltySide: HockeyMatchTeamDto | undefined = match.matchTeams.find((side) => side.id === missedPenaltySideId);
+
+  const recordMissedPenalty = async (payload: MissedPenaltyPayload): Promise<void> => {
+    if (!missedPenaltySideId) return;
+    setMatch(await hockeyMatchService.recordMissedPenaltyShot(match.id, {
+      matchTeamId: missedPenaltySideId,
+      shooterActivePlayerId: payload.playerId,
+      periodNumber: payload.periodNumber,
+      timeInSeconds: payload.timeInSeconds,
+    }));
+  };
+
+  const changeDecision = async (decision: MatchDecision): Promise<void> => {
+    const updated = await hockeyMatchService.setDecidedIn(match.id, decision);
+    setMatch(updated);
+    restoreFromMatch(updated);
+  };
+
 
   const teamNamesByMatchTeamId = useMemo(() => {
     const names = new Map<string, string>();
@@ -644,6 +679,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose, mode }: ManageHock
           && match.events.every((eventItem) => eventItem.eventType === 'Period')
         }
         onRevertToScheduled={() => setShowRevertConfirm(true)}
+        onChangeDecision={() => setShowDecisionDialog(true)}
       />
       <RevertToScheduledDialog
         isOpen={showRevertConfirm}
@@ -683,7 +719,7 @@ function ManageHockeyMatchContent({ match, setMatch, onClose, mode }: ManageHock
             canEndPeriod={periodManagement.canEndPeriod}
             getPeriodControlButtonText={periodManagement.getPeriodControlButtonText}
             getPeriodControlAction={periodManagement.getPeriodControlAction}
-            keybindsEnabled={!eventForm && !isLineupDialogOpen}
+            keybindsEnabled={!eventForm && !isLineupDialogOpen && !missedPenaltySideId && !showDecisionDialog}
             isStartMatchDisabled={!homeGoalieId || !awayGoalieId || !match.homeTeamId || !match.awayTeamId}
             startDisabledReason={
               !match.homeTeamId || !match.awayTeamId
@@ -708,10 +744,11 @@ function ManageHockeyMatchContent({ match, setMatch, onClose, mode }: ManageHock
             onShowGoalForm={(teamId) => openEventForm('goal', match.matchTeams.find((side) => side.id === teamId))}
             onShowPenaltyForm={(teamId) => openEventForm('penalty', match.matchTeams.find((side) => side.id === teamId))}
             onShowShotForm={(teamId) => openEventForm('shot', match.matchTeams.find((side) => side.id === teamId))}
+            onShowMissedPenaltyForm={setMissedPenaltySideId}
             onShowBulkSaveForm={openBulkSaveForm}
             onShowFaceoffForm={openFaceoffForm}
             onRecordOffside={() => void recordOffside()}
-            keybindsEnabled={!eventForm && !isLineupDialogOpen && canRecord}
+            keybindsEnabled={!eventForm && !isLineupDialogOpen && !missedPenaltySideId && !showDecisionDialog && canRecord}
           />
           <ActiveRosterCard
             leftTeamName={leftName}
@@ -802,7 +839,9 @@ function ManageHockeyMatchContent({ match, setMatch, onClose, mode }: ManageHock
         onPlayerChange={setPlayerId}
         onAssistChange={setAssistId}
         onSecondaryAssistChange={setSecondaryAssistId}
+        goalFlags={goalFlags}
         onStrengthChange={setGoalStrength}
+        onFlagsChange={setGoalFlags}
         periodNumber={eventPeriodNumber}
         periods={recordablePeriods}
         overtimePeriodNumber={periodManagement.overtimePeriodNumber}
@@ -851,6 +890,35 @@ function ManageHockeyMatchContent({ match, setMatch, onClose, mode }: ManageHock
           onClose={closeBulkSaveForm}
           loading={busy}
           errorMessage={bulkSaveError}
+        />
+      )}
+      {missedPenaltySide && (
+        <MissedPenaltyDialog
+          teamName={teamNames.get(missedPenaltySide.teamId) ?? ''}
+          shooters={sortPlayersForSelect(toFormPlayers(missedPenaltySide.activePlayers, playerNames))
+            .map((player) => ({ id: player.id, label: formatPlayerOptionLabel(player) }))}
+          periods={recordablePeriods}
+          overtimePeriodNumber={periodManagement.overtimePeriodNumber}
+          shootoutPeriodNumber={periodManagement.shootoutPeriodNumber}
+          periodLabels={{
+            field: t('hockey.matches.eventPeriod', 'Period'),
+            period: (number: number) => t('hockey.matches.periodN', 'Period {{number}}', { number }),
+            overtime: t('hockey.matches.overtime', 'Overtime'),
+            shootout: t('hockey.matches.shootout', 'Shootout'),
+          }}
+          initialPeriod={timer.currentPeriod}
+          initialTimeInSeconds={getInPeriodSeconds()}
+          onSubmit={recordMissedPenalty}
+          onClose={() => setMissedPenaltySideId(null)}
+        />
+      )}
+      {showDecisionDialog && (
+        <MatchDecisionDialog
+          current={matchDecisionOf(match.wentToOvertime, match.wentToShootout)}
+          allowOvertime
+          allowShootout
+          onSubmit={changeDecision}
+          onClose={() => setShowDecisionDialog(false)}
         />
       )}
       <ShotRecordingForm

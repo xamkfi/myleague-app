@@ -61,6 +61,14 @@ public class RecordHockeyGoalRequest
     /// </summary>
     public bool WasEmptyNet { get; set; }
     /// <summary>
+    /// Whether the goal was scored during a delayed penalty.
+    /// </summary>
+    public bool WasDelayedPenalty { get; set; }
+    /// <summary>
+    /// Whether the goal was scored from a penalty shot.
+    /// </summary>
+    public bool WasPenaltyShotGoal { get; set; }
+    /// <summary>
     /// Description.
     /// </summary>
     public string? Description { get; set; }
@@ -118,9 +126,47 @@ public class UpdateHockeyGoalRequest
     /// </summary>
     public bool WasEmptyNet { get; set; }
     /// <summary>
+    /// Whether the goal was scored during a delayed penalty.
+    /// </summary>
+    public bool WasDelayedPenalty { get; set; }
+    /// <summary>
+    /// Whether the goal was scored from a penalty shot.
+    /// </summary>
+    public bool WasPenaltyShotGoal { get; set; }
+    /// <summary>
     /// Description.
     /// </summary>
     public string? Description { get; set; }
+}
+
+/// <summary>
+/// Request body for recording a missed penalty shot.
+/// </summary>
+public class RecordHockeyMissedPenaltyShotRequest
+{
+    /// <summary>
+    /// Match team of the shooter.
+    /// </summary>
+    [Required]
+    public Guid MatchTeamId { get; set; }
+
+    /// <summary>
+    /// Match active player who took the shot.
+    /// </summary>
+    [Required]
+    public Guid ShooterActivePlayerId { get; set; }
+
+    /// <summary>
+    /// Period number, overtime and shootout included.
+    /// </summary>
+    [Required]
+    public int PeriodNumber { get; set; }
+
+    /// <summary>
+    /// Time in seconds on the continuous match clock.
+    /// </summary>
+    [Required]
+    public int TimeInSeconds { get; set; }
 }
 
 /// <summary>

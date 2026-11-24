@@ -27,7 +27,6 @@ interface RosterPlayerOption {
 interface SelectionState {
   selected: boolean;
   position: string;
-  isOnField: boolean;
 }
 
 interface MatchInfo {
@@ -144,7 +143,6 @@ function ClubAdminMatchRosterPage() {
           initialSelections[p.id] = {
             selected: existing !== undefined,
             position: p.position,
-            isOnField: true,
           };
         });
         setSelections(initialSelections);
@@ -179,7 +177,6 @@ function ClubAdminMatchRosterPage() {
           initialSelections[p.playerId] = {
             selected: existing !== undefined,
             position: existing?.position ?? defaultFloorballFieldPosition(p.position),
-            isOnField: true,
           };
         });
         setSelections(initialSelections);
@@ -214,7 +211,6 @@ function ClubAdminMatchRosterPage() {
           initialSelections[p.playerId] = {
             selected: existing !== undefined,
             position: existing?.position ?? defaultFootballPosition(p.position),
-            isOnField: existing?.isOnField ?? false,
           };
         });
         setSelections(initialSelections);
@@ -280,13 +276,6 @@ function ClubAdminMatchRosterPage() {
     }));
   };
 
-  const toggleOnField = (playerId: string) => {
-    setSelections((prev) => ({
-      ...prev,
-      [playerId]: { ...prev[playerId], isOnField: !prev[playerId].isOnField },
-    }));
-  };
-
   const handleSave = async () => {
     if (!sport || !teamId || !matchId) return;
     setIsSaving(true);
@@ -317,7 +306,7 @@ function ClubAdminMatchRosterPage() {
           .map((p) => ({
             playerId: p.playerId,
             position: selections[p.playerId].position as FootballPosition,
-            isOnField: selections[p.playerId].isOnField,
+            isOnField: true,
           }));
 
         await clubAdminService.announceFootballLineup(matchId, teamId, selectedPlayers);
@@ -343,7 +332,7 @@ function ClubAdminMatchRosterPage() {
     ? players.filter((p) => selections[p.playerId]?.selected).length
     : players.filter((p) => selections[p.playerId]?.selected && p.playerId !== goalieId).length;
   const isScheduled = matchInfo?.status === 'Scheduled';
-  const columnCount = isHockey ? 2 : isFloorball ? 3 : 4;
+  const columnCount = isHockey ? 2 : 3;
   const hasActiveFilters = searchQuery.trim() !== '' || listFilter !== 'all';
 
   return (
@@ -402,7 +391,7 @@ function ClubAdminMatchRosterPage() {
                   ? t('clubAdmin.hockeyRosterHint', 'Select the dressed players for this match. A goalie is required and at least 15 players must be selected.')
                   : isFloorball
                     ? t('clubAdmin.floorballRosterHint', 'Select the field players for this match and set their role. The goalie is selected separately above.')
-                    : t('clubAdmin.footballRosterHint', 'Select the players for this match, set their position, and mark the starting lineup.')}
+                    : t('clubAdmin.footballRosterHint', 'Select the players for this match and set their position.')}
               </p>
 
               <div className="club-admin-roster-toolbar">
@@ -468,7 +457,6 @@ function ClubAdminMatchRosterPage() {
                       <th className="club-admin-select-col">{t('clubAdmin.inRoster', 'In roster')}</th>
                       <th>{t('clubAdmin.playerName', 'Player')}</th>
                       {!isHockey && <th>{t('clubAdmin.matchPosition', 'Match position')}</th>}
-                      {!isFloorball && !isHockey && <th>{t('clubAdmin.starting', 'Starting')}</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -526,16 +514,6 @@ function ClubAdminMatchRosterPage() {
                                   ))}
                                 </select>
                               )}
-                            </td>
-                          )}
-                          {!isFloorball && !isHockey && (
-                            <td>
-                              <input
-                                type="checkbox"
-                                checked={selection?.isOnField ?? false}
-                                onChange={() => toggleOnField(player.playerId)}
-                                disabled={isSaving || !selection?.selected}
-                              />
                             </td>
                           )}
                         </tr>

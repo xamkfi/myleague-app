@@ -1,8 +1,8 @@
-import { RosterExcelImportModal, type RosterImportLock } from '../../../../../components/admin/RosterExcelImportModal/RosterExcelImportModal';
+import { RosterJsonImportModal, type RosterImportLock } from '../../../../../components/admin/RosterJsonImportModal/RosterJsonImportModal';
 import {
   importFootballRosters,
-  loadFootballRosterSeasonTeams,
-  loadFootballRosterSeasons,
+  loadFootballRosterCompetitions,
+  loadFootballRosterTeams,
   revertFootballRosters,
 } from '../../../../../api/football/rosterImportService';
 import {
@@ -31,11 +31,11 @@ export function FootballRosterImportModal({
   presetSeasonId,
 }: FootballRosterImportModalProps) {
   return (
-    <RosterExcelImportModal
+    <RosterJsonImportModal
       onClose={onClose}
       onImported={onImported}
-      loadSeasons={loadFootballRosterSeasons}
-      loadSeasonTeams={loadFootballRosterSeasonTeams}
+      loadCompetitions={loadFootballRosterCompetitions}
+      loadTeams={loadFootballRosterTeams}
       importRosters={importFootballRosters}
       revertRosters={revertFootballRosters}
       lockedSelection={lockedSelection}

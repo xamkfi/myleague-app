@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { footballMatchEventService } from '../../../../../api/football/footballMatchEventService';
 import type { FootballMatchDto, FootballMatchRules } from '../../../../../types/football/footballTypes';
 import type { PeriodEventData } from '../components/types';
@@ -47,6 +48,7 @@ export const usePeriodManagement = ({
   setCurrentPeriod,
   loadCurrentMatchStatus,
 }: UsePeriodManagementProps) => {
+  const { t } = useTranslation();
   const rules = resolveMatchRules(currentMatch.matchRules);
   const extraTimePeriodNumber = useMemo(() => extraTimeStartPeriod(rules), [rules]);
   const shootoutPeriodNumber = useMemo(() => penaltyShootoutPeriod(rules), [rules]);
@@ -215,36 +217,16 @@ export const usePeriodManagement = ({
     maxPeriodNumber,
   ]);
 
-  const getPeriodStatus = useCallback(() => {
-    if (periodLoading[currentPeriod]) {
-      return 'Processing...';
-    }
-    if (currentMatch.status === 'Completed') {
-      return 'Completed';
-    }
-
-    const label = getPeriodLabel(currentPeriod, rules);
-    if (currentMatch.status === 'InProgress') {
-      if (endedPeriods.has(currentPeriod)) {
-        return `${label} ended`;
-      }
-      if (startedPeriods.has(currentPeriod)) {
-        return `${label} started`;
-      }
-      return `${label} not started`;
-    }
-    return 'Not started';
-  }, [periodLoading, currentPeriod, currentMatch.status, endedPeriods, startedPeriods, rules]);
-
   const getPeriodControlButtonText = useCallback(() => {
     if (canEndPeriod()) {
-      if (periodLoading[currentPeriod]) return 'Ending...';
-      return `End ${getPeriodLabel(currentPeriod, rules).toLowerCase()}`;
+      if (periodLoading[currentPeriod]) return t('football.matches.manage.periodControl.ending');
+      return t('football.matches.manage.periodControl.end', { period: getPeriodLabel(currentPeriod, rules, t) });
     }
-    if (periodLoading[nextPeriodToStart]) return 'Starting...';
-    if (nextPeriodToStart <= 0) return 'Start half';
-    return `Start ${getPeriodLabel(nextPeriodToStart, rules).toLowerCase()}`;
-  }, [canEndPeriod, periodLoading, currentPeriod, nextPeriodToStart, rules]);
+    if (periodLoading[nextPeriodToStart]) return t('football.matches.manage.periodControl.starting');
+    return t('football.matches.manage.periodControl.start', {
+      period: getPeriodLabel(Math.max(1, nextPeriodToStart), rules, t),
+    });
+  }, [canEndPeriod, periodLoading, currentPeriod, nextPeriodToStart, rules, t]);
 
   const isInOvertime = useCallback(
     () => isExtraTimePeriod(currentPeriod, rules),
@@ -296,7 +278,6 @@ export const usePeriodManagement = ({
     confirmEndPeriod,
     cancelEndPeriod,
     canEndPeriod,
-    getPeriodStatus,
     getPeriodControlButtonText,
     isInOvertime,
     isInShootout,

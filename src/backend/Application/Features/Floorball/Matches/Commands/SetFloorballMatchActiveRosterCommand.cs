@@ -36,6 +36,12 @@ public class SetFloorballMatchActiveRosterCommand : IRequest<Result<FloorballMat
     /// goalie is left untouched.
     /// </summary>
     public Guid? GoalieId { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the team's recorded saves and conceded goals move to
+    /// <see cref="GoalieId"/>, for when they were recorded on the wrong goalie.
+    /// </summary>
+    public bool MoveGoalieEvents { get; set; }
 }
 
 /// <summary>

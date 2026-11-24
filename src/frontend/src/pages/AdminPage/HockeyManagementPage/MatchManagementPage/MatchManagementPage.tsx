@@ -10,6 +10,7 @@ import { loadTeamNameMap } from '../../../../utils/hockeyLookups';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
+import DeleteMatchDialog from '../../../../components/match/DeleteMatchDialog';
 import ConfirmationDialog from '../../../../components/ConfirmationDialog/ConfirmationDialog';
 import SearchField from '../../../../components/SearchField/SearchField';
 import Button from '../../../../components/Button/Button';
@@ -65,6 +66,7 @@ function HockeyMatchManagementPage({ mode = 'all' }: HockeyMatchManagementPagePr
   const [pageSize, setPageSize] = useState(25);
   const [confirmDialog, setConfirmDialog] = useState<{ type: 'cancel' | 'reactivate'; match: HockeyMatchDto } | null>(null);
   const [dialogLoading, setDialogLoading] = useState(false);
+  const [matchToDelete, setMatchToDelete] = useState<HockeyMatchDto | null>(null);
 
   useEffect(() => {
     if (urlCompetitionId !== selectedCompetitionId) {
@@ -304,6 +306,7 @@ function HockeyMatchManagementPage({ mode = 'all' }: HockeyMatchManagementPagePr
             onStartMatch={(match) => navigate(managePath(match))}
             onCancelMatch={(match) => setConfirmDialog({ type: 'cancel', match })}
             onReactivateMatch={(match) => setConfirmDialog({ type: 'reactivate', match })}
+            onDeleteMatch={setMatchToDelete}
           />
         </div>
         {filtered.length > 0 && (
@@ -342,6 +345,17 @@ function HockeyMatchManagementPage({ mode = 'all' }: HockeyMatchManagementPagePr
           onConfirm={() => void handleConfirmAction()}
           onCancel={() => setConfirmDialog(null)}
         />
+        {matchToDelete && (
+          <DeleteMatchDialog
+            matchLabel={[matchToDelete.homeTeamId, matchToDelete.awayTeamId]
+              .map((teamId) => (teamId ? teamNames.get(teamId) ?? '' : ''))
+              .join(' – ')}
+            onDelete={() => hockeyMatchService.delete(matchToDelete.id)}
+            onDeleted={() => setMatches((prev) => prev.filter((item) => item.id !== matchToDelete.id))}
+            onError={setError}
+            onClose={() => setMatchToDelete(null)}
+          />
+        )}
       </div>
     </PageTemplate>
   );

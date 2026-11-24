@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import FootballEventPeriodSelect from './FootballEventPeriodSelect';
 import './CardRecordingForm.scss';
 import { FootballCardType, type FootballMatchDto, type FootballTeam } from '../../../../../types/football/footballTypes';
@@ -24,10 +25,10 @@ interface CardRecordingFormProps {
   onPeriodChange: (periodNumber: number) => void;
 }
 
-const CARD_TYPE_OPTIONS: ReadonlyArray<{ value: FootballCardType; label: string }> = [
-  { value: FootballCardType.Yellow, label: 'Yellow' },
-  { value: FootballCardType.SecondYellow, label: 'Second Yellow' },
-  { value: FootballCardType.DirectRed, label: 'Direct Red' },
+const CARD_TYPE_OPTIONS: ReadonlyArray<{ value: FootballCardType; name: string }> = [
+  { value: FootballCardType.Yellow, name: 'Yellow' },
+  { value: FootballCardType.SecondYellow, name: 'SecondYellow' },
+  { value: FootballCardType.DirectRed, name: 'DirectRed' },
 ];
 
 const DESCRIPTION_MAX_LENGTH: number = 280;
@@ -54,6 +55,7 @@ const CardRecordingForm = ({
   onTimeChange,
   onPeriodChange,
 }: CardRecordingFormProps) => {
+  const { t } = useTranslation();
   const firstFieldRef = useRef<HTMLSelectElement | null>(null);
 
   const sortedPlayers: FootballPlayerDto[] = useMemo(
@@ -109,13 +111,13 @@ const CardRecordingForm = ({
         aria-labelledby="card-record-modal-title"
       >
         <div className="card-record-modal__header">
-          <h3 id="card-record-modal-title">Record card for {selectedTeamName ?? 'team'}</h3>
+          <h3 id="card-record-modal-title">{t('football.matches.manage.cardForm.title', { team: selectedTeamName ?? '' })}</h3>
           <button
             className="card-record-modal__close"
             onClick={onClose}
             disabled={loading}
             type="button"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             ×
           </button>
@@ -125,7 +127,7 @@ const CardRecordingForm = ({
           <div className="event-form card-form">
             <div className="form-grid">
               <div className="field">
-                <label htmlFor="card-player">Receiving player</label>
+                <label htmlFor="card-player">{t('football.matches.manage.cardForm.receivingPlayer')}</label>
                 <select
                   id="card-player"
                   ref={firstFieldRef}
@@ -133,7 +135,7 @@ const CardRecordingForm = ({
                   value={cardForm.playerId}
                   onChange={(e) => setCardForm((prev) => ({ ...prev, playerId: e.target.value }))}
                 >
-                  <option value="">Select player</option>
+                  <option value="">{t('football.matches.manage.goalForm.selectPlayer')}</option>
                   {sortedPlayers.map((player) => (
                     <option key={player.id} value={player.id}>
                       {formatPlayerOptionLabel(player)}
@@ -143,7 +145,7 @@ const CardRecordingForm = ({
               </div>
 
               <div className="field">
-                <label htmlFor="card-type">Card type</label>
+                <label htmlFor="card-type">{t('football.matches.manage.cardForm.cardType')}</label>
                 <select
                   id="card-type"
                   className={`select-field${cardTypeValue ? '' : ' is-placeholder'}`}
@@ -156,10 +158,10 @@ const CardRecordingForm = ({
                     }));
                   }}
                 >
-                  <option value="">Select card</option>
+                  <option value="">{t('football.matches.manage.cardForm.selectCard')}</option>
                   {CARD_TYPE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label}
+                      {t(`football.matches.manage.cardTypes.${option.name}`)}
                     </option>
                   ))}
                 </select>
@@ -175,7 +177,7 @@ const CardRecordingForm = ({
               />
 
               <div className="field field--time">
-                <label htmlFor="card-time-minutes">Time</label>
+                <label htmlFor="card-time-minutes">{t('football.matches.manage.goalForm.time')}</label>
                 <div className="time-input-group">
                   <input
                     id="card-time-minutes"
@@ -186,7 +188,7 @@ const CardRecordingForm = ({
                     min={0}
                     max={99}
                     placeholder="MM"
-                    aria-label="Minutes"
+                    aria-label={t('floorball.matches.manage.timeMinutesAria')}
                   />
                   <span className="time-separator" aria-hidden="true">
                     :
@@ -200,7 +202,7 @@ const CardRecordingForm = ({
                     min={0}
                     max={59}
                     placeholder="SS"
-                    aria-label="Seconds"
+                    aria-label={t('floorball.matches.manage.timeSecondsAria')}
                   />
                 </div>
               </div>
@@ -208,13 +210,14 @@ const CardRecordingForm = ({
 
             <div className="field field--description">
               <label htmlFor="card-description">
-                Description <span className="field-hint">(optional)</span>
+                {t('football.matches.manage.cardForm.description')}{' '}
+                <span className="field-hint">{t('football.matches.manage.goalForm.optional')}</span>
               </label>
               <textarea
                 id="card-description"
                 value={cardForm.description}
                 onChange={(e) => setCardForm((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="E.g. unsporting behaviour, dissent, serious foul play…"
+                placeholder={t('football.matches.manage.cardForm.descriptionPlaceholder')}
                 className="description-input"
                 maxLength={DESCRIPTION_MAX_LENGTH}
                 rows={3}
@@ -226,13 +229,13 @@ const CardRecordingForm = ({
 
             {missingJersey && (
               <div className="field-error" role="alert">
-                Selected player has no jersey number. Assign a jersey before recording the card.
+                {t('football.matches.manage.cardForm.missingJersey')}
               </div>
             )}
 
             <div className="form-actions">
               <button onClick={onClose} className="cancel-btn" type="button" disabled={loading}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={onRecordCard}
@@ -240,7 +243,11 @@ const CardRecordingForm = ({
                 className="submit-btn"
                 type="button"
               >
-                {loading ? 'Recording…' : missingJersey ? 'Missing jersey' : 'Record Card'}
+                {loading
+                  ? t('football.matches.manage.goalForm.recording')
+                  : missingJersey
+                    ? t('football.matches.manage.goalForm.missingJerseyShort')
+                    : t('football.matches.manage.cardForm.submit')}
               </button>
             </div>
           </div>

@@ -160,12 +160,15 @@ public static class HockeyStatisticsCalculationService
         foreach (HockeyMatchActivePlayer goalie in goalies)
         {
             Guid goalieId = goalie.Id;
+            // Shootout attempts and empty-net goals are not charged to a goalie.
             List<HockeyShot> against = match.Events.OfType<HockeyShot>()
-                .Where(s => s.GoalieActivePlayerId == goalieId)
+                .Where(s => s.GoalieActivePlayerId == goalieId && !s.IsShootoutShot)
                 .ToList();
             int saves = against.Count(s => s.ShotResult == HockeyShotResult.Saved);
             int goalsAgainst = against.Count(s => s.ShotResult == HockeyShotResult.Goal)
-                + match.Events.OfType<HockeyGoal>().Count(g => g.GoalieActivePlayerId == goalieId);
+                + match.Events.OfType<HockeyGoal>().Count(g => g.GoalieActivePlayerId == goalieId
+                    && !g.WasEmptyNet
+                    && ResolvePeriodType(g.PeriodNumber, match) != HockeyPeriodType.Shootout);
             int shotsAgainst = saves + against.Count(s => s.ShotResult == HockeyShotResult.Goal);
             if (shotsAgainst < saves + goalsAgainst)
                 shotsAgainst = saves + goalsAgainst;
@@ -187,6 +190,8 @@ public static class HockeyStatisticsCalculationService
             int minutes = EstimateGoalieMinutes(match, goalieId);
             int shutouts = goalsAgainst == 0 && shotsAgainst > 0 ? 1 : 0;
             stats.UpdateGoaltending(saves, shotsAgainst, goalsAgainst, minutes, shutouts);
+            if (minutes == 0 && matchTeam.ActiveGoalieMatchPlayerId != goalieId)
+                stats.MarkDidNotPlay();
 
             foreach (IGrouping<int, HockeyShot> periodGroup in against.GroupBy(s => s.PeriodNumber))
             {
@@ -442,7 +447,7 @@ public static class HockeyStatisticsCalculationService
 
     private static int EstimateGoalieMinutes(HockeyMatch match, Guid goalieActivePlayerId)
     {
-        // Lightweight estimate: full regulation minutes when goalie faced any shot or started.
+        // Lightweight estimate: full regulation minutes when the goalie has any event.
         bool appeared = match.Events.OfType<HockeyShot>().Any(s => s.GoalieActivePlayerId == goalieActivePlayerId)
             || match.Events.OfType<HockeyGoal>().Any(g => g.GoalieActivePlayerId == goalieActivePlayerId)
             || match.Events.OfType<HockeyGoalieChange>().Any(c =>

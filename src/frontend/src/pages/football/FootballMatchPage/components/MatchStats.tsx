@@ -16,7 +16,6 @@ interface TeamStatView {
   goals: number;
   yellowCards: number;
   redCards: number;
-  substitutions: number;
   cleanSheet: boolean;
 }
 
@@ -54,7 +53,6 @@ export default function MatchStats({ match }: MatchStatsProps) {
     match.id,
     match.goalEvents?.length,
     match.cardEvents?.length,
-    match.substitutionEvents?.length,
   ]);
 
   if (isLoading) {
@@ -73,7 +71,6 @@ export default function MatchStats({ match }: MatchStatsProps) {
     goals: 0,
     yellowCards: 0,
     redCards: 0,
-    substitutions: 0,
     cleanSheet: false,
   });
 
@@ -155,14 +152,6 @@ export default function MatchStats({ match }: MatchStatsProps) {
           homeValue={homeStats.redCards}
           awayValue={awayStats.redCards}
           total={homeStats.redCards + awayStats.redCards}
-        />
-        <StatRow
-          label={t('football.match.stats.substitutions', 'Substitutions')}
-          home={homeStats.substitutions}
-          away={awayStats.substitutions}
-          homeValue={homeStats.substitutions}
-          awayValue={awayStats.substitutions}
-          total={homeStats.substitutions + awayStats.substitutions}
         />
         <div className="stat-row stat-percentage-only">
           <div className="stat-values">

@@ -257,6 +257,11 @@ public record RecordGoalRequest
     public int? GoalType { get; init; }
 
     /// <summary>
+    /// Gets whether the goal was scored during a delayed penalty
+    /// </summary>
+    public bool WasDelayedPenalty { get; init; }
+
+    /// <summary>
     /// When <c>true</c>, skips the per-(match, scorer) double-click window. Intended for
     /// historical import / admin backfill, not the live scorekeeper UI.
     /// </summary>

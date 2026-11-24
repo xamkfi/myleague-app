@@ -59,6 +59,14 @@ export interface RecordGoalEventRequest {
    * "no specific type" which the backend treats as a regular goal.
    */
   goalType?: number;
+  wasDelayedPenalty?: boolean;
+}
+
+export interface RecordMissedPenaltyRequest {
+  teamId: string;
+  playerId: string;
+  periodNumber: number;
+  timeInSeconds: number;
 }
 
 export interface RecordPenaltyEventRequest {
@@ -185,7 +193,21 @@ export const floorballMatchEventService = {
           isShootout: g.wasInShootout,
           assisterId: g.assisterId,
           secondaryAssisterId: g.secondaryAssisterId,
-          goalType: g.goalType ?? null
+          goalType: g.goalType ?? null,
+          wasDelayedPenalty: g.wasDelayedPenalty ?? false
+        }
+      }));
+
+      const missedPenaltyEvents: FloorballDomainEventDto[] = (match?.missedPenaltyEvents ?? []).map((m) => ({
+        eventType: 'FloorballMissedPenaltyEvent',
+        occurredOn,
+        data: {
+          matchId,
+          eventId: m.id,
+          teamId: m.teamId,
+          playerId: m.playerId,
+          periodNumber: m.periodNumber,
+          timeInSeconds: m.timeInSeconds
         }
       }));
 
@@ -230,7 +252,7 @@ export const floorballMatchEventService = {
         }
       }));
 
-      const synthesizedEvents = [...goalEvents, ...penaltyEvents, ...saveEvents];
+      const synthesizedEvents = [...goalEvents, ...penaltyEvents, ...saveEvents, ...missedPenaltyEvents];
 
       return {
         success: true,
@@ -269,7 +291,8 @@ export const floorballMatchEventService = {
         periodNumber: data.periodNumber,
         timeInSeconds: data.timeInSeconds,
         description: '',
-        goalType: data.goalType ?? null
+        goalType: data.goalType ?? null,
+        wasDelayedPenalty: data.wasDelayedPenalty ?? false
       };
 
       const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${data.matchId}/events/goal`, {
@@ -316,6 +339,28 @@ export const floorballMatchEventService = {
       console.error('Error recording penalty:', error);
       throw error;
     }
+  },
+
+  /**
+   * Records a missed penalty shot
+   */
+  recordMissedPenalty: async (matchId: string, data: RecordMissedPenaltyRequest): Promise<ApiResponse<FloorballMatchDto>> => {
+    const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/events/missed-penalty`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return handleApiResponse<FloorballMatchDto>(response);
+  },
+
+  /**
+   * Deletes a missed penalty shot
+   */
+  deleteMissedPenalty: async (matchId: string, eventId: string): Promise<ApiResponse<FloorballMatchDto>> => {
+    const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/events/missed-penalty/${eventId}`, {
+      method: 'DELETE',
+    });
+    return handleApiResponse<FloorballMatchDto>(response);
   },
 
   /**

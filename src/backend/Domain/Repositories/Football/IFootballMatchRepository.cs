@@ -63,6 +63,14 @@ public interface IFootballMatchRepository
         int limit,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Gets a team's completed matches in a competition with lineups and period scores, without tracking.
+    /// </summary>
+    Task<IReadOnlyList<FootballMatch>> GetCompletedWithLineupsAsync(
+        Guid teamId,
+        Guid competitionId,
+        CancellationToken cancellationToken = default);
+
     Task<bool> HasAnyForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
     Task<IEnumerable<FootballMatch>> GetUpcomingByTeamIdAsync(Guid teamId, int count = 5);
     Task<IEnumerable<FootballMatch>> GetPastByTeamIdAsync(Guid teamId, int count = 5);

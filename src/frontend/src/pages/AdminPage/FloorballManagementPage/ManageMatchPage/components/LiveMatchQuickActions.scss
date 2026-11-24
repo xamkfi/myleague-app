@@ -140,6 +140,16 @@
     }
   }
 
+  &.missed-penalty-btn {
+    background: $color-neutral-light-grey;
+    border-color: $color-neutral-dark-grey;
+    color: $color-neutral-dark-grey;
+
+    &:hover:not(:disabled) {
+      filter: brightness(0.95);
+    }
+  }
+
   &.penalty-btn {
     background: #FFF9E3;
     border-color: #DE921A;

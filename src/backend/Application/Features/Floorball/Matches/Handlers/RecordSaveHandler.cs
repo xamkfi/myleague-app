@@ -121,16 +121,10 @@ public class RecordSaveHandler : IRequestHandler<RecordFloorballSaveCommand, Res
             }
 
             // Aggregate stats updates so we hit the statistics tables once per request rather
-            // than once per save — the per-save UpdateGoalieSeasonStatistics / UpdateMatch...
-            // calls are pure increments, so collapsing them into a single batched call yields
-            // the same end state.
-            await UpdateGoalieSeasonStatistics(goalie.Id, request.TeamId, match.CompetitionId, saveCount, saveCount, 0, cancellationToken);
-
-            // Update match team statistics for the attacking team (the team that took the shot that was saved).
-            // The save is for the defending team (request.TeamId), so we need to update the opposing team's stats.
-            // A started match has both team IDs assigned, so .Value is safe here.
-            Guid attackingTeamId = (request.TeamId == match.HomeTeamId ? match.AwayTeamId : match.HomeTeamId)!.Value;
-            await UpdateMatchTeamStatistics(match.Id, attackingTeamId, saveCount, cancellationToken);
+            // than once per save.
+            await FloorballMatchStatisticsSupport.AdjustGoalieAsync(
+                _statisticsRepository, goalie.Id, request.TeamId, match.CompetitionId, saveCount, goalsAgainst: 0, cancellationToken);
+            await FloorballMatchStatisticsSupport.SyncMatchShotsAsync(_statisticsRepository, match, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -144,44 +138,15 @@ public class RecordSaveHandler : IRequestHandler<RecordFloorballSaveCommand, Res
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             return Result<FloorballMatchDto>.Success(matchDto);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error occurred while recording save in match {MatchId}", request.MatchId);
-            return Result<FloorballMatchDto>.Failure("An error occurred while recording the save.");
+            _logger.LogWarning(ex, "Domain rejected RecordSave for {MatchId}", request.MatchId);
+            return Result<FloorballMatchDto>.Failure(ex.Message);
         }
-    }
-
-    /// <summary>
-    /// Updates goalie season statistics for saves and shots faced
-    /// </summary>
-    private async Task UpdateGoalieSeasonStatistics(Guid goalieId, Guid teamId, Guid seasonId, int saves, int shotsAgainst, int goalsAllowed, CancellationToken cancellationToken)
-    {
-        FloorballGoalieSeasonStatistics? goalieStats = await _statisticsRepository.GetGoalieSeasonStatisticsAsync(goalieId, teamId, seasonId, cancellationToken);
-        if (goalieStats == null)
+        catch (ArgumentException ex)
         {
-            goalieStats = new FloorballGoalieSeasonStatistics(goalieId, teamId, seasonId);
+            _logger.LogWarning(ex, "Invalid RecordSave for {MatchId}", request.MatchId);
+            return Result<FloorballMatchDto>.Failure(ex.Message);
         }
-
-        goalieStats.RecordSaves(saves, shotsAgainst, goalsAllowed);
-        await _statisticsRepository.SaveGoalieSeasonStatisticsAsync(goalieStats, cancellationToken);
-    }
-
-    /// <summary>
-    /// Updates match team statistics for shots faced
-    /// </summary>
-    private async Task UpdateMatchTeamStatistics(Guid matchId, Guid teamId, int shotsAgainst, CancellationToken cancellationToken)
-    {
-        FloorballMatchTeamStatistics? matchStats = await _statisticsRepository.GetMatchTeamStatisticsAsync(matchId, teamId, cancellationToken);
-        if (matchStats == null)
-        {
-            matchStats = new FloorballMatchTeamStatistics(matchId, teamId);
-        }
-
-        // Only shots against, no shots on goal (since it was saved)
-        matchStats.UpdateShotStatistics(0, shotsAgainst);
-
-        await _statisticsRepository.SaveMatchTeamStatisticsAsync(matchStats, cancellationToken);
     }
 }
-
-

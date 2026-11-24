@@ -21,6 +21,8 @@ export interface FootballPlayerSeasonStatisticsDto {
   points: number;
   yellowCards: number;
   redCards: number;
+  /** Matches kept goal in without conceding. Filled by the team statistics query only. */
+  cleanSheets?: number;
 }
 
 export interface FootballTeamSeasonStatisticsDto {
@@ -50,14 +52,12 @@ export interface FootballTeamSeasonStatisticsDto {
 }
 
 export interface FootballMatchTeamStatisticsDto {
-  id: string;
   matchId: string;
   teamId: string;
   teamName: string;
   goals: number;
   yellowCards: number;
   redCards: number;
-  substitutions: number;
   cleanSheet: boolean;
 }
 

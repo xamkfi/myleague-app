@@ -2,38 +2,34 @@ using Application.Common;
 using Application.Features.Football.Statistics.DTOs;
 using Application.Features.Football.Statistics.Mappings;
 using Application.Features.Football.Statistics.Queries;
-using Domain.Entities.Football.Statistics;
+using Domain.Entities.Football.Matches;
+using Domain.Enums.Football;
 using Domain.Repositories.Football;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Football.Statistics.Handlers;
 
 /// <summary>
-/// Handler for retrieving match statistics
+/// Handler for retrieving match statistics, counted from the match events
 /// </summary>
 public class GetMatchStatisticsHandler : IRequestHandler<GetFootballMatchStatisticsQuery, Result<List<FootballMatchTeamStatisticsDto>>>
 {
-    private readonly IFootballStatisticsRepository _statisticsRepository;
-    private readonly ILogger<GetMatchStatisticsHandler> _logger;
+    private readonly IFootballMatchRepository _matchRepository;
 
-    public GetMatchStatisticsHandler(
-        IFootballStatisticsRepository statisticsRepository,
-        ILogger<GetMatchStatisticsHandler> logger)
+    public GetMatchStatisticsHandler(IFootballMatchRepository matchRepository)
     {
-        _statisticsRepository = statisticsRepository;
-        _logger = logger;
+        _matchRepository = matchRepository;
     }
 
     public async Task<Result<List<FootballMatchTeamStatisticsDto>>> Handle(GetFootballMatchStatisticsQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting match statistics for Match: {MatchId}", request.MatchId);
+        FootballMatch? match = await _matchRepository.GetByIdAsync(request.MatchId);
+        if (match == null || match.Status == FootballMatchStatus.Scheduled)
+            return Result<List<FootballMatchTeamStatisticsDto>>.Success(new List<FootballMatchTeamStatisticsDto>());
 
-        List<FootballMatchTeamStatistics> matchStats =
-            (await _statisticsRepository.GetMatchStatisticsAsync(request.MatchId, cancellationToken)).ToList();
-
-        List<FootballMatchTeamStatisticsDto> dtos = matchStats
-            .Select(ms => FootballStatisticsMapper.ToDto(ms))
+        List<FootballMatchTeamStatisticsDto> dtos = new[] { match.HomeTeamId, match.AwayTeamId }
+            .OfType<Guid>()
+            .Select(teamId => FootballStatisticsMapper.ToMatchTeamStatisticsDto(match, teamId))
             .ToList();
 
         return Result<List<FootballMatchTeamStatisticsDto>>.Success(dtos);

@@ -25,7 +25,8 @@ public class HockeyMatchEventConfiguration : BaseEntityConfiguration<HockeyMatch
             .HasValue<HockeyTimeout>(HockeyMatchEventType.Timeout)
             .HasValue<HockeyGoalieChange>(HockeyMatchEventType.GoalieChange)
             .HasValue<HockeyVideoReview>(HockeyMatchEventType.VideoReview)
-            .HasValue<HockeyShootoutAttempt>(HockeyMatchEventType.ShootoutAttempt);
+            .HasValue<HockeyShootoutAttempt>(HockeyMatchEventType.ShootoutAttempt)
+            .HasValue<HockeyMissedPenaltyShot>(HockeyMatchEventType.MissedPenaltyShot);
 
         builder.Property(e => e.MatchId).IsRequired();
         builder.Property(e => e.EventType).IsRequired();

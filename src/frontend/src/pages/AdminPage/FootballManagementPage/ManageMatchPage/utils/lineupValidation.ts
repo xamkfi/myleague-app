@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import {
   FootballPosition,
   type FootballLineupPlayer,
@@ -17,51 +18,26 @@ export const DEFAULT_FOOTBALL_MATCH_RULES: FootballMatchRules = {
   allowPenaltyShootout: false,
 };
 
-export interface LineupDraftPlayer {
-  playerId: string;
-  position: FootballPosition;
-  isOnField: boolean;
-  isSentOff: boolean;
-}
-
 export function resolveMatchRules(rules: FootballMatchRules | undefined | null): FootballMatchRules {
   return rules ?? DEFAULT_FOOTBALL_MATCH_RULES;
-}
-
-export function getOnFieldPlayers(lineup: readonly FootballLineupPlayer[]): FootballLineupPlayer[] {
-  return lineup.filter((player) => player.isOnField && !player.isSentOff);
-}
-
-export function getBenchPlayers(lineup: readonly FootballLineupPlayer[]): FootballLineupPlayer[] {
-  return lineup.filter((player) => !player.isOnField && !player.isSentOff);
 }
 
 export function getSentOffPlayers(lineup: readonly FootballLineupPlayer[]): FootballLineupPlayer[] {
   return lineup.filter((player) => player.isSentOff);
 }
 
-export function validateTeamLineup(
-  lineup: readonly LineupDraftPlayer[],
+/** Why a match cannot start with this lineup. The lineup can have any number of players. */
+export type LineupProblem = 'needPlayers' | 'needGoalkeeper';
+
+export function findLineupProblem(
+  lineup: ReadonlyArray<Pick<FootballLineupPlayer, 'position'>>,
   rules: FootballMatchRules,
-): string | null {
-  const onField = lineup.filter((player) => player.isOnField);
-  if (onField.some((player) => player.isSentOff)) {
-    return 'Sent-off players cannot be on the field.';
+): LineupProblem | null {
+  if (lineup.length === 0) {
+    return 'needPlayers';
   }
-  // A sent-off player is not replaced, so each red card lowers the on-field count by one.
-  const sentOffCount = lineup.filter((player) => player.isSentOff).length;
-  const requiredOnField = Math.max(0, rules.playersOnField - sentOffCount);
-  if (onField.length !== requiredOnField) {
-    return `On-field count must equal ${requiredOnField} players.`;
-  }
-  // Like the backend, the goalkeeper rule applies to a full field only.
-  if (rules.requireGoalkeeper && onField.length === rules.playersOnField) {
-    const goalkeeperCount = onField.filter(
-      (player) => player.position === FootballPosition.Goalkeeper,
-    ).length;
-    if (goalkeeperCount !== 1) {
-      return 'Exactly one on-field player must be a goalkeeper.';
-    }
+  if (rules.requireGoalkeeper && lineup.every((player) => player.position !== FootballPosition.Goalkeeper)) {
+    return 'needGoalkeeper';
   }
   return null;
 }
@@ -70,10 +46,7 @@ export function isTeamLineupReady(
   lineup: readonly FootballLineupPlayer[] | undefined,
   rules: FootballMatchRules,
 ): boolean {
-  if (!lineup || lineup.length === 0) {
-    return false;
-  }
-  return validateTeamLineup(lineup, rules) === null;
+  return findLineupProblem(lineup ?? [], rules) === null;
 }
 
 export function areBothLineupsReady(
@@ -135,18 +108,16 @@ export function isPenaltyShootoutPeriod(period: number, rules: FootballMatchRule
   return rules.allowPenaltyShootout && period === penaltyShootoutPeriod(rules);
 }
 
-export function getPeriodLabel(period: number, rules: FootballMatchRules): string {
+export function getPeriodLabel(period: number, rules: FootballMatchRules, t: TFunction): string {
   if (isPenaltyShootoutPeriod(period, rules)) {
-    return 'Penalty shootout';
+    return t('football.matches.manage.eventPeriod.shootout', 'Penalty shootout');
   }
   if (isExtraTimePeriod(period, rules)) {
-    const extraTimeIndex = period - extraTimeStartPeriod(rules) + 1;
-    if (rules.extraTimeHalfCount > 1) {
-      return `Extra time half ${extraTimeIndex}`;
-    }
-    return 'Extra time half';
+    return t('football.matches.manage.eventPeriod.extraTime', 'Extra time {{number}}', {
+      number: period - extraTimeStartPeriod(rules) + 1,
+    });
   }
-  return `Half ${period}`;
+  return t('football.matches.manage.eventPeriod.half', 'Half {{number}}', { number: period });
 }
 
 export function getPeriodDurationSeconds(period: number, rules: FootballMatchRules): number {

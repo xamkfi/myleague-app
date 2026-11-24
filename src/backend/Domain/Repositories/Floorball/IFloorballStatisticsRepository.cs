@@ -240,6 +240,14 @@ public interface IFloorballStatisticsRepository
     /// <returns>Task representing the async operation</returns>
     Task SaveMatchTeamStatisticsAsync(FloorballMatchTeamStatistics statistics, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Marks both teams' statistics rows of a match for removal. The rows have no foreign key to the
+    /// match, so deleting the match does not remove them.
+    /// </summary>
+    /// <param name="matchId">The match ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    Task RemoveMatchTeamStatisticsAsync(Guid matchId, CancellationToken cancellationToken = default);
+
     #endregion
 
     #region Statistics Cache

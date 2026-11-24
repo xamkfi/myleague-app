@@ -103,7 +103,9 @@ public class HockeyGoal : HockeyMatchEvent
         Guid? secondaryAssistActivePlayerId = null,
         Guid? goalieActivePlayerId = null,
         bool wasEmptyNet = false,
-        string? description = null)
+        string? description = null,
+        bool wasDelayedPenalty = false,
+        bool wasPenaltyShotGoal = false)
     {
         if (scoringMatchTeamId == Guid.Empty)
             throw new ArgumentException("Scoring match team id cannot be empty.", nameof(scoringMatchTeamId));
@@ -126,5 +128,12 @@ public class HockeyGoal : HockeyMatchEvent
         GoalieActivePlayerId = goalieActivePlayerId;
         GoalStrength = goalStrength;
         WasEmptyNet = wasEmptyNet;
+        WasDelayedPenalty = wasDelayedPenalty;
+        WasPenaltyShotGoal = wasPenaltyShotGoal;
     }
+
+    /// <summary>
+    /// Moves the goal to another period when the way the match was decided is corrected.
+    /// </summary>
+    internal void MoveToPeriod(int periodNumber) => UpdateTiming(periodNumber, GameTime, Description);
 }

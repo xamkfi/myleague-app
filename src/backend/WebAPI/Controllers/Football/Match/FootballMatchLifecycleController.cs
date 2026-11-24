@@ -72,6 +72,25 @@ public class FootballMatchLifecycleController : BaseApiController
     }
 
     /// <summary>
+    /// Corrects the phase of play that decided a match in progress (a completed match is reopened
+    /// first). Standings points depend on it. When the score is not level and the target phase has no
+    /// goals yet, the deciding goal is moved there.
+    /// </summary>
+    [HttpPut("decided-in")]
+    [ProducesResponseType(typeof(ApiResponse<FootballMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<FootballMatchDto>>> SetDecidedIn(
+        Guid matchId,
+        [FromBody] SetMatchDecisionRequest request,
+        CancellationToken cancellationToken)
+    {
+        Result<FootballMatchDto> result = await _mediator.Send(
+            new SetFootballMatchDecisionCommand(matchId, request.Decision), cancellationToken);
+        return HandleResult(result, "Match decision updated successfully", "Failed to update match decision");
+    }
+
+    /// <summary>
     /// Puts a match that was started by mistake back to Scheduled. Allowed only while the match
     /// is in progress with a 0-0 score and no recorded events.
     /// </summary>

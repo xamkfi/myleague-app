@@ -114,6 +114,11 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
         public DbSet<FloorballSave> FloorballSaves { get; set; }
 
         /// <summary>
+        /// Gets or sets the FloorballMissedPenalties DbSet.
+        /// </summary>
+        public DbSet<FloorballMissedPenalty> FloorballMissedPenalties { get; set; }
+
+        /// <summary>
         /// Gets or sets the FloorballTeamManagers DbSet.
         /// </summary>
         public DbSet<FloorballTeamManager> FloorballTeamManagers { get; set; }
@@ -221,6 +226,7 @@ namespace MyLeague.Infrastructure.Persistence.Contexts
             modelBuilder.ApplyConfiguration(new FloorballGoalConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballPenaltyConfiguration());
             modelBuilder.ApplyConfiguration(new FloorballSaveConfiguration());
+            modelBuilder.ApplyConfiguration(new FloorballMissedPenaltyConfiguration());
             
             // Apply statistics configurations
             modelBuilder.ApplyConfiguration(new FloorballTeamSeasonStatisticsConfiguration());

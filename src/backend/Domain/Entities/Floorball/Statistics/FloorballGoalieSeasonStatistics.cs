@@ -93,7 +93,7 @@ public class FloorballGoalieSeasonStatistics : BaseEntity
     public int GoalsAgainst { get; private set; }
 
     /// <summary>
-    /// Gets the goals against average (GAA)
+    /// Gets the goals against average (GAA): goals conceded by this goalie per game played
     /// </summary>
     public decimal GoalsAgainstAverage { get; private set; }
 
@@ -222,6 +222,25 @@ public class FloorballGoalieSeasonStatistics : BaseEntity
     }
 
     /// <summary>
+    /// Records that the goalie was in goal during a game without being the goalie of record, so the
+    /// result, shutout and minutes are credited to someone else.
+    /// </summary>
+    public void RecordAppearance()
+    {
+        GamesPlayed++;
+        UpdateGoalsAgainstAverage();
+    }
+
+    /// <summary>
+    /// Reverts a previous <see cref="RecordAppearance"/> call.
+    /// </summary>
+    public void UndoAppearance()
+    {
+        if (GamesPlayed > 0) GamesPlayed--;
+        UpdateGoalsAgainstAverage();
+    }
+
+    /// <summary>
     /// Reverts a previous <see cref="RecordGamePlayed"/> call. Used when a Completed match this
     /// goalie was active in is reopened back to InProgress, so the per-match aggregates
     /// (games played/started, win/loss/tie, shutouts, minutes) do not double-count once the
@@ -324,12 +343,11 @@ public class FloorballGoalieSeasonStatistics : BaseEntity
     }
 
     /// <summary>
-    /// Updates the goals against average based on current goals and minutes
+    /// Updates the goals against average: the goalie's own conceded goals per game played
     /// </summary>
     private void UpdateGoalsAgainstAverage()
     {
-        // GAA = (Goals Against × 60) / Minutes Played
-        GoalsAgainstAverage = MinutesPlayed > 0 ? (decimal)GoalsAgainst * 60 / MinutesPlayed : 0;
+        GoalsAgainstAverage = GamesPlayed > 0 ? (decimal)GoalsAgainst / GamesPlayed : 0;
     }
 
     /// <summary>

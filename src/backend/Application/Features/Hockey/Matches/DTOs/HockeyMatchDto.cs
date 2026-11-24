@@ -83,7 +83,10 @@ public record HockeyMatchEventDto(
     string? GoalStrength = null,
     string? PenaltyOffence = null,
     string? PenaltySeverity = null,
-    int? PenaltyMinutes = null);
+    int? PenaltyMinutes = null,
+    bool WasEmptyNet = false,
+    bool WasDelayedPenalty = false,
+    bool WasPenaltyShotGoal = false);
 
 /// <summary>
 /// Official assigned to a match.

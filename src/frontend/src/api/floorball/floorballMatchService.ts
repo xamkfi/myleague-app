@@ -9,6 +9,7 @@ import type {
 } from '../../types/floorball/floorballTypes';
 import type { FloorballPosition } from '../../types/floorball/floorballTypes';
 import type { MatchStatusCountsDto, MatchStatusCountsRequest } from '../../types/common/matchStatusCounts';
+import type { MatchDecision } from '../../types/common/matchDecision';
 import { authFetch } from '../utils/authFetch';
 import { parseErrorResponse } from '../utils/ParseErrorResponse';
 import { API_URL } from '../../constants/config';
@@ -319,9 +320,8 @@ export const floorballMatchService = {
   },
 
   /**
-   * Permanently delete a floorball match. Only allowed for matches still in the
-   * Scheduled state (server enforces this). Used by the tournament JSON import
-   * revert flow to remove freshly created matches.
+   * Permanently delete a floorball match in any state. The server reverts the statistics it
+   * produced and refuses a playoff match that has been started.
    */
   delete: async (id: string): Promise<ApiResponse<void>> => {
     try {
@@ -623,7 +623,12 @@ export const floorballMatchService = {
   setActiveRoster: async (
     matchId: string,
     teamId: string,
-    payload: { players: { playerId: string; position: FloorballPosition }[]; goalieId: string | null }
+    payload: {
+      players: { playerId: string; position: FloorballPosition }[];
+      goalieId: string | null;
+      /** Moves the team's recorded saves and conceded goals to `goalieId`. */
+      moveGoalieEvents?: boolean;
+    }
   ): Promise<ApiResponse<FloorballMatchDto>> => {
     try {
       const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/teams/${teamId}/active-roster`, {
@@ -634,6 +639,7 @@ export const floorballMatchService = {
         body: JSON.stringify({
           players: payload.players,
           goalieId: payload.goalieId,
+          moveGoalieEvents: payload.moveGoalieEvents ?? false,
         }),
       });
 
@@ -651,6 +657,22 @@ export const floorballMatchService = {
       console.error('Error in floorballMatchService.setActiveRoster:', error);
       throw error;
     }
+  },
+
+  /**
+   * Corrects the phase of play that decided a match in progress
+   */
+  setDecidedIn: async (matchId: string, decision: MatchDecision): Promise<ApiResponse<FloorballMatchDto>> => {
+    const response = await authFetch(`${API_URL}/${MATCHES_PATH}/${matchId}/decided-in`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ decision }),
+    });
+    const apiResponse: ApiResponse<FloorballMatchDto> = await response.json();
+    if (!response.ok || !apiResponse.success) {
+      throw new Error(await parseErrorResponse(apiResponse, 'Failed to change how the match was decided'));
+    }
+    return apiResponse;
   },
 
   /**

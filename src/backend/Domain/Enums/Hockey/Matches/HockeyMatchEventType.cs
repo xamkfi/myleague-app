@@ -44,6 +44,10 @@ public enum HockeyMatchEventType
     /// <summary>
     /// ShootoutAttempt
     /// </summary>
-    ShootoutAttempt = 9
+    ShootoutAttempt = 9,
+    /// <summary>
+    /// MissedPenaltyShot: a penalty shot that did not result in a goal
+    /// </summary>
+    MissedPenaltyShot = 10
 }
 

@@ -32,5 +32,14 @@ public class FootballGoal : FootballMatchEvent
         GoalType = goalType;
     }
 
+    /// <summary>
+    /// Moves the goal to another period and goal type when the way the match was decided is corrected.
+    /// </summary>
+    internal void MoveToPeriod(int periodNumber, FootballGoalType goalType)
+    {
+        PeriodNumber = periodNumber;
+        GoalType = goalType;
+    }
+
     public bool IsOwnGoal => GoalType == FootballGoalType.OwnGoal;
 }

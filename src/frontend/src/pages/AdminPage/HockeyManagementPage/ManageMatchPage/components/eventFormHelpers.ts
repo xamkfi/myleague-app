@@ -8,6 +8,18 @@ export interface HockeyFormPlayer {
   position?: string;
 }
 
+export interface HockeyGoalFlags {
+  wasPenaltyShotGoal: boolean;
+  wasEmptyNet: boolean;
+  wasDelayedPenalty: boolean;
+}
+
+export const NO_GOAL_FLAGS: HockeyGoalFlags = {
+  wasPenaltyShotGoal: false,
+  wasEmptyNet: false,
+  wasDelayedPenalty: false,
+};
+
 const isGoaliePlayer = (player: HockeyFormPlayer): boolean =>
   Boolean(player.isGoalie) || player.position === 'Goalie';
 

@@ -19,4 +19,9 @@ public class FootballPlayerSeasonStatisticsDto
     public int Points { get; set; }
     public int YellowCards { get; set; }
     public int RedCards { get; set; }
+
+    /// <summary>
+    /// Completed matches the player kept goal in without conceding. Filled for team queries only.
+    /// </summary>
+    public int CleanSheets { get; set; }
 }

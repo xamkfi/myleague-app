@@ -15,6 +15,7 @@ interface LiveMatchQuickActionsProps {
   rightTeamSide: TeamSide;
   onShowGoalForm: (teamId: string) => void;
   onShowPenaltyForm: (teamId: string) => void;
+  onShowMissedPenaltyForm: (teamId: string) => void;
   // Save recording controls
   leftGoalieId?: string;
   rightGoalieId?: string;
@@ -39,6 +40,7 @@ const LiveMatchQuickActions = ({
   rightTeamSide,
   onShowGoalForm,
   onShowPenaltyForm,
+  onShowMissedPenaltyForm,
   leftGoalieId,
   rightGoalieId,
   onRecordSave,
@@ -110,6 +112,15 @@ const LiveMatchQuickActions = ({
       >
         <span className="btn-label">{t('floorball.matches.manage.quickActions.recordPenalty', 'Record penalty')}</span>
         <i className="fas fa-exclamation-triangle btn-icon" aria-hidden="true"></i>
+      </button>
+      <button
+        onClick={() => teamId && onShowMissedPenaltyForm(teamId)}
+        className="action-btn missed-penalty-btn"
+        disabled={loading || !isMatchInProgress || !teamId}
+        type="button"
+      >
+        <span className="btn-label">{t('matchManage.missedPenalty.quickAction', 'Missed penalty')}</span>
+        <i className="fas fa-times btn-icon" aria-hidden="true"></i>
       </button>
     </div>
   );

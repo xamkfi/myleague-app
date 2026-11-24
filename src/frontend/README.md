@@ -23,7 +23,6 @@ Conventions are in [.claude/rules/frontend.md](../../.claude/rules/frontend.md).
 | i18n | i18next + react-i18next, `fi` and `en` |
 | Live updates | `@microsoft/signalr` 8 |
 | Rich text | Quill / react-quill, sanitized with DOMPurify |
-| Excel import | exceljs |
 | Package manager | pnpm 10.11 (pinned in `packageManager`) |
 
 ## Prerequisites

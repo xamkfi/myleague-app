@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { EventGroup, ProcessedEvent, ProcessedEventType } from './types';
 import { formatMatchEventTime } from '../../../../../utils/matchEventFormat';
 import { getFloorballGoalTypeInfo } from '../../../../../utils/floorballGoalType';
+import { formatFloorballPenaltyMinutes } from '../../../../../utils/floorballPenalty';
 import BulkActionsBar from '../../../../../components/BulkActionsBar/BulkActionsBar';
 import './LiveMatchEventsHistory.scss';
 
@@ -51,6 +52,7 @@ const EVENT_TYPE_ICON: Record<ProcessedEventType, string> = {
   goal: 'fas fa-bullseye',
   penalty: 'fas fa-exclamation-triangle',
   save: 'fas fa-shield-alt',
+  missedPenalty: 'fas fa-times',
 };
 
 /**
@@ -277,10 +279,20 @@ const LiveMatchEventsHistory = ({
                 {goalTypeInfo && goalTypeInfo.abbreviation && (
                   <span
                     className="goal-type-badge"
-                    title={goalTypeInfo.label}
-                    aria-label={goalTypeInfo.label}
+                    title={t(`floorball.matches.manage.goalTypes.${goalTypeInfo.name}`, goalTypeInfo.label)}
+                    aria-label={t(`floorball.matches.manage.goalTypes.${goalTypeInfo.name}`, goalTypeInfo.label)}
                   >
                     ({goalTypeInfo.abbreviation})
+                  </span>
+                )}
+
+                {event.wasDelayedPenalty && (
+                  <span
+                    className="goal-type-badge"
+                    title={t('matchPage.events.delayedPenalty', 'Delayed penalty')}
+                    aria-label={t('matchPage.events.delayedPenalty', 'Delayed penalty')}
+                  >
+                    (SR)
                   </span>
                 )}
 
@@ -303,13 +315,18 @@ const LiveMatchEventsHistory = ({
                     <span className="event-text penalty-text">
                       <span className="penalty-line">
                         {event.playerName || ''}
-                        {event.penaltyMinutes ? ` · ${event.penaltyMinutes} min` : ''}
+                        {event.penaltyMinutes ? ` · ${formatFloorballPenaltyMinutes(event.penaltyMinutes)} min` : ''}
                       </span>
                       {penaltyDescription && (
                         <span className="penalty-description" title={penaltyDescription}>
                           {penaltyDescription}
                         </span>
                       )}
+                    </span>
+                  )}
+                  {event.type === 'missedPenalty' && (
+                    <span className="event-text">
+                      <span className="player-name">{event.playerName}</span>
                     </span>
                   )}
                   {event.type === 'save' && (

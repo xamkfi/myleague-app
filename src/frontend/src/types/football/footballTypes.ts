@@ -209,6 +209,16 @@ export interface FootballCardEventDto {
   description?: string;
 }
 
+/** Penalty kick that did not result in a goal. */
+export interface FootballMissedPenaltyEventDto {
+  id: string;
+  teamId: string;
+  playerId: string;
+  periodNumber: number;
+  timeInSeconds: number;
+  playerName?: string;
+}
+
 export interface FootballSubstitutionEventDto {
   id: string;
   teamId: string;
@@ -257,6 +267,7 @@ export interface FootballMatchDto {
   goalEvents: FootballGoalEventDto[];
   cardEvents: FootballCardEventDto[];
   substitutionEvents: FootballSubstitutionEventDto[];
+  missedPenaltyEvents?: FootballMissedPenaltyEventDto[] | null;
   matchRules: FootballMatchRules;
   homeLineup: FootballLineupPlayer[];
   awayLineup: FootballLineupPlayer[];

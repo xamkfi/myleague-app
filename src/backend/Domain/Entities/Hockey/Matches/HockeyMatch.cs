@@ -1,6 +1,7 @@
 using Domain.Entities.Hockey.Competitions;
 using Domain.Entities.Hockey.Matches.Events;
 using Domain.Entities.Hockey.Teams;
+using Domain.Enums.Common;
 using Domain.Enums.Hockey.Competitions;
 using Domain.Enums.Hockey.Matches;
 using Domain.Enums.Hockey.Teams;
@@ -287,7 +288,24 @@ public class HockeyMatch : BaseEntity
 
     public void UpdateScheduledStartTime(DateTime scheduledStartTime) => ScheduledStartTime = scheduledStartTime;
 
-    public void SetStatus(HockeyMatchStatus status) => Status = status;
+    /// <summary>
+    /// Sets the match status. A finished match that goes back into play loses its stored result and end
+    /// time, so finishing it again derives them from the corrected score.
+    /// </summary>
+    public void SetStatus(HockeyMatchStatus status)
+    {
+        bool reopened = Status == HockeyMatchStatus.Finished
+            && status is HockeyMatchStatus.InProgress
+                or HockeyMatchStatus.Intermission
+                or HockeyMatchStatus.Overtime
+                or HockeyMatchStatus.Shootout;
+        Status = status;
+        if (reopened)
+        {
+            ResultType = null;
+            ActualEndTime = null;
+        }
+    }
 
     public void SetResultType(HockeyMatchResultType? resultType) => ResultType = resultType;
 
@@ -432,6 +450,84 @@ public class HockeyMatch : BaseEntity
 
     public void SetWentToShootout(bool wentToShootout) => WentToShootout = wentToShootout;
 
+    /// <summary>
+    /// Gets the period number used for overtime (regular periods + 1).
+    /// </summary>
+    public int OvertimePeriodNumber => MatchRules.RegularPeriodCount + 1;
+
+    /// <summary>
+    /// Gets the period number used for the shootout (regular periods + 2).
+    /// </summary>
+    public int ShootoutPeriodNumber => MatchRules.RegularPeriodCount + 2;
+
+    /// <summary>
+    /// Corrects the phase of play that decided the match, so the standings award the right points.
+    /// When the score is not level and the target period has no goals yet, the last goal of the match
+    /// is moved there. Period markers of the removed extra periods are returned so the caller can
+    /// delete them from the store.
+    /// </summary>
+    public IReadOnlyList<HockeyMatchEvent> SetDecidedIn(MatchDecision decision)
+    {
+        EnsureCanModifyEvents();
+        if (Status is HockeyMatchStatus.Scheduled or HockeyMatchStatus.Warmup)
+            throw new InvalidOperationException("The match has not been started.");
+
+        int lastPeriod = decision switch
+        {
+            MatchDecision.Regulation => MatchRules.RegularPeriodCount,
+            MatchDecision.Overtime => OvertimePeriodNumber,
+            MatchDecision.Shootout => ShootoutPeriodNumber,
+            _ => throw new ArgumentOutOfRangeException(nameof(decision), decision, "Unknown match decision."),
+        };
+
+        if (decision != MatchDecision.Regulation)
+        {
+            EnsurePeriodScore(lastPeriod, decision == MatchDecision.Overtime ? HockeyPeriodType.Overtime : HockeyPeriodType.Shootout);
+            MoveDecidingGoal(lastPeriod);
+        }
+
+        if (_events.Any(e => e.PeriodNumber > lastPeriod && e is not HockeyPeriodEvent))
+            throw new InvalidOperationException("Delete the events of the later periods before changing how the match was decided.");
+
+        List<HockeyMatchEvent> removedMarkers = _events
+            .Where(e => e.PeriodNumber > lastPeriod && e is HockeyPeriodEvent)
+            .ToList();
+        _events.RemoveAll(removedMarkers.Contains);
+        _periodScores.RemoveAll(p => p.PeriodNumber > lastPeriod);
+
+        WentToOvertime = decision == MatchDecision.Overtime
+            || (decision == MatchDecision.Shootout && WentToOvertime);
+        WentToShootout = decision == MatchDecision.Shootout;
+        CurrentPeriodNumber = lastPeriod;
+        RecalculatePeriodGoals();
+
+        return removedMarkers;
+    }
+
+    private void EnsurePeriodScore(int periodNumber, HockeyPeriodType periodType)
+    {
+        if (_periodScores.All(p => p.PeriodNumber != periodNumber))
+            AddPeriodScore(periodNumber, periodType);
+    }
+
+    private void MoveDecidingGoal(int periodNumber)
+    {
+        List<HockeyGoal> goals = _events.OfType<HockeyGoal>()
+            .OrderByDescending(g => g.PeriodNumber)
+            .ThenByDescending(g => g.GameTime)
+            .ThenByDescending(g => g.CreatedAt)
+            .ToList();
+        if (HomeScore == AwayScore || goals.Any(g => g.PeriodNumber == periodNumber))
+            return;
+
+        Guid? winningMatchTeamId = HomeScore > AwayScore ? HomeMatchTeam?.Id : AwayMatchTeam?.Id;
+        HockeyGoal? deciding = goals.FirstOrDefault();
+        if (Math.Abs(HomeScore - AwayScore) != 1 || deciding is null || deciding.ScoringMatchTeamId != winningMatchTeamId)
+            throw new InvalidOperationException("The score must be level without the deciding goal. Correct the goals first.");
+
+        deciding.MoveToPeriod(periodNumber);
+    }
+
     public void SetTeamGoals(HockeyTeamSlot slot, int goals)
     {
         HockeyMatchTeam matchTeam = GetRequiredMatchTeam(slot);
@@ -495,6 +591,12 @@ public class HockeyMatch : BaseEntity
         DeleteEventOfType<HockeyPenalty>(penaltyEventId, "Penalty");
 
     /// <summary>
+    /// Removes a missed penalty shot event.
+    /// </summary>
+    public HockeyMissedPenaltyShot DeleteMissedPenaltyShotEvent(Guid missedPenaltyShotEventId) =>
+        DeleteEventOfType<HockeyMissedPenaltyShot>(missedPenaltyShotEventId, "Missed penalty shot");
+
+    /// <summary>
     /// Removes a shot event.
     /// </summary>
     public HockeyShot DeleteShotEvent(Guid shotEventId) =>
@@ -514,7 +616,9 @@ public class HockeyMatch : BaseEntity
         Guid? secondaryAssistActivePlayerId = null,
         Guid? goalieActivePlayerId = null,
         bool wasEmptyNet = false,
-        string? description = null)
+        string? description = null,
+        bool wasDelayedPenalty = false,
+        bool wasPenaltyShotGoal = false)
     {
         EnsureCanModifyEvents();
 
@@ -542,7 +646,9 @@ public class HockeyMatch : BaseEntity
             secondaryAssistActivePlayerId,
             goalieActivePlayerId,
             wasEmptyNet,
-            description);
+            description,
+            wasDelayedPenalty,
+            wasPenaltyShotGoal);
 
         RecalculatePeriodGoals();
         return goal;
@@ -766,7 +872,10 @@ public class HockeyMatch : BaseEntity
     public bool ReferencesCompetitionTeam(Guid competitionTeamId) =>
         _matchTeams.Any(t => t.CompetitionTeamId == competitionTeamId);
 
-    private bool IsPlayoffBracketMatch =>
+    /// <summary>
+    /// Whether the match belongs to a playoff bracket or series.
+    /// </summary>
+    public bool IsPlayoffBracketMatch =>
         PlayoffRound is not null || NextMatchId is not null || PlayoffSeriesId is not null;
 
     private Guid? ResolveCompetitionTeamId(Guid teamId, HockeyCompetitionTeam? competitionTeam)

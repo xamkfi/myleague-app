@@ -229,6 +229,10 @@ public class CompleteFootballMatchHandler : IRequestHandler<CompleteFootballMatc
                     participants.Add((substitution.PlayerOffId, substitution.TeamId));
                     participants.Add((substitution.PlayerOnId, substitution.TeamId));
                     break;
+
+                case FootballMissedPenalty missedPenalty:
+                    participants.Add((missedPenalty.ShooterPlayerId, missedPenalty.TeamId));
+                    break;
             }
         }
 

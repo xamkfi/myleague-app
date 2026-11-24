@@ -18,6 +18,8 @@ interface LiveMatchModalHeaderProps {
   /** Shows "Revert to not started" while live. Only for a 0-0 match with no recorded events. */
   canRevertToScheduled?: boolean;
   onRevertToScheduled?: () => void;
+  /** Shows "Decided in" while live, for correcting overtime and shootout results. */
+  onChangeDecision?: () => void;
 }
 
 const LiveMatchModalHeader = ({
@@ -32,6 +34,7 @@ const LiveMatchModalHeader = ({
   onReopen,
   canRevertToScheduled = false,
   onRevertToScheduled,
+  onChangeDecision,
 }: LiveMatchModalHeaderProps) => {
   const { t } = useTranslation();
   const homeName: string = homeTeam?.name || t('matchManage.scoreboard.home', 'Home');
@@ -96,6 +99,17 @@ const LiveMatchModalHeader = ({
                 >
                   <i className="fas fa-undo" aria-hidden="true"></i>
                   {t('matchManage.header.revertToScheduled', 'Revert to not started')}
+                </button>
+              )}
+              {onChangeDecision && (
+                <button
+                  type="button"
+                  onClick={onChangeDecision}
+                  className="revert-match-button"
+                  title={t('matchManage.header.changeDecisionTitle', 'Change whether the match was decided in regulation, overtime or a shootout')}
+                >
+                  <i className="fas fa-flag" aria-hidden="true"></i>
+                  {t('matchManage.header.changeDecision', 'Decided in')}
                 </button>
               )}
               <button

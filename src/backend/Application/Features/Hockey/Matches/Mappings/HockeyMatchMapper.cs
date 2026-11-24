@@ -135,7 +135,10 @@ public static class HockeyMatchMapper
             goal?.GoalStrength.ToString(),
             penalty?.Offence.ToString(),
             penalty?.Severity.ToString(),
-            penalty?.PenaltyMinutes);
+            penalty?.PenaltyMinutes,
+            goal?.WasEmptyNet ?? false,
+            goal?.WasDelayedPenalty ?? false,
+            goal?.WasPenaltyShotGoal ?? false);
     }
 
     public static HockeyMatchOfficialDto ToOfficialDto(HockeyMatchOfficial official)

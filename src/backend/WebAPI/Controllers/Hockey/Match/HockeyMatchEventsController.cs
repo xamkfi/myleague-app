@@ -53,7 +53,9 @@ public class HockeyMatchEventsController : BaseApiController
             request.SecondaryAssistActivePlayerId,
             request.GoalieActivePlayerId,
             request.WasEmptyNet,
-            request.Description), cancellationToken);
+            request.Description,
+            request.WasDelayedPenalty,
+            request.WasPenaltyShotGoal), cancellationToken);
 
         return HandleResult(result, "Goal recorded successfully", "Failed to record goal");
     }
@@ -97,9 +99,49 @@ public class HockeyMatchEventsController : BaseApiController
             request.SecondaryAssistActivePlayerId,
             request.GoalieActivePlayerId,
             request.WasEmptyNet,
-            request.Description), cancellationToken);
+            request.Description,
+            request.WasDelayedPenalty,
+            request.WasPenaltyShotGoal), cancellationToken);
 
         return HandleResult(result, "Goal updated successfully", "Failed to update goal");
+    }
+
+    /// <summary>
+    /// Records a missed penalty shot, in play or in the shootout. The score is not affected.
+    /// </summary>
+    [Authorize(Roles = AuthRoles.MatchOperators)]
+    [HttpPost("{matchId:guid}/events/missed-penalty-shots")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> RecordMissedPenaltyShot(
+        Guid matchId,
+        [FromBody] RecordHockeyMissedPenaltyShotRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(new RecordHockeyMissedPenaltyShotCommand(
+            matchId,
+            request.MatchTeamId,
+            request.ShooterActivePlayerId,
+            request.PeriodNumber,
+            request.TimeInSeconds), cancellationToken);
+
+        return HandleResult(result, "Missed penalty shot recorded successfully", "Failed to record missed penalty shot");
+    }
+
+    /// <summary>
+    /// Deletes a missed penalty shot event (live-ops undo).
+    /// </summary>
+    [Authorize(Roles = AuthRoles.MatchOperators)]
+    [HttpDelete("{matchId:guid}/events/missed-penalty-shots/{eventId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> DeleteMissedPenaltyShot(Guid matchId, Guid eventId,
+        CancellationToken cancellationToken = default)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new DeleteHockeyMissedPenaltyShotCommand(matchId, eventId), cancellationToken);
+        return HandleResult(result, "Missed penalty shot deleted successfully", "Failed to delete missed penalty shot");
     }
 
     /// <summary>

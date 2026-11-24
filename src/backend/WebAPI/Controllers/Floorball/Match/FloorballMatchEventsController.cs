@@ -72,7 +72,8 @@ namespace WebAPI.Controllers.Floorball
                 request.PeriodNumber,
                 request.TimeInSeconds,
                 request.Description,
-                request.GoalType
+                request.GoalType,
+                request.WasDelayedPenalty
             );
 
             Result<FloorballMatchDto> result = await _mediator.Send(command, cancellationToken);
@@ -226,6 +227,52 @@ namespace WebAPI.Controllers.Floorball
                 new DeleteFloorballSaveCommand(matchId, saveEventId), cancellationToken);
 
             return HandleResult(result, "Save deleted successfully", "Failed to delete save");
+        }
+
+        /// <summary>
+        /// Records a missed penalty shot, in play or in the shootout. The score is not affected.
+        /// </summary>
+        [HttpPost("missed-penalty")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status429TooManyRequests)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> RecordMissedPenalty(
+            Guid matchId,
+            [FromBody] RecordFloorballMissedPenaltyRequest request,
+            CancellationToken cancellationToken)
+        {
+            string rateKey = $"{matchId}:missed-penalty:{request.TeamId}:{request.PlayerId}";
+            if (_rateLimiter.IsRateLimited(rateKey, MatchEventRateLimits.PenaltyWindow))
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests,
+                    ApiResponse<FloorballMatchDto>.ErrorResponse("Too many missed penalty events; please wait a moment."));
+            }
+
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new RecordFloorballMissedPenaltyCommand(
+                    matchId, request.TeamId, request.PlayerId, request.PeriodNumber, request.TimeInSeconds),
+                cancellationToken);
+
+            return HandleResult(result, "Missed penalty recorded successfully", "Failed to record missed penalty");
+        }
+
+        /// <summary>
+        /// Deletes a missed penalty shot from a floorball match
+        /// </summary>
+        [HttpDelete("missed-penalty/{missedPenaltyEventId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> DeleteMissedPenalty(
+            Guid matchId,
+            Guid missedPenaltyEventId,
+            CancellationToken cancellationToken)
+        {
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new DeleteFloorballMissedPenaltyCommand(matchId, missedPenaltyEventId), cancellationToken);
+
+            return HandleResult(result, "Missed penalty deleted successfully", "Failed to delete missed penalty");
         }
 
         /// <summary>

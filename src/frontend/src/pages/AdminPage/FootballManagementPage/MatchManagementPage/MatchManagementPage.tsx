@@ -12,6 +12,7 @@ import type { FootballMatchDto } from '../../../../types/football/footballTypes'
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import LoadingSpinner from '../../../../components/LoadingSpinner/LoadingSpinner';
+import DeleteMatchDialog from '../../../../components/match/DeleteMatchDialog';
 import ConfirmationDialog from '../../../../components/ConfirmationDialog/ConfirmationDialog';
 import SearchField from '../../../../components/SearchField/SearchField';
 import Button from '../../../../components/Button/Button';
@@ -133,6 +134,7 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
     match: FootballMatchDto;
   } | null>(null);
   const [dialogLoading, setDialogLoading] = useState(false);
+  const [matchToDelete, setMatchToDelete] = useState<FootballMatchDto | null>(null);
 
   // Fetch status counts (lightweight queries)
   const fetchStatusCounts = useCallback(async () => {
@@ -460,6 +462,7 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
             onStartMatch={handleStartMatch}
             onCancelMatch={handleCancelMatch}
             onReactivateMatch={handleReactivateMatch}
+            onDeleteMatch={setMatchToDelete}
           />
         </div>
 
@@ -499,6 +502,21 @@ const MatchManagementPage = ({ mode = 'all' }: MatchManagementPageProps) => {
           onConfirm={handleConfirmAction}
           onCancel={() => setConfirmDialog(null)}
         />
+
+        {matchToDelete && (
+          <DeleteMatchDialog
+            matchLabel={`${matchToDelete.homeTeamName ?? ''} – ${matchToDelete.awayTeamName ?? ''}`}
+            onDelete={async () => {
+              await footballMatchService.delete(matchToDelete.id);
+            }}
+            onDeleted={() => {
+              void fetchMatches(false);
+              void fetchStatusCounts();
+            }}
+            onError={setError}
+            onClose={() => setMatchToDelete(null)}
+          />
+        )}
       </div>
     </PageTemplate>
   );

@@ -90,6 +90,7 @@ public class GetFloorballMatchByIdHandler : IRequestHandler<GetFloorballMatchByI
             IEnumerable<Guid> playerIds = match.GoalEvents
                 .SelectMany(g => new[] { g.ScoringPlayerId, g.AssistingPlayerId, g.SecondaryAssistingPlayerId })
                 .Concat(match.PenaltyEvents.Select(p => p.PlayerId))
+                .Concat(match.MissedPenaltyEvents.Select(m => (Guid?)m.ShooterPlayerId))
                 .OfType<Guid>()
                 .Distinct()
                 .ToList();

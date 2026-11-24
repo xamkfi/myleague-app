@@ -80,6 +80,17 @@ public static class FootballMatchMapper
                 s.Description))
             .ToList();
 
+        List<FootballMissedPenaltyEventDto> missedPenaltyEvents = match.Events
+            .OfType<FootballMissedPenalty>()
+            .Select(m => new FootballMissedPenaltyEventDto(
+                m.Id,
+                m.TeamId,
+                m.ShooterPlayerId,
+                m.PeriodNumber,
+                m.TimeInSeconds,
+                GetPlayerName(m.ShooterPlayerId, playerPersonLookup)))
+            .ToList();
+
         Uri? homeTeamLogo = match.HomeTeam?.GetEffectiveLogoUrl(homeClub?.LogoUrl);
         Uri? awayTeamLogo = match.AwayTeam?.GetEffectiveLogoUrl(awayClub?.LogoUrl);
 
@@ -137,7 +148,8 @@ public static class FootballMatchMapper
                 .ToList(),
             match.Scorekeepers
                 .Select(s => new MatchPersonDto(s.PersonId, MatchPersonLookup.NameOf(s.PersonId, staffPersonLookup)))
-                .ToList());
+                .ToList(),
+            missedPenaltyEvents);
     }
 
     /// <summary>

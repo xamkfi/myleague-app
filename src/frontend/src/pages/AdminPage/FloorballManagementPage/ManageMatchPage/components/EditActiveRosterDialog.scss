@@ -154,6 +154,15 @@
     color: $color-neutral-dark-grey;
   }
 
+  &__checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
+    line-height: 20px;
+    cursor: pointer;
+  }
+
   &__warning {
     display: inline-flex;
     align-items: center;

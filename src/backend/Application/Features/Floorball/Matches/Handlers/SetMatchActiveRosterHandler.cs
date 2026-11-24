@@ -22,17 +22,20 @@ public class SetMatchActiveRosterHandler : IRequestHandler<SetFloorballMatchActi
 {
     private readonly IFloorballMatchRepository _matchRepository;
     private readonly IFloorballTeamRepository _teamRepository;
+    private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
     private readonly ILogger<SetMatchActiveRosterHandler> _logger;
 
     public SetMatchActiveRosterHandler(
         IFloorballMatchRepository matchRepository,
         IFloorballTeamRepository teamRepository,
+        IFloorballStatisticsRepository statisticsRepository,
         IFloorballUnitOfWork unitOfWork,
         ILogger<SetMatchActiveRosterHandler> logger)
     {
         _matchRepository = matchRepository;
         _teamRepository = teamRepository;
+        _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -69,6 +72,11 @@ public class SetMatchActiveRosterHandler : IRequestHandler<SetFloorballMatchActi
 
             match.SetActiveRoster(request.TeamId, selections, request.GoalieId);
 
+            if (request.MoveGoalieEvents && request.GoalieId.HasValue)
+            {
+                await MoveGoalieEventsAsync(match, request.TeamId, request.GoalieId.Value, cancellationToken);
+            }
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
@@ -88,10 +96,21 @@ public class SetMatchActiveRosterHandler : IRequestHandler<SetFloorballMatchActi
             _logger.LogWarning(ex, "Invalid operation while setting active roster for match {MatchId}", request.MatchId);
             return Result<FloorballMatchDto>.Failure(ex.Message);
         }
-        catch (Exception ex)
+    }
+
+    private async Task MoveGoalieEventsAsync(
+        FloorballMatch match, Guid teamId, Guid goalieId, CancellationToken cancellationToken)
+    {
+        IReadOnlyCollection<FloorballGoalieEventTransfer> transfers = match.MoveGoalieEvents(teamId, goalieId);
+        foreach (FloorballGoalieEventTransfer transfer in transfers)
         {
-            _logger.LogError(ex, "Unexpected error while setting active roster for match {MatchId}", request.MatchId);
-            return Result<FloorballMatchDto>.Failure("An error occurred while updating the active roster.");
+            await FloorballMatchStatisticsSupport.AdjustGoalieAsync(
+                _statisticsRepository, transfer.FromGoalieId, teamId, match.CompetitionId,
+                -transfer.Saves, -transfer.GoalsAgainst, cancellationToken);
         }
+
+        await FloorballMatchStatisticsSupport.AdjustGoalieAsync(
+            _statisticsRepository, goalieId, teamId, match.CompetitionId,
+            transfers.Sum(t => t.Saves), transfers.Sum(t => t.GoalsAgainst), cancellationToken);
     }
 }

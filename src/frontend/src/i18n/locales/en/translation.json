@@ -224,7 +224,9 @@
       "reopenMatchTitle": "Reopen this match for editing",
       "revertToScheduled": "Revert to not started",
       "revertToScheduledTitle": "Return the match to not started. Only possible at 0-0 with no recorded events.",
-      "closeTitle": "Back to the match list"
+      "closeTitle": "Back to the match list",
+      "changeDecision": "Decided in",
+      "changeDecisionTitle": "Change whether the match was decided in regulation, overtime or a shootout"
     },
     "revertToScheduled": {
       "title": "Revert match to not started?",
@@ -239,6 +241,38 @@
       "messageMany": "Delete {{count}} selected match events?",
       "warning": "This action cannot be undone.",
       "confirm": "Delete"
+    },
+    "decision": {
+      "title": "How the match was decided",
+      "hint": "Standings points follow this choice. If the score is not level, the deciding goal is moved to the chosen phase.",
+      "regulation": "Regulation",
+      "overtime": "Overtime",
+      "shootout": "Shootout",
+      "errors": {
+        "notLevel": "The score must be level without the deciding goal. Correct the goals first.",
+        "laterEvents": "Delete the events of the later phases first.",
+        "notInRules": "The match rules do not allow this.",
+        "failed": "Failed to change how the match was decided."
+      }
+    },
+    "missedPenalty": {
+      "title": "Record a missed penalty",
+      "quickAction": "Missed penalty",
+      "shooter": "Shooter",
+      "selectShooter": "Select player",
+      "time": "Time",
+      "submit": "Record",
+      "failed": "Failed to record the missed penalty"
+    },
+    "delayedPenalty": "Scored during a delayed penalty (SR)",
+    "deleteMatch": {
+      "action": "Delete match",
+      "title": "Delete the match?",
+      "message": "{{match}} is deleted permanently with all its events.",
+      "warning": "The result and statistics are removed from the standings and player statistics. This cannot be undone.",
+      "confirm": "Delete match",
+      "failed": "Failed to delete the match",
+      "playoffStarted": "A playoff match that has been started cannot be deleted."
     }
   },
   "matchScorekeepers": {
@@ -358,7 +392,10 @@
       "shootoutShort": "SO",
       "timeout": "Timeout",
       "noEvents": "No match events yet",
-      "unknownPlayer": "Unknown player"
+      "unknownPlayer": "Unknown player",
+      "missedPenalty": "Missed penalty",
+      "delayedPenalty": "Delayed penalty",
+      "penaltyMinutes": "{{minutes}} min"
     },
     "timer": {
       "start": "Start Timer",
@@ -2118,7 +2155,8 @@
           "type": {
             "goal": "Goal",
             "penalty": "Penalty",
-            "save": "Save"
+            "save": "Save",
+            "missedPenalty": "Missed penalty"
           }
         },
         "confirmEndPeriod": {
@@ -2198,7 +2236,6 @@
           "duration": "Duration",
           "selectDuration": "Select duration",
           "duration2": "2 minutes (minor)",
-          "duration5": "5 minutes (major)",
           "duration10": "10 minutes (misconduct)",
           "duration20": "20 minutes (game misconduct)",
           "time": "Time",
@@ -2207,7 +2244,8 @@
           "missingJersey": "Selected player has no jersey number. Assign a jersey before recording the penalty.",
           "missingJerseyShort": "Missing jersey",
           "recording": "Recording…",
-          "submit": "Record penalty"
+          "submit": "Record penalty",
+          "duration4": "2+2 minutes (double minor)"
         },
         "errors": {
           "connection": "Could not reach the server. Check your connection and try again.",
@@ -2298,7 +2336,9 @@
           "Defender": "Defender",
           "Forward": "Forward"
         },
-        "saveLineup": "Save lineup"
+        "saveLineup": "Save lineup",
+        "moveGoalieEvents": "Move this match's saves and conceded goals to the new goalkeeper",
+        "moveGoalieEventsHint": "Choose this if they were recorded on the wrong goalkeeper. Leave it off if the goalkeeper was changed during the match."
       },
       "assignTeams": {
         "action": "Assign teams",
@@ -2346,8 +2386,11 @@
       "savePercentage": "Save percentage",
       "goalsAgainstAverage": "Goals against average",
       "yellowCards": "Yellow cards",
-      "redCards": "Red cards"
-    }
+      "redCards": "Red cards",
+      "cleanSheets": "Matches without conceding a goal"
+    },
+    "position": "Position",
+    "cleanSheets": "Clean sheets"
   },
   "seasonContent": {
     "title": "Introduction blocks",
@@ -2366,19 +2409,14 @@
   "common": {
     "rosterImport": {
       "button": "Import roster",
-      "buttonTooltip": "Import a team roster from a JSON file into a selected season.",
+      "buttonTooltip": "Import a team roster from a JSON file into a season or tournament.",
       "title": "Import roster from JSON",
-      "season": "Season",
-      "seasonPlaceholder": "Select a season",
       "teams": "Teams",
-      "modeSingle": "One team",
-      "modeMultiple": "Several teams",
-      "multiReminder": "Each team in the JSON file is imported when its name matches a team in the season.",
       "fileShape": "Choose the JSON file first. The team is read from the name when the file includes one. Position and jersey number are optional.",
       "fileSummary": "In the file",
       "unnamedTeam": "Team name could not be read · {{count}} players",
       "destinationHeading": "Where to import",
-      "destinationHint": "Choose the season. Each team from the file is imported into the team in the right column. An empty choice leaves that team out.",
+      "destinationHint": "Choose the season or tournament. Each team from the file is imported into the team in the right column. An empty choice leaves that team out.",
       "fileTeamColumn": "Team in the file",
       "seasonTeamColumn": "Import into",
       "playerCountShort": "{{count}} players",
@@ -2386,13 +2424,13 @@
       "importIntoNamed": "Import {{name}} into",
       "importIntoUnnamed": "Import these players into",
       "skipTeam": "Do not import",
-      "nameMatches": "The name matches a team in the season.",
+      "nameMatches": "The name matches.",
       "pickDestination": "Choose at least one team to import the players into.",
-      "duplicateDestination": "The same season team is selected for more than one file team: {{names}}",
+      "duplicateDestination": "The same team is selected for more than one file team: {{names}}",
       "cannotImport": "Import cannot start. The reason is listed below.",
       "noPlayersInFile": "The file has no players to import. Every player needs a first and last name.",
       "nothingAdded": "No players were added to the roster. {{reasons}}",
-      "noTeams": "This season has no teams.",
+      "noTeams": "This competition has no teams.",
       "dropzone": "Drop a JSON file here or choose a file.",
       "chooseFile": "Choose file",
       "jsonOnly": "Choose a .json file.",
@@ -2410,9 +2448,8 @@
         "downloadedToast": "Prompt downloaded as a .txt file. Open it, copy the contents, and paste them into the AI chat.",
         "errorToast": "Could not copy or download the prompt. Try the download button again."
       },
-      "loadFailed": "Could not load seasons: {{msg}}",
+      "loadFailed": "Could not load seasons and tournaments: {{msg}}",
       "teamsFailed": "Could not load teams: {{msg}}",
-      "selectFirst": "Select the season and at least one team before choosing the file.",
       "lockedIntro": "Importing the roster of {{team}} into {{season}}.",
       "selectedCompetition": "Selected competition",
       "previewHeading": "Check before import",
@@ -2425,10 +2462,7 @@
       "captain": "captain",
       "referee": "referee",
       "invalidNameMark": "name incomplete",
-      "missingTeams": "Missing from the file: {{names}}",
-      "extraTeams": "Extra teams in the file will not be imported: {{names}}",
       "duplicateNames": "The file contains the same team more than once: {{names}}",
-      "unnamedPlayers": "The file has players without a team name. For several teams, each block needs JOUKKUEEN NIMI.",
       "invalidNames": "A first and last name are required: {{names}}",
       "canImportHint": "Players are added to the selected season roster. An empty jersey number is left empty.",
       "start": "Import roster",
@@ -2440,7 +2474,13 @@
       "reverted": "Reverted {{deleted}} records, {{failed}} failed.",
       "failed": "Import failed",
       "progress": "{{done}} / {{total}}",
-      "summary": "Added {{added}} players, skipped {{skipped}}, new persons {{persons}}."
+      "summary": "Added {{added}} players, skipped {{skipped}}, new persons {{persons}}.",
+      "competition": "Season or tournament",
+      "competitionPlaceholder": "Select a season or tournament",
+      "competitionKinds": {
+        "season": "Seasons",
+        "tournament": "Tournaments"
+      }
     },
     "back": "Back",
     "backTo": "Back to",
@@ -2537,7 +2577,8 @@
       "previous": "Previous",
       "next": "Next",
       "pageOf": "Page {{current}} of {{total}}"
-    }
+    },
+    "team": "Team"
   },
   "newsPage": {
     "matchStatus": {
@@ -2942,6 +2983,116 @@
           "half": "Half {{number}}",
           "extraTime": "Extra time {{number}}",
           "shootout": "Penalty shootout"
+        },
+        "title": "Match management",
+        "startMatch": "Start match",
+        "matchCompleted": "Match completed",
+        "startDisabled": {
+          "teams": "Assign both teams before starting",
+          "lineup": "Set the lineup of both teams to start",
+          "officials": "Assign officials to start"
+        },
+        "periodStatus": {
+          "completed": "played",
+          "started": "live",
+          "upcoming": "upcoming"
+        },
+        "periodControl": {
+          "ending": "Ending...",
+          "starting": "Starting...",
+          "end": "End {{period}}",
+          "start": "Start {{period}}",
+          "startExtraTime": "Start extra time"
+        },
+        "quickActions": {
+          "title": "Record event",
+          "recordGoal": "Goal",
+          "recordCard": "Card"
+        },
+        "goalForm": {
+          "title": "Record goal for {{team}}",
+          "scoringPlayer": "Scoring player",
+          "ownGoalScorer": "Own-goal scorer (opponent)",
+          "selectPlayer": "Select player",
+          "assistingPlayer": "Assisting player",
+          "optional": "(optional)",
+          "noAssist": "No assist",
+          "goalType": "Goal type",
+          "time": "Time",
+          "missingJersey": "Selected player has no jersey number. Assign a jersey before recording the goal.",
+          "missingJerseyShort": "Missing jersey",
+          "recording": "Recording…",
+          "submit": "Record goal"
+        },
+        "cardForm": {
+          "title": "Record card for {{team}}",
+          "receivingPlayer": "Receiving player",
+          "cardType": "Card",
+          "selectCard": "Select card",
+          "description": "Description",
+          "descriptionPlaceholder": "E.g. unsporting behaviour, dissent, serious foul play…",
+          "missingJersey": "Selected player has no jersey number. Assign a jersey before recording the card.",
+          "submit": "Record card"
+        },
+        "cardTypes": {
+          "Yellow": "Yellow card",
+          "SecondYellow": "Second yellow",
+          "DirectRed": "Red card"
+        },
+        "goalTypes": {
+          "Regular": "Regular goal",
+          "PenaltyKick": "Penalty kick",
+          "OwnGoal": "Own goal",
+          "ExtraTime": "Extra time",
+          "PenaltyShootout": "Penalty shootout"
+        },
+        "events": {
+          "type": {
+            "goal": "Goal",
+            "card": "Card",
+            "substitution": "Substitution",
+            "missedPenalty": "Missed penalty"
+          }
+        },
+        "errors": {
+          "selectTeamAndPlayer": "Select a team and a player",
+          "selectCard": "Select a team, a player and a card",
+          "throttle": "Wait a moment before recording another event.",
+          "recordGoal": "Failed to record goal",
+          "recordCard": "Failed to record card",
+          "deleteEvent": "Failed to delete event",
+          "missingEventId": "Cannot delete: missing event id",
+          "noEventsSelected": "Cannot delete: no events selected",
+          "startExtraTime": "Failed to start extra time",
+          "startShootout": "Failed to start penalty shootout"
+        },
+        "confirmEndHalf": {
+          "title": "End the half?",
+          "message": "Are you sure you want to end half {{number}} at {{time}}?",
+          "confirm": "End half"
+        },
+        "confirmExtraTime": {
+          "title": "Start extra time?",
+          "message": "Are you sure you want to start extra time?",
+          "warning": "Extra time is played according to the match rules."
+        },
+        "confirmShootout": {
+          "title": "Start the penalty shootout?",
+          "message": "Are you sure you want to start the penalty shootout?",
+          "warning": "The penalty shootout is not timed.",
+          "confirm": "Start penalty shootout"
+        },
+        "confirmEndMatch": {
+          "title": "End the match?",
+          "message": "Are you sure you want to end this match?",
+          "messageShootout": "Are you sure you want to end this match? The penalty shootout ends with it.",
+          "warning": "The result is confirmed. You can reopen the match later if needed."
+        },
+        "confirmReopen": {
+          "title": "Reopen match for editing",
+          "message": "The match goes back to in progress so you can edit events or continue play.",
+          "warning": "The match is taken out of the standings and statistics until you finish it again.",
+          "confirm": "Yes, reopen match"
         }
       },
       "assignTeams": {
@@ -2976,7 +3127,32 @@
         "loanPlayersConfirmTitle": "Add loan players",
         "loanPlayersConfirmMessage": "Add {{count}} loan players for {{team}}? Existing loan players are used first.",
         "loanPlayersConfirm": "Yes, add loan players",
-        "loanPlayersFailed": "Failed to add loan players"
+        "loanPlayersFailed": "Failed to add loan players",
+        "activeLineup": "Lineup",
+        "editLineup": "Edit lineup",
+        "editLineupTitle": "Edit lineup",
+        "saveLineup": "Save lineup",
+        "saveFailed": "Failed to save the lineup",
+        "homeTeam": "Home team",
+        "awayTeam": "Away team",
+        "playerCount": "{{count}} players",
+        "playerCount_one": "{{count}} player",
+        "playerCount_other": "{{count}} players",
+        "inLineup": "In lineup",
+        "selectPlayer": "{{name}} in the lineup",
+        "selectAll": "Select all",
+        "clearAll": "Clear",
+        "player": "Player",
+        "position": "Position",
+        "searchPlayers": "Search players by name...",
+        "noTeamPlayers": "Team has no players.",
+        "noAvailablePlayers": "No players match the search.",
+        "noPlayers": "The lineup has not been set yet.",
+        "goalkeeperShort": "GK",
+        "sentOff": "Sent off",
+        "needPlayers": "Choose the players who are in the match.",
+        "needGoalkeeper": "Choose at least one goalkeeper for the lineup.",
+        "hasEvents": "Player has recorded events in this match and cannot be removed"
       },
       "actions": {
         "open": "Open Match",
@@ -2987,6 +3163,24 @@
         "reactivate": "Reactivate Match",
         "edit": "Edit match details",
         "menu": "Match actions menu"
+      }
+    },
+    "match": {
+      "sentOff": "sent off",
+      "stats": {
+        "goals": "Goals",
+        "yellowCards": "Yellow cards",
+        "redCards": "Red cards",
+        "cleanSheet": "Clean sheet",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "events": {
+        "cardShort": {
+          "Yellow": "Y",
+          "SecondYellow": "2Y",
+          "DirectRed": "R"
+        }
       }
     }
   },
@@ -3924,10 +4118,7 @@
         "PowerPlayOneMan": "Power play (1)",
         "PowerPlayTwoMan": "Power play (2)",
         "ShortHandedOneMan": "Shorthanded (1)",
-        "ShortHandedTwoMan": "Shorthanded (2)",
-        "PenaltyShot": "Penalty shot",
-        "EmptyNet": "Empty net",
-        "OwnGoal": "Own goal"
+        "ShortHandedTwoMan": "Shorthanded (2)"
       },
       "penaltyOffences": {
         "Tripping": "Tripping",
@@ -3939,7 +4130,7 @@
         "CrossChecking": "Cross-checking",
         "Boarding": "Boarding",
         "Charging": "Charging",
-        "IllegalCheck": "Illegal check",
+        "IllegalCheck": "Body checking",
         "CheckingFromBehind": "Checking from behind",
         "CheckingToHeadOrNeck": "Checking to the head or neck",
         "Elbowing": "Elbowing",
@@ -3950,9 +4141,11 @@
         "Fighting": "Fighting",
         "GoalieInterference": "Goaltender interference",
         "DelayOfGame": "Delay of game",
-        "TooManyPlayers": "Too many players",
+        "TooManyPlayers": "Too many players on the ice",
         "UnsportsmanlikeConduct": "Unsportsmanlike conduct",
-        "Other": "Other"
+        "Other": "Other",
+        "HoldingTheStick": "Holding the stick",
+        "SlapShot": "Slap shot"
       },
       "penaltySeverities": {
         "Minor": "Minor",
@@ -3963,6 +4156,10 @@
         "MatchPenalty": "Match penalty",
         "PenaltyShot": "Penalty shot",
         "BenchMinor": "Bench minor"
+      },
+      "goalFlags": {
+        "penaltyShot": "Penalty shot (RL)",
+        "emptyNet": "Empty net (TM)"
       }
     }
   },
@@ -4474,11 +4671,10 @@
     "clearGoalie": "Clear",
     "hockeyRosterHint": "Select the dressed players for this match. A goalie is required.",
     "floorballRosterHint": "Select the field players for this match and set their role. The goalie is selected separately above.",
-    "footballRosterHint": "Select the players for this match, set their position, and mark the starting lineup.",
+    "footballRosterHint": "Select the players for this match and set their position.",
     "inRoster": "In roster",
     "playerName": "Player",
     "matchPosition": "Match position",
-    "starting": "Starting",
     "emptyRoster": "This team has no players on its roster yet.",
     "searchNoResults": "No players match the current search.",
     "selectedPlayers": "Selected players",

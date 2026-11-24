@@ -107,8 +107,8 @@ export function aggregateGoalieSeasons(rows: GoalieSeasonInput[]): GoalieSeasonP
     .map((row) => ({
       seasonLabel: row.seasonLabel,
       savePercentage: row.shotsAgainst > 0 ? (row.saves / row.shotsAgainst) * 100 : 0,
-      goalsAgainstAverage: row.minutesPlayed > 0
-        ? (row.goalsAgainst * 60) / row.minutesPlayed
+      goalsAgainstAverage: row.gamesPlayed > 0
+        ? row.goalsAgainst / row.gamesPlayed
         : row.goalsAgainstAverage,
     }));
 }

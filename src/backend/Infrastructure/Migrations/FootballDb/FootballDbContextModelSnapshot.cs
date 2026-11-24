@@ -1131,6 +1131,23 @@ namespace MyLeague.Infrastructure.Migrations.FootballDb
                     b.HasDiscriminator().HasValue("Goal");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Football.Matches.FootballMissedPenalty", b =>
+                {
+                    b.HasBaseType("Domain.Entities.Football.Matches.FootballMatchEvent");
+
+                    b.Property<Guid>("ShooterPlayerId")
+                        .HasColumnType("uuid");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_FootballMatchEvent_PeriodNumber", "\"PeriodNumber\" > 0");
+
+                            t.HasCheckConstraint("CK_FootballMatchEvent_TimeInSeconds", "\"TimeInSeconds\" >= 0");
+                        });
+
+                    b.HasDiscriminator().HasValue("MissedPenalty");
+                });
+
             modelBuilder.Entity("Domain.Entities.Football.Matches.FootballSubstitution", b =>
                 {
                     b.HasBaseType("Domain.Entities.Football.Matches.FootballMatchEvent");

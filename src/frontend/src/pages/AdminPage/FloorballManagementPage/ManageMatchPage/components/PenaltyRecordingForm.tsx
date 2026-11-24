@@ -6,6 +6,7 @@ import type { FloorballPlayerDto } from '../../../../../api/floorball/floorballP
 import type { PenaltyForm } from './types';
 import { formatPlayerOptionLabel, sortPlayersForSelect } from './eventFormHelpers';
 import EventTimeInput from '../../../../../components/match/EventTimeInput';
+import { FLOORBALL_DOUBLE_MINOR_MINUTES } from '../../../../../utils/floorballPenalty';
 import FloorballEventPeriodSelect from './FloorballEventPeriodSelect';
 
 interface PenaltyRecordingFormProps {
@@ -30,7 +31,7 @@ interface PenaltyRecordingFormProps {
 /** Duration options; the label is resolved via i18n key `penaltyForm.duration{value}`. */
 const PENALTY_DURATION_OPTIONS: ReadonlyArray<{ value: number; labelKey: string; fallback: string }> = [
   { value: 2, labelKey: 'floorball.matches.manage.penaltyForm.duration2', fallback: '2 minutes (minor)' },
-  { value: 5, labelKey: 'floorball.matches.manage.penaltyForm.duration5', fallback: '5 minutes (major)' },
+  { value: FLOORBALL_DOUBLE_MINOR_MINUTES, labelKey: 'floorball.matches.manage.penaltyForm.duration4', fallback: '2+2 minutes (double minor)' },
   { value: 10, labelKey: 'floorball.matches.manage.penaltyForm.duration10', fallback: '10 minutes (misconduct)' },
   { value: 20, labelKey: 'floorball.matches.manage.penaltyForm.duration20', fallback: '20 minutes (game misconduct)' },
 ];

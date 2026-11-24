@@ -35,7 +35,8 @@ public class FloorballMatchEventConfiguration : IEntityTypeConfiguration<Floorba
         builder.HasDiscriminator<string>("EventType")
             .HasValue<FloorballGoal>("Goal")
             .HasValue<FloorballPenalty>("Penalty")
-            .HasValue<FloorballSave>("Save");
+            .HasValue<FloorballSave>("Save")
+            .HasValue<FloorballMissedPenalty>("MissedPenalty");
         
         // Properties
         builder.Property(e => e.Id)
