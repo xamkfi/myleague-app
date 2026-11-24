@@ -96,6 +96,14 @@ public enum HockeyPenaltyOffence
     /// <summary>
     /// Other: any offence not listed
     /// </summary>
-    Other = 22
+    Other = 22,
+    /// <summary>
+    /// HoldingTheStick: holding an opponent's stick
+    /// </summary>
+    HoldingTheStick = 23,
+    /// <summary>
+    /// SlapShot: a slap shot where the competition rules forbid it
+    /// </summary>
+    SlapShot = 24
 }
 

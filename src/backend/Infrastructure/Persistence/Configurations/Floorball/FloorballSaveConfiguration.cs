@@ -20,7 +20,7 @@ public class FloorballSaveConfiguration : IEntityTypeConfiguration<FloorballSave
     /// <param name="builder"></param>
     public void Configure(EntityTypeBuilder<FloorballSave> builder)
     {
-        builder.Property(s => s.GoalieId).IsRequired();
+        builder.Property(s => s.GoalieId).HasColumnName("GoalieId").IsRequired();
         builder.Property(s => s.WasInOvertime).IsRequired();
         builder.Property(s => s.WasInShootout).IsRequired();
 

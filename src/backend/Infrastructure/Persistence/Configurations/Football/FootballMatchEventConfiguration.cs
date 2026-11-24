@@ -18,7 +18,8 @@ public class FootballMatchEventConfiguration : IEntityTypeConfiguration<Football
         builder.HasDiscriminator<string>("EventType")
             .HasValue<FootballGoal>("Goal")
             .HasValue<FootballCard>("Card")
-            .HasValue<FootballSubstitution>("Substitution");
+            .HasValue<FootballSubstitution>("Substitution")
+            .HasValue<FootballMissedPenalty>("MissedPenalty");
 
         builder.Property(e => e.MatchId).IsRequired();
         builder.Property(e => e.TeamId).IsRequired();

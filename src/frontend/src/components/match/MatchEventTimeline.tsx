@@ -2,6 +2,7 @@ import type { MouseEvent, ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getTeamInitials } from './matchHeaderUtils';
+import './matchEventKinds.scss';
 
 export interface TimelinePlayer {
   name: string;
@@ -16,13 +17,13 @@ export interface TimelineGoalBadge {
 
 export interface TimelineEvent {
   key: string;
-  kind: 'goal' | 'penalty';
+  kind: 'goal' | 'penalty' | 'missedPenalty';
   periodNumber: number;
   timeInSeconds: number;
   side: 'home' | 'away';
   player?: TimelinePlayer;
   assists?: TimelinePlayer[];
-  goalBadge?: TimelineGoalBadge | null;
+  goalBadges?: TimelineGoalBadge[];
   penaltyLabel?: string;
   description?: string;
 }
@@ -157,11 +158,11 @@ function MatchEventTimeline({
       <span className="event-type-badge goal" aria-label={t('matchPage.events.goal', 'Goal')} title={t('matchPage.events.goal', 'Goal')}>
         <span className="badge-letter" aria-hidden>G</span>
       </span>
-      {event.goalBadge && event.goalBadge.abbreviation && (
-        <span className="goal-type-badge" title={event.goalBadge.label} aria-label={event.goalBadge.label}>
-          ({event.goalBadge.abbreviation})
+      {(event.goalBadges ?? []).filter((badge) => badge.abbreviation).map((badge) => (
+        <span key={badge.abbreviation} className="goal-type-badge" title={badge.label} aria-label={badge.label}>
+          ({badge.abbreviation})
         </span>
-      )}
+      ))}
       {renderTeamBadge(event.side)}
       <span className="event-score">{scoreByGoalKey.get(event.key) ?? ''}</span>
       <span className="event-details">
@@ -197,6 +198,30 @@ function MatchEventTimeline({
     );
   };
 
+  const renderMissedPenaltyRow = (event: TimelineEvent): ReactElement => {
+    const label: string = t('matchPage.events.missedPenalty', 'Missed penalty');
+    return (
+      <div className={`event-row ${event.side === 'home' ? 'home-event' : 'away-event'} missed-penalty`}>
+        <span className="event-time" title={periodTitle(event.periodNumber)}>
+          {eventClock(event.periodNumber, event.timeInSeconds)}
+        </span>
+        <span className="event-type-badge missed-penalty" aria-label={label} title={label}>
+          <i className="fas fa-times" aria-hidden="true"></i>
+        </span>
+        {renderTeamBadge(event.side)}
+        <span className="event-details">
+          {renderPlayerName(event.player)}
+          <span className="penalty-type"> ({label.toLowerCase()})</span>
+        </span>
+      </div>
+    );
+  };
+
+  const renderRow = (event: TimelineEvent): ReactElement => {
+    if (event.kind === 'goal') return renderGoalRow(event);
+    return event.kind === 'penalty' ? renderPenaltyRow(event) : renderMissedPenaltyRow(event);
+  };
+
   return (
     <div className="match-events">
       {periods.map((period) => (
@@ -209,7 +234,7 @@ function MatchEventTimeline({
               .filter((event) => event.periodNumber === period)
               .map((event) => (
                 <div key={event.key}>
-                  {event.kind === 'goal' ? renderGoalRow(event) : renderPenaltyRow(event)}
+                  {renderRow(event)}
                 </div>
               ))}
           </div>

@@ -56,6 +56,14 @@ interface CardEventFields {
   description?: string;
 }
 
+interface MissedPenaltyEventFields {
+  eventId?: string;
+  teamId?: string;
+  playerId?: string;
+  periodNumber?: number;
+  timeInSeconds?: number;
+}
+
 interface SubstitutionEventFields {
   eventId?: string;
   TeamId?: string;
@@ -212,6 +220,25 @@ export const useMatchEvents = ({
             timestamp: new Date(event.occurredOn),
             cardType,
             description,
+          };
+        }
+
+        if (event.eventType === 'FootballMissedPenaltyEvent') {
+          const missed = event.data as MissedPenaltyEventFields;
+          const teamId = missed.teamId ?? '';
+          const isHome: boolean = teamId === currentMatch.homeTeamId;
+          return {
+            id: `missed-penalty-${missed.eventId ?? ''}`,
+            type: 'missedPenalty',
+            eventId: missed.eventId ?? '',
+            teamId,
+            teamName: (isHome ? homeTeam?.name : awayTeam?.name) ?? '',
+            teamShortName: isHome ? homeTeam?.shortName : awayTeam?.shortName,
+            playerId: missed.playerId,
+            playerName: getPlayerNameById(missed.playerId),
+            periodNumber: missed.periodNumber ?? 1,
+            timeInSeconds: missed.timeInSeconds ?? 0,
+            timestamp: new Date(event.occurredOn),
           };
         }
 

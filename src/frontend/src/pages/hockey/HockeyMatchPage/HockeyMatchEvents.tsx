@@ -3,8 +3,9 @@ import type { HockeyMatchDto, HockeyMatchEventDto, HockeyTeamDto } from '../../.
 import { hockeyHomeTeam } from '../../../types/hockey/hockeyTypes';
 import { resolveHockeyCareerPlayerId } from '../../../utils/hockeyLookups';
 import {
-  hockeyGoalStrengthAbbreviation,
+  hockeyGoalTags,
   isHockeyGoalEvent,
+  isHockeyMissedPenaltyShotEvent,
   isHockeyPenaltyEvent,
 } from '../../../utils/hockeyEventDisplay';
 import { formatEventTimeMmSs, formatMatchEventTime } from '../../../utils/matchEventFormat';
@@ -80,11 +81,10 @@ function HockeyMatchEvents({ match, teams, homeName, awayName, playerNames }: Ho
   };
 
   const events: TimelineEvent[] = match.events
-    .filter((event) => isHockeyGoalEvent(event) || isHockeyPenaltyEvent(event))
+    .filter((event) => isHockeyGoalEvent(event) || isHockeyPenaltyEvent(event) || isHockeyMissedPenaltyShotEvent(event))
     .map((event): TimelineEvent => {
       const side: 'home' | 'away' = home && event.matchTeamId === home.id ? 'home' : 'away';
       if (isHockeyGoalEvent(event)) {
-        const abbreviation: string = hockeyGoalStrengthAbbreviation(event.goalStrength);
         return {
           key: event.id,
           kind: 'goal',
@@ -96,12 +96,17 @@ function HockeyMatchEvents({ match, teams, homeName, awayName, playerNames }: Ho
             toPlayer(event.primaryAssistActivePlayerId),
             toPlayer(event.secondaryAssistActivePlayerId),
           ].filter((assist): assist is TimelinePlayer => assist !== undefined),
-          goalBadge: abbreviation
-            ? {
-                abbreviation,
-                label: t(`hockey.matches.goalStrengths.${event.goalStrength}`, event.goalStrength ?? ''),
-              }
-            : null,
+          goalBadges: hockeyGoalTags(event).map((tag) => ({ abbreviation: tag.abbreviation, label: t(tag.labelKey) })),
+        };
+      }
+      if (isHockeyMissedPenaltyShotEvent(event)) {
+        return {
+          key: event.id,
+          kind: 'missedPenalty',
+          periodNumber: event.periodNumber,
+          timeInSeconds: event.gameTimeSeconds,
+          side,
+          player: toPlayer(event.matchActivePlayerId),
         };
       }
       return {

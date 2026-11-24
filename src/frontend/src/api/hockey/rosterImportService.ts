@@ -6,36 +6,43 @@ import type {
   SeasonImportSummary,
 } from '../../types/common/seasonImportTypes';
 import { HOCKEY_POSITIONS, type HockeyPosition } from '../../types/hockey/hockeyTypes';
-import type { RosterAssignment, RosterTeamOption } from '../common/rosterExcelParser';
+import {
+  toRosterCompetitionOptions,
+  toRosterTeamOptions,
+  type RosterAssignment,
+  type RosterCompetitionOption,
+  type RosterTeamOption,
+} from '../common/rosterAssignments';
 import { importRosterAssignments, revertRosterRecords, snapshotFromRosterRows } from '../common/rosterImportRunner';
 import { loadHockeyPlayersById } from '../../utils/hockeyLookups';
 import { hockeyPlayerService } from './hockeyPlayerService';
 import { hockeySeasonService } from './hockeySeasonService';
 import { hockeyTeamService } from './hockeyTeamService';
+import { hockeyTournamentService } from './hockeyTournamentService';
 
 const HOCKEY_POSITION_SET = new Set<string>(HOCKEY_POSITIONS);
 
-export async function loadHockeyRosterSeasons(): Promise<RosterTeamOption[]> {
-  const seasons = await hockeySeasonService.getAll(undefined, true);
-  return seasons
-    .map((season) => ({ id: season.id, name: season.name }))
-    .sort((left, right) => left.name.localeCompare(right.name, 'fi'));
+export async function loadHockeyRosterCompetitions(): Promise<RosterCompetitionOption[]> {
+  const [seasons, tournaments] = await Promise.all([
+    hockeySeasonService.getAll(undefined, true),
+    hockeyTournamentService.getAll(undefined, true),
+  ]);
+  return toRosterCompetitionOptions(seasons, tournaments);
 }
 
-export async function loadHockeyRosterSeasonTeams(seasonId: string): Promise<RosterTeamOption[]> {
-  const [season, teams] = await Promise.all([
-    hockeySeasonService.getById(seasonId, true),
+export async function loadHockeyRosterTeams(competition: RosterCompetitionOption): Promise<RosterTeamOption[]> {
+  const [{ teams: memberships }, teams] = await Promise.all([
+    competition.kind === 'tournament'
+      ? hockeyTournamentService.getById(competition.id, true)
+      : hockeySeasonService.getById(competition.id, true),
     hockeyTeamService.getAll(),
   ]);
   const names = new Map(teams.map((team) => [team.id, team.name]));
-  const unique = new Map<string, string>();
-  for (const membership of season.teams) {
-    if (!membership.isActive) continue;
-    unique.set(membership.teamId, names.get(membership.teamId) ?? membership.teamId);
-  }
-  return [...unique.entries()]
-    .map(([id, name]) => ({ id, name }))
-    .sort((left, right) => left.name.localeCompare(right.name, 'fi'));
+  return toRosterTeamOptions(
+    memberships
+      .filter((membership) => membership.isActive)
+      .map(({ teamId }) => ({ id: teamId, name: names.get(teamId) ?? teamId })),
+  );
 }
 
 export async function importHockeyRosters(

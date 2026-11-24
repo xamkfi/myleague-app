@@ -262,23 +262,7 @@ namespace Application.Features.Floorball.Players.Handlers
         {
             return match.PenaltyEvents
                 .Where(p => p.PlayerId == playerId)
-                .Sum(p => GetPenaltyMinutes(p.PenaltyType));
-        }
-
-        /// <summary>
-        /// Get penalty minutes based on penalty type
-        /// </summary>
-        private static int GetPenaltyMinutes(FloorballPenaltyType penaltyType)
-        {
-            return penaltyType switch
-            {
-                FloorballPenaltyType.Minor => 2,
-                FloorballPenaltyType.Major => 5,
-                FloorballPenaltyType.Misconduct => 10,
-                FloorballPenaltyType.MatchPenalty => 10,
-                FloorballPenaltyType.Technical => 2,
-                _ => 0
-            };
+                .Sum(p => p.DurationInMinutes);
         }
     }
 } 

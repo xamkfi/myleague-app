@@ -39,4 +39,5 @@ public record FootballMatchDto(
     Guid? NextMatchId = null,
     FootballPlayoffSlot? NextMatchSlot = null,
     IReadOnlyCollection<MatchPersonDto>? RefereeDetails = null,
-    IReadOnlyCollection<MatchPersonDto>? Scorekeepers = null);
+    IReadOnlyCollection<MatchPersonDto>? Scorekeepers = null,
+    IReadOnlyCollection<FootballMissedPenaltyEventDto>? MissedPenaltyEvents = null);

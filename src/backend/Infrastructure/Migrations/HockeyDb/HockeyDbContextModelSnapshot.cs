@@ -3026,6 +3026,18 @@ namespace MyLeague.Infrastructure.Migrations.HockeyDb
                     b.HasDiscriminator().HasValue(7);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Hockey.Matches.Events.HockeyMissedPenaltyShot", b =>
+                {
+                    b.HasBaseType("Domain.Entities.Hockey.Matches.Events.HockeyMatchEvent");
+
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_HockeyMatchEvent_PeriodNumber", "\"PeriodNumber\" >= 1");
+                        });
+
+                    b.HasDiscriminator().HasValue(10);
+                });
+
             modelBuilder.Entity("Domain.Entities.Hockey.Matches.Events.HockeyPenalty", b =>
                 {
                     b.HasBaseType("Domain.Entities.Hockey.Matches.Events.HockeyMatchEvent");

@@ -59,6 +59,7 @@ namespace Application.Features.Floorball.Matches.DTOs
     /// to "Season" for backward compatibility when the mapper can't resolve the navigation.</param>
     /// <param name="RefereeDetails">Referees with display names (Id = referee ID). Names are empty when persons were not loaded.</param>
     /// <param name="Scorekeepers">Optional scorekeepers (toimitsijat) with display names (Id = person ID).</param>
+    /// <param name="MissedPenaltyEvents">Missed penalty shots, in play or in the shootout.</param>
     public record FloorballMatchDto(
         Guid Id,
         Guid CompetitionId,
@@ -90,5 +91,6 @@ namespace Application.Features.Floorball.Matches.DTOs
         string? TournamentStage = null,
         FloorballCompetitionType CompetitionType = FloorballCompetitionType.Season,
         IReadOnlyCollection<MatchPersonDto>? RefereeDetails = null,
-        IReadOnlyCollection<MatchPersonDto>? Scorekeepers = null);
+        IReadOnlyCollection<MatchPersonDto>? Scorekeepers = null,
+        IReadOnlyCollection<FloorballMissedPenaltyEventDto>? MissedPenaltyEvents = null);
 }

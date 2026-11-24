@@ -50,7 +50,9 @@ public class UpdateHockeyGoalHandler : IRequestHandler<UpdateHockeyGoalCommand, 
                 request.SecondaryAssistActivePlayerId,
                 request.GoalieActivePlayerId,
                 request.WasEmptyNet,
-                request.Description);
+                request.Description,
+                request.WasDelayedPenalty,
+                request.WasPenaltyShotGoal);
 
             HockeyDomainValidationResult validation = HockeyMatchValidationService.ValidateEventPlayerReferences(match);
             if (!validation.IsValid)

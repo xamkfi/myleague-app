@@ -1,5 +1,7 @@
 using Application.Features.Floorball.Matches.Commands;
 using Application.Common;
+using Application.Constants;
+using Application.Interfaces.Common;
 using Application.Features.Floorball.Seasons.DTOs;
 using Application.Features.Floorball.Matches.DTOs;
 using Application.Features.Floorball.Teams.DTOs;
@@ -35,6 +37,7 @@ public class DeleteSaveHandler : IRequestHandler<DeleteFloorballSaveCommand, Res
     private readonly IFloorballPlayerRepository _playerRepository;
     private readonly IFloorballStatisticsRepository _statisticsRepository;
     private readonly IFloorballUnitOfWork _unitOfWork;
+    private readonly INotificationSenderService _notificationSenderService;
     private readonly ILogger<DeleteSaveHandler> _logger;
 
     public DeleteSaveHandler(
@@ -42,12 +45,14 @@ public class DeleteSaveHandler : IRequestHandler<DeleteFloorballSaveCommand, Res
         IFloorballPlayerRepository playerRepository,
         IFloorballStatisticsRepository statisticsRepository,
         IFloorballUnitOfWork unitOfWork,
+        INotificationSenderService notificationSenderService,
         ILogger<DeleteSaveHandler> logger)
     {
         _matchRepository = matchRepository;
         _playerRepository = playerRepository;
         _statisticsRepository = statisticsRepository;
         _unitOfWork = unitOfWork;
+        _notificationSenderService = notificationSenderService;
         _logger = logger;
     }
 
@@ -67,44 +72,28 @@ public class DeleteSaveHandler : IRequestHandler<DeleteFloorballSaveCommand, Res
             // Delete the save event and get the deleted save
             FloorballSave deletedSave = match.DeleteSaveEvent(request.SaveEventId);
 
-            // Update goalie season statistics: decrement saves and shots against
-            await RemoveGoalieSeasonStatistics(deletedSave.GoalieId, deletedSave.TeamId, match.CompetitionId, 1, 1, cancellationToken);
-
-            // Update match team statistics: decrement shots against
-            await RemoveMatchTeamStatistics(match.Id, deletedSave.TeamId, 1, cancellationToken);
+            await FloorballMatchStatisticsSupport.AdjustGoalieAsync(
+                _statisticsRepository, deletedSave.GoalieId, deletedSave.TeamId, match.CompetitionId, saves: -1, goalsAgainst: 0, cancellationToken);
+            await FloorballMatchStatisticsSupport.SyncMatchShotsAsync(_statisticsRepository, match, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _notificationSenderService.SendNotificationAsync(
+                FloorballNotificationEvents.SaveRecorded,
+                new MatchNotificationPayload(match.Id));
 
             FloorballMatchDto matchDto = FloorballMatchMapper.ToDto(match);
             return Result<FloorballMatchDto>.Success(matchDto);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error occurred while deleting save event with ID: {SaveEventId}", request.SaveEventId);
-            return Result<FloorballMatchDto>.Failure("An error occurred while deleting the save event.");
+            _logger.LogWarning(ex, "Domain rejected deleting save {SaveEventId}", request.SaveEventId);
+            return Result<FloorballMatchDto>.Failure(ex.Message);
         }
-    }
-
-    private async Task RemoveGoalieSeasonStatistics(Guid goalieId, Guid teamId, Guid seasonId, int saves, int shotsAgainst, CancellationToken cancellationToken)
-    {
-        FloorballGoalieSeasonStatistics? goalieStats = await _statisticsRepository.GetGoalieSeasonStatisticsAsync(goalieId, teamId, seasonId, cancellationToken);
-        if (goalieStats != null)
+        catch (ArgumentException ex)
         {
-            goalieStats.RecordSaves(-saves, -shotsAgainst, 0);
-            await _statisticsRepository.SaveGoalieSeasonStatisticsAsync(goalieStats, cancellationToken);
-        }
-    }
-
-    private async Task RemoveMatchTeamStatistics(Guid matchId, Guid teamId, int shotsAgainst, CancellationToken cancellationToken)
-    {
-        FloorballMatchTeamStatistics? matchStats = await _statisticsRepository.GetMatchTeamStatisticsAsync(matchId, teamId, cancellationToken);
-        if (matchStats != null)
-        {
-            // Use the dedicated remover to avoid passing negative values
-            matchStats.RemoveShotStatistics(0, shotsAgainst);
-            await _statisticsRepository.SaveMatchTeamStatisticsAsync(matchStats, cancellationToken);
+            _logger.LogWarning(ex, "Save {SaveEventId} cannot be deleted", request.SaveEventId);
+            return Result<FloorballMatchDto>.Failure(ex.Message);
         }
     }
 }
-
-

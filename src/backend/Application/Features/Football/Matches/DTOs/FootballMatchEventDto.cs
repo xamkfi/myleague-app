@@ -45,6 +45,17 @@ public record FootballCardEventDto(
     string? Description);
 
 /// <summary>
+/// A missed penalty kick in a football match.
+/// </summary>
+public record FootballMissedPenaltyEventDto(
+    Guid Id,
+    Guid TeamId,
+    Guid PlayerId,
+    int PeriodNumber,
+    int TimeInSeconds,
+    string PlayerName);
+
+/// <summary>
 /// A substitution in a football match.
 /// </summary>
 public record FootballSubstitutionEventDto(

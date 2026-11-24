@@ -96,6 +96,26 @@ namespace WebAPI.Controllers.Floorball.Match
         }
 
         /// <summary>
+        /// Corrects the phase of play that decided a match in progress (a completed match is reopened
+        /// first). Standings points depend on it. When the score is not level and the target period has
+        /// no goals yet, the deciding goal is moved there.
+        /// </summary>
+        [HttpPut("decided-in")]
+        [ProducesResponseType(typeof(ApiResponse<FloorballMatchDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<FloorballMatchDto>>> SetDecidedIn(
+            Guid matchId,
+            [FromBody] SetMatchDecisionRequest request,
+            CancellationToken cancellationToken)
+        {
+            Result<FloorballMatchDto> result = await _mediator.Send(
+                new SetFloorballMatchDecisionCommand(matchId, request.Decision), cancellationToken);
+
+            return HandleResult(result, "Match decision updated successfully", "Failed to update match decision");
+        }
+
+        /// <summary>
         /// Puts a match that was started by mistake back to Scheduled. Allowed only while the match
         /// is in progress with a 0-0 score and no recorded events.
         /// </summary>

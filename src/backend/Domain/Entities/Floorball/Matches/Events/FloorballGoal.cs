@@ -32,7 +32,19 @@ public class FloorballGoal : FloorballMatchEvent
     /// Gets the type of goal scored
     /// </summary>
     public FloorballGoalType? GoalType { get; private set; }
-    
+
+    /// <summary>
+    /// Gets the ID of the goalie who conceded the goal. Null when no goalie is charged with it:
+    /// own goals, empty-net goals, shootout goals, or no goalie assigned.
+    /// </summary>
+    public Guid? GoalieId { get; private set; }
+
+    /// <summary>
+    /// Gets whether the goal was scored while a penalty against the opponent was delayed.
+    /// Combines freely with <see cref="GoalType"/>.
+    /// </summary>
+    public bool WasDelayedPenalty { get; private set; }
+
     /// <summary>
     /// Private constructor for EF Core
     /// </summary>
@@ -51,6 +63,8 @@ public class FloorballGoal : FloorballMatchEvent
     /// <param name="timeInSeconds">The time in seconds</param>
     /// <param name="goalType">The type of goal (optional)</param>
     /// <param name="description">The description of the goal</param>
+    /// <param name="goalieId">The goalie charged with the goal (optional)</param>
+    /// <param name="wasDelayedPenalty">Whether the goal was scored during a delayed penalty</param>
     public FloorballGoal(
         Guid matchId,
         Guid teamId,
@@ -60,12 +74,30 @@ public class FloorballGoal : FloorballMatchEvent
         int periodNumber,
         int timeInSeconds,
         FloorballGoalType? goalType = null,
-        string? description = null) 
+        string? description = null,
+        Guid? goalieId = null,
+        bool wasDelayedPenalty = false)
         : base(matchId, teamId, periodNumber, timeInSeconds, description)
     {
         ScoringPlayerId = scoringPlayerId;
         AssistingPlayerId = assistingPlayerId;
         SecondaryAssistingPlayerId = secondaryAssistingPlayerId;
+        GoalType = goalType;
+        GoalieId = goalieId;
+        WasDelayedPenalty = wasDelayedPenalty;
+    }
+
+    /// <summary>
+    /// Charges the goal to another goalie, or to none.
+    /// </summary>
+    internal void ChargeToGoalie(Guid? goalieId) => GoalieId = goalieId;
+
+    /// <summary>
+    /// Moves the goal to another period and goal type when the way the match was decided is corrected.
+    /// </summary>
+    internal void MoveToPeriod(int periodNumber, FloorballGoalType goalType)
+    {
+        PeriodNumber = periodNumber;
         GoalType = goalType;
     }
 } 

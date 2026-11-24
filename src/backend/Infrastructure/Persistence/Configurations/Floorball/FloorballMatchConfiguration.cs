@@ -155,6 +155,7 @@ namespace MyLeague.Infrastructure.Persistence.Configurations.Floorball
             builder.Ignore(m => m.GoalEvents);
             builder.Ignore(m => m.PenaltyEvents);
             builder.Ignore(m => m.SaveEvents);
+            builder.Ignore(m => m.MissedPenaltyEvents);
 
             builder.HasMany(m => m.Events)
                .WithOne()                        // no back-link on the event entity

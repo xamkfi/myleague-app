@@ -423,6 +423,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Floorball
                                 || ((FloorballGoal)e).AssistingPlayerId == playerId
                                 || ((FloorballGoal)e).SecondaryAssistingPlayerId == playerId))
                         || (e is FloorballPenalty && ((FloorballPenalty)e).PlayerId == playerId)
+                        || (e is FloorballMissedPenalty && ((FloorballMissedPenalty)e).ShooterPlayerId == playerId)
                         || (e is FloorballSave && ((FloorballSave)e).GoalieId == playerId)))
                 .OrderByDescending(m => m.ScheduledDateTime)
                 .ThenBy(m => m.Id)

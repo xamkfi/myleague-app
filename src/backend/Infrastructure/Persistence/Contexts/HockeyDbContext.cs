@@ -83,6 +83,7 @@ public class HockeyDbContext : DbContext
     public DbSet<HockeyGoalieChange> HockeyGoalieChanges => Set<HockeyGoalieChange>();
     public DbSet<HockeyTimeout> HockeyTimeouts => Set<HockeyTimeout>();
     public DbSet<HockeyShootoutAttempt> HockeyShootoutAttempts => Set<HockeyShootoutAttempt>();
+    public DbSet<HockeyMissedPenaltyShot> HockeyMissedPenaltyShots => Set<HockeyMissedPenaltyShot>();
 
     public DbSet<HockeyMatchTeamStatistics> HockeyMatchTeamStatistics => Set<HockeyMatchTeamStatistics>();
     public DbSet<HockeyMatchPlayerStatistics> HockeyMatchPlayerStatistics => Set<HockeyMatchPlayerStatistics>();

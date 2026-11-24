@@ -63,6 +63,15 @@ const GoalRecordingForm = ({
   const goalTypeValue: string =
     goalForm.goalType === null || goalForm.goalType === undefined ? '' : String(goalForm.goalType);
 
+  // Overtime and shootout goals belong to their own period. Standings points follow the period
+  // that was started, not the goal type, so the types are only offered there.
+  const isGoalTypeAvailable = (goalType: FloorballGoalType): boolean => {
+    if (goalType === FloorballGoalType.Regular) return false;
+    if (goalType === FloorballGoalType.Overtime) return goalForm.periodNumber === overtimePeriodNumber;
+    if (goalType === FloorballGoalType.Shootout) return goalForm.periodNumber === shootoutPeriodNumber;
+    return true;
+  };
+
   // Autofocus the first interactive field whenever the modal opens. Improves keyboard /
   // accessibility flow and matches the user expectation that they can start typing/selecting
   // immediately after clicking the trigger button.
@@ -178,7 +187,7 @@ const GoalRecordingForm = ({
                   }}
                 >
                   <option value="">{t('floorball.matches.manage.goalTypes.Regular')}</option>
-                  {FLOORBALL_GOAL_TYPE_OPTIONS.filter((o) => o.value !== FloorballGoalType.Regular).map((option) => (
+                  {FLOORBALL_GOAL_TYPE_OPTIONS.filter((o) => isGoalTypeAvailable(o.value)).map((option) => (
                     <option key={option.value} value={option.value}>
                       {t(`floorball.matches.manage.goalTypes.${option.name}`, option.label)}
                     </option>
@@ -203,6 +212,15 @@ const GoalRecordingForm = ({
                 onChange={onTimeChange}
               />
             </div>
+
+            <label className="event-form__checkbox">
+              <input
+                type="checkbox"
+                checked={goalForm.wasDelayedPenalty}
+                onChange={(e) => setGoalForm((prev) => ({ ...prev, wasDelayedPenalty: e.target.checked }))}
+              />
+              {t('matchManage.delayedPenalty')}
+            </label>
 
             {missingJersey && (
               <div className="field-error" role="alert">

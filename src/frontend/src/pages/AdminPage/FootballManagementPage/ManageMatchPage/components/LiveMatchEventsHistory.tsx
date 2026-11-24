@@ -33,30 +33,25 @@ function getTeamShortName(teamName: string): string {
   return words.map((w) => w[0]).join('').toUpperCase();
 }
 
-function getEventTypeLabel(type: ProcessedEvent['type']): { label: string; icon: string } {
-  switch (type) {
-    case 'goal':
-      return { label: 'Goal', icon: '⚽' };
-    case 'card':
-      return { label: 'Card', icon: '🟨' };
-    case 'substitution':
-      return { label: 'Sub', icon: '🔄' };
-    default:
-      return { label: '', icon: '' };
-  }
+const EVENT_ICON: Record<ProcessedEvent['type'], string> = {
+  goal: '⚽',
+  card: '🟨',
+  substitution: '🔄',
+  missedPenalty: '❌',
+};
+
+type CardTypeName = 'Yellow' | 'SecondYellow' | 'DirectRed';
+
+function cardTypeName(cardType: ProcessedEvent['cardType']): CardTypeName | null {
+  if (cardType === FootballCardType.Yellow || cardType === 'Yellow') return 'Yellow';
+  if (cardType === FootballCardType.SecondYellow || cardType === 'SecondYellow') return 'SecondYellow';
+  if (cardType === FootballCardType.DirectRed || cardType === 'DirectRed') return 'DirectRed';
+  return null;
 }
 
-function getCardTypeLabel(cardType: ProcessedEvent['cardType']): string {
-  if (cardType === FootballCardType.Yellow || cardType === 'Yellow' || cardType === 0) {
-    return 'Yellow';
-  }
-  if (cardType === FootballCardType.SecondYellow || cardType === 'SecondYellow' || cardType === 1) {
-    return 'Second yellow';
-  }
-  if (cardType === FootballCardType.DirectRed || cardType === 'DirectRed' || cardType === 2) {
-    return 'Direct red';
-  }
-  return 'Card';
+function eventIcon(event: ProcessedEvent): string {
+  if (event.type !== 'card') return EVENT_ICON[event.type];
+  return cardTypeName(event.cardType) === 'Yellow' ? '🟨' : '🟥';
 }
 
 function groupEvents(events: readonly ProcessedEvent[]): EventGroup[] {
@@ -131,13 +126,16 @@ const LiveMatchEventsHistory = ({
   };
 
   const allSelected: boolean = groups.length > 0 && selectedKeys.size === groups.length;
+  const selectAllLabel: string = allSelected
+    ? t('floorball.matches.manage.events.clearSelection')
+    : t('floorball.matches.manage.events.selectAllEvents');
 
   return (
     <div className="events-history">
       <div className="events-history__header">
-        <h3>MATCH EVENTS</h3>
+        <h3>{t('floorball.matches.manage.events.title')}</h3>
         {bulkSelectionEnabled && groups.length > 0 && (
-          <label className="events-history__select-all" title={allSelected ? 'Clear selection' : 'Select all events'}>
+          <label className="events-history__select-all" title={selectAllLabel}>
             <input
               type="checkbox"
               className="events-history__checkbox"
@@ -152,9 +150,9 @@ const LiveMatchEventsHistory = ({
                   clearSelection();
                 }
               }}
-              aria-label={allSelected ? 'Clear selection' : 'Select all events'}
+              aria-label={selectAllLabel}
             />
-            <span className="events-history__select-all-label">Select all</span>
+            <span className="events-history__select-all-label">{t('floorball.matches.manage.events.selectAll')}</span>
           </label>
         )}
       </div>
@@ -177,12 +175,13 @@ const LiveMatchEventsHistory = ({
       )}
 
       {groups.length === 0 ? (
-        <div className="no-events">No events recorded yet</div>
+        <div className="no-events">{t('floorball.matches.manage.events.empty')}</div>
       ) : (
         <div className="events-list">
           {groups.map((group) => {
             const event: ProcessedEvent = group.representative;
-            const { label, icon } = getEventTypeLabel(event.type);
+            const label: string = t(`football.matches.manage.events.type.${event.type}`);
+            const cardName: CardTypeName | null = event.type === 'card' ? cardTypeName(event.cardType) : null;
             const teamShort = event.teamShortName?.trim()
               ? event.teamShortName
               : getTeamShortName(event.teamName);
@@ -203,8 +202,10 @@ const LiveMatchEventsHistory = ({
                     className="event-select events-history__checkbox"
                     checked={isSelected}
                     onChange={() => toggleSelection(group.key)}
-                    aria-label={`Select ${event.type} at ${formatMatchEventTime(event.periodNumber, event.timeInSeconds)}`}
-                    title="Select event"
+                    aria-label={t('floorball.matches.manage.events.selectEvent', {
+                      type: label,
+                      time: formatMatchEventTime(event.periodNumber, event.timeInSeconds),
+                    })}
                   />
                 )}
 
@@ -214,7 +215,7 @@ const LiveMatchEventsHistory = ({
 
                 <span className={`event-type-badge ${event.type}`} aria-label={label} title={label}>
                   <span className="badge-icon" aria-hidden>
-                    {icon}
+                    {eventIcon(event)}
                   </span>
                   <span className="badge-text">{label}</span>
                 </span>
@@ -222,8 +223,8 @@ const LiveMatchEventsHistory = ({
                 {goalTypeInfo && goalTypeInfo.abbreviation && (
                   <span
                     className="goal-type-badge"
-                    title={goalTypeInfo.label}
-                    aria-label={goalTypeInfo.label}
+                    title={t(`football.matches.manage.goalTypes.${goalTypeInfo.name}`, goalTypeInfo.label)}
+                    aria-label={t(`football.matches.manage.goalTypes.${goalTypeInfo.name}`, goalTypeInfo.label)}
                   >
                     ({goalTypeInfo.abbreviation})
                   </span>
@@ -235,19 +236,23 @@ const LiveMatchEventsHistory = ({
                   {event.type === 'goal' ? (
                     <span className="event-text">
                       <span className="player-name">{event.playerName}</span>
-                      {event.assisterName && ` (Assist: ${event.assisterName})`}
+                      {event.assisterName && ` (${t('floorball.matches.manage.events.assist', { name: event.assisterName })})`}
                     </span>
                   ) : event.type === 'card' ? (
                     <span className="event-text penalty-text">
                       <span className="penalty-line">
                         {event.playerName || ''}
-                        {` · ${getCardTypeLabel(event.cardType)}`}
+                        {cardName && ` · ${t(`football.matches.manage.cardTypes.${cardName}`)}`}
                       </span>
                       {cardDescription && (
                         <span className="penalty-description" title={cardDescription}>
                           {cardDescription}
                         </span>
                       )}
+                    </span>
+                  ) : event.type === 'missedPenalty' ? (
+                    <span className="event-text">
+                      <span className="player-name">{event.playerName}</span>
                     </span>
                   ) : event.type === 'substitution' ? (
                     <span className="event-text">
@@ -261,9 +266,9 @@ const LiveMatchEventsHistory = ({
                 {canDelete && (
                   <button
                     className="event-delete"
-                    title="Delete event"
+                    title={t('floorball.matches.manage.events.deleteEvent')}
                     onClick={() => onDeleteEvent && onDeleteEvent(group)}
-                    aria-label="Delete event"
+                    aria-label={t('floorball.matches.manage.events.deleteEvent')}
                   >
                     ×
                   </button>

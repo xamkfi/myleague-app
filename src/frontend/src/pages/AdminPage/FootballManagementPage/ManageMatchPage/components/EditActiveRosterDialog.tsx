@@ -15,10 +15,10 @@ import {
   type LineupPlayerRequest,
 } from '../../../../../types/football/footballTypes';
 import {
+  findLineupProblem,
   lineupPositionOrDefault,
   resolveMatchRules,
-  validateTeamLineup,
-  type LineupDraftPlayer,
+  type LineupProblem,
 } from '../utils/lineupValidation';
 import './EditActiveRosterDialog.scss';
 
@@ -35,6 +35,8 @@ interface EditActiveRosterDialogProps {
   initialAwayLineup: FootballLineupPlayer[];
   matchRules?: FootballMatchRules;
   competitionId?: string | null;
+  /** Players with recorded events in this match; the backend refuses to remove them. */
+  lockedPlayerIds: ReadonlySet<string>;
   onPlayerAdded: (teamId: string, player: FootballPlayerDto) => void;
   onClose: () => void;
   onSaved: (updatedMatch: FootballMatchDto) => void;
@@ -43,7 +45,8 @@ interface EditActiveRosterDialogProps {
 
 interface PlayerLineupState {
   position: FootballPosition;
-  isOnField: boolean;
+  /** Whether the player is in the match lineup. */
+  isSelected: boolean;
   isSentOff: boolean;
 }
 
@@ -77,27 +80,24 @@ const buildInitialState = (
     const saved: FootballLineupPlayer | undefined = existing.get(player.id);
     next.set(player.id, {
       position: lineupPositionOrDefault(saved?.position ?? player.position),
-      isOnField: saved?.isOnField === true && saved.isSentOff !== true,
+      isSelected: saved !== undefined,
       isSentOff: saved?.isSentOff === true,
     });
   }
   return next;
 };
 
-const toDraft = (state: TeamLineupMap): LineupDraftPlayer[] =>
-  Array.from(state.entries()).map(([playerId, entry]) => ({
-    playerId,
-    position: entry.position,
-    isOnField: entry.isOnField,
-    isSentOff: entry.isSentOff,
-  }));
+const selectedEntries = (state: TeamLineupMap): PlayerLineupState[] =>
+  [...state.values()].filter((entry) => entry.isSelected);
 
 interface TeamColumnProps {
   teamLabel: string;
   players: FootballPlayerDto[];
   state: TeamLineupMap;
   rules: FootballMatchRules;
-  onToggleOnField: (playerId: string) => void;
+  lockedPlayerIds: ReadonlySet<string>;
+  onToggleSelected: (playerId: string) => void;
+  onSelectAll: (selected: boolean) => void;
   onChangePosition: (playerId: string, position: FootballPosition) => void;
   onUseLoanGoalkeeper: () => void;
   onUseLoanPlayers: (count: number) => void;
@@ -113,7 +113,9 @@ const TeamColumn = ({
   players,
   state,
   rules,
-  onToggleOnField,
+  lockedPlayerIds,
+  onToggleSelected,
+  onSelectAll,
   onChangePosition,
   onUseLoanGoalkeeper,
   onUseLoanPlayers,
@@ -138,18 +140,15 @@ const TeamColumn = ({
     });
   }, [sortedPlayers, search]);
 
-  const onFieldCount: number = Array.from(state.values()).filter((entry) => entry.isOnField).length;
-  const validationMessage: string | null = validateTeamLineup(toDraft(state), rules);
+  const selected: PlayerLineupState[] = selectedEntries(state);
+  const problem: LineupProblem | null = findLineupProblem(selected, rules);
 
   return (
     <div className="eard-column">
       <div className="eard-column__header">
         <h3 className="eard-column__team">{teamLabel}</h3>
-        <span className={`eard-column__count${validationMessage ? ' eard-column__count--invalid' : ''}`}>
-          {t('football.matches.lineup.onFieldCount', '{{current}} / {{required}} on field', {
-            current: onFieldCount,
-            required: rules.playersOnField,
-          })}
+        <span className={`eard-column__count${problem ? ' eard-column__count--invalid' : ''}`}>
+          {t('football.matches.lineup.playerCount', '{{count}} players', { count: selected.length })}
         </span>
       </div>
 
@@ -198,12 +197,21 @@ const TeamColumn = ({
         {t('football.matches.lineup.loanPlayersHint', 'Adds the requested number of loan players to this match. Existing loan players are used first, and only the missing ones are created.')}
       </p>
 
-      {validationMessage && (
+      {problem && (
         <span className="eard-field__warning">
           <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>
-          {validationMessage}
+          {t(`football.matches.lineup.${problem}`)}
         </span>
       )}
+
+      <div className="eard-select-all">
+        <button type="button" className="eard-btn eard-btn--ghost eard-btn--sm" onClick={() => onSelectAll(true)}>
+          {t('football.matches.lineup.selectAll', 'Select all')}
+        </button>
+        <button type="button" className="eard-btn eard-btn--ghost eard-btn--sm" onClick={() => onSelectAll(false)}>
+          {t('football.matches.lineup.clearAll', 'Clear')}
+        </button>
+      </div>
 
       <div className="eard-filters">
         <div className="eard-filters__search">
@@ -238,25 +246,37 @@ const TeamColumn = ({
           <table className="eard-table">
             <thead>
               <tr>
+                <th>{t('football.matches.lineup.inLineup', 'In lineup')}</th>
                 <th className="eard-table__jersey">#</th>
                 <th>{t('football.matches.lineup.player', 'Player')}</th>
                 <th>{t('football.matches.lineup.position', 'Position')}</th>
-                <th>{t('football.matches.lineup.status', 'Status')}</th>
               </tr>
             </thead>
             <tbody>
               {filteredPlayers.map((player: FootballPlayerDto) => {
                 const entry: PlayerLineupState | undefined = state.get(player.id);
                 const isSentOff: boolean = entry?.isSentOff === true;
-                const isOnField: boolean = entry?.isOnField === true;
+                const isSelected: boolean = entry?.isSelected === true;
+                const isLocked: boolean = isSelected && (isSentOff || lockedPlayerIds.has(player.id));
+                const playerName: string = formatPersonName(player.person.firstName, player.person.lastName);
                 return (
                   <tr key={player.id} className={isSentOff ? 'eard-row--sent-off' : ''}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        disabled={isLocked}
+                        onChange={() => onToggleSelected(player.id)}
+                        aria-label={t('football.matches.lineup.selectPlayer', '{{name}} in the lineup', { name: playerName })}
+                        title={isLocked ? t('football.matches.lineup.hasEvents', 'Player has recorded events in this match and cannot be removed') : undefined}
+                      />
+                    </td>
                     <td className="eard-table__jersey">
                       {player.jerseyNumber != null ? `#${player.jerseyNumber}` : '–'}
                     </td>
                     <td>
                       <span className="eard-player-name">
-                        {formatPersonName(player.person.firstName, player.person.lastName)}
+                        {playerName}
                       </span>
                       {isSentOff && (
                         <span className="eard-position-badge">
@@ -268,31 +288,17 @@ const TeamColumn = ({
                       <select
                         className="eard-field__select"
                         value={entry?.position ?? FootballPosition.Midfielder}
-                        disabled={isSentOff}
+                        disabled={isSentOff || !isSelected}
                         onChange={(e: ChangeEvent<HTMLSelectElement>) =>
                           onChangePosition(player.id, e.target.value as FootballPosition)
                         }
                       >
                         {LINEUP_POSITIONS.map((position) => (
                           <option key={position} value={position}>
-                            {position}
+                            {t(`football.positions.${position}`, position)}
                           </option>
                         ))}
                       </select>
-                    </td>
-                    <td className="eard-table__action">
-                      <button
-                        type="button"
-                        className={`eard-btn eard-btn--sm ${isOnField ? 'eard-btn--add-defender' : 'eard-btn--ghost'}`}
-                        disabled={isSentOff}
-                        onClick={() => onToggleOnField(player.id)}
-                      >
-                        {isSentOff
-                          ? t('football.matches.lineup.sentOff', 'Sent off')
-                          : isOnField
-                            ? t('football.matches.lineup.onField', 'On field')
-                            : t('football.matches.lineup.bench', 'Bench')}
-                      </button>
                     </td>
                   </tr>
                 );
@@ -318,6 +324,7 @@ const EditActiveRosterDialog = ({
   initialAwayLineup,
   matchRules,
   competitionId,
+  lockedPlayerIds,
   onPlayerAdded,
   onClose,
   onSaved,
@@ -350,59 +357,51 @@ const EditActiveRosterDialog = ({
     setAwayState(buildInitialState(awayPlayers, initialAwayLineup));
   }, [isOpen, homePlayers, awayPlayers, initialHomeLineup, initialAwayLineup]);
 
-  const toggleOnField = useCallback((side: 'home' | 'away', playerId: string): void => {
-    const updater = (prev: TeamLineupMap): TeamLineupMap => {
-      const next = new Map(prev);
-      const current = next.get(playerId);
-      if (!current || current.isSentOff) return prev;
-      next.set(playerId, { ...current, isOnField: !current.isOnField });
+  const updateTeamState = useCallback(
+    (side: 'home' | 'away', updater: (prev: TeamLineupMap) => TeamLineupMap): void => {
+      if (side === 'home') {
+        setHomeState(updater);
+      } else {
+        setAwayState(updater);
+      }
+    },
+    [],
+  );
+
+  const toggleSelected = useCallback((side: 'home' | 'away', playerId: string): void => {
+    updateTeamState(side, (prev) => {
+      const current = prev.get(playerId);
+      if (!current) return prev;
+      return new Map(prev).set(playerId, { ...current, isSelected: !current.isSelected });
+    });
+  }, [updateTeamState]);
+
+  const selectAll = useCallback((side: 'home' | 'away', selected: boolean): void => {
+    updateTeamState(side, (prev) => {
+      const next: TeamLineupMap = new Map();
+      for (const [playerId, entry] of prev) {
+        const keepSelected: boolean = entry.isSelected && (entry.isSentOff || lockedPlayerIds.has(playerId));
+        next.set(playerId, { ...entry, isSelected: selected || keepSelected });
+      }
       return next;
-    };
-    if (side === 'home') {
-      setHomeState(updater);
-    } else {
-      setAwayState(updater);
-    }
-  }, []);
+    });
+  }, [updateTeamState, lockedPlayerIds]);
 
   const changePosition = useCallback((side: 'home' | 'away', playerId: string, position: FootballPosition): void => {
-    const updater = (prev: TeamLineupMap): TeamLineupMap => {
-      const next = new Map(prev);
-      const current = next.get(playerId);
+    updateTeamState(side, (prev) => {
+      const current = prev.get(playerId);
       if (!current) return prev;
-      next.set(playerId, { ...current, position });
-      return next;
-    };
-    if (side === 'home') {
-      setHomeState(updater);
-    } else {
-      setAwayState(updater);
-    }
-  }, []);
+      return new Map(prev).set(playerId, { ...current, position });
+    });
+  }, [updateTeamState]);
 
   const placeLoanGoalkeeper = useCallback((side: 'home' | 'away', playerId: string): void => {
-    const updater = (prev: TeamLineupMap): TeamLineupMap => {
-      const next = new Map(prev);
-      if (rules.requireGoalkeeper) {
-        for (const [id, entry] of next) {
-          if (id !== playerId && entry.isOnField && entry.position === FootballPosition.Goalkeeper && !entry.isSentOff) {
-            next.set(id, { ...entry, isOnField: false });
-          }
-        }
-      }
-      next.set(playerId, {
-        position: FootballPosition.Goalkeeper,
-        isOnField: true,
-        isSentOff: false,
-      });
-      return next;
-    };
-    if (side === 'home') {
-      setHomeState(updater);
-    } else {
-      setAwayState(updater);
-    }
-  }, [rules.requireGoalkeeper]);
+    updateTeamState(side, (prev) => new Map(prev).set(playerId, {
+      position: FootballPosition.Goalkeeper,
+      isSelected: true,
+      isSentOff: false,
+    }));
+  }, [updateTeamState]);
 
   const addLoanGoalkeeper = useCallback(async (side: 'home' | 'away'): Promise<void> => {
     const teamId = side === 'home' ? homeTeamId : awayTeamId;
@@ -440,27 +439,19 @@ const EditActiveRosterDialog = ({
   }, [awayTeamId, competitionId, homeTeamId, onError, onPlayerAdded, placeLoanGoalkeeper, t]);
 
   const placeLoanPlayers = useCallback((side: 'home' | 'away', playerIds: string[]): void => {
-    const updater = (prev: TeamLineupMap): TeamLineupMap => {
+    updateTeamState(side, (prev) => {
       const next = new Map(prev);
       for (const playerId of playerIds) {
         const current = next.get(playerId);
-        if (current?.isOnField === true && current.isSentOff !== true) {
-          continue;
-        }
         next.set(playerId, {
-          position: FootballPosition.Midfielder,
-          isOnField: true,
-          isSentOff: false,
+          position: current?.position ?? FootballPosition.Midfielder,
+          isSelected: true,
+          isSentOff: current?.isSentOff ?? false,
         });
       }
       return next;
-    };
-    if (side === 'home') {
-      setHomeState(updater);
-    } else {
-      setAwayState(updater);
-    }
-  }, []);
+    });
+  }, [updateTeamState]);
 
   const addLoanPlayers = useCallback(async (side: 'home' | 'away', count: number): Promise<void> => {
     const teamId = side === 'home' ? homeTeamId : awayTeamId;
@@ -500,16 +491,17 @@ const EditActiveRosterDialog = ({
     }
   }, [awayTeamId, competitionId, homeTeamId, onError, onPlayerAdded, placeLoanPlayers, t]);
 
-  const homeError: string | null = validateTeamLineup(toDraft(homeState), rules);
-  const awayError: string | null = validateTeamLineup(toDraft(awayState), rules);
-  const canSave: boolean = !homeError && !awayError && !saving && loanSide === null;
+  const canSave: boolean = !saving && loanSide === null;
 
+  // Only the players who are in the match. Everyone in the lineup counts as having played.
   const toPayload = (state: TeamLineupMap): LineupPlayerRequest[] =>
-    Array.from(state.entries()).map(([playerId, entry]) => ({
-      playerId,
-      position: entry.position,
-      isOnField: entry.isSentOff ? false : entry.isOnField,
-    }));
+    [...state.entries()]
+      .filter(([, entry]) => entry.isSelected)
+      .map(([playerId, entry]) => ({
+        playerId,
+        position: entry.position,
+        isOnField: !entry.isSentOff,
+      }));
 
   const handleSave = useCallback(async (): Promise<void> => {
     if (!canSave) return;
@@ -526,12 +518,14 @@ const EditActiveRosterDialog = ({
       }
       onClose();
     } catch (error) {
-      const message: string = error instanceof Error ? error.message : 'Failed to save lineup';
+      const message: string = error instanceof Error
+        ? error.message
+        : t('football.matches.lineup.saveFailed', 'Failed to save lineup');
       onError(message);
     } finally {
       setSaving(false);
     }
-  }, [canSave, homeState, awayState, matchId, homeTeamId, awayTeamId, onClose, onSaved, onError]);
+  }, [canSave, homeState, awayState, matchId, homeTeamId, awayTeamId, onClose, onSaved, onError, t]);
 
   const pendingTeamName: string = pendingLoan?.side === 'home'
     ? homeTeamName
@@ -583,7 +577,9 @@ const EditActiveRosterDialog = ({
             players={homePlayers}
             state={homeState}
             rules={rules}
-            onToggleOnField={(id) => toggleOnField('home', id)}
+            lockedPlayerIds={lockedPlayerIds}
+            onToggleSelected={(id) => toggleSelected('home', id)}
+            onSelectAll={(selected) => selectAll('home', selected)}
             onChangePosition={(id, position) => changePosition('home', id, position)}
             onUseLoanGoalkeeper={() => setPendingLoan({ kind: 'goalkeeper', side: 'home' })}
             onUseLoanPlayers={(count) => setPendingLoan({ kind: 'players', side: 'home', count })}
@@ -594,7 +590,9 @@ const EditActiveRosterDialog = ({
             players={awayPlayers}
             state={awayState}
             rules={rules}
-            onToggleOnField={(id) => toggleOnField('away', id)}
+            lockedPlayerIds={lockedPlayerIds}
+            onToggleSelected={(id) => toggleSelected('away', id)}
+            onSelectAll={(selected) => selectAll('away', selected)}
             onChangePosition={(id, position) => changePosition('away', id, position)}
             onUseLoanGoalkeeper={() => setPendingLoan({ kind: 'goalkeeper', side: 'away' })}
             onUseLoanPlayers={(count) => setPendingLoan({ kind: 'players', side: 'away', count })}

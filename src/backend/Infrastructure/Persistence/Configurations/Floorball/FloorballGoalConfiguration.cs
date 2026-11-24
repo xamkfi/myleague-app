@@ -24,6 +24,9 @@ public class FloorballGoalConfiguration : IEntityTypeConfiguration<FloorballGoal
         b.Property(g => g.AssistingPlayerId).IsRequired(false);
         b.Property(g => g.SecondaryAssistingPlayerId).IsRequired(false);
         b.Property(g => g.GoalType).IsRequired(false);
+        // Shares the column with FloorballSave.GoalieId: the goalie who faced the shot.
+        b.Property(g => g.GoalieId).HasColumnName("GoalieId").IsRequired(false);
+        b.Property(g => g.WasDelayedPenalty).HasDefaultValue(false);
 
 
         b.HasIndex(g => g.ScoringPlayerId)

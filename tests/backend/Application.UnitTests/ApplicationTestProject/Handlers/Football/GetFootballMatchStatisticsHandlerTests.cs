@@ -12,17 +12,12 @@ namespace ApplicationTestProject.Handlers.Football;
 public class GetFootballMatchStatisticsHandlerTests
 {
     [Fact]
-    public async Task Handle_WhenMatchHasNoStatistics_ReturnsEmptySuccess()
+    public async Task Handle_WhenMatchIsMissing_ReturnsEmptySuccess()
     {
-        Mock<IFootballStatisticsRepository> repository = new();
+        Mock<IFootballMatchRepository> repository = new();
         Guid matchId = Guid.NewGuid();
-        repository
-            .Setup(r => r.GetMatchStatisticsAsync(matchId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Array.Empty<FootballMatchTeamStatistics>());
 
-        GetMatchStatisticsHandler handler = new(
-            repository.Object,
-            Mock.Of<ILogger<GetMatchStatisticsHandler>>());
+        GetMatchStatisticsHandler handler = new(repository.Object);
 
         Result<List<FootballMatchTeamStatisticsDto>> result = await handler.Handle(
             new GetFootballMatchStatisticsQuery(matchId),

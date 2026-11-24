@@ -1,8 +1,8 @@
-import { RosterExcelImportModal, type RosterImportLock } from '../../../../../components/admin/RosterExcelImportModal/RosterExcelImportModal';
+import { RosterJsonImportModal, type RosterImportLock } from '../../../../../components/admin/RosterJsonImportModal/RosterJsonImportModal';
 import {
   importFloorballRosters,
-  loadFloorballRosterSeasonTeams,
-  loadFloorballRosterSeasons,
+  loadFloorballRosterCompetitions,
+  loadFloorballRosterTeams,
   revertFloorballRosters,
 } from '../../../../../api/floorball/rosterImportService';
 import {
@@ -31,11 +31,11 @@ export function FloorballRosterImportModal({
   presetSeasonId,
 }: FloorballRosterImportModalProps) {
   return (
-    <RosterExcelImportModal
+    <RosterJsonImportModal
       onClose={onClose}
       onImported={onImported}
-      loadSeasons={loadFloorballRosterSeasons}
-      loadSeasonTeams={loadFloorballRosterSeasonTeams}
+      loadCompetitions={loadFloorballRosterCompetitions}
+      loadTeams={loadFloorballRosterTeams}
       importRosters={importFloorballRosters}
       revertRosters={revertFloorballRosters}
       lockedSelection={lockedSelection}

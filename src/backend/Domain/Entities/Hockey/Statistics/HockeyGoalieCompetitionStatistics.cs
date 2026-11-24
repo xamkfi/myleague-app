@@ -126,6 +126,6 @@ public class HockeyGoalieCompetitionStatistics : BaseEntity
     private void RecalculateDerived()
     {
         SavePercentage = HockeyStatisticsMath.Percentage(Saves, ShotsAgainst);
-        GoalsAgainstAverage = HockeyStatisticsMath.GoalsAgainstAverage(GoalsAgainst, MinutesPlayed);
+        GoalsAgainstAverage = HockeyStatisticsMath.GoalsAgainstAverage(GoalsAgainst, GamesPlayed);
     }
 }

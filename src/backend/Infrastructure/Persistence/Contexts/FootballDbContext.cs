@@ -39,6 +39,7 @@ public class FootballDbContext : DbContext
     public DbSet<FootballGoal> FootballGoals { get; set; }
     public DbSet<FootballCard> FootballCards { get; set; }
     public DbSet<FootballSubstitution> FootballSubstitutions { get; set; }
+    public DbSet<FootballMissedPenalty> FootballMissedPenalties { get; set; }
     public DbSet<FootballTeamManager> FootballTeamManagers { get; set; }
     public DbSet<FootballTeamSeasonStatistics> FootballTeamSeasonStatistics { get; set; }
     public DbSet<FootballPlayerSeasonStatistics> FootballPlayerSeasonStatistics { get; set; }
@@ -92,6 +93,7 @@ public class FootballDbContext : DbContext
         modelBuilder.ApplyConfiguration(new FootballGoalConfiguration());
         modelBuilder.ApplyConfiguration(new FootballCardConfiguration());
         modelBuilder.ApplyConfiguration(new FootballSubstitutionConfiguration());
+        modelBuilder.ApplyConfiguration(new FootballMissedPenaltyConfiguration());
         modelBuilder.ApplyConfiguration(new FootballTeamSeasonStatisticsConfiguration());
         modelBuilder.ApplyConfiguration(new FootballPlayerSeasonStatisticsConfiguration());
         modelBuilder.ApplyConfiguration(new FootballMatchTeamStatisticsConfiguration());

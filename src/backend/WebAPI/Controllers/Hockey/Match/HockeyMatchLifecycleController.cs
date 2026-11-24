@@ -65,6 +65,26 @@ public class HockeyMatchLifecycleController : BaseApiController
     }
 
     /// <summary>
+    /// Corrects the phase of play that decided a match in progress (a finished match is reopened
+    /// first). Standings points depend on it. When the score is not level and the target period has
+    /// no goals yet, the last goal is moved there.
+    /// </summary>
+    [Authorize(Roles = AuthRoles.MatchOperators)]
+    [HttpPut("{matchId:guid}/decided-in")]
+    [ProducesResponseType(typeof(ApiResponse<HockeyMatchDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HockeyMatchDto>>> SetDecidedIn(
+        Guid matchId,
+        [FromBody] SetMatchDecisionRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<HockeyMatchDto> result = await _mediator.Send(
+            new SetHockeyMatchDecisionCommand(matchId, request.Decision), cancellationToken);
+        return HandleResult(result, "Match decision updated successfully", "Failed to update match decision");
+    }
+
+    /// <summary>
     /// Sets match status. Match officials may only set <see cref="HockeyMatchStatus.InProgress"/>
     /// (reopen a finished match); every other status change is for system admins.
     /// </summary>

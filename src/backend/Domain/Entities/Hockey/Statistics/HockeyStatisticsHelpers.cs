@@ -56,11 +56,14 @@ internal static class HockeyStatisticsMath
         return Math.Round((decimal)numerator / denominator * 100m, 2, MidpointRounding.AwayFromZero);
     }
 
-    public static decimal GoalsAgainstAverage(int goalsAgainst, int minutesPlayed)
+    /// <summary>
+    /// The goalie's own conceded goals per game played.
+    /// </summary>
+    public static decimal GoalsAgainstAverage(int goalsAgainst, int gamesPlayed)
     {
-        if (minutesPlayed <= 0)
+        if (gamesPlayed <= 0)
             return 0m;
-        return Math.Round((decimal)goalsAgainst * 60m / minutesPlayed, 2, MidpointRounding.AwayFromZero);
+        return Math.Round((decimal)goalsAgainst / gamesPlayed, 2, MidpointRounding.AwayFromZero);
     }
 
     public static void EnsureNonNegative(int value, string paramName)

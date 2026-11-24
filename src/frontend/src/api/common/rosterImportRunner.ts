@@ -14,7 +14,7 @@ import {
   importTeamPlayers,
   revertCreatedRecords,
 } from './seasonImportShared';
-import { splitPersonName, type RosterAssignment } from './rosterExcelParser';
+import { splitPersonName, type RosterAssignment } from './rosterAssignments';
 
 export function snapshotFromRosterRows(
   rows: readonly {

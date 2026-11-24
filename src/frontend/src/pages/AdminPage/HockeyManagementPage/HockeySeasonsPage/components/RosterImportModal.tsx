@@ -1,8 +1,8 @@
-import { RosterExcelImportModal, type RosterImportLock } from '../../../../../components/admin/RosterExcelImportModal/RosterExcelImportModal';
+import { RosterJsonImportModal, type RosterImportLock } from '../../../../../components/admin/RosterJsonImportModal/RosterJsonImportModal';
 import {
   importHockeyRosters,
-  loadHockeyRosterSeasonTeams,
-  loadHockeyRosterSeasons,
+  loadHockeyRosterCompetitions,
+  loadHockeyRosterTeams,
   revertHockeyRosters,
 } from '../../../../../api/hockey/rosterImportService';
 import {
@@ -31,11 +31,11 @@ export function HockeyRosterImportModal({
   presetSeasonId,
 }: HockeyRosterImportModalProps) {
   return (
-    <RosterExcelImportModal
+    <RosterJsonImportModal
       onClose={onClose}
       onImported={onImported}
-      loadSeasons={loadHockeyRosterSeasons}
-      loadSeasonTeams={loadHockeyRosterSeasonTeams}
+      loadCompetitions={loadHockeyRosterCompetitions}
+      loadTeams={loadHockeyRosterTeams}
       importRosters={importHockeyRosters}
       revertRosters={revertHockeyRosters}
       lockedSelection={lockedSelection}

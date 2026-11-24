@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import type { FootballMatchDto } from '../../../../types/football/footballTypes';
 
 export function formatDate(dateString: string) {
@@ -41,9 +42,12 @@ export function getTeamName(teamId: string, match: FootballMatchDto): string {
   return 'Unknown Team';
 }
 
-export function getPeriodName(period: number): string {
-  if (period === 1) return '1ST HALF';
-  if (period === 2) return '2ND HALF';
-  if (period === 3) return 'EXTRA TIME';
-  return `PERIOD ${period}`;
-} 
+export function getPeriodName(period: number, match: FootballMatchDto, t: TFunction): string {
+  const halves: number = match.matchRules?.numberOfHalves ?? 2;
+  if (period <= halves) return t('football.matches.manage.eventPeriod.half', { number: period });
+  const extraHalves: number = match.matchRules?.allowExtraTime ? match.matchRules.extraTimeHalfCount : 0;
+  if (period <= halves + extraHalves) {
+    return t('football.matches.manage.eventPeriod.extraTime', { number: period - halves });
+  }
+  return t('football.matches.manage.eventPeriod.shootout');
+}

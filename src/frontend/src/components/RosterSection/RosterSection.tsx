@@ -4,6 +4,22 @@ import type { SportKind } from '../../utils/sportRoutes';
 import { LicenceLegend, LicenceStatusDot } from '../LicenceStatus/LicenceStatus';
 import '../../pages/floorball/FloorballTeamPage/components/RosterSection.scss';
 
+/** Statistics a roster column can show. */
+export type RosterStatColumn =
+  | 'goals'
+  | 'assists'
+  | 'savePercentage'
+  | 'goalsAgainstAverage'
+  | 'yellowCards'
+  | 'cleanSheets';
+
+/** The two columns after games played. */
+export type RosterStatColumns = readonly [RosterStatColumn, RosterStatColumn];
+
+const DECIMAL_COLUMNS: ReadonlySet<RosterStatColumn> = new Set<RosterStatColumn>(['savePercentage', 'goalsAgainstAverage']);
+const DEFAULT_FIELD_COLUMNS: RosterStatColumns = ['goals', 'assists'];
+const DEFAULT_GOALIE_COLUMNS: RosterStatColumns = ['savePercentage', 'goalsAgainstAverage'];
+
 export interface RosterPlayerRow {
   playerId: string;
   playerName: string;
@@ -12,6 +28,7 @@ export interface RosterPlayerRow {
   gamesPlayed?: number;
   goals?: number;
   assists?: number;
+  yellowCards?: number;
   nameSuffix?: string;
   /** Licence paid for this team. Leave undefined to hide the indicator. */
   licenceActive?: boolean;
@@ -22,9 +39,10 @@ export interface RosterStatRow {
   gamesPlayed: number;
   goals: number;
   assists: number;
-  /** Goalie-only columns; shown instead of goals and assists for goalie positions. */
   savePercentage?: number;
   goalsAgainstAverage?: number;
+  yellowCards?: number;
+  cleanSheets?: number;
 }
 
 interface RosterSectionProps {
@@ -32,13 +50,22 @@ interface RosterSectionProps {
   players: RosterPlayerRow[];
   playerStatistics?: RosterStatRow[] | null;
   positionOrder: string[];
-  /** Positions whose group shows save percentage and goals against average instead of goals and assists. */
+  /** Positions whose group shows the goalie columns. */
   goaliePositions?: string[];
+  fieldColumns?: RosterStatColumns;
+  goalieColumns?: RosterStatColumns;
   positionLabel?: (position: string) => string;
 }
 
-function formatDecimal(value: number | undefined): string {
-  return value === undefined ? '—' : value.toFixed(2);
+function formatStat(column: RosterStatColumn, stats: RosterStatRow | undefined, player: RosterPlayerRow): string {
+  const fallback: Partial<Record<RosterStatColumn, number>> = {
+    goals: player.goals,
+    assists: player.assists,
+    yellowCards: player.yellowCards,
+  };
+  const value: number | undefined = stats?.[column] ?? fallback[column];
+  if (value === undefined) return '—';
+  return DECIMAL_COLUMNS.has(column) ? value.toFixed(2) : String(value);
 }
 
 export default function RosterSection({
@@ -47,6 +74,8 @@ export default function RosterSection({
   playerStatistics,
   positionOrder,
   goaliePositions = [],
+  fieldColumns = DEFAULT_FIELD_COLUMNS,
+  goalieColumns = DEFAULT_GOALIE_COLUMNS,
   positionLabel,
 }: RosterSectionProps) {
   const { t } = useTranslation();
@@ -61,7 +90,7 @@ export default function RosterSection({
     <div className="roster-section">
       {showLicence && <LicenceLegend />}
       {playerPositions.map((pos) => {
-        const isGoalieGroup: boolean = goaliePositions.includes(pos);
+        const [firstColumn, secondColumn]: RosterStatColumns = goaliePositions.includes(pos) ? goalieColumns : fieldColumns;
         return (
           <div className="roster-container" key={pos}>
             <div className="roster-position-header">
@@ -73,17 +102,8 @@ export default function RosterSection({
                   <div className="roster-jersey" title={t('roster.tooltips.jerseyNumber')}>{t('roster.jerseyNumber')}</div>
                   <div className="roster-player-name">{t('roster.name')}</div>
                   <div className="roster-games-played" title={t('roster.tooltips.matchesPlayed')}>{t('roster.matchesPlayed')}</div>
-                  {isGoalieGroup ? (
-                    <>
-                      <div className="roster-goals" title={t('roster.tooltips.savePercentage')}>{t('roster.savePercentage')}</div>
-                      <div className="roster-assists" title={t('roster.tooltips.goalsAgainstAverage')}>{t('roster.goalsAgainstAverage')}</div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="roster-goals" title={t('roster.tooltips.goals')}>{t('roster.goals')}</div>
-                      <div className="roster-assists" title={t('roster.tooltips.assists')}>{t('roster.assists')}</div>
-                    </>
-                  )}
+                  <div className="roster-goals" title={t(`roster.tooltips.${firstColumn}`)}>{t(`roster.${firstColumn}`)}</div>
+                  <div className="roster-assists" title={t(`roster.tooltips.${secondColumn}`)}>{t(`roster.${secondColumn}`)}</div>
                 </div>
                 {players
                   .filter((player) => player.position === pos)
@@ -115,21 +135,8 @@ export default function RosterSection({
                         <div className="roster-games-played">
                           {seasonStats?.gamesPlayed ?? player.gamesPlayed ?? '—'}
                         </div>
-                        {isGoalieGroup ? (
-                          <>
-                            <div className="roster-goals">{formatDecimal(seasonStats?.savePercentage)}</div>
-                            <div className="roster-assists">{formatDecimal(seasonStats?.goalsAgainstAverage)}</div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="roster-goals">
-                              {seasonStats?.goals ?? player.goals ?? '—'}
-                            </div>
-                            <div className="roster-assists">
-                              {seasonStats?.assists ?? player.assists ?? '—'}
-                            </div>
-                          </>
-                        )}
+                        <div className="roster-goals">{formatStat(firstColumn, seasonStats, player)}</div>
+                        <div className="roster-assists">{formatStat(secondColumn, seasonStats, player)}</div>
                       </div>
                     );
                   })}

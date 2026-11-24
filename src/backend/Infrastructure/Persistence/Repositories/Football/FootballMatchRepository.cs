@@ -360,6 +360,7 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                             && (((FootballGoal)e).ScoringPlayerId == playerId
                                 || ((FootballGoal)e).AssistingPlayerId == playerId))
                         || (e is FootballCard && ((FootballCard)e).PlayerId == playerId)
+                        || (e is FootballMissedPenalty && ((FootballMissedPenalty)e).ShooterPlayerId == playerId)
                         || (e is FootballSubstitution
                             && (((FootballSubstitution)e).PlayerOffId == playerId
                                 || ((FootballSubstitution)e).PlayerOnId == playerId))))
@@ -385,6 +386,23 @@ namespace MyLeague.Infrastructure.Persistence.Repositories.Football
                 .Where(m => matchIds.Contains(m.Id))
                 .OrderByDescending(m => m.ScheduledDateTime)
                 .ThenBy(m => m.Id)
+                .ToListAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<FootballMatch>> GetCompletedWithLineupsAsync(
+            Guid teamId,
+            Guid competitionId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _entities
+                .AsNoTracking()
+                .AsSplitQuery()
+                .Include(m => m.PeriodScores)
+                .Include(m => m.Lineup)
+                .Where(m => m.CompetitionId == competitionId
+                    && m.Status == FootballMatchStatus.Completed
+                    && (m.HomeTeamId == teamId || m.AwayTeamId == teamId))
                 .ToListAsync(cancellationToken);
         }
 

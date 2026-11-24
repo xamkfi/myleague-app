@@ -224,6 +224,18 @@ export interface FloorballGoalEventDto {
    * accept either at the type level.
    */
   goalType?: FloorballGoalType | number | string | null;
+  /** Scored while a penalty against the opponent was delayed. Combines with any goal type. */
+  wasDelayedPenalty?: boolean;
+}
+
+/** Penalty shot that did not result in a goal. */
+export interface FloorballMissedPenaltyEventDto {
+  id: string;
+  teamId: string;
+  playerId: string;
+  periodNumber: number;
+  timeInSeconds: number;
+  playerName?: string;
 }
 
 export interface FloorballPenaltyEventDto {
@@ -295,6 +307,7 @@ export interface FloorballMatchDto {
   goalEvents: FloorballGoalEventDto[];
   penaltyEvents: FloorballPenaltyEventDto[];
   saveEvents: FloorballSaveEventDto[];
+  missedPenaltyEvents?: FloorballMissedPenaltyEventDto[] | null;
   matchRules: FloorballMatchRules;
   /**
    * Active field players for the home team in this match, each with the per-match role

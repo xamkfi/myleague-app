@@ -51,6 +51,8 @@ public class RecordHockeyGoalHandler : IRequestHandler<RecordHockeyGoalCommand, 
                 request.SecondaryAssistActivePlayerId,
                 request.GoalieActivePlayerId,
                 wasEmptyNet: request.WasEmptyNet,
+                wasDelayedPenalty: request.WasDelayedPenalty,
+                wasPenaltyShotGoal: request.WasPenaltyShotGoal,
                 description: request.Description);
 
             match.AddEvent(goal);

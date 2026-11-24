@@ -1,0 +1,32 @@
+@use '@variables' as *;
+
+// Accent colours for event rows beyond goals and floorball/hockey penalties. The row layout itself
+// comes from the sport's match page styles.
+@mixin event-kind($name, $accent, $badge-text: $color-neutral-white) {
+  .event-row.#{$name} {
+    border-left: 4px solid $accent;
+
+    .event-type-badge.#{$name} {
+      background-color: $accent;
+      color: $badge-text;
+    }
+  }
+
+  .event-row.away-event.#{$name} {
+    border-left: none;
+    border-right: 4px solid $accent;
+  }
+}
+
+@include event-kind('missed-penalty', $color-neutral-dark-grey);
+@include event-kind('yellow-card', $color-yellow-primary, $color-neutral-black);
+@include event-kind('red-card', $color-red-primary);
+@include event-kind('substitution', $color-blue-secondary);
+
+// A second yellow sends the player off, so its badge shows both colours.
+@include event-kind('second-yellow-card', $color-red-primary);
+
+.event-row.second-yellow-card .event-type-badge.second-yellow-card {
+  background: linear-gradient(135deg, $color-yellow-primary 50%, $color-red-primary 50%);
+  color: $color-neutral-black;
+}

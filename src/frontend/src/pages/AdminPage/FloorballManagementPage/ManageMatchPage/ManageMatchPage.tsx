@@ -9,6 +9,7 @@ import { floorballPeriodEventFlags, floorballPeriodStartSeconds } from '../../..
 import { formatEventTimeMmSs } from '../../../../utils/matchEventFormat';
 import PageTemplate from '../../../../components/PageTemplate/AdminPageTemplate';
 import OfficialPageTemplate from '../../../OfficialPage/components/OfficialPageTemplate';
+import { matchDecisionOf, type MatchDecision } from '../../../../types/common/matchDecision';
 import type { ManageMatchMode } from '../../../../types/common/manageMatchMode';
 import ErrorPopup from '../../../../components/ErrorPopup/ErrorPopup';
 import AssignTeamsDialog from '../../../../components/AssignTeamsDialog/AssignTeamsDialog';
@@ -26,7 +27,10 @@ import EditActiveRosterDialog from './components/EditActiveRosterDialog';
 import OfficialsSelectorSection from '../../../../components/match/OfficialsSelectorSection';
 import ScorekeepersSection from '../../../../components/match/ScorekeepersSection';
 import MatchConfirmationDialogs from './components/MatchConfirmationDialogs';
+import MatchDecisionDialog from '../../../../components/match/MatchDecisionDialog';
+import MissedPenaltyDialog, { type MissedPenaltyPayload } from '../../../../components/match/MissedPenaltyDialog';
 import BulkSaveDialog, { type BulkSavePayload } from '../../../../components/match/BulkSaveDialog';
+import { formatPlayerOptionLabel, sortPlayersForSelect } from './components/eventFormHelpers';
 import type { EventGroup, ProcessedEvent } from './components/types';
 
 import { MatchTimerProvider, useMatchTimerContext } from './context';
@@ -102,6 +106,8 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
   const [groupsToDelete, setGroupsToDelete] = useState<EventGroup[] | null>(null);
   const [deleteEventLoading, setDeleteEventLoading] = useState<boolean>(false);
   const [isLineupDialogOpen, setIsLineupDialogOpen] = useState<boolean>(false);
+  const [missedPenaltyTeamId, setMissedPenaltyTeamId] = useState<string | null>(null);
+  const [showDecisionDialog, setShowDecisionDialog] = useState<boolean>(false);
   // Bulk save dialog state. `null` means "closed"; an object means the dialog is open for the
   // captured side + goalie.
   const [bulkSaveTarget, setBulkSaveTarget] = useState<BulkSaveTarget | null>(null);
@@ -164,6 +170,21 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
     }
     return ids;
   }, [matchEvents.allEvents]);
+
+  // Goalies who have saves or conceded goals; changing one offers to move them.
+  const goaliesWithEvents: ReadonlySet<string> = useMemo(() => {
+    const ids = new Set<string>();
+    for (const save of currentMatch.saveEvents ?? []) ids.add(save.goalieId);
+    for (const eventItem of matchEvents.allEvents) {
+      if (eventItem.type === 'save' && eventItem.playerId) ids.add(eventItem.playerId);
+      if (eventItem.type !== 'goal') continue;
+      const conceding: string | undefined = eventItem.teamId === currentMatch.homeTeamId
+        ? currentMatch.awayActiveGoalieId
+        : currentMatch.homeActiveGoalieId;
+      if (conceding) ids.add(conceding);
+    }
+    return ids;
+  }, [matchEvents.allEvents, currentMatch]);
 
   const periodManagement = usePeriodManagement({
     currentMatch,
@@ -236,6 +257,8 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
     && !forms.showGoalForm
     && !forms.showPenaltyForm
     && !isLineupDialogOpen
+    && !missedPenaltyTeamId
+    && !showDecisionDialog
     && !bulkSaveTarget
     && !showEndMatchConfirmation
     && !showReopenConfirmation
@@ -588,19 +611,38 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
           await floorballMatchService.deleteGoal(match.id, eventId);
         } else if (evt.type === 'penalty') {
           await floorballMatchService.deletePenalty(match.id, eventId);
+        } else if (evt.type === 'missedPenalty') {
+          await floorballMatchEventService.deleteMissedPenalty(match.id, eventId);
         } else {
           await floorballMatchService.deleteSave(match.id, eventId);
         }
       }
-      await loadCurrentMatchStatus();
-      await loadMatchEvents();
     } catch (error) {
       reportError(error, t('floorball.matches.manage.errors.deleteEvent', 'Failed to delete event'));
     } finally {
+      // Also after a failure: the events deleted before it are gone from the backend.
+      await loadCurrentMatchStatus();
+      await loadMatchEvents();
       setGroupsToDelete(null);
       setDeleteEventLoading(false);
     }
   }, [groupsToDelete, match.id, loadCurrentMatchStatus, loadMatchEvents, setError, reportError, t]);
+
+  // ---------------------------------------------------------------------------
+  // Missed penalties and how the match was decided
+  // ---------------------------------------------------------------------------
+  const handleRecordMissedPenalty = useCallback(async (payload: MissedPenaltyPayload): Promise<void> => {
+    if (!missedPenaltyTeamId) return;
+    await floorballMatchEventService.recordMissedPenalty(match.id, { teamId: missedPenaltyTeamId, ...payload });
+    await loadMatchEvents();
+  }, [missedPenaltyTeamId, match.id, loadMatchEvents]);
+
+  const handleChangeDecision = useCallback(async (decision: MatchDecision): Promise<void> => {
+    const response = await floorballMatchService.setDecidedIn(match.id, decision);
+    setCurrentMatch(response.data);
+    setMatch(response.data);
+    await loadMatchEvents();
+  }, [match.id, setCurrentMatch, setMatch, loadMatchEvents]);
 
   // ---------------------------------------------------------------------------
   // Officials
@@ -701,6 +743,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
         onReopen={() => setShowReopenConfirmation(true)}
         canRevertToScheduled={canRevertToScheduled}
         onRevertToScheduled={() => setShowRevertConfirmation(true)}
+        onChangeDecision={() => setShowDecisionDialog(true)}
       />
 
       <ErrorPopup message={matchData.error} />
@@ -765,6 +808,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
             rightTeamSide={rightSideTeam}
             onShowGoalForm={forms.openGoalFormForTeam}
             onShowPenaltyForm={forms.openPenaltyFormForTeam}
+            onShowMissedPenaltyForm={setMissedPenaltyTeamId}
             leftGoalieId={leftSideGoalieId}
             rightGoalieId={rightSideGoalieId}
             onRecordSave={handleRecordSave}
@@ -801,6 +845,7 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
             initialAwayGoalieId={awayGoalieId}
             competitionId={currentMatch.competitionId}
             lockedPlayerIds={playersWithEvents}
+            goaliesWithEvents={goaliesWithEvents}
             onPlayerAdded={matchData.appendPlayer}
             onClose={() => setIsLineupDialogOpen(false)}
             onSaved={(updated) => {
@@ -890,6 +935,37 @@ const ManageMatchPageContent = ({ match, setMatch, onClose, mode }: ManageMatchP
           />
         </div>
       </div>
+
+      {missedPenaltyTeamId && (
+        <MissedPenaltyDialog
+          teamName={(missedPenaltyTeamId === homeTeamId ? matchData.homeTeam?.name : matchData.awayTeam?.name) ?? ''}
+          shooters={sortPlayersForSelect(matchData.getPlayersForTeam(missedPenaltyTeamId))
+            .map((player) => ({ id: player.id, label: formatPlayerOptionLabel(player) }))}
+          periods={forms.recordablePeriods}
+          overtimePeriodNumber={forms.overtimePeriod}
+          shootoutPeriodNumber={forms.shootoutPeriod}
+          periodLabels={{
+            field: t('floorball.matches.manage.eventPeriod.label', 'Period'),
+            period: (number: number) => t('floorball.matches.manage.eventPeriod.period', 'Period {{number}}', { number }),
+            overtime: t('floorball.matches.manage.eventPeriod.overtime', 'Overtime'),
+            shootout: t('floorball.matches.manage.eventPeriod.shootout', 'Shootout'),
+          }}
+          initialPeriod={currentPeriod}
+          initialTimeInSeconds={timer.getCurrentElapsedSeconds()}
+          onSubmit={handleRecordMissedPenalty}
+          onClose={() => setMissedPenaltyTeamId(null)}
+        />
+      )}
+
+      {showDecisionDialog && (
+        <MatchDecisionDialog
+          current={matchDecisionOf(currentMatch.wentToOvertime, currentMatch.wentToShootout)}
+          allowOvertime={currentMatch.matchRules?.allowOvertime ?? true}
+          allowShootout={currentMatch.matchRules?.allowShootout ?? true}
+          onSubmit={handleChangeDecision}
+          onClose={() => setShowDecisionDialog(false)}
+        />
+      )}
 
       {bulkSaveTarget && (
         <BulkSaveDialog
